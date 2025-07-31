@@ -27,6 +27,8 @@ data class AdditionalConditionUploadSummary(
 
   val fileType: String? = null,
 
+  val imageType: String? = null,
+
   val fileSize: Int = 0,
 
   @NotNull
@@ -45,7 +47,7 @@ data class AdditionalConditionUploadSummary(
   @Transient
   var preloadedThumbnailImage: ByteArray? = null
 
-  override fun toString(): String = "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, fileSize=$fileSize, uploadedTime=$uploadedTime, description=$description)"
+  override fun toString(): String = "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, imageType=$imageType, fileSize=$fileSize, uploadedTime=$uploadedTime, description=$description)"
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -56,6 +58,7 @@ data class AdditionalConditionUploadSummary(
     if (id != other.id) return false
     if (filename != other.filename) return false
     if (fileType != other.fileType) return false
+    if (imageType != other.imageType) return false
     if (fileSize != other.fileSize) return false
     if (uploadedTime != other.uploadedTime) return false
     if (description != other.description) return false
@@ -67,6 +70,7 @@ data class AdditionalConditionUploadSummary(
     var result = id.hashCode()
     result = 31 * result + (filename?.hashCode() ?: 0)
     result = 31 * result + (fileType?.hashCode() ?: 0)
+    result = 31 * result + (imageType?.hashCode() ?: 0)
     result = 31 * result + fileSize
     result = 31 * result + uploadedTime.hashCode()
     result = 31 * result + (description?.hashCode() ?: 0)

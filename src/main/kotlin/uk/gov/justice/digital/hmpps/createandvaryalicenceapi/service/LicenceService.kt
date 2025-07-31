@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -426,7 +427,8 @@ class LicenceService(
 
       is CrdLicence -> {
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
-        licenceEntity.submit(submitter as CommunityOffenderManager)
+        licenceEntity
+          .submit(submitter as CommunityOffenderManager)
       }
 
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
@@ -924,8 +926,12 @@ class LicenceService(
       it.copy(
         id = -1,
         licence = newLicence,
-        additionalConditionData = it.additionalConditionData.map { it.copy(id = -1) },
-        additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { it.copy(id = -1) },
+        additionalConditionData = it.additionalConditionData.map { conditionData -> conditionData.copy(id = -1) },
+        additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { conditionSummary ->
+          conditionSummary.copy(
+            id = -1,
+          )
+        },
       )
     }
 
@@ -990,7 +996,7 @@ class LicenceService(
     val username = SecurityContextHolder.getContext().authentication.name
     val staff = this.staffRepository.findByUsernameIgnoreCase(username)
       ?: error("Cannot find staff with username: $username")
-    return if (staff is CommunityOffenderManager) staff else error("Cannot find staff with username: $username")
+    return staff as? CommunityOffenderManager ?: error("Cannot find staff with username: $username")
   }
 
   private fun AdditionalCondition.isNotAp() = LicenceType.valueOf(this.conditionType) != LicenceType.AP
@@ -1063,32 +1069,35 @@ class LicenceService(
   }
 
   @Transactional
-  fun timeout(licence: CrdLicence, reason: String? = null) {
-    val timedOutLicence = licence.timeOut()
-    licenceRepository.saveAndFlush(timedOutLicence)
+  fun timeout(licence: EntityLicence, reason: String? = null) {
+    check(licence is SupportsHardStop) { "Can only timeout licence kinds that support hard stop: ${licence.id}" }
+
+    licence.timeOut()
+    licenceRepository.saveAndFlush(licence)
     auditEventRepository.saveAndFlush(
       AuditEvent(
-        licenceId = timedOutLicence.id,
+        licenceId = licence.id,
         username = "SYSTEM",
         fullName = "SYSTEM",
         eventType = AuditEventType.SYSTEM_EVENT,
-        summary = "Licence automatically timed out for ${timedOutLicence.forename} ${timedOutLicence.surname} ${reason ?: ""}",
-        detail = "ID ${timedOutLicence.id} type ${timedOutLicence.typeCode} status ${timedOutLicence.statusCode} version ${timedOutLicence.version}",
+        summary = "Licence automatically timed out for ${licence.forename} ${licence.surname} ${reason ?: ""}",
+        detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
       ),
     )
     licenceEventRepository.saveAndFlush(
       LicenceEvent(
-        licenceId = timedOutLicence.id,
+        licenceId = licence.id,
         eventType = LicenceEventType.TIMED_OUT,
         username = "SYSTEM",
         forenames = "SYSTEM",
         surname = "SYSTEM",
-        eventDescription = "Licence automatically timed out for ${timedOutLicence.forename} ${timedOutLicence.surname} ${reason ?: ""}",
+        eventDescription = "Licence automatically timed out for ${licence.forename} ${licence.surname} ${reason ?: ""}",
       ),
     )
-    if (timedOutLicence.versionOfId != null) {
-      val com = timedOutLicence.responsibleCom
-      with(timedOutLicence) {
+
+    if (licence.versionOfId != null) {
+      val com = licence.responsibleCom
+      with(licence) {
         notifyService.sendEditedLicenceTimedOutEmail(
           com.email,
           "${com.firstName} ${com.lastName}",

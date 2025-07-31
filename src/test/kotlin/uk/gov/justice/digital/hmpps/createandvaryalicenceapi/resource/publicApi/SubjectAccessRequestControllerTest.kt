@@ -24,13 +24,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAttachmentDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType.SYSTEM_EVENT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.transformToSarAuditEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.SubjectAccessRequestService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 
@@ -65,12 +66,12 @@ class SubjectAccessRequestControllerTest {
   @Test
   fun `get a Subject Access Request Content for CRD Licence`() {
     val licences = listOf(TestData.createSarLicence())
-    val auditEvents = aListOfAuditEvents.transformToSarAuditEvents()
     whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
       SarContent(
         Content(
           licences,
-          auditEvents,
+          aListOfAuditEvents,
+          aListOfAttachments,
         ),
       ),
     )
@@ -120,35 +121,42 @@ class SubjectAccessRequestControllerTest {
 
   private companion object {
     val aListOfAuditEvents = listOf(
-      AuditEvent(
-        id = 1L,
+      SarAuditEvent(
         licenceId = 1L,
         eventTime = LocalDateTime.of(2023, 10, 11, 12, 0),
         username = "USER",
         fullName = "First Last",
-        eventType = AuditEventType.USER_EVENT,
+        eventType = USER_EVENT,
         summary = "Summary1",
         detail = "Detail1",
       ),
-      AuditEvent(
-        id = 2L,
+      SarAuditEvent(
         licenceId = 1L,
         eventTime = LocalDateTime.of(2023, 10, 11, 12, 1),
         username = "USER",
         fullName = "First Last",
-        eventType = AuditEventType.USER_EVENT,
+        eventType = USER_EVENT,
         summary = "Summary2",
         detail = "Detail2",
       ),
-      AuditEvent(
-        id = 3L,
+      SarAuditEvent(
         licenceId = 1L,
         eventTime = LocalDateTime.of(2023, 10, 11, 12, 2),
         username = "CUSER",
         fullName = "First Last",
-        eventType = AuditEventType.SYSTEM_EVENT,
+        eventType = SYSTEM_EVENT,
         summary = "Summary3",
         detail = "Detail3",
+      ),
+    )
+    val aListOfAttachments = listOf(
+      SarAttachmentDetail(
+        attachmentNumber = 1,
+        name = "a file",
+        contentType = "application/pdf",
+        url = "http://localhost:8080/licence/G4169UO",
+        filename = "G4169UO.pdf",
+        filesize = 12344,
       ),
     )
   }

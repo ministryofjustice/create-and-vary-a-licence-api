@@ -6,6 +6,10 @@ import java.time.LocalDateTime
 
 @Schema(description = "Describes the files uploaded for an additional condition")
 data class SarAdditionalConditionUploadSummary(
+  @Schema(
+    description = "The numeric identifier to identify this attachment",
+  )
+  override val attachmentNumber: Int,
 
   @Schema(
     description = "The original file name uploaded for this condition on this licence",
@@ -13,8 +17,11 @@ data class SarAdditionalConditionUploadSummary(
   )
   val filename: String? = null,
 
-  @Schema(description = "The file type uploaded for this condition on this licence", example = "application/pdf")
-  val fileType: String? = null,
+  @Schema(
+    description = "The mime type based on the type of image that has been extracted from the upload",
+    example = "image/png",
+  )
+  val imageType: String? = null,
 
   @Schema(description = "The original file size in bytes", example = "27566")
   val fileSize: Int = 0,
@@ -28,4 +35,4 @@ data class SarAdditionalConditionUploadSummary(
     example = "A description of the exclusion zone boundaries",
   )
   val description: String? = null,
-)
+) : SarAttachmentSummary

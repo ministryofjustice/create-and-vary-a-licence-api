@@ -25,7 +25,7 @@ data class EventType(
 )
 
 data class PersonReference(val identifiers: List<Identifiers> = listOf()) {
-  fun crn() = identifiers.find { it.type == "CRN" }?.value
+  fun crn() = identifiers.find { it.type == "CRN" }?.value!!
   fun noms() = identifiers.find { it.type == "NOMS" }?.value
 }
 
