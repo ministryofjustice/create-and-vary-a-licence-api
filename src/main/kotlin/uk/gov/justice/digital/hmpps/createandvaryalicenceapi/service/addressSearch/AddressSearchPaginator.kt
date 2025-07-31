@@ -1,10 +1,9 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressSearchResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.OsPlacesApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesMapperToAddressSearchResponseMapper
 
 @Component
