@@ -17,8 +17,11 @@ data class SarAdditionalConditionUploadSummary(
   )
   val filename: String? = null,
 
-  @Schema(description = "The file type uploaded for this condition on this licence", example = "application/pdf")
-  val fileType: String? = null,
+  @Schema(
+    description = "The mime type based on the type of image that has been extracted from the upload",
+    example = "image/png",
+  )
+  val imageType: String? = null,
 
   @Schema(description = "The original file size in bytes", example = "27566")
   val fileSize: Int = 0,

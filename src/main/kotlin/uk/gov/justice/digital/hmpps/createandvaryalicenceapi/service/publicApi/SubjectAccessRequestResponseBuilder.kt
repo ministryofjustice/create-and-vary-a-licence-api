@@ -19,6 +19,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarStandardCondition
 import java.util.concurrent.atomic.AtomicInteger
 
+private const val UNAVAILABLE = "unavailable"
+
 class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
   private val attachmentIdSeq = AtomicInteger()
   private val sarLicences: MutableList<SarLicence> = mutableListOf()
@@ -102,8 +104,8 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
 
     return SarAdditionalConditionUploadSummary(
       attachmentNumber = attachmentNumber,
-      filename = entity.filename,
-      fileType = entity.fileType,
+      filename = entity.filename ?: UNAVAILABLE,
+      imageType = entity.imageType ?: UNAVAILABLE,
       fileSize = entity.fileSize,
       uploadedTime = entity.uploadedTime,
       description = entity.description,
@@ -117,10 +119,10 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     conditionId: Long?,
   ) = SarAttachmentDetail(
     attachmentNumber = attachmentNumber,
-    name = entity.description ?: "unavailable",
-    contentType = entity.fileType ?: "unavailable",
+    name = entity.description ?: UNAVAILABLE,
+    contentType = entity.imageType ?: UNAVAILABLE,
     url = "$baseUrl/public/licences/$licenceId/conditions/$conditionId/image-upload",
-    filename = entity.filename ?: "unavailable",
+    filename = entity.filename ?: UNAVAILABLE,
     filesize = entity.fileSize,
   )
 

@@ -53,6 +53,11 @@ class CaseloadServiceTest {
         "A1234AA" to LocalDate.of(2021, 10, 22),
       ),
     )
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
+      mapOf(
+        "A1234AA" to LocalDate.of(2021, 10, 22),
+      ),
+    )
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
   }
 
