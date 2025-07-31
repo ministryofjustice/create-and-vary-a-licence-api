@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.UUID
@@ -25,6 +26,7 @@ class ExclusionZoneService(
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val documentService: DocumentService,
+  private val documentCountsRepository: DocumentCountsRepository,
 ) {
 
   init {
@@ -116,23 +118,17 @@ class ExclusionZoneService(
   fun deleteDocumentsFor(additionalConditions: List<AdditionalCondition>) {
     log.info("Deleting documents for ${additionalConditions.size} additional conditions")
 
-    val uploadSummaries = additionalConditions.flatMap { it.additionalConditionUploadSummary }
-    val uuidsToDelete = mutableListOf<String?>()
-
-    // Remove AdditionalConditionUploadSummary documents
-    uploadSummaries.forEach { uuidsToDelete.add(it.thumbnailImageDsUuid) }
-
-    // Remove AdditionalConditionUploadDetail documents
-    uploadSummaries
-      .map { additionalConditionUploadDetailRepository.findById(it.uploadDetailId).orElseThrow() }
-      .forEach { uuidsToDelete.addAll(listOf(it.fullSizeImageDsUuid, it.originalDataDsUuid)) }
-
-    uuidsToDelete.filterNotNull()
-      .also { log.info("Found ${it.size} documents to delete") }
-      .forEach { documentService.deleteDocument(UUID.fromString(it)) }
-
     // Remove AdditionalConditionUploadDetail records so they don't get orphaned
-    additionalConditionUploadDetailRepository.deleteAllByIdInBatch(uploadSummaries.map { it.uploadDetailId })
+    additionalConditionUploadDetailRepository.deleteAllByIdInBatch(
+      additionalConditions
+        .flatMap { it.additionalConditionUploadSummary }
+        .map { it.uploadDetailId },
+    )
+
+    documentCountsRepository.countsOfDocumentsRelatedTo(additionalConditions.map { it.id!! })
+      .filter { it.count == 1 }
+      .also { log.info("Deleting ${it.size} documents...") }
+      .forEach { documentService.deleteDocument(UUID.fromString(it.uuid)) }
   }
 
   private fun uploadExtractedExclusionZoneParts(
