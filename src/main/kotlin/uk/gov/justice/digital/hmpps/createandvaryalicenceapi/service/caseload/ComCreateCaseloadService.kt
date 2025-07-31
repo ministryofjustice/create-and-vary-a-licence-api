@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isTodayOrInTheFuture
 
 @Service
@@ -91,11 +92,11 @@ class ComCreateCaseloadService(
   private fun filterCasesEligibleForCvl(cases: Map<ManagedOffenderCrn, CaseloadItem>, crnsToLicences: Map<String, List<CaseLoadLicenceSummary>>): Map<ManagedOffenderCrn, CaseloadItem> = cases.filter { (deliusRecord, nomisRecord) ->
     val prisoner = nomisRecord.prisoner.toPrisonerSearchPrisoner()
     val licences = crnsToLicences[deliusRecord.crn]!!
-    val prrdLicence = licences.find { licence -> licence.kind == LicenceKind.PRRD }
+    val prrdLicence = licences.find { determineReleaseDateKind(prisoner.postRecallReleaseDate, prisoner.conditionalReleaseDate) == LicenceKind.PRRD }
     when {
       prisoner.bookingId == null -> false
       licences.any { it.licenceStatus == ACTIVE } -> false
-      prrdLicence != null && prrdLicence.licenceStatus != NOT_STARTED -> true
+      prrdLicence != null && prrdLicence.licenceId != null -> true
       !eligibilityService.isEligibleForCvl(prisoner) -> false
       else -> true
     }

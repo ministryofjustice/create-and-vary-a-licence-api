@@ -95,7 +95,7 @@ class UpdateSentenceDateServiceTest {
 
   @BeforeEach
   fun beforeEach() {
-    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2023, 9, 11))
+    whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 9, 11))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
   }
 
@@ -653,7 +653,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `Recalculates Licence Start Date rather than reading from the request`() {
-    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2024, 1, 1))
+    whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2024, 1, 1))
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(

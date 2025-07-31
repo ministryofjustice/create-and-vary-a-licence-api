@@ -48,7 +48,7 @@ abstract class Licence(
   @param:NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "kind", insertable = false, updatable = false)
-  override var kind: LicenceKind,
+  var kind: LicenceKind,
 
   @param:NotNull
   @Enumerated(EnumType.STRING)

@@ -16,17 +16,13 @@ import java.time.LocalDate
 class CaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val releaseDateService: ReleaseDateService,
-  private val licenceCreationService: LicenceCreationService,
 ) {
 
   fun getPrisonersByNumber(nomisIds: List<String>): List<CaseloadItem> {
     val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)
 
-    val prisonersToLicenceKinds = prisoners.associate {
-      it.prisonerNumber to licenceCreationService.determineLicenceKind(it)
-    }
     val licenceStartDates =
-      releaseDateService.getLicenceStartDates(prisoners, prisonersToLicenceKinds)
+      releaseDateService.getLicenceStartDates(prisoners)
 
     return prisoners.map { prisonerToCaseloadItem(it, licenceStartDates[it.prisonerNumber]) }
   }
@@ -49,8 +45,7 @@ class CaseloadService(
   fun getPrisoner(nomisId: String) = getPrisonersByNumber(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
 
   fun prisonerToCaseloadItem(prisoner: PrisonerSearchPrisoner, licenceStartDate: LocalDate?): CaseloadItem {
-    val kind = licenceCreationService.determineLicenceKind(prisoner)
-    val sentenceDateHolder = prisoner.toSentenceDateHolder(licenceStartDate, kind)
+    val sentenceDateHolder = prisoner.toSentenceDateHolder(licenceStartDate)
     return CaseloadItem(
       prisoner = prisoner.toPrisoner(),
       cvl = CvlFields(

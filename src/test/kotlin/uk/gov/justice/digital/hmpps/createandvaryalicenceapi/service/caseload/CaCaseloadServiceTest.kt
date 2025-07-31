@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -59,7 +58,6 @@ import java.time.ZoneId
 
 class CaCaseloadServiceTest {
   private val caseloadService = mock<CaseloadService>()
-  private val licenceCreationService = mock<LicenceCreationService>()
   private val licenceService = mock<LicenceService>()
   private val hdcService = mock<HdcService>()
   private val deliusApiClient = mock<DeliusApiClient>()
@@ -69,7 +67,6 @@ class CaCaseloadServiceTest {
 
   private val service = CaCaseloadService(
     caseloadService,
-    licenceCreationService,
     licenceService,
     hdcService,
     eligibilityService,
@@ -109,7 +106,6 @@ class CaCaseloadServiceTest {
   fun reset() {
     reset(
       caseloadService,
-      licenceCreationService,
       licenceService,
       hdcService,
       eligibilityService,
@@ -170,7 +166,6 @@ class CaCaseloadServiceTest {
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(listOf(comUser))
     whenever(deliusApiClient.getProbationCases(any(), anyOrNull())).thenReturn(listOf(probationCase))
     whenever(deliusApiClient.getOffenderManagers(any(), anyOrNull())).thenReturn(listOf(aCommunityManager))
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
   }
 
   @Nested
@@ -179,7 +174,7 @@ class CaCaseloadServiceTest {
     inner class `in the hard stop period` {
       @Test
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
-        whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
+        whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
         whenever(caseloadService.prisonerToCaseloadItem(any(), any())).thenReturn(
           TestData.caseLoadItem().copy(
             TestData.caseLoadItem().prisoner,
@@ -822,7 +817,7 @@ class CaCaseloadServiceTest {
 
         whenever(hdcService.getHdcStatus(listOf(prisoner))).thenReturn(HdcStatuses(emptySet()))
 
-        whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
+        whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(

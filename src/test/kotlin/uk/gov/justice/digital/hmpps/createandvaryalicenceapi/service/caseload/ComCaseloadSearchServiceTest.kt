@@ -59,7 +59,6 @@ class ComCaseloadSearchServiceTest {
     hdcService,
     eligibilityService,
     releaseDateService,
-    licenceCreationService,
     clock,
   )
 

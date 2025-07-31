@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -89,7 +90,7 @@ class EligibilityServiceTest {
 
     @Test
     fun `Person is on ineligible EDS - ARD is outside threshold in the past - not eligible for CVL `() {
-      whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.now(clock).minusDays(5))
+      whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.now(clock).minusDays(5))
       val result = service.getIneligibilityReasons(
         aPrisonerSearchResult.copy(
           confirmedReleaseDate = LocalDate.now(clock).minusDays(5),
