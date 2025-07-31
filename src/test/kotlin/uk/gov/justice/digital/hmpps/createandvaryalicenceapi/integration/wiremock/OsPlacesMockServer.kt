@@ -7,7 +7,7 @@ private const val OS_PLACES_WIREMOCK_PORT = 8099
 
 class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_WIREMOCK_PORT) {
 
-  fun stubGetAddressesForPostcode(postcode: String, offset: Int = 0, maxResults: Int = 50) {
+  fun stubGetAddressesForPostcode(postcode: String, offset: Int = 0, maxResults: Int = 100) {
     val json = """{
       "header": {
         "uri": "https://api.os.uk/search/places/v1/postcode?postcode=$postcode&offset=$offset&maxresults=$maxResults",
@@ -150,7 +150,7 @@ class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_
     )
   }
 
-  fun stubGetAddressesForIrregularPostcode(postcode: String, offset: Int = 0, maxResults: Int = 50) {
+  fun stubGetAddressesForIrregularPostcode(postcode: String, offset: Int = 0, maxResults: Int = 100) {
     val json = """{
       "header": {
         "uri": "https://api.os.uk/search/places/v1/postcode?postcode=$postcode",
@@ -219,7 +219,7 @@ class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_
     )
   }
 
-  fun stubSearchForAddresses(searchQuery: String, offset: Int = 0, maxResults: Int = 50) {
+  fun stubSearchForAddresses(searchQuery: String, offset: Int = 0, maxResults: Int = 100) {
     val json = """{
       "header": {
         "uri": "https://api.os.uk/search/places/v1/find?query=$searchQuery&offset=$offset&maxresults=$maxResults",
