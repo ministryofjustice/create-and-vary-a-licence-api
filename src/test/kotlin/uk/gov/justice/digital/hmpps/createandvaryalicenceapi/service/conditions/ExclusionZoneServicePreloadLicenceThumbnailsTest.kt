@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.*
@@ -20,6 +21,7 @@ class ExclusionZoneServicePreloadLicenceThumbnailsTest {
   private val additionalConditionRepository: AdditionalConditionRepository = mock()
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository = mock()
   private val documentService: DocumentService = mock()
+  private val documentCountsRepository: DocumentCountsRepository = mock()
 
   @Test
   fun `return a map of thumbnail id to image bytes for every additional condition featuring an uploaded thumbnail`() {
@@ -36,6 +38,7 @@ class ExclusionZoneServicePreloadLicenceThumbnailsTest {
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       documentService,
+      documentCountsRepository,
     )
 
     exclusionZoneService.preloadThumbnailsFor(licence)
