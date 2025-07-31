@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Respon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
 @Component
-class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient: WebClient) {
+class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebClient: WebClient) {
   companion object {
     private const val STAFF_EMAIL_BATCH = 500
     private const val STAFF_USERNAME_BATCH = 500

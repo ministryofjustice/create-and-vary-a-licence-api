@@ -7,19 +7,22 @@ import java.time.LocalDate
 
 @Schema(description = "Request object for updating an offender's personal details")
 data class UpdateOffenderDetailsRequest(
-  @Schema(description = "The offender forename", example = "Steven")
-  @NotNull
+  @field:Schema(description = "The offender forename", example = "Steven")
+  @param:NotNull
   val forename: String? = null,
 
-  @Schema(description = "The offender middle names", example = "Jason Kyle")
+  @field:Schema(description = "The offender middle names", example = "Jason Kyle")
   val middleNames: String? = null,
 
-  @Schema(description = "The offender surname", example = "Smith")
-  @NotNull
+  @field:Schema(description = "The offender surname", example = "Smith")
+  @param:NotNull
   val surname: String? = null,
 
-  @Schema(description = "The offender's date of birth, from either prison or probation services", example = "12/12/2001")
-  @NotNull
-  @JsonFormat(pattern = "dd/MM/yyyy")
+  @field:Schema(
+    description = "The offender's date of birth, from either prison or probation services",
+    example = "12/12/2001",
+  )
+  @param:NotNull
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
   val dateOfBirth: LocalDate? = null,
 )

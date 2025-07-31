@@ -32,10 +32,10 @@ import java.util.Objects
 abstract class Staff(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   var id: Long = -1,
 
-  @NotNull
+  @param:NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "kind", insertable = false, updatable = false)
   var kind: StaffKind,

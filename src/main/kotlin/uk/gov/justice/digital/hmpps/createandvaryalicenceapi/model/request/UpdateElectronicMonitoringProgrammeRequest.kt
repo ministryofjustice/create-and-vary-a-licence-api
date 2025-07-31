@@ -10,10 +10,10 @@ import kotlin.reflect.KClass
 @ValidProgrammeName
 @Schema(description = "Request for providing details about any electronic monitoring programme")
 data class UpdateElectronicMonitoringProgrammeRequest(
-  @Schema(description = "Is the licence to be tagged for electronic monitoring programme")
+  @field:Schema(description = "Is the licence to be tagged for electronic monitoring programme")
   val isToBeTaggedForProgramme: Boolean? = null,
 
-  @Schema(description = "Programme Name of the licence", example = "Off Some Road")
+  @field:Schema(description = "Programme Name of the licence", example = "Off Some Road")
   val programmeName: String? = null,
 )
 

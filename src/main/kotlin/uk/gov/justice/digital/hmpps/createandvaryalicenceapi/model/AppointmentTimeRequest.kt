@@ -7,9 +7,12 @@ import java.time.LocalDateTime
 
 @Schema(description = "Request object for updating the date and time of the initial appointment")
 data class AppointmentTimeRequest(
-  @Schema(description = "The date and time of the initial appointment", example = "12/12/2021 10:35")
-  @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+  @field:Schema(description = "The date and time of the initial appointment", example = "12/12/2021 10:35")
+  @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm")
   val appointmentTime: LocalDateTime?,
-  @Schema(description = "The type of appointment time at the initial appointment", example = "IMMEDIATE_UPON_RELEASE")
+  @field:Schema(
+    description = "The type of appointment time at the initial appointment",
+    example = "IMMEDIATE_UPON_RELEASE",
+  )
   val appointmentTimeType: AppointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
 )

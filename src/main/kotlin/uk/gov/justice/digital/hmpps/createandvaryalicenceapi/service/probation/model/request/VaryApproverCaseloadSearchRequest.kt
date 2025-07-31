@@ -5,21 +5,21 @@ import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
 
 @Schema(description = "Search criteria for vary approver caseload search")
 data class VaryApproverCaseloadSearchRequest(
-  @Schema(
+  @field:Schema(
     description = "The probation delivery units where the the licence is supervised",
     example = "[\"N55PDV\"]",
     requiredMode = NOT_REQUIRED,
   )
   val probationPduCodes: List<String>? = null,
 
-  @Schema(
+  @field:Schema(
     description = "The probation region where the licence is supervised",
     example = "N01",
     requiredMode = NOT_REQUIRED,
   )
   val probationAreaCode: String? = null,
 
-  @Schema(
+  @field:Schema(
     description = "Search text to filter caseload",
     example = "2022-04-20",
     requiredMode = NOT_REQUIRED,

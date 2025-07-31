@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batch
 import java.time.LocalDate
 
 @Service
-class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prisonerSearchApiWebClient: WebClient) {
+class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val prisonerSearchApiWebClient: WebClient) {
 
   companion object {
     private const val PAGE_SIZE = 2000

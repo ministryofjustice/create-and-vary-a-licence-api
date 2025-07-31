@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 @Table(name = "omu_contact")
 data class OmuContact(
   @Id
-  @NotNull
+  @param:NotNull
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", nullable = false)
   var id: Long = -1,

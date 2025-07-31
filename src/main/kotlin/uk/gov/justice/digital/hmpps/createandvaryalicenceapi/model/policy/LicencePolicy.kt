@@ -43,7 +43,7 @@ data class ChangeHint(
 )
 
 data class LicencePolicy(
-  @JsonProperty("version")
+  @field:JsonProperty("version")
   val version: String,
   val standardConditions: StandardConditions,
   val additionalConditions: AdditionalConditions,

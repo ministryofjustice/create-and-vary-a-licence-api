@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDate
 
 data class OffenderManager(
-  @JsonProperty("staff")
+  @field:JsonProperty("staff")
   val staffDetail: ProbationSearchStaffDetail,
   val active: Boolean,
-  @JsonFormat(pattern = "yyyy-MM-dd")
+  @field:JsonFormat(pattern = "yyyy-MM-dd")
   val fromDate: LocalDate? = null,
 )
 

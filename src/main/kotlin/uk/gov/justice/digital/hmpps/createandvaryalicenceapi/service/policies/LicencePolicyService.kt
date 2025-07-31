@@ -57,7 +57,7 @@ data class LicenceConditionChanges(
 
 @Service
 class LicencePolicyService(
-  @Value("\${policyv3.enabled}") private val policyV3Enabled: Boolean = false,
+  @param:Value("\${policyv3.enabled}") private val policyV3Enabled: Boolean = false,
   private var policies: List<LicencePolicy> = emptyList(),
 ) {
 
@@ -104,7 +104,10 @@ class LicencePolicyService(
     .find { it.code == conditionCode }
     ?: error("Condition with code: '$conditionCode' and version: '$version' not found.")
 
-  fun getConditionsRequiringElectronicMonitoringResponse(version: String, conditionCodes: Set<String>): List<IAdditionalCondition> = policyByVersion(version)
+  fun getConditionsRequiringElectronicMonitoringResponse(
+    version: String,
+    conditionCodes: Set<String>,
+  ): List<IAdditionalCondition> = policyByVersion(version)
     .additionalConditions.ap
     .filter { it.requiresElectronicMonitoringResponse && conditionCodes.contains(it.code) }
 
@@ -114,7 +117,13 @@ class LicencePolicyService(
       conditionCodes,
     )
     if (conditionsRequiringResponse.isNotEmpty()) {
-      log.info("Handling Electronic Monitoring response record for conditions: ${conditionsRequiringResponse.joinToString(",") { it.code }}")
+      log.info(
+        "Handling Electronic Monitoring response record for conditions: ${
+          conditionsRequiringResponse.joinToString(
+            ",",
+          ) { it.code }
+        }",
+      )
       return true
     }
     return false
