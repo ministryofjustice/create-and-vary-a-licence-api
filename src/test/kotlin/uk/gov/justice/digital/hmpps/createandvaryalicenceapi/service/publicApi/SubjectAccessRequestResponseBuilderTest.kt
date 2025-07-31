@@ -76,6 +76,7 @@ class SubjectAccessRequestResponseBuilderTest {
                   id = 1L,
                   filename = "file1.pdf",
                   fileType = "application/pdf",
+                  imageType = "image/png",
                   fileSize = 1024,
                   uploadedTime = LocalDateTime.now(),
                   description = "Document 1",
@@ -86,6 +87,7 @@ class SubjectAccessRequestResponseBuilderTest {
                   id = 2L,
                   filename = "file2.pdf",
                   fileType = "application/pdf",
+                  imageType = "image/jpeg",
                   fileSize = 1025,
                   uploadedTime = LocalDateTime.now(),
                   description = "Document 2",
@@ -106,6 +108,7 @@ class SubjectAccessRequestResponseBuilderTest {
                   id = 3L,
                   filename = "file3.pdf",
                   fileType = "application/pdf",
+                  imageType = "image/png",
                   fileSize = 1026,
                   uploadedTime = LocalDateTime.now(),
                   description = "Document 3",
@@ -125,14 +128,14 @@ class SubjectAccessRequestResponseBuilderTest {
     with(result.content.attachments[0]) {
       assertThat(attachmentNumber).isEqualTo(0)
       assertThat(name).isEqualTo("Document 1")
-      assertThat(contentType).isEqualTo("application/pdf")
+      assertThat(contentType).isEqualTo("image/png")
       assertThat(url).isEqualTo("https://some-host/public/licences/1/conditions/10/image-upload")
       assertThat(filename).isEqualTo("file1.pdf")
       assertThat(filesize).isEqualTo(1024)
 
       val summary = result.content.licences.findAttachmentSummary(attachmentNumber)
       assertThat(summary.filename).isEqualTo(filename)
-      assertThat(summary.fileType).isEqualTo(contentType)
+      assertThat(summary.imageType).isEqualTo(contentType)
       assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
     }
@@ -140,28 +143,28 @@ class SubjectAccessRequestResponseBuilderTest {
     with(result.content.attachments[1]) {
       assertThat(attachmentNumber).isEqualTo(1)
       assertThat(name).isEqualTo("Document 2")
-      assertThat(contentType).isEqualTo("application/pdf")
+      assertThat(contentType).isEqualTo("image/jpeg")
       assertThat(url).isEqualTo("https://some-host/public/licences/1/conditions/10/image-upload")
       assertThat(filename).isEqualTo("file2.pdf")
       assertThat(filesize).isEqualTo(1025)
 
       val summary = result.content.licences.findAttachmentSummary(attachmentNumber)
       assertThat(summary.filename).isEqualTo(filename)
-      assertThat(summary.fileType).isEqualTo(contentType)
+      assertThat(summary.imageType).isEqualTo(contentType)
       assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
     }
     with(result.content.attachments[2]) {
       assertThat(attachmentNumber).isEqualTo(2)
       assertThat(name).isEqualTo("Document 3")
-      assertThat(contentType).isEqualTo("application/pdf")
+      assertThat(contentType).isEqualTo("image/png")
       assertThat(url).isEqualTo("https://some-host/public/licences/1/conditions/11/image-upload")
       assertThat(filename).isEqualTo("file3.pdf")
       assertThat(filesize).isEqualTo(1026)
 
       val summary = result.content.licences.findAttachmentSummary(attachmentNumber)
       assertThat(summary.filename).isEqualTo(filename)
-      assertThat(summary.fileType).isEqualTo(contentType)
+      assertThat(summary.imageType).isEqualTo(contentType)
       assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
     }
