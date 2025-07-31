@@ -33,16 +33,16 @@ class AddressSearchPaginator(
     fetchCallBack: (page: Int, pageable: PageRequest) -> List<T>,
     mapResults: (T) -> R,
   ): List<R> {
-    val results = mutableListOf<T>()
-    var page = 0
-    while (results.size < maxTotal) {
-      val resultsFromApiCall = fetchCallBack(page, PageRequest.of(page, pageSize))
+    val totalResults = mutableListOf<T>()
+    var pageCount = 0
+    while (totalResults.size < maxTotal) {
+      val resultsFromApiCall = fetchCallBack(pageCount, PageRequest.of(pageCount, pageSize))
       if (resultsFromApiCall.isNotEmpty()) {
-        results.addAll(resultsFromApiCall)
+        totalResults.addAll(resultsFromApiCall)
       }
       if (resultsFromApiCall.size < pageSize) break
-      page++
+      pageCount++
     }
-    return results.take(maxTotal).map { mapResults(it) }
+    return totalResults.take(maxTotal).map { mapResults(it) }
   }
 }
