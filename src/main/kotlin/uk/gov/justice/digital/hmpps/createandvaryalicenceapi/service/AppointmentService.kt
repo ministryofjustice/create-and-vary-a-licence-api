@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
@@ -24,7 +23,6 @@ class AppointmentService(
   private val licenceRepository: LicenceRepository,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
-  private val addressRepository: AddressRepository,
 ) {
 
   @Transactional
@@ -175,13 +173,24 @@ class AppointmentService(
 
     licenceRepository.saveAndFlush(licenceEntity)
 
+    if (request.isPreferredAddress && staffMember != null) {
+      staffMember.savedAppointmentAddresses.add(AddressMapper.toEntity(request))
+      staffRepository.saveAndFlush(staffMember)
+    }
+
+    val auditDetails = mutableMapOf(
+      "field" to "appointmentAddress",
+      "previousValue" to (previousAddress ?: ""),
+      "newValue" to (request.toString() ?: ""),
+    )
+
+    if (request.isPreferredAddress) {
+      auditDetails["savedToStaffMember"] = staffMember?.username ?: "none"
+    }
+
     auditService.recordAuditEventInitialAppointmentUpdate(
       licenceEntity,
-      mapOf(
-        "field" to "appointmentAddress",
-        "previousValue" to (previousAddress ?: ""),
-        "newValue" to (request.toString() ?: ""),
-      ),
+      auditDetails,
       staffMember,
     )
   }

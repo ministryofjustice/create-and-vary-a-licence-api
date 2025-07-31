@@ -49,6 +49,13 @@ data class AddAddressRequest(
   @field:NotNull(message = "Source must not be null")
   @Schema(example = "MANUAL", description = "Source of the address", required = true)
   val source: AddressSource,
+
+  @Schema(
+    description = "Flag to indicate if the address should be added to the user's saved addresses",
+    example = "true",
+    required = false,
+  )
+  val isPreferredAddress: Boolean,
 ) {
 
   override fun toString(): String = listOf(
