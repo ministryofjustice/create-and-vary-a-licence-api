@@ -31,34 +31,32 @@ class ExclusionZoneService(
 
   @Transactional
   fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
-    val licenceEntity = licenceRepository.findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-    val additionalCondition = additionalConditionRepository.findById(conditionId)
-      .orElseThrow { EntityNotFoundException("$conditionId") }
+    log.info(
+      "uploadExclusionZoneFile - Licence id={}, AdditionalCondition id={}, File(Name={}, OriginalFileName={}, Type={}, Size={})",
+      licenceId,
+      conditionId,
+      file.name,
+      file.originalFilename,
+      file.contentType,
+      file.size,
+    )
 
-    removeExistingUploads(additionalCondition)
+    val licenceEntity = licence(licenceId)
+    val additionalCondition = additionalCondition(conditionId)
 
-    log.info("uploadExclusionZoneFile: Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
+    deleteDocumentsFor(listOf(additionalCondition))
 
     val pdfExtract = ExclusionZonePdfExtract
       .runCatching { fromMultipartFile(file) }
       .getOrElse { throw ValidationException(it) }
-    logAndUploadExclusionZoneFile(file, pdfExtract, licenceEntity, additionalCondition)
-  }
 
-  fun logAndUploadExclusionZoneFile(
-    originalFile: MultipartFile,
-    pdfExtract: ExclusionZonePdfExtract,
-    licence: Licence,
-    additionalCondition: AdditionalCondition,
-  ) {
     val (originalDataDsUuid, fullSizeImageDsUuid, thumbnailImageDsUuid) =
-      uploadDocuments(originalFile, pdfExtract, licence, additionalCondition)
+      uploadExtractedExclusionZoneParts(file, pdfExtract, licenceEntity, additionalCondition)
 
     val uploadDetail = AdditionalConditionUploadDetail(
-      licenceId = licence.id,
+      licenceId = licenceEntity.id,
       additionalConditionId = additionalCondition.id,
-      originalData = originalFile.bytes,
+      originalData = file.bytes,
       originalDataDsUuid = originalDataDsUuid?.toString(),
       fullSizeImage = pdfExtract.fullSizeImage,
       fullSizeImageDsUuid = fullSizeImageDsUuid?.toString(),
@@ -68,9 +66,9 @@ class ExclusionZoneService(
 
     val uploadSummary = AdditionalConditionUploadSummary(
       additionalCondition = additionalCondition,
-      filename = originalFile.originalFilename,
-      fileType = originalFile.contentType,
-      fileSize = originalFile.size.toInt(),
+      filename = file.originalFilename,
+      fileType = file.contentType,
+      fileSize = file.size.toInt(),
       description = pdfExtract.description,
       thumbnailImage = pdfExtract.thumbnailImage,
       thumbnailImageDsUuid = thumbnailImageDsUuid?.toString(),
@@ -82,56 +80,17 @@ class ExclusionZoneService(
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
 
-  private fun uploadDocuments(
-    originalFile: MultipartFile,
-    pdfExtract: ExclusionZonePdfExtract,
-    licence: Licence,
-    additionalCondition: AdditionalCondition,
-  ): Triple<UUID?, UUID?, UUID?> {
-    val metadata = mapOf(
-      "licenceId" to licence.id.toString(),
-      "additionalConditionId" to additionalCondition.id.toString(),
+  fun getExclusionZoneImage(licenceId: Long, conditionId: Long): ByteArray? {
+    licence(licenceId)
+
+    val uploadDetail = additionalConditionUploadDetail(
+      additionalCondition(conditionId).additionalConditionUploadSummary.first().uploadDetailId,
     )
 
-    with(documentService) {
-      val originalDataDsUuid = uploadDocument(originalFile.bytes, metadata + mapOf("kind" to "pdf"))
-      val fullSizeImageDsUuid = uploadDocument(pdfExtract.fullSizeImage, metadata + mapOf("kind" to "fullSizeImage"))
-      val thumbnailImageDsUuid = uploadDocument(pdfExtract.thumbnailImage, metadata + mapOf("kind" to "thumbnail"))
-
-      return Triple(originalDataDsUuid, fullSizeImageDsUuid, thumbnailImageDsUuid)
-    }
-  }
-
-  private fun removeExistingUploads(additionalCondition: AdditionalCondition) {
-    additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
-      additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
-        additionalConditionUploadDetailRepository.delete(detail)
-      }
-    }
-  }
-
-  fun getExclusionZoneImage(licenceId: Long, conditionId: Long): ByteArray? {
-    licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val additionalCondition = additionalConditionRepository
-      .findById(conditionId)
-      .orElseThrow { EntityNotFoundException("$conditionId") }
-
-    val uploadIds = additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }
-    if (uploadIds.isEmpty()) {
-      throw EntityNotFoundException("$conditionId")
-    }
-
-    val upload = additionalConditionUploadDetailRepository
-      .findById(uploadIds.first())
-      .orElseThrow { EntityNotFoundException("$conditionId") }
-
-    return if (upload.fullSizeImageDsUuid != null) {
-      documentService.downloadDocument(UUID.fromString(upload.fullSizeImageDsUuid))
+    return if (uploadDetail.fullSizeImageDsUuid != null) {
+      documentService.downloadDocument(UUID.fromString(uploadDetail.fullSizeImageDsUuid))
     } else {
-      upload.fullSizeImage
+      uploadDetail.fullSizeImage
     }
   }
 
@@ -141,6 +100,64 @@ class ExclusionZoneService(
       .filterNot { it.thumbnailImageDsUuid == null }
       .forEach { it.preloadedThumbnailImage = documentService.downloadDocument(UUID.fromString(it.thumbnailImageDsUuid)) }
   }
+
+  fun deleteDocumentsFor(licence: Licence) {
+    log.info("Deleting documents for Licence id=${licence.id}")
+
+    deleteDocumentsFor(licence.additionalConditions)
+  }
+
+  fun deleteDocumentsFor(additionalConditions: List<AdditionalCondition>) {
+    log.info("Deleting documents for ${additionalConditions.size} additional conditions")
+
+    val uploadSummaries = additionalConditions.flatMap { it.additionalConditionUploadSummary }
+    val uuidsToDelete = mutableListOf<String?>()
+
+    // Remove AdditionalConditionUploadSummary documents
+    uploadSummaries.forEach { uuidsToDelete.add(it.thumbnailImageDsUuid) }
+
+    // Remove AdditionalConditionUploadDetail documents
+    uploadSummaries
+      .map { additionalConditionUploadDetailRepository.findById(it.uploadDetailId).orElseThrow() }
+      .forEach { uuidsToDelete.addAll(listOf(it.fullSizeImageDsUuid, it.originalDataDsUuid)) }
+
+    uuidsToDelete.filterNotNull()
+      .also { log.info("Found ${it.size} documents to delete") }
+      .forEach { documentService.deleteDocument(UUID.fromString(it)) }
+
+    // Remove AdditionalConditionUploadDetail records so they don't get orphaned
+    additionalConditionUploadDetailRepository.deleteAllByIdInBatch(uploadSummaries.map { it.uploadDetailId })
+  }
+
+  private fun uploadExtractedExclusionZoneParts(
+    originalFile: MultipartFile,
+    pdfExtract: ExclusionZonePdfExtract,
+    licence: Licence,
+    additionalCondition: AdditionalCondition,
+  ): Triple<UUID?, UUID?, UUID?> {
+    val metadataFor = { kind: String ->
+      mapOf(
+        "licenceId" to licence.id.toString(),
+        "additionalConditionId" to additionalCondition.id.toString(),
+        "kind" to kind,
+      )
+    }
+
+    return Triple(
+      documentService.uploadDocument(originalFile.bytes, metadataFor("pdf")),
+      documentService.uploadDocument(pdfExtract.fullSizeImage, metadataFor("fullSizeImage")),
+      documentService.uploadDocument(pdfExtract.thumbnailImage, metadataFor("thumbnail")),
+    )
+  }
+
+  private fun licence(id: Long) = licenceRepository.findById(id)
+    .orElseThrow { EntityNotFoundException("Unable to find Licence id=$id") }
+
+  private fun additionalCondition(id: Long) = additionalConditionRepository.findById(id)
+    .orElseThrow { EntityNotFoundException("Unable to find AdditionalCondition id=$id") }
+
+  private fun additionalConditionUploadDetail(id: Long) = additionalConditionUploadDetailRepository.findById(id)
+    .orElseThrow { EntityNotFoundException("Unable to find AdditionalConditionUploadDetail id=$id") }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

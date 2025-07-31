@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -35,12 +34,12 @@ class LicenceConditionService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val bespokeConditionRepository: BespokeConditionRepository,
-  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val conditionFormatter: ConditionFormatter,
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
   private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService,
+  private val exclusionZoneService: ExclusionZoneService,
 ) {
 
   @Transactional
@@ -178,16 +177,9 @@ class LicenceConditionService(
       }
     }
 
-    licenceRepository.saveAndFlush(licenceEntity)
+    exclusionZoneService.deleteDocumentsFor(removedConditions)
 
-    // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
-    removedConditions.forEach { oldCondition ->
-      oldCondition.additionalConditionUploadSummary.forEach {
-        additionalConditionUploadDetailRepository.findById(it.uploadDetailId).ifPresent { uploadDetail ->
-          additionalConditionUploadDetailRepository.delete(uploadDetail)
-        }
-      }
-    }
+    licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventUpdateAdditionalConditions(
       licenceEntity,
@@ -364,11 +356,15 @@ class LicenceConditionService(
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
+
     if (licenceEntity is HasElectronicMonitoringResponseProvider) {
       removedAdditionalConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
         electronicMonitoringProgrammeService.handleRemovedConditionsIfEnabled(licenceEntity, it)
       }
     }
+
+    exclusionZoneService.deleteDocumentsFor(removedAdditionalConditions)
+
     licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
