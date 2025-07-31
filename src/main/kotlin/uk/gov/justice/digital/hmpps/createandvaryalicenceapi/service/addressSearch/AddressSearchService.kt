@@ -20,11 +20,6 @@ class AddressSearchService(
     return addressSearchPaginator.searchByText(searchQuery)
   }
 
-  fun searchForAddressesByPostcode(postcode: String): List<AddressSearchResponse> {
-    val cleanedPostcode = postcode.uppercase().replace(Regex("[^A-Z0-9]"), "")
-    return addressSearchPaginator.searchByPostcode(cleanedPostcode)
-  }
-
   @Transactional
   fun searchForAddressByReference(reference: String): AddressSearchResponse = mapper.map(osPlacesApiClient.searchForAddressByReference(reference))
 }

@@ -30,19 +30,6 @@ class AddressSearchPaginatorTest {
   }
 
   @Test
-  fun `searchByPostcode returns mapped results from multiple pages`() {
-    // Given
-    val expectedResultSize = 105
-    stubPostcodeSearch(expectedResultSize, "SW1A1AA")
-
-    // When
-    val result = paginator.searchByPostcode("SW1A1AA")
-
-    // Then
-    assertResults(result, expectedResultSize)
-  }
-
-  @Test
   fun `searchByText returns empty when first page is empty`() {
     // Given
     whenever(apiClient.searchForAddressesByText(any(), eq("Street")))
@@ -50,19 +37,6 @@ class AddressSearchPaginatorTest {
 
     // When
     val result = paginator.searchByText("Street")
-
-    // Then
-    assertThat(result).isEmpty()
-  }
-
-  @Test
-  fun `searchByPostcode returns empty when first page is empty`() {
-    // Given
-    whenever(apiClient.searchForAddressesByPostcode(any(), eq("SW1A1AA")))
-      .thenReturn(emptyList())
-
-    // When
-    val result = paginator.searchByPostcode("SW1A1AA")
 
     // Then
     assertThat(result).isEmpty()
@@ -89,46 +63,12 @@ class AddressSearchPaginatorTest {
   }
 
   @Test
-  fun `searchByPostcode stops when page is partially filled`() {
-    // Given
-    val partialPage = listOf(
-      createOsPlacesAddress(1),
-      createOsPlacesAddress(2),
-      createOsPlacesAddress(3),
-    )
-    whenever(apiClient.searchForAddressesByPostcode(any(), eq("SW1A1AA")))
-      .thenReturn(partialPage)
-
-    // When
-    val result = paginator.searchByPostcode("SW1A1AA")
-
-    // Then
-    assertThat(result).hasSize(3)
-    assertThat(result[0].uprn).isEqualTo("uprn-1")
-    assertThat(result[2].uprn).isEqualTo("uprn-3")
-  }
-
-  @Test
   fun `searchByText limits to maxTotal`() {
     // Given
     stubTextSearch(250, query = "Street")
 
     // When
     val result = paginator.searchByText("Street")
-
-    // Then
-    assertThat(result).hasSize(200)
-    assertThat(result.first().uprn).isEqualTo("uprn-1")
-    assertThat(result.last().uprn).isEqualTo("uprn-200")
-  }
-
-  @Test
-  fun `searchByPostcode limits to maxTotal`() {
-    // Given
-    stubPostcodeSearch(250, postcode = "SW1A1AA")
-
-    // When
-    val result = paginator.searchByPostcode("SW1A1AA")
 
     // Then
     assertThat(result).hasSize(200)
@@ -153,12 +93,6 @@ class AddressSearchPaginatorTest {
   private fun stubTextSearch(totalResults: Int, query: String = "Street") {
     val pages = createResults(totalResults)
     whenever(apiClient.searchForAddressesByText(any(), eq(query)))
-      .thenReturn(pages[0], *pages.drop(1).toTypedArray())
-  }
-
-  private fun stubPostcodeSearch(totalResults: Int, postcode: String) {
-    val pages = createResults(totalResults)
-    whenever(apiClient.searchForAddressesByPostcode(any(), eq(postcode)))
       .thenReturn(pages[0], *pages.drop(1).toTypedArray())
   }
 

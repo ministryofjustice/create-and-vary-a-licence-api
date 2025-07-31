@@ -19,15 +19,5 @@ class ResponseUtils {
       }
       else -> Mono.error(it)
     }
-
-    @JvmStatic
-    fun <T> coerce400ToEmptyOrThrow(it: Throwable): Mono<T> = when {
-      it is WebClientResponseException && it.statusCode == HttpStatus.BAD_REQUEST -> {
-        val uri = it.request?.uri?.toString() ?: "Unknown"
-        log.info("Bad resource request for URI: $uri")
-        Mono.empty()
-      }
-      else -> Mono.error(it)
-    }
   }
 }

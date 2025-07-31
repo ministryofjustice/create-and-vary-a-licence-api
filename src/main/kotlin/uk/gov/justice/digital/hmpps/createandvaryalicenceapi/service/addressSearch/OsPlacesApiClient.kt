@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils
 
 @Component
 class OsPlacesApiClient(
@@ -20,19 +19,6 @@ class OsPlacesApiClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(OsPlacesApiResponse::class.java)
-      .onErrorResume { ResponseUtils.coerce400ToEmptyOrThrow(it) }
-      .block()
-    return searchResult?.results?.map { it.dpa } ?: emptyList()
-  }
-
-  fun searchForAddressesByPostcode(pageable: PageRequest, postcode: String): List<DeliveryPointAddress> {
-    val searchResult = osPlacesApiWebClient
-      .get()
-      .uri("/postcode?postcode=$postcode&key=$apiKey&offset=${pageable.offset}&maxresults=${pageable.pageSize}")
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono(OsPlacesApiResponse::class.java)
-      .onErrorResume { ResponseUtils.coerce400ToEmptyOrThrow(it) }
       .block()
     return searchResult?.results?.map { it.dpa } ?: emptyList()
   }

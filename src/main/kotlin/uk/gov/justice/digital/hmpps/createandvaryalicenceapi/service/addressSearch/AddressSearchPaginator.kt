@@ -21,13 +21,6 @@ class AddressSearchPaginator(
     mapResults = { addressMapper.map(it) },
   )
 
-  fun searchByPostcode(postcode: String): List<AddressSearchResponse> = paginate(
-    fetchCallBack = { page, pageable ->
-      osPlacesApiClient.searchForAddressesByPostcode(pageable, postcode)
-    },
-    mapResults = { addressMapper.map(it) },
-  )
-
   private fun <T, R> paginate(
     fetchCallBack: (page: Int, pageable: PageRequest) -> List<T>,
     mapResults: (T) -> R,

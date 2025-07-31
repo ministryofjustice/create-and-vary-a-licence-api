@@ -71,53 +71,6 @@ class AddressSearchResource(private val addressSearchService: AddressSearchServi
     searchQuery: String,
   ): List<AddressSearchResponse> = addressSearchService.searchForAddressesByText(searchQuery)
 
-  @GetMapping("/address/search/by/postcode/{postcode}")
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Searches for addresses that match the given postcode",
-    description = "Searches for addresses that match the given postcode",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returns addresses matching the given search text",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = AddressSearchResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun searchForAddressesByPostcode(
-    @Size(min = 5, max = 10, message = "Postcode must be more than 4 and no more than 10 in length")
-    @PathVariable(name = "postcode")
-    postcode: String,
-  ): List<AddressSearchResponse> = addressSearchService.searchForAddressesByPostcode(postcode)
-
   @GetMapping("/address/search/by/reference/{reference}")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
