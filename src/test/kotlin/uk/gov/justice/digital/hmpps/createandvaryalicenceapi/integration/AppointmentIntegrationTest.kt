@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import java.time.LocalDateTime
@@ -47,6 +48,9 @@ class AppointmentIntegrationTest(
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
+
+  @Autowired
+  lateinit var staffRepository: StaffRepository
 
   @BeforeEach
   fun reset() {
@@ -226,7 +230,7 @@ class AppointmentIntegrationTest(
     val licence = getLicence()
     val savedAddress = getAddress(licence)
     assertThat(savedAddress.id).isEqualTo(1)
-    assertThat(addAddressRequest).usingRecursiveComparison().isEqualTo(savedAddress)
+    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("addToSavedAddresses").isEqualTo(savedAddress)
 
     assertThat(savedAddress.reference).isNotNull()
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
@@ -237,6 +241,7 @@ class AppointmentIntegrationTest(
     assertThat(auditEvent.summary).isEqualTo("Updated initial appointment details for Person One")
     assertThat(auditEvent.changes!!["previousValue"] as String).isEqualTo("")
     assertThat(auditEvent.changes!!["newValue"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
+    assertThat(auditEvent.changes).doesNotContainKey("savedToStaffMember")
   }
 
   @Test
@@ -257,7 +262,7 @@ class AppointmentIntegrationTest(
     val licence = getLicence()
     val savedAddress = getAddress(licence)
     assertThat(savedAddress.id).isEqualTo(2)
-    assertThat(addAddressRequest).usingRecursiveComparison().isEqualTo(savedAddress)
+    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("addToSavedAddresses").isEqualTo(savedAddress)
     assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
@@ -267,6 +272,7 @@ class AppointmentIntegrationTest(
     assertThat(auditEvent.summary).isEqualTo("Updated initial appointment details for Person One")
     assertThat(auditEvent.changes!!["previousValue"] as String).isEqualTo(",REF-123456,123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,MANUAL")
     assertThat(auditEvent.changes!!["newValue"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
+    assertThat(auditEvent.changes).doesNotContainKey("savedToStaffMember")
   }
 
   @Test
@@ -276,7 +282,7 @@ class AppointmentIntegrationTest(
   fun `When updating appointment address using look up Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val addAddressRequest = buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.OS_PLACES)
+    val addAddressRequest = buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.OS_PLACES, addToSavedAddresses = true)
 
     // When
     val result = putRequest(uri, addAddressRequest)
@@ -289,6 +295,14 @@ class AppointmentIntegrationTest(
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
     assertThat(savedAddress.id).isEqualTo(2)
+
+    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
+    assertThat(staff?.savedAppointmentAddresses).anySatisfy {
+      assertThat(it.uprn).isEqualTo("NEW_UPRN")
+    }
+
+    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    assertThat(auditEvent.changes).containsEntry("savedToStaffMember", "test-client")
   }
 
   @Test
@@ -311,6 +325,12 @@ class AppointmentIntegrationTest(
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
     assertThat(savedAddress.id).isEqualTo(2)
+
+    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
+    assertThat(staff?.savedAppointmentAddresses).isEmpty()
+
+    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    assertThat(auditEvent.changes).doesNotContainKey("savedToStaffMember")
   }
 
   @Test
@@ -514,6 +534,7 @@ class AppointmentIntegrationTest(
     townOrCity: String = "London",
     county: String? = "Greater London",
     postcode: String = "NW1 6XE",
+    addToSavedAddresses: Boolean = false,
   ): AddAddressRequest = AddAddressRequest(
     uprn = uprn,
     firstLine = firstLine,
@@ -522,6 +543,7 @@ class AppointmentIntegrationTest(
     county = county,
     postcode = postcode,
     source = source,
+    addToSavedAddresses = addToSavedAddresses,
   )
 
   private companion object {

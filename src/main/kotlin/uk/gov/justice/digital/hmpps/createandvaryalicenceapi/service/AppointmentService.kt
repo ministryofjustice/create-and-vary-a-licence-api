@@ -24,7 +24,6 @@ class AppointmentService(
   private val licenceRepository: LicenceRepository,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
-  private val addressRepository: AddressRepository,
 ) {
 
   @Transactional
@@ -175,13 +174,24 @@ class AppointmentService(
 
     licenceRepository.saveAndFlush(licenceEntity)
 
+    if (request.addToSavedAddresses && staffMember != null) {
+      staffMember.savedAppointmentAddresses.add(AddressMapper.toEntity(request))
+      staffRepository.saveAndFlush(staffMember)
+    }
+
+    val auditDetails = mutableMapOf(
+      "field" to "appointmentAddress",
+      "previousValue" to (previousAddress ?: ""),
+      "newValue" to (request.toString() ?: ""),
+    )
+
+    if (request.addToSavedAddresses) {
+      auditDetails["savedToStaffMember"] = staffMember?.username ?: "none"
+    }
+
     auditService.recordAuditEventInitialAppointmentUpdate(
       licenceEntity,
-      mapOf(
-        "field" to "appointmentAddress",
-        "previousValue" to (previousAddress ?: ""),
-        "newValue" to (request.toString() ?: ""),
-      ),
+      auditDetails,
       staffMember,
     )
   }

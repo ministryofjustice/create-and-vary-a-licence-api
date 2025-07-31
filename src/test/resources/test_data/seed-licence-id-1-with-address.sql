@@ -78,5 +78,3 @@ INSERT INTO address (reference, first_line, second_line, town_or_city, county, p
 VALUES ('REF-123456', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');
 
 INSERT INTO licence_appointment_address(licence_id,address_id) VALUES(1,1);
-
-
