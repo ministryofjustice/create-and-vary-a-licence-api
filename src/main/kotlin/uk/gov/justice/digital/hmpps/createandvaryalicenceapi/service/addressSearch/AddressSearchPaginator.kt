@@ -11,7 +11,7 @@ class AddressSearchPaginator(
   private val osPlacesApiClient: OsPlacesApiClient,
   private val addressMapper: OsPlacesMapperToAddressSearchResponseMapper,
   @Value("\${address.os-places.search.page-size:100}") private val pageSize: Int,
-  @Value("\${address.search.max-total:500}") private val maxTotal: Int,
+  @Value("\${address.search.max-total:200}") private val maxTotal: Int,
 ) {
 
   fun searchByText(searchQuery: String): List<AddressSearchResponse> = paginate(

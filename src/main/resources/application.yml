@@ -156,7 +156,7 @@ dpr:
 
 address:
   search:
-    max-total: 500
+    max-total: 200
   os-places:
     search:
       page-size: 100
