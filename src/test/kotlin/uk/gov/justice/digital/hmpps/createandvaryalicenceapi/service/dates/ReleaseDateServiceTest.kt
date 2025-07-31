@@ -21,9 +21,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.temporal.TemporalAdjusters
 
 class ReleaseDateServiceTest {
   private val iS91DeterminationService = mock<IS91DeterminationService>()
@@ -52,7 +54,6 @@ class ReleaseDateServiceTest {
       override val conditionalReleaseDate: LocalDate? = null
       override val actualReleaseDate: LocalDate? = null
       override val homeDetentionCurfewActualDate: LocalDate? = homeDetentionCurfewActualDate
-      override val kind: LicenceKind = LicenceKind.CRD
       override val postRecallReleaseDate: LocalDate? = null
     },
   )
@@ -457,7 +458,7 @@ class ReleaseDateServiceTest {
 
   @Nested
   inner class `Licence is due for early release` {
-    val date = LocalDate.of(2024, 4, 4)
+    val date = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
 
     @Test
     fun `missing crd`() {
@@ -511,7 +512,7 @@ class ReleaseDateServiceTest {
 
     @Test
     fun `ard is two days before crd when one is a non working day`() {
-      val sunday = LocalDate.of(2024, 4, 7)
+      val sunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
       val licence = createCrdLicence().copy(
         actualReleaseDate = sunday.minusDays(2),
         conditionalReleaseDate = sunday,
@@ -582,7 +583,7 @@ class ReleaseDateServiceTest {
 
     @Test
     fun `ard is two days before prrd when one is a non working day`() {
-      val sunday = LocalDate.of(2024, 4, 7)
+      val sunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
       val licence = createPrrdLicence().copy(
         actualReleaseDate = sunday.minusDays(2),
         postRecallReleaseDate = sunday,

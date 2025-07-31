@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -27,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.Clock
 import java.time.LocalDate
 
@@ -38,7 +38,6 @@ class ComCaseloadSearchService(
   private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
-  private val licenceCreationService: LicenceCreationService,
   private val clock: Clock,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
@@ -123,7 +122,7 @@ class ComCaseloadSearchService(
     licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
 
     prisonOffender != null &&
-      (licence.kind == LicenceKind.PRRD || eligibilityService.isEligibleForCvl(prisonOffender)) ->
+      (determineReleaseDateKind(licence.postRecallReleaseDate, licence.conditionalReleaseDate) == LicenceKind.PRRD || eligibilityService.isEligibleForCvl(prisonOffender)) ->
       deliusOffender.toStartedRecord(licence)
 
     else -> null
@@ -144,8 +143,7 @@ class ComCaseloadSearchService(
     prisonOffender: PrisonerSearchPrisoner,
     licenceStartDate: LocalDate?,
   ): FoundProbationRecord {
-    val kind = licenceCreationService.determineLicenceKind(prisonOffender)
-    val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate, kind)
+    val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate)
     val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
 
     return this.transformToUnstartedRecord(
