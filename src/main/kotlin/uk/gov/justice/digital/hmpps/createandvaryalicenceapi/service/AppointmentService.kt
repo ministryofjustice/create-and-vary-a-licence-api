@@ -173,7 +173,7 @@ class AppointmentService(
 
     licenceRepository.saveAndFlush(licenceEntity)
 
-    if (request.addToSavedAddresses && staffMember != null) {
+    if (request.isPreferredAddress && staffMember != null) {
       staffMember.savedAppointmentAddresses.add(AddressMapper.toEntity(request))
       staffRepository.saveAndFlush(staffMember)
     }
@@ -184,7 +184,7 @@ class AppointmentService(
       "newValue" to (request.toString() ?: ""),
     )
 
-    if (request.addToSavedAddresses) {
+    if (request.isPreferredAddress) {
       auditDetails["savedToStaffMember"] = staffMember?.username ?: "none"
     }
 

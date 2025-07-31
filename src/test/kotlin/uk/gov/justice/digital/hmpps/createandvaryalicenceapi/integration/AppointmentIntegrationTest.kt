@@ -230,7 +230,7 @@ class AppointmentIntegrationTest(
     val licence = getLicence()
     val savedAddress = getAddress(licence)
     assertThat(savedAddress.id).isEqualTo(1)
-    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("addToSavedAddresses").isEqualTo(savedAddress)
+    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("isPreferredAddress").isEqualTo(savedAddress)
 
     assertThat(savedAddress.reference).isNotNull()
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
@@ -262,7 +262,7 @@ class AppointmentIntegrationTest(
     val licence = getLicence()
     val savedAddress = getAddress(licence)
     assertThat(savedAddress.id).isEqualTo(2)
-    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("addToSavedAddresses").isEqualTo(savedAddress)
+    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("isPreferredAddress").isEqualTo(savedAddress)
     assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
@@ -282,7 +282,7 @@ class AppointmentIntegrationTest(
   fun `When updating appointment address using look up Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val addAddressRequest = buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.OS_PLACES, addToSavedAddresses = true)
+    val addAddressRequest = buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.OS_PLACES, isPreferredAddress = true)
 
     // When
     val result = putRequest(uri, addAddressRequest)
@@ -534,7 +534,7 @@ class AppointmentIntegrationTest(
     townOrCity: String = "London",
     county: String? = "Greater London",
     postcode: String = "NW1 6XE",
-    addToSavedAddresses: Boolean = false,
+    isPreferredAddress: Boolean = false,
   ): AddAddressRequest = AddAddressRequest(
     uprn = uprn,
     firstLine = firstLine,
@@ -543,7 +543,7 @@ class AppointmentIntegrationTest(
     county = county,
     postcode = postcode,
     source = source,
-    addToSavedAddresses = addToSavedAddresses,
+    isPreferredAddress = isPreferredAddress,
   )
 
   private companion object {
