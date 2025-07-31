@@ -112,7 +112,6 @@
     <ID>TooManyFunctions:ToSarModelTransfer.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.ToSarModelTransfer.kt</ID>
     <ID>TooManyFunctions:WebClientConfiguration.kt$WebClientConfiguration</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
-    <ID>UnusedPrivateProperty:AppointmentService.kt$AppointmentService$private val addressRepository: AddressRepository</ID>
     <ID>UtilityClassWithPublicConstructor:AddressMapper.kt$AddressMapper</ID>
   </CurrentIssues>
 </SmellBaseline>

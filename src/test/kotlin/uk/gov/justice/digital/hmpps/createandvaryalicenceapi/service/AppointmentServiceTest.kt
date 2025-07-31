@@ -39,9 +39,8 @@ class AppointmentServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
-  private val addressRepository = mock<AddressRepository>()
 
-  private val service = AppointmentService(licenceRepository, auditService, staffRepository, addressRepository)
+  private val service = AppointmentService(licenceRepository, auditService, staffRepository)
 
   @BeforeEach
   fun reset() {
