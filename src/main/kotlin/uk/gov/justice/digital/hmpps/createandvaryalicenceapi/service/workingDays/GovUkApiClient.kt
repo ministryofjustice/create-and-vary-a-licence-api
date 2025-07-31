@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import java.time.LocalDate
 
 @Service
-class GovUkApiClient(@Qualifier("govUkWebClient") val govUkApiClient: WebClient) {
+class GovUkApiClient(@param:Qualifier("govUkWebClient") val govUkApiClient: WebClient) {
 
   fun getBankHolidaysForEnglandAndWales(): List<LocalDate> {
     val response = govUkApiClient

@@ -3,13 +3,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Prison(
-  @JsonProperty("agencyId")
+  @field:JsonProperty("agencyId")
   val prisonId: String,
 
-  @JsonProperty("formattedDescription")
+  @field:JsonProperty("formattedDescription")
   val description: String,
 
-  @JsonProperty("phones")
+  @field:JsonProperty("phones")
   val phoneDetails: List<PhoneDetail>,
 ) {
   fun getPrisonContactNumber(): String = listOfNotNull(

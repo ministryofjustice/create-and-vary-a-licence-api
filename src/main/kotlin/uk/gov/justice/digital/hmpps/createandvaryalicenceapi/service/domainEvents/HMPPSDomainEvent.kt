@@ -13,15 +13,15 @@ data class HMPPSDomainEvent(
 )
 
 data class Message(
-  @JsonProperty("Message") val message: String,
-  @JsonProperty("MessageId") val messageId: String,
-  @JsonProperty("MessageAttributes") val messageAttributes: MessageAttributes,
+  @field:JsonProperty("Message") val message: String,
+  @field:JsonProperty("MessageId") val messageId: String,
+  @field:JsonProperty("MessageAttributes") val messageAttributes: MessageAttributes,
 )
 
 data class MessageAttributes(val eventType: EventType)
 data class EventType(
-  @JsonProperty("Value") val value: String,
-  @JsonProperty("Type") val type: String,
+  @field:JsonProperty("Value") val value: String,
+  @field:JsonProperty("Type") val type: String,
 )
 
 data class PersonReference(val identifiers: List<Identifiers> = listOf()) {

@@ -24,7 +24,7 @@ class ElectronicMonitoringProgrammeService(
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
-  @Value("\${feature.toggle.electronicMonitoringResponseHandling:false}")
+  @param:Value("\${feature.toggle.electronicMonitoringResponseHandling:false}")
   private val electronicMonitoringResponseHandlingEnabled: Boolean = false,
 ) {
 
@@ -88,7 +88,12 @@ class ElectronicMonitoringProgrammeService(
     val removedConditionsRequiringEmResponse =
       licencePolicyService.getConditionsRequiringElectronicMonitoringResponse(version, removedConditionCodes)
     val currentConditionCodes = licenceEntity.additionalConditions.map { it.conditionCode }.toSet()
-    if (removedConditionsRequiringEmResponse.isNotEmpty() && !licencePolicyService.isElectronicMonitoringResponseRequired(currentConditionCodes, version)) {
+    if (removedConditionsRequiringEmResponse.isNotEmpty() &&
+      !licencePolicyService.isElectronicMonitoringResponseRequired(
+        currentConditionCodes,
+        version,
+      )
+    ) {
       deleteElectronicMonitoringProvider(licenceEntity)
     }
   }

@@ -13,7 +13,7 @@ class SubjectAccessRequestService(
   private val licenceService: LicenceService,
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
-  @Value("\${self.api.link}") private val baseUrl: String,
+  @param:Value("\${self.api.link}") private val baseUrl: String,
 ) {
 
   @Transactional

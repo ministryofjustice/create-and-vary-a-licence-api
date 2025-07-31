@@ -11,7 +11,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono
 
 @Service
-class HdcApiClient(@Qualifier("oauthHdcApiClient") val hdcApiWebClient: WebClient) {
+class HdcApiClient(@param:Qualifier("oauthHdcApiClient") val hdcApiWebClient: WebClient) {
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -26,12 +26,16 @@ class HdcApiClient(@Qualifier("oauthHdcApiClient") val hdcApiWebClient: WebClien
     .onErrorResume { propagate404Response(it, bookingId) }
     .block()!!
 
-  private fun <API_RESPONSE_BODY_TYPE> propagate404Response(exception: Throwable, licenceId: Long): Mono<API_RESPONSE_BODY_TYPE> = with(exception) {
+  private fun <API_RESPONSE_BODY_TYPE> propagate404Response(
+    exception: Throwable,
+    licenceId: Long,
+  ): Mono<API_RESPONSE_BODY_TYPE> = with(exception) {
     when {
       this is WebClientResponseException && statusCode == NOT_FOUND -> {
         log.info("No resource found when calling hdc-api ${request?.uri?.path}")
         Mono.error(EntityNotFoundException("No licence data found for $licenceId"))
       }
+
       else -> Mono.error(exception)
     }
   }

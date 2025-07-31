@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
 @Service
-class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: WebClient) {
+class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebClient: WebClient) {
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

@@ -10,59 +10,59 @@ import java.time.LocalDate
 @Schema(description = "Describes an CA(OMU) case")
 data class CaCase(
 
-  @Schema(description = "Type of this licence", example = LicenceKinds.CRD)
+  @field:Schema(description = "Type of this licence", example = LicenceKinds.CRD)
   val kind: LicenceKind? = null,
 
-  @Schema(description = "Unique identifier for this licence within the service", example = "99999")
+  @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val licenceId: Long? = null,
 
-  @Schema(description = "The version number of this licence", example = "1.3")
+  @field:Schema(description = "The version number of this licence", example = "1.3")
   val licenceVersionOf: Long? = null,
 
-  @Schema(description = "The full name of the person on licence", example = "John Doe")
+  @field:Schema(description = "The full name of the person on licence", example = "John Doe")
   val name: String,
 
-  @Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
+  @field:Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
   val prisonerNumber: String,
 
-  @Schema(description = "The details for the active supervising probation officer")
+  @field:Schema(description = "The details for the active supervising probation officer")
   val probationPractitioner: ProbationPractitioner? = null,
 
-  @Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
-  @JsonFormat(pattern = "dd/MM/yyyy")
+  @field:Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate? = null,
 
-  @Schema(description = "Label for release date", example = "Confirmed release date")
+  @field:Schema(description = "Label for release date", example = "Confirmed release date")
   val releaseDateLabel: String? = null,
 
-  @Schema(description = "The new status for this licence", example = "APPROVED")
+  @field:Schema(description = "The new status for this licence", example = "APPROVED")
   val licenceStatus: LicenceStatus,
 
-  @Schema(
+  @field:Schema(
     description = "The type of tab this licence has to be populated",
     example = "RELEASES_IN_NEXT_TWO_WORKING_DAYS",
   )
   val tabType: CaViewCasesTab? = null,
 
-  @Schema(
+  @field:Schema(
     description = "Legal Status",
     example = "SENTENCED",
     allowableValues = ["RECALL", "DEAD", "INDETERMINATE_SENTENCE", "SENTENCED", "CONVICTED_UNSENTENCED", "CIVIL_PRISONER", "IMMIGRATION_DETAINEE", "REMAND", "UNKNOWN", "OTHER"],
   )
   var nomisLegalStatus: String? = null,
 
-  @get:Schema(description = "The full name of the person who last updated this licence", example = "Jane Jones")
+  @field:Schema(description = "The full name of the person who last updated this licence", example = "Jane Jones")
   val lastWorkedOnBy: String? = null,
 
-  @Schema(description = "Is the prisoner due for early release", example = "false")
+  @field:Schema(description = "Is the prisoner due for early release", example = "false")
   val isDueForEarlyRelease: Boolean? = null,
 
-  @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
+  @field:Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
 
-  @Schema(description = "The agency code where this offender resides or was released from", example = "MDI")
+  @field:Schema(description = "The agency code where this offender resides or was released from", example = "MDI")
   val prisonCode: String? = null,
 
-  @Schema(description = "The agency description of the detaining prison", example = "Leeds (HMP)")
+  @field:Schema(description = "The agency description of the detaining prison", example = "Leeds (HMP)")
   val prisonDescription: String? = null,
 )

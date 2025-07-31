@@ -5,9 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Describes the conditions which form a licence policy")
 data class LicencePolicyConditions(
 
-  @Schema(description = "The list of standard conditions which form the licence policy")
+  @field:Schema(description = "The list of standard conditions which form the licence policy")
   val standard: List<StandardCondition>,
 
-  @Schema(description = "The list of additional conditions which form the licence policy")
+  @field:Schema(description = "The list of additional conditions which form the licence policy")
   val additional: List<LicencePolicyAdditionalCondition>,
 )

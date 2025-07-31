@@ -14,7 +14,7 @@ import jakarta.validation.constraints.NotNull
 data class StandardCondition(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   val id: Long = -1,
 
   @ManyToOne

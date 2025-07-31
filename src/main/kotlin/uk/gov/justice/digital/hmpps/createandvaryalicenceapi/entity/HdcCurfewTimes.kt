@@ -19,7 +19,7 @@ import java.time.LocalTime
 data class HdcCurfewTimes(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   val id: Long = -1,
 
   @ManyToOne

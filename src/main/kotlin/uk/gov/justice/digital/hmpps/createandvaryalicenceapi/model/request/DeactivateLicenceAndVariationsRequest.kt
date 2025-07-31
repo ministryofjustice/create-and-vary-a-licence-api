@@ -5,6 +5,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLice
 
 @Schema(description = "Request object for deactivating an active licence and its variations")
 data class DeactivateLicenceAndVariationsRequest(
-  @Schema(description = "A key representing the reason for the variation", example = "RESENTENCED")
+  @field:Schema(description = "A key representing the reason for the variation", example = "RESENTENCED")
   val reason: DateChangeLicenceDeativationReason,
 )

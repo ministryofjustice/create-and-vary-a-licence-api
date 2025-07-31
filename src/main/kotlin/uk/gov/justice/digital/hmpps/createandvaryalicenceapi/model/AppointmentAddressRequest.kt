@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank
 
 @Schema(description = "Request object for updating the address of the initial appointment")
 data class AppointmentAddressRequest(
-  @Schema(
+  @field:Schema(
     description = "The address of initial appointment",
     example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
   )

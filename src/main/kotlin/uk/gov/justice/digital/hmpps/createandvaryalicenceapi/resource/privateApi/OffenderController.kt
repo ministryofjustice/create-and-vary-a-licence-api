@@ -31,8 +31,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffServic
 class OffenderController(
   private val offenderService: OffenderService,
   private val staffService: StaffService,
-  @Value("\${domain.event.listener.enabled}") private val domainEventListenerEnabled: Boolean,
-  @Value("\${update.offender.details.handler.enabled}") private val updateOffenderDetailsHandleEnabled: Boolean,
+  @param:Value("\${domain.event.listener.enabled}") private val domainEventListenerEnabled: Boolean,
+  @param:Value("\${update.offender.details.handler.enabled}") private val updateOffenderDetailsHandleEnabled: Boolean,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

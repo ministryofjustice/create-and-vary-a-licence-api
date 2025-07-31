@@ -5,25 +5,29 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 
 @Schema(description = "A response object for a address")
 data class AddressResponse(
-  @Schema(description = "The address's unique reference", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479 or 10023122431", required = true)
+  @field:Schema(
+    description = "The address's unique reference",
+    example = "f47ac10b-58cc-4372-a567-0e02b2c3d479 or 10023122431",
+    required = true,
+  )
   val reference: String,
 
-  @Schema(description = "The first line of the address", example = "12 Cardiff Road", required = true)
+  @field:Schema(description = "The first line of the address", example = "12 Cardiff Road", required = true)
   val firstLine: String,
 
-  @Schema(description = "The second line of the address", example = "Penarth", required = false)
+  @field:Schema(description = "The second line of the address", example = "Penarth", required = false)
   val secondLine: String? = null,
 
-  @Schema(description = "The town or city of the address", example = "Cardiff", required = true)
+  @field:Schema(description = "The town or city of the address", example = "Cardiff", required = true)
   val townOrCity: String,
 
-  @Schema(description = "The county of the address", example = "Vale of Glamorgan", required = false)
+  @field:Schema(description = "The county of the address", example = "Vale of Glamorgan", required = false)
   val county: String? = null,
 
-  @Schema(description = "The postcode of the address", example = "CF64 1AB", required = true)
+  @field:Schema(description = "The postcode of the address", example = "CF64 1AB", required = true)
   val postcode: String,
 
-  @Schema(example = "MANUAL", description = "Source of the address")
+  @field:Schema(example = "MANUAL", description = "Source of the address")
   val source: AddressSource,
 
 )
