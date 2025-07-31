@@ -13,13 +13,13 @@ import java.time.LocalDateTime
 data class LicenceDocument(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   val id: Long = -1,
 
-  @NotNull
+  @param:NotNull
   val licenceId: Long = -1,
 
-  @NotNull
+  @param:NotNull
   val createdTime: LocalDateTime = LocalDateTime.now(),
 
   val s3Location: String? = null,

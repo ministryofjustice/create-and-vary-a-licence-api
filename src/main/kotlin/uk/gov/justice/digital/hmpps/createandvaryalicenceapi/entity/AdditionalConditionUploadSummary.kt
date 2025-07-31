@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 data class AdditionalConditionUploadSummary(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   val id: Long = -1,
 
   @ManyToOne
@@ -31,7 +31,7 @@ data class AdditionalConditionUploadSummary(
 
   val fileSize: Int = 0,
 
-  @NotNull
+  @param:NotNull
   val uploadedTime: LocalDateTime = LocalDateTime.now(),
 
   val description: String? = null,
@@ -40,7 +40,7 @@ data class AdditionalConditionUploadSummary(
   val thumbnailImage: ByteArray? = null,
   val thumbnailImageDsUuid: String? = null,
 
-  @NotNull
+  @param:NotNull
   val uploadDetailId: Long,
 ) {
 

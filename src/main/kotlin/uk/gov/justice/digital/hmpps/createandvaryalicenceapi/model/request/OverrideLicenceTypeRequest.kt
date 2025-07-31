@@ -7,10 +7,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 @Schema(description = "Request object for overriding a licence type")
 data class OverrideLicenceTypeRequest(
-  @Schema(description = "The new licence Type to assign to the licence")
-  @NotNull
+  @field:Schema(description = "The new licence Type to assign to the licence")
+  @param:NotNull
   val licenceType: LicenceType,
-  @Schema(description = "Reason for overriding the licence status")
-  @NotEmpty
+  @field:Schema(description = "Reason for overriding the licence status")
+  @field:NotEmpty
   val reason: String,
 )

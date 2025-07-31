@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank
 
 @Schema(description = "Request object for referring a licence variation")
 data class ReferVariationRequest(
-  @Schema(description = "A large string containing rich text markup. A reason for referring the licence variation.")
+  @field:Schema(description = "A large string containing rich text markup. A reason for referring the licence variation.")
   @field:NotBlank
   val reasonForReferral: String,
 )

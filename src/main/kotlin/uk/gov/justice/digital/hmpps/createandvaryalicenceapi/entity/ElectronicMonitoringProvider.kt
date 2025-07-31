@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 data class ElectronicMonitoringProvider(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   val id: Long = -1L,
 
   @OneToOne

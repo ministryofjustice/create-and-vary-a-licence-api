@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
 
 data class PrisonerNumbers(
-  @Schema(description = "List of prisoner numbers to search by", example = "[\"A1234AA\"]")
-  @NotEmpty
-  @Size(min = 1, max = 1000)
+  @field:Schema(description = "List of prisoner numbers to search by", example = "[\"A1234AA\"]")
+  @field:NotEmpty
+  @field:Size(min = 1, max = 1000)
   val prisonerNumbers: List<String>,
 )

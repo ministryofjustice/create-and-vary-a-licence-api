@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull
 @Table(name = "licence_type")
 data class LicenceType(
   @Id
-  @NotNull
+  @param:NotNull
   val typeCode: String,
 
   val description: String,

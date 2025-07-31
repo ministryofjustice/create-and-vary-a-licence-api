@@ -14,14 +14,14 @@ import jakarta.validation.constraints.NotNull
 data class AdditionalConditionData(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   val id: Long = -1,
 
   @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)
   val additionalCondition: AdditionalCondition,
 
-  @NotNull
+  @param:NotNull
   val dataSequence: Int = -1,
 
   val dataField: String? = null,

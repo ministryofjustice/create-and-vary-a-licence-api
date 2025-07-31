@@ -13,13 +13,13 @@ import jakarta.validation.constraints.NotNull
 data class AdditionalConditionUploadDetail(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   val id: Long = -1,
 
-  @NotNull
+  @param:NotNull
   val licenceId: Long,
 
-  @NotNull
+  @param:NotNull
   val additionalConditionId: Long,
 
   @Basic

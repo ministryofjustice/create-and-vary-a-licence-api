@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 @Schema(description = "A request object to add an address")
 data class AddAddressRequest(
 
-  @Schema(
+  @field:Schema(
     description = "Unique Property Reference Number, acquired from OsPlacesApi, post code and address look up",
     example = "200010019924",
     required = false,
@@ -25,17 +25,17 @@ data class AddAddressRequest(
   val uprn: String? = null,
 
   @field:NotBlank(message = "First line of the address must not be blank")
-  @Schema(description = "The first line of the address", example = "12 Cardiff Road", required = true)
+  @field:Schema(description = "The first line of the address", example = "12 Cardiff Road", required = true)
   val firstLine: String,
 
-  @Schema(description = "The second line of the address", example = "Penarth", required = false)
+  @field:Schema(description = "The second line of the address", example = "Penarth", required = false)
   val secondLine: String? = null,
 
   @field:NotBlank(message = "Town or city must not be blank")
-  @Schema(description = "The town or city of the address", example = "Cardiff", required = true)
+  @field:Schema(description = "The town or city of the address", example = "Cardiff", required = true)
   val townOrCity: String,
 
-  @Schema(description = "The county of the address", example = "Vale of Glamorgan", required = false)
+  @field:Schema(description = "The county of the address", example = "Vale of Glamorgan", required = false)
   val county: String? = null,
 
   @field:NotBlank(message = "Postcode must not be blank")
@@ -43,12 +43,19 @@ data class AddAddressRequest(
     regexp = "^[A-Z]{1,2}[0-9][0-9A-Z]?[ ]?[0-9][A-Z]{2}\$",
     message = "Postcode must be in a valid UK format",
   )
-  @Schema(description = "The postcode of the address", example = "CF64 1AB", required = true)
+  @field:Schema(description = "The postcode of the address", example = "CF64 1AB", required = true)
   val postcode: String,
 
   @field:NotNull(message = "Source must not be null")
-  @Schema(example = "MANUAL", description = "Source of the address", required = true)
+  @field:Schema(example = "MANUAL", description = "Source of the address", required = true)
   val source: AddressSource,
+
+  @Schema(
+    description = "Flag to indicate if the address should be added to the user's saved addresses",
+    example = "true",
+    required = false,
+  )
+  val isPreferredAddress: Boolean,
 ) {
 
   override fun toString(): String = listOf(

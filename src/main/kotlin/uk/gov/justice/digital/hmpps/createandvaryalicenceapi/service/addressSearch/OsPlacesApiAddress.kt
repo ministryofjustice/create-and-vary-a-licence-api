@@ -3,6 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSea
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class OsPlacesApiAddress(
-  @JsonProperty("DPA")
+  @field:JsonProperty("DPA")
   val dpa: DeliveryPointAddress,
 )

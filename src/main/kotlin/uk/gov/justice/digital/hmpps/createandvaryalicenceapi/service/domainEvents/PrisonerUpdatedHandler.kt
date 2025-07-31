@@ -12,7 +12,7 @@ class PrisonerUpdatedHandler(
   private val objectMapper: ObjectMapper,
   private val offenderService: OffenderService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  @Value("\${update.offender.details.handler.enabled}") private val updateOffenderDetailsHandleEnabled: Boolean,
+  @param:Value("\${update.offender.details.handler.enabled}") private val updateOffenderDetailsHandleEnabled: Boolean,
 ) {
   fun handleEvent(message: String) {
     if (updateOffenderDetailsHandleEnabled) {

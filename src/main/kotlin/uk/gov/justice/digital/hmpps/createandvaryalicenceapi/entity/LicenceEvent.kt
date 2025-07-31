@@ -16,10 +16,10 @@ import java.time.LocalDateTime
 data class LicenceEvent(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   val id: Long = -1,
 
-  @NotNull
+  @param:NotNull
   val licenceId: Long = -1,
 
   @Enumerated(EnumType.STRING)
@@ -30,6 +30,6 @@ data class LicenceEvent(
   val surname: String? = null,
   val eventDescription: String? = null,
 
-  @NotNull
+  @param:NotNull
   val eventTime: LocalDateTime = LocalDateTime.now(),
 )

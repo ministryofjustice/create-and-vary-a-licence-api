@@ -12,8 +12,8 @@ import reactor.core.publisher.Mono
 
 @Component
 class OsPlacesApiClient(
-  @Qualifier("osPlacesClient") private val osPlacesApiWebClient: WebClient,
-  @Value("\${os.places.api.key}") private val apiKey: String,
+  @param:Qualifier("osPlacesClient") private val osPlacesApiWebClient: WebClient,
+  @param:Value("\${os.places.api.key}") private val apiKey: String,
 ) {
   fun searchForAddressesByText(pageable: PageRequest, searchQuery: String): List<DeliveryPointAddress> {
     val searchResult = osPlacesApiWebClient
@@ -22,7 +22,15 @@ class OsPlacesApiClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(OsPlacesApiResponse::class.java)
-      .onErrorResume { e -> if (e is WebClientResponseException && e.statusCode == HttpStatus.BAD_REQUEST) Mono.empty() else Mono.error(e) }
+      .onErrorResume { e ->
+        if (e is WebClientResponseException && e.statusCode == HttpStatus.BAD_REQUEST) {
+          Mono.empty()
+        } else {
+          Mono.error(
+            e,
+          )
+        }
+      }
       .block()
     return searchResult?.results?.map { it.dpa } ?: emptyList()
   }
@@ -34,7 +42,15 @@ class OsPlacesApiClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(OsPlacesApiResponse::class.java)
-      .onErrorResume { e -> if (e is WebClientResponseException && e.statusCode == HttpStatus.BAD_REQUEST) Mono.empty() else Mono.error(e) }
+      .onErrorResume { e ->
+        if (e is WebClientResponseException && e.statusCode == HttpStatus.BAD_REQUEST) {
+          Mono.empty()
+        } else {
+          Mono.error(
+            e,
+          )
+        }
+      }
       .block()
     return searchResult?.results?.map { it.dpa } ?: emptyList()
   }

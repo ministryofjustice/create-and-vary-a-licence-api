@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration
 import uk.gov.service.notify.NotificationClient
 
 @Configuration
-class NotifyConfiguration(@Value("\${notify.api.key:invalidKey}") private val apiKey: String) {
+class NotifyConfiguration(@param:Value("\${notify.api.key:invalidKey}") private val apiKey: String) {
   @Bean
   fun notifyClient(): NotificationClient = NotificationClient(apiKey)
 }

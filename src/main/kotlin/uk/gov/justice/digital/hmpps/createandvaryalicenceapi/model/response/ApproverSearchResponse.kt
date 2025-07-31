@@ -5,9 +5,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 
 @Schema(description = "Response object which describes a result from an approver caseload search")
 data class ApproverSearchResponse(
-  @Schema(description = "A list of cases needing approval search results")
+  @field:Schema(description = "A list of cases needing approval search results")
   val approvalNeededResponse: List<ApprovalCase>,
 
-  @Schema(description = "A list of recently approved cases search results")
+  @field:Schema(description = "A list of recently approved cases search results")
   val recentlyApprovedResponse: List<ApprovalCase>,
 )

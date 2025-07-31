@@ -6,9 +6,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Po
 @Schema(description = "Describes the set of conditions associated with a given version of the policy")
 data class LicencePolicy(
 
-  @Schema(description = "The version of the licence policy", example = "V2_1")
+  @field:Schema(description = "The version of the licence policy", example = "V2_1")
   val version: PolicyVersion,
 
-  @Schema(description = "The AP and PSS conditions that form the licence policy")
+  @field:Schema(description = "The AP and PSS conditions that form the licence policy")
   val conditions: ConditionTypes,
 )

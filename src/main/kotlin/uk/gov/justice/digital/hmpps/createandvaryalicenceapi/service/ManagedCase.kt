@@ -10,19 +10,19 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 
 @Schema(description = "Describes an CA(OMU) caseload")
 data class ManagedCase(
-  @Schema(description = "Details about a offender")
+  @field:Schema(description = "Details about a offender")
   val deliusRecord: DeliusRecord? = null,
 
-  @Schema(description = "Details about a prisoner")
+  @field:Schema(description = "Details about a prisoner")
   val nomisRecord: Prisoner? = null,
 
-  @Schema(description = "Describes a licence within this service, A discriminator exists to distinguish between different types of licence")
+  @field:Schema(description = "Describes a licence within this service, A discriminator exists to distinguish between different types of licence")
   val licences: List<CaseLoadLicenceSummary> = emptyList(),
 
-  @Schema(description = "Describes a probation practitioner on an approval case")
+  @field:Schema(description = "Describes a probation practitioner on an approval case")
   val probationPractitioner: ProbationPractitioner? = null,
 
-  @Schema(description = "Additional information pertinent to CVL")
+  @field:Schema(description = "Additional information pertinent to CVL")
   val cvlFields: CvlFields,
 )
 

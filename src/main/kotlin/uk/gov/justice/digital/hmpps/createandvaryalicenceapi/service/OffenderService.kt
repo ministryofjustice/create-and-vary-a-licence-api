@@ -24,7 +24,7 @@ OffenderService(
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val releaseDateService: ReleaseDateService,
-  @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
+  @param:Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
 ) {
 
   companion object {
@@ -33,7 +33,13 @@ OffenderService(
 
   @Transactional
   fun updateOffenderWithResponsibleCom(crn: String, newCom: CommunityOffenderManager) {
-    log.info("Updating responsible COM for CRN={} to {} {} (email={})", crn, newCom.username, newCom.staffIdentifier, newCom.email)
+    log.info(
+      "Updating responsible COM for CRN={} to {} {} (email={})",
+      crn,
+      newCom.username,
+      newCom.staffIdentifier,
+      newCom.email,
+    )
 
     val offenderLicences = licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
@@ -43,11 +49,20 @@ OffenderService(
     val inProgressLicence = offenderLicences.find { it.kind != HARD_STOP && it.statusCode == IN_PROGRESS }
 
     if (inProgressLicence != null) {
-      log.info("Found in-progress licence (id={}) for CRN={} - checking for late allocation warning.", inProgressLicence.id, crn)
+      log.info(
+        "Found in-progress licence (id={}) for CRN={} - checking for late allocation warning.",
+        inProgressLicence.id,
+        crn,
+      )
 
       val releaseDate = inProgressLicence.licenceStartDate
       if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {
-        log.warn("Late allocation warning triggered for CRN={} licenceId={} with releaseDate={}", crn, inProgressLicence.id, releaseDate)
+        log.warn(
+          "Late allocation warning triggered for CRN={} licenceId={} with releaseDate={}",
+          crn,
+          inProgressLicence.id,
+          releaseDate,
+        )
 
         val prisoner = listOf(
           Case(
@@ -64,7 +79,12 @@ OffenderService(
           prisoner,
         )
 
-        log.info("Late allocation email sent to {} for CRN={} and licenceId={}", newCom.email, crn, inProgressLicence.id)
+        log.info(
+          "Late allocation email sent to {} for CRN={} and licenceId={}",
+          newCom.email,
+          crn,
+          inProgressLicence.id,
+        )
       }
     } else {
       log.info("No in-progress licence found for CRN={}", crn)
