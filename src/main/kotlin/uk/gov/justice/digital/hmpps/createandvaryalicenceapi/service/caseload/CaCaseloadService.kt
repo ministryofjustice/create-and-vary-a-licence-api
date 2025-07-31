@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
@@ -40,7 +39,6 @@ import java.time.LocalDate
 @Service
 class CaCaseloadService(
   private val caseloadService: CaseloadService,
-  private val licenceCreationService: LicenceCreationService,
   private val licenceService: LicenceService,
   private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
@@ -274,11 +272,7 @@ class CaCaseloadService(
 
     val eligiblePrisoners = filterOffendersEligibleForLicence(prisonersWithoutLicences.toList())
 
-    val prisonersToLicenceKinds = eligiblePrisoners.associate {
-      it.prisonerNumber to licenceCreationService.determineLicenceKind(it)
-    }
-
-    val licenceStartDates = releaseDateService.getLicenceStartDates(eligiblePrisoners, prisonersToLicenceKinds)
+    val licenceStartDates = releaseDateService.getLicenceStartDates(eligiblePrisoners)
 
     val casesWithoutLicences = pairNomisRecordsWithDelius(eligiblePrisoners, licenceStartDates)
     return createNotStartedLicenceForCase(casesWithoutLicences, licenceStartDates)
