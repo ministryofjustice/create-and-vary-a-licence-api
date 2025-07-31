@@ -9,8 +9,8 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Component
 class OsPlacesApiClient(
-  @Qualifier("osPlacesClient") private val osPlacesApiWebClient: WebClient,
-  @Value("\${os.places.api.key}") private val apiKey: String,
+  @param:Qualifier("osPlacesClient") private val osPlacesApiWebClient: WebClient,
+  @param:Value("\${os.places.api.key}") private val apiKey: String,
 ) {
   fun searchForAddressesByText(pageable: PageRequest, searchQuery: String): List<DeliveryPointAddress> {
     val searchResult = osPlacesApiWebClient

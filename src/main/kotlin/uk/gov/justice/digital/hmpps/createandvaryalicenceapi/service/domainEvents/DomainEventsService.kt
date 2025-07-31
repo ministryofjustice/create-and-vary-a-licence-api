@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class DomainEventsService(
-  @Value("\${self.api.link}") private val baseUrl: String,
+  @param:Value("\${self.api.link}") private val baseUrl: String,
   private val clock: Clock,
   private val applicationEventPublisher: ApplicationEventPublisher,
 ) {

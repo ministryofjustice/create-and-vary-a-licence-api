@@ -19,7 +19,7 @@ import org.hibernate.annotations.FetchMode
 @Table(name = "additional_condition")
 data class AdditionalCondition(
   @Id
-  @NotNull
+  @param:NotNull
   @GeneratedValue(strategy = IDENTITY)
   val id: Long = -1,
 

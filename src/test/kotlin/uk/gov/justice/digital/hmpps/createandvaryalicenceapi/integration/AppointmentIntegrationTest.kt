@@ -495,7 +495,10 @@ class AppointmentIntegrationTest(
     .accept(MediaType.APPLICATION_JSON)
     .exchange()
 
-  private fun getErrorResponse(result: WebTestClient.ResponseSpec, exceptedStatus: HttpStatusCode = HttpStatusCode.valueOf(400)): ErrorResponse? {
+  private fun getErrorResponse(
+    result: WebTestClient.ResponseSpec,
+    exceptedStatus: HttpStatusCode = HttpStatusCode.valueOf(400),
+  ): ErrorResponse? {
     result.expectStatus().isEqualTo(exceptedStatus)
     val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
     assertThat(errorResponse).isNotNull

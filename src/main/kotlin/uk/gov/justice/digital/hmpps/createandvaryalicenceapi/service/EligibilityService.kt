@@ -18,7 +18,7 @@ fun Collection<EligibilityCheckAndReason>.getIneligibilityReasons(prisoner: Pris
 @Service
 class EligibilityService(
   private val clock: Clock,
-  @Value("\${recall.enabled}") private val recallEnabled: Boolean = false,
+  @param:Value("\${recall.enabled}") private val recallEnabled: Boolean = false,
 ) {
 
   val genericChecks = listOf(

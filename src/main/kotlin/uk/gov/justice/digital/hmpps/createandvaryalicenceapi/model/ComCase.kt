@@ -17,48 +17,48 @@ enum class LicenceCreationType {
 
 @Schema(description = "Describes an COM case")
 data class ComCase(
-  @Schema(description = "The full name of the person on licence", example = "John Doe")
+  @field:Schema(description = "The full name of the person on licence", example = "John Doe")
   val name: String?,
 
-  @Schema(description = "The case reference number (CRN) for the person on this licence", example = "X12444")
+  @field:Schema(description = "The case reference number (CRN) for the person on this licence", example = "X12444")
   val crnNumber: String?,
 
-  @Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
+  @field:Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
   val prisonerNumber: String?,
 
-  @Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
-  @JsonFormat(pattern = "dd/MM/yyyy")
+  @field:Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate?,
 
-  @Schema(description = "Unique identifier for this licence within the service", example = "99999")
+  @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val licenceId: Long?,
 
-  @Schema(description = "The new status for this licence", example = "APPROVED")
+  @field:Schema(description = "The new status for this licence", example = "APPROVED")
   val licenceStatus: LicenceStatus?,
 
-  @Schema(description = "The licence type code", example = "AP")
+  @field:Schema(description = "The licence type code", example = "AP")
   val licenceType: LicenceType?,
 
-  @Schema(description = "Is a review of this licence is required", example = "true")
+  @field:Schema(description = "Is a review of this licence is required", example = "true")
   val isReviewNeeded: Boolean,
 
-  @Schema(description = "The details for the active supervising probation officer")
+  @field:Schema(description = "The details for the active supervising probation officer")
   val probationPractitioner: ProbationPractitioner?,
 
-  @Schema(description = "Date which the hard stop period will start", example = "03/05/2023")
-  @JsonFormat(pattern = "dd/MM/yyyy")
+  @field:Schema(description = "Date which the hard stop period will start", example = "03/05/2023")
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
   val hardStopDate: LocalDate? = null,
 
-  @Schema(description = "Date which to show the hard stop warning", example = "01/05/2023")
-  @JsonFormat(pattern = "dd/MM/yyyy")
+  @field:Schema(description = "Date which to show the hard stop warning", example = "01/05/2023")
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
   val hardStopWarningDate: LocalDate? = null,
 
-  @Schema(description = "Type of this licence", example = LicenceKinds.CRD)
+  @field:Schema(description = "Type of this licence", example = LicenceKinds.CRD)
   val kind: LicenceKind?,
 
-  @Schema(description = "Is the prisoner due for early release", example = "false")
+  @field:Schema(description = "Is the prisoner due for early release", example = "false")
   val isDueForEarlyRelease: Boolean,
 
-  @Schema(description = "How this licence will need to be created", example = "PRISON_WILL_CREATE_THIS_LICENCE")
+  @field:Schema(description = "How this licence will need to be created", example = "PRISON_WILL_CREATE_THIS_LICENCE")
   val licenceCreationType: LicenceCreationType? = null,
 )

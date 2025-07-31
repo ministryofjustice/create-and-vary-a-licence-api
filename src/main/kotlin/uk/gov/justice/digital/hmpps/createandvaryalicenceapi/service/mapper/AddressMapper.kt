@@ -7,34 +7,30 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Addr
 import java.util.UUID
 
 @Component
-class AddressMapper {
+object AddressMapper {
+  fun copy(entity: Address?): Address? = entity?.copy(
+    id = -1,
+    reference = UUID.randomUUID().toString(),
+  )
 
-  companion object {
+  fun toEntity(request: AddAddressRequest): Address = Address(
+    reference = UUID.randomUUID().toString(),
+    uprn = request.uprn,
+    firstLine = request.firstLine,
+    secondLine = request.secondLine,
+    townOrCity = request.townOrCity,
+    county = request.county,
+    postcode = request.postcode,
+    source = request.source,
+  )
 
-    fun copy(entity: Address?): Address? = entity?.copy(
-      id = -1,
-      reference = UUID.randomUUID().toString(),
-    )
-
-    fun toEntity(request: AddAddressRequest): Address = Address(
-      reference = UUID.randomUUID().toString(),
-      uprn = request.uprn,
-      firstLine = request.firstLine,
-      secondLine = request.secondLine,
-      townOrCity = request.townOrCity,
-      county = request.county,
-      postcode = request.postcode,
-      source = request.source,
-    )
-
-    fun toResponse(entity: Address): AddressResponse = AddressResponse(
-      reference = entity.reference,
-      firstLine = entity.firstLine,
-      secondLine = entity.secondLine,
-      townOrCity = entity.townOrCity,
-      county = entity.county,
-      postcode = entity.postcode,
-      source = entity.source,
-    )
-  }
+  fun toResponse(entity: Address): AddressResponse = AddressResponse(
+    reference = entity.reference,
+    firstLine = entity.firstLine,
+    secondLine = entity.secondLine,
+    townOrCity = entity.townOrCity,
+    county = entity.county,
+    postcode = entity.postcode,
+    source = entity.source,
+  )
 }

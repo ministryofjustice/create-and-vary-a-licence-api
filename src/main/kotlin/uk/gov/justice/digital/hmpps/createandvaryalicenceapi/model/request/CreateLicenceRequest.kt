@@ -12,10 +12,10 @@ enum class LicenceType {
 
 @Schema(description = "Request object for creating a new licence")
 data class CreateLicenceRequest(
-  @Schema(description = "The prison nomis identifier for this offender", example = "A1234AA")
-  @NotNull
+  @field:Schema(description = "The prison nomis identifier for this offender", example = "A1234AA")
+  @param:NotNull
   val nomsId: String,
 
-  @Schema(description = "The type of licence to create", example = "CRD")
+  @field:Schema(description = "The type of licence to create", example = "CRD")
   val type: LicenceType = LicenceType.CRD,
 )

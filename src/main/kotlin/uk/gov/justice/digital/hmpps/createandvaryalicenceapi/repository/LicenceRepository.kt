@@ -230,30 +230,30 @@ interface EditedLicenceNotReApproved {
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
 data class UnapprovedLicence(
-  @Schema(description = "The Crime Reference Number", example = "Z882661")
+  @field:Schema(description = "The Crime Reference Number", example = "Z882661")
   val crn: String? = null,
 
-  @Schema(description = "The prisoner's first name", example = "Jim")
+  @field:Schema(description = "The prisoner's first name", example = "Jim")
   val forename: String? = null,
 
-  @Schema(description = "The prisoner's last name", example = "Smith")
+  @field:Schema(description = "The prisoner's last name", example = "Smith")
   val surname: String? = null,
 
-  @Schema(description = "The COM's first name", example = "Joseph")
+  @field:Schema(description = "The COM's first name", example = "Joseph")
   val comFirstName: String? = null,
 
-  @Schema(description = "The COM's last name", example = "Bloggs")
+  @field:Schema(description = "The COM's last name", example = "Bloggs")
   val comLastName: String? = null,
 
-  @Schema(description = "The COM's email address", example = "jbloggs@probation.gov.uk")
+  @field:Schema(description = "The COM's email address", example = "jbloggs@probation.gov.uk")
   val comEmail: String? = null,
 )
 
 @Schema(description = "Describes a team and the respective count of their cases that need review")
 data class TeamCountsDto(
-  @Schema(description = "The team code", example = "ABC123")
+  @field:Schema(description = "The team code", example = "ABC123")
   val teamCode: String,
 
-  @Schema(description = "A count of cases that need to be reviewed", example = "42")
+  @field:Schema(description = "A count of cases that need to be reviewed", example = "42")
   val count: Long,
 )

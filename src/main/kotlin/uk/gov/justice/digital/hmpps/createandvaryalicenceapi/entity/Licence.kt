@@ -42,21 +42,21 @@ import java.util.Objects
 abstract class Licence(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
+  @param:NotNull
   var id: Long = -1,
 
-  @NotNull
+  @param:NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "kind", insertable = false, updatable = false)
   override var kind: LicenceKind,
 
-  @NotNull
+  @param:NotNull
   @Enumerated(EnumType.STRING)
   var typeCode: LicenceType = LicenceType.AP,
 
   var version: String? = null,
 
-  @NotNull
+  @param:NotNull
   @Enumerated(EnumType.STRING)
   var statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
 

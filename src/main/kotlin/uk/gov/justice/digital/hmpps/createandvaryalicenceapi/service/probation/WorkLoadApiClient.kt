@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils
 
 @Component
-class WorkLoadApiClient(@Qualifier("oauthWorkLoadApiClient") val workLoadApiClient: WebClient) {
+class WorkLoadApiClient(@param:Qualifier("oauthWorkLoadApiClient") val workLoadApiClient: WebClient) {
 
   fun getStaffDetails(personUuid: String): WorkLoadAllocationResponse? = workLoadApiClient
     .get()

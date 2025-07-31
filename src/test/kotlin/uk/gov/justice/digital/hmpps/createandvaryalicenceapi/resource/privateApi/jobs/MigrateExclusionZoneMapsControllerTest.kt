@@ -70,7 +70,12 @@ class MigrateExclusionZoneMapsControllerTest {
   }
 
   private fun triggerRequest(withBatchSizeOf: Int?): ResultActions = mvc.perform(
-    MockMvcRequestBuilders.post("/jobs/migrate-exclusion-zone-maps".plus(withBatchSizeOf?.let { "?batchSize=$it" } ?: ""))
+    MockMvcRequestBuilders.post(
+      "/jobs/migrate-exclusion-zone-maps".plus(
+        withBatchSizeOf?.let { "?batchSize=$it" }
+          ?: "",
+      ),
+    )
       .accept(MediaType.APPLICATION_JSON)
       .contentType(MediaType.APPLICATION_JSON),
   )

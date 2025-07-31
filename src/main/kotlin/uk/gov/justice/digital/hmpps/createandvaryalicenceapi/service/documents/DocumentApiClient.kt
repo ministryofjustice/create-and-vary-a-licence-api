@@ -11,7 +11,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import java.util.UUID
 
 @Service
-class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClient: WebClient) {
+class DocumentApiClient(@param:Qualifier("oauthDocumentApiClient") val documentApiClient: WebClient) {
 
   // Swagger documentation: https://document-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html#/document-controller/downloadDocumentFile
   fun downloadDocumentFile(documentUuid: UUID): ByteArray = documentApiClient.get()
@@ -21,7 +21,11 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     .retrieve()
     .onStatus(HttpStatusCode::isError) { response ->
       response.bodyToMono<String>().map { body ->
-        error("Error downloading document (UUID=$documentUuid, StatusCode=${response.statusCode().value()}, Response=$body)")
+        error(
+          "Error downloading document (UUID=$documentUuid, StatusCode=${
+            response.statusCode().value()
+          }, Response=$body)",
+        )
       }
     }
     .bodyToMono(ByteArray::class.java)
@@ -38,7 +42,7 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     .header("Service-Name", "create-and-vary-a-licence-api")
     .bodyValue(
       MultipartBodyBuilder().apply {
-        part("file", ByteArrayResource(file)).filename(documentUuid.toString())
+        part("file", ByteArrayResource(file), MediaType.APPLICATION_PDF).filename(documentUuid.toString())
         part("metadata", metadata)
       }.build(),
     )
@@ -46,7 +50,11 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     .retrieve()
     .onStatus(HttpStatusCode::isError) { response ->
       response.bodyToMono<String>().map { body ->
-        error("Error during uploading document (UUID=$documentUuid, StatusCode=${response.statusCode().value()}, Response=$body)")
+        error(
+          "Error during uploading document (UUID=$documentUuid, StatusCode=${
+            response.statusCode().value()
+          }, Response=$body)",
+        )
       }
     }
     .bodyToMono(Document::class.java)
@@ -61,7 +69,11 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
       .retrieve()
       .onStatus(HttpStatusCode::isError) { response ->
         response.bodyToMono<String>().map { body ->
-          error("Error deleting document (UUID=$documentUuid, StatusCode=${response.statusCode().value()}, Response=$body)")
+          error(
+            "Error deleting document (UUID=$documentUuid, StatusCode=${
+              response.statusCode().value()
+            }, Response=$body)",
+          )
         }
       }
       .bodyToMono(ByteArray::class.java)

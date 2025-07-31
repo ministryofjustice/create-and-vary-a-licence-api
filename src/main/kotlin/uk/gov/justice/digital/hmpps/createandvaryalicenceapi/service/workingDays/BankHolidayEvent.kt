@@ -4,6 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
 class BankHolidayEvent(
-  @JsonFormat(pattern = "yyyy-MM-dd")
+  @field:JsonFormat(pattern = "yyyy-MM-dd")
   val date: LocalDate,
 )

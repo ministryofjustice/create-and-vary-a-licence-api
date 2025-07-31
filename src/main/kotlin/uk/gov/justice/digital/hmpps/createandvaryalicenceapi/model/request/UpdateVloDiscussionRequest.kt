@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank
 
 @Schema(description = "Request object for updating the VLO discussion")
 data class UpdateVloDiscussionRequest(
-  @Schema(description = "Whether or not the licence variation has been discussed with a VLO", example = "Yes")
+  @field:Schema(description = "Whether or not the licence variation has been discussed with a VLO", example = "Yes")
   @field:NotBlank
   val vloDiscussion: String,
 )
