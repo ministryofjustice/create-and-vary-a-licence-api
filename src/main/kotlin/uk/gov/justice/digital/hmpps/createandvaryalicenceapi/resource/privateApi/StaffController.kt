@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSear
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadSearchService
@@ -205,4 +207,48 @@ class StaffController(
   fun retrieveReviewCounts(
     @PathVariable("staffIdentifier") staffIdentifier: Long,
   ) = this.staffService.getReviewCounts(staffIdentifier)
+
+
+  @Tag(name = Tags.STAFF)
+  @GetMapping(
+    value = ["/staff/address/preferred"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Retrieve the preferred address for a staff member",
+    description = "Fetches the preferred address associated with the given staff identifier. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The preferred address was retrieved successfully",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = AddressResponse::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, staff identifier must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getPreferredAddress(): List<AddressResponse> = this.staffService.getPreferredAddress()
+
 }
