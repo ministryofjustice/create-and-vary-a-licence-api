@@ -34,14 +34,12 @@ interface StaffRepository : JpaRepository<Staff, Long> {
   )
   fun findPrisonUserByUsernameIgnoreCase(username: String): PrisonUser?
 
-
   @Query(
     """
       SELECT s FROM Staff s
       LEFT JOIN FETCH s.savedAppointmentAddresses
       WHERE LOWER(s.username) = LOWER(:username)
-  """
+  """,
   )
   fun findByUsernameIgnoreCaseWithAddresses(username: String): Staff?
-
 }

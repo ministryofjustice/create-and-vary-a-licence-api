@@ -208,7 +208,6 @@ class StaffController(
     @PathVariable("staffIdentifier") staffIdentifier: Long,
   ) = this.staffService.getReviewCounts(staffIdentifier)
 
-
   @Tag(name = Tags.STAFF)
   @GetMapping(
     value = ["/staff/address/preferred"],
@@ -250,5 +249,4 @@ class StaffController(
     ],
   )
   fun getPreferredAddress(): List<AddressResponse> = this.staffService.getPreferredAddress()
-
 }

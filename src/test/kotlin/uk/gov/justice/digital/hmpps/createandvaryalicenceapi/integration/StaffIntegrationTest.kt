@@ -222,7 +222,6 @@ class StaffIntegrationTest : IntegrationTestBase() {
     assertThat(teamCount.count).isEqualTo(2)
   }
 
-
   @Test
   @Sql(
     "classpath:test_data/seed-staff-address.sql",
@@ -244,9 +243,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
     assertThat(resultList!![1].postcode).isEqualTo("TE5 7AB")
   }
 
-
-
-    private fun doUpdate(uri: String, body: Any) {
+  private fun doUpdate(uri: String, body: Any) {
     webTestClient.put()
       .uri(uri)
       .bodyValue(body)
