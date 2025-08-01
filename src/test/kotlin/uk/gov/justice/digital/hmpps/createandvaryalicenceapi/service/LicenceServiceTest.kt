@@ -1429,7 +1429,7 @@ class LicenceServiceTest {
         eq(variation.forename!!),
         eq(variation.surname!!),
         eq(variation.crn!!),
-        eq(variation.responsibleCom.fullName),
+        eq(variation.submittedBy?.fullName ?: ""),
       )
 
     assertThat(licenceCaptor.value)
@@ -3612,7 +3612,7 @@ class LicenceServiceTest {
           eq(variation.forename!!),
           eq(variation.surname!!),
           eq(variation.crn!!),
-          eq(variation.responsibleCom.fullName),
+          eq(variation.submittedBy?.fullName ?: ""),
         )
 
       assertThat(licenceCaptor.value)
