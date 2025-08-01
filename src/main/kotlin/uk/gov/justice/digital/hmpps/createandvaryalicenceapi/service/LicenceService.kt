@@ -463,7 +463,7 @@ class LicenceService(
       AuditEvent(
         licenceId = licenceId,
         username = username,
-        fullName = "${submitter.firstName} ${submitter.lastName}",
+        fullName = submitter.fullName,
         summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
         detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
       ),
@@ -478,7 +478,7 @@ class LicenceService(
           updatedLicence.forename!!,
           updatedLicence.surname!!,
           updatedLicence.crn!!,
-          username!!,
+          submitter.fullName,
         )
       }
     }
