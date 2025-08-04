@@ -252,7 +252,7 @@ class LicenceService(
       }
     }
 
-    val isReApproval = licenceEntity.statusCode === APPROVED && request.status === IN_PROGRESS
+    val isReApproval = licenceEntity.statusCode === APPROVED && request.status === SUBMITTED
 
     licenceEntity.updateStatus(
       statusCode = request.status,
@@ -266,7 +266,7 @@ class LicenceService(
     )
     licenceRepository.saveAndFlush(licenceEntity)
 
-    // if previous status was APPROVED and the new status is IN_PROGRESS then email OMU regarding re-approval
+    // if previous status was APPROVED and the new status is SUBMITTED then email OMU regarding re-approval
     if (isReApproval) {
       notifyReApprovalNeeded(licenceEntity)
     }
@@ -645,6 +645,7 @@ class LicenceService(
     }
 
     val licenceCopy = populateCopyAndAudit(licence.kind, licence, copyToEdit, creator)
+
     notifyReApprovalNeeded(licence)
     return licenceCopy.toSummary()
   }

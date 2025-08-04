@@ -821,7 +821,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(notifyService, times(1)).sendVariationForReApprovalEmail(
+    verify(notifyService, never()).sendVariationForReApprovalEmail(
       eq("test@test.com"),
       eq(aLicenceEntity.forename ?: "unknown"),
       eq(aLicenceEntity.surname ?: "unknown"),
@@ -853,6 +853,39 @@ class LicenceServiceTest {
           "Licence edited for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )
+  }
+
+  @Test
+  fun `update an APPROVED licence back to SUBMITTED sends a variation for re approval email`() {
+    // Given
+    val username = "tcom"
+    val fullName = "Y"
+
+    val request = StatusUpdateRequest(status = LicenceStatus.SUBMITTED, username = username, fullName = fullName)
+    val omuContact = OmuContact(
+      prisonCode = "BXI",
+      email = "test@test.com",
+      dateCreated = LocalDateTime.now(),
+    )
+
+    whenever(licenceRepository.findById(1L))
+      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(omuContact)
+    whenever(staffRepository.findByUsernameIgnoreCase(username)).thenReturn(aCom)
+
+    // When
+    service.updateLicenceStatus(1L, request)
+
+    // Then
+    verify(notifyService, times(1)).sendVariationForReApprovalEmail(
+      eq("test@test.com"),
+      eq(aLicenceEntity.forename!!),
+      eq(aLicenceEntity.surname!!),
+      eq(aLicenceEntity.nomsId),
+      eq(aLicenceEntity.licenceStartDate),
+      eq(aLicenceEntity.conditionalReleaseDate),
+    )
   }
 
   @Test
