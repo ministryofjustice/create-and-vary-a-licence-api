@@ -243,6 +243,35 @@ class StaffIntegrationTest : IntegrationTestBase() {
     assertThat(resultList!![1].postcode).isEqualTo("TE5 7AB")
   }
 
+  @Test
+  @Sql("classpath:test_data/seed-staff-address.sql")
+  fun `Delete address by reference for staff`() {
+    val referenceToDelete = "REF-123456"
+
+    webTestClient.delete()
+      .uri("/staff/address/reference/$referenceToDelete")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"), user = "Staff1"))
+      .exchange()
+      .expectStatus().isNoContent
+
+    val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses("Staff1")
+    assertThat(staff).isNotNull
+    assertThat(staff!!.savedAppointmentAddresses.any { it.reference == referenceToDelete }).isFalse()
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-staff-address.sql")
+  fun `Return error when address reference not found`() {
+    val invalidReference = "NON_EXISTENT_REF"
+
+    webTestClient.delete()
+      .uri("/staff/address/reference/$invalidReference")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"), user = "Staff2"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+  }
+
   private fun doUpdate(uri: String, body: Any) {
     webTestClient.put()
       .uri(uri)

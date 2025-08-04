@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -144,6 +145,20 @@ class StaffService(
 
     log.info("Retrieving preferred addresses for staff ${staff.fullName}")
     return staff.savedAppointmentAddresses.map { address -> AddressMapper.toResponse(address) }
+  }
+
+  fun deleteAddressByReference(reference: String) {
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses(username)
+      ?: error("Staff with username $username not found")
+
+    log.info("Deleting address with reference $reference for staff ${staff.fullName}")
+
+    val addressToDelete = staff.savedAppointmentAddresses.firstOrNull { it.reference == reference }
+      ?: throw EntityNotFoundException("Address with reference $reference not found for staff ${staff.fullName}")
+
+    staff.savedAppointmentAddresses.remove(addressToDelete)
+    staffRepository.saveAndFlush(staff)
   }
 
   private fun PrisonUser.updatedWith(
