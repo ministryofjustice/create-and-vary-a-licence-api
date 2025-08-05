@@ -63,6 +63,8 @@ class ApproverCaseloadService(
         approvedOn = licenceSummary?.approvedDate,
         isDueForEarlyRelease = licenceSummary?.isDueForEarlyRelease,
         kind = licenceSummary?.kind,
+        prisonCode = licenceSummary?.prisonCode,
+        prisonDescription = licenceSummary?.prisonDescription,
       )
     }.sortedWith(compareBy(nullsFirst()) { it.releaseDate })
   }

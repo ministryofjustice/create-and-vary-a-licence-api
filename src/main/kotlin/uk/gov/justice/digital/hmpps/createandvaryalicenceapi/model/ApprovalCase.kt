@@ -49,4 +49,10 @@ data class ApprovalCase(
 
   @field:Schema(description = "Type of this licence")
   val kind: LicenceKind? = null,
+
+  @field:Schema(description = "The agency code where this offender resides or was released from", example = "LEI")
+  val prisonCode: String? = null,
+
+  @field:Schema(description = "The agency description of the detaining prison", example = "Leeds (HMP)")
+  val prisonDescription: String? = null,
 )
