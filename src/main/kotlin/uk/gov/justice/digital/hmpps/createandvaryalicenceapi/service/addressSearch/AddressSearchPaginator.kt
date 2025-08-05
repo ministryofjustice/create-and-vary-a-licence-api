@@ -10,8 +10,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPl
 class AddressSearchPaginator(
   private val osPlacesApiClient: OsPlacesApiClient,
   private val addressMapper: OsPlacesMapperToAddressSearchResponseMapper,
-  @Value("\${address.os-places.search.page-size:100}") private val pageSize: Int,
-  @Value("\${address.search.max-total:200}") private val maxTotal: Int,
+  @param:Value("\${address.os-places.search.page-size:100}") private val pageSize: Int,
+  @param:Value("\${address.search.max-total:200}") private val maxTotal: Int,
 ) {
 
   fun searchByText(searchQuery: String): List<AddressSearchResponse> = paginate(
