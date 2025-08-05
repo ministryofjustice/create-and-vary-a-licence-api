@@ -92,7 +92,7 @@ generic-service:
       allowRetry: false
 
     - name: documents-migration-job
-      enabled: true
+      enabled: false
       path: /migrate-exclusion-zone-maps?batchSize=25
       cron: "*/1 8-6 * * *" # every 1 minute between 8am-6pm UTC
       allowRetry: false
