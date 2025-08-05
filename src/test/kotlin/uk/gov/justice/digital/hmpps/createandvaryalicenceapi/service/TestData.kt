@@ -723,6 +723,8 @@ object TestData {
     isDueForEarlyRelease = false,
     probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
     kind = LicenceKind.CRD,
+    prisonCode = "MDI",
+    prisonDescription = "Moorland (HMP)",
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(

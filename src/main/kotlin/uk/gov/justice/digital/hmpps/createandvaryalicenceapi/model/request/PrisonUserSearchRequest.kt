@@ -12,7 +12,7 @@ data class PrisonUserSearchRequest(
   )
   val query: String,
 
-  @field:Schema(description = "The prison caseloads of the prison staff member", example = "[BAI]")
+  @field:Schema(description = "The prison caseloads of the prison staff member", example = "['BAI']")
   @field:NotEmpty
   val prisonCaseloads: Set<String>,
 )

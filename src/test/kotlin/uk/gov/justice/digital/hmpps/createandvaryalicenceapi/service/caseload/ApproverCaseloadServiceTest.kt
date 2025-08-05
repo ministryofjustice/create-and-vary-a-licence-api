@@ -71,6 +71,8 @@ class ApproverCaseloadServiceTest {
             assertThat(name).isEqualTo("Test Test")
           }
           assertThat(kind).isEqualTo(LicenceKind.CRD)
+          assertThat(prisonCode).isEqualTo("MDI")
+          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
         }
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
@@ -156,6 +158,8 @@ class ApproverCaseloadServiceTest {
             assertThat(name).isEqualTo("Test Test")
           }
           assertThat(kind).isEqualTo(LicenceKind.CRD)
+          assertThat(prisonCode).isEqualTo("MDI")
+          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
         }
 
         with(approvalCases.last()) {
@@ -173,6 +177,8 @@ class ApproverCaseloadServiceTest {
             assertThat(name).isEqualTo("Test2 Test2")
           }
           assertThat(kind).isEqualTo(LicenceKind.CRD)
+          assertThat(prisonCode).isEqualTo("ABC")
+          assertThat(prisonDescription).isEqualTo("ABC (HMP)")
         }
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
@@ -435,6 +441,8 @@ class ApproverCaseloadServiceTest {
             assertThat(name).isEqualTo("Test Test")
           }
           assertThat(kind).isEqualTo(LicenceKind.CRD)
+          assertThat(prisonCode).isEqualTo("MDI")
+          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
         }
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
@@ -531,6 +539,8 @@ class ApproverCaseloadServiceTest {
             assertThat(name).isEqualTo("Test2 Test2")
           }
           assertThat(kind).isEqualTo(LicenceKind.CRD)
+          assertThat(prisonCode).isEqualTo("ABC")
+          assertThat(prisonDescription).isEqualTo("ABC (HMP)")
         }
 
         with(caseload.last()) {
@@ -548,6 +558,8 @@ class ApproverCaseloadServiceTest {
             assertThat(name).isEqualTo("Test Test")
           }
           assertThat(kind).isEqualTo(LicenceKind.CRD)
+          assertThat(prisonCode).isEqualTo("MDI")
+          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
         }
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
