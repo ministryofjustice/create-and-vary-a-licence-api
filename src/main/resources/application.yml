@@ -154,6 +154,13 @@ dpr:
     user:
       role: ROLE_NOMIS_BATCHLOAD
 
+address:
+  search:
+    max-total: 200
+  os-places:
+    search:
+      page-size: 100
+
 feature:
   toggle:
     electronicMonitoringResponseHandling: false

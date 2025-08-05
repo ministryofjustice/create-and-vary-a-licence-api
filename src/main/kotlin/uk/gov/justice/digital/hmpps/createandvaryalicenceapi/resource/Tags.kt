@@ -7,6 +7,7 @@ class Tags {
     const val ANCILLARY = "Ancillary"
     const val APPOINTMENTS = "Appointments"
     const val COM = "Community Offender Manager"
+    const val STAFF = "Staff"
     const val EVENTS = "Events"
     const val EXCLUSION_ZONES = "Exclusion zones"
     const val HDC = "HDC"

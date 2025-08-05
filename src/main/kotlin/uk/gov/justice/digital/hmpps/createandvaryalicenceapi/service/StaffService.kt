@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
@@ -8,8 +10,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import java.time.LocalDateTime
 
@@ -132,6 +136,29 @@ class StaffService(
       comReviewCount,
       teamsReviewCount,
     )
+  }
+
+  fun getPreferredAddress(): List<AddressResponse> {
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses(username)
+      ?: error("Staff with username $username not found")
+
+    log.info("Retrieving preferred addresses for staff ${staff.fullName}")
+    return staff.savedAppointmentAddresses.map { address -> AddressMapper.toResponse(address) }
+  }
+
+  fun deleteAddressByReference(reference: String) {
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses(username)
+      ?: error("Staff with username $username not found")
+
+    log.info("Deleting address with reference $reference for staff ${staff.fullName}")
+
+    val addressToDelete = staff.savedAppointmentAddresses.firstOrNull { it.reference == reference }
+      ?: throw EntityNotFoundException("Address with reference $reference not found for staff ${staff.fullName}")
+
+    staff.savedAppointmentAddresses.remove(addressToDelete)
+    staffRepository.saveAndFlush(staff)
   }
 
   private fun PrisonUser.updatedWith(

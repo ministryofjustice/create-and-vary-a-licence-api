@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
 import java.util.concurrent.CountDownLatch
@@ -219,6 +220,56 @@ class StaffIntegrationTest : IntegrationTestBase() {
     assertThat(resultObject.myCount).isEqualTo(2)
     assertThat(teamCount.teamCode).isEqualTo("A01B02")
     assertThat(teamCount.count).isEqualTo(2)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-staff-address.sql",
+  )
+  fun `Get preferred addresses for staff`() {
+    val resultList = webTestClient.get()
+      .uri("/staff/address/preferred")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"), user = "Staff1"))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(AddressResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(resultList).isNotNull
+    assertThat(resultList).hasSize(2)
+    assertThat(resultList!!.first().postcode).isEqualTo("TE5 7AA")
+    assertThat(resultList!![1].postcode).isEqualTo("TE5 7AB")
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-staff-address.sql")
+  fun `Delete address by reference for staff`() {
+    val referenceToDelete = "REF-123456"
+
+    webTestClient.delete()
+      .uri("/staff/address/reference/$referenceToDelete")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"), user = "Staff1"))
+      .exchange()
+      .expectStatus().isNoContent
+
+    val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses("Staff1")
+    assertThat(staff).isNotNull
+    assertThat(staff!!.savedAppointmentAddresses.any { it.reference == referenceToDelete }).isFalse()
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-staff-address.sql")
+  fun `Return error when address reference not found`() {
+    val invalidReference = "NON_EXISTENT_REF"
+
+    webTestClient.delete()
+      .uri("/staff/address/reference/$invalidReference")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"), user = "Staff2"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
   }
 
   private fun doUpdate(uri: String, body: Any) {
