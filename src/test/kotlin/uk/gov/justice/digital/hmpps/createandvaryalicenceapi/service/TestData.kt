@@ -288,6 +288,61 @@ object TestData {
     )
   }
 
+  fun createHardStopRecallLicence() = HardStopLicence(
+    id = 1,
+    typeCode = AP,
+    version = "2.1",
+    statusCode = LicenceStatus.IN_PROGRESS,
+    nomsId = "A1234AA",
+    bookingNo = "123456",
+    bookingId = 54321,
+    crn = "X12345",
+    pnc = "2019/123445",
+    cro = "12345",
+    prisonCode = "MDI",
+    prisonDescription = "Moorland (HMP)",
+    forename = "John",
+    surname = "Smith",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    actualReleaseDate = LocalDate.of(2021, 10, 22),
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceEndDate = LocalDate.of(2021, 10, 22),
+    licenceStartDate = LocalDate.of(2021, 10, 22),
+    licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    probationAreaCode = "N01",
+    probationAreaDescription = "Wales",
+    probationPduCode = "N01A",
+    probationPduDescription = "Cardiff",
+    probationLauCode = "N01A2",
+    probationLauDescription = "Cardiff South",
+    probationTeamCode = "NA01A2-A",
+    probationTeamDescription = "Cardiff South Team A",
+    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+    standardConditions = emptyList(),
+    responsibleCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "tcom",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    ),
+    createdBy = PrisonUser(
+      username = "tca",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    ),
+    postRecallReleaseDate = LocalDate.now(),
+  ).let {
+    it.copy(
+      standardConditions = someEntityStandardConditions(it),
+      additionalConditions = listOf(hardStopAdditionalCondition(it)),
+    )
+  }
+
   fun createVariationLicence() = VariationLicence(
     id = 1,
     typeCode = AP,

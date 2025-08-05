@@ -71,6 +71,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopRecallLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
@@ -1297,6 +1298,45 @@ class LicenceServiceTest {
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
     assertThat(licence.submittedBy).isNotNull
     assertThat(licence.submittedBy!!.username).isEqualTo("tcom")
+    assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
+    assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
+    verify(eligibilityService, never()).isEligibleForCvl(any())
+  }
+
+  @Test
+  fun `submit a HARD_STOP recall licence saves new fields to the licence and does not check eligibility`() {
+    // Given
+    val authentication = mock<Authentication>()
+    val securityContext = mock<SecurityContext>()
+
+    whenever(authentication.name).thenReturn("tca")
+    whenever(securityContext.authentication).thenReturn(authentication)
+    SecurityContextHolder.setContext(securityContext)
+
+    val caseAdmin = PrisonUser(
+      username = "tca",
+      email = "testemail@prison.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHardStopRecallLicence()))
+    whenever(staffRepository.findByUsernameIgnoreCase("tca")).thenReturn(caseAdmin)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+
+    // When
+    service.submitLicence(1L, emptyList())
+
+    // Then
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    val licence = licenceCaptor.value as HardStopLicence
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(licence.kind).isEqualTo(LicenceKind.HARD_STOP)
+    assertThat(licence.submittedBy).isNotNull
+    assertThat(licence.submittedBy!!.username).isEqualTo("tca")
     assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     verify(eligibilityService, never()).isEligibleForCvl(any())
