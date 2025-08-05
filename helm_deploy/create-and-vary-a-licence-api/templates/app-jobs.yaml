@@ -1,12 +1,12 @@
 {{ $host := (index .Values "generic-service" "ingress" "host") }}
 {{- range .Values.jobs }}
-  {{- if .enabled -}}
+  {{ if .enabled -}}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ .name }}
 spec:
-  schedule: {{ .cron }}
+  schedule: "{{ .cron }}"
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 5
   startingDeadlineSeconds: 43200
