@@ -669,7 +669,7 @@ object TestData {
     probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
     kind = LicenceKind.CRD,
     prisonCode = "MDI",
-    prisonDescription = "Moorland (HMP)"
+    prisonDescription = "Moorland (HMP)",
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
