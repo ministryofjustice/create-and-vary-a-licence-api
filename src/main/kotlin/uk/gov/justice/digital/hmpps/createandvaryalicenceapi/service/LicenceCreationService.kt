@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
@@ -156,7 +157,7 @@ class LicenceCreationService(
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
-    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.HARD_STOP)
+    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
       ?: createCom(currentResponsibleOfficerDetails.id)
@@ -248,17 +249,10 @@ class LicenceCreationService(
 
   fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner): LicenceKind {
     val today = LocalDate.now()
-    val prrd = nomisRecord.postRecallReleaseDate
 
-    var kind: LicenceKind
+    var kind = determineReleaseDateKind(nomisRecord.postRecallReleaseDate, nomisRecord.conditionalReleaseDate)
 
-    if (prrd?.isAfter(today) == true && (nomisRecord.conditionalReleaseDate == null || prrd.isAfter(nomisRecord.conditionalReleaseDate))) {
-      kind = LicenceKind.PRRD
-    } else {
-      kind = LicenceKind.CRD
-    }
-
-    val hardstopDate = releaseDateService.getHardStopDate(nomisRecord.toSentenceDateHolder(null, kind))
+    val hardstopDate = releaseDateService.getHardStopDate(nomisRecord.toSentenceDateHolder(null))
     if (hardstopDate != null && hardstopDate <= today) {
       kind = LicenceKind.HARD_STOP
     }
