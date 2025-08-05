@@ -28,7 +28,7 @@ class CaseloadServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val licenceCreationService = mock<LicenceCreationService>()
   private val service =
-    CaseloadService(prisonerSearchApiClient, releaseDateService, licenceCreationService)
+    CaseloadService(prisonerSearchApiClient, releaseDateService)
 
   @BeforeEach
   fun reset() {
@@ -48,12 +48,12 @@ class CaseloadServiceTest {
     whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
     whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
-    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
       mapOf(
         "A1234AA" to LocalDate.of(2021, 10, 22),
       ),
     )
-    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
       mapOf(
         "A1234AA" to LocalDate.of(2021, 10, 22),
       ),

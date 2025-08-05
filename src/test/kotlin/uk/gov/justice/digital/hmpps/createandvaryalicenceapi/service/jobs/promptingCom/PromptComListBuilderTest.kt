@@ -43,7 +43,6 @@ class PromptComListBuilderTest {
     releaseDateService,
     hdcService,
     deliusApiClient,
-    licenceCreationService,
   )
 
   @BeforeEach
