@@ -75,8 +75,8 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     Content(
       licences = sarLicences,
       auditEvents = auditEvents.map { toSarAuditEvent(it) }.sortedBy { it.eventTime },
-      attachments = attachmentDetail,
     ),
+    attachments = attachmentDetail
   )
 
   private fun transformToSarAdditionalConditions(licence: Licence, entity: AdditionalCondition) = SarAdditionalCondition(

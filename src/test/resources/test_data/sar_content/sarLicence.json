@@ -72,16 +72,16 @@
         "summary": "Summary3",
         "detail": "Detail3"
       }
-    ],
-    "attachments": [
-      {
-        "attachmentNumber": 1,
-        "name": "a file",
-        "contentType": "application/pdf",
-        "url": "http://localhost:8080/licence/G4169UO",
-        "filename": "G4169UO.pdf",
-        "filesize": 12344
-      }
     ]
-  }
+  },
+  "attachments": [
+    {
+      "attachmentNumber": 1,
+      "name": "a file",
+      "contentType": "application/pdf",
+      "url": "http://localhost:8080/licence/G4169UO",
+      "filename": "G4169UO.pdf",
+      "filesize": 12344
+    }
+  ]
 }

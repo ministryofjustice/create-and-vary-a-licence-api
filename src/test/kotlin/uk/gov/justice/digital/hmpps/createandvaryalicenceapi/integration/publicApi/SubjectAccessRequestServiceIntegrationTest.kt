@@ -115,7 +115,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
     assertThat(summary.fileSize).isEqualTo(12345)
     assertThat(summary.description).isEqualTo("Description")
 
-    assertThat(result.content.attachments).isEqualTo(
+    assertThat(result.attachments).isEqualTo(
       listOf(
         SarAttachmentDetail(
           attachmentNumber = 0,

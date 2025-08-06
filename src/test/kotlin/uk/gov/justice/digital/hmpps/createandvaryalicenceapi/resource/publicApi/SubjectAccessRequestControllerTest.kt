@@ -71,8 +71,8 @@ class SubjectAccessRequestControllerTest {
         Content(
           licences,
           aListOfAuditEvents,
-          aListOfAttachments,
         ),
+        aListOfAttachments,
       ),
     )
 
