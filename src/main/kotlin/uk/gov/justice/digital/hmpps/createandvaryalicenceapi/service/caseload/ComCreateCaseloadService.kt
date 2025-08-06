@@ -158,7 +158,7 @@ class ComCreateCaseloadService(
   private fun findHardStopLicenceToDisplay(licences: List<CaseLoadLicenceSummary>): CaseLoadLicenceSummary {
     val hardStopLicence = licences.find { it.kind == LicenceKind.HARD_STOP }!!
 
-    if (hardStopLicence.licenceStatus == IN_PROGRESS) {
+    if (hardStopLicence.licenceId == null || hardStopLicence.licenceStatus == IN_PROGRESS) {
       return hardStopLicence.copy(
         licenceStatus = TIMED_OUT,
         licenceCreationType = LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
