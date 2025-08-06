@@ -50,7 +50,7 @@ data class AddAddressRequest(
   @field:Schema(example = "MANUAL", description = "Source of the address", required = true)
   val source: AddressSource,
 
-  @Schema(
+  @field:Schema(
     description = "Flag to indicate if the address should be added to the user's saved addresses",
     example = "true",
     required = false,

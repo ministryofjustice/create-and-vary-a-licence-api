@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAttachmentDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
 
@@ -85,6 +86,47 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
           "Detail1",
         ),
       )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-2.sql",
+    "classpath:test_data/add-upload-to-licence-id-2.sql",
+  )
+  fun `Get sarContent with exclusion zone`() {
+    val resultList = webTestClient.get()
+      .uri("/subject-access-request?prn=A1234AA")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_SAR_DATA_ACCESS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(SarContent::class.java)
+      .returnResult().responseBody
+
+    assertThat(resultList?.size).isEqualTo(1)
+
+    val result = resultList?.first()
+
+    val summary = result!!.content.licences[0].additionalLicenceConditions[0].uploadSummary[0]
+    assertThat(summary.attachmentNumber).isEqualTo(0)
+    assertThat(summary.filename).isEqualTo("Test-file.pdf")
+    assertThat(summary.imageType).isEqualTo("image/png")
+    assertThat(summary.fileSize).isEqualTo(12345)
+    assertThat(summary.description).isEqualTo("Description")
+
+    assertThat(result.content.attachments).isEqualTo(
+      listOf(
+        SarAttachmentDetail(
+          attachmentNumber = 0,
+          name = "Description",
+          contentType = "image/png",
+          url = "http://localhost:8089/public/licences/2/conditions/1/image-upload",
+          filename = "Test-file.pdf",
+          filesize = 12345,
+        ),
+      ),
+    )
   }
 
   @Test

@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.D
 import java.util.UUID
 import javax.imageio.ImageIO
 
+private const val IMAGE_TYPE = "image/png"
+
 @Service
 class ExclusionZoneService(
   private val licenceRepository: LicenceRepository,
@@ -70,6 +72,7 @@ class ExclusionZoneService(
       additionalCondition = additionalCondition,
       filename = originalFile.originalFilename,
       fileType = originalFile.contentType,
+      imageType = IMAGE_TYPE,
       fileSize = originalFile.size.toInt(),
       description = pdfExtract.description,
       thumbnailImage = pdfExtract.thumbnailImage,
@@ -139,7 +142,9 @@ class ExclusionZoneService(
     licence.additionalConditions
       .flatMap { it.additionalConditionUploadSummary }
       .filterNot { it.thumbnailImageDsUuid == null }
-      .forEach { it.preloadedThumbnailImage = documentService.downloadDocument(UUID.fromString(it.thumbnailImageDsUuid)) }
+      .forEach {
+        it.preloadedThumbnailImage = documentService.downloadDocument(UUID.fromString(it.thumbnailImageDsUuid))
+      }
   }
 
   companion object {

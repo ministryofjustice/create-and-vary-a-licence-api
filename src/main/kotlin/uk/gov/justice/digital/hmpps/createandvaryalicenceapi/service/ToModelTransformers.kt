@@ -717,6 +717,7 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
   fileType = entity.fileType,
   fileSize = entity.fileSize,
   uploadedTime = entity.uploadedTime,
+  imageType = entity.imageType,
   description = entity.description,
   thumbnailImage = (entity.preloadedThumbnailImage ?: entity.thumbnailImage)?.toBase64(),
   uploadDetailId = entity.uploadDetailId,
