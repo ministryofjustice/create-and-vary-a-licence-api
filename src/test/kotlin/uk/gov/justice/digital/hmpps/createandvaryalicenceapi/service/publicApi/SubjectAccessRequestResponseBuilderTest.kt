@@ -25,7 +25,7 @@ class SubjectAccessRequestResponseBuilderTest {
 
     assertThat(result.content.licences).hasSize(1)
     assertThat(result.content.auditEvents).isEmpty()
-    assertThat(result.content.attachments).isEmpty()
+    assertThat(result.attachments).isEmpty()
 
     with(result.content.licences.first()) {
       assertThat(id).isEqualTo(crdLicence.id)
@@ -123,9 +123,9 @@ class SubjectAccessRequestResponseBuilderTest {
       .build(emptyList())
 
     assertThat(result.content.licences).hasSize(1)
-    assertThat(result.content.attachments).hasSize(3)
+    assertThat(result.attachments).hasSize(3)
 
-    with(result.content.attachments[0]) {
+    with(result.attachments[0]) {
       assertThat(attachmentNumber).isEqualTo(0)
       assertThat(name).isEqualTo("Document 1")
       assertThat(contentType).isEqualTo("image/png")
@@ -140,7 +140,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(summary.description).isEqualTo(name)
     }
 
-    with(result.content.attachments[1]) {
+    with(result.attachments[1]) {
       assertThat(attachmentNumber).isEqualTo(1)
       assertThat(name).isEqualTo("Document 2")
       assertThat(contentType).isEqualTo("image/jpeg")
@@ -154,7 +154,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
     }
-    with(result.content.attachments[2]) {
+    with(result.attachments[2]) {
       assertThat(attachmentNumber).isEqualTo(2)
       assertThat(name).isEqualTo("Document 3")
       assertThat(contentType).isEqualTo("image/png")

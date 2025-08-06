@@ -9,13 +9,13 @@ data class Content(
 
   @field:Schema(description = "The list of audit events")
   val auditEvents: List<SarAuditEvent>,
-
-  @field:Schema(description = "The list of referenced attachments")
-  val attachments: List<SarAttachmentDetail>,
 )
 
 @Schema(description = "The Sar Content holds the prisoner details")
 data class SarContent(
   @field:Schema(description = "SAR content")
   val content: Content,
+
+  @field:Schema(description = "The list of referenced attachments")
+  val attachments: List<SarAttachmentDetail>,
 )
