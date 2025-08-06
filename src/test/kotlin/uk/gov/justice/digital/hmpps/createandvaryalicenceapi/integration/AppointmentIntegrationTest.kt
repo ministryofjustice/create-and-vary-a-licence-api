@@ -43,7 +43,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as L
   properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"],
 )
 class AppointmentIntegrationTest(
-  @Autowired private val licenceRepository: LicenceRepository,
+  @param:Autowired private val licenceRepository: LicenceRepository,
 ) : IntegrationTestBase() {
 
   @Autowired
@@ -230,7 +230,8 @@ class AppointmentIntegrationTest(
     val licence = getLicence()
     val savedAddress = getAddress(licence)
     assertThat(savedAddress.id).isEqualTo(1)
-    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("isPreferredAddress").isEqualTo(savedAddress)
+    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("isPreferredAddress")
+      .isEqualTo(savedAddress)
 
     assertThat(savedAddress.reference).isNotNull()
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
@@ -262,7 +263,8 @@ class AppointmentIntegrationTest(
     val licence = getLicence()
     val savedAddress = getAddress(licence)
     assertThat(savedAddress.id).isEqualTo(2)
-    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("isPreferredAddress").isEqualTo(savedAddress)
+    assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("isPreferredAddress")
+      .isEqualTo(savedAddress)
     assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
@@ -282,7 +284,8 @@ class AppointmentIntegrationTest(
   fun `When updating appointment address using look up Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val addAddressRequest = buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.OS_PLACES, isPreferredAddress = true)
+    val addAddressRequest =
+      buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.OS_PLACES, isPreferredAddress = true)
 
     // When
     val result = putRequest(uri, addAddressRequest)
