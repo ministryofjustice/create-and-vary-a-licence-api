@@ -184,7 +184,7 @@ class ConditionControllerTest {
     )
 
     val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(
-      data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
+      data = listOf(AdditionalConditionData(id = 1, field = "field1", value = "value1", sequence = 0)),
     )
   }
 }

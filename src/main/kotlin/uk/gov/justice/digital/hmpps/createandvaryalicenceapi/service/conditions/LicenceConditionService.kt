@@ -109,10 +109,13 @@ class LicenceConditionService(
     }
 
     licenceRepository.saveAndFlush(licenceEntity)
-
     // return the newly added condition.
-    val newCondition =
-      licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
+    val newCondition = licenceEntity.additionalConditions
+      .asSequence()
+      .filter { it.conditionCode == request.conditionCode }
+      .let { filtered ->
+        filtered.maxBy { it.id ?: -1 }
+      }
 
     auditService.recordAuditEventAddAdditionalConditionOfSameType(licenceEntity, newCondition, staffMember)
 
@@ -139,7 +142,7 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
     val conditionIds = licenceEntity.additionalConditions.filter {
       request.conditionCodes.contains(it.conditionCode)
-    }.map { it.id }
+    }.map { it.id!! }
     deleteConditions(licenceEntity, conditionIds, emptyList(), emptyList())
   }
 
@@ -266,7 +269,7 @@ class LicenceConditionService(
     // Replace the bespoke conditions
     request.conditions.forEachIndexed { index, condition ->
       bespokeConditionRepository.saveAndFlush(
-        BespokeCondition(licence = licenceEntity, conditionSequence = index, conditionText = condition),
+        BespokeCondition(id = null, licence = licenceEntity, conditionSequence = index, conditionText = condition),
       )
     }
 

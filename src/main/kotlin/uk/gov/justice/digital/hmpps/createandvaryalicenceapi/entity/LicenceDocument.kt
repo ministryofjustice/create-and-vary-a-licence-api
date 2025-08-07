@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 import java.time.LocalDateTime
 
 @Entity
@@ -13,8 +14,8 @@ import java.time.LocalDateTime
 data class LicenceDocument(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:NotNull
-  val id: Long = -1,
+  @param:Positive
+  val id: Long? = null,
 
   @param:NotNull
   val licenceId: Long = -1,

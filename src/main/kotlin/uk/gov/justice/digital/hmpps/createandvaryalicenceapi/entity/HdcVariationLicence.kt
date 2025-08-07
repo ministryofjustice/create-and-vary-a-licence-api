@@ -22,7 +22,7 @@ import java.time.LocalDateTime
 @Entity
 @DiscriminatorValue(value = "HDC_VARIATION")
 class HdcVariationLicence(
-  id: Long = -1L,
+  id: Long? = null,
   typeCode: LicenceType,
   version: String? = null,
   statusCode: LicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
@@ -161,7 +161,7 @@ class HdcVariationLicence(
   HdcCase {
 
   fun copy(
-    id: Long = this.id,
+    id: Long? = this.id,
     typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,

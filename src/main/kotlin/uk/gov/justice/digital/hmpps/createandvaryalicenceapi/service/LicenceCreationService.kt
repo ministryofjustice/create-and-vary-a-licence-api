@@ -310,8 +310,8 @@ class LicenceCreationService(
         staffIdentifier = staffId,
         username = com.username?.uppercase() ?: missing(staffId, "username"),
         email = com.email,
-        firstName = com.name?.forename,
-        lastName = com.name?.surname,
+        firstName = com.name.forename,
+        lastName = com.name.surname,
       ),
     )
   }

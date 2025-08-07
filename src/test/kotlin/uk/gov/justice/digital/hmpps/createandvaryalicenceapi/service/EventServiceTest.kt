@@ -40,13 +40,9 @@ class EventServiceTest {
 
   @Test
   fun `find events matching criteria - no parameters matches all`() {
-    val eventQueryObject = EventQueryObject()
-    whenever(
-      licenceEventRepository.findAll(any<Specification<LicenceEvent>>(), any<Sort>()),
-    )
-      .thenReturn(
-        listOf(aLicenceEventEntity),
-      )
+    val eventQueryObject = EventQueryObject(licenceId = 1)
+    whenever(licenceEventRepository.findAll(any<Specification<LicenceEvent>>(), any<Sort>()))
+      .thenReturn(listOf(aLicenceEventEntity))
 
     val events = service.findEventsMatchingCriteria(eventQueryObject)
 
@@ -81,6 +77,7 @@ class EventServiceTest {
 
   private companion object {
     val aLicenceEventEntity = LicenceEvent(
+      id = 1,
       licenceId = 1,
       eventType = LicenceEventType.SUBMITTED,
       username = "tcom",
