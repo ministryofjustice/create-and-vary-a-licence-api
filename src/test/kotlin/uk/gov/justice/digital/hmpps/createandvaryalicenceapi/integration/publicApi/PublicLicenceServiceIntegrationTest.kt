@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.public
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -124,16 +126,17 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
 
   @Nested
   inner class `Get exclusion zone image by condition ID` {
-    @Test
     @Sql(
       "classpath:test_data/seed-licence-id-2.sql",
       "classpath:test_data/add-upload-to-licence-id-2.sql",
     )
-    fun `Get exclusion zone image by condition ID`() {
+    @ParameterizedTest
+    @CsvSource("ROLE_VIEW_LICENCES", "ROLE_SAR_DATA_ACCESS")
+    fun `Get exclusion zone image by condition ID`(role: String) {
       val result = webTestClient.get()
         .uri("/public/licences/2/conditions/1/image-upload")
         .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+        .headers(setAuthorisation(roles = listOf(role)))
         .exchange()
         .expectStatus().isOk
 

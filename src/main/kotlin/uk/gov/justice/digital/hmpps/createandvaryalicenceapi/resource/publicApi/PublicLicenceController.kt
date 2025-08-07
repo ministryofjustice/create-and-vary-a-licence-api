@@ -160,8 +160,9 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     summary = "Get an associated image upload for a specific licence and condition",
     description = "Returns an associated image upload for a specified licence and condition. " +
       "Requires ROLE_VIEW_LICENCES.",
-    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES"), SecurityRequirement(name = "SAR_DATA_ACCESS")],
   )
+  @PreAuthorize("hasAnyRole('VIEW_LICENCES', 'SAR_DATA_ACCESS')")
   @ApiResponses(
     value = [
       ApiResponse(
