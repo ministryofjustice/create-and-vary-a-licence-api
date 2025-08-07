@@ -1962,12 +1962,11 @@ class LicenceServiceTest {
   fun `creating a variation`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
-        -1,
-        1,
-        "user",
-        null,
-        null,
-        null,
+        staffIdentifier = 1,
+        username = "user",
+        email = null,
+        firstName = null,
+        lastName = null,
       ),
     )
     whenever(licencePolicyService.currentPolicy()).thenReturn(
@@ -2003,12 +2002,11 @@ class LicenceServiceTest {
   fun `creating an HDC variation`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
-        -1,
-        1,
-        "user",
-        null,
-        null,
-        null,
+        staffIdentifier = 1,
+        username = "user",
+        email = null,
+        firstName = null,
+        lastName = null,
       ),
     )
     whenever(licencePolicyService.currentPolicy()).thenReturn(
