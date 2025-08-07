@@ -7,6 +7,15 @@ import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
 import jakarta.validation.constraints.Positive
 
+/**
+ * Base mapped superclass for entities with a generated primary key.
+ *
+ * The nullable `idInternal` is assigned by the database upon persistence,
+ * using the IDENTITY generation strategy.
+ * The public `id` property exposes the ID or returns -1 if not yet assigned.
+ *
+ * Equality and hashCode implementations are based on `idInternal`.
+ */
 @MappedSuperclass
 abstract class AbstractIdEntity(
   @Id
@@ -23,7 +32,7 @@ abstract class AbstractIdEntity(
     if (this === other) return true
     if (other == null || this::class != other::class) return false
     other as AbstractIdEntity
-    return id != null && id == other.id
+    return idInternal != null && idInternal == other.idInternal
   }
 
   override fun hashCode(): Int = id.hashCode()
