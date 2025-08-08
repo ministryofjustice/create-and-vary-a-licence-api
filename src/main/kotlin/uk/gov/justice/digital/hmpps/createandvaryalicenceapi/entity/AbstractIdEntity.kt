@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType.IDENTITY
 import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
 import jakarta.validation.constraints.Positive
+import org.hibernate.Hibernate
 
 /**
  * Base mapped superclass for entities with a generated primary key.
@@ -30,12 +31,17 @@ abstract class AbstractIdEntity(
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other == null || this::class != other::class) return false
+    if (other == null) return false
+    if (Hibernate.getClass(this) != Hibernate.getClass(other)) return false
     other as AbstractIdEntity
-    return idInternal != null && idInternal == other.idInternal
+    return this.idInternal != null && this.idInternal == other.idInternal
   }
 
-  override fun hashCode(): Int = id.hashCode()
+  override fun hashCode(): Int {
+    return idInternal?.hashCode() ?: 0
+  }
 
-  override fun toString(): String = this::class.simpleName + "(id=$id)"
+  override fun toString(): String {
+    return "${Hibernate.getClass(this).simpleName}(id=$idInternal)"
+  }
 }
