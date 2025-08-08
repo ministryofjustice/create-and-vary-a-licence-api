@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType.IDENTITY
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.hibernate.Hibernate
 import java.time.LocalDateTime
 
 enum class AddressSource {
@@ -17,7 +18,7 @@ enum class AddressSource {
 
 @Entity
 @Table(name = "address")
-data class Address(
+class Address(
   @Id
   @GeneratedValue(strategy = IDENTITY)
   val id: Long? = null,
@@ -27,30 +28,30 @@ data class Address(
 
   // Unique Property Reference Number
   @Column(nullable = true, unique = false)
-  val uprn: String? = null,
+  var uprn: String? = null,
 
   @Column(name = "first_line", nullable = false)
-  val firstLine: String,
+  var firstLine: String,
 
   @Column(name = "second_line")
-  val secondLine: String? = null,
+  var secondLine: String? = null,
 
   @Column(name = "town_or_city", nullable = false)
-  val townOrCity: String,
+  var townOrCity: String,
 
   @Column
-  val county: String? = null,
+  var county: String? = null,
 
   @Column(nullable = false)
-  val postcode: String,
+  var postcode: String,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "source", nullable = false)
-  val source: AddressSource,
+  var source: AddressSource,
 
   val createdTimestamp: LocalDateTime = LocalDateTime.now(),
 
-  val lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
+  var lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
 ) {
   override fun toString(): String = listOf(
     uprn.orEmpty(),
@@ -65,7 +66,8 @@ data class Address(
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other == null || this::class != other::class) return false
+    if (other == null) return false
+    if (Hibernate.getClass(this) != Hibernate.getClass(other)) return false
     other as Address
     return id != null && id == other.id
   }

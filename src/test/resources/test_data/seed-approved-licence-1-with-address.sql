@@ -59,7 +59,7 @@ values ('CRD',
         1,
         1,
         '1.0',
-		'123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND');
+		'123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');

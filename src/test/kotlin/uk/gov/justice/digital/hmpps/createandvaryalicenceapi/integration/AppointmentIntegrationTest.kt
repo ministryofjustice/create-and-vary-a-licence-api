@@ -216,7 +216,7 @@ class AppointmentIntegrationTest(
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `When adding appointment address manually entered Then everything saves as expected`() {
+  fun `When adding appointment not preferred address manually entered Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
     val addAddressRequest = buildAddAddressRequest(source = AddressSource.MANUAL)
@@ -228,7 +228,7 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
 
     val licence = getLicence()
-    val savedAddress = getAddress(licence)
+    val savedAddress = getAndAssertAddress(licence)
     assertThat(savedAddress.id).isEqualTo(1)
     assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("isPreferredAddress")
       .isEqualTo(savedAddress)
@@ -240,9 +240,97 @@ class AppointmentIntegrationTest(
 
     val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
     assertThat(auditEvent.summary).isEqualTo("Updated initial appointment details for Person One")
-    assertThat(auditEvent.changes!!["previousValue"] as String).isEqualTo("")
-    assertThat(auditEvent.changes!!["newValue"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
+    assertThat(auditEvent.changes!!["previousValue"]).isNull()
+    assertThat(auditEvent.changes!!["value"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
     assertThat(auditEvent.changes).doesNotContainKey("savedToStaffMember")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `When adding a preferred appointment address Then everything saves as expected`() {
+    // Given
+    val uri = "/licence/id/1/appointment/address"
+    val addAddressRequest = buildAddAddressRequest(isPreferredAddress = true)
+
+    // When
+    val result = putRequest(uri, addAddressRequest)
+
+    // Then
+    result.expectStatus().isOk
+    val licence = getLicence()
+    val savedAddress = getAndAssertAddress(licence)
+    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
+    assertThat(staff?.savedAppointmentAddresses).contains(savedAddress)
+    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    assertThat(auditEvent.changes).containsEntry("savedToStaffMember", "test-client")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `When adding an appointment address that is not preferred Then everything saves as expected`() {
+    // Given
+    val uri = "/licence/id/1/appointment/address"
+    val addAddressRequest = buildAddAddressRequest(isPreferredAddress = false)
+
+    // When
+    val result = putRequest(uri, addAddressRequest)
+
+    // Then
+    result.expectStatus().isOk
+    val licence = getLicence()
+    val savedAddress = getAndAssertAddress(licence)
+    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
+    assertThat(staff?.savedAppointmentAddresses).doesNotContain(savedAddress)
+    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    assertThat(auditEvent.changes).doesNotContainEntry("savedToStaffMember", "test-client")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1-with-address.sql",
+  )
+  fun `When updating a preferred appointment address Then everything saves as expected`() {
+    // Given
+    val uri = "/licence/id/1/appointment/address"
+    val addAddressRequest = buildAddAddressRequest(isPreferredAddress = true)
+
+    // When
+    val result = putRequest(uri, addAddressRequest)
+
+    // Then
+    result.expectStatus().isOk
+    val licence = getLicence()
+    val savedAddress = getAndAssertAddress(licence)
+    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
+    assertThat(staff?.savedAppointmentAddresses).contains(savedAddress)
+    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    assertThat(auditEvent.changes).containsEntry("savedToStaffMember", "test-client")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1-with-address.sql",
+  )
+  fun `When updating an appointment address that is not preferred Then everything saves as expected`() {
+    // Given
+    val uri = "/licence/id/1/appointment/address"
+    val addAddressRequest = buildAddAddressRequest(isPreferredAddress = false)
+
+    // When
+    val result = putRequest(uri, addAddressRequest)
+
+    // Then
+    result.expectStatus().isOk
+    val licence = getLicence()
+    val savedAddress = getAndAssertAddress(licence)
+    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
+    assertThat(staff?.savedAppointmentAddresses).doesNotContain(savedAddress)
+    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    assertThat(auditEvent.changes).doesNotContainEntry("savedToStaffMember", "test-client")
   }
 
   @Test
@@ -252,7 +340,7 @@ class AppointmentIntegrationTest(
   fun `When updating appointment address manually entered Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val addAddressRequest = buildAddAddressRequest(source = AddressSource.MANUAL)
+    val addAddressRequest = buildAddAddressRequest(source = AddressSource.MANUAL, isPreferredAddress = false)
 
     // When
     val result = putRequest(uri, addAddressRequest)
@@ -261,19 +349,19 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
 
     val licence = getLicence()
-    val savedAddress = getAddress(licence)
-    assertThat(savedAddress.id).isEqualTo(2)
+    val savedAddress = getAndAssertAddress(licence)
+    assertThat(savedAddress.id).isEqualTo(1)
     assertThat(addAddressRequest).usingRecursiveComparison().ignoringFields("isPreferredAddress")
       .isEqualTo(savedAddress)
-    assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
+    assertThat(savedAddress.reference).isEqualTo("550e8400-e29b-41d4-a716-446655440000")
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(savedAddress.lastUpdatedTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
 
     val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(licence.id)).last()
     assertThat(auditEvent.summary).isEqualTo("Updated initial appointment details for Person One")
-    assertThat(auditEvent.changes!!["previousValue"] as String).isEqualTo(",REF-123456,123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,MANUAL")
-    assertThat(auditEvent.changes!!["newValue"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
+    assertThat(auditEvent.changes!!["previousValue"] as String).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+    assertThat(auditEvent.changes!!["value"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
     assertThat(auditEvent.changes).doesNotContainKey("savedToStaffMember")
   }
 
@@ -293,11 +381,11 @@ class AppointmentIntegrationTest(
     // Then
     result.expectStatus().isOk
 
-    val savedAddress = getAddress()
-    assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
+    val savedAddress = getAndAssertAddress()
+    assertThat(savedAddress.reference).isEqualTo("550e8400-e29b-41d4-a716-446655440000")
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
-    assertThat(savedAddress.id).isEqualTo(2)
+    assertThat(savedAddress.id).isEqualTo(1)
 
     val staff = staffRepository.findByUsernameIgnoreCase("test-client")
     assertThat(staff?.savedAppointmentAddresses).anySatisfy {
@@ -323,11 +411,11 @@ class AppointmentIntegrationTest(
     // Then
     result.expectStatus().isOk
 
-    val savedAddress = getAddress()
-    assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
+    val savedAddress = getAndAssertAddress()
+    assertThat(savedAddress.reference).isEqualTo("550e8400-e29b-41d4-a716-446655440000")
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
-    assertThat(savedAddress.id).isEqualTo(2)
+    assertThat(savedAddress.id).isEqualTo(1)
 
     val staff = staffRepository.findByUsernameIgnoreCase("test-client")
     assertThat(staff?.savedAppointmentAddresses).isEmpty()
@@ -391,7 +479,7 @@ class AppointmentIntegrationTest(
 
     // Then
     result.expectStatus().isOk
-    val savedAddress = getAddress()
+    val savedAddress = getAndAssertAddress()
     // reference self populates if null, test above tests for this
     assertThat(savedAddress.secondLine).isNull()
     assertThat(savedAddress.county).isNull()
@@ -514,7 +602,7 @@ class AppointmentIntegrationTest(
     return licence!!
   }
 
-  private fun getAddress(licence: LicenceEntity = getLicence()): Address {
+  private fun getAndAssertAddress(licence: LicenceEntity = getLicence()): Address {
     assertThat(licence.licenceAppointmentAddress).isNotNull
     assertThat(licence.appointmentAddress).isNotNull
     val licenceAppointmentAddress = licence.licenceAppointmentAddress!!

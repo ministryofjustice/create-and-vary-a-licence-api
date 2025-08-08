@@ -28,7 +28,8 @@ insert into licence (kind,
                      responsible_com_id,
                      created_by_com_id,
                      licence_version,
-					 post_recall_release_date)
+					 post_recall_release_date,
+					 appointment_address)
 values (
         'PRRD',
         'AP',
@@ -60,7 +61,8 @@ values (
         1,
         1,
         '1.0',
-		'2025-02-25');
+		'2025-02-25',
+		'123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
@@ -75,7 +77,7 @@ insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_prog
 VALUES (1, true, 'Test Programme');
 
 INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, source)
-VALUES ('REF-123456', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');
+VALUES ('550e8400-e29b-41d4-a716-446655440000', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');
 
 INSERT INTO licence_appointment_address (licence_id, address_id)
 SELECT (SELECT MAX(id) FROM licence), (SELECT MAX(id) FROM address);

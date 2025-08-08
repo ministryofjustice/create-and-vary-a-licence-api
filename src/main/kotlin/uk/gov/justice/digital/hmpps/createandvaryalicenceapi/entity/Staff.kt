@@ -54,7 +54,6 @@ abstract class Staff(
   @OneToMany(
     cascade = [CascadeType.ALL],
     fetch = FetchType.LAZY,
-    orphanRemoval = true,
   )
   @JoinTable(
     name = "STAFF_SAVED_APPOINTMENT_ADDRESS",
