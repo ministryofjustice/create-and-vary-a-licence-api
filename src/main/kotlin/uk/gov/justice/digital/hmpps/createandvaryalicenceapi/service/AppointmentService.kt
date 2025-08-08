@@ -158,7 +158,7 @@ class AppointmentService(
     }
 
     licence.dateLastUpdated = LocalDateTime.now()
-    licence.updatedByUsername = staff?.username ?: SYSTEM_USER
+    licence.updatedByUsername = getUserName(staff)
     licence.updatedBy = staff
 
     auditService.recordAuditEventInitialAppointmentUpdate(
@@ -184,7 +184,7 @@ class AppointmentService(
     return buildAuditDetails(
       field = "appointmentAddress",
       value = addressString,
-      staffUsername = staff?.username ?: SYSTEM_USER,
+      staffUsername = getUserName(staff),
       isPreferred = request.isPreferredAddress,
     )
   }
@@ -207,10 +207,13 @@ class AppointmentService(
       field = "updateAppointmentAddress",
       previousValue = previousAddress,
       value = newAddressString,
-      staffUsername = staff?.username ?: SYSTEM_USER,
+      staffUsername = getUserName(staff),
       isPreferred = request.isPreferredAddress,
     )
   }
+
+  private fun getUserName(staff: Staff?) =
+    staff?.username ?: SYSTEM_USER
 
   private fun buildAuditDetails(
     field: String,
