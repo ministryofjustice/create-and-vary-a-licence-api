@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 data class ElectronicMonitoringProvider(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
+  @field:Positive
   val id: Long? = null,
 
   @OneToOne

@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Positive
 data class BespokeCondition(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
+  @field:Positive
   val id: Long? = null,
 
   @ManyToOne
