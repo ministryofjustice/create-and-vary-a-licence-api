@@ -66,7 +66,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     assertThat(conditions).hasSize(1)
 
     val uploadFile =
-      ExclusionZonePdfExtract.fromMultipartFile(MockMultipartFile("file", fileResource.contentAsByteArray))!!
+      ExclusionZonePdfExtract.fromMultipartFile(MockMultipartFile("file", fileResource.contentAsByteArray))
 
     // Check that file contents are sent to the document api
     val fullSizeUuid = documentApiMockServer.verifyUploadedDocument(

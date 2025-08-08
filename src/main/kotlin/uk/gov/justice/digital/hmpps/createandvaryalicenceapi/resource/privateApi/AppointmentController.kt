@@ -241,6 +241,6 @@ class AppointmentController(
     @Valid @RequestBody
     request: AddAddressRequest,
   ) {
-    appointmentService.updateAppointmentAddress(licenceId, request)
+    appointmentService.addAppointmentAddress(licenceId, request)
   }
 }

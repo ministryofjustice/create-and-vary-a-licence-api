@@ -62,7 +62,7 @@ values (
 		1,
 		1,
 		'1.0',
-		'123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND');
+		'123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA');
 
 INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, source)
 VALUES ('REF-123456', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');

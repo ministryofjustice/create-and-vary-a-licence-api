@@ -250,7 +250,7 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
-  fun recordAuditEventInitialAppointmentUpdate(licence: Licence, changes: Map<String, Any>, staffMember: Staff?) {
+  fun recordAuditEventInitialAppointmentUpdate(licence: Licence, changes: Map<String, String>, staffMember: Staff?) {
     val summary = "Updated initial appointment details"
 
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
