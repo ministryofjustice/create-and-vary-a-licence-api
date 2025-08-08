@@ -9,7 +9,7 @@ import java.util.UUID
 @Component
 object AddressMapper {
   fun copy(entity: Address?): Address? = entity?.copy(
-    id = -1,
+    id = null,
     reference = UUID.randomUUID().toString(),
   )
 

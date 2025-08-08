@@ -1814,6 +1814,7 @@ class LicenceCreationServiceTest {
       )
 
     val com = CommunityOffenderManager(
+      id = 1,
       staffIdentifier = 2000,
       username = "tcom",
       email = "testemail@probation.gov.uk",
@@ -1822,6 +1823,7 @@ class LicenceCreationServiceTest {
     )
 
     val prisonUser = PrisonUser(
+      id = 1,
       username = "ca",
       email = "testemail@prison.gov.uk",
       firstName = "A",
@@ -1843,7 +1845,7 @@ class LicenceCreationServiceTest {
     )
 
     val newCom = CommunityOffenderManager(
-      id = -2L,
+      id = 1,
       staffIdentifier = 2000,
       username = "com-user",
       email = "comuser@probation.gov.uk",

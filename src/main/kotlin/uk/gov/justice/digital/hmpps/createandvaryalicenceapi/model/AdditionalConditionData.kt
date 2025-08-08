@@ -9,7 +9,7 @@ data class AdditionalConditionData(
     description = "The internal ID of this data item, for this condition on this licence",
     example = "98989",
   )
-  val id: Long = -1,
+  val id: Long? = null,
 
   @field:Schema(
     description = "The field name of this data item for this condition on this licence",

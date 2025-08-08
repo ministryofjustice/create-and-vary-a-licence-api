@@ -339,7 +339,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
     val anAdditionalConditionDataRequest = UpdateAdditionalConditionDataRequest(
       data = listOf(
-        AdditionalConditionData(field = "gender", value = "women or men", sequence = 0),
+        AdditionalConditionData(id = 1, field = "gender", value = "women or men", sequence = 0),
       ),
     )
 

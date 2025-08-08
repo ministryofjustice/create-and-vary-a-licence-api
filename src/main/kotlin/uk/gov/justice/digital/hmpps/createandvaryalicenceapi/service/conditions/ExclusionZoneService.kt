@@ -59,7 +59,7 @@ class ExclusionZoneService(
 
     val uploadDetail = AdditionalConditionUploadDetail(
       licenceId = licence.id,
-      additionalConditionId = additionalCondition.id,
+      additionalConditionId = additionalCondition.id!!,
       originalData = originalFile.bytes,
       originalDataDsUuid = originalDataDsUuid?.toString(),
       fullSizeImage = pdfExtract.fullSizeImage,
@@ -78,7 +78,7 @@ class ExclusionZoneService(
       description = pdfExtract.description,
       thumbnailImage = pdfExtract.thumbnailImage,
       thumbnailImageDsUuid = thumbnailImageDsUuid?.toString(),
-      uploadDetailId = savedDetail.id,
+      uploadDetailId = savedDetail.id!!,
     )
 
     val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = listOf(uploadSummary))

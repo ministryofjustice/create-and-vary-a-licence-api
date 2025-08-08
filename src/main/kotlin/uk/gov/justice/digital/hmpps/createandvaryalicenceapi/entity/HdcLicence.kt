@@ -23,7 +23,7 @@ import java.time.LocalDateTime
 @Entity
 @DiscriminatorValue(value = "HDC")
 class HdcLicence(
-  id: Long = -1L,
+  id: Long? = null,
   typeCode: LicenceType,
   version: String? = null,
   statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
@@ -175,7 +175,7 @@ class HdcLicence(
   HdcCase {
 
   fun copy(
-    id: Long = this.id,
+    id: Long? = this.id,
     typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,

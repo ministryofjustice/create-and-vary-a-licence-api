@@ -659,7 +659,7 @@ fun toHdcVariation(
 fun List<EntityStandardCondition>.transformToModelStandard(conditionType: String): List<ModelStandardCondition> = filter { condition -> condition.conditionType == conditionType }.map(::transform)
 
 fun transform(entity: EntityStandardCondition): ModelStandardCondition = ModelStandardCondition(
-  id = entity.id,
+  id = entity.id!!,
   code = entity.conditionCode,
   sequence = entity.conditionSequence,
   text = entity.conditionText,
@@ -693,7 +693,7 @@ fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelA
 fun List<EntityAdditionalConditionData>.transformToModelAdditionalData(): List<ModelAdditionalConditionData> = map(::transform)
 
 fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionData = ModelAdditionalConditionData(
-  id = entity.id,
+  id = entity.id!!,
   sequence = entity.dataSequence,
   field = entity.dataField,
   value = entity.dataValue,
@@ -703,7 +703,7 @@ fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionDa
 fun List<EntityBespokeCondition>.transformToModelBespoke(): List<ModelBespokeCondition> = map(::transform)
 
 fun transform(entity: EntityBespokeCondition): ModelBespokeCondition = ModelBespokeCondition(
-  id = entity.id,
+  id = entity.id!!,
   sequence = entity.conditionSequence,
   text = entity.conditionText,
 )
@@ -712,7 +712,7 @@ fun transform(entity: EntityBespokeCondition): ModelBespokeCondition = ModelBesp
 fun List<EntityAdditionalConditionUploadSummary>.transformToModelAdditionalConditionUploadSummary(): List<ModelAdditionalConditionUploadSummary> = map(::transform)
 
 fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalConditionUploadSummary = ModelAdditionalConditionUploadSummary(
-  id = entity.id,
+  id = entity.id!!,
   filename = entity.filename,
   fileType = entity.fileType,
   fileSize = entity.fileSize,
@@ -755,7 +755,7 @@ private fun transform(entity: EntityAuditEvent): ModelAuditEvent = ModelAuditEve
 fun List<EntityLicenceEvent>.transformToModelEvents(): List<ModelLicenceEvent> = map(::transform)
 
 fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent(
-  id = entity.id,
+  id = entity.id!!,
   licenceId = entity.licenceId,
   eventType = entity.eventType,
   username = entity.username,

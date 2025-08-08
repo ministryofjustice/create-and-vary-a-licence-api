@@ -5,9 +5,10 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType.IDENTITY
+import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Positive
 import java.time.LocalDateTime
 
 enum class AddressSource {
@@ -18,8 +19,10 @@ enum class AddressSource {
 @Entity
 @Table(name = "address")
 data class Address(
+
   @Id
-  @GeneratedValue(strategy = IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @param:Positive
   val id: Long? = null,
 
   @Column(nullable = false, unique = true)

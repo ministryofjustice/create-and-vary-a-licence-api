@@ -19,6 +19,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
@@ -30,10 +31,11 @@ import java.util.Objects
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "kind", discriminatorType = DiscriminatorType.STRING)
 abstract class Staff(
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:NotNull
-  var id: Long = -1,
+  @param:Positive
+  val id: Long? = null,
 
   @param:NotNull
   @Enumerated(EnumType.STRING)

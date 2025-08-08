@@ -9,7 +9,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 import org.hibernate.annotations.Type
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
@@ -20,8 +20,8 @@ import java.time.LocalDateTime
 data class AuditEvent(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:NotNull
-  val id: Long = -1,
+  @param:Positive
+  val id: Long? = null,
 
   val licenceId: Long? = null,
 

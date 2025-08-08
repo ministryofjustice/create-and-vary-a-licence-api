@@ -8,14 +8,15 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 
 @Entity
 @Table(name = "additional_condition_data")
 data class AdditionalConditionData(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:NotNull
-  val id: Long = -1,
+  @param:Positive
+  val id: Long? = null,
 
   @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)

@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 @Entity
 @DiscriminatorValue(value = "PRISON_USER")
 class PrisonUser(
-  id: Long = -1,
+  id: Long? = null,
   username: String,
   email: String?,
   firstName: String?,
@@ -25,7 +25,7 @@ class PrisonUser(
 ),
   Creator {
   fun copy(
-    id: Long = this.id,
+    id: Long? = this.id,
     username: String = this.username,
     email: String? = this.email,
     firstName: String? = this.firstName,

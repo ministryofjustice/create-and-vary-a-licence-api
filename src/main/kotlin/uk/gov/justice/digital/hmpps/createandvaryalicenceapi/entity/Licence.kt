@@ -8,9 +8,6 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
@@ -40,11 +37,7 @@ import java.util.Objects
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "kind", discriminatorType = DiscriminatorType.STRING)
 abstract class Licence(
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:NotNull
-  var id: Long = -1,
-
+  id: Long? = null,
   @param:NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "kind", insertable = false, updatable = false)
@@ -151,7 +144,8 @@ abstract class Licence(
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "updated_by_id", nullable = true)
   var updatedBy: Staff? = null,
-) : SentenceDateHolder {
+) : AbstractIdEntity(idInternal = id),
+  SentenceDateHolder {
 
   companion object {
     const val SYSTEM_USER = "SYSTEM_USER"

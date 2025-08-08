@@ -7,14 +7,16 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 
 @Entity
 @Table(name = "additional_condition_upload_detail")
 data class AdditionalConditionUploadDetail(
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:NotNull
-  val id: Long = -1,
+  @param:Positive
+  val id: Long? = null,
 
   @param:NotNull
   val licenceId: Long,
