@@ -88,6 +88,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     assertThat(uploadSummary.filename).isEqualTo(fileResource.filename)
     assertThat(uploadSummary.fileType).isEqualTo("application/pdf")
     assertThat(uploadSummary.imageType).isEqualTo("image/png")
+    assertThat(uploadSummary.imageSize).isEqualTo(uploadFile.fullSizeImage.size)
     assertThat(uploadSummary.thumbnailImage).isEqualTo(uploadFile.thumbnailImage)
     assertThat(uploadSummary.thumbnailImageDsUuid).isEqualTo(thumbnailUuid.toString())
     assertThat(uploadSummary.description?.trim()).isEqualTo("Description")
