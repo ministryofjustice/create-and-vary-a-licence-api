@@ -985,6 +985,49 @@ class ComCreateCaseloadServiceTest {
   }
 
   @Test
+  fun `it sets LicenceCreationType to PRISON_WILL_CREATE_THIS_LICENCE if no licence has been started in the hard stop period`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+    )
+    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.HARD_STOP)
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      listOf(
+        createCaseloadItem(
+          "AB1234E",
+          twoDaysFromNow,
+          bookingId = "1",
+          licenceStartDate = twoDaysFromNow,
+          licenceExpiryDate = tenDaysFromNow,
+          topupSupervisionExpiryDate = elevenDaysFromNow,
+          isInHardStopPeriod = true,
+        ),
+      ),
+    )
+
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+      emptyList(),
+    )
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    verifyCase(
+      caseload.first(),
+      "X12348",
+      "AB1234E",
+      LicenceStatus.TIMED_OUT,
+      LicenceType.AP_PSS,
+      LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
+      expectedReleaseDate = twoDaysFromNow,
+      expectedLicenceKind = LicenceKind.HARD_STOP,
+    )
+  }
+
+  @Test
   fun `it sets LicenceCreationType to LICENCE_CREATED_BY_PRISON if the hard stop licence has been submitted`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
@@ -1098,6 +1141,7 @@ class ComCreateCaseloadServiceTest {
     legalStatus: String? = null,
     indeterminateSentence: Boolean? = false,
     licenceStartDate: LocalDate? = null,
+    isInHardStopPeriod: Boolean = false,
   ): CaseloadItem = CaseloadItem(
     prisoner = Prisoner(
       prisonerNumber = prisonerNumber,
@@ -1118,7 +1162,7 @@ class ComCreateCaseloadServiceTest {
       legalStatus = legalStatus,
       indeterminateSentence = indeterminateSentence,
     ),
-    cvl = CvlFields(licenceType = LicenceType.PSS, licenceStartDate = licenceStartDate),
+    cvl = CvlFields(licenceType = LicenceType.PSS, licenceStartDate = licenceStartDate, isInHardStopPeriod = isInHardStopPeriod),
   )
 
   private fun verifyCase(
