@@ -37,11 +37,7 @@ abstract class AbstractIdEntity(
     return this.idInternal != null && this.idInternal == other.idInternal
   }
 
-  override fun hashCode(): Int {
-    return idInternal?.hashCode() ?: 0
-  }
+  override fun hashCode(): Int = idInternal?.hashCode() ?: 0
 
-  override fun toString(): String {
-    return "${Hibernate.getClass(this).simpleName}(id=$idInternal)"
-  }
+  override fun toString(): String = "${Hibernate.getClass(this).simpleName}(id=$idInternal)"
 }
