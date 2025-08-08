@@ -27,6 +27,9 @@ data class AdditionalConditionUploadSummary(
   @field:Schema(description = "The original file size in bytes", example = "27566")
   val fileSize: Int = 0,
 
+  @field:Schema(description = "The image size in bytes", example = "27566")
+  val imageSize: Int? = 0,
+
   @field:Schema(description = "The date and time this file was uploaded", example = "12/12/2021 10:35")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm")
   val uploadedTime: LocalDateTime = LocalDateTime.now(),

@@ -112,7 +112,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
     assertThat(summary.attachmentNumber).isEqualTo(0)
     assertThat(summary.filename).isEqualTo("Test-file.pdf")
     assertThat(summary.imageType).isEqualTo("image/png")
-    assertThat(summary.fileSize).isEqualTo(12345)
+    assertThat(summary.fileSize).isEqualTo(23456)
     assertThat(summary.description).isEqualTo("Description")
 
     assertThat(result.attachments).isEqualTo(
@@ -123,7 +123,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
           contentType = "image/png",
           url = "http://localhost:8089/public/licences/2/conditions/1/image-upload",
           filename = "Test-file.pdf",
-          filesize = 12345,
+          filesize = 23456,
         ),
       ),
     )
