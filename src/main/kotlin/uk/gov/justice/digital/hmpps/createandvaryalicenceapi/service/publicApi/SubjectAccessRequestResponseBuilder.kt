@@ -21,6 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 private const val UNAVAILABLE = "unavailable"
 
+// We should be able to remove this and make everything non-nullable after migration
+private const val UNAVAILABLE_SIZE = -1
+
 class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
   private val attachmentIdSeq = AtomicInteger()
   private val sarLicences: MutableList<SarLicence> = mutableListOf()
@@ -106,7 +109,7 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
       attachmentNumber = attachmentNumber,
       filename = entity.filename ?: UNAVAILABLE,
       imageType = entity.imageType ?: UNAVAILABLE,
-      fileSize = entity.fileSize,
+      fileSize = entity.imageSize ?: UNAVAILABLE_SIZE,
       uploadedTime = entity.uploadedTime,
       description = entity.description,
     )
@@ -123,7 +126,7 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     contentType = entity.imageType ?: UNAVAILABLE,
     url = "$baseUrl/public/licences/$licenceId/conditions/$conditionId/image-upload",
     filename = entity.filename ?: UNAVAILABLE,
-    filesize = entity.fileSize,
+    filesize = entity.imageSize ?: UNAVAILABLE_SIZE,
   )
 
   private fun transformToSarStandardConditions(entity: StandardCondition): SarStandardCondition = SarStandardCondition(
