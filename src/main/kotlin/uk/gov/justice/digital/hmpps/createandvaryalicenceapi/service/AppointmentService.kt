@@ -212,8 +212,7 @@ class AppointmentService(
     )
   }
 
-  private fun getUserName(staff: Staff?) =
-    staff?.username ?: SYSTEM_USER
+  private fun getUserName(staff: Staff?) = staff?.username ?: SYSTEM_USER
 
   private fun buildAuditDetails(
     field: String,
