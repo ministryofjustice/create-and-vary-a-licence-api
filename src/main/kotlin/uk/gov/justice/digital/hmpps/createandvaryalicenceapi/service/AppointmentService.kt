@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -157,7 +158,7 @@ class AppointmentService(
     }
 
     licence.dateLastUpdated = LocalDateTime.now()
-    licence.updatedByUsername = staff.username
+    licence.updatedByUsername = staff?.username ?: SYSTEM_USER
     licence.updatedBy = staff
 
     auditService.recordAuditEventInitialAppointmentUpdate(
@@ -167,32 +168,36 @@ class AppointmentService(
     )
   }
 
-  private fun createAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff): Map<String, String> {
+  private fun createAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
     val address = addressMapper.toEntity(request)
     val addressString = request.toString()
 
     licence.appointmentAddress = addressString
     licence.licenceAppointmentAddress = address
 
-    if (request.isPreferredAddress) {
-      staff.savedAppointmentAddresses.add(address)
+    staff?.let {
+      if (request.isPreferredAddress) {
+        it.savedAppointmentAddresses.add(address)
+      }
     }
 
     return buildAuditDetails(
       field = "appointmentAddress",
       value = addressString,
-      staffUsername = staff.username,
+      staffUsername = staff?.username ?: SYSTEM_USER,
       isPreferred = request.isPreferredAddress,
     )
   }
 
-  private fun updateAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff): Map<String, String> {
+  private fun updateAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
     val address = licence.licenceAppointmentAddress!!
     val previousAddress = licence.appointmentAddress!!
     val newAddressString = request.toString()
 
-    if (request.isPreferredAddress) {
-      staff.savedAppointmentAddresses.add(address)
+    staff?.let {
+      if (request.isPreferredAddress) {
+        it.savedAppointmentAddresses.add(address)
+      }
     }
 
     addressMapper.update(address, request)
@@ -202,7 +207,7 @@ class AppointmentService(
       field = "updateAppointmentAddress",
       previousValue = previousAddress,
       value = newAddressString,
-      staffUsername = staff.username,
+      staffUsername = staff?.username ?: SYSTEM_USER,
       isPreferred = request.isPreferredAddress,
     )
   }
@@ -224,9 +229,8 @@ class AppointmentService(
     return details
   }
 
-  private fun getStaffUser(): Staff {
+  private fun getStaffUser(): Staff? {
     val username = SecurityContextHolder.getContext().authentication.name
     return staffRepository.findByUsernameIgnoreCase(username)
-      ?: error("Staff user not found: $username")
   }
 }
