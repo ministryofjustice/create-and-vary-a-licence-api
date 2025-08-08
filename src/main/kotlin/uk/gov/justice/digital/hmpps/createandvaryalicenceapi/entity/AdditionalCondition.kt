@@ -20,7 +20,7 @@ import org.hibernate.annotations.FetchMode
 data class AdditionalCondition(
   @Id
   @GeneratedValue(strategy = IDENTITY)
-  @param:Positive
+  @field:Positive
   val id: Long? = null,
 
   @ManyToOne

@@ -15,7 +15,7 @@ data class AdditionalConditionUploadDetail(
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
+  @field:Positive
   val id: Long? = null,
 
   @param:NotNull
