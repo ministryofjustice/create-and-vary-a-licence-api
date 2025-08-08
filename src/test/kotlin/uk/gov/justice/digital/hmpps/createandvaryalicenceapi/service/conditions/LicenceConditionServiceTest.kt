@@ -437,21 +437,20 @@ class LicenceConditionServiceTest {
   inner class `add additional conditions` {
     @Test
     fun `update additional conditions`() {
-      whenever(licenceRepository.findById(1L))
-        .thenReturn(
-          Optional.of(
-            aLicenceEntity.copy(
-              additionalConditions = listOf(
-                additionalCondition(1),
-                additionalCondition(3).copy(
-                  conditionCode = "code3",
-                  conditionSequence = 6,
-                  additionalConditionData = someDifferentAdditionalConditionData,
-                ),
-              ),
-            ),
+      val licence = aLicenceEntity.copy(
+        additionalConditions = listOf(
+          additionalCondition(1),
+          additionalCondition(
+            3,
+            conditionCode = "code3",
+            conditionSequence = 6,
+            additionalConditionData = someDifferentAdditionalConditionData,
           ),
-        )
+        ),
+      )
+
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(Optional.of(licence))
 
       whenever(policyService.getAllAdditionalConditions()).thenReturn(
         AllAdditionalConditions(mapOf("1.0" to mapOf(policyApCondition.code to policyApCondition))),
@@ -480,7 +479,7 @@ class LicenceConditionServiceTest {
         .containsExactly(
           tuple(1L, "code", 5),
           tuple(3L, "code3", 6),
-          tuple(-1L, "code", 7),
+          tuple(null, "code", 7),
         )
 
       // Verify last contact info is recorded
@@ -493,14 +492,19 @@ class LicenceConditionServiceTest {
     }
   }
 
-  private fun additionalCondition(id: Long, code: String = "code") = AdditionalCondition(
+  private fun additionalCondition(
+    id: Long? = 1,
+    conditionCode: String = "code",
+    conditionSequence: Int = 5,
+    additionalConditionData: List<EntityAdditionalConditionData> = someAdditionalConditionData,
+  ) = AdditionalCondition(
     id = id,
     conditionVersion = "1.0",
-    conditionCode = code,
-    conditionSequence = 5,
+    conditionCode = conditionCode,
+    conditionSequence = conditionSequence,
     conditionCategory = "oldCategory",
     conditionText = "oldText",
-    additionalConditionData = someAdditionalConditionData,
+    additionalConditionData = additionalConditionData,
     licence = aLicenceEntity,
     conditionType = "AP",
   )
@@ -513,9 +517,9 @@ class LicenceConditionServiceTest {
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val bespokeEntities = listOf(
-        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
-        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 2, conditionText = "Condition 3"),
-        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
+        BespokeCondition(licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
+        BespokeCondition(licence = aLicenceEntity, conditionSequence = 2, conditionText = "Condition 3"),
+        BespokeCondition(licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
       )
 
       bespokeEntities.forEach { bespoke ->
@@ -592,6 +596,7 @@ class LicenceConditionServiceTest {
     @Test
     fun `update additional condition data throws not found exception if licence is not found`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
       val exception = assertThrows<EntityNotFoundException> {
         service.updateAdditionalConditionData(
           1L,
@@ -637,6 +642,7 @@ class LicenceConditionServiceTest {
           UpdateAdditionalConditionDataRequest(
             data = listOf(
               AdditionalConditionData(
+                id = 1,
                 field = "field1",
                 value = "value1",
                 sequence = 0,
@@ -676,6 +682,7 @@ class LicenceConditionServiceTest {
       val request = UpdateAdditionalConditionDataRequest(
         data = listOf(
           AdditionalConditionData(
+            id = 1,
             field = "field1",
             value = "value1",
             sequence = 0,
@@ -696,7 +703,7 @@ class LicenceConditionServiceTest {
       assertThat(conditionCaptor.value.expandedConditionText).isEqualTo("expanded text")
       assertThat(conditionCaptor.value.additionalConditionData).containsExactly(
         EntityAdditionalConditionData(
-          id = -1,
+          id = null,
           additionalCondition = anAdditionalConditionEntity,
           dataSequence = 0,
           dataField = "field1",
@@ -736,6 +743,7 @@ class LicenceConditionServiceTest {
       val request = UpdateAdditionalConditionDataRequest(
         data = listOf(
           AdditionalConditionData(
+            id = 1,
             field = "field1",
             value = "value1",
             sequence = 0,
@@ -772,9 +780,9 @@ class LicenceConditionServiceTest {
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
 
       val bespokeEntities = listOf(
-        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
-        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 2, conditionText = "Condition 3"),
-        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
+        BespokeCondition(licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
+        BespokeCondition(licence = aLicenceEntity, conditionSequence = 2, conditionText = "Condition 3"),
+        BespokeCondition(licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
       )
 
       bespokeEntities.forEach { bespoke ->
@@ -858,6 +866,7 @@ class LicenceConditionServiceTest {
     val aCom = TestData.com()
 
     val aPreviousUser = CommunityOffenderManager(
+      id = 1,
       staffIdentifier = 4000,
       username = "test",
       email = "test@test.com",

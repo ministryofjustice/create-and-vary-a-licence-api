@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 @Entity
 @DiscriminatorValue(value = "PRRD")
 class PrrdLicence(
-  id: Long = -1L,
+  id: Long? = null,
   typeCode: LicenceType,
   version: String? = null,
   statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
@@ -158,7 +158,7 @@ class PrrdLicence(
   HasElectronicMonitoringResponseProvider {
 
   fun copy(
-    id: Long = this.id,
+    id: Long? = this.id,
     typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,

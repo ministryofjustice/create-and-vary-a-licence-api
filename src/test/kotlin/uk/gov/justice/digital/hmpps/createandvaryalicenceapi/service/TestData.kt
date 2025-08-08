@@ -64,6 +64,7 @@ object TestData {
   private val TEN_DAYS_FROM_NOW = LocalDate.now().plusDays(10)
 
   fun com() = CommunityOffenderManager(
+    id = 1,
     staffIdentifier = 2000,
     username = "tcom",
     email = "testemail@probation.gov.uk",

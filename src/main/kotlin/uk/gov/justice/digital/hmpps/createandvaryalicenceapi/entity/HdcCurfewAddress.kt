@@ -7,15 +7,15 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 
 @Entity
 @Table(name = "hdc_curfew_address")
 data class HdcCurfewAddress(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:NotNull
-  val id: Long = -1,
+  @param:Positive
+  val id: Long? = null,
 
   @OneToOne
   @JoinColumn(name = "licence_id", nullable = false)

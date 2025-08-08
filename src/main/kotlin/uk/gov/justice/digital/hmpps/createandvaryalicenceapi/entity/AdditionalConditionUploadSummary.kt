@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 import java.time.LocalDateTime
 
 @Entity
@@ -16,8 +17,8 @@ import java.time.LocalDateTime
 data class AdditionalConditionUploadSummary(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:NotNull
-  val id: Long = -1,
+  @param:Positive
+  val id: Long? = null,
 
   @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)
@@ -30,6 +31,8 @@ data class AdditionalConditionUploadSummary(
   val imageType: String? = null,
 
   val fileSize: Int = 0,
+
+  val imageSize: Int? = 0,
 
   @param:NotNull
   val uploadedTime: LocalDateTime = LocalDateTime.now(),
@@ -47,7 +50,7 @@ data class AdditionalConditionUploadSummary(
   @Transient
   var preloadedThumbnailImage: ByteArray? = null
 
-  override fun toString(): String = "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, imageType=$imageType, fileSize=$fileSize, uploadedTime=$uploadedTime, description=$description)"
+  override fun toString(): String = "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, imageType=$imageType, fileSize=$fileSize, imageSize=$imageSize, uploadedTime=$uploadedTime, description=$description)"
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -60,6 +63,7 @@ data class AdditionalConditionUploadSummary(
     if (fileType != other.fileType) return false
     if (imageType != other.imageType) return false
     if (fileSize != other.fileSize) return false
+    if (imageSize != other.imageSize) return false
     if (uploadedTime != other.uploadedTime) return false
     if (description != other.description) return false
 
@@ -72,6 +76,7 @@ data class AdditionalConditionUploadSummary(
     result = 31 * result + (fileType?.hashCode() ?: 0)
     result = 31 * result + (imageType?.hashCode() ?: 0)
     result = 31 * result + fileSize
+    result = 31 * result + (imageSize ?: 0)
     result = 31 * result + uploadedTime.hashCode()
     result = 31 * result + (description?.hashCode() ?: 0)
     return result

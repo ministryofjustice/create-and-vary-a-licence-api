@@ -178,7 +178,7 @@ object LicenceFactory {
   fun createCrdCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return licence.copy(
-        id = -1,
+        id = null,
         dateCreated = LocalDateTime.now(),
         statusCode = IN_PROGRESS,
         licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
@@ -191,7 +191,7 @@ object LicenceFactory {
   fun createPrrdCopyToEdit(licence: PrrdLicence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return licence.copy(
-        id = -1,
+        id = null,
         dateCreated = LocalDateTime.now(),
         statusCode = IN_PROGRESS,
         licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
@@ -204,7 +204,7 @@ object LicenceFactory {
   fun createHdcCopyToEdit(licence: HdcLicence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return licence.copy(
-        id = -1,
+        id = null,
         dateCreated = LocalDateTime.now(),
         statusCode = IN_PROGRESS,
         licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
@@ -217,7 +217,6 @@ object LicenceFactory {
   fun createVariation(licence: Licence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return VariationLicence(
-        id = -1,
         typeCode = this.typeCode,
         version = this.version,
         statusCode = VARIATION_IN_PROGRESS,
@@ -322,7 +321,6 @@ object LicenceFactory {
   fun createHdcVariation(licence: HdcLicence, creator: CommunityOffenderManager): HdcVariationLicence {
     with(licence) {
       return HdcVariationLicence(
-        id = -1,
         typeCode = this.typeCode,
         version = this.version,
         statusCode = VARIATION_IN_PROGRESS,

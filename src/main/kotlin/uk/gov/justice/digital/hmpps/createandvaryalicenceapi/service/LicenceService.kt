@@ -903,11 +903,11 @@ class LicenceService(
     val newLicence = licenceRepository.save(licenceCopy)
 
     val standardConditions = licence.standardConditions.map {
-      it.copy(id = -1, licence = newLicence)
+      it.copy(id = null, licence = newLicence)
     }
 
     val bespokeConditions = licence.bespokeConditions.map {
-      it.copy(id = -1, licence = newLicence)
+      it.copy(id = null, licence = newLicence)
     }
 
     standardConditionRepository.saveAll(standardConditions)
@@ -928,12 +928,12 @@ class LicenceService(
 
     val additionalConditions = licenceConditions.map {
       it.copy(
-        id = -1,
+        id = null,
         licence = newLicence,
-        additionalConditionData = it.additionalConditionData.map { conditionData -> conditionData.copy(id = -1) },
+        additionalConditionData = it.additionalConditionData.map { conditionData -> conditionData.copy(id = null) },
         additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { conditionSummary ->
           conditionSummary.copy(
-            id = -1,
+            id = null,
           )
         },
       )
@@ -949,9 +949,9 @@ class LicenceService(
       val updatedAdditionalConditionUploadSummary = condition.additionalConditionUploadSummary.map {
         var uploadDetail = additionalConditionUploadDetailRepository.getReferenceById(it.uploadDetailId)
         uploadDetail =
-          uploadDetail.copy(id = -1, licenceId = newLicence.id, additionalConditionId = condition.id)
+          uploadDetail.copy(id = null, licenceId = newLicence.id, additionalConditionId = condition.id!!)
         uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
-        it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
+        it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id!!)
       }
 
       condition.copy(

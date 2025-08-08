@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
-import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
 
@@ -19,9 +19,9 @@ import org.hibernate.annotations.FetchMode
 @Table(name = "additional_condition")
 data class AdditionalCondition(
   @Id
-  @param:NotNull
   @GeneratedValue(strategy = IDENTITY)
-  val id: Long = -1,
+  @param:Positive
+  val id: Long? = null,
 
   @ManyToOne
   @JoinColumn(name = "licence_id", nullable = false)

@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTim
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
 class VariationLicenceTest {
 
@@ -55,8 +56,10 @@ class VariationLicenceTest {
 
     VariationLicence::class.memberProperties.forEach {
       // HDCAD will always be null for non-HDC licences
-      if (it.name != "homeDetentionCurfewActualDate" && it.get(variationLicence) == null) {
-        fail { "${it.name} does not have a value set - needs to be set to test copy" }
+      if (it.name != "homeDetentionCurfewActualDate") {
+        it.isAccessible = true
+        val value = it.get(variationLicence)
+          ?: fail { "${it.name} does not have a value set - needs to be set to test copy" }
       }
     }
 

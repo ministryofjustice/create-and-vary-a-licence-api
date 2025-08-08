@@ -4,11 +4,8 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType.IDENTITY
-import jakarta.persistence.Id
 import jakarta.persistence.Table
-import org.hibernate.Hibernate
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AbstractIdEntity
 import java.time.LocalDateTime
 
 enum class AddressSource {
@@ -19,9 +16,7 @@ enum class AddressSource {
 @Entity
 @Table(name = "address")
 class Address(
-  @Id
-  @GeneratedValue(strategy = IDENTITY)
-  val id: Long? = null,
+  id: Long? = null,
 
   @Column(nullable = false, unique = true)
   val reference: String,
@@ -52,7 +47,8 @@ class Address(
   val createdTimestamp: LocalDateTime = LocalDateTime.now(),
 
   var lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
-) {
+) : AbstractIdEntity(idInternal = id) {
+
   override fun toString(): String = listOf(
     uprn.orEmpty(),
     reference,
@@ -63,14 +59,4 @@ class Address(
     postcode,
     source.name,
   ).joinToString(",")
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other == null) return false
-    if (Hibernate.getClass(this) != Hibernate.getClass(other)) return false
-    other as Address
-    return id != null && id == other.id
-  }
-
-  override fun hashCode(): Int = id?.hashCode() ?: 0
 }
