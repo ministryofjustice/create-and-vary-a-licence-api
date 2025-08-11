@@ -17,7 +17,7 @@ data class ElectronicMonitoringProvider(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @field:Positive
-  val id: Long? = null,
+  open val id: Long? = null,
 
   @OneToOne
   @JoinColumn(name = "licence_id", nullable = false, unique = true)

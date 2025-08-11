@@ -21,7 +21,7 @@ data class AdditionalCondition(
   @Id
   @GeneratedValue(strategy = IDENTITY)
   @field:Positive
-  val id: Long? = null,
+  open val id: Long? = null,
 
   @ManyToOne
   @JoinColumn(name = "licence_id", nullable = false)

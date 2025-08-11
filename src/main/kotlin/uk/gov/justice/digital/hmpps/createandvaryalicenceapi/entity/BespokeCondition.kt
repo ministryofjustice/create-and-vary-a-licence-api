@@ -15,7 +15,7 @@ data class BespokeCondition(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @field:Positive
-  val id: Long? = null,
+  open val id: Long? = null,
 
   @ManyToOne
   @JoinColumn(name = "licence_id", nullable = false)

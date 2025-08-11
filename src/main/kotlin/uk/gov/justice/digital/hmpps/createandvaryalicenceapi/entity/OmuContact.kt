@@ -14,7 +14,7 @@ data class OmuContact(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @field:Positive
-  val id: Long? = null,
+  open val id: Long? = null,
   val prisonCode: String,
   val email: String,
   var dateCreated: LocalDateTime,

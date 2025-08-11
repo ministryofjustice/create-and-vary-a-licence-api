@@ -18,7 +18,7 @@ data class AdditionalConditionUploadSummary(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @field:Positive
-  val id: Long? = null,
+  open val id: Long? = null,
 
   @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)

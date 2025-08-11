@@ -23,7 +23,7 @@ data class Address(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @field:Positive
-  val id: Long? = null,
+  open val id: Long? = null,
 
   @Column(nullable = false, unique = true)
   val reference: String,
