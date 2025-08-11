@@ -280,7 +280,7 @@ class LicenceService(
     domainEventsService.recordDomainEvent(licenceEntity, request.status)
   }
 
-  private fun auditStatusChange(licenceEntity: EntityLicence, staffMember: Staff?) {
+  protected fun auditStatusChange(licenceEntity: EntityLicence, staffMember: Staff?) {
     val licenceFullName = "${licenceEntity.forename} ${licenceEntity.surname}"
     val detailText =
       "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}"
