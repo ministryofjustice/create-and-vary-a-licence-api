@@ -94,6 +94,7 @@
     <ID>ReturnCount:NotifyService.kt$NotifyService$private fun sendEmail( templateId: String, emailAddress: String, values: Map&lt;String, Any&gt;, ): Boolean</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt$ComAllocatedHandler$e: Exception</ID>
+    <ID>TooManyFunctions:AppointmentService.kt$AppointmentService</ID>
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
     <ID>TooManyFunctions:CaCaseloadService.kt$CaCaseloadService</ID>
     <ID>TooManyFunctions:CaseloadController.kt$CaseloadController</ID>
