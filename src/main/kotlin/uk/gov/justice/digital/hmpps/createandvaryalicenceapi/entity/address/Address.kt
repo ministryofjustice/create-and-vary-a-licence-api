@@ -50,11 +50,27 @@ class Address(
 ) : AbstractIdEntity(idInternal = id) {
 
   override fun toString(): String = listOf(
+    reference,
     uprn.orEmpty(),
     firstLine,
     secondLine.orEmpty(),
     townOrCity,
     county.orEmpty(),
     postcode,
+    source,
   ).joinToString(",")
+
+  /**
+   * Checks equality of address by comparing key address fields with another,
+   *
+   * This method focuses purely on the meaningful data that defines the address,
+   * rather than full object equality or database identity.
+   */
+  fun isSame(other: Address): Boolean {
+    return firstLine == other.firstLine &&
+      secondLine.orEmpty() == other.secondLine.orEmpty() &&
+      townOrCity == other.townOrCity &&
+      county.orEmpty() == other.county.orEmpty() &&
+      postcode == other.postcode
+  }
 }

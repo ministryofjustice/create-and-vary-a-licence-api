@@ -176,7 +176,7 @@ class AppointmentService(
 
   private fun createAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
     log.info(
-      "Creating appointment address for licenceId={}, requestUprn={}, requestPostcode={}, staffId={}",
+      "Creating appointment address for licenceId={}, prn={}, postcode={}, staffId={}",
       licence.id,
       request.uprn,
       request.postcode,
@@ -189,7 +189,7 @@ class AppointmentService(
     licence.appointmentAddress = addressString
     licence.licenceAppointmentAddress = address
 
-    updateSavedAddresses(staff, request.isPreferredAddress, address)
+    addSavedAddresses(staff, request.isPreferredAddress, address)
 
     return buildAuditDetails(
       field = "appointmentAddress",
@@ -201,7 +201,7 @@ class AppointmentService(
 
   private fun updateAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
     log.info(
-      "update appointment address for licenceId={}, requestUprn={}, requestPostcode={}, staffId={}",
+      "Updating appointment address for licenceId={}, prn={}, postcode={}, staffId={}",
       licence.id,
       request.uprn,
       request.postcode,
@@ -212,7 +212,7 @@ class AppointmentService(
     val previousAddress = licence.appointmentAddress!!
     val newAddressString = request.toString()
 
-    updateSavedAddresses(staff, request.isPreferredAddress, address)
+    addSavedAddresses(staff, request.isPreferredAddress, address)
 
     addressMapper.update(address, request)
     licence.appointmentAddress = newAddressString
@@ -226,14 +226,14 @@ class AppointmentService(
     )
   }
 
-  private fun updateSavedAddresses(
+  private fun addSavedAddresses(
     staff: Staff?,
     isPreferredAddress: Boolean,
     address: Address,
   ) {
     if (isPreferredAddress) {
       staff?.let {
-        val exists = it.savedAppointmentAddresses.any { existing -> existing.toString() == address.toString() }
+        val exists = it.savedAppointmentAddresses.any { existing -> existing.isSame(address) }
         if (!exists) {
           it.savedAppointmentAddresses.add(address)
         }
