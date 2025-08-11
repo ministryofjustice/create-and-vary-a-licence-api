@@ -66,11 +66,9 @@ class Address(
    * This method focuses purely on the meaningful data that defines the address,
    * rather than full object equality or database identity.
    */
-  fun isSame(other: Address): Boolean {
-    return firstLine == other.firstLine &&
-      secondLine.orEmpty() == other.secondLine.orEmpty() &&
-      townOrCity == other.townOrCity &&
-      county.orEmpty() == other.county.orEmpty() &&
-      postcode == other.postcode
-  }
+  fun isSame(other: Address): Boolean = firstLine == other.firstLine &&
+    secondLine.orEmpty() == other.secondLine.orEmpty() &&
+    townOrCity == other.townOrCity &&
+    county.orEmpty() == other.county.orEmpty() &&
+    postcode == other.postcode
 }
