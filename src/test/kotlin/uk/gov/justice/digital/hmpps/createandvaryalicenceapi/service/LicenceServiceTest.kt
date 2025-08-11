@@ -729,17 +729,19 @@ class LicenceServiceTest {
   fun `update PRRD licence status to APPROVED deactivates previous version of PRRD licence`() {
     val newLicenceId = 23L
     val fullName = "user 1"
-    val firstVersionOfLicence = createPrrdLicence().copy(
+
+    val aPrrdLicence = createPrrdLicence()
+    val firstVersionOfLicence = aPrrdLicence.copy(
       statusCode = LicenceStatus.APPROVED,
       approvedByUsername = aCom.username,
       approvedByName = fullName,
       approvedDate = LocalDateTime.now(),
     )
     val newVersionOfLicence =
-      anHdcLicenceEntity.copy(
+      aPrrdLicence.copy(
         id = newLicenceId,
         statusCode = LicenceStatus.IN_PROGRESS,
-        versionOfId = anHdcLicenceEntity.id,
+        versionOfId = aPrrdLicence.id,
       )
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(firstVersionOfLicence))
@@ -773,7 +775,7 @@ class LicenceServiceTest {
         listOf(
           firstVersionOfLicence.id,
           LicenceEventType.SUPERSEDED,
-          "Licence deactivated as a newer version was approved for ${anHdcLicenceEntity.forename} ${anHdcLicenceEntity.surname}",
+          "Licence deactivated as a newer version was approved for ${newVersionOfLicence.forename} ${newVersionOfLicence.surname}",
         ),
       )
 
@@ -783,7 +785,7 @@ class LicenceServiceTest {
         listOf(
           newVersionOfLicence.id,
           LicenceEventType.APPROVED,
-          "Licence updated to APPROVED for ${newVersionOfLicence.forename} ${newVersionOfLicence.surname}",
+          "Licence updated to APPROVED for ${aPrrdLicence.forename} ${aPrrdLicence.surname}",
         ),
       )
 
