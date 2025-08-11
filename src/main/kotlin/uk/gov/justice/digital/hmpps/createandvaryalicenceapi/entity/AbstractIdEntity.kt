@@ -23,10 +23,10 @@ abstract class AbstractIdEntity(
   @GeneratedValue(strategy = IDENTITY)
   @Column(name = "id")
   @param:Positive
-  protected val idInternal: Long? = null,
+  protected open val idInternal: Long? = null,
 ) {
 
-  val id: Long
+  open val id: Long
     get() = idInternal ?: -1
 
   override fun equals(other: Any?): Boolean {
