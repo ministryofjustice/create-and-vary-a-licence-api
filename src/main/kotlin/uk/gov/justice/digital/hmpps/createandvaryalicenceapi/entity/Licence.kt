@@ -106,7 +106,7 @@ abstract class Licence(
   @OneToOne(
     cascade = [CascadeType.ALL],
     fetch = FetchType.LAZY,
-    orphanRemoval = true
+    orphanRemoval = true,
   )
   @JoinTable(
     name = "LICENCE_APPOINTMENT_ADDRESS",

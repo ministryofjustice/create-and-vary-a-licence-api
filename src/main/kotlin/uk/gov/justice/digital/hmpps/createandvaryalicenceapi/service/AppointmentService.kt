@@ -229,6 +229,8 @@ class AppointmentService(
     request: AddAddressRequest,
   ) {
     if (request.isPreferredAddress) {
+      // Create a new address entity not connected to the licence as they different relationships
+      // and are managed separately!
       val newPreferredAddress = addressMapper.toEntity(request)
       staff?.let {
         val exists = it.savedAppointmentAddresses.any { existing -> existing.isSame(newPreferredAddress) }

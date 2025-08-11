@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCoun
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
 import java.util.concurrent.CountDownLatch
@@ -28,6 +29,9 @@ class StaffIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var staffRepository: StaffRepository
+
+  @Autowired
+  lateinit var addressRepository: AddressRepository
 
   @Test
   fun `Add a COM record`() {
@@ -240,7 +244,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
     assertThat(resultList).isNotNull
     assertThat(resultList).hasSize(2)
     assertThat(resultList!!.first().postcode).isEqualTo("TE5 7AA")
-    assertThat(resultList!![1].postcode).isEqualTo("TE5 7AB")
+    assertThat(resultList[1].postcode).isEqualTo("TE5 7AB")
   }
 
   @Test
@@ -257,6 +261,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
     val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses("Staff1")
     assertThat(staff).isNotNull
     assertThat(staff!!.savedAppointmentAddresses.any { it.reference == referenceToDelete }).isFalse()
+    assertThat(addressRepository.findById(1)).isNotPresent()
   }
 
   @Test

@@ -35,7 +35,7 @@ abstract class Staff(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @param:Positive
-  val id: Long? = null,
+  open val id: Long? = null,
 
   @param:NotNull
   @Enumerated(EnumType.STRING)
@@ -56,7 +56,7 @@ abstract class Staff(
   @OneToMany(
     cascade = [CascadeType.ALL],
     fetch = FetchType.LAZY,
-    orphanRemoval = true
+    orphanRemoval = true,
   )
   @JoinTable(
     name = "STAFF_SAVED_APPOINTMENT_ADDRESS",
