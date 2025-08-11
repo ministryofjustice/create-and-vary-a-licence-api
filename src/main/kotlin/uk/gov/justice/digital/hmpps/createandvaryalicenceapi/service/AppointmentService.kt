@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -183,13 +182,12 @@ class AppointmentService(
       staff?.id ?: "none",
     )
 
-    val address = addressMapper.toEntity(request)
     val addressString = request.toString()
 
     licence.appointmentAddress = addressString
-    licence.licenceAppointmentAddress = address
+    licence.licenceAppointmentAddress = addressMapper.toEntity(request)
 
-    addSavedAddresses(staff, request.isPreferredAddress, address)
+    addSavedAddresses(staff, request)
 
     return buildAuditDetails(
       field = "appointmentAddress",
@@ -212,7 +210,7 @@ class AppointmentService(
     val previousAddress = licence.appointmentAddress!!
     val newAddressString = request.toString()
 
-    addSavedAddresses(staff, request.isPreferredAddress, address)
+    addSavedAddresses(staff, request)
 
     addressMapper.update(address, request)
     licence.appointmentAddress = newAddressString
@@ -228,14 +226,14 @@ class AppointmentService(
 
   private fun addSavedAddresses(
     staff: Staff?,
-    isPreferredAddress: Boolean,
-    address: Address,
+    request: AddAddressRequest,
   ) {
-    if (isPreferredAddress) {
+    if (request.isPreferredAddress) {
+      val newPreferredAddress = addressMapper.toEntity(request)
       staff?.let {
-        val exists = it.savedAppointmentAddresses.any { existing -> existing.isSame(address) }
+        val exists = it.savedAppointmentAddresses.any { existing -> existing.isSame(newPreferredAddress) }
         if (!exists) {
-          it.savedAppointmentAddresses.add(address)
+          it.savedAppointmentAddresses.add(newPreferredAddress)
         }
       }
     }
