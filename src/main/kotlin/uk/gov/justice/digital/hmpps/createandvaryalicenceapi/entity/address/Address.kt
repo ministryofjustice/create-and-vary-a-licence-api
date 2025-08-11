@@ -51,12 +51,10 @@ class Address(
 
   override fun toString(): String = listOf(
     uprn.orEmpty(),
-    reference,
     firstLine,
     secondLine.orEmpty(),
     townOrCity,
     county.orEmpty(),
     postcode,
-    source.name,
   ).joinToString(",")
 }

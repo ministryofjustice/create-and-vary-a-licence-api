@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -175,11 +176,7 @@ class AppointmentService(
     licence.appointmentAddress = addressString
     licence.licenceAppointmentAddress = address
 
-    staff?.let {
-      if (request.isPreferredAddress) {
-        it.savedAppointmentAddresses.add(address)
-      }
-    }
+    updateSavedAddresses(staff, request.isPreferredAddress, address)
 
     return buildAuditDetails(
       field = "appointmentAddress",
@@ -194,11 +191,7 @@ class AppointmentService(
     val previousAddress = licence.appointmentAddress!!
     val newAddressString = request.toString()
 
-    staff?.let {
-      if (request.isPreferredAddress) {
-        it.savedAppointmentAddresses.add(address)
-      }
-    }
+    updateSavedAddresses(staff, request.isPreferredAddress, address)
 
     addressMapper.update(address, request)
     licence.appointmentAddress = newAddressString
@@ -210,6 +203,21 @@ class AppointmentService(
       staffUsername = getUserName(staff),
       isPreferred = request.isPreferredAddress,
     )
+  }
+
+  private fun updateSavedAddresses(
+    staff: Staff?,
+    isPreferredAddress: Boolean,
+    address: Address,
+  ) {
+    if (isPreferredAddress) {
+      staff?.let {
+        val exists = it.savedAppointmentAddresses.any { existing -> existing.toString() == address.toString() }
+        if (!exists) {
+          it.savedAppointmentAddresses.add(address)
+        }
+      }
+    }
   }
 
   private fun getUserName(staff: Staff?) = staff?.username ?: SYSTEM_USER

@@ -74,8 +74,9 @@ values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (1, true, 'Test Programme');
 
-INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, source)
-VALUES ('550e8400-e29b-41d4-a716-446655440000', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');
+INSERT INTO address (uprn,reference, first_line, second_line, town_or_city, county, postcode, source)
+VALUES ('uprn','550e8400-e29b-41d4-a716-446655440000', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','OS_PLACES');
 
 INSERT INTO licence_appointment_address(licence_id,address_id) VALUES(1,1);
 INSERT INTO staff_saved_appointment_address(staff_id,address_id) VALUES(1,1);
+

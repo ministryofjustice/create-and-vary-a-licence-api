@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -45,6 +46,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as L
 class AppointmentIntegrationTest(
   @param:Autowired private val licenceRepository: LicenceRepository,
 ) : IntegrationTestBase() {
+
+  @Autowired
+  private lateinit var addressRepository: AddressRepository
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
@@ -261,6 +265,8 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
     val licence = getLicence()
     val savedAddress = getAndAssertAddress(licence)
+    assertThat(savedAddress.id).isEqualTo(1)
+    assertThat(addressRepository.findAll().size).isEqualTo(1)
     val staff = staffRepository.findByUsernameIgnoreCase("test-client")
     assertThat(staff?.savedAppointmentAddresses).contains(savedAddress)
     val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
@@ -305,10 +311,42 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
     val licence = getLicence()
     val savedAddress = getAndAssertAddress(licence)
+    assertThat(savedAddress.id).isEqualTo(1)
+    assertThat(addressRepository.findAll().size).isEqualTo(1)
     val staff = staffRepository.findByUsernameIgnoreCase("test-client")
     assertThat(staff?.savedAppointmentAddresses).contains(savedAddress)
     val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
     assertThat(auditEvent.changes).containsEntry("savedToStaffMember", "test-client")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1-with-address.sql",
+    "classpath:test_data/seed-licence-id-2.sql",
+  )
+  fun `When updating a preferred appointment from a address then no duplicate saved address`() {
+    // Given
+    val uri = "/licence/id/2/appointment/address"
+    val addAddressRequest = buildAddAddressRequest(
+      isPreferredAddress = true,
+      firstLine = "123 Test Street",
+      secondLine = "Apt 4B",
+      townOrCity = "Testville",
+      county = "Testshire",
+      postcode = "TE5 7AA",
+    )
+
+    // When
+    val result = putRequest(uri, addAddressRequest)
+
+    // Then
+    result.expectStatus().isOk
+    val licence = getLicence(id = 2)
+    val savedAddress = getAndAssertAddress(licence)
+    assertThat(savedAddress.id).isEqualTo(2)
+    assertThat(addressRepository.findAll().size).isEqualTo(2)
+    assertThat(licence.responsibleCom.savedAppointmentAddresses.size).isEqualTo(1)
+    assertThat(licence.responsibleCom.savedAppointmentAddresses.first().id).isEqualTo(1)
   }
 
   @Test
@@ -327,8 +365,11 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
     val licence = getLicence()
     val savedAddress = getAndAssertAddress(licence)
-    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
-    assertThat(staff?.savedAppointmentAddresses).doesNotContain(savedAddress)
+    assertThat(addressRepository.findAll().size).isEqualTo(1)
+    assertThat(savedAddress.id).isEqualTo(1)
+    val savedAppointmentAddresses = licence.responsibleCom.savedAppointmentAddresses
+    assertThat(savedAppointmentAddresses.size).isEqualTo(1)
+    assertThat(savedAppointmentAddresses.first().id).isEqualTo(savedAddress.id)
     val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
     assertThat(auditEvent.changes).doesNotContainEntry("savedToStaffMember", "test-client")
   }
