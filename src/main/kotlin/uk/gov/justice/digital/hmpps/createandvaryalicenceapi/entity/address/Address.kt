@@ -22,8 +22,8 @@ data class Address(
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
-  val id: Long? = null,
+  @field:Positive
+  open val id: Long? = null,
 
   @Column(nullable = false, unique = true)
   val reference: String,

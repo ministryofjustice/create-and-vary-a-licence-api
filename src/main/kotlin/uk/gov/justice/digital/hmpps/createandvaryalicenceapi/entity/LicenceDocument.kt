@@ -14,8 +14,8 @@ import java.time.LocalDateTime
 data class LicenceDocument(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
-  val id: Long? = null,
+  @field:Positive
+  open val id: Long? = null,
 
   @param:NotNull
   val licenceId: Long = -1,

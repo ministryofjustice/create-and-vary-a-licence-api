@@ -14,8 +14,8 @@ import jakarta.validation.constraints.Positive
 data class StandardCondition(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
-  val id: Long? = null,
+  @field:Positive
+  open val id: Long? = null,
 
   @ManyToOne
   @JoinColumn(name = "licence_id", nullable = false)
