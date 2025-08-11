@@ -17,8 +17,8 @@ import java.time.LocalDateTime
 data class AdditionalConditionUploadSummary(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
-  val id: Long? = null,
+  @field:Positive
+  open val id: Long? = null,
 
   @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)

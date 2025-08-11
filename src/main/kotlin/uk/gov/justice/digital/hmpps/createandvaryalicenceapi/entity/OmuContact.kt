@@ -13,8 +13,8 @@ import java.time.LocalDateTime
 data class OmuContact(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
-  val id: Long? = null,
+  @field:Positive
+  open val id: Long? = null,
   val prisonCode: String,
   val email: String,
   var dateCreated: LocalDateTime,

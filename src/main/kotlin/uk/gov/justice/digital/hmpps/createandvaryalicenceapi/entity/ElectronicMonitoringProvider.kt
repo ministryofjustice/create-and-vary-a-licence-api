@@ -16,8 +16,8 @@ import java.time.LocalDateTime
 data class ElectronicMonitoringProvider(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
-  val id: Long? = null,
+  @field:Positive
+  open val id: Long? = null,
 
   @OneToOne
   @JoinColumn(name = "licence_id", nullable = false, unique = true)

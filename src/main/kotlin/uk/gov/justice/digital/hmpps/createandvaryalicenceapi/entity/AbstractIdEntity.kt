@@ -22,8 +22,8 @@ abstract class AbstractIdEntity(
   @Id
   @GeneratedValue(strategy = IDENTITY)
   @Column(name = "id")
-  @param:Positive
-  protected open val idInternal: Long? = null,
+  @field:Positive
+  protected val idInternal: Long? = null,
 ) {
 
   open val id: Long

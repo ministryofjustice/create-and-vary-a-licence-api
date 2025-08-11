@@ -20,8 +20,8 @@ import org.hibernate.annotations.FetchMode
 data class AdditionalCondition(
   @Id
   @GeneratedValue(strategy = IDENTITY)
-  @param:Positive
-  val id: Long? = null,
+  @field:Positive
+  open val id: Long? = null,
 
   @ManyToOne
   @JoinColumn(name = "licence_id", nullable = false)

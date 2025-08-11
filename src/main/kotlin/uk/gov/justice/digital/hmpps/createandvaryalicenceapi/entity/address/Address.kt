@@ -57,7 +57,7 @@ class Address(
     townOrCity,
     county.orEmpty(),
     postcode,
-    source,
+    source.name,
   ).joinToString(",")
 
   /**

@@ -20,8 +20,8 @@ import java.time.LocalDateTime
 data class AuditEvent(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @param:Positive
-  val id: Long? = null,
+  @field:Positive
+  open val id: Long? = null,
 
   val licenceId: Long? = null,
 
