@@ -245,6 +245,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
     assertThat(resultList).hasSize(2)
     assertThat(resultList!!.first().postcode).isEqualTo("TE5 7AA")
     assertThat(resultList[1].postcode).isEqualTo("TE5 7AB")
+    assertThat(resultList[1].uprn).isEqualTo("UPRN")
   }
 
   @Test

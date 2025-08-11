@@ -35,6 +35,7 @@ class AddressMapper {
     @JvmStatic
     fun toResponse(entity: Address): AddressResponse = AddressResponse(
       reference = entity.reference,
+      uprn =  entity.uprn,
       firstLine = entity.firstLine,
       secondLine = entity.secondLine,
       townOrCity = entity.townOrCity,
