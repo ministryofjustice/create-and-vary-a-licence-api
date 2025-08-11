@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,6 +29,10 @@ class AppointmentService(
   private val staffRepository: StaffRepository,
   private val addressMapper: AddressMapper,
 ) {
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
 
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
@@ -170,6 +175,14 @@ class AppointmentService(
   }
 
   private fun createAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
+    log.info(
+      "Creating appointment address for licenceId={}, requestUprn={}, requestPostcode={}, staffId={}",
+      licence.id,
+      request.uprn,
+      request.postcode,
+      staff?.id ?: "none",
+    )
+
     val address = addressMapper.toEntity(request)
     val addressString = request.toString()
 
@@ -187,6 +200,14 @@ class AppointmentService(
   }
 
   private fun updateAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
+    log.info(
+      "update appointment address for licenceId={}, requestUprn={}, requestPostcode={}, staffId={}",
+      licence.id,
+      request.uprn,
+      request.postcode,
+      staff?.id ?: "none",
+    )
+
     val address = licence.licenceAppointmentAddress!!
     val previousAddress = licence.appointmentAddress!!
     val newAddressString = request.toString()
