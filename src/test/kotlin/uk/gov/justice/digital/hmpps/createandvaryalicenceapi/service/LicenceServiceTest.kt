@@ -796,7 +796,7 @@ class LicenceServiceTest {
           firstVersionOfLicence.id,
           aCom.username,
           "${aCom.firstName} ${aCom.lastName}",
-          "Licence set to INACTIVE for ${anHdcLicenceEntity.forename} ${anHdcLicenceEntity.surname}",
+          "Licence set to INACTIVE for ${aPrrdLicence.forename} ${aPrrdLicence.surname}",
           USER_EVENT,
         ),
       )
@@ -808,7 +808,7 @@ class LicenceServiceTest {
           newVersionOfLicence.id,
           aCom.username,
           "${aCom.firstName} ${aCom.lastName}",
-          "Licence approved for ${anHdcLicenceEntity.forename} ${anHdcLicenceEntity.surname}",
+          "Licence approved for ${aPrrdLicence.forename} ${aPrrdLicence.surname}",
           USER_EVENT,
         ),
       )
