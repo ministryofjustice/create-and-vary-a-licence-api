@@ -4,11 +4,8 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
 import jakarta.persistence.Table
-import jakarta.validation.constraints.Positive
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AbstractIdEntity
 import java.time.LocalDateTime
 
 enum class AddressSource {
@@ -18,46 +15,43 @@ enum class AddressSource {
 
 @Entity
 @Table(name = "address")
-data class Address(
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @field:Positive
-  open val id: Long? = null,
+class Address(
+  id: Long? = null,
 
   @Column(nullable = false, unique = true)
   val reference: String,
 
   // Unique Property Reference Number
   @Column(nullable = true, unique = false)
-  val uprn: String? = null,
+  var uprn: String? = null,
 
   @Column(name = "first_line", nullable = false)
-  val firstLine: String,
+  var firstLine: String,
 
   @Column(name = "second_line")
-  val secondLine: String? = null,
+  var secondLine: String? = null,
 
   @Column(name = "town_or_city", nullable = false)
-  val townOrCity: String,
+  var townOrCity: String,
 
   @Column
-  val county: String? = null,
+  var county: String? = null,
 
   @Column(nullable = false)
-  val postcode: String,
+  var postcode: String,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "source", nullable = false)
-  val source: AddressSource,
+  var source: AddressSource,
 
   val createdTimestamp: LocalDateTime = LocalDateTime.now(),
 
-  val lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
-) {
+  var lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
+) : AbstractIdEntity(idInternal = id) {
+
   override fun toString(): String = listOf(
-    uprn.orEmpty(),
     reference,
+    uprn.orEmpty(),
     firstLine,
     secondLine.orEmpty(),
     townOrCity,
@@ -66,12 +60,15 @@ data class Address(
     source.name,
   ).joinToString(",")
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other == null || this::class != other::class) return false
-    other as Address
-    return id != null && id == other.id
-  }
-
-  override fun hashCode(): Int = id?.hashCode() ?: 0
+  /**
+   * Checks equality of address by comparing key address fields with another,
+   *
+   * This method focuses purely on the meaningful data that defines the address,
+   * rather than full object equality or database identity.
+   */
+  fun isSame(other: Address): Boolean = firstLine == other.firstLine &&
+    secondLine.orEmpty() == other.secondLine.orEmpty() &&
+    townOrCity == other.townOrCity &&
+    county.orEmpty() == other.county.orEmpty() &&
+    postcode == other.postcode
 }
