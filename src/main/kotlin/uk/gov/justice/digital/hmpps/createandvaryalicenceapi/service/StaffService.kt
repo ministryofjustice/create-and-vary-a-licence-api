@@ -74,23 +74,21 @@ class StaffService(
 
     val com = comResult.first()
 
-    return if (com.isUpdate(comDetails)) {
+    if (isUpdateRequest(com, comDetails)) {
       log.info(
         "Updating COM record (id={}) for staffIdentifier={} username={}",
         com.id,
         comDetails.staffIdentifier,
         comDetails.staffUsername,
       )
-      staffRepository.saveAndFlush(
-        com.copy(
-          staffIdentifier = comDetails.staffIdentifier,
-          username = comDetails.staffUsername.uppercase(),
-          email = comDetails.staffEmail,
-          firstName = comDetails.firstName,
-          lastName = comDetails.lastName,
-          lastUpdatedTimestamp = LocalDateTime.now(),
-        ),
-      )
+      with(com) {
+        staffIdentifier = comDetails.staffIdentifier
+        username = comDetails.staffUsername.uppercase()
+        email = comDetails.staffEmail
+        firstName = comDetails.firstName
+        lastName = comDetails.lastName
+        lastUpdatedTimestamp = LocalDateTime.now()
+      }
     } else {
       log.info(
         "No changes detected for COM record (id={}) - skipping update for staffIdentifier={} username={}",
@@ -98,8 +96,8 @@ class StaffService(
         comDetails.staffIdentifier,
         comDetails.staffUsername,
       )
-      com
     }
+    return com
   }
 
   @Transactional
@@ -112,7 +110,7 @@ class StaffService(
         log.info("No existing prison user found — creating new record")
         staffRepository.saveAndFlush(request.toEntity())
       }
-      found.isUpdate(request) -> {
+      found.isUpdateRequest(request) -> {
         log.info("Prison user found — applying updates")
         found.updatedWith(request)
       }
@@ -172,13 +170,16 @@ class StaffService(
     return this
   }
 
-  private fun CommunityOffenderManager.isUpdate(comDetails: UpdateComRequest) = (comDetails.firstName != this.firstName) ||
-    (comDetails.lastName != this.lastName) ||
-    (comDetails.staffEmail != this.email) ||
-    (!comDetails.staffUsername.equals(this.username, ignoreCase = true)) ||
-    (comDetails.staffIdentifier != this.staffIdentifier)
+  fun isUpdateRequest(
+    com: CommunityOffenderManager,
+    comUpdateRequest: UpdateComRequest,
+  ) = (comUpdateRequest.firstName != com.firstName) ||
+    (comUpdateRequest.lastName != com.lastName) ||
+    (comUpdateRequest.staffEmail != com.email) ||
+    (!comUpdateRequest.staffUsername.equals(com.username, ignoreCase = true)) ||
+    (comUpdateRequest.staffIdentifier != com.staffIdentifier)
 
-  private fun PrisonUser.isUpdate(caDetails: UpdatePrisonUserRequest) = (caDetails.firstName != this.firstName) ||
+  private fun PrisonUser.isUpdateRequest(caDetails: UpdatePrisonUserRequest) = (caDetails.firstName != this.firstName) ||
     (caDetails.lastName != this.lastName) ||
     (caDetails.staffEmail != this.email) ||
     (!caDetails.staffUsername.equals(this.username, ignoreCase = true))
