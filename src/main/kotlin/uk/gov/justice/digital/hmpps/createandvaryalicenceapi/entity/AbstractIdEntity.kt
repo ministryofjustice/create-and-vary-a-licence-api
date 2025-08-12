@@ -26,7 +26,7 @@ abstract class AbstractIdEntity(
   protected val idInternal: Long? = null,
 ) {
 
-  val id: Long
+  open val id: Long
     get() = idInternal ?: -1
 
   override fun equals(other: Any?): Boolean {

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 
 @Schema(description = "A response object for a address")
@@ -11,6 +12,14 @@ data class AddressResponse(
     required = true,
   )
   val reference: String,
+
+  @field:Schema(
+    description = "Unique Property Reference Number, acquired from OsPlacesApi, post code and address look up",
+    example = "200010019924",
+    required = false,
+  )
+  @field:Size(min = 1, max = 12)
+  val uprn: String? = null,
 
   @field:Schema(description = "The first line of the address", example = "12 Cardiff Road", required = true)
   val firstLine: String,

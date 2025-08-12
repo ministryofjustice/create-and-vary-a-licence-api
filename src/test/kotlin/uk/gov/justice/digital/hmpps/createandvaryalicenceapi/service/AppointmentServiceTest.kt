@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.DUTY_OFFICER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -38,8 +39,9 @@ class AppointmentServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
+  private val addressMapper = AddressMapper()
 
-  private val service = AppointmentService(licenceRepository, auditService, staffRepository)
+  private val service = AppointmentService(licenceRepository, auditService, staffRepository, addressMapper)
 
   @BeforeEach
   fun reset() {

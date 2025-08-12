@@ -147,6 +147,7 @@ class StaffService(
     return staff.savedAppointmentAddresses.map { address -> AddressMapper.toResponse(address) }
   }
 
+  @Transactional
   fun deleteAddressByReference(reference: String) {
     val username = SecurityContextHolder.getContext().authentication.name
     val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses(username)
@@ -158,7 +159,6 @@ class StaffService(
       ?: throw EntityNotFoundException("Address with reference $reference not found for staff ${staff.fullName}")
 
     staff.savedAppointmentAddresses.remove(addressToDelete)
-    staffRepository.saveAndFlush(staff)
   }
 
   private fun PrisonUser.updatedWith(

@@ -2,10 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -23,7 +26,12 @@ class AppointmentService(
   private val licenceRepository: LicenceRepository,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
+  private val addressMapper: AddressMapper,
 ) {
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
 
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
@@ -38,9 +46,7 @@ class AppointmentService(
 
     val previousPerson = licenceEntity.appointmentPerson
 
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+    val staffMember = getStaffUser()
 
     licenceEntity.updateAppointmentPerson(
       appointmentPersonType = request.appointmentPersonType,
@@ -72,9 +78,7 @@ class AppointmentService(
     }
     val previousTime = licenceEntity.appointmentTime
 
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+    val staffMember = getStaffUser()
 
     licenceEntity.updateAppointmentTime(
       appointmentTime = request.appointmentTime,
@@ -101,9 +105,7 @@ class AppointmentService(
 
     val previousContact = licenceEntity.appointmentContact
 
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+    val staffMember = getStaffUser()
 
     licenceEntity.updateAppointmentContactNumber(
       appointmentContact = request.telephone,
@@ -130,10 +132,7 @@ class AppointmentService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val previousAddress = licenceEntity.appointmentAddress
-
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+    val staffMember = getStaffUser()
 
     licenceEntity.updateAppointmentAddress(
       appointmentAddress = request.appointmentAddress,
@@ -153,45 +152,116 @@ class AppointmentService(
   }
 
   @Transactional
-  fun updateAppointmentAddress(licenceId: Long, request: AddAddressRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+  fun addAppointmentAddress(licenceId: Long, request: AddAddressRequest) {
+    val licence = licenceRepository.findById(licenceId)
+      .orElseThrow { EntityNotFoundException("Licence $licenceId not found") }
 
-    val previousAddress = licenceEntity.licenceAppointmentAddress?.toString()
-      ?: licenceEntity.appointmentAddress
-
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
-
-    licenceEntity.licenceAppointmentAddress = AddressMapper.toEntity(request)
-    licenceEntity.appointmentAddress = request.toString()
-    licenceEntity.dateLastUpdated = LocalDateTime.now()
-    licenceEntity.updatedByUsername = staffMember?.username ?: SYSTEM_USER
-    licenceEntity.updatedBy = staffMember ?: licenceEntity.updatedBy
-
-    licenceRepository.saveAndFlush(licenceEntity)
-
-    if (request.isPreferredAddress && staffMember != null) {
-      staffMember.savedAppointmentAddresses.add(AddressMapper.toEntity(request))
-      staffRepository.saveAndFlush(staffMember)
+    val staff = getStaffUser()
+    val auditData = when (licence.licenceAppointmentAddress) {
+      null -> createAppointmentAddress(licence, request, staff)
+      else -> updateAppointmentAddress(licence, request, staff)
     }
 
-    val auditDetails = mutableMapOf(
-      "field" to "appointmentAddress",
-      "previousValue" to (previousAddress ?: ""),
-      "newValue" to (request.toString() ?: ""),
-    )
-
-    if (request.isPreferredAddress) {
-      auditDetails["savedToStaffMember"] = staffMember?.username ?: "none"
-    }
+    licence.dateLastUpdated = LocalDateTime.now()
+    licence.updatedByUsername = getUserName(staff)
+    licence.updatedBy = staff
 
     auditService.recordAuditEventInitialAppointmentUpdate(
-      licenceEntity,
-      auditDetails,
-      staffMember,
+      licence,
+      auditData,
+      staff,
     )
+  }
+
+  private fun createAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
+    log.info(
+      "Creating appointment address for licenceId={}, prn={}, postcode={}, staffId={}",
+      licence.id,
+      request.uprn,
+      request.postcode,
+      staff?.id ?: "none",
+    )
+
+    val addressString = request.toString()
+
+    licence.appointmentAddress = addressString
+    licence.licenceAppointmentAddress = addressMapper.toEntity(request)
+
+    addSavedAddresses(staff, request)
+
+    return buildAuditDetails(
+      field = "appointmentAddress",
+      value = addressString,
+      staffUsername = getUserName(staff),
+      isPreferred = request.isPreferredAddress,
+    )
+  }
+
+  private fun updateAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
+    log.info(
+      "Updating appointment address for licenceId={}, prn={}, postcode={}, staffId={}",
+      licence.id,
+      request.uprn,
+      request.postcode,
+      staff?.id ?: "none",
+    )
+
+    val address = licence.licenceAppointmentAddress!!
+    val previousAddress = licence.appointmentAddress!!
+    val newAddressString = request.toString()
+
+    addSavedAddresses(staff, request)
+
+    addressMapper.update(address, request)
+    licence.appointmentAddress = newAddressString
+
+    return buildAuditDetails(
+      field = "updateAppointmentAddress",
+      previousValue = previousAddress,
+      value = newAddressString,
+      staffUsername = getUserName(staff),
+      isPreferred = request.isPreferredAddress,
+    )
+  }
+
+  private fun addSavedAddresses(
+    staff: Staff?,
+    request: AddAddressRequest,
+  ) {
+    if (request.isPreferredAddress) {
+      // Create a new address entity not connected to the licence as they different relationships
+      // and are managed separately!
+      val newPreferredAddress = addressMapper.toEntity(request)
+      staff?.let {
+        val exists = it.savedAppointmentAddresses.any { existing -> existing.isSame(newPreferredAddress) }
+        if (!exists) {
+          it.savedAppointmentAddresses.add(newPreferredAddress)
+        }
+      }
+    }
+  }
+
+  private fun getUserName(staff: Staff?) = staff?.username ?: SYSTEM_USER
+
+  private fun buildAuditDetails(
+    field: String,
+    value: String? = null,
+    previousValue: String? = null,
+    staffUsername: String,
+    isPreferred: Boolean = false,
+  ): MutableMap<String, String> {
+    val details = mutableMapOf<String, String>()
+    details["field"] = field
+    value?.let { details["value"] = it }
+    previousValue?.let { details["previousValue"] = it }
+    if (isPreferred) {
+      details["savedToStaffMember"] = staffUsername
+    }
+    return details
+  }
+
+  private fun getStaffUser(): Staff? {
+    val username = SecurityContextHolder.getContext().authentication.name
+    return staffRepository.findByUsernameIgnoreCase(username)
   }
 }
