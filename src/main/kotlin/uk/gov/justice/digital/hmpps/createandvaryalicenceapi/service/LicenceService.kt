@@ -205,9 +205,8 @@ class LicenceService(
         when (licenceEntity) {
           is VariationLicence -> error("Cannot approve a Variation licence: ${licenceEntity.id}")
           is HdcVariationLicence -> error("Cannot approve an HDC Variation licence: ${licenceEntity.id}")
-          is PrrdLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
-          is CrdLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
-          is HdcLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
+          is PrrdLicence, is CrdLicence, is HdcLicence ->
+            deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
         }
         approvedByUser = request.username
         approvedByName = request.fullName
@@ -367,36 +366,18 @@ class LicenceService(
   private fun deactivatePreviousLicenceVersion(licence: EntityLicence, fullName: String?, staffMember: Staff?) {
     val previousVersionId = getVersionOf(licence) ?: return
 
-    val previousLicenceVersion =
-      licenceRepository.findById(previousVersionId)
-        .orElseThrow { EntityNotFoundException("$previousVersionId") }
+    val licenceToDeactivate = licenceRepository.findById(previousVersionId)
+      .orElseThrow { EntityNotFoundException("$previousVersionId") }
 
-    val updatedLicence = when (previousLicenceVersion) {
-      is CrdLicence -> previousLicenceVersion.copy(
-        dateLastUpdated = LocalDateTime.now(),
-        updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-        statusCode = INACTIVE,
-        updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
-      )
-
-      is PrrdLicence -> previousLicenceVersion.copy(
-        dateLastUpdated = LocalDateTime.now(),
-        updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-        statusCode = INACTIVE,
-        updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
-      )
-
-      is HdcLicence -> previousLicenceVersion.copy(
-        dateLastUpdated = LocalDateTime.now(),
-        updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-        statusCode = INACTIVE,
-        updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
-      )
-
+    when (licenceToDeactivate) {
+      is CrdLicence, is PrrdLicence, is HdcLicence -> {
+        licenceToDeactivate.dateLastUpdated = LocalDateTime.now()
+        licenceToDeactivate.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+        licenceToDeactivate.statusCode = INACTIVE
+        licenceToDeactivate.updatedBy = staffMember ?: licenceToDeactivate.updatedBy
+      }
       else -> error("Trying to inactivate non-crd licence: $previousVersionId")
     }
-
-    licenceRepository.saveAndFlush(updatedLicence)
 
     val (firstName, lastName) = splitName(fullName)
     licenceEventRepository.saveAndFlush(
@@ -410,7 +391,7 @@ class LicenceService(
       ),
     )
 
-    auditStatusChange(updatedLicence, staffMember)
+    auditStatusChange(licenceToDeactivate, staffMember)
   }
 
   @Transactional
