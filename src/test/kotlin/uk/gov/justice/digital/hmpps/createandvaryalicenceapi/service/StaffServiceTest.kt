@@ -72,7 +72,7 @@ class StaffServiceTest {
       // Then
       verify(staffRepository, times(1)).findCommunityOffenderManager(3000, "jbloggs")
       verify(staffRepository, times(0)).saveAndFlush(any<CommunityOffenderManager>())
-      verify(spyService, times(1)).isRequestAnUpdate(foundCom, updateRequest)
+      verify(spyService, times(1)).isUpdateRequest(foundCom, updateRequest)
       assertComMatchesRequest(result, updateRequest)
     }
 
@@ -103,7 +103,7 @@ class StaffServiceTest {
       // Then
       verify(staffRepository, times(1)).findCommunityOffenderManager(2000, "JOEBLOGGS")
       verify(staffRepository, times(0)).saveAndFlush(any<CommunityOffenderManager>())
-      verify(spyService, times(1)).isRequestAnUpdate(foundCom, updateRequest)
+      verify(spyService, times(1)).isUpdateRequest(foundCom, updateRequest)
     }
 
     @Test
@@ -126,7 +126,7 @@ class StaffServiceTest {
       // Then
       verify(staffRepository, times(1)).findCommunityOffenderManager(3000, "jbloggs")
       verify(staffRepository, times(1)).saveAndFlush(any<CommunityOffenderManager>())
-      verify(spyService, times(0)).isRequestAnUpdate(any(), any())
+      verify(spyService, times(0)).isUpdateRequest(any(), any())
       assertComMatchesRequest(result, updateRequest)
     }
 

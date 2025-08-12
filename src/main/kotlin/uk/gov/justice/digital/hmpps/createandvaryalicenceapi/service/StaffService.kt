@@ -74,7 +74,7 @@ class StaffService(
 
     val com = comResult.first()
 
-    if (isRequestAnUpdate(com, comDetails)) {
+    if (isUpdateRequest(com, comDetails)) {
       log.info(
         "Updating COM record (id={}) for staffIdentifier={} username={}",
         com.id,
@@ -110,7 +110,7 @@ class StaffService(
         log.info("No existing prison user found — creating new record")
         staffRepository.saveAndFlush(request.toEntity())
       }
-      found.isRequestAnUpdate(request) -> {
+      found.isUpdateRequest(request) -> {
         log.info("Prison user found — applying updates")
         found.updatedWith(request)
       }
@@ -170,7 +170,7 @@ class StaffService(
     return this
   }
 
-  fun isRequestAnUpdate(
+  fun isUpdateRequest(
     com: CommunityOffenderManager,
     comUpdateRequest: UpdateComRequest,
   ) = (comUpdateRequest.firstName != com.firstName) ||
@@ -179,7 +179,7 @@ class StaffService(
     (!comUpdateRequest.staffUsername.equals(com.username, ignoreCase = true)) ||
     (comUpdateRequest.staffIdentifier != com.staffIdentifier)
 
-  private fun PrisonUser.isRequestAnUpdate(caDetails: UpdatePrisonUserRequest) = (caDetails.firstName != this.firstName) ||
+  private fun PrisonUser.isUpdateRequest(caDetails: UpdatePrisonUserRequest) = (caDetails.firstName != this.firstName) ||
     (caDetails.lastName != this.lastName) ||
     (caDetails.staffEmail != this.email) ||
     (!caDetails.staffUsername.equals(this.username, ignoreCase = true))
