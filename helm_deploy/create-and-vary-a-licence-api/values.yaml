@@ -130,9 +130,3 @@ jobs:
     path: /notify-probation-of-unapproved-licences
     cron: "0 2 * * *" # 2am every day
     allowRetry: false
-
-  - name: documents-migration-job
-    enabled: true
-    path: /migrate-exclusion-zone-maps?batchSize=25
-    cron: "*/1 * * * *" # every 1 minute
-    allowRetry: false
