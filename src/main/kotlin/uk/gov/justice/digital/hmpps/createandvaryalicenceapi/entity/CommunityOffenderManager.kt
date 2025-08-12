@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 @DiscriminatorValue(value = "COMMUNITY_OFFENDER_MANAGER")
 class CommunityOffenderManager(
   id: Long? = null,
-  val staffIdentifier: Long,
+  var staffIdentifier: Long,
   username: String,
   email: String?,
   firstName: String?,

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.Mockito.spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
@@ -45,28 +46,8 @@ class StaffServiceTest {
   inner class `COM tests` {
     @Test
     fun `updates existing COM with new details`() {
-      val expectedCom = CommunityOffenderManager(
-        staffIdentifier = 3000,
-        username = "JBLOGGS",
-        email = "jbloggs123@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      )
-
-      whenever(staffRepository.findCommunityOffenderManager(any(), any()))
-        .thenReturn(
-          listOf(
-            CommunityOffenderManager(
-              staffIdentifier = 2000,
-              username = "joebloggs",
-              email = "jbloggs@probation.gov.uk",
-              firstName = "A",
-              lastName = "B",
-            ),
-          ),
-        )
-
-      val comDetails = UpdateComRequest(
+      // Given
+      val updateRequest = UpdateComRequest(
         staffIdentifier = 3000,
         staffUsername = "jbloggs",
         staffEmail = "jbloggs123@probation.gov.uk",
@@ -74,64 +55,63 @@ class StaffServiceTest {
         lastName = "Y",
       )
 
-      service.updateComDetails(comDetails)
+      val foundCom = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "joebloggs",
+        email = "jbloggs@probation.gov.uk",
+        firstName = "A",
+        lastName = "B",
+      )
+      whenever(staffRepository.findCommunityOffenderManager(any(), any())).thenReturn(listOf(foundCom))
 
-      argumentCaptor<CommunityOffenderManager>().apply {
-        verify(staffRepository, times(1)).findCommunityOffenderManager(3000, "jbloggs")
-        verify(staffRepository, times(1)).saveAndFlush(capture())
+      val spyService = spy(service)
 
-        assertThat(firstValue).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp")
-          .isEqualTo(expectedCom)
-      }
+      // When
+      val result = spyService.updateComDetails(updateRequest)
+
+      // Then
+      verify(staffRepository, times(1)).findCommunityOffenderManager(3000, "jbloggs")
+      verify(staffRepository, times(0)).saveAndFlush(any<CommunityOffenderManager>())
+      verify(spyService, times(1)).isUpdate(foundCom, updateRequest)
+      assertComMatchesRequest(result, updateRequest)
     }
 
     @Test
     fun `does not update COM with same details`() {
-      whenever(staffRepository.findCommunityOffenderManager(any(), any()))
-        .thenReturn(
-          listOf(
-            CommunityOffenderManager(
-              staffIdentifier = 2000,
-              username = "joebloggs",
-              email = "jbloggs123@probation.gov.uk",
-              firstName = "X",
-              lastName = "Y",
-            ),
-          ),
-        )
+      // Given
+      val foundCom = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "joebloggs",
+        email = "jbloggs@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y",
+      )
+      whenever(staffRepository.findCommunityOffenderManager(any(), any())).thenReturn(listOf(foundCom))
 
-      val comDetails = UpdateComRequest(
+      val updateRequest = UpdateComRequest(
         staffIdentifier = 2000,
         staffUsername = "JOEBLOGGS",
         staffEmail = "jbloggs123@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
       )
+      val spyService = spy(service)
 
-      service.updateComDetails(comDetails)
+      // When
+      spyService.updateComDetails(updateRequest)
 
+      // Then
       verify(staffRepository, times(1)).findCommunityOffenderManager(2000, "JOEBLOGGS")
-      verify(staffRepository, times(0)).saveAndFlush(any())
+      verify(staffRepository, times(0)).saveAndFlush(any<CommunityOffenderManager>())
+      verify(spyService, times(1)).isUpdate(foundCom, updateRequest)
     }
 
     @Test
     fun `adds a new existing COM if it doesnt exist`() {
-      val expectedCom = CommunityOffenderManager(
-        staffIdentifier = 3000,
-        username = "JBLOGGS",
-        email = "jbloggs123@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      )
+      // Given
+      whenever(staffRepository.findCommunityOffenderManager(any(), any())).thenReturn(listOf())
 
-      whenever(
-        staffRepository.findCommunityOffenderManager(
-          any(),
-          any(),
-        ),
-      ).thenReturn(listOf())
-
-      val comDetails = UpdateComRequest(
+      val updateRequest = UpdateComRequest(
         staffIdentifier = 3000,
         staffUsername = "jbloggs",
         staffEmail = "jbloggs123@probation.gov.uk",
@@ -139,52 +119,26 @@ class StaffServiceTest {
         lastName = "Y",
       )
 
-      service.updateComDetails(comDetails)
+      val spyService = spy(service)
+      // When
+      val result = spyService.updateComDetails(updateRequest)
 
+      // Then
       verify(staffRepository, times(1)).findCommunityOffenderManager(3000, "jbloggs")
-      verify(staffRepository, times(1)).saveAndFlush(expectedCom)
+      verify(staffRepository, times(1)).saveAndFlush(any<CommunityOffenderManager>())
+      verify(spyService, times(0)).isUpdate(any(), any())
+      assertComMatchesRequest(result, updateRequest)
     }
 
-    @Test
-    fun `updates existing COM with new staffIdentifier`() {
-      val expectedCom = CommunityOffenderManager(
-        staffIdentifier = 2001,
-        username = "JOEBLOGGS",
-        email = "jbloggs123@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      )
-
-      whenever(staffRepository.findCommunityOffenderManager(any(), any()))
-        .thenReturn(
-          listOf(
-            CommunityOffenderManager(
-              staffIdentifier = 2000,
-              username = "JOEBLOGGS",
-              email = "jbloggs@probation.gov.uk",
-              firstName = "A",
-              lastName = "B",
-            ),
-          ),
-        )
-
-      val comDetails = UpdateComRequest(
-        staffIdentifier = 2001,
-        staffUsername = "JOEBLOGGS",
-        staffEmail = "jbloggs123@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      )
-
-      service.updateComDetails(comDetails)
-
-      argumentCaptor<CommunityOffenderManager>().apply {
-        verify(staffRepository, times(1)).findCommunityOffenderManager(2001, "JOEBLOGGS")
-        verify(staffRepository, times(1)).saveAndFlush(capture())
-
-        assertThat(firstValue).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp")
-          .isEqualTo(expectedCom)
-      }
+    private fun assertComMatchesRequest(
+      result: CommunityOffenderManager,
+      updateRequest: UpdateComRequest,
+    ) {
+      assertThat(result.staffIdentifier).isEqualTo(updateRequest.staffIdentifier)
+      assertThat(result.username).isEqualTo(updateRequest.staffUsername.uppercase())
+      assertThat(result.email).isEqualTo(updateRequest.staffEmail)
+      assertThat(result.firstName).isEqualTo(updateRequest.firstName)
+      assertThat(result.lastName).isEqualTo(updateRequest.lastName)
     }
 
     @Test
