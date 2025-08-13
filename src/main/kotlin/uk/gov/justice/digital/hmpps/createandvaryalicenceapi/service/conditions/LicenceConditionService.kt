@@ -294,7 +294,7 @@ class LicenceConditionService(
     val conditionCode = additionalCondition.conditionCode
     val newAdditionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
 
-    with (additionalCondition) {
+    with(additionalCondition) {
       conditionVersion = version
       additionalConditionData.clear()
       additionalConditionData.addAll(newAdditionalConditionData)
@@ -307,11 +307,9 @@ class LicenceConditionService(
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, additionalCondition, staffMember)
   }
 
-  private fun getLicence(licenceId: Long): Licence {
-    return  licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-  }
+  private fun getLicence(licenceId: Long): Licence = licenceRepository
+    .findById(licenceId)
+    .orElseThrow { EntityNotFoundException("$licenceId") }
 
   fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) = conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
 
@@ -368,8 +366,7 @@ class LicenceConditionService(
     auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, removedBespokeConditions, staffMember)
   }
 
-  private fun getCurrentUserName(): String =
-    SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER
+  private fun getCurrentUserName(): String = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
