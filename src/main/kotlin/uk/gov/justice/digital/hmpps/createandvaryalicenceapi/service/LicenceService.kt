@@ -911,7 +911,7 @@ class LicenceService(
       it.copy(
         id = null,
         licence = newLicence,
-        additionalConditionData = it.additionalConditionData.map { conditionData -> conditionData.copy(id = null) },
+        additionalConditionData = it.additionalConditionData.map { conditionData -> conditionData.copy(id = null) }.toMutableList(),
         additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { conditionSummary ->
           conditionSummary.copy(
             id = null,
@@ -936,7 +936,7 @@ class LicenceService(
       }
 
       condition.copy(
-        additionalConditionData = updatedAdditionalConditionData,
+        additionalConditionData = updatedAdditionalConditionData.toMutableList(),
         additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary,
       )
     }

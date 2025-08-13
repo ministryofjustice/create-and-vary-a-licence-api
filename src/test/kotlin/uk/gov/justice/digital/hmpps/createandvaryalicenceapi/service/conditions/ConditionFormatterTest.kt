@@ -1017,7 +1017,7 @@ class ConditionFormatterTest {
     conditionCategory = "Residence at a specific place",
     conditionSequence = 0,
     conditionText = "You must reside within the [INSERT REGION] while of no fixed abode, unless otherwise approved by your supervising officer.",
-    additionalConditionData = emptyList(),
+    additionalConditionData = mutableListOf(),
     additionalConditionUploadSummary = emptyList(),
     conditionVersion = "1.0",
     conditionType = "AP",

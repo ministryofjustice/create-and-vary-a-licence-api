@@ -70,8 +70,8 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         isLicenceReadyToSubmit(
           listOf(
-            anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
-            anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = emptyList()),
+            anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf()),
+            anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = mutableListOf()),
           ),
           aMappedPolicy,
         ),
@@ -87,7 +87,7 @@ class AdditionalConditionWithConfigTest {
     fun `maps conditions that do not need inputs to true`() {
       assertThat(
         isLicenceReadyToSubmit(
-          listOf(anAdditionalConditionEntity.copy(additionalConditionData = emptyList())),
+          listOf(anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf())),
           aMappedPolicyWithoutInputs,
         ),
       ).isEqualTo(
@@ -115,7 +115,7 @@ class AdditionalConditionWithConfigTest {
     fun `when a condition changes between policy versions, checks the policy version that matches the condition version`() {
       assertThat(
         isLicenceReadyToSubmit(
-          listOf(anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = emptyList())),
+          listOf(anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = mutableListOf())),
           aMappedPolicyWithMultipleVersions,
         ),
       ).isEqualTo(
@@ -146,7 +146,7 @@ class AdditionalConditionWithConfigTest {
     fun `checks for conditional inputs when determining submission status`() {
       assertThat(
         isLicenceReadyToSubmit(
-          listOf(anAdditionalConditionEntity.copy(additionalConditionData = listOf(conditionalAdditionalConditionData))),
+          listOf(anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf(conditionalAdditionalConditionData))),
           aMappedPolicyWithConditionalInputs,
         ),
       ).isEqualTo(
@@ -173,7 +173,7 @@ class AdditionalConditionWithConfigTest {
     fun `returns false for a condition that is missing inputs`() {
       assertThat(
         isConditionReadyToSubmit(
-          anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
+          anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf()),
           aMappedPolicy,
         ),
       ).isFalse()
@@ -183,7 +183,7 @@ class AdditionalConditionWithConfigTest {
     fun `returns true for a condition that doesn't need inputs`() {
       assertThat(
         isConditionReadyToSubmit(
-          anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
+          anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf()),
           aMappedPolicyWithoutInputs,
         ),
       ).isTrue()
@@ -274,7 +274,7 @@ class AdditionalConditionWithConfigTest {
       conditionCategory = "category",
       conditionSequence = 4,
       conditionText = "text",
-      additionalConditionData = listOf(someAdditionalConditionData),
+      additionalConditionData = mutableListOf(someAdditionalConditionData),
       additionalConditionUploadSummary = emptyList(),
       conditionType = "AP",
     )

@@ -305,23 +305,19 @@ class LicenceConditionService(
 
     val version = licenceEntity.version!!
     val conditionCode = additionalCondition.conditionCode
-    val additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
+    val newAdditionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
 
-    val updatedAdditionalCondition = additionalCondition.copy(
-      conditionVersion = version,
-      additionalConditionData = additionalConditionData,
-      expandedConditionText = getFormattedText(version, conditionCode, additionalConditionData),
-    )
-    additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+    with(additionalCondition) {
+      conditionVersion = version
+      additionalConditionData.clear()
+      additionalConditionData.addAll(newAdditionalConditionData)
+      expandedConditionText = getFormattedText(version, conditionCode, newAdditionalConditionData)
+    }
 
     val username = SecurityContextHolder.getContext().authentication.name
-
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
-
     licenceEntity.updateConditions(staffMember = staffMember)
-    licenceRepository.saveAndFlush(licenceEntity)
-
-    auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition, staffMember)
+    auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, additionalCondition, staffMember)
   }
 
   fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) = conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)

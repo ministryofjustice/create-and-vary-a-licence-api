@@ -96,7 +96,7 @@ class ExclusionZoneServiceTest {
   private companion object {
     val aLicenceEntity = TestData.createCrdLicence()
 
-    val someAdditionalConditionData = listOf(
+    val someAdditionalConditionData = mutableListOf(
       AdditionalConditionData(
         id = 1,
         dataField = "outOfBoundArea",

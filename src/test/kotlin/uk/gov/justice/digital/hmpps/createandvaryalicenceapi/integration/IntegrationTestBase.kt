@@ -59,7 +59,7 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 @ActiveProfiles("test")
 @SpringBootTest(
   webEnvironment = RANDOM_PORT,
-  properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=false"],
+  properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"],
 )
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)

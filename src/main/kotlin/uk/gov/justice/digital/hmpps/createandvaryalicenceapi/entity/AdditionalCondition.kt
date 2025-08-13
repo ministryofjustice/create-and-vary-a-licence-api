@@ -27,7 +27,7 @@ data class AdditionalCondition(
   @JoinColumn(name = "licence_id", nullable = false)
   var licence: Licence,
 
-  val conditionVersion: String,
+  var conditionVersion: String,
   val conditionCode: String,
   var conditionCategory: String,
   var conditionSequence: Int? = null,
@@ -43,7 +43,7 @@ data class AdditionalCondition(
   )
   @Fetch(FetchMode.SUBSELECT)
   @OrderBy("dataSequence")
-  val additionalConditionData: List<AdditionalConditionData> = emptyList(),
+  val additionalConditionData: MutableList<AdditionalConditionData> = mutableListOf(),
 
   @OneToMany(
     mappedBy = "additionalCondition",
