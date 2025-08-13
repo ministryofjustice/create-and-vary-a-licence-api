@@ -110,13 +110,15 @@ class ExclusionZoneService(
   }
 
   fun deleteDocumentsFor(licence: Licence) {
-    log.info("Deleting documents for Licence id=${licence.id}")
+    log.info("Deleting documents for Licence id={}", licence.id)
 
     deleteDocumentsFor(licence.additionalConditions)
   }
 
   fun deleteDocumentsFor(additionalConditions: List<AdditionalCondition>) {
-    log.info("Deleting documents for ${additionalConditions.size} additional conditions")
+    val additionalConditionIds = additionalConditions.map { it.id!! }
+
+    log.info("Deleting documents for AdditionalConditions with id in ({})", additionalConditionIds)
 
     // Remove AdditionalConditionUploadDetail records so they don't get orphaned
     additionalConditionUploadDetailRepository.deleteAllByIdInBatch(
@@ -125,9 +127,9 @@ class ExclusionZoneService(
         .map { it.uploadDetailId },
     )
 
-    documentCountsRepository.countsOfDocumentsRelatedTo(additionalConditions.map { it.id!! })
+    documentCountsRepository.countsOfDocumentsRelatedTo(additionalConditionIds)
       .filter { it.count == 1 }
-      .also { log.info("Deleting ${it.size} documents...") }
+      .also { log.info("Found {} documents to delete...", it.size) }
       .forEach { documentService.deleteDocument(UUID.fromString(it.uuid)) }
   }
 
