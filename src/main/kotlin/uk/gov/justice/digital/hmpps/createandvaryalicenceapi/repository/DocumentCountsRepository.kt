@@ -10,26 +10,19 @@ interface DocumentCountResult {
   val count: Int
 }
 
-data class DocumentCount(override val uuid: String, override val count: Int) : DocumentCountResult
-
 @Repository
 interface DocumentCountsRepository : JpaRepository<AdditionalConditionUploadDetail, Long> {
   @NativeQuery(
     """
-      SELECT uuid, COUNT(uuid) AS count
+      SELECT uuid, COUNT(*) OVER()
       FROM (
-        SELECT full_size_image_ds_uuid AS uuid
-        FROM additional_condition_upload_detail
-        WHERE additional_condition_id IN (:additionalConditionIds)
-        UNION ALL
-        SELECT original_data_ds_uuid AS uuid
-        FROM additional_condition_upload_detail
-        WHERE additional_condition_id IN (:additionalConditionIds)
-        UNION ALL
-        SELECT thumbnail_image_ds_uuid AS uuid
-        FROM additional_condition_upload_summary
-        WHERE additional_condition_id IN (:additionalConditionIds)
+        SELECT 
+          d.additional_condition_id,
+          UNNEST(array[d.original_data_ds_uuid, d.full_size_image_ds_uuid, s.thumbnail_image_ds_uuid]) AS uuid
+        FROM additional_condition_upload_detail d
+        JOIN additional_condition_upload_summary s ON s.upload_detail_id = d.id
       )
+      WHERE additional_condition_id IN (:additionalConditionIds)
       GROUP BY uuid
     """,
   )
