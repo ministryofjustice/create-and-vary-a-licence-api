@@ -364,7 +364,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-variation-licence-id-1-inPssPeriod.sql",
   )
-  fun `Create licence variation when in pss period excludes bespoke conditions`() {
+  fun `Create licence variation when in pss period then exclude bespoke conditions`() {
     // Given
     val uri = "/licence/id/1/create-variation"
 
