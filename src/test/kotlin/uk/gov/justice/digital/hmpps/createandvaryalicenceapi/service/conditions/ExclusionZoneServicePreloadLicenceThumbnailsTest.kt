@@ -52,7 +52,7 @@ class ExclusionZoneServicePreloadLicenceThumbnailsTest {
     conditionCategory = "",
     conditionText = "",
     conditionType = "",
-    additionalConditionData = emptyList(),
+    additionalConditionData = mutableListOf(),
     additionalConditionUploadSummary = listOf(
       AdditionalConditionUploadSummary(
         id = 2L,

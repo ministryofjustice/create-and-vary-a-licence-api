@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import kotlin.jvm.optionals.getOrNull
 
 private const val CONDITION_CODE = "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02"
 
@@ -262,6 +263,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the data associated with an additional condition`() {
+    // Given
     webTestClient.put()
       .uri("/licence/id/1/additional-conditions")
       .bodyValue(anAdditionalConditionsRequest)
@@ -276,33 +278,34 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     assertThat(conditions).isNotEmpty
     val conditionId = conditions.first().id
 
-    webTestClient.put()
+    // When
+    val result = webTestClient.put()
       .uri("/licence/id/1/additional-conditions/condition/$conditionId")
       .bodyValue(anAdditionalConditionDataRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
 
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
+    // Then
+    result.expectStatus().isOk
 
-    assertThat(result?.additionalLicenceConditions?.get(0)?.expandedText).isEqualTo("Notify your supervising officer of any developing intimate relationships with women or men.")
+    val licence = licenceRepository.findById(1).getOrNull()
+    assertThat(licence!!).isNotNull
+    assertThat(licence.additionalConditions).isNotEmpty
+    val firstCondition = licence.additionalConditions.first()
 
-    assertThat(result?.additionalLicenceConditions?.get(0)?.data)
-      .extracting<Tuple> { tuple(it.field, it.value, it.sequence) }
-      .containsAll(
-        listOf(
-          tuple("gender", "women or men", 0),
-        ),
-      )
+    assertThat(firstCondition)
+      .extracting("conditionVersion", "expandedConditionText")
+      .containsExactly("1.0", "Notify your supervising officer of any developing intimate relationships with women or men.")
+
+    assertThat(firstCondition.additionalConditionData).isNotEmpty
+    assertThat(firstCondition.additionalConditionData).hasSize(1)
+    val additionalConditionData = firstCondition.additionalConditionData[0]
+
+    assertThat(additionalConditionData.id).isEqualTo(1)
+    assertThat(additionalConditionData.dataField).isEqualTo("gender")
+    assertThat(additionalConditionData.dataValue).isEqualTo("women or men")
+    assertThat(additionalConditionData.dataSequence).isEqualTo(0)
   }
 
   private companion object {

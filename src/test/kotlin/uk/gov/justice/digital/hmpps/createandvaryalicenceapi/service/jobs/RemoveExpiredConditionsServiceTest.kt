@@ -213,7 +213,7 @@ class RemoveExpiredConditionsServiceTest {
       )
     }
 
-    val someAdditionalConditionData = listOf(
+    val someAdditionalConditionData = mutableListOf(
       AdditionalConditionData(
         id = 1,
         dataField = "dataField",

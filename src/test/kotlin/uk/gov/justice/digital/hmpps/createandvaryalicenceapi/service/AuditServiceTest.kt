@@ -394,7 +394,7 @@ class AuditServiceTest {
           conditionCode = "code2",
           conditionCategory = "category2",
           conditionText = "text2",
-          additionalConditionData = emptyList(),
+          additionalConditionData = mutableListOf(),
         ),
       )
 
@@ -491,7 +491,7 @@ class AuditServiceTest {
           conditionCode = "code2",
           conditionCategory = "category2",
           conditionText = "text2",
-          additionalConditionData = emptyList(),
+          additionalConditionData = mutableListOf(),
         ),
       )
 
@@ -896,7 +896,7 @@ class AuditServiceTest {
 
     val aHdcLicenceEntity = TestData.createHdcLicence()
 
-    val someAdditionalConditionData = listOf(
+    val someAdditionalConditionData = mutableListOf(
       AdditionalConditionData(
         id = 1,
         dataField = "dataField",

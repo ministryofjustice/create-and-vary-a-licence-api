@@ -496,7 +496,7 @@ class LicenceConditionServiceTest {
     id: Long? = 1,
     conditionCode: String = "code",
     conditionSequence: Int = 5,
-    additionalConditionData: List<EntityAdditionalConditionData> = someAdditionalConditionData,
+    additionalConditionData: MutableList<EntityAdditionalConditionData> = someAdditionalConditionData,
   ) = AdditionalCondition(
     id = id,
     conditionVersion = "1.0",
@@ -661,108 +661,43 @@ class LicenceConditionServiceTest {
 
     @Test
     fun `update additional condition data`() {
-      whenever(licenceRepository.findById(1L))
-        .thenReturn(
-          Optional.of(
-            aLicenceEntity.copy(
-              additionalConditions = listOf(
-                additionalCondition(1),
-              ),
-            ),
-          ),
-        )
-      whenever(additionalConditionRepository.findById(1L))
-        .thenReturn(
-          Optional.of(
-            anAdditionalConditionEntity.copy(),
-          ),
-        )
+      // Given
+
+      val additionalCondition = additionalCondition(1)
+
+      val licence = aLicenceEntity.copy(additionalConditions = listOf(additionalCondition))
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+      whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(additionalCondition))
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
+      val additionalConditionDataRequest = AdditionalConditionData(
+        id = 1,
+        field = "field1",
+        value = "value1",
+        sequence = 0,
+      )
       val request = UpdateAdditionalConditionDataRequest(
-        data = listOf(
-          AdditionalConditionData(
-            id = 1,
-            field = "field1",
-            value = "value1",
-            sequence = 0,
-          ),
-        ),
+        data = listOf(additionalConditionDataRequest),
       )
 
+      // When
       service.updateAdditionalConditionData(1L, 1L, request)
 
-      val conditionCaptor = ArgumentCaptor.forClass(AdditionalCondition::class.java)
-      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
-
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditionData(any(), any(), any())
-
-      verify(additionalConditionRepository, times(1)).saveAndFlush(conditionCaptor.capture())
-
-      assertThat(conditionCaptor.value.expandedConditionText).isEqualTo("expanded text")
-      assertThat(conditionCaptor.value.additionalConditionData).containsExactly(
-        EntityAdditionalConditionData(
-          id = null,
-          additionalCondition = anAdditionalConditionEntity,
-          dataSequence = 0,
-          dataField = "field1",
-          dataValue = "value1",
-        ),
+      // Then
+      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditionData(
+        licence,
+        additionalCondition,
+        aCom,
       )
+      verify(staffRepository, times(1)).findByUsernameIgnoreCase("tcom")
+      verify(conditionFormatter, times(1)).format(CONDITION_CONFIG, additionalCondition.additionalConditionData)
 
-      // Verify last contact info is recorded
-      assertThat(licenceCaptor.value)
-        .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf(aCom.username, aCom))
-
-      verify(conditionFormatter).format(CONDITION_CONFIG, conditionCaptor.value.additionalConditionData)
-    }
-
-    @Test
-    fun `updating additional condition data triggers checking condition formatting`() {
-      whenever(licenceRepository.findById(1L))
-        .thenReturn(
-          Optional.of(
-            aLicenceEntity.copy(
-              additionalConditions = listOf(
-                additionalCondition(1),
-              ),
-            ),
-          ),
-        )
-      whenever(additionalConditionRepository.findById(1L))
-        .thenReturn(
-          Optional.of(
-            anAdditionalConditionEntity.copy(),
-          ),
-        )
-
-      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
-
-      val request = UpdateAdditionalConditionDataRequest(
-        data = listOf(
-          AdditionalConditionData(
-            id = 1,
-            field = "field1",
-            value = "value1",
-            sequence = 0,
-          ),
-        ),
-      )
-
-      service.updateAdditionalConditionData(1L, 1L, request)
-
-      val conditionCaptor = ArgumentCaptor.forClass(AdditionalCondition::class.java)
-      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
-
-      verify(additionalConditionRepository).saveAndFlush(conditionCaptor.capture())
-      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
-      verify(conditionFormatter).format(CONDITION_CONFIG, conditionCaptor.value.additionalConditionData)
-
-      assertThat(licenceCaptor.value)
-        .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf(aCom.username, aCom))
+      assertThat(additionalCondition.conditionVersion).isEqualTo(licence.version)
+      assertThat(additionalCondition.expandedConditionText).isEqualTo("expanded text")
+      val additionalConditionData = additionalCondition.additionalConditionData.first()
+      assertThat(additionalConditionData.dataField).isEqualTo("field1")
+      assertThat(additionalConditionData.dataValue).isEqualTo("value1")
+      assertThat(additionalConditionData.additionalCondition).isEqualTo(additionalCondition)
     }
   }
 
@@ -815,7 +750,7 @@ class LicenceConditionServiceTest {
 
     val aLicenceEntity = TestData.createCrdLicence()
 
-    val someAdditionalConditionData = listOf(
+    val someAdditionalConditionData = mutableListOf(
       EntityAdditionalConditionData(
         id = 1,
         dataField = "dataField",
@@ -824,7 +759,7 @@ class LicenceConditionServiceTest {
       ),
     )
 
-    val someDifferentAdditionalConditionData = listOf(
+    val someDifferentAdditionalConditionData = mutableListOf(
       EntityAdditionalConditionData(
         id = 2,
         dataField = "dataField",

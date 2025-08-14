@@ -638,7 +638,7 @@ class PublicLicenceServiceTest {
       createdBy = aCom,
     )
 
-    val someAdditionalConditionData = listOf(
+    val someAdditionalConditionData = mutableListOf(
       AdditionalConditionData(
         id = 1,
         dataField = "outOfBoundArea",

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
@@ -45,15 +46,13 @@ class LicenceConditionService(
 
   @Transactional
   fun updateStandardConditions(licenceId: Long, request: UpdateStandardConditionDataRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
 
     val entityStandardLicenceConditions =
       request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
     val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = getCurrentUserName()
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
@@ -76,11 +75,9 @@ class LicenceConditionService(
     licenceId: Long,
     request: AddAdditionalConditionRequest,
   ): AdditionalCondition {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = getCurrentUserName()
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
@@ -129,17 +126,13 @@ class LicenceConditionService(
 
   @Transactional
   fun deleteAdditionalCondition(licenceId: Long, conditionId: Long) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
     deleteConditions(licenceEntity, listOf(conditionId), emptyList(), emptyList())
   }
 
   @Transactional
   fun deleteAdditionalConditionsByCode(licenceId: Long, request: DeleteAdditionalConditionsByCodeRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
     val conditionIds = licenceEntity.additionalConditions.filter {
       request.conditionCodes.contains(it.conditionCode)
     }.map { it.id!! }
@@ -148,11 +141,9 @@ class LicenceConditionService(
 
   @Transactional
   fun updateAdditionalConditions(licenceId: Long, request: AdditionalConditionsRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = getCurrentUserName()
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
@@ -239,11 +230,9 @@ class LicenceConditionService(
 
   @Transactional
   fun updateBespokeConditions(licenceId: Long, request: BespokeConditionRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = getCurrentUserName()
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
@@ -295,9 +284,7 @@ class LicenceConditionService(
     additionalConditionId: Long,
     request: UpdateAdditionalConditionDataRequest,
   ) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
 
     val additionalCondition = additionalConditionRepository
       .findById(additionalConditionId)
@@ -305,24 +292,24 @@ class LicenceConditionService(
 
     val version = licenceEntity.version!!
     val conditionCode = additionalCondition.conditionCode
-    val additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
+    val newAdditionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
 
-    val updatedAdditionalCondition = additionalCondition.copy(
-      conditionVersion = version,
-      additionalConditionData = additionalConditionData,
-      expandedConditionText = getFormattedText(version, conditionCode, additionalConditionData),
-    )
-    additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+    with(additionalCondition) {
+      conditionVersion = version
+      additionalConditionData.clear()
+      additionalConditionData.addAll(newAdditionalConditionData)
+      expandedConditionText = getFormattedText(version, conditionCode, newAdditionalConditionData)
+    }
 
-    val username = SecurityContextHolder.getContext().authentication.name
-
+    val username = getCurrentUserName()
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
-
     licenceEntity.updateConditions(staffMember = staffMember)
-    licenceRepository.saveAndFlush(licenceEntity)
-
-    auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition, staffMember)
+    auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, additionalCondition, staffMember)
   }
+
+  private fun getLicence(licenceId: Long): Licence = licenceRepository
+    .findById(licenceId)
+    .orElseThrow { EntityNotFoundException("$licenceId") }
 
   fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) = conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
 
@@ -336,7 +323,7 @@ class LicenceConditionService(
     if (standardConditionIds.isEmpty() && additionalConditionIds.isEmpty() && bespokeConditionIds.isEmpty()) {
       return
     }
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = getCurrentUserName()
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
@@ -378,6 +365,8 @@ class LicenceConditionService(
     auditService.recordAuditEventDeleteStandardConditions(licenceEntity, removedStandardConditions, staffMember)
     auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, removedBespokeConditions, staffMember)
   }
+
+  private fun getCurrentUserName(): String = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

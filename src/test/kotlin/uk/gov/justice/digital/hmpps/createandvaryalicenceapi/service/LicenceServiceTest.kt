@@ -4146,7 +4146,7 @@ class LicenceServiceTest {
     isReviewNeeded = false,
   )
 
-  private val someAdditionalConditionData = listOf(
+  private val someAdditionalConditionData = mutableListOf(
     AdditionalConditionData(
       id = 1,
       dataField = "dataField",
