@@ -9,6 +9,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.never
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
@@ -43,6 +44,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
     )
   }
 
+  @Transactional
   @Sql(
     "classpath:test_data/seed-a-few-licences.sql",
     "classpath:test_data/seed-uploads-for-copied-licences.sql",

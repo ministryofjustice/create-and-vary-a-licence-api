@@ -37,21 +37,29 @@ VALUES
 INSERT INTO additional_condition_upload_summary (
     additional_condition_id,
     thumbnail_image_ds_uuid,
-    upload_detail_id
+    upload_detail_id,
+    file_size,
+    file_type
 )
 VALUES
     (
         1,
         '92939445-4159-4214-aa75-d07568a3e136',
-        1
+        1,
+        1,
+        'image/png'
     ),
     (
         3,
         '0bbf1459-ee7a-4114-b509-eb9a3fcc2756',
-        2
+        2,
+        1,
+        'image/png'
     ),
     (
         2,
         '53655fe1-1368-4ed3-bfb0-2727a4e73be5',
-        3
+        3,
+        1,
+        'image/png'
     );

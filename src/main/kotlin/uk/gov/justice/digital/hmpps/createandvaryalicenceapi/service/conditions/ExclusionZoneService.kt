@@ -120,17 +120,17 @@ class ExclusionZoneService(
 
     log.info("Deleting documents for AdditionalConditions with id in ({})", additionalConditionIds)
 
-    // Remove AdditionalConditionUploadDetail records so they don't get orphaned
+    documentCountsRepository.countsOfDocumentsRelatedTo(additionalConditionIds)
+      .filter { it.count == 1 }
+      .also { log.info("Found {} documents to delete...", it.size) }
+      .forEach { documentService.deleteDocument(UUID.fromString(it.uuid)) }
+
+    // Remove these after checking for duplicates otherwise there is a good chance you never find duplicates
     additionalConditionUploadDetailRepository.deleteAllByIdInBatch(
       additionalConditions
         .flatMap { it.additionalConditionUploadSummary }
         .map { it.uploadDetailId },
     )
-
-    documentCountsRepository.countsOfDocumentsRelatedTo(additionalConditionIds)
-      .filter { it.count == 1 }
-      .also { log.info("Found {} documents to delete...", it.size) }
-      .forEach { documentService.deleteDocument(UUID.fromString(it.uuid)) }
   }
 
   private fun uploadExtractedExclusionZoneParts(
