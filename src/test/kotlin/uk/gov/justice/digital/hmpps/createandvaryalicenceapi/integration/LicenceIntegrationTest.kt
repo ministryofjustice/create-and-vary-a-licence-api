@@ -334,11 +334,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceRepository.count()).isEqualTo(2)
 
     val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
-    assertThat(newLicence!!).isNotNull
+    assertThat(newLicence).isNotNull
     val oldLicence = licenceRepository.findById(licenceSummary.licenceId - 1).getOrNull()
-    assertThat(oldLicence!!).isNotNull
+    assertThat(oldLicence).isNotNull
 
-    assertThat(newLicence.licenceVersion).isEqualTo("2.0")
+    assertThat(newLicence!!.licenceVersion).isEqualTo("2.0")
     assertThat(newLicence.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
 
     assertThat(newLicence).isInstanceOf(EntityVariationLicence::class.java)
@@ -347,7 +347,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence.variationOfId).isEqualTo(1)
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
 
-    assertThat(newLicence.standardConditions.size).isEqualTo(oldLicence.standardConditions.size)
+    assertThat(newLicence.standardConditions.size).isEqualTo(oldLicence!!.standardConditions.size)
     assertThat(newLicence.additionalConditions.size).isEqualTo(oldLicence.additionalConditions.size)
     assertThat(newLicence.bespokeConditions.size).isEqualTo(oldLicence.bespokeConditions.size)
 
@@ -358,6 +358,28 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
     assertListsEqual(newLicence.additionalConditions, oldLicence.additionalConditions)
     assertListsEqual(newLicence.bespokeConditions, oldLicence.bespokeConditions)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-variation-licence-id-1-inPssPeriod.sql",
+  )
+  fun `Create licence variation when in pss period excludes bespoke conditions`() {
+    // Given
+    val uri = "/licence/id/1/create-variation"
+
+    // When
+    val result = postRequest(uri)
+
+    // Then
+    result.expectStatus().isOk
+
+    val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    val newLicence = licenceRepository.findById(licenceSummary!!.licenceId).getOrNull()
+    assertThat(newLicence!!.bespokeConditions.size).isEqualTo(0)
   }
 
   private fun <T> assertNoOverlap(newList: List<T>, oldList: List<T>, selectorCallBack: (T) -> Any?) {
