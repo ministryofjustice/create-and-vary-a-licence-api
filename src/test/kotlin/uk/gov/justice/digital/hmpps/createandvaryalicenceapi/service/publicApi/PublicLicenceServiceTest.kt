@@ -673,7 +673,7 @@ class PublicLicenceServiceTest {
       conditionText = "text",
       conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = listOf(someUploadSummaryData),
+      additionalConditionUploadSummary = mutableListOf(someUploadSummaryData),
     )
 
     val anAdditionalConditionUploadDetailEntity = AdditionalConditionUploadDetail(
@@ -694,7 +694,7 @@ class PublicLicenceServiceTest {
       conditionText = "text",
       conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = emptyList(),
+      additionalConditionUploadSummary = mutableListOf(),
     )
 
     val publicLicenseConditions = Conditions(

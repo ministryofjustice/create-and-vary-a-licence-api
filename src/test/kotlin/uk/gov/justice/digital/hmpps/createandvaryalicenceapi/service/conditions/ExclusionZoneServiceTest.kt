@@ -121,7 +121,7 @@ class ExclusionZoneServiceTest {
       conditionText = "text",
       conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = emptyList(),
+      additionalConditionUploadSummary = mutableListOf(),
     )
 
     val someUploadSummaryData = AdditionalConditionUploadSummary(
@@ -145,7 +145,7 @@ class ExclusionZoneServiceTest {
       conditionText = "text",
       conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = listOf(someUploadSummaryData),
+      additionalConditionUploadSummary = mutableListOf(someUploadSummaryData),
     )
 
     val anAdditionalConditionUploadDetailEntity = AdditionalConditionUploadDetail(

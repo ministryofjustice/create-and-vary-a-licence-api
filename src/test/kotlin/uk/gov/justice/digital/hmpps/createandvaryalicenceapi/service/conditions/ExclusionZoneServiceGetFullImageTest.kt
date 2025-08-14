@@ -78,7 +78,7 @@ class ExclusionZoneServiceGetFullImageTest {
     id = additionalConditionId,
     licence = mock(),
     additionalConditionData = mock(),
-    additionalConditionUploadSummary = listOf(additionalConditionUploadSummary()),
+    additionalConditionUploadSummary = mutableListOf(additionalConditionUploadSummary()),
     conditionVersion = "",
     conditionCode = "",
     conditionCategory = "",

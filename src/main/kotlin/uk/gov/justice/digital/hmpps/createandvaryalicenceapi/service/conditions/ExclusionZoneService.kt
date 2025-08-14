@@ -81,7 +81,7 @@ class ExclusionZoneService(
       uploadDetailId = savedDetail.id!!,
     )
 
-    val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = listOf(uploadSummary))
+    val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = mutableListOf(uploadSummary))
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }

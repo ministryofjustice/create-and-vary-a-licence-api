@@ -53,7 +53,7 @@ class ExclusionZoneServicePreloadLicenceThumbnailsTest {
     conditionText = "",
     conditionType = "",
     additionalConditionData = mutableListOf(),
-    additionalConditionUploadSummary = listOf(
+    additionalConditionUploadSummary = mutableListOf(
       AdditionalConditionUploadSummary(
         id = 2L,
         additionalCondition = mock(),

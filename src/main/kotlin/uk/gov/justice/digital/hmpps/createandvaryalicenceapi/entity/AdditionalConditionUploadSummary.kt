@@ -22,7 +22,7 @@ data class AdditionalConditionUploadSummary(
 
   @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)
-  val additionalCondition: AdditionalCondition,
+  var additionalCondition: AdditionalCondition,
 
   val filename: String? = null,
 
@@ -44,7 +44,7 @@ data class AdditionalConditionUploadSummary(
   val thumbnailImageDsUuid: String? = null,
 
   @param:NotNull
-  val uploadDetailId: Long,
+  var uploadDetailId: Long,
 ) {
 
   @Transient

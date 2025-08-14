@@ -74,7 +74,7 @@ values ( 2, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9'
 
 -- Create the data for the exclusion zone condition
 insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
-values ( 1, 1, 'outOfBoundArea', 'Town centre');
+values ( (select max(id) from additional_condition), 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
-values (1, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
+values ((select max(id) from additional_condition), 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');

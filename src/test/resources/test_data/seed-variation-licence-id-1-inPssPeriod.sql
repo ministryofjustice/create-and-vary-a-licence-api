@@ -30,8 +30,8 @@ insert into licence (kind,
                      licence_version,
 					 appointment_address)
 values (
-        'CRD',
-        'AP',
+        'VARIATION',
+        'AP_PSS',
         '1.0',
         'IN_PROGRESS',
         'A1234AA',
@@ -50,8 +50,8 @@ values (
         '2020-10-11',
         '2022-02-25',
         '2022-02-25',
-        '2022-02-25',
-        current_date,
+        '20252-08-01',
+        '2025-08-01',
         '2023-02-25',
         'N01',
         'PDU1',
@@ -85,8 +85,3 @@ values (1, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9',
 insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
 values ((select max(id) from additional_condition), 1, 'outOfBoundArea', 'Town centre');
 
-INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, source)
-VALUES ('550e8400-e29b-41d4-a716-446655440000', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');
-
-INSERT INTO licence_appointment_address(licence_id,address_id) VALUES(1,1);
-INSERT INTO staff_saved_appointment_address(staff_id,address_id) VALUES(1,1);
