@@ -335,6 +335,9 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
     assertThat(newLicence!!).isNotNull
+    val oldLicence = licenceRepository.findById(licenceSummary.licenceId - 1).getOrNull()
+    assertThat(oldLicence!!).isNotNull
+
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
     assertThat(newLicence.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
 
@@ -343,6 +346,35 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertLicenceHasExpectedAddress(newLicence, newAddress = true)
     assertThat(newLicence.variationOfId).isEqualTo(1)
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
+
+    assertThat(newLicence.standardConditions.size).isEqualTo(oldLicence.standardConditions.size)
+    assertThat(newLicence.additionalConditions.size).isEqualTo(oldLicence.additionalConditions.size)
+    assertThat(newLicence.bespokeConditions.size).isEqualTo(oldLicence.bespokeConditions.size)
+
+    assertNoOverlap(newLicence.standardConditions, oldLicence.standardConditions) { it.id }
+    assertNoOverlap(newLicence.additionalConditions, oldLicence.additionalConditions) { it.id }
+    assertNoOverlap(newLicence.bespokeConditions, oldLicence.bespokeConditions) { it.id }
+
+    assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
+    assertListsEqual(newLicence.additionalConditions, oldLicence.additionalConditions)
+    assertListsEqual(newLicence.bespokeConditions, oldLicence.bespokeConditions)
+  }
+
+  private fun <T> assertNoOverlap(newList: List<T>, oldList: List<T>, selectorCallBack: (T) -> Any?) {
+    assertThat(newList.map(selectorCallBack)).doesNotContainAnyElementsOf(oldList.map(selectorCallBack))
+  }
+
+  private fun <T> assertListsEqual(
+    newList: List<T>,
+    oldList: List<T>,
+    fieldsToIgnore: List<String> = listOf("id", "createdAt", "updatedAt", "licence"),
+    nestedFieldsRegx: List<String> = fieldsToIgnore.map { ".*\\.$it" },
+  ) {
+    assertThat(newList)
+      .usingRecursiveComparison()
+      .ignoringFields(*fieldsToIgnore.toTypedArray())
+      .ignoringFieldsMatchingRegexes(*nestedFieldsRegx.toTypedArray())
+      .isEqualTo(oldList)
   }
 
   @Test

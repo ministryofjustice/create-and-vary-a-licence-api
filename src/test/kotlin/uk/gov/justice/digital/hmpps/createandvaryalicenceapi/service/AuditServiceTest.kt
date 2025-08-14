@@ -922,7 +922,7 @@ class AuditServiceTest {
       conditionSequence = 4,
       conditionText = "text",
       additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = emptyList(),
+      additionalConditionUploadSummary = mutableListOf(),
       conditionType = "AP",
     )
 

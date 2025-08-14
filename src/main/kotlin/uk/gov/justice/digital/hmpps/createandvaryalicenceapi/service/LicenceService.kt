@@ -916,7 +916,7 @@ class LicenceService(
           conditionSummary.copy(
             id = null,
           )
-        },
+        }.toMutableList(),
       )
     }
 
@@ -933,7 +933,7 @@ class LicenceService(
           uploadDetail.copy(id = null, licenceId = newLicence.id, additionalConditionId = condition.id!!)
         uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
         it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id!!)
-      }
+      }.toMutableList()
 
       condition.copy(
         additionalConditionData = updatedAdditionalConditionData.toMutableList(),

@@ -99,7 +99,7 @@ object TestData {
     expandedConditionText = HARD_STOP_CONDITION.text,
     conditionVersion = licence.version!!,
     additionalConditionData = mutableListOf(),
-    additionalConditionUploadSummary = emptyList(),
+    additionalConditionUploadSummary = mutableListOf(),
     conditionCategory = HARD_STOP_CONDITION.categoryShort!!,
   )
 

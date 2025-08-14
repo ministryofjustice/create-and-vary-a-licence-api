@@ -71,8 +71,19 @@ values (1, 'notBreakLaw', 2, 'Do not break the law', 'AP');
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');
 
+insert into bespoke_condition (licence_id, condition_sequence, condition_text)
+values ( 1, 4, 'bespoke condition 1');
+
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (1, true, 'Test Programme');
+
+-- Create the exclusion zone additional condition
+insert into additional_condition (licence_id, condition_version, condition_category, condition_code, condition_sequence, condition_text, condition_type)
+values (1, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 5, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
+
+-- Create the data for the exclusion zone condition
+insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
+values ((select max(id) from additional_condition), 1, 'outOfBoundArea', 'Town centre');
 
 INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, source)
 VALUES ('550e8400-e29b-41d4-a716-446655440000', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');
