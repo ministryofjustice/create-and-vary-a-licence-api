@@ -263,7 +263,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the data associated with an additional condition`() {
-    // Then
+    // Given
     webTestClient.put()
       .uri("/licence/id/1/additional-conditions")
       .bodyValue(anAdditionalConditionsRequest)
@@ -278,7 +278,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     assertThat(conditions).isNotEmpty
     val conditionId = conditions.first().id
 
-    // Given
+    // When
     val result = webTestClient.put()
       .uri("/licence/id/1/additional-conditions/condition/$conditionId")
       .bodyValue(anAdditionalConditionDataRequest)
@@ -286,7 +286,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
 
-    // When
+    // Then
     result.expectStatus().isOk
 
     val licence = licenceRepository.findById(1).getOrNull()
