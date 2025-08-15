@@ -17,6 +17,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
@@ -33,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
@@ -57,6 +59,9 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
+
+  @Autowired
+  lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
 
   @BeforeEach
   fun reset() {
@@ -352,8 +357,26 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence.bespokeConditions.size).isEqualTo(oldLicence.bespokeConditions.size)
 
     assertNoOverlap(newLicence.standardConditions, oldLicence.standardConditions) { it.id }
-    assertNoOverlap(newLicence.additionalConditions, oldLicence.additionalConditions) { it.id }
     assertNoOverlap(newLicence.bespokeConditions, oldLicence.bespokeConditions) { it.id }
+
+    assertNoOverlap(newLicence.standardConditions, oldLicence.standardConditions) { it.licence.id }
+    assertNoOverlap(newLicence.bespokeConditions, oldLicence.bespokeConditions) { it.licence.id }
+
+    val doNotContainSameValeCallbacks: List<(AdditionalCondition) -> Any?> = listOf(
+      { it.id },
+      { it.licence.id },
+      { it.additionalConditionData.firstOrNull()?.id },
+      { it.additionalConditionData.firstOrNull()?.additionalCondition?.id },
+      { it.additionalConditionUploadSummary.firstOrNull()?.id },
+      { it.additionalConditionUploadSummary.firstOrNull()?.additionalCondition?.id },
+      { it.additionalConditionUploadSummary.firstOrNull()?.uploadDetailId },
+    )
+    assertNoOverlaps(doNotContainSameValeCallbacks, newLicence.additionalConditions, oldLicence.additionalConditions)
+
+    val uploadDetailOld = additionalConditionUploadDetailRepository.getReferenceById(oldLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
+    val uploadDetailNew = additionalConditionUploadDetailRepository.getReferenceById(newLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
+    assertListsEqual(listOf(uploadDetailNew), listOf(uploadDetailOld), listOf("id", "licenceId", "additionalConditionId"))
+    assertListsNotEqual(listOf(uploadDetailNew), listOf(uploadDetailOld), listOf("originalData", "fullSizeImage"))
 
     assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
     assertListsEqual(newLicence.additionalConditions, oldLicence.additionalConditions)
@@ -382,6 +405,16 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence!!.bespokeConditions.size).isEqualTo(0)
   }
 
+  private fun <T> assertNoOverlaps(
+    extractors: List<(T) -> Any?>,
+    newList: List<T>,
+    oldList: List<T>,
+  ) {
+    extractors.forEach {
+      assertNoOverlap(newList, oldList, it)
+    }
+  }
+
   private fun <T> assertNoOverlap(newList: List<T>, oldList: List<T>, selectorCallBack: (T) -> Any?) {
     assertThat(newList.map(selectorCallBack)).doesNotContainAnyElementsOf(oldList.map(selectorCallBack))
   }
@@ -389,7 +422,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   private fun <T> assertListsEqual(
     newList: List<T>,
     oldList: List<T>,
-    fieldsToIgnore: List<String> = listOf("id", "createdAt", "updatedAt", "licence"),
+    fieldsToIgnore: List<String> = listOf("id", "createdAt", "updatedAt", "licence", "uploadDetailId"),
     nestedFieldsRegx: List<String> = fieldsToIgnore.map { ".*\\.$it" },
   ) {
     assertThat(newList)
@@ -397,6 +430,19 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .ignoringFields(*fieldsToIgnore.toTypedArray())
       .ignoringFieldsMatchingRegexes(*nestedFieldsRegx.toTypedArray())
       .isEqualTo(oldList)
+  }
+
+  private fun <T> assertListsNotEqual(
+    newList: List<T>,
+    oldList: List<T>,
+    fieldsToIgnore: List<String> = listOf("id", "createdAt", "updatedAt", "licence", "uploadDetailId"),
+    nestedFieldsRegx: List<String> = fieldsToIgnore.map { ".*\\.$it" },
+  ) {
+    assertThat(newList)
+      .usingRecursiveComparison()
+      .ignoringFields(*fieldsToIgnore.toTypedArray())
+      .ignoringFieldsMatchingRegexes(*nestedFieldsRegx.toTypedArray())
+      .isNotEqualTo(oldList)
   }
 
   @Test

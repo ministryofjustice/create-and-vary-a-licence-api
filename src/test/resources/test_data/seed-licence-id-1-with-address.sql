@@ -85,6 +85,15 @@ values (1, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9',
 insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
 values ((select max(id) from additional_condition), 1, 'outOfBoundArea', 'Town centre');
 
+insert into additional_condition_upload_summary
+(additional_condition_id, filename, file_type, image_type, file_size, image_size, description, thumbnail_image,
+ upload_detail_id)
+values ((select max(id) from additional_condition), 'Test-file.pdf', 'application/pdf', 'image/png', 12345, 23456, 'Description', 'thumb', 1);
+
+insert into additional_condition_upload_detail
+(licence_id, additional_condition_id, original_data, full_size_image)
+values (1, (select max(id) from additional_condition), 'Some data', 'some more data');
+
 INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, source)
 VALUES ('550e8400-e29b-41d4-a716-446655440000', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');
 
