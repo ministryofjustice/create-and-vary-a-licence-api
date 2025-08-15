@@ -32,16 +32,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
@@ -80,9 +77,6 @@ class LicenceService(
   private val licenceRepository: LicenceRepository,
   private val crdLicenceRepository: CrdLicenceRepository,
   private val staffRepository: StaffRepository,
-  private val standardConditionRepository: StandardConditionRepository,
-  private val additionalConditionRepository: AdditionalConditionRepository,
-  private val bespokeConditionRepository: BespokeConditionRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val licencePolicyService: LicencePolicyService,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
@@ -880,77 +874,71 @@ class LicenceService(
   ): EntityLicence {
     val newStatus = kind.initialStatus()
 
+    licenceCopy.bespokeConditions.clear()
+    licenceCopy.standardConditions.clear()
+    licenceCopy.additionalConditions.clear()
+
     licenceCopy.version = licencePolicyService.currentPolicy().version
-    val newLicence = licenceRepository.save(licenceCopy)
-
-    val standardConditions = licence.standardConditions.map {
-      it.copy(id = null, licence = newLicence)
-    }
-
-    val bespokeConditions = licence.bespokeConditions.map {
-      it.copy(id = null, licence = newLicence)
-    }
-
-    standardConditionRepository.saveAll(standardConditions)
+    licenceCopy.standardConditions.addAll(
+      licence.standardConditions.map { it.copy(id = null, licence = licenceCopy) },
+    )
 
     val isNowInPssPeriod =
       licence is Variation && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()
 
     if (!isNowInPssPeriod) {
-      bespokeConditionRepository.saveAll(bespokeConditions)
-    }
-
-    val licenceConditions: List<AdditionalCondition> =
-      if (isNowInPssPeriod) {
-        licence.additionalConditions.filter { it.isNotAp() }
-      } else {
-        licence.additionalConditions
-      }
-
-    val additionalConditions = licenceConditions.map {
-      it.copy(
-        id = null,
-        licence = newLicence,
-        additionalConditionData = it.additionalConditionData.map { conditionData -> conditionData.copy(id = null) }.toMutableList(),
-        additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { conditionSummary ->
-          conditionSummary.copy(
-            id = null,
-          )
-        }.toMutableList(),
+      licenceCopy.bespokeConditions.addAll(
+        licence.bespokeConditions.map { it.copy(id = null, licence = licenceCopy) },
       )
     }
 
-    val copyOfAdditionalConditions = additionalConditionRepository.saveAll(additionalConditions)
+    val copiedAdditionalConditions = licence.additionalConditions
+      .run { if (isNowInPssPeriod) filter { it.isNotAp() } else this }
+      .map { condition ->
 
-    val newAdditionalConditions = copyOfAdditionalConditions.map { condition ->
-      val updatedAdditionalConditionData = condition.additionalConditionData.map {
-        it.copy(additionalCondition = condition)
+        val copiedCondition = condition.copy(
+          id = null,
+          licence = licenceCopy,
+          additionalConditionData = mutableListOf(),
+          additionalConditionUploadSummary = mutableListOf(),
+        )
+
+        val data = condition.additionalConditionData.map {
+          it.copy(id = null, additionalCondition = copiedCondition)
+        }
+        val summary = condition.additionalConditionUploadSummary.map {
+          it.copy(id = null, additionalCondition = copiedCondition)
+        }
+
+        copiedCondition.additionalConditionData.addAll(data)
+        copiedCondition.additionalConditionUploadSummary.addAll(summary)
+        copiedCondition
       }
 
-      val updatedAdditionalConditionUploadSummary = condition.additionalConditionUploadSummary.map {
+
+    // This needs to be saved here before the below code uses the condition.id
+    licenceCopy.additionalConditions.addAll(copiedAdditionalConditions)
+    licenceRepository.saveAndFlush(licenceCopy)
+
+    copiedAdditionalConditions.forEach { condition ->
+      condition.additionalConditionUploadSummary.forEach {
+
         var uploadDetail = additionalConditionUploadDetailRepository.getReferenceById(it.uploadDetailId)
-        uploadDetail =
-          uploadDetail.copy(id = null, licenceId = newLicence.id, additionalConditionId = condition.id!!)
-        uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
-        it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id!!)
-      }.toMutableList()
-
-      condition.copy(
-        additionalConditionData = updatedAdditionalConditionData.toMutableList(),
-        additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary,
-      )
+        uploadDetail = uploadDetail.copy(id = null, licenceId = licenceCopy.id, additionalConditionId = condition.id!!)
+        val savedUploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
+        it.uploadDetailId = savedUploadDetail.id!!
+      }
     }
 
-    additionalConditionRepository.saveAll(newAdditionalConditions)
 
     val licenceEventMessage = when (licenceCopy.statusCode) {
-      VARIATION_IN_PROGRESS -> "A variation was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
-      IN_PROGRESS -> "A new licence version was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
+      VARIATION_IN_PROGRESS -> "A variation was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"
+      IN_PROGRESS -> "A new licence version was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"
       else -> error("Invalid new licence status of ${licenceCopy.statusCode} when creating a licence copy ")
     }
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
-        licenceId = newLicence.id,
+        licenceId = licenceCopy.id,
         eventType = kind.copyEventType(),
         username = creator.username,
         forenames = creator.firstName,
@@ -960,8 +948,8 @@ class LicenceService(
     )
 
     val auditEventSummary = when (newStatus) {
-      VARIATION_IN_PROGRESS -> "Licence varied for ${newLicence.forename} ${newLicence.surname}"
-      IN_PROGRESS -> "New licence version created for ${newLicence.forename} ${newLicence.surname}"
+      VARIATION_IN_PROGRESS -> "Licence varied for ${licenceCopy.forename} ${licenceCopy.surname}"
+      IN_PROGRESS -> "New licence version created for ${licenceCopy.forename} ${licenceCopy.surname}"
       else -> error("Invalid new licence status of $newStatus when creating a licence copy ")
     }
     auditEventRepository.saveAndFlush(
@@ -970,11 +958,11 @@ class LicenceService(
         username = creator.username,
         fullName = "${creator.firstName} ${creator.lastName}",
         summary = auditEventSummary,
-        detail = "Old ID ${licence.id}, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}",
+        detail = "Old ID ${licence.id}, new ID ${licenceCopy.id} type ${licenceCopy.typeCode} status ${licenceCopy.statusCode.name} version ${licenceCopy.version}",
       ),
     )
 
-    return newLicence
+    return licenceCopy
   }
 
   private fun getCommunityOffenderManagerForCurrentUser(): CommunityOffenderManager {

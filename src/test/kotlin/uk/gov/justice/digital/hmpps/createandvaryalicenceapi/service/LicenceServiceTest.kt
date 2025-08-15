@@ -58,16 +58,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
@@ -102,9 +99,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as HdcVariationLicenceModel
 
 class LicenceServiceTest {
-  private val standardConditionRepository = mock<StandardConditionRepository>()
-  private val additionalConditionRepository = mock<AdditionalConditionRepository>()
-  private val bespokeConditionRepository = mock<BespokeConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
   private val crdLicenceRepository = mock<CrdLicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
@@ -125,9 +119,6 @@ class LicenceServiceTest {
       licenceRepository,
       crdLicenceRepository,
       staffRepository,
-      standardConditionRepository,
-      additionalConditionRepository,
-      bespokeConditionRepository,
       licenceEventRepository,
       licencePolicyService,
       additionalConditionUploadDetailRepository,
@@ -153,8 +144,6 @@ class LicenceServiceTest {
 
     reset(
       licenceRepository,
-      standardConditionRepository,
-      bespokeConditionRepository,
       licenceEventRepository,
       additionalConditionUploadDetailRepository,
       auditEventRepository,
@@ -2071,7 +2060,7 @@ class LicenceServiceTest {
 
     service.createVariation(1L)
 
-    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     with(licenceCaptor.value as VariationLicence) {
       assertThat(kind).isEqualTo(LicenceKind.VARIATION)
       assertThat(version).isEqualTo("2.1")
@@ -2111,7 +2100,7 @@ class LicenceServiceTest {
 
     service.createVariation(1L)
 
-    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     with(licenceCaptor.value as HdcVariationLicence) {
       assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
       assertThat(version).isEqualTo("2.1")
@@ -2161,14 +2150,16 @@ class LicenceServiceTest {
         typeCode = LicenceType.AP_PSS,
       ),
     )
-    val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+    val newLicenceCaptor = argumentCaptor<Licence>()
 
     service.createVariation(1L)
 
-    verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
-    assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
-    assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
-    assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
+    verify(licenceRepository, times(1)).saveAndFlush(newLicenceCaptor.capture())
+    val newLicence = newLicenceCaptor.firstValue
+
+    assertThat(newLicence.additionalConditions.size).isEqualTo(2)
+    assertThat(newLicence.additionalConditions.first().conditionType).isEqualTo(LicenceType.AP.toString())
+    assertThat(newLicence.additionalConditions.last().conditionType).isEqualTo(LicenceType.PSS.toString())
   }
 
   @Test
@@ -2205,7 +2196,7 @@ class LicenceServiceTest {
     val auditEventCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     service.editLicence(1L)
 
-    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     with(licenceCaptor.value as CrdLicence) {
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -2257,7 +2248,7 @@ class LicenceServiceTest {
     service.editLicence(1L)
 
     // Then
-    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     with(licenceCaptor.value as PrrdLicence) {
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -2302,12 +2293,15 @@ class LicenceServiceTest {
 
     whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
 
-    val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+    val newLicenceCaptor = argumentCaptor<Licence>()
     service.editLicence(1L)
-    verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
-    assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
-    assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
-    assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
+
+    verify(licenceRepository, times(1)).saveAndFlush(newLicenceCaptor.capture())
+    val newLicence = newLicenceCaptor.firstValue
+
+    assertThat(newLicence.additionalConditions.size).isEqualTo(2)
+    assertThat(newLicence.additionalConditions.first().conditionType).isEqualTo(LicenceType.AP.toString())
+    assertThat(newLicence.additionalConditions.last().conditionType).isEqualTo(LicenceType.PSS.toString())
   }
 
   @Test
@@ -3832,7 +3826,7 @@ class LicenceServiceTest {
 
       service.editLicence(1L)
 
-      verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       with(licenceCaptor.value as HdcLicence) {
         assertThat(version).isEqualTo("2.1")
         assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -3880,12 +3874,16 @@ class LicenceServiceTest {
 
       whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
 
-      val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+      val newLicenceCaptor = argumentCaptor<Licence>()
+
       service.editLicence(1L)
-      verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
-      assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
-      assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
-      assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
+
+      verify(licenceRepository, times(1)).saveAndFlush(newLicenceCaptor.capture())
+      val newLicence = newLicenceCaptor.firstValue
+
+      assertThat(newLicence.additionalConditions.size).isEqualTo(2)
+      assertThat(newLicence.additionalConditions.first().conditionType).isEqualTo(LicenceType.AP.toString())
+      assertThat(newLicence.additionalConditions.last().conditionType).isEqualTo(LicenceType.PSS.toString())
     }
 
     @Test
