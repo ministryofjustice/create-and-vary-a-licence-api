@@ -2483,6 +2483,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).delete(aLicenceEntity)
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+    verify(exclusionZoneService, times(1)).deleteDocumentsFor(aLicenceEntity)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
