@@ -915,21 +915,18 @@ class LicenceService(
         copiedCondition
       }
 
-
     // This needs to be saved here before the below code uses the condition.id
     licenceCopy.additionalConditions.addAll(copiedAdditionalConditions)
     licenceRepository.saveAndFlush(licenceCopy)
 
     copiedAdditionalConditions.forEach { condition ->
       condition.additionalConditionUploadSummary.forEach {
-
         var uploadDetail = additionalConditionUploadDetailRepository.getReferenceById(it.uploadDetailId)
         uploadDetail = uploadDetail.copy(id = null, licenceId = licenceCopy.id, additionalConditionId = condition.id!!)
         val savedUploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
         it.uploadDetailId = savedUploadDetail.id!!
       }
     }
-
 
     val licenceEventMessage = when (licenceCopy.statusCode) {
       VARIATION_IN_PROGRESS -> "A variation was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"

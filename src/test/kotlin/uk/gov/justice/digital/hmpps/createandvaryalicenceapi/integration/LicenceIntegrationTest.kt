@@ -63,7 +63,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Autowired
   lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
 
-
   @BeforeEach
   fun reset() {
     govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
@@ -364,27 +363,25 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertNoOverlap(newLicence.bespokeConditions, oldLicence.bespokeConditions) { it.licence.id }
 
     val doNotContainSameValeCallbacks: List<(AdditionalCondition) -> Any?> = listOf(
-        { it.id },
-        { it.licence.id },
-        { it.additionalConditionData.firstOrNull()?.id },
-        { it.additionalConditionData.firstOrNull()?.additionalCondition?.id },
-        { it.additionalConditionUploadSummary.firstOrNull()?.id },
-        { it.additionalConditionUploadSummary.firstOrNull()?.additionalCondition?.id },
-        { it.additionalConditionUploadSummary.firstOrNull()?.uploadDetailId },
+      { it.id },
+      { it.licence.id },
+      { it.additionalConditionData.firstOrNull()?.id },
+      { it.additionalConditionData.firstOrNull()?.additionalCondition?.id },
+      { it.additionalConditionUploadSummary.firstOrNull()?.id },
+      { it.additionalConditionUploadSummary.firstOrNull()?.additionalCondition?.id },
+      { it.additionalConditionUploadSummary.firstOrNull()?.uploadDetailId },
     )
     assertNoOverlaps(doNotContainSameValeCallbacks, newLicence.additionalConditions, oldLicence.additionalConditions)
 
     val uploadDetailOld = additionalConditionUploadDetailRepository.getReferenceById(oldLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
     val uploadDetailNew = additionalConditionUploadDetailRepository.getReferenceById(newLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
-    assertListsEqual(listOf( uploadDetailNew), listOf(uploadDetailOld), listOf("id", "licenceId", "additionalConditionId"))
-    assertListsNotEqual(listOf( uploadDetailNew), listOf(uploadDetailOld), listOf("originalData", "fullSizeImage"))
+    assertListsEqual(listOf(uploadDetailNew), listOf(uploadDetailOld), listOf("id", "licenceId", "additionalConditionId"))
+    assertListsNotEqual(listOf(uploadDetailNew), listOf(uploadDetailOld), listOf("originalData", "fullSizeImage"))
 
     assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
     assertListsEqual(newLicence.additionalConditions, oldLicence.additionalConditions)
     assertListsEqual(newLicence.bespokeConditions, oldLicence.bespokeConditions)
   }
-
-
 
   @Test
   @Sql(
@@ -411,7 +408,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   private fun <T> assertNoOverlaps(
     extractors: List<(T) -> Any?>,
     newList: List<T>,
-    oldList: List<T>
+    oldList: List<T>,
   ) {
     extractors.forEach {
       assertNoOverlap(newList, oldList, it)
