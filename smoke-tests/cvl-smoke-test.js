@@ -2,6 +2,7 @@ import {browser} from "k6/browser";
 import {b64encode} from "k6/encoding";
 import {expect} from "https://jslib.k6.io/k6-testing/0.5.0/index.js";
 import http from 'k6/http';
+import secrets from 'k6/secrets'
 import {check, fail} from 'k6';
 
 const AUTH_URL = __ENV.AUTH_URL;
@@ -40,7 +41,6 @@ export function setup() {
  * The main test function, see https://grafana.com/docs/k6/latest/using-k6/test-lifecycle/
  */
 export default async function () {
-    // getToken()
     await signIn()
 }
 
@@ -51,21 +51,15 @@ const signIn = async () => {
         await page.goto(CVL_URL);
 
         checkData = await page.locator('h1').textContent();
-        console.log(`checkData is ${checkData}`)
         check(page, {
             header: checkData === 'Sign in',
         });
 
-        await page.locator('input[data-element-id=username]').type('username')
-        await page.locator('input[data-element-id=password]').type('password')
-
-        const user = await page.locator('input[data-element-id=username]').inputValue()
-        const password = await page.locator('input[data-element-id=password]').inputValue()
-        console.log(`user is ${user}`)
-        console.log(`password is ${password}`)
+        await page.locator('input[data-element-id=username]').type(await secrets.get('username'))
+        await page.locator('input[data-element-id=password]').type(await secrets.get('password'))
 
         await page.locator('button[data-element-id=continue-button]').click()
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(3000);
         await page.screenshot({path: 'screenshot-test-end.png'});
     } catch (error) {
         fail(`Failed to load homepage: ${error.message}`);
