@@ -42,9 +42,7 @@ export function setup() {
  */
 export default async function () {
     // await comSignIn()
-
-    const licence = getLicenceById(686)
-    console.log(`licence: ${JSON.stringify(licence)}`)
+    const licence = getCurrentLicences(await secrets.get('nomisId'))
 }
 
 async function signIn(username, password) {
@@ -73,21 +71,51 @@ async function comSignIn() {
     await signIn(await secrets.get('com_username'), await secrets.get('com_password'))
 }
 
-function getLicenceById(licenceId) {
-    const token = getToken()
-
-    const url = `${CVL_API_URL}/licence/id/${licenceId}`;
-    const params = {
+function apiHeaders() {
+    return {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${getToken()}`
         },
     };
+}
 
-    const res = http.get(url, params);
+function getLicenceById(licenceId) {
+    const url = `${CVL_API_URL}/licence/id/${licenceId}`;
+    const res = http.get(url, apiHeaders());
     if (res.status !== 200) {
         fail(`could not get licence by id: ${res.status}`);
     }
+    return JSON.parse(res.body)
+}
+
+function getCurrentLicences(nomsId) {
+    const url = `${CVL_API_URL}/licence/match`;
+    const payload = {
+        "nomsId": [
+            nomsId,
+        ]
+    }
+    const res = http.post(url, JSON.stringify(payload), apiHeaders());
+    if (res.status !== 200) {
+        fail(`could not get current licences: ${res.status}`);
+    }
+
+    // {
+    //     "nomsId": [
+    //     "A8480DZ"
+    // ],
+    //     "status": [
+    //     "IN_PROGRESS",
+    //     "SUBMITTED",
+    //     "APPROVED",
+    //     "ACTIVE",
+    //     "VARIATION_IN_PROGRESS",
+    //     "VARIATION_SUBMITTED",
+    //     "VARIATION_APPROVED",
+    //     "TIMED_OUT"
+    // ]
+    // }
     return JSON.parse(res.body)
 }
 
