@@ -14,16 +14,22 @@ interface DocumentCountResult {
 interface DocumentCountsRepository : JpaRepository<AdditionalConditionUploadDetail, Long> {
   @NativeQuery(
     """
-      SELECT uuid, COUNT(*) OVER()
-      FROM (
-        SELECT 
+      WITH additional_condition_uuids AS (
+        SELECT
           d.additional_condition_id,
           UNNEST(array[d.original_data_ds_uuid, d.full_size_image_ds_uuid, s.thumbnail_image_ds_uuid]) AS uuid
         FROM additional_condition_upload_detail d
         JOIN additional_condition_upload_summary s ON s.upload_detail_id = d.id
       )
-      WHERE additional_condition_id IN (:additionalConditionIds)
-      GROUP BY uuid
+      SELECT uuid_totals.uuid, uuid_totals.count
+      FROM (
+        SELECT uuid, COUNT(uuid) AS count
+        FROM additional_condition_uuids
+        GROUP BY uuid
+      ) uuid_totals
+      JOIN additional_condition_uuids 
+      ON additional_condition_uuids.uuid = uuid_totals.uuid 
+      AND additional_condition_uuids.additional_condition_id IN (:additionalConditionIds)
     """,
   )
   fun countsOfDocumentsRelatedTo(additionalConditionIds: List<Long>): List<DocumentCountResult>
