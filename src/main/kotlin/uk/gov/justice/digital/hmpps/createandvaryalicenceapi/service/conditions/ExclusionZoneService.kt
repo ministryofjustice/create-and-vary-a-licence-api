@@ -74,7 +74,7 @@ class ExclusionZoneService(
       fileType = file.contentType,
       fileSize = file.size.toInt(),
       imageType = IMAGE_TYPE,
-      imageSize = file.size.toInt(),
+      imageSize = pdfExtract.fullSizeImage.size,
       description = pdfExtract.description,
       thumbnailImage = pdfExtract.thumbnailImage,
       thumbnailImageDsUuid = thumbnailImageDsUuid?.toString(),
