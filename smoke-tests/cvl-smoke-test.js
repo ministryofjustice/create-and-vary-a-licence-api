@@ -42,7 +42,7 @@ export function setup() {
  */
 export default async function () {
     // await comSignIn()
-    const licence = getCurrentLicences(await secrets.get('nomisId'))
+    deactivateCurrentLicences(await secrets.get('nomisId'))
 }
 
 async function signIn(username, password) {
@@ -94,6 +94,16 @@ function getCurrentLicences(nomsId) {
     const payload = {
         "nomsId": [
             nomsId,
+        ],
+        "status": [
+            "IN_PROGRESS",
+            "SUBMITTED",
+            "APPROVED",
+            "ACTIVE",
+            "VARIATION_IN_PROGRESS",
+            "VARIATION_SUBMITTED",
+            "VARIATION_APPROVED",
+            "TIMED_OUT"
         ]
     }
     const res = http.post(url, JSON.stringify(payload), apiHeaders());
@@ -101,22 +111,26 @@ function getCurrentLicences(nomsId) {
         fail(`could not get current licences: ${res.status}`);
     }
 
-    // {
-    //     "nomsId": [
-    //     "A8480DZ"
-    // ],
-    //     "status": [
-    //     "IN_PROGRESS",
-    //     "SUBMITTED",
-    //     "APPROVED",
-    //     "ACTIVE",
-    //     "VARIATION_IN_PROGRESS",
-    //     "VARIATION_SUBMITTED",
-    //     "VARIATION_APPROVED",
-    //     "TIMED_OUT"
-    // ]
-    // }
     return JSON.parse(res.body)
+}
+
+function updateLicenceStatus(licenceId, status) {
+    const url = `${CVL_API_URL}/licence/id/${licenceId}/status`;
+    const payload = {
+        status,
+        username: 'SMOKE_TEST',
+        fullName: 'SMOKE_TEST',
+    }
+    const res = http.put(url, JSON.stringify(payload), apiHeaders());
+    if (res.status !== 200) {
+        fail(`could not update status of licence ${licenceId} to ${status}, response code: ${res.status}`);
+    }
+}
+
+function deactivateCurrentLicences(nomisId) {
+    const licences = getCurrentLicences(nomisId)
+    const licenceIds = licences.map(licence => licence.licenceId)
+    licenceIds.forEach(licenceId => updateLicenceStatus(licenceId, 'INACTIVE'))
 }
 
 function getToken() {

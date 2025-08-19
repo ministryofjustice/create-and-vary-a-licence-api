@@ -36,8 +36,9 @@ npm install
 Create a file named cvl-smoke-tests.secrets in the smoke-tests directory. It should have the following contents.
 
 ```shell
-user="the user name"
-password="the password"
+user="a COM user name"
+password="a COM password"
+nomisId="a valid nomis id to use for creating licences etc"
 ```
 
 # Run the tests
