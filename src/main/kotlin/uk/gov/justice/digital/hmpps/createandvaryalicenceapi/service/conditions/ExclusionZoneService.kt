@@ -109,12 +109,14 @@ class ExclusionZoneService(
       }
   }
 
+  @Transactional
   fun deleteDocumentsFor(licence: Licence) {
     log.info("Deleting documents for Licence id={}", licence.id)
 
     deleteDocumentsFor(licence.additionalConditions)
   }
 
+  @Transactional
   fun deleteDocumentsFor(additionalConditions: List<AdditionalCondition>) {
     val additionalConditionIds = additionalConditions.map { it.id!! }
 
