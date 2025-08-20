@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
@@ -30,12 +32,14 @@ class ExclusionZoneServiceTest {
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val documentService = mock<DocumentService>()
+  private val documentCountsRepository: DocumentCountsRepository = Mockito.mock()
 
   private val service = ExclusionZoneService(
     licenceRepository,
     additionalConditionRepository,
     additionalConditionUploadDetailRepository,
     documentService,
+    documentCountsRepository,
   )
 
   @BeforeEach
@@ -45,6 +49,7 @@ class ExclusionZoneServiceTest {
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       documentService,
+      documentCountsRepository,
     )
   }
 

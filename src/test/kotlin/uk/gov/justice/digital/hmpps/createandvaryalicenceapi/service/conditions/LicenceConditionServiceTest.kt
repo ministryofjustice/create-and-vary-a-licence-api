@@ -38,7 +38,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -54,23 +53,23 @@ class LicenceConditionServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val bespokeConditionRepository = mock<BespokeConditionRepository>()
-  private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val policyService = mock<LicencePolicyService>()
   private val conditionFormatter = mock<ConditionFormatter>()
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
   private val electronicMonitoringProgrammeService = mock<ElectronicMonitoringProgrammeService>()
+  private val exclusionZoneService = mock<ExclusionZoneService>()
 
   private val service = LicenceConditionService(
     licenceRepository,
     additionalConditionRepository,
     bespokeConditionRepository,
-    additionalConditionUploadDetailRepository,
     conditionFormatter,
     policyService,
     auditService,
     staffRepository,
     electronicMonitoringProgrammeService,
+    exclusionZoneService,
   )
 
   @BeforeEach
@@ -88,8 +87,8 @@ class LicenceConditionServiceTest {
       licenceRepository,
       additionalConditionRepository,
       bespokeConditionRepository,
-      additionalConditionUploadDetailRepository,
       staffRepository,
+      exclusionZoneService,
     )
   }
 
@@ -177,6 +176,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
+      verify(exclusionZoneService, times(1)).deleteDocumentsFor(listOf(additionalCondition(2)))
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -216,6 +216,10 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      verify(exclusionZoneService, times(1)).deleteDocumentsFor(
+        listOf(additionalCondition(2), additionalCondition(3)),
+      )
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -338,6 +342,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).findById(1L)
       verify(licenceRepository, times(0)).saveAndFlush(any())
+      verifyNoInteractions(exclusionZoneService)
       verifyNoInteractions(staffRepository)
     }
 
@@ -348,6 +353,8 @@ class LicenceConditionServiceTest {
      */
     @Test
     fun `update additional conditions`() {
+      val expectedToBeRemoved = additionalCondition(2).copy(conditionSequence = 6, conditionCode = "code2", conditionType = "AP")
+
       whenever(licenceRepository.findById(1L))
         .thenReturn(
           Optional.of(
@@ -360,7 +367,7 @@ class LicenceConditionServiceTest {
                   conditionText = "oldText",
                   conditionType = "AP",
                 ),
-                additionalCondition(2).copy(conditionSequence = 6, conditionCode = "code2", conditionType = "AP"),
+                expectedToBeRemoved,
                 additionalCondition(3).copy(conditionSequence = 7, conditionCode = "code3", conditionType = "PSS"),
               ),
             ),
@@ -386,6 +393,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any(), any())
+      verify(exclusionZoneService, times(1)).deleteDocumentsFor(listOf(expectedToBeRemoved))
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1).copy(
