@@ -61,9 +61,7 @@ class ExclusionZoneService(
     val uploadDetail = AdditionalConditionUploadDetail(
       licenceId = licenceEntity.id,
       additionalConditionId = additionalCondition.id!!,
-      originalData = file.bytes,
       originalDataDsUuid = originalDataDsUuid?.toString(),
-      fullSizeImage = pdfExtract.fullSizeImage,
       fullSizeImageDsUuid = fullSizeImageDsUuid?.toString(),
     )
 
@@ -77,7 +75,6 @@ class ExclusionZoneService(
       imageType = IMAGE_TYPE,
       imageSize = pdfExtract.fullSizeImage.size,
       description = pdfExtract.description,
-      thumbnailImage = pdfExtract.thumbnailImage,
       thumbnailImageDsUuid = thumbnailImageDsUuid?.toString(),
       uploadDetailId = savedDetail.id!!,
     )
@@ -95,11 +92,7 @@ class ExclusionZoneService(
       additionalCondition(conditionId).additionalConditionUploadSummary.first().uploadDetailId,
     )
 
-    return if (uploadDetail.fullSizeImageDsUuid != null) {
-      documentService.downloadDocument(UUID.fromString(uploadDetail.fullSizeImageDsUuid))
-    } else {
-      uploadDetail.fullSizeImage
-    }
+    return uploadDetail.fullSizeImageDsUuid?.let { uuid -> documentService.downloadDocument(UUID.fromString(uuid)) }
   }
 
   fun preloadThumbnailsFor(licence: Licence) {

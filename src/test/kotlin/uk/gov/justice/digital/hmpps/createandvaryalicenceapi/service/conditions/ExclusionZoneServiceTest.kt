@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
-import java.util.Optional
+import java.util.*
 
 class ExclusionZoneServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -81,6 +81,8 @@ class ExclusionZoneServiceTest {
 
   @Test
   fun `service returns a full-sized exclusion zone image`() {
+    val documentServiceFile = ClassPathResource("test_map.jpg").inputStream.readAllBytes()
+
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
     whenever(additionalConditionUploadDetailRepository.findById(1L)).thenReturn(
@@ -88,10 +90,12 @@ class ExclusionZoneServiceTest {
         anAdditionalConditionUploadDetailEntity,
       ),
     )
+    whenever(documentService.downloadDocument(UUID.fromString(anAdditionalConditionUploadDetailEntity.fullSizeImageDsUuid)))
+      .thenReturn(documentServiceFile)
 
     val image = service.getExclusionZoneImage(1L, 1L)
 
-    assertThat(image).isEqualTo(ClassPathResource("test_map.jpg").inputStream.readAllBytes())
+    assertThat(image).isEqualTo(documentServiceFile)
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(additionalConditionRepository, times(1)).findById(1L)
@@ -134,7 +138,6 @@ class ExclusionZoneServiceTest {
       filename = "test.pdf",
       fileType = "application/pdf",
       description = "Description",
-      thumbnailImage = ByteArray(0),
       // Any additional condition is Ok here
       additionalCondition = anAdditionalConditionEntityWithoutUpload,
       uploadDetailId = 1,
@@ -157,8 +160,7 @@ class ExclusionZoneServiceTest {
       id = 1,
       licenceId = 1,
       additionalConditionId = 1,
-      fullSizeImage = ClassPathResource("test_map.jpg").inputStream.readAllBytes(),
-      originalData = ClassPathResource("Test_map_2021-12-06_112550.pdf").inputStream.readAllBytes(),
+      fullSizeImageDsUuid = "9f7f2002-cdd6-4e3a-8f3f-135271433300",
     )
   }
 }

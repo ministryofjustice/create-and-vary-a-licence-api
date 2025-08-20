@@ -89,16 +89,13 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     assertThat(uploadSummary.fileType).isEqualTo("application/pdf")
     assertThat(uploadSummary.imageType).isEqualTo("image/png")
     assertThat(uploadSummary.imageSize).isEqualTo(uploadFile.fullSizeImage.size)
-    assertThat(uploadSummary.thumbnailImage).isEqualTo(uploadFile.thumbnailImage)
     assertThat(uploadSummary.thumbnailImageDsUuid).isEqualTo(thumbnailUuid.toString())
     assertThat(uploadSummary.description?.trim()).isEqualTo("Description")
 
     // Check that the upload detail values are also stored and referenced by the ID column in the summary
     val uploadDetail = additionalConditionUploadDetailRepository.findById(uploadSummary.uploadDetailId).orElseThrow()
     assertThat(uploadDetail.licenceId).isEqualTo(2)
-    assertThat(uploadDetail.fullSizeImage).isEqualTo(uploadFile.fullSizeImage)
     assertThat(uploadDetail.fullSizeImageDsUuid).isEqualTo(fullSizeUuid.toString())
-    assertThat(uploadDetail.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
     assertThat(uploadDetail.originalDataDsUuid).isEqualTo(pdfUuid.toString())
   }
 
@@ -123,6 +120,8 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
       .exchange()
       .expectStatus().isForbidden
+
+    documentApiMockServer.verifyUploadedDocument(didHappenXTimes = 0)
   }
 
   @Test
@@ -131,15 +130,29 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
   fun `get full-sized image for exclusion zone upload`() {
+    // Given upload detail has UUID stored
+    additionalConditionUploadDetailRepository.save(
+      additionalConditionUploadDetailRepository.findById(1).orElseThrow()
+        .copy(fullSizeImageDsUuid = "44f8163c-6c97-4ff2-932b-ae24feb0c112"),
+    )
+    // Given document service has the file uploaded to it
+    documentApiMockServer.stubDownloadDocumentFile(
+      withUUID = "44f8163c-6c97-4ff2-932b-ae24feb0c112",
+      document = byteArrayOf(9, 9, 9),
+    )
+
+    // When I request the Image
     val result = webTestClient.get()
       .uri("/exclusion-zone/id/2/condition/id/1/full-size-image")
       .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
+      .expectHeader().contentType(MediaType.IMAGE_JPEG)
+      .expectBody().returnResult()
 
-    assertThat(result.expectHeader().contentType(MediaType.IMAGE_JPEG)).isNotNull
-    assertThat(result.expectBody()).isNotNull
+    // Then I get back the image that was previously uploaded to the document service
+    assertThat(result.responseBody).isEqualTo(byteArrayOf(9, 9, 9))
   }
 
   @Test
