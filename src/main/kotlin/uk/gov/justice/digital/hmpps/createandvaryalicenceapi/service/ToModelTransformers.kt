@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
@@ -122,7 +123,7 @@ fun toHardstop(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionSubmissionStatus: Map<String, ConditionStatus>,
 ) = ModelHardstopLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -206,7 +207,7 @@ fun toVariation(
   licence: VariationLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionSubmissionStatus: Map<String, ConditionStatus>,
 ): ModelVariationLicence = ModelVariationLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -292,7 +293,7 @@ fun toPrrd(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionSubmissionStatus: Map<String, ConditionStatus>,
 ) = PrrdLicenceResponse(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -386,7 +387,7 @@ fun toCrd(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionSubmissionStatus: Map<String, ConditionStatus>,
 ) = ModelCrdLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -480,7 +481,7 @@ fun toHdc(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionSubmissionStatus: Map<String, ConditionStatus>,
 ) = ModelHdcLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -573,7 +574,7 @@ fun toHdcVariation(
   licence: HdcVariationLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionSubmissionStatus: Map<String, ConditionStatus>,
 ) = ModelHdcVariationLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -668,15 +669,16 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition = ModelSt
 // Transform a list of entity additional conditions to model additional conditions
 fun List<EntityAdditionalCondition>.transformToModelAdditional(
   conditionType: String,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionSubmissionStatus: Map<String, ConditionStatus>,
 ): List<ModelAdditionalCondition> = filter { condition -> condition.conditionType == conditionType }.map {
   transform(
     it,
-    conditionSubmissionStatus[it.conditionCode]!!,
+    conditionSubmissionStatus[it.conditionCode]!!.readyToSubmit,
+    conditionSubmissionStatus[it.conditionCode]!!.requiresInput,
   )
 }
 
-fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition = ModelAdditionalCondition(
+fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean, requiresInput: Boolean): ModelAdditionalCondition = ModelAdditionalCondition(
   id = entity.id,
   code = entity.conditionCode,
   version = entity.conditionVersion,
@@ -687,6 +689,7 @@ fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelA
   data = entity.additionalConditionData.transformToModelAdditionalData(),
   uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
   readyToSubmit = readyToSubmit,
+  requiresInput = requiresInput,
 )
 
 // Transform a list of entity additional condition data to model additional condition data

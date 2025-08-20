@@ -41,8 +41,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isLicenceReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.getLicenceConditionStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -100,7 +101,7 @@ class LicenceService(
     val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
 
     val conditionsSubmissionStatus =
-      isLicenceReadyToSubmit(
+      getLicenceConditionStatuses(
         entityLicence.additionalConditions,
         licencePolicyService.getAllAdditionalConditions(),
       )
@@ -112,7 +113,7 @@ class LicenceService(
     licence: EntityLicence,
     earliestReleaseDate: LocalDate?,
     isEligibleForEarlyRelease: Boolean,
-    conditionSubmissionStatus: Map<String, Boolean>,
+    conditionSubmissionStatus: Map<String, ConditionStatus>,
   ): Licence = when (licence) {
     is PrrdLicence -> toPrrd(
       licence = licence,
