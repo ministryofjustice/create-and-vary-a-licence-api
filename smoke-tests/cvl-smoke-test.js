@@ -3,11 +3,13 @@ import {b64encode} from "k6/encoding";
 import {expect} from "https://jslib.k6.io/k6-testing/0.5.0/index.js";
 import http from 'k6/http';
 import secrets from 'k6/secrets'
-import {check, fail} from 'k6';
+import {check, fail, sleep} from 'k6';
+import {test} from "k6/execution";
 
 const AUTH_URL = __ENV.AUTH_URL;
 const CVL_API_URL = __ENV.CVL_API_URL;
 const CVL_URL = __ENV.CVL_URL;
+const HOME_URL = CVL_URL + "/";
 const AUTH_CREDENTIALS = b64encode(`${__ENV.SYSTEM_CLIENT_ID}:${__ENV.SYSTEM_CLIENT_SECRET}`);
 /*
  * Test config, see https://grafana.com/docs/k6/latest/using-k6/k6-options/
@@ -41,8 +43,8 @@ export function setup() {
  * The main test function, see https://grafana.com/docs/k6/latest/using-k6/test-lifecycle/
  */
 export default async function () {
-    // await comSignIn()
     deactivateCurrentLicences(await secrets.get('nomisId'))
+    await createLicence(await secrets.get('nomisId'))
 }
 
 async function signIn(username, password) {
@@ -53,22 +55,51 @@ async function signIn(username, password) {
 
         checkData = await page.locator('h1').textContent();
         check(page, {
-            header: checkData === 'Sign in',
+            "Sign in page is available": checkData === 'Sign in',
         });
 
         await page.locator('input[data-element-id=username]').type(username)
         await page.locator('input[data-element-id=password]').type(password)
 
-        await page.locator('button[data-element-id=continue-button]').click()
+        const continueButton = page.locator('button[data-element-id=continue-button]')
+        await continueButton.waitFor()
+        await continueButton.click()
+        await page.waitForURL(HOME_URL)
+        return page
     } catch (error) {
-        fail(`Failed to sign in: ${error.message}`);
-    } finally {
+        await page.screenshot({path: 'sign-in-failed.png'});
         await page.close();
+        test.abort(`Failed to sign in: ${error.message}`);
     }
 }
 
 async function comSignIn() {
-    await signIn(await secrets.get('com_username'), await secrets.get('com_password'))
+    return await signIn(await secrets.get('com_username'), await secrets.get('com_password'))
+}
+
+async function createLicence(nomisId) {
+    let page = await comSignIn()
+    const creatEditLicenceLink = page.locator('#createLicenceCard a')
+    await creatEditLicenceLink.waitFor()
+    await creatEditLicenceLink.click()
+
+    await page.waitForURL(/\/licence\/create\/caseload/);
+    const createLicenceLink = page.locator(`a[href="/licence/create/nomisId/${nomisId}/confirm"]`)
+    await createLicenceLink.waitFor()
+    await createLicenceLink.click()
+
+    await page.waitForURL(`${CVL_URL}/licence/create/nomisId/${nomisId}/confirm`)
+
+    await page.locator('#answer').click()
+    await page.locator('button[data-qa=continue]').click()
+
+    await page.waitForURL(/initial-meeting-name/);
+    checkLicenceCreated(nomisId)
+
+    await page.screenshot({path: 'end.png'});
+
+    // await page.waitForTimeout(1000);
+    // await page.screenshot({path: 'end.png'});
 }
 
 function apiHeaders() {
@@ -89,22 +120,13 @@ function getLicenceById(licenceId) {
     return JSON.parse(res.body)
 }
 
-function getCurrentLicences(nomsId) {
+function getLicencesForNomisId(nomsId, statuses) {
     const url = `${CVL_API_URL}/licence/match`;
     const payload = {
         "nomsId": [
             nomsId,
         ],
-        "status": [
-            "IN_PROGRESS",
-            "SUBMITTED",
-            "APPROVED",
-            "ACTIVE",
-            "VARIATION_IN_PROGRESS",
-            "VARIATION_SUBMITTED",
-            "VARIATION_APPROVED",
-            "TIMED_OUT"
-        ]
+        "status": statuses
     }
     const res = http.post(url, JSON.stringify(payload), apiHeaders());
     if (res.status !== 200) {
@@ -112,6 +134,18 @@ function getCurrentLicences(nomsId) {
     }
 
     return JSON.parse(res.body)
+}
+
+function checkLicenceCreated(nomisId) {
+    //const licences = getLicencesForNomisId(nomisId, ["IN_PROGRESS"])
+    const licences = getLicencesForNomisId(nomisId, [
+        "IN_PROGRESS",
+    ])
+    const status = licences.map(licence => licence.licenceStatus)
+    console.log(`licences: ${status}`)
+    check(licences, {
+        "An IN PROGRESS licence has been created": (licences) => licences.length === 1
+    });
 }
 
 function updateLicenceStatus(licenceId, status) {
@@ -128,7 +162,16 @@ function updateLicenceStatus(licenceId, status) {
 }
 
 function deactivateCurrentLicences(nomisId) {
-    const licences = getCurrentLicences(nomisId)
+    const licences = getLicencesForNomisId(nomisId, [
+        "IN_PROGRESS",
+        "SUBMITTED",
+        "APPROVED",
+        "ACTIVE",
+        "VARIATION_IN_PROGRESS",
+        "VARIATION_SUBMITTED",
+        "VARIATION_APPROVED",
+        "TIMED_OUT"
+    ])
     const licenceIds = licences.map(licence => licence.licenceId)
     licenceIds.forEach(licenceId => updateLicenceStatus(licenceId, 'INACTIVE'))
 }
