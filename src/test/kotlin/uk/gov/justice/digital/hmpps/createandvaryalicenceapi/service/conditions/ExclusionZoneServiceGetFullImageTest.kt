@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.Optional
@@ -20,6 +21,7 @@ class ExclusionZoneServiceGetFullImageTest {
   private val additionalConditionRepository: AdditionalConditionRepository = mock()
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository = mock()
   private val documentService: DocumentService = mock()
+  private val documentCountsRepository: DocumentCountsRepository = mock()
 
   private val fileStoredInDatabase = byteArrayOf(9, 9, 9)
   private val fileStoredRemotely = byteArrayOf(1, 1, 1)
@@ -39,6 +41,7 @@ class ExclusionZoneServiceGetFullImageTest {
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       documentService,
+      documentCountsRepository,
     )
 
     assertThat(exclusionZoneService.getExclusionZoneImage(licenceId, additionalConditionId))
@@ -54,6 +57,7 @@ class ExclusionZoneServiceGetFullImageTest {
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       documentService,
+      documentCountsRepository,
     )
 
     assertThat(exclusionZoneService.getExclusionZoneImage(licenceId, additionalConditionId))
