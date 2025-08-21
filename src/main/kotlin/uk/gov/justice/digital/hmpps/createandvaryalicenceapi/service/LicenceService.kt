@@ -835,6 +835,7 @@ class LicenceService(
       ),
     )
 
+    exclusionZoneService.deleteDocumentsFor(licenceEntity)
     licenceRepository.delete(licenceEntity)
   }
 
