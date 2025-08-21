@@ -29,7 +29,7 @@ fun mapConditionsToConfig(
 */
 fun getLicenceConditionStatuses(
   licenceConditions: List<AdditionalCondition>,
-  policyConditions: AllAdditionalConditions
+  policyConditions: AllAdditionalConditions,
 ): Map<String, ConditionStatus> {
   val conditionsWithConfig = mapConditionsToConfig(licenceConditions, policyConditions)
 
@@ -53,7 +53,6 @@ fun getLicenceConditionStatuses(
     condition.conditionCode to ConditionStatus(readyToSubmit, requiresInput)
   }
 }
-
 
 fun isConditionReadyToSubmit(
   licenceCondition: AdditionalCondition,
