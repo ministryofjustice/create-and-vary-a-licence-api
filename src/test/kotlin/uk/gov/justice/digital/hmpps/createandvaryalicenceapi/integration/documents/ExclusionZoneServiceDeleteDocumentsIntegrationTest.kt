@@ -23,13 +23,17 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
 
   lateinit var exclusionZoneService: ExclusionZoneService
 
-  @Autowired lateinit var licenceRepository: LicenceRepository
+  @Autowired
+  lateinit var licenceRepository: LicenceRepository
 
-  @Autowired lateinit var additionalConditionRepository: AdditionalConditionRepository
+  @Autowired
+  lateinit var additionalConditionRepository: AdditionalConditionRepository
 
-  @Autowired lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
+  @Autowired
+  lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
 
-  @Autowired lateinit var documentCountsRepository: DocumentCountsRepository
+  @Autowired
+  lateinit var documentCountsRepository: DocumentCountsRepository
   val documentService: DocumentService = mock()
 
   @BeforeEach
@@ -52,7 +56,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
     val licence = licenceRepository.findById(2L)
       .getOrElse { throw AssertionError("Licence not found") }
 
-    exclusionZoneService.deleteDocumentsFor(licence)
+    exclusionZoneService.deleteDocumentsFor(licence.additionalConditions)
 
     mapOf(
       "37eb7e31-a133-4259-96bc-93369b917eb8" to never(), // 2 references to this doc
