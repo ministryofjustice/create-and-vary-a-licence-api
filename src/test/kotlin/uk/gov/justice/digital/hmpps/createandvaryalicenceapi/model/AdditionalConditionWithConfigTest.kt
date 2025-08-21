@@ -15,8 +15,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.AdditionalConditionWithConfig
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.getLicenceConditionStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.getLicenceConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isConditionReadyToSubmit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.mapConditionsToConfig
 
@@ -42,29 +42,29 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `returns if there are no conditions on the licence`() {
       assertThat(
-        getLicenceConditionStatuses(
+        getLicenceConditionPolicyData(
           emptyList(),
           aMappedPolicy,
         ),
       ).isEqualTo(
-        emptyMap<String, ConditionStatus>(),
+        emptyMap<String, ConditionPolicyData>(),
       )
     }
 
     @Test
     fun `maps conditions with inputs to true`() {
       assertThat(
-        getLicenceConditionStatuses(
+        getLicenceConditionPolicyData(
           listOf(anAdditionalConditionEntity, anAdditionalConditionEntity.copy(conditionCode = "code2")),
           aMappedPolicy,
         ),
       ).isEqualTo(
         mapOf(
-          "code" to ConditionStatus(
+          "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
           ),
-          "code2" to ConditionStatus(
+          "code2" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
           ),
@@ -75,7 +75,7 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `maps conditions with missing inputs to false`() {
       assertThat(
-        getLicenceConditionStatuses(
+        getLicenceConditionPolicyData(
           listOf(
             anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf()),
             anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = mutableListOf()),
@@ -84,11 +84,11 @@ class AdditionalConditionWithConfigTest {
         ),
       ).isEqualTo(
         mapOf(
-          "code" to ConditionStatus(
+          "code" to ConditionPolicyData(
             readyToSubmit = false,
             requiresInput = true,
           ),
-          "code2" to ConditionStatus(
+          "code2" to ConditionPolicyData(
             readyToSubmit = false,
             requiresInput = true,
           ),
@@ -99,13 +99,13 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `maps conditions that do not need inputs to true`() {
       assertThat(
-        getLicenceConditionStatuses(
+        getLicenceConditionPolicyData(
           listOf(anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf())),
           aMappedPolicyWithoutInputs,
         ),
       ).isEqualTo(
         mapOf(
-          "code" to ConditionStatus(
+          "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = false,
           ),
@@ -116,13 +116,13 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `maps conditions that have optional fields based on the presence of required fields`() {
       assertThat(
-        getLicenceConditionStatuses(
+        getLicenceConditionPolicyData(
           listOf(anAdditionalConditionEntity),
           aMappedPolicyWithMultipleInputs,
         ),
       ).isEqualTo(
         mapOf(
-          "code" to ConditionStatus(
+          "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
           ),
@@ -133,13 +133,13 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `when a condition changes between policy versions, checks the policy version that matches the condition version`() {
       assertThat(
-        getLicenceConditionStatuses(
+        getLicenceConditionPolicyData(
           listOf(anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = mutableListOf())),
           aMappedPolicyWithMultipleVersions,
         ),
       ).isEqualTo(
         mapOf(
-          "code2" to ConditionStatus(
+          "code2" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = false,
           ),
@@ -150,7 +150,7 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `checks submission status based on condition policy version, not licence policy version`() {
       assertThat(
-        getLicenceConditionStatuses(
+        getLicenceConditionPolicyData(
           listOf(
             anAdditionalConditionEntity.copy(
               conditionVersion = "2.1",
@@ -161,7 +161,7 @@ class AdditionalConditionWithConfigTest {
         ),
       ).isEqualTo(
         mapOf(
-          "code" to ConditionStatus(
+          "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
           ),
@@ -172,13 +172,13 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `checks for conditional inputs when determining submission status`() {
       assertThat(
-        getLicenceConditionStatuses(
+        getLicenceConditionPolicyData(
           listOf(anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf(conditionalAdditionalConditionData))),
           aMappedPolicyWithConditionalInputs,
         ),
       ).isEqualTo(
         mapOf(
-          "code" to ConditionStatus(
+          "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
           ),
