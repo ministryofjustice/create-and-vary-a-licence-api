@@ -9,7 +9,7 @@ data class AdditionalConditionWithConfig(
   val config: IAdditionalCondition,
 )
 
-data class ConditionStatus(
+data class ConditionPolicyData(
   val readyToSubmit: Boolean,
   val requiresInput: Boolean,
 )
@@ -27,10 +27,10 @@ fun mapConditionsToConfig(
   Data-input is all-or-nothing (ie the user cannot submit data without filling out all required fields),
   so we can infer that the presence of any data means all the required data exists and the condition is ready to submit.
 */
-fun getLicenceConditionStatuses(
+fun getLicenceConditionPolicyData(
   licenceConditions: List<AdditionalCondition>,
   policyConditions: AllAdditionalConditions,
-): Map<String, ConditionStatus> {
+): Map<String, ConditionPolicyData> {
   val conditionsWithConfig = mapConditionsToConfig(licenceConditions, policyConditions)
 
   return conditionsWithConfig.associate { conditionWithConfig ->
@@ -50,11 +50,11 @@ fun getLicenceConditionStatuses(
       requiredFields.any { it in enteredFields }
     }
 
-    condition.conditionCode to ConditionStatus(readyToSubmit, requiresInput)
+    condition.conditionCode to ConditionPolicyData(readyToSubmit, requiresInput)
   }
 }
 
 fun isConditionReadyToSubmit(
   licenceCondition: AdditionalCondition,
   policyConditions: AllAdditionalConditions,
-): ConditionStatus = getLicenceConditionStatuses(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!
+): ConditionPolicyData = getLicenceConditionPolicyData(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!
