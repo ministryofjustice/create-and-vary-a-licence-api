@@ -603,6 +603,7 @@ class LicenceControllerTest {
         expandedText = "Do not associate with value1 for a period of value2",
         data = someAssociationData,
         readyToSubmit = true,
+        requiresInput = true,
       ),
     )
 

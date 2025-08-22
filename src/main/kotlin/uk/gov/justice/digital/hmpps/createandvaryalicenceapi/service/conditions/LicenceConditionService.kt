@@ -115,12 +115,12 @@ class LicenceConditionService(
 
     auditService.recordAuditEventAddAdditionalConditionOfSameType(licenceEntity, newCondition, staffMember)
 
-    val readyToSubmit = isConditionReadyToSubmit(
+    val (readyToSubmit, requiresInput) = isConditionReadyToSubmit(
       newCondition,
       licencePolicyService.getAllAdditionalConditions(),
     )
 
-    return transform(newCondition, readyToSubmit)
+    return transform(newCondition, readyToSubmit, requiresInput)
   }
 
   @Transactional

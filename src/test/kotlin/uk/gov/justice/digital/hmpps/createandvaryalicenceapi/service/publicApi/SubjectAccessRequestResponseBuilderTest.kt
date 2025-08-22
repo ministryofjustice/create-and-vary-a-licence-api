@@ -71,6 +71,7 @@ class SubjectAccessRequestResponseBuilderTest {
               category = "Category A",
               expandedText = "Condition text",
               readyToSubmit = true,
+              requiresInput = true,
               uploadSummary = listOf(
                 AdditionalConditionUploadSummary(
                   id = 1L,
@@ -105,6 +106,7 @@ class SubjectAccessRequestResponseBuilderTest {
               category = "Category B",
               expandedText = "Condition text - B ",
               readyToSubmit = true,
+              requiresInput = true,
               uploadSummary = listOf(
                 AdditionalConditionUploadSummary(
                   id = 3L,

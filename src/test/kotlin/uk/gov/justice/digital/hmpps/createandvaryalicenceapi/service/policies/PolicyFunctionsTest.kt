@@ -297,5 +297,6 @@ class PolicyFunctionsTest {
     text = "removedText",
     data = emptyList(),
     readyToSubmit = true,
+    requiresInput = true,
   )
 }
