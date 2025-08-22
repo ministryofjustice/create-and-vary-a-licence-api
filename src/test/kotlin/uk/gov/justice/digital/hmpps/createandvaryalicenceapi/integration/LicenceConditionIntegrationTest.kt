@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import kotlin.jvm.optionals.getOrNull
@@ -42,6 +43,9 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var additionalConditionRepository: AdditionalConditionRepository
+
+  @Autowired
+  lateinit var documentCountsRepository: DocumentCountsRepository
 
   @Test
   @Sql(
@@ -296,7 +300,10 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
     assertThat(firstCondition)
       .extracting("conditionVersion", "expandedConditionText")
-      .containsExactly("1.0", "Notify your supervising officer of any developing intimate relationships with women or men.")
+      .containsExactly(
+        "1.0",
+        "Notify your supervising officer of any developing intimate relationships with women or men.",
+      )
 
     assertThat(firstCondition.additionalConditionData).isNotEmpty
     assertThat(firstCondition.additionalConditionData).hasSize(1)

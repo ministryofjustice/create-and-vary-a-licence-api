@@ -12,7 +12,6 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.core.io.ClassPathResource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
@@ -658,7 +657,6 @@ class PublicLicenceServiceTest {
       filename = "test.pdf",
       fileType = "application/pdf",
       description = "Description",
-      thumbnailImage = ByteArray(0),
       additionalCondition = someAdditionalConditionData[0].additionalCondition,
       uploadDetailId = 1,
     )
@@ -680,8 +678,6 @@ class PublicLicenceServiceTest {
       id = 1,
       licenceId = 1,
       additionalConditionId = 1,
-      fullSizeImage = ClassPathResource("test_map.jpg").inputStream.readAllBytes(),
-      originalData = ClassPathResource("Test_map_2021-12-06_112550.pdf").inputStream.readAllBytes(),
     )
 
     val anAdditionalConditionEntityWithoutUpload = AdditionalCondition(

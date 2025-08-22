@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
@@ -60,9 +61,7 @@ class ExclusionZoneService(
     val uploadDetail = AdditionalConditionUploadDetail(
       licenceId = licenceEntity.id,
       additionalConditionId = additionalCondition.id!!,
-      originalData = file.bytes,
       originalDataDsUuid = originalDataDsUuid?.toString(),
-      fullSizeImage = pdfExtract.fullSizeImage,
       fullSizeImageDsUuid = fullSizeImageDsUuid?.toString(),
     )
 
@@ -76,12 +75,12 @@ class ExclusionZoneService(
       imageType = IMAGE_TYPE,
       imageSize = pdfExtract.fullSizeImage.size,
       description = pdfExtract.description,
-      thumbnailImage = pdfExtract.thumbnailImage,
       thumbnailImageDsUuid = thumbnailImageDsUuid?.toString(),
       uploadDetailId = savedDetail.id!!,
     )
 
-    val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = mutableListOf(uploadSummary))
+    val updatedAdditionalCondition =
+      additionalCondition.copy(additionalConditionUploadSummary = mutableListOf(uploadSummary))
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
@@ -93,11 +92,7 @@ class ExclusionZoneService(
       additionalCondition(conditionId).additionalConditionUploadSummary.first().uploadDetailId,
     )
 
-    return if (uploadDetail.fullSizeImageDsUuid != null) {
-      documentService.downloadDocument(UUID.fromString(uploadDetail.fullSizeImageDsUuid))
-    } else {
-      uploadDetail.fullSizeImage
-    }
+    return uploadDetail.fullSizeImageDsUuid?.let { uuid -> documentService.downloadDocument(UUID.fromString(uuid)) }
   }
 
   fun preloadThumbnailsFor(licence: Licence) {
@@ -109,14 +104,7 @@ class ExclusionZoneService(
       }
   }
 
-  @Transactional
-  fun deleteDocumentsFor(licence: Licence) {
-    log.info("Deleting documents for Licence id={}", licence.id)
-
-    deleteDocumentsFor(licence.additionalConditions)
-  }
-
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun deleteDocumentsFor(additionalConditions: List<AdditionalCondition>) {
     val additionalConditionIds = additionalConditions.map { it.id!! }
 
