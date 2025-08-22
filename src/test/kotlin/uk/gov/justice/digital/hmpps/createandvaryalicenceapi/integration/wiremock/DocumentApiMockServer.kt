@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.binaryEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.delete
 import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
+import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
@@ -50,14 +51,24 @@ class DocumentApiMockServer : WireMockServer(8097) {
 
     verify(didHappenXTimes, request)
 
-    return UUID.fromString(
-      findAll(request).first().url.substringAfter("/documents/$withType/"),
-    )
+    return if (didHappenXTimes > 0) {
+      UUID.fromString(findAll(request).first().url.substringAfter("/documents/$withType/"))
+    } else {
+      null
+    }
   }
 
   fun verifyDelete(withUuid: String) {
     val request = deleteRequestedFor(urlEqualTo("/documents/$withUuid"))
     verify(request)
+  }
+
+  fun stubDownloadDocumentFile(withUUID: String = "[a-z0-9A-Z|-]{36}", document: ByteArray?) {
+    stubFor(
+      get(urlMatching("/documents/$withUUID/file")).willReturn(
+        aResponse().withBody(document),
+      ),
+    )
   }
 
   private var happyResponse = """
