@@ -144,6 +144,25 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
+    "classpath:test_data/seed-a-few-licences.sql",
+    "classpath:test_data/seed-uploads-for-copied-licences.sql",
+  )
+  fun `Delete exclusion zone`() {
+    documentApiMockServer.stubDeleteDocuments()
+
+    // Given
+    webTestClient.delete()
+      .uri("/licence/id/2/additional-condition/id/2")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isNoContent
+
+    documentApiMockServer.verifyDelete("20ca047a-0ae6-4c09-8b97-e3f211feb733")
+  }
+
+  @Test
+  @Sql(
     "classpath:test_data/seed-licence-id-2.sql",
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )

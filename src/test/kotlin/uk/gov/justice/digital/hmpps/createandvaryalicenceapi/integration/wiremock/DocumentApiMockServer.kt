@@ -4,9 +4,12 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aMultipart
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.binaryEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.delete
+import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import net.minidev.json.JSONObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentType
@@ -20,6 +23,16 @@ class DocumentApiMockServer : WireMockServer(8097) {
           .withHeader("Content-Type", "application/json")
           .withBody(happyResponse)
           .withStatus(201),
+      ),
+    )
+  }
+
+  fun stubDeleteDocuments() {
+    stubFor(
+      delete(urlMatching("/documents/[a-z0-9A-Z|-]{36}")).willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(204),
       ),
     )
   }
@@ -42,11 +55,9 @@ class DocumentApiMockServer : WireMockServer(8097) {
     )
   }
 
-  fun verifyNoUploadedDocuments(
-    withUuid: String = "[a-z0-9A-Z|-]{36}",
-    withType: DocumentType = DocumentType.EXCLUSION_ZONE_MAP,
-  ) {
-    verify(0, postRequestedFor(urlMatching("/documents/$withType/$withUuid")))
+  fun verifyDelete(withUuid: String) {
+    val request = deleteRequestedFor(urlEqualTo("/documents/$withUuid"))
+    verify(request)
   }
 
   private var happyResponse = """

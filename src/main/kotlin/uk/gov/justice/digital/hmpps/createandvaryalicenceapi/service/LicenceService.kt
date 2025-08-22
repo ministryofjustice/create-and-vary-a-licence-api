@@ -370,6 +370,7 @@ class LicenceService(
         licenceToDeactivate.statusCode = INACTIVE
         licenceToDeactivate.updatedBy = staffMember ?: licenceToDeactivate.updatedBy
       }
+
       else -> error("Trying to inactivate non-crd licence: $previousVersionId")
     }
 
@@ -409,7 +410,11 @@ class LicenceService(
 
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
-        if (determineReleaseDateKind(licenceEntity.postRecallReleaseDate, licenceEntity.conditionalReleaseDate) != PRRD) {
+        if (determineReleaseDateKind(
+            licenceEntity.postRecallReleaseDate,
+            licenceEntity.conditionalReleaseDate,
+          ) != PRRD
+        ) {
           assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         }
         licenceEntity.submit(submitter as PrisonUser)
@@ -833,8 +838,8 @@ class LicenceService(
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
     )
-
-    exclusionZoneService.deleteDocumentsFor(licenceEntity)
+    log.info("Deleting documents for Licence id={}", licenceEntity.id)
+    exclusionZoneService.deleteDocumentsFor(licenceEntity.additionalConditions)
     licenceRepository.delete(licenceEntity)
   }
 
