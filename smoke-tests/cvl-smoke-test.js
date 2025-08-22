@@ -14,6 +14,7 @@ const AUTH_CREDENTIALS = b64encode(`${__ENV.SYSTEM_CLIENT_ID}:${__ENV.SYSTEM_CLI
 
 const LICENCE_APPOINTMENT_NAME = 'SMOKE_TEST_APPOINTMENT';
 const LICENCE_ADDRESS_LINE_1 = 'SMOKE_TEST_ADDRESS_LINE_1';
+const LICENCE_ADDRESS_LINE_2 = 'SMOKE_TEST_ADDRESS_LINE_2';
 const LICENCE_TOWN = 'SMOKE_TEST_TOWN';
 const LICENCE_POSTCODE = 'SMOKE_TEST_POSTCODE';
 const LICENCE_CONTACT_PHONE_NUMBER = '0123455666';
@@ -100,13 +101,14 @@ async function createLicence(nomisId) {
     await page.locator('button[data-qa=continue]').click()
 
     await page.waitForURL(/initial-meeting-name/);
-    checkLicenceCreated(nomisId)
+    checkLicenceIsInProgress(nomisId)
 
     await page.locator('#contactName').type(LICENCE_APPOINTMENT_NAME)
     await page.locator('button[data-qa=continue]').click()
 
     await page.waitForURL(/initial-meeting-place/);
     await page.locator('#addressLine1').type(LICENCE_ADDRESS_LINE_1)
+    await page.locator('#addressLine2').type(LICENCE_ADDRESS_LINE_2)
     await page.locator('#addressTown').type(LICENCE_TOWN)
     await page.locator('#addressPostcode').type(LICENCE_POSTCODE)
     await page.locator('button[data-qa=continue]').click()
@@ -130,8 +132,7 @@ async function createLicence(nomisId) {
     await page.waitForURL(/check-your-answers/);
     await page.screenshot({path: 'end.png'});
 
-    // await page.waitForTimeout(1000);
-    // await page.screenshot({path: 'end.png'});
+    checkLicenceCreated(nomisId)
 }
 
 function apiHeaders() {
@@ -168,15 +169,31 @@ function getLicencesForNomisId(nomsId, statuses) {
     return JSON.parse(res.body)
 }
 
-function checkLicenceCreated(nomisId) {
-    //const licences = getLicencesForNomisId(nomisId, ["IN_PROGRESS"])
+function checkLicenceIsInProgress(nomisId) {
     const licences = getLicencesForNomisId(nomisId, [
         "IN_PROGRESS",
     ])
     const status = licences.map(licence => licence.licenceStatus)
-    console.log(`licences: ${status}`)
     check(licences, {
         "An IN PROGRESS licence has been created": (licences) => licences.length === 1
+    });
+}
+
+function checkLicenceCreated(nomisId) {
+    const licences = getLicencesForNomisId(nomisId, [
+        "IN_PROGRESS",
+    ])
+    check(licences, {
+        "Licence creation complete": (licences) => licences.length === 1,
+    });
+
+    const licence = getLicenceById(licences[0].licenceId)
+    check(licence, {
+        "Licence has correct nomis id": (licence) => licence.nomsId === nomisId,
+        "Licence has correct appointment name": (licence) => licence.appointmentPerson === LICENCE_APPOINTMENT_NAME,
+        "Licence has correct appointment address": (licence) => licence.appointmentAddress === `${LICENCE_ADDRESS_LINE_1}, ${LICENCE_ADDRESS_LINE_2}, ${LICENCE_TOWN}, , ${LICENCE_POSTCODE}`,
+        "Licence has correct phone number": (licence) => licence.appointmentContact === LICENCE_CONTACT_PHONE_NUMBER,
+        "Licence has no additional conditions": (licence) => licence.additionalLicenceConditions.length === 0,
     });
 }
 
