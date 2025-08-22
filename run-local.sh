@@ -8,6 +8,10 @@
 # around removing the SSL connection to the database and setting the DB properties, SERVER_PORT and client credentials
 # to match those used in the docker-compose files.
 #
+# Args:
+# * --debug = enables jvm debugging - requires remote debug being set up in intellij to start the app
+# * --skip-docker = prevent tear down and refresh of docker containers
+#
 
 restart_docker () {
   # Stop the back end containers
@@ -65,13 +69,33 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 export POLICYV3_ENABLED=true
 export RECALL_ENABLED=true
 
-if [[ $1 != "--skip-docker" ]]; then
+SKIP_DOCKER=false
+DEBUG=""
+
+# Parse all arguments
+for arg in "$@"; do
+  case $arg in
+    --skip-docker)
+      SKIP_DOCKER=true
+      ;;
+    --debug)
+      DEBUG="--debug-jvm"
+      ;;
+    *)
+      echo "Unknown argument: $arg"
+      ;;
+  esac
+done
+
+# Conditionally restart Docker
+if [[ $SKIP_DOCKER == false ]]; then
   restart_docker
 fi
+
 
 # Run the application with stdout and dev profiles active
 echo "Starting the API locally"
 
-SPRING_PROFILES_ACTIVE=stdout,dev ./gradlew bootRun
+SPRING_PROFILES_ACTIVE=stdout,dev ./gradlew bootRun $DEBUG
 
 # End
