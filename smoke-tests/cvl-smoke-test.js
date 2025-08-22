@@ -3,7 +3,7 @@ import {b64encode} from "k6/encoding";
 import {expect} from "https://jslib.k6.io/k6-testing/0.5.0/index.js";
 import http from 'k6/http';
 import secrets from 'k6/secrets'
-import {check, fail, sleep} from 'k6';
+import {check, fail} from 'k6';
 import {test} from "k6/execution";
 
 const AUTH_URL = __ENV.AUTH_URL;
