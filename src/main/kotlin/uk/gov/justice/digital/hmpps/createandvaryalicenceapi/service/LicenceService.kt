@@ -41,8 +41,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isLicenceReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.getLicenceConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -100,7 +101,7 @@ class LicenceService(
     val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
 
     val conditionsSubmissionStatus =
-      isLicenceReadyToSubmit(
+      getLicenceConditionPolicyData(
         entityLicence.additionalConditions,
         licencePolicyService.getAllAdditionalConditions(),
       )
@@ -112,7 +113,7 @@ class LicenceService(
     licence: EntityLicence,
     earliestReleaseDate: LocalDate?,
     isEligibleForEarlyRelease: Boolean,
-    conditionSubmissionStatus: Map<String, Boolean>,
+    conditionPolicyData: Map<String, ConditionPolicyData>,
   ): Licence = when (licence) {
     is PrrdLicence -> toPrrd(
       licence = licence,
@@ -123,7 +124,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is CrdLicence -> toCrd(
@@ -135,14 +136,14 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is VariationLicence -> toVariation(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is HardStopLicence -> toHardstop(
@@ -154,7 +155,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is HdcLicence -> toHdc(
@@ -166,14 +167,14 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is HdcVariationLicence -> toHdcVariation(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")

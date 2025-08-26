@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.NativeQuery
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 
 interface DocumentCountResult {
@@ -32,5 +33,6 @@ interface DocumentCountsRepository : JpaRepository<AdditionalConditionUploadDeta
       AND additional_condition_uuids.additional_condition_id IN (:additionalConditionIds)
     """,
   )
+  @Transactional(readOnly = true)
   fun countsOfDocumentsRelatedTo(additionalConditionIds: List<Long>): List<DocumentCountResult>
 }

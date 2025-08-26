@@ -9,6 +9,11 @@ data class AdditionalConditionWithConfig(
   val config: IAdditionalCondition,
 )
 
+data class ConditionPolicyData(
+  val readyToSubmit: Boolean,
+  val requiresInput: Boolean,
+)
+
 fun mapConditionsToConfig(
   licenceConditions: List<AdditionalCondition>,
   policyConditions: AllAdditionalConditions,
@@ -22,25 +27,34 @@ fun mapConditionsToConfig(
   Data-input is all-or-nothing (ie the user cannot submit data without filling out all required fields),
   so we can infer that the presence of any data means all the required data exists and the condition is ready to submit.
 */
-fun isLicenceReadyToSubmit(
+fun getLicenceConditionPolicyData(
   licenceConditions: List<AdditionalCondition>,
   policyConditions: AllAdditionalConditions,
-): Map<String, Boolean> {
+): Map<String, ConditionPolicyData> {
   val conditionsWithConfig = mapConditionsToConfig(licenceConditions, policyConditions)
-  return conditionsWithConfig.associate {
-    val enteredFields = it.additionalCondition.additionalConditionData.map { data -> data.dataField }
-    val readyToSubmit =
-      if (!it.config.requiresInput) {
-        true
-      } else {
-        val policyInputs = it.config.getConditionInputs()!!.flatMap { input -> input.getAllFieldNames() }
-        policyInputs.any { name -> enteredFields.contains(name) }
-      }
-    Pair(it.additionalCondition.conditionCode, readyToSubmit)
+
+  return conditionsWithConfig.associate { conditionWithConfig ->
+    val condition = conditionWithConfig.additionalCondition
+    val config = conditionWithConfig.config
+
+    val requiresInput = config.requiresInput
+    val enteredFields = condition.additionalConditionData.map { it.dataField }
+
+    val readyToSubmit = if (!requiresInput) {
+      true
+    } else {
+      val requiredFields = config.getConditionInputs()
+        ?.flatMap { it.getAllFieldNames() }
+        .orEmpty()
+
+      requiredFields.any { it in enteredFields }
+    }
+
+    condition.conditionCode to ConditionPolicyData(readyToSubmit, requiresInput)
   }
 }
 
 fun isConditionReadyToSubmit(
   licenceCondition: AdditionalCondition,
   policyConditions: AllAdditionalConditions,
-): Boolean = isLicenceReadyToSubmit(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!
+): ConditionPolicyData = getLicenceConditionPolicyData(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!

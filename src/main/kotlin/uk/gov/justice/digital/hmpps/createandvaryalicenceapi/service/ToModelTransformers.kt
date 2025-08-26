@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
@@ -122,7 +123,7 @@ fun toHardstop(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHardstopLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -184,9 +185,9 @@ fun toHardstop(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
   isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
@@ -206,7 +207,7 @@ fun toVariation(
   licence: VariationLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ): ModelVariationLicence = ModelVariationLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -269,9 +270,9 @@ fun toVariation(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   variationOf = licence.variationOfId,
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
@@ -292,7 +293,7 @@ fun toPrrd(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = PrrdLicenceResponse(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -353,9 +354,9 @@ fun toPrrd(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
   isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
@@ -386,7 +387,7 @@ fun toCrd(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelCrdLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -447,9 +448,9 @@ fun toCrd(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
   isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
@@ -480,7 +481,7 @@ fun toHdc(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHdcLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -543,9 +544,9 @@ fun toHdc(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
   isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
@@ -573,7 +574,7 @@ fun toHdcVariation(
   licence: HdcVariationLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHdcVariationLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -638,9 +639,9 @@ fun toHdcVariation(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   variationOf = licence.variationOfId,
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
@@ -668,15 +669,16 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition = ModelSt
 // Transform a list of entity additional conditions to model additional conditions
 fun List<EntityAdditionalCondition>.transformToModelAdditional(
   conditionType: String,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ): List<ModelAdditionalCondition> = filter { condition -> condition.conditionType == conditionType }.map {
   transform(
     it,
-    conditionSubmissionStatus[it.conditionCode]!!,
+    conditionPolicyData[it.conditionCode]!!.readyToSubmit,
+    conditionPolicyData[it.conditionCode]!!.requiresInput,
   )
 }
 
-fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition = ModelAdditionalCondition(
+fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean, requiresInput: Boolean): ModelAdditionalCondition = ModelAdditionalCondition(
   id = entity.id,
   code = entity.conditionCode,
   version = entity.conditionVersion,
@@ -687,6 +689,7 @@ fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelA
   data = entity.additionalConditionData.transformToModelAdditionalData(),
   uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
   readyToSubmit = readyToSubmit,
+  requiresInput = requiresInput,
 )
 
 // Transform a list of entity additional condition data to model additional condition data
