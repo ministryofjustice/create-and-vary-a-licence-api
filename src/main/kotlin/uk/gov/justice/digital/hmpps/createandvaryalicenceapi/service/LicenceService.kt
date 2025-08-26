@@ -113,7 +113,7 @@ class LicenceService(
     licence: EntityLicence,
     earliestReleaseDate: LocalDate?,
     isEligibleForEarlyRelease: Boolean,
-    conditionSubmissionStatus: Map<String, ConditionPolicyData>,
+    conditionPolicyData: Map<String, ConditionPolicyData>,
   ): Licence = when (licence) {
     is PrrdLicence -> toPrrd(
       licence = licence,
@@ -124,7 +124,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is CrdLicence -> toCrd(
@@ -136,14 +136,14 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      ConditionPolicyData = ConditionPolicyData,
     )
 
     is VariationLicence -> toVariation(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      ConditionPolicyData = ConditionPolicyData,
     )
 
     is HardStopLicence -> toHardstop(
@@ -155,7 +155,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      ConditionPolicyData = ConditionPolicyData,
     )
 
     is HdcLicence -> toHdc(
@@ -167,14 +167,14 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      ConditionPolicyData = ConditionPolicyData,
     )
 
     is HdcVariationLicence -> toHdcVariation(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      ConditionPolicyData = ConditionPolicyData,
     )
 
     else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")

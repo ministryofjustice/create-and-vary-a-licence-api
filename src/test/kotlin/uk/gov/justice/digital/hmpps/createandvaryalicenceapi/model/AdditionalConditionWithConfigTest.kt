@@ -38,7 +38,7 @@ class AdditionalConditionWithConfigTest {
   }
 
   @Nested
-  inner class CheckConditionsReadyToSubmit {
+  inner class CheckConditionsReadyToSubmitAndRequiresInput {
     @Test
     fun `returns if there are no conditions on the licence`() {
       assertThat(
