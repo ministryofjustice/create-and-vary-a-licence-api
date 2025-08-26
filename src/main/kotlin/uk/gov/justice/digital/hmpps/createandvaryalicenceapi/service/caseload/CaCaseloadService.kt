@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -268,14 +269,14 @@ class CaCaseloadService(
 
     val prisonersWithoutLicences = prisonersApproachingRelease.filter { p ->
       !licenceNomisIds.contains(p.prisonerNumber)
-    }
+    }.toList()
 
-    val eligiblePrisoners = filterOffendersEligibleForLicence(prisonersWithoutLicences.toList())
+    val licenceStartDates = releaseDateService.getLicenceStartDates(prisonersWithoutLicences)
+    val casesWithoutLicences = pairNomisRecordsWithDelius(prisonersWithoutLicences, licenceStartDates)
 
-    val licenceStartDates = releaseDateService.getLicenceStartDates(eligiblePrisoners)
+    val eligibleCases = filterOffendersEligibleForLicence(casesWithoutLicences)
 
-    val casesWithoutLicences = pairNomisRecordsWithDelius(eligiblePrisoners, licenceStartDates)
-    return createNotStartedLicenceForCase(casesWithoutLicences, licenceStartDates)
+    return createNotStartedLicenceForCase(eligibleCases, licenceStartDates)
   }
 
   private fun createNotStartedLicenceForCase(
@@ -313,14 +314,14 @@ class CaCaseloadService(
     )
   }
 
-  private fun filterOffendersEligibleForLicence(offenders: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
-    val eligibleOffenders = offenders.filter { eligibilityService.isEligibleForCvl(it) }
+  private fun filterOffendersEligibleForLicence(offenders: List<ManagedCase>): List<ManagedCase> {
+    val eligibleOffenders = offenders.filter { eligibilityService.isEligibleForCvl(it.nomisRecord!!.toPrisonerSearchPrisoner()) }
 
     if (eligibleOffenders.isEmpty()) return eligibleOffenders
 
-    val hdcStatuses = hdcService.getHdcStatus(eligibleOffenders)
+    val hdcStatuses = hdcService.getHdcStatus(eligibleOffenders.map { it.nomisRecord!!.toPrisonerSearchPrisoner() })
 
-    return eligibleOffenders.filter { hdcStatuses.canUnstartedCaseBeSeenByCa(it.bookingId?.toLong()!!) }
+    return eligibleOffenders.filter { hdcStatuses.canUnstartedCaseBeSeenByCa(it.nomisRecord!!.bookingId?.toLong()!!) }
   }
 
   private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> = licences.filter { l -> l.nomisLegalStatus != "DEAD" }

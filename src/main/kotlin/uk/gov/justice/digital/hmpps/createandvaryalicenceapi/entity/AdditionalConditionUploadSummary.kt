@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -39,8 +38,6 @@ data class AdditionalConditionUploadSummary(
 
   val description: String? = null,
 
-  @Basic
-  val thumbnailImage: ByteArray? = null,
   val thumbnailImageDsUuid: String? = null,
 
   @param:NotNull

@@ -23,7 +23,6 @@ class ExclusionZoneServiceGetFullImageTest {
   private val documentService: DocumentService = mock()
   private val documentCountsRepository: DocumentCountsRepository = mock()
 
-  private val fileStoredInDatabase = byteArrayOf(9, 9, 9)
   private val fileStoredRemotely = byteArrayOf(1, 1, 1)
 
   private val licenceId = 1L
@@ -33,8 +32,24 @@ class ExclusionZoneServiceGetFullImageTest {
   private val uuid = UUID.fromString("fcc03409-b1a0-4c60-8662-ad9e441bc54d")
 
   @Test
-  fun `when there is no document service uuid recorded then the image is returned from the document service`() {
-    givenUploadDetailHas(fullSizeImage = fileStoredInDatabase, fullSizeImageUUID = uuid)
+  fun `when there is no document service uuid recorded then we cannot return an image`() {
+    givenUploadDetailHas(fullSizeImageUUID = null)
+
+    val exclusionZoneService = ExclusionZoneService(
+      licenceRepository,
+      additionalConditionRepository,
+      additionalConditionUploadDetailRepository,
+      documentService,
+      documentCountsRepository,
+    )
+
+    assertThat(exclusionZoneService.getExclusionZoneImage(licenceId, additionalConditionId))
+      .isNull()
+  }
+
+  @Test
+  fun `when there is a document service uuid recorded then we attempt to return it from the remote service`() {
+    givenUploadDetailHas(fullSizeImageUUID = uuid)
 
     val exclusionZoneService = ExclusionZoneService(
       licenceRepository,
@@ -48,23 +63,7 @@ class ExclusionZoneServiceGetFullImageTest {
       .isEqualTo(fileStoredRemotely)
   }
 
-  @Test
-  fun `when there is no document service uuid recorded then the image is returned from the database`() {
-    givenUploadDetailHas(fullSizeImage = fileStoredInDatabase, fullSizeImageUUID = null)
-
-    val exclusionZoneService = ExclusionZoneService(
-      licenceRepository,
-      additionalConditionRepository,
-      additionalConditionUploadDetailRepository,
-      documentService,
-      documentCountsRepository,
-    )
-
-    assertThat(exclusionZoneService.getExclusionZoneImage(licenceId, additionalConditionId))
-      .isEqualTo(fileStoredInDatabase)
-  }
-
-  private fun givenUploadDetailHas(fullSizeImage: ByteArray?, fullSizeImageUUID: UUID?) {
+  private fun givenUploadDetailHas(fullSizeImageUUID: UUID?) {
     whenever(licenceRepository.findById(licenceId)).thenReturn(Optional.of(mock()))
 
     whenever(additionalConditionRepository.findById(additionalConditionId)).thenReturn(
@@ -72,7 +71,7 @@ class ExclusionZoneServiceGetFullImageTest {
     )
 
     whenever(additionalConditionUploadDetailRepository.findById(additionalConditionUploadDetailId)).thenReturn(
-      Optional.of(additionalConditionUploadDetail(fullSizeImage, fullSizeImageUUID)),
+      Optional.of(additionalConditionUploadDetail(fullSizeImageUUID)),
     )
 
     whenever(documentService.downloadDocument(uuid)).thenReturn(fileStoredRemotely)
@@ -97,11 +96,10 @@ class ExclusionZoneServiceGetFullImageTest {
     uploadDetailId = additionalConditionUploadDetailId,
   )
 
-  private fun additionalConditionUploadDetail(fullSizeImage: ByteArray?, fullSizeImageUUID: UUID?): AdditionalConditionUploadDetail = AdditionalConditionUploadDetail(
+  private fun additionalConditionUploadDetail(fullSizeImageUUID: UUID?): AdditionalConditionUploadDetail = AdditionalConditionUploadDetail(
     id = 4L,
     licenceId = 1L,
     additionalConditionId = 2L,
-    fullSizeImage = fullSizeImage,
     fullSizeImageDsUuid = fullSizeImageUUID?.toString(),
   )
 }
