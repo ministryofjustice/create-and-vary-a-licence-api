@@ -193,7 +193,7 @@ class SubjectAccessRequestResponseBuilderTest {
       isInHardStopPeriod = true,
       isDueForEarlyRelease = true,
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
-      conditionSubmissionStatus = emptyMap(),
+      conditionPolicyData = emptyMap(),
     )
   }
 }
