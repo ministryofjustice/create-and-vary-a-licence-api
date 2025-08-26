@@ -136,14 +136,14 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      ConditionPolicyData = ConditionPolicyData,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is VariationLicence -> toVariation(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      ConditionPolicyData = ConditionPolicyData,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is HardStopLicence -> toHardstop(
@@ -155,7 +155,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      ConditionPolicyData = ConditionPolicyData,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is HdcLicence -> toHdc(
@@ -167,14 +167,14 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      ConditionPolicyData = ConditionPolicyData,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is HdcVariationLicence -> toHdcVariation(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      ConditionPolicyData = ConditionPolicyData,
+      conditionPolicyData = conditionPolicyData,
     )
 
     else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
