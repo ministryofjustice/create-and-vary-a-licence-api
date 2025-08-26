@@ -44,7 +44,7 @@ class DocumentApiClientDownloadTest {
     givenDocumentApiRespondsWith(status = responseStatusCode, responseBody = errorResponse)
 
     assertThatThrownBy { documentApiClient.downloadDocumentFile(uuid) }
-      .isInstanceOf(IllegalStateException::class.java)
+      .isInstanceOf(RuntimeException::class.java)
       .hasMessageContaining(
         "Error downloading document (UUID=%s, StatusCode=%d, Response=%s)".format(
           uuid,
@@ -64,7 +64,10 @@ class DocumentApiClientDownloadTest {
     }
   """.trimMargin()
 
-  private fun givenDocumentApiRespondsWith(status: Int = 200, responseBody: String = documentFile.toString(Charsets.UTF_8)) {
+  private fun givenDocumentApiRespondsWith(
+    status: Int = 200,
+    responseBody: String = documentFile.toString(Charsets.UTF_8),
+  ) {
     wiremock.stubFor(
       get(urlEqualTo("/documents/$uuid/file")).willReturn(
         aResponse()

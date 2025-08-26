@@ -6,8 +6,10 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Mono
 import java.util.UUID
 
 @Service
@@ -20,12 +22,10 @@ class DocumentApiClient(@param:Qualifier("oauthDocumentApiClient") val documentA
     .accept(MediaType.APPLICATION_PDF)
     .retrieve()
     .onStatus(HttpStatusCode::isError) { response ->
-      response.bodyToMono<String>().map { body ->
-        error(
-          "Error downloading document (UUID=$documentUuid, StatusCode=${
-            response.statusCode().value()
-          }, Response=$body)",
-        )
+      wrapWithContext(response) { body ->
+        "Error downloading document (UUID=$documentUuid, StatusCode=${
+          response.statusCode().value()
+        }, Response=$body)"
       }
     }
     .bodyToMono(ByteArray::class.java)
@@ -49,12 +49,10 @@ class DocumentApiClient(@param:Qualifier("oauthDocumentApiClient") val documentA
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .onStatus(HttpStatusCode::isError) { response ->
-      response.bodyToMono<String>().map { body ->
-        error(
-          "Error during uploading document (UUID=$documentUuid, StatusCode=${
-            response.statusCode().value()
-          }, Response=$body)",
-        )
+      wrapWithContext(response) { body ->
+        "Error during uploading document (UUID=$documentUuid, StatusCode=${
+          response.statusCode().value()
+        }, Response=$body)"
       }
     }
     .bodyToMono(Document::class.java)
@@ -65,18 +63,27 @@ class DocumentApiClient(@param:Qualifier("oauthDocumentApiClient") val documentA
     documentApiClient.delete()
       .uri("/documents/$documentUuid")
       .header("Service-Name", "create-and-vary-a-licence-api")
-      .accept(MediaType.APPLICATION_PDF)
+      .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .onStatus(HttpStatusCode::isError) { response ->
-        response.bodyToMono<String>().map { body ->
-          error(
-            "Error deleting document (UUID=$documentUuid, StatusCode=${
-              response.statusCode().value()
-            }, Response=$body)",
-          )
+        wrapWithContext(response) { body ->
+          "Error deleting document (UUID=$documentUuid, StatusCode=${
+            response.statusCode().value()
+          }, Response=$body)"
         }
       }
-      .bodyToMono(ByteArray::class.java)
+      .bodyToMono(Void::class.java)
       .block()
   }
+
+  private fun wrapWithContext(
+    response: ClientResponse,
+    message: (body: String?) -> String,
+  ) = response.bodyToMono<String>().map { body ->
+    RuntimeException(message(body))
+  }.switchIfEmpty(
+    Mono.error {
+      RuntimeException(message(null))
+    },
+  )
 }
