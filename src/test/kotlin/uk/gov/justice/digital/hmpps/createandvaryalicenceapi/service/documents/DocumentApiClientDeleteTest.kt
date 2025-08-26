@@ -39,11 +39,11 @@ class DocumentApiClientDeleteTest {
 
   @ParameterizedTest
   @CsvSource("400", "401", "403")
-  fun `Throws an exception when the request is not successful`(responseStatusCode: Int) {
+  fun `Throws an exception when the request is not successful and status is {0}`(responseStatusCode: Int) {
     givenDocumentApiRespondsWith(status = responseStatusCode, responseBody = errorResponse)
 
     assertThatThrownBy { documentApiClient.deleteDocument(uuid) }
-      .isInstanceOf(IllegalStateException::class.java)
+      .isInstanceOf(RuntimeException::class.java)
       .hasMessageContaining(
         "Error deleting document (UUID=%s, StatusCode=%d, Response=%s)".format(
           uuid,
@@ -53,22 +53,33 @@ class DocumentApiClientDeleteTest {
       )
   }
 
-  private var errorResponse = """
-    {
-      "userMessage": "string",
-      "developerMessage": "string",
-      "errorCode": 1073741824,
-      "moreInfo": "string",
-      "status": 1073741824
-    }
-  """.trimMargin()
+  @ParameterizedTest
+  @CsvSource("400", "401", "403")
+  fun `Throws an exception when the request is not successful, response body is missing and status is {0}`(
+    responseStatusCode: Int,
+  ) {
+    givenDocumentApiRespondsWith(status = responseStatusCode, responseBody = null)
 
-  private fun givenDocumentApiRespondsWith(status: Int = 200, responseBody: String = "") {
+    assertThatThrownBy { documentApiClient.deleteDocument(uuid) }
+      .isInstanceOf(RuntimeException::class.java)
+      .hasMessageContaining(
+        "Error deleting document (UUID=%s, StatusCode=%d, Response=%s)".format(
+          uuid,
+          responseStatusCode,
+          null,
+        ),
+      )
+  }
+
+  private var errorResponse =
+    """{"userMessage":"string","developerMessage":"string","errorCode":1073741824,"moreInfo":"string","status": 1073741824 }""".trimMargin()
+
+  private fun givenDocumentApiRespondsWith(status: Int = 200, responseBody: String? = "") {
     wiremock.stubFor(
       delete(urlEqualTo("/documents/$uuid")).willReturn(
         aResponse()
-          .withHeader("Content-Type", "application/pdf")
-          .withBody(responseBody)
+          .also { if (responseBody != null) it.withBody(responseBody) }
+          .withHeader("Content-Type", "application/json")
           .withStatus(status),
       ),
     )
