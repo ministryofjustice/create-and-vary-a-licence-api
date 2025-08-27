@@ -9,15 +9,20 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 
 class OffenderIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
+
+  @Autowired
+  lateinit var staffRepository: StaffRepository
 
   @Test
   fun `Get forbidden (403) when incorrect roles are supplied`() {
@@ -111,18 +116,61 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     assertThat(licence.probationTeamCode).isEqualTo("TEAM2")
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-3.sql",
+  )
+  fun `Synchronises COM allocation info with Delius`() {
+    val crn = "CRN1"
+    val userName = "username"
+    val emailAddress = "emailAddress@Delius"
+    val staffIdentifier = 123L
+    val firstName = "forename"
+    val lastName = "surname"
+
+    deliusMockServer.stubGetOffenderManager(
+      crn,
+      userName = userName,
+      emailAddress,
+      staffIdentifier,
+      firstName = firstName,
+      lastName = lastName,
+    )
+    deliusMockServer.stubAssignDeliusRole(userName = userName.uppercase())
+
+    webTestClient.put()
+      .uri("/offender/sync-com/crn/$crn")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val com = staffRepository.findByStaffIdentifier(staffIdentifier)
+    assertThat(com).isNotNull
+    assertThat(com!!.username).isEqualTo(userName.uppercase())
+    assertThat(com.email).isEqualTo(emailAddress)
+    assertThat(com.firstName).isEqualTo(firstName)
+    assertThat(com.lastName).isEqualTo(lastName)
+
+    val licence = licenceRepository.findById(3L).orElseThrow()
+    assertThat(licence.responsibleCom.id).isEqualTo(com.id)
+  }
+
   private companion object {
+    val deliusMockServer = DeliusMockServer()
     val govUkApiMockServer = GovUkMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
+      deliusMockServer.start()
       govUkApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
+      deliusMockServer.stop()
       govUkApiMockServer.stop()
     }
   }

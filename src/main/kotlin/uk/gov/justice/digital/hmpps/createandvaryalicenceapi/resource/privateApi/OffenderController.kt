@@ -24,11 +24,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 
 @RestController
 @Tag(name = Tags.OFFENDER)
 @RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
 class OffenderController(
+  private val comAllocatedHandler: ComAllocatedHandler,
   private val offenderService: OffenderService,
   private val staffService: StaffService,
   @param:Value("\${domain.event.listener.enabled}") private val domainEventListenerEnabled: Boolean,
@@ -168,4 +170,38 @@ class OffenderController(
       this.offenderService.updateOffenderDetails(nomsId, body)
     }
   }
+
+  @PutMapping(value = ["/sync-com/crn/{crn}"], produces = [MediaType.APPLICATION_JSON_VALUE])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Updates the COM allocation for for licences linked to the given CRN.",
+    description = "Updates the COM allocation for for licences linked to the given CRN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The COM allocation info was",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Not-found, an invalid CRN was provided",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun syncComAllocation(
+    @PathVariable crn: String,
+  ) = comAllocatedHandler.syncComAllocation(crn)
 }

@@ -110,6 +110,14 @@ class ComAllocatedHandler(
     }
   }
 
+  fun syncComAllocation(crn: String) {
+    log.info("Syncing COM allocation for CRN: {}", crn)
+    val offenderManager = getOffenderManagerForDeliusEvent(crn)
+    if (isValidOffenderManager(offenderManager, crn)) {
+      processComAllocation(offenderManager!!)
+    }
+  }
+
   private fun getOffenderManagerForApop(detailUrl: String): OffenderManager {
     val personUuid = getPersonUuid(detailUrl)
     log.info("Getting offender manager from APOP for personUuid: {}", personUuid)

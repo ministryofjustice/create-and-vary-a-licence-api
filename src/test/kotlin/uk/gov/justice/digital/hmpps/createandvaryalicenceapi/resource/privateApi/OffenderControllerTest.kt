@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import java.time.LocalDate
 
 @ExtendWith(SpringExtension::class)
@@ -38,6 +39,9 @@ import java.time.LocalDate
 @ContextConfiguration(classes = [OffenderController::class])
 @WebAppConfiguration
 class OffenderControllerTest {
+
+  @MockitoBean
+  private lateinit var comAllocatedHandler: ComAllocatedHandler
 
   @MockitoBean
   private lateinit var offenderService: OffenderService
@@ -58,6 +62,7 @@ class OffenderControllerTest {
     mvc = MockMvcBuilders
       .standaloneSetup(
         OffenderController(
+          comAllocatedHandler,
           offenderService,
           staffService,
           domainEventListenerEnabled = false,
