@@ -2,12 +2,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.io.ByteArrayResource
-import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.bodyToMono
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.rethrowAnyHttpErrorWithContext
 import java.util.UUID
 
 @Service
@@ -19,14 +18,10 @@ class DocumentApiClient(@param:Qualifier("oauthDocumentApiClient") val documentA
     .header("Service-Name", "create-and-vary-a-licence-api")
     .accept(MediaType.APPLICATION_PDF)
     .retrieve()
-    .onStatus(HttpStatusCode::isError) { response ->
-      response.bodyToMono<String>().map { body ->
-        error(
-          "Error downloading document (UUID=$documentUuid, StatusCode=${
-            response.statusCode().value()
-          }, Response=$body)",
-        )
-      }
+    .rethrowAnyHttpErrorWithContext { response, body ->
+      "Error downloading document (UUID=$documentUuid, StatusCode=${
+        response.statusCode().value()
+      }, Response=$body)"
     }
     .bodyToMono(ByteArray::class.java)
     .block() ?: error("Error downloading document (UUID=$documentUuid)")
@@ -48,14 +43,10 @@ class DocumentApiClient(@param:Qualifier("oauthDocumentApiClient") val documentA
     )
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .onStatus(HttpStatusCode::isError) { response ->
-      response.bodyToMono<String>().map { body ->
-        error(
-          "Error during uploading document (UUID=$documentUuid, StatusCode=${
-            response.statusCode().value()
-          }, Response=$body)",
-        )
-      }
+    .rethrowAnyHttpErrorWithContext { response, body ->
+      "Error during uploading document (UUID=$documentUuid, StatusCode=${
+        response.statusCode().value()
+      }, Response=$body)"
     }
     .bodyToMono(Document::class.java)
     .block() ?: error("Error during uploading document (UUID=$documentUuid)")
@@ -65,18 +56,14 @@ class DocumentApiClient(@param:Qualifier("oauthDocumentApiClient") val documentA
     documentApiClient.delete()
       .uri("/documents/$documentUuid")
       .header("Service-Name", "create-and-vary-a-licence-api")
-      .accept(MediaType.APPLICATION_PDF)
+      .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .onStatus(HttpStatusCode::isError) { response ->
-        response.bodyToMono<String>().map { body ->
-          error(
-            "Error deleting document (UUID=$documentUuid, StatusCode=${
-              response.statusCode().value()
-            }, Response=$body)",
-          )
-        }
+      .rethrowAnyHttpErrorWithContext { response, body ->
+        "Error deleting document (UUID=$documentUuid, StatusCode=${
+          response.statusCode().value()
+        }, Response=$body)"
       }
-      .bodyToMono(ByteArray::class.java)
+      .bodyToMono(Void::class.java)
       .block()
   }
 }

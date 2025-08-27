@@ -15,6 +15,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Eligibility
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.View.PRISON
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.View.PROBATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -36,6 +38,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import java.time.Clock
 import java.time.LocalDate
+
+private enum class View(val caseComparator: Comparator<CaCase>) {
+  PRISON(
+    compareBy<CaCase> { it.releaseDate }
+      .thenBy { it.licenceId },
+  ),
+  PROBATION(
+    compareByDescending<CaCase> { it.releaseDate }
+      .thenBy { it.licenceId },
+  ),
+}
 
 @Service
 class CaCaseloadService(
@@ -65,20 +78,20 @@ class CaCaseloadService(
       ),
     )
 
-    val eligibleExistingLicences = filterAndFormatExistingLicences(existingLicences)
+    val eligibleExistingCases = filterAndFormatExistingCases(existingLicences)
 
-    val eligibleNotStartedLicences = findAndFormatNotStartedLicences(
+    val eligibleNotStartedCases = findAndFormatNotStartedCases(
       existingLicences,
       prisonCaseload,
     )
 
-    if (eligibleExistingLicences.isEmpty() && eligibleNotStartedLicences.isEmpty()) {
+    if (eligibleExistingCases.isEmpty() && eligibleNotStartedCases.isEmpty()) {
       return emptyList()
     }
 
-    val cases = mapCasesToComs(eligibleExistingLicences + eligibleNotStartedLicences)
+    val cases = mapCasesToComs(eligibleExistingCases + eligibleNotStartedCases)
 
-    return buildCaseload(cases, searchString, "prison")
+    return buildCaseload(cases, searchString, PRISON)
   }
 
   fun getProbationOmuCaseload(
@@ -105,7 +118,7 @@ class CaCaseloadService(
     val formattedLicences = formatReleasedLicences(licences)
     val cases = mapCasesToComs(formattedLicences)
 
-    return buildCaseload(cases, searchString, "probation")
+    return buildCaseload(cases, searchString, PROBATION)
   }
 
   fun searchForOffenderOnPrisonCaseAdminCaseload(body: PrisonUserSearchRequest): PrisonCaseAdminSearchResult {
@@ -216,10 +229,9 @@ class CaCaseloadService(
     return caCaseListWithNoComId + caCaseListWithStaffUsername + cases.withStaffCode
   }
 
-  private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): List<CaCase> {
+  private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: View): List<CaCase> {
     val searchResults = applySearch(searchString, cases)
-    val sortResults = applySort(searchResults, view)
-    return sortResults
+    return searchResults.sortedWith(view.caseComparator)
   }
 
   private fun applySearch(searchString: String?, cases: List<CaCase>): List<CaCase> {
@@ -234,21 +246,7 @@ class CaCaseloadService(
     }
   }
 
-  private fun applySort(cases: List<CaCase>, view: String): List<CaCase> = when (view) {
-    "prison" -> cases.sortedWith(
-      compareBy<CaCase> { it.releaseDate }
-        .thenBy { it.licenceId },
-    )
-
-    "probation" -> cases.sortedWith(
-      compareByDescending<CaCase> { it.releaseDate }
-        .thenBy { it.licenceId },
-    )
-
-    else -> cases
-  }
-
-  private fun filterAndFormatExistingLicences(licences: List<LicenceSummary>): List<CaCase> {
+  private fun filterAndFormatExistingCases(licences: List<LicenceSummary>): List<CaCase> {
     val preReleaseLicences = licences.filter { it.licenceStatus != ACTIVE }
     if (preReleaseLicences.isEmpty()) {
       return emptyList()
@@ -256,11 +254,11 @@ class CaCaseloadService(
 
     val licenceNomisIds = preReleaseLicences.map { it.nomisId }
     val prisonersWithLicences = caseloadService.getPrisonersByNumber(licenceNomisIds)
-    val nomisEnrichedLicences = this.enrichWithNomisData(preReleaseLicences, prisonersWithLicences)
+    val nomisEnrichedLicences = enrichWithNomisData(preReleaseLicences, prisonersWithLicences)
     return filterExistingLicencesForEligibility(nomisEnrichedLicences)
   }
 
-  private fun findAndFormatNotStartedLicences(
+  private fun findAndFormatNotStartedCases(
     licences: List<LicenceSummary>,
     prisonCaseload: Set<String>,
   ): List<CaCase> {
@@ -315,7 +313,8 @@ class CaCaseloadService(
   }
 
   private fun filterOffendersEligibleForLicence(offenders: List<ManagedCase>): List<ManagedCase> {
-    val eligibleOffenders = offenders.filter { eligibilityService.isEligibleForCvl(it.nomisRecord!!.toPrisonerSearchPrisoner()) }
+    val eligibleOffenders =
+      offenders.filter { eligibilityService.isEligibleForCvl(it.nomisRecord!!.toPrisonerSearchPrisoner()) }
 
     if (eligibleOffenders.isEmpty()) return eligibleOffenders
 

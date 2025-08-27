@@ -765,6 +765,7 @@ object TestData {
       id = 1,
       code = "599bdcae-d545-461c-b1a9-02cb3d4ba268",
       readyToSubmit = true,
+      requiresInput = true,
     ),
   )
 
@@ -777,6 +778,7 @@ object TestData {
       expandedText = "Do not associate with value1 for a period of value2",
       data = someModelAssociationData(),
       readyToSubmit = true,
+      requiresInput = true,
     ),
   )
 

@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.SearchQueryRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.coerce404ToEmptyOrThrow
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
 @Component
@@ -55,9 +55,7 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono(User::class.java)
-    .onErrorResume {
-      ResponseUtils.coerce404ToEmptyOrThrow(it)
-    }
+    .coerce404ToEmptyOrThrow()
     .block()
 
   fun getStaffByIdentifier(staffIdentifier: Long): User? = deliusApiWebClient
@@ -66,9 +64,7 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono(User::class.java)
-    .onErrorResume {
-      ResponseUtils.coerce404ToEmptyOrThrow(it)
-    }
+    .coerce404ToEmptyOrThrow()
     .block()
 
   fun getOffenderManager(crnOrNomisId: String): CommunityManager? = deliusApiWebClient
@@ -77,9 +73,7 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono(typeReference<CommunityManager>())
-    .onErrorResume {
-      ResponseUtils.coerce404ToEmptyOrThrow(it)
-    }
+    .coerce404ToEmptyOrThrow()
     .block()
 
   fun getOffenderManagers(
