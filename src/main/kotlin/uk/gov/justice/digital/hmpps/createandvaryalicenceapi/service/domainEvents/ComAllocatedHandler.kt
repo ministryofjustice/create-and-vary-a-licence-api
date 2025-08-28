@@ -92,13 +92,13 @@ class ComAllocatedHandler(
   private fun getOffenderManager(crn: String, event: HMPPSDomainEvent): OffenderManager? {
     val isDeliusEvent = event.detailUrl.isNullOrBlank()
     return if (isDeliusEvent) {
-      getOffenderManagerForDeliusEvent(crn)
+      getOffenderManagerFromDelius(crn)
     } else {
-      getOffenderManagerForApop(event.detailUrl!!)
+      getOffenderManagerFromApop(event.detailUrl)
     }
   }
 
-  fun getOffenderManagerForDeliusEvent(crn: String): OffenderManager? {
+  fun getOffenderManagerFromDelius(crn: String): OffenderManager? {
     log.info("Getting offender manager from Delius for CRN: {}", crn)
 
     val response = deliusApiClient.getOffenderManager(crn)
@@ -112,13 +112,13 @@ class ComAllocatedHandler(
 
   fun syncComAllocation(crn: String) {
     log.info("Syncing COM allocation for CRN: {}", crn)
-    val offenderManager = getOffenderManagerForDeliusEvent(crn)
+    val offenderManager = getOffenderManagerFromDelius(crn)
     if (isValidOffenderManager(offenderManager, crn)) {
       processComAllocation(offenderManager!!)
     }
   }
 
-  private fun getOffenderManagerForApop(detailUrl: String): OffenderManager {
+  private fun getOffenderManagerFromApop(detailUrl: String): OffenderManager {
     val personUuid = getPersonUuid(detailUrl)
     log.info("Getting offender manager from APOP for personUuid: {}", personUuid)
 
