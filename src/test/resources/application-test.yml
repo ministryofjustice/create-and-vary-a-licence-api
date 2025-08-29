@@ -96,6 +96,8 @@ policyv3:
 
 recall:
   enabled: true
+  prisons: ""
+  regions: ""
 
 oauth:
   client:
