@@ -391,6 +391,47 @@ class EligibilityServiceTest {
     }
   }
 
+  @Nested
+  inner class PrrdCasesFlagDisabled {
+    val eligiblePrisonCodes = "PRISON_CODE,PRISON_CODE_2"
+    val eligibleRegionCodes = "REGION_CODE,REGION_CODE_2"
+
+    @BeforeEach
+    fun setup() {
+      service = EligibilityService(clock, false, eligiblePrisonCodes, eligibleRegionCodes)
+    }
+
+    @Test
+    fun `Eligible case returns true if probation region and prison are permitted`() {
+      val result = service.isEligibleForCvl(aRecallPrisonerSearchResult.copy(prisonId = "PRISON_CODE"), "REGION_CODE_2")
+      assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `Eligible case returns false if probation region is not permitted`() {
+      val result = service.isEligibleForCvl(aRecallPrisonerSearchResult.copy(prisonId = "PRISON_CODE"), "SOME_OTHER_REGION")
+      assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `Eligible case returns false if prison code is not permitted`() {
+      val result = service.isEligibleForCvl(aRecallPrisonerSearchResult.copy(prisonId = "SOME_OTHER_PRISON"), "REGION_CODE_2")
+      assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `Ineligible case returns false when probation region and prison are permitted`() {
+      val result = service.isEligibleForCvl(
+        aRecallPrisonerSearchResult.copy(
+          postRecallReleaseDate = null,
+          prisonId = "PRISON_CODE",
+        ),
+        "REGION_CODE_2",
+      )
+      assertThat(result).isFalse()
+    }
+  }
+
   private companion object {
     val clock: Clock = Clock.fixed(Instant.parse("2023-11-03T00:00:00Z"), ZoneId.systemDefault())
 

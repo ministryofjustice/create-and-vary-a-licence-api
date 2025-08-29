@@ -5,4 +5,5 @@ data class TeamDetail(
   val description: String,
   val borough: Detail,
   val district: Detail,
+  val provider: Detail,
 )

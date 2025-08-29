@@ -404,25 +404,21 @@ class LicenceService(
       }
 
       is CrdLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+        assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         licenceEntity
           .submit(submitter as CommunityOffenderManager)
       }
 
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
-        if (determineReleaseDateKind(
-            licenceEntity.postRecallReleaseDate,
-            licenceEntity.conditionalReleaseDate,
-          ) != PRRD
-        ) {
-          assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+        if (determineReleaseDateKind(licenceEntity.postRecallReleaseDate, licenceEntity.conditionalReleaseDate) != PRRD) {
+          assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         }
         licenceEntity.submit(submitter as PrisonUser)
       }
 
       is HdcLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+        assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
@@ -616,7 +612,7 @@ class LicenceService(
     }
 
     if (licence.kind != PRRD) {
-      assertCaseIsEligible(licence.id, licence.nomsId)
+      assertCaseIsEligible(licence, licence.nomsId)
     }
 
     val creator = getCommunityOffenderManagerForCurrentUser()
@@ -1108,14 +1104,14 @@ class LicenceService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 
-  private fun assertCaseIsEligible(licenceId: Long, nomisId: String?) {
+  private fun assertCaseIsEligible(licence: EntityLicence, nomisId: String?) {
     if (nomisId == null) {
-      throw ValidationException("Unable to perform action, licence $licenceId is missing NOMS ID")
+      throw ValidationException("Unable to perform action, licence ${licence.id} is missing NOMS ID")
     }
 
     val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).first()
-    if (!eligibilityService.isEligibleForCvl(prisoner)) {
-      throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
+    if (!eligibilityService.isEligibleForCvl(prisoner, licence.probationAreaCode)) {
+      throw ValidationException("Unable to perform action, licence ${licence.id} is ineligible for CVL")
     }
   }
 

@@ -313,8 +313,12 @@ class CaCaseloadService(
   }
 
   private fun filterOffendersEligibleForLicence(offenders: List<ManagedCase>): List<ManagedCase> {
-    val eligibleOffenders =
-      offenders.filter { eligibilityService.isEligibleForCvl(it.nomisRecord!!.toPrisonerSearchPrisoner()) }
+    val eligibleOffenders = offenders.filter {
+      eligibilityService.isEligibleForCvl(
+        it.nomisRecord!!.toPrisonerSearchPrisoner(),
+        it.deliusRecord?.managedOffenderCrn?.team?.provider?.code,
+      )
+    }
 
     if (eligibleOffenders.isEmpty()) return eligibleOffenders
 
@@ -400,6 +404,7 @@ class CaCaseloadService(
                   name = com.name,
                   unallocated = com.unallocated,
                 ),
+                team = com.team,
               ),
             ),
           )

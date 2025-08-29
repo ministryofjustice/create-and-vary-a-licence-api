@@ -184,7 +184,7 @@ class CaCaseloadServiceTest {
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
-        whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+        whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
@@ -799,7 +799,7 @@ class CaCaseloadServiceTest {
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
-        whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+        whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(
           true,
         )
         val prisoner = aPrisonerSearchPrisoner.copy(
@@ -847,7 +847,7 @@ class CaCaseloadServiceTest {
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
-        whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+        whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(
           true,
         )
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
@@ -1560,6 +1560,10 @@ class CaCaseloadServiceTest {
           district = Detail(
             code = "N01A2",
             description = "Cardiff South",
+          ),
+          provider = Detail(
+            code = "N01",
+            description = "Wales",
           ),
         ),
         provider = Detail(

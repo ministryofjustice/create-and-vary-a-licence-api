@@ -109,7 +109,7 @@ class ComCaseloadSearchService(
     // no match for prisoner in Delius
     prisonOffender == null -> null
 
-    !eligibilityService.isEligibleForCvl(prisonOffender) -> null
+    !eligibilityService.isEligibleForCvl(prisonOffender, deliusOffender.team.provider?.code) -> null
 
     else -> deliusOffender.toUnstartedRecord(prisonOffender, licenceStartDate)
   }
@@ -122,7 +122,7 @@ class ComCaseloadSearchService(
     licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
 
     prisonOffender != null &&
-      (determineReleaseDateKind(licence.postRecallReleaseDate, licence.conditionalReleaseDate) == LicenceKind.PRRD || eligibilityService.isEligibleForCvl(prisonOffender)) ->
+      (determineReleaseDateKind(licence.postRecallReleaseDate, licence.conditionalReleaseDate) == LicenceKind.PRRD || eligibilityService.isEligibleForCvl(prisonOffender, deliusOffender.team.provider?.code)) ->
       deliusOffender.toStartedRecord(licence)
 
     else -> null

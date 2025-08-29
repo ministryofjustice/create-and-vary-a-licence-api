@@ -37,6 +37,7 @@ class OffenderManagerMapperTest {
           description = "Team One",
           district = Detail("D1", "District One"),
           borough = Detail("B1", "Borough One"),
+          provider = Detail("P1", "Provider One"),
         ),
       ),
       provider = Detail(
@@ -99,18 +100,21 @@ class OffenderManagerMapperTest {
           description = "Team One",
           district = Detail("D1", "District One"),
           borough = Detail("B1", "Borough One"),
+          provider = Detail("P1", "Provider One"),
         ),
         TeamDetail(
           code = "T2",
           description = "Team Two",
           district = Detail("D2", "District Two"),
           borough = Detail("B2", "Borough Two"),
+          provider = Detail("P1", "Provider One"),
         ),
         TeamDetail(
           code = "T3",
           description = "Team Three",
           district = Detail("D3", "District Three"),
           borough = Detail("B3", "Borough Three"),
+          provider = Detail("P1", "Provider One"),
         ),
       ),
       provider = Detail(
@@ -152,6 +156,7 @@ class OffenderManagerMapperTest {
         description = "Team One",
         district = Detail(code = "DT1", description = "District One"),
         borough = Detail(code = "BR1", description = "Borough One"),
+        provider = Detail("P1", "Provider One"),
       ),
       allocationDate = LocalDate.now(),
       unallocated = false,

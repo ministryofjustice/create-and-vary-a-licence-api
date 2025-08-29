@@ -7,6 +7,8 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -83,7 +85,7 @@ class ComCreateCaseloadServiceTest {
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(0)
-    verify(eligibilityService, never()).isEligibleForCvl(any())
+    verify(eligibilityService, never()).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -169,7 +171,7 @@ class ComCreateCaseloadServiceTest {
         createCaseloadItem("AB1234E", tenDaysFromNow, bookingId = "1", licenceStartDate = tenDaysFromNow),
       ),
     )
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -248,14 +250,14 @@ class ComCreateCaseloadServiceTest {
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
 
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
-    whenever(eligibilityService.isEligibleForCvl(caseloadItems[1].prisoner.toPrisonerSearchPrisoner())).thenReturn(
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(caseloadItems[1].prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(
       false,
     )
-    whenever(eligibilityService.isEligibleForCvl(caseloadItems[2].prisoner.toPrisonerSearchPrisoner())).thenReturn(
+    whenever(eligibilityService.isEligibleForCvl(eq(caseloadItems[2].prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(
       false,
     )
-    whenever(eligibilityService.isEligibleForCvl(caseloadItems[9].prisoner.toPrisonerSearchPrisoner())).thenReturn(
+    whenever(eligibilityService.isEligibleForCvl(eq(caseloadItems[9].prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(
       false,
     )
 
@@ -395,7 +397,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         StaffNameResponse(
@@ -511,11 +513,11 @@ class ComCreateCaseloadServiceTest {
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
-    whenever(eligibilityService.isEligibleForCvl(case1.prisoner.toPrisonerSearchPrisoner())).thenReturn(true)
-    whenever(eligibilityService.isEligibleForCvl(case2.prisoner.toPrisonerSearchPrisoner())).thenReturn(false)
-    whenever(eligibilityService.isEligibleForCvl(case3.prisoner.toPrisonerSearchPrisoner())).thenReturn(false)
-    whenever(eligibilityService.isEligibleForCvl(case4.prisoner.toPrisonerSearchPrisoner())).thenReturn(true)
-    whenever(eligibilityService.isEligibleForCvl(case5.prisoner.toPrisonerSearchPrisoner())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(case1.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(case2.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(eq(case3.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(eq(case4.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(case5.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(true)
 
     whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
@@ -619,7 +621,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf(selectedTeam))
@@ -672,7 +674,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
 
@@ -700,7 +702,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
 
@@ -745,7 +747,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
-    whenever(eligibilityService.isEligibleForCvl(caseloadItems[0].prisoner.toPrisonerSearchPrisoner())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(caseloadItems[0].prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(caseloadItems[0].prisoner.bookingId?.toLong()!!)))
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
@@ -767,12 +769,12 @@ class ComCreateCaseloadServiceTest {
     )
 
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(false)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(0)
-    verify(eligibilityService, times(1)).isEligibleForCvl(any())
+    verify(eligibilityService, times(1)).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -796,7 +798,7 @@ class ComCreateCaseloadServiceTest {
     )
 
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(false)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
@@ -830,7 +832,7 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceKind = LicenceKind.PRRD,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS,
     )
-    verify(eligibilityService, never()).isEligibleForCvl(any())
+    verify(eligibilityService, never()).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -870,7 +872,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -923,7 +925,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -967,7 +969,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -1010,7 +1012,7 @@ class ComCreateCaseloadServiceTest {
       emptyList(),
     )
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -1054,7 +1056,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -1109,7 +1111,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 

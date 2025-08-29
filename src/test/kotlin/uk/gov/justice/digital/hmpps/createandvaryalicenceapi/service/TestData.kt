@@ -636,6 +636,10 @@ object TestData {
         code = "N01A2",
         description = "Cardiff South",
       ),
+      provider = Detail(
+        code = "N01",
+        description = "Wales",
+      ),
     ),
     provider = Detail(
       code = "N01",
@@ -692,7 +696,7 @@ object TestData {
       "A01B02C",
       Name("Staff", surname = "Surname"),
     ),
-    team = TeamDetail("A01B02", "Test Team", Detail("B01", "Test borough"), Detail("D01", "Test district")),
+    team = TeamDetail("A01B02", "Test Team", Detail("B01", "Test borough"), Detail("D01", "Test district"), Detail("P01", "Test provider")),
     allocationDate = LocalDate.of(2023, 5, 24),
   )
 

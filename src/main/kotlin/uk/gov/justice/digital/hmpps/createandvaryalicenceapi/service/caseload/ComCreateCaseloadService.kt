@@ -97,7 +97,7 @@ class ComCreateCaseloadService(
       prisoner.bookingId == null -> false
       licences.any { it.licenceStatus == ACTIVE } -> false
       prrdLicence != null && prrdLicence.licenceId != null -> true
-      !eligibilityService.isEligibleForCvl(prisoner) -> false
+      !eligibilityService.isEligibleForCvl(prisoner, deliusRecord.team?.provider?.code) -> false
       else -> true
     }
   }

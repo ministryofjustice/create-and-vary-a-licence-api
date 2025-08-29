@@ -1345,7 +1345,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     service.submitLicence(1L, emptyList())
 
@@ -1391,7 +1391,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createPrrdLicence()))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     // When
     service.submitLicence(1L, emptyList())
@@ -1407,7 +1407,7 @@ class LicenceServiceTest {
     assertThat(licence.submittedBy!!.username).isEqualTo("tcom")
     assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
-    verify(eligibilityService, never()).isEligibleForCvl(any())
+    verify(eligibilityService, never()).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -1430,7 +1430,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHardStopRecallLicence()))
     whenever(staffRepository.findByUsernameIgnoreCase("tca")).thenReturn(caseAdmin)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     // When
     service.submitLicence(1L, emptyList())
@@ -1446,7 +1446,7 @@ class LicenceServiceTest {
     assertThat(licence.submittedBy!!.username).isEqualTo("tca")
     assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
-    verify(eligibilityService, never()).isEligibleForCvl(any())
+    verify(eligibilityService, never()).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -1469,7 +1469,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardStopLicence))
     whenever(staffRepository.findByUsernameIgnoreCase("tca")).thenReturn(caseAdmin)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     service.submitLicence(1L, emptyList())
 
@@ -1537,7 +1537,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(false)
 
     val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
 
@@ -1558,7 +1558,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
 
@@ -2184,7 +2184,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2235,7 +2235,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     val approvedLicence = createPrrdLicence().copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2256,7 +2256,7 @@ class LicenceServiceTest {
       assertThat(licenceVersion).isEqualTo("1.1")
     }
 
-    verify(eligibilityService, never()).isEligibleForCvl(any())
+    verify(eligibilityService, never()).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -2281,7 +2281,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2326,7 +2326,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2385,7 +2385,7 @@ class LicenceServiceTest {
   @Test
   fun `attempting to edit a licence that is ineligible for CVL results in validation exception`() {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(false)
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -3690,7 +3690,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hdcLicence))
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+      whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
       service.submitLicence(
         1L,
@@ -3742,7 +3742,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+      whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
       service.submitLicence(
         1L,
@@ -3817,7 +3817,7 @@ class LicenceServiceTest {
         Optional.of(approvedLicence),
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+      whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
       whenever(licenceRepository.save(any())).thenReturn(anHdcLicenceEntity)
 
@@ -3871,7 +3871,7 @@ class LicenceServiceTest {
         Optional.of(approvedLicence),
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+      whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
       whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
 
