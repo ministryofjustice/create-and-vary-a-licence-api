@@ -19,11 +19,9 @@ fun Collection<EligibilityCheckAndReason>.getIneligibilityReasons(prisoner: Pris
 class EligibilityService(
   private val clock: Clock,
   @param:Value("\${recall.enabled}") private val recallEnabled: Boolean = false,
-  @param:Value("\${recall.prisons}") private val recallEnabledPrisonsEnv: String = "",
-  @param:Value("\${recall.regions}") private val recallEnabledRegionsEnv: String = "",
+  @param:Value("\${recall.prisons}") private val recallEnabledPrisons: List<String> = emptyList(),
+  @param:Value("\${recall.regions}") private val recallEnabledRegions: List<String> = emptyList(),
 ) {
-  val recallEnabledPrisons: List<String> = recallEnabledPrisonsEnv.split(",")
-  val recallEnabledRegions: List<String> = recallEnabledRegionsEnv.split(",")
 
   val genericChecks = listOf(
     !isPersonParoleEligible() describedAs "is eligible for parole",

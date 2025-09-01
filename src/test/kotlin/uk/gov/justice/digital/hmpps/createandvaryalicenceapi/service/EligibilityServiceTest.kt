@@ -393,8 +393,8 @@ class EligibilityServiceTest {
 
   @Nested
   inner class PrrdCasesFlagDisabled {
-    val eligiblePrisonCodes = "PRISON_CODE,PRISON_CODE_2"
-    val eligibleRegionCodes = "REGION_CODE,REGION_CODE_2"
+    val eligiblePrisonCodes = listOf("PRISON_CODE", "PRISON_CODE_2")
+    val eligibleRegionCodes = listOf("REGION_CODE", "REGION_CODE_2")
 
     @BeforeEach
     fun setup() {
