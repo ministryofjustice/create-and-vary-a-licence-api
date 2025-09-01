@@ -13,7 +13,6 @@ class AddressMapper {
 
   companion object {
 
-    @JvmStatic
     fun copy(entity: Address?): Address? {
       if (entity == null) return null
 
@@ -32,7 +31,6 @@ class AddressMapper {
       )
     }
 
-    @JvmStatic
     fun toResponse(entity: Address): AddressResponse = AddressResponse(
       reference = entity.reference,
       uprn = entity.uprn,
