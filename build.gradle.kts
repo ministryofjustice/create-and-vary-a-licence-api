@@ -14,7 +14,6 @@ repositories {
   mavenCentral()
 }
 
-ext["hibernate.version"] = "6.5.3.Final"
 ext["logback.version"] = "1.5.14"
 
 dependencies {
