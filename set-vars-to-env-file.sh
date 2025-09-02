@@ -35,7 +35,9 @@ export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets
 
 # --- Booleans / Flags ---
 export POLICYV3_ENABLED=true
-export RECALL_ENABLED=true
+export RECALL_ENABLED=false
+export RECALL_PRISONS="MDI"
+export RECALL_REGIONS="N55"
 
 
 # --- Write to .env file ---
@@ -65,6 +67,10 @@ cat > "$fileToAddVars" <<EOF
 # --- Flags ---
   POLICYV3_ENABLED=${POLICYV3_ENABLED}
   RECALL_ENABLED=${RECALL_ENABLED}
+
+# --- Recall trial ---
+  RECALL_PRISONS=${RECALL_PRISONS}
+  RECALL_REGIONS=${RECALL_REGIONS}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"

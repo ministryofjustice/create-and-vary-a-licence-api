@@ -950,6 +950,10 @@ class ApproverCaseloadServiceTest {
           code = "N01A2",
           description = "Cardiff South",
         ),
+        provider = Detail(
+          code = "N01",
+          description = "Wales",
+        ),
       ),
       provider = Detail(
         code = "N01",
