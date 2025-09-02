@@ -67,6 +67,10 @@ cat > "$fileToAddVars" <<EOF
 # --- Flags ---
   POLICYV3_ENABLED=${POLICYV3_ENABLED}
   RECALL_ENABLED=${RECALL_ENABLED}
+
+# --- Recall trial ---
+  RECALL_PRISONS=${RECALL_PRISONS}
+  RECALL_REGIONS=${RECALL_REGIONS}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"
