@@ -5,6 +5,7 @@ import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.mockito.Mockito.spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -55,8 +56,13 @@ class ExclusionZoneServiceTest {
 
   @Test
   fun `service uploads an exclusion zone file`() {
+    // Given
+    val additionalCondition = anAdditionalConditionEntityWithoutUpload.copy(
+      additionalConditionUploadSummary = spy(mutableListOf()),
+    )
+
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithoutUpload))
+    whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(additionalCondition))
     whenever(additionalConditionUploadDetailRepository.saveAndFlush(any())).thenReturn(
       anAdditionalConditionUploadDetailEntity,
     )
@@ -71,12 +77,15 @@ class ExclusionZoneServiceTest {
       fileResource.file.inputStream(),
     )
 
+    // When
     service.uploadExclusionZoneFile(1L, 1L, multiPartFile)
 
+    // Then
     verify(licenceRepository, times(1)).findById(1L)
     verify(additionalConditionRepository, times(1)).findById(1L)
     verify(additionalConditionUploadDetailRepository, times(1)).saveAndFlush(any())
-    verify(additionalConditionRepository, times(1)).saveAndFlush(any())
+    verify(additionalCondition.additionalConditionUploadSummary, times(1)).clear()
+    verify(additionalCondition.additionalConditionUploadSummary, times(1)).add(any())
   }
 
   @Test
