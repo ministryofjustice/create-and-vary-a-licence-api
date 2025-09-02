@@ -1190,8 +1190,12 @@ ALTER TABLE address DISABLE TRIGGER set_address_last_updated_timestamp;
 INSERT INTO address (id,reference, first_line, second_line, town_or_city, county, postcode,
    source, created_timestamp, last_updated_timestamp
 ) SELECT
-	  licence_id,reference::text as reference, first_line, second_line, town_or_city, county, postcode,
-	   source, created_timestamp, last_updated_timestamp
+	  licence_id,reference::text as reference, first_line, second_line, town_or_city,
+	  CASE
+        WHEN county = town_or_city THEN NULL
+        ELSE county
+      END AS county,
+	  postcode, source, created_timestamp, last_updated_timestamp
 	FROM tmp_stage_8 order by licence_id;
 
 INSERT INTO licence_appointment_address (licence_id, address_id)
