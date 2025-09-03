@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecor
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCaseDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.View.PRISON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.View.PROBATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
@@ -278,7 +278,7 @@ class CaCaseloadService(
   }
 
   private fun createNotStartedLicenceForCase(
-    cases: List<ManagedCase>,
+    cases: List<ManagedCaseDto>,
     licenceStartDates: Map<String, LocalDate?>,
   ): List<CaCase> = cases.map { case ->
 
@@ -312,7 +312,7 @@ class CaCaseloadService(
     )
   }
 
-  private fun filterOffendersEligibleForLicence(offenders: List<ManagedCase>): List<ManagedCase> {
+  private fun filterOffendersEligibleForLicence(offenders: List<ManagedCaseDto>): List<ManagedCaseDto> {
     val eligibleOffenders = offenders.filter {
       eligibilityService.isEligibleForCvl(
         it.nomisRecord!!.toPrisonerSearchPrisoner(),
@@ -382,7 +382,7 @@ class CaCaseloadService(
   private fun pairNomisRecordsWithDelius(
     prisoners: List<PrisonerSearchPrisoner>,
     licenceStartDates: Map<String, LocalDate?>,
-  ): List<ManagedCase> {
+  ): List<ManagedCaseDto> {
     val caseloadNomisIds = prisoners
       .map { it.prisonerNumber }
 
@@ -393,7 +393,7 @@ class CaCaseloadService(
         val licenceStartDate = licenceStartDates[prisoner.prisonerNumber]
         val com = coms.find { com -> com.case.nomisId == prisoner.prisonerNumber }
         if (com != null) {
-          ManagedCase(
+          ManagedCaseDto(
             nomisRecord = prisoner.toPrisoner(),
             cvlFields = caseloadService.prisonerToCaseloadItem(prisoner, licenceStartDate).cvl,
             deliusRecord = DeliusRecord(
