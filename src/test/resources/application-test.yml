@@ -95,9 +95,9 @@ policyv3:
   enabled: true
 
 recall:
-  enabled: true
-  prisons: ""
-  regions: ""
+  enabled: false
+  prisons: "PRISON1"
+  regions: "REGION1"
 
 oauth:
   client:

@@ -612,6 +612,102 @@ class DeliusMockServer : WireMockServer(8093) {
                   "unallocated": null
                 },
                 "team": null
+              },
+              {
+                "crn": "X12353",
+                "nomisId": "AB1234J",
+                "allocationDate": null,
+                "staff": {
+                  "id": null,
+                  "code": "X1234",
+                  "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                  },
+                  "unallocated": null
+                },
+                "team": {
+                  "id": 1,
+                  "code": "TEAM1",
+                  "description": "Team 1",
+                  "district": {
+                    "code": "DISTRICT1",
+                    "description": "District 1"
+                  },
+                  "borough": {
+                    "code": "BOROUGH1",
+                    "description": "Borough 1"
+                  },
+                  "provider": {
+                    "code": "REGION1",
+                    "description": "Region 1"
+                  }
+                }
+              },
+              {
+                "crn": "X12354",
+                "nomisId": "AB1234K",
+                "allocationDate": null,
+                "staff": {
+                  "id": null,
+                  "code": "X1234",
+                  "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                  },
+                  "unallocated": null
+                },
+                "team": {
+                  "id": 2,
+                  "code": "TEAM2",
+                  "description": "Team 2",
+                  "district": {
+                    "code": "DISTRICT2",
+                    "description": "District 2"
+                  },
+                  "borough": {
+                    "code": "BOROUGH2",
+                    "description": "Borough 2"
+                  },
+                  "provider": {
+                    "code": "REGION2",
+                    "description": "Region 2"
+                  }
+                }
+              },
+              {
+                "crn": "X12355",
+                "nomisId": "AB1234L",
+                "allocationDate": null,
+                "staff": {
+                  "id": null,
+                  "code": "X1234",
+                  "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                  },
+                  "unallocated": null
+                },
+                "team": {
+                  "id": 2,
+                  "code": "TEAM2",
+                  "description": "Team 2",
+                  "district": {
+                    "code": "DISTRICT2",
+                    "description": "District 2"
+                  },
+                  "borough": {
+                    "code": "BOROUGH2",
+                    "description": "Borough 2"
+                  },
+                  "provider": {
+                    "code": "REGION2",
+                    "description": "Region 2"
+                  }
+                }
               }
             ]
           """.trimIndent(),
@@ -657,6 +753,38 @@ class DeliusMockServer : WireMockServer(8093) {
                   "unallocated": null
                 },
                 "team": null
+              },
+              {
+                "crn": "X12353",
+                "nomisId": "AB1234G",
+                "allocationDate": null,
+                "staff": {
+                  "id": null,
+                  "code": "X1234",
+                  "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                  },
+                  "unallocated": null
+                },
+                "team": {
+                  "id": 1,
+                  "code": "TEAM1",
+                  "description": "Team 1",
+                  "district": {
+                    "code": "DISTRICT1",
+                    "description": "District 1"
+                  },
+                  "borough": {
+                    "code": "BOROUGH1",
+                    "description": "Borough 1"
+                  },
+                  "provider": {
+                    "code": "REGION1",
+                    "description": "Region 1"
+                  }
+                }
               }
             ]
           """.trimIndent(),
