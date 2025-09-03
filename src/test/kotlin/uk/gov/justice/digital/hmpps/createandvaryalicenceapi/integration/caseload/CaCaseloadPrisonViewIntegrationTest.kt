@@ -299,6 +299,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
       description = "staff-description-$id",
       borough = Detail("borough-code-$id", "borough-description-$id"),
       district = Detail("district-code-$id", "district-description-$id"),
+      provider = Detail("probationArea-code-$id", "probationArea-description-$id"),
     ),
     provider = Detail("probationArea-code-$id", "probationArea-description-$id"),
     unallocated = false,
