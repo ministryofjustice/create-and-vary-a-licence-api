@@ -19,6 +19,8 @@ fun Collection<EligibilityCheckAndReason>.getIneligibilityReasons(prisoner: Pris
 class EligibilityService(
   private val clock: Clock,
   @param:Value("\${recall.enabled}") private val recallEnabled: Boolean = false,
+  @param:Value("\${recall.prisons}") private val recallEnabledPrisons: List<String> = emptyList(),
+  @param:Value("\${recall.regions}") private val recallEnabledRegions: List<String> = emptyList(),
 ) {
 
   val genericChecks = listOf(
@@ -42,9 +44,9 @@ class EligibilityService(
     prrdIsBeforeSled() describedAs "post recall release date is not before SLED",
   )
 
-  fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean = getIneligibilityReasons(prisoner).isEmpty()
+  fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner, areaCode: String? = null): Boolean = getIneligibilityReasons(prisoner, areaCode).isEmpty()
 
-  fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
+  fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner, areaCode: String? = null): List<String> {
     val genericIneligibilityReasons = genericChecks.getIneligibilityReasons(prisoner)
     val crdIneligibilityReasons = crdChecks.getIneligibilityReasons(prisoner)
 
@@ -55,7 +57,7 @@ class EligibilityService(
 
     var recallIneligibilityReasons = emptyList<String>()
 
-    if (recallEnabled) {
+    if (recallEnabled || (recallEnabledPrisons.contains(prisoner.prisonId) && recallEnabledRegions.contains(areaCode))) {
       recallIneligibilityReasons = recallChecks.getIneligibilityReasons(prisoner)
       // If eligible for PRRD licence, return as eligible
       if (genericIneligibilityReasons.isEmpty() && recallIneligibilityReasons.isEmpty()) {

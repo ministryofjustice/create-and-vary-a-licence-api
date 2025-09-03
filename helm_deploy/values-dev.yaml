@@ -27,6 +27,8 @@ generic-service:
     DOMAIN_EVENT_LISTENER_ENABLED: true
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: false
     RECALL_ENABLED: false
+    RECALL_PRISONS: "MDI"
+    RECALL_REGIONS: "N55"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
