@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
@@ -7,8 +10,12 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 
 class DeliusMockServer : WireMockServer(8093) {
+
+  private val objectMapper = ObjectMapper().registerModule(JavaTimeModule())
+    .registerKotlinModule()
 
   fun stubAssignDeliusRole(userName: String) {
     stubFor(
@@ -262,6 +269,20 @@ class DeliusMockServer : WireMockServer(8093) {
                 }]
               """.trimMargin(),
             ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetManagersForGetApprovalCaseload(managers: List<CommunityManager>) {
+    val jsonBody = objectMapper.writeValueAsString(managers)
+
+    stubFor(
+      post(urlEqualTo("/probation-case/responsible-community-manager"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonBody)
+            .withStatus(200),
         ),
     )
   }
