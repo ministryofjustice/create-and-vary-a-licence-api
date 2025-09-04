@@ -57,6 +57,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
+@RequiresCom("Without a COM, where can we get this data when setting the COM username or do we just surface results as null", "findLicencesMatchingCriteria, findSubmittedVariationsByRegion, findLicencesForCrnsAndStatuses, createVariation, editLicence")
 fun transformToLicenceSummary(
   licence: Licence,
   hardStopDate: LocalDate?,
@@ -93,7 +94,7 @@ fun transformToLicenceSummary(
   topupSupervisionStartDate = licence.topupSupervisionStartDate,
   topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
   postRecallReleaseDate = licence.postRecallReleaseDate,
-  comUsername = licence.responsibleCom.username,
+  comUsername = licence.getCom()?.username,
   bookingId = licence.bookingId,
   dateCreated = licence.dateCreated,
   approvedByName = licence.approvedByName,
@@ -114,6 +115,7 @@ fun transformToLicenceSummary(
   homeDetentionCurfewActualDate = if (licence.isHdcLicence()) licence.homeDetentionCurfewActualDate else null,
 )
 
+@RequiresCom("Is COM required for hardstop, if so the responsibleCOM would never be null")
 fun toHardstop(
   licence: HardStopLicence,
   earliestReleaseDate: LocalDate?,
@@ -154,7 +156,7 @@ fun toHardstop(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -203,6 +205,7 @@ fun toHardstop(
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
+@RequiresCom("Is COM required for variation, if so the responsibleCOM would never be null")
 fun toVariation(
   licence: VariationLicence,
   earliestReleaseDate: LocalDate?,
@@ -238,7 +241,7 @@ fun toVariation(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -284,6 +287,7 @@ fun toVariation(
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
+@RequiresCom("Is COM required for PRRD, if so the responsibleCOM would never be null")
 fun toPrrd(
   licence: PrrdLicence,
   earliestReleaseDate: LocalDate?,
@@ -324,7 +328,7 @@ fun toPrrd(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -378,6 +382,7 @@ fun toPrrd(
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
+@RequiresCom("Is COM required for CRD, if so the responsibleCOM would never be null")
 fun toCrd(
   licence: CrdLicence,
   earliestReleaseDate: LocalDate?,
@@ -418,7 +423,7 @@ fun toCrd(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -472,6 +477,7 @@ fun toCrd(
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
+@RequiresCom("Is COM required for HDC, if so the responsibleCOM would never be null")
 fun toHdc(
   licence: HdcLicence,
   earliestReleaseDate: LocalDate?,
@@ -514,7 +520,7 @@ fun toHdc(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -570,6 +576,7 @@ fun toHdc(
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
+@RequiresCom("Is COM required for HDC variation, if so the responsibleCOM would never be null")
 fun toHdcVariation(
   licence: HdcVariationLicence,
   earliestReleaseDate: LocalDate?,
@@ -607,7 +614,7 @@ fun toHdcVariation(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -862,6 +869,7 @@ fun Licence.getSubmittedByFullName(): String? {
   }
 }
 
+@RequiresCom("Without a COM, where can we get this data when setting the COM username or do we just surface results as null")
 fun transformToApprovalLicenceSummary(
   licence: EntityLicence,
   hardStopDate: LocalDate?,
@@ -890,7 +898,7 @@ fun transformToApprovalLicenceSummary(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  comUsername = licence.responsibleCom.username,
+  comUsername = licence.getCom()?.username,
   conditionalReleaseDate = licence.conditionalReleaseDate,
   actualReleaseDate = licence.actualReleaseDate,
   sentenceStartDate = licence.sentenceStartDate,

@@ -291,6 +291,7 @@ class LicenceCreationService(
     )
   }
 
+  @RequiresCom("If this is unallocated or not returned, what should happen to the value on the licence? We could now just return null but what about licences where it now can't be null")
   private fun getCurrentResponsibleOfficer(
     deliusRecord: ProbationCase,
     prisonNumber: String,
