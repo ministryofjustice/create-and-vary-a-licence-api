@@ -852,7 +852,23 @@ VALUES
 ('Redcar', 'Town', 'England', 'North Yorkshire', 'TS'),
 ('Rhyl', 'Town', 'Wales', 'Denbighshire', 'LL'),
 ('Skipton', 'Town', 'England', 'North Yorkshire', 'BD'),
-('Worthing', 'Town', 'England', 'West Sussex', 'BN');
+('Worthing', 'Town', 'England', 'West Sussex', 'BN'),
+-- extra
+('Grays', 'Town', 'England', 'Essex', 'RM'),
+('Winsford', 'Town', 'England', 'Cheshire', 'CW'),
+('Aston', 'Town', 'England', 'West Midlands', 'B6'),
+('Sandbach', 'Town', 'England', 'Cheshire', 'CW'),
+('St Helens', 'Town', 'England', 'Merseyside', 'WA'),
+('Weston-super-Mare', 'Town', 'England', 'North Somerset', 'BS'),
+('Goole', 'Town', 'England', 'East Riding of Yorkshire', 'DN'),
+('Wellingborough', 'Town', 'England', 'Northamptonshire', 'NN'),
+('Ebbw Vale', 'Town', 'Wales', 'Blaenau Gwent', 'NP'),
+('Redhill', 'Town', 'England', 'Surrey', 'RH'),
+('Maesteg', 'Town', 'Wales', 'Bridgend County Borough', 'CF'),
+('North Shields', 'Town', 'England', 'Tyne and Wear', 'NE'),
+('Leek', 'Town', 'England', 'Staffordshire', 'ST'),
+-- Spelling mistakes
+('Sheffeild', 'City', 'England', 'South Yorkshire', 'S');
 
 
 -- Stage 4 gets urban.urban_postcode_prefix not already aquired and country, county, urban_name
