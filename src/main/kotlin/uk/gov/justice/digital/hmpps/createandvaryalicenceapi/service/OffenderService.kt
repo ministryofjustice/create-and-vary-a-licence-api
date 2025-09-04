@@ -31,6 +31,7 @@ OffenderService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
+  @RequiresCom("When updating responsible COM for a CRN, should anything additional happen if the COM was null to begin with, is it licence dependent?", "ComAllocatedHandler, UpdateResponsibleCom")
   @Transactional
   fun updateOffenderWithResponsibleCom(crn: String, newCom: CommunityOffenderManager) {
     log.info(
@@ -43,7 +44,7 @@ OffenderService(
 
     val offenderLicences = licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
-    offenderLicences.forEach { it.responsibleCom = newCom }
+    offenderLicences.forEach { it.setCom(newCom) }
     licenceRepository.saveAllAndFlush(offenderLicences)
 
     val inProgressLicence = offenderLicences.find { it.kind != HARD_STOP && it.statusCode == IN_PROGRESS }

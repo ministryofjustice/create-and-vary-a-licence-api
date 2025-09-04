@@ -6,6 +6,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RequiresCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -73,7 +74,6 @@ class VariationLicence(
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
-  responsibleCom: CommunityOffenderManager,
   override var variationOfId: Long? = null,
   licenceVersion: String? = "1.0",
   updatedBy: Staff? = null,
@@ -85,6 +85,10 @@ class VariationLicence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   override var createdBy: CommunityOffenderManager? = null,
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "responsible_com_id", nullable = false)
+  override var responsibleCom: CommunityOffenderManager,
 ) : Licence(
   id = id,
   kind = LicenceKind.VARIATION,
@@ -141,10 +145,17 @@ class VariationLicence(
   standardConditions = standardConditions.toMutableList(),
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
-  responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
-  Variation {
+  Variation,
+  HasCom {
+
+  @RequiresCom("Do variations always need a COM set? , Does a variation licence always need a COM set?")
+  override fun getCom(): CommunityOffenderManager = responsibleCom
+
+  override fun setCom(com: CommunityOffenderManager) {
+    this.responsibleCom = com
+  }
 
   fun copy(
     id: Long? = this.id,
@@ -204,7 +215,7 @@ class VariationLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.responsibleCom!!,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,
