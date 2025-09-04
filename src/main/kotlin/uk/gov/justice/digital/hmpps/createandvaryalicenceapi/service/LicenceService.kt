@@ -1059,7 +1059,7 @@ class LicenceService(
     )
   }
 
-  @RequiresCom("Do we timeout a time served case?, Do we timeout a licence if it has no COM allocated?", "UpdateSentenceDates and TimeoutLicencesService")
+  @RequiresCom("Do we timeout a time served case?, Do we timeout a licence if it has no COM allocated?")
   @Transactional
   fun timeout(licence: EntityLicence, reason: String? = null) {
     check(licence is SupportsHardStop) { "Can only timeout licence kinds that support hard stop: ${licence.id}" }

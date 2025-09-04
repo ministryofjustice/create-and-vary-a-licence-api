@@ -57,7 +57,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
-@RequiresCom("Without a COM, where can we get this data when setting the COM username or do we just surface results as null", "findLicencesMatchingCriteria, findSubmittedVariationsByRegion, findLicencesForCrnsAndStatuses, createVariation, editLicence")
+@RequiresCom("Without a COM, where can we get this data when setting the COM username or do we just surface results as null")
 fun transformToLicenceSummary(
   licence: Licence,
   hardStopDate: LocalDate?,
