@@ -51,7 +51,7 @@ jobs:
   - name: activate-licences-job
     enabled: true
     path: /activate-licences
-    cron: "9,12,15,18 * * *" # 9am, 12pm, 3pm, and 6pm UTC every day
+    cron: "9,12,15,18 * * * *" # 9am, 12pm, 3pm, and 6pm UTC every day
     allowRetry: true
 
   - name: deactivate-licences-past-release-date-job
