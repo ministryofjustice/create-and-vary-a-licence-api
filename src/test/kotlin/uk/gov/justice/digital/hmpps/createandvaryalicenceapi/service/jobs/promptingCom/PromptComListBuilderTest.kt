@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
@@ -65,7 +66,7 @@ class PromptComListBuilderTest {
     fun eligibleCase() {
       val prisoner = prisonerSearchResult()
 
-      whenever(eligibilityService.isEligibleForCvl(prisoner)).thenReturn(true)
+      whenever(eligibilityService.isEligibleForCvl(eq(prisoner), anyOrNull())).thenReturn(true)
 
       val result = promptComListBuilder.excludeIneligibleCases(listOf(prisoner))
 
@@ -76,7 +77,7 @@ class PromptComListBuilderTest {
     fun ineligibleCase() {
       val prisoner = prisonerSearchResult()
 
-      whenever(eligibilityService.isEligibleForCvl(prisoner)).thenReturn(false)
+      whenever(eligibilityService.isEligibleForCvl(eq(prisoner), anyOrNull())).thenReturn(false)
 
       val result = promptComListBuilder.excludeIneligibleCases(listOf(prisoner))
 
