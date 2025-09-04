@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RequiresCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.Clock
@@ -19,6 +20,7 @@ class PromptComService(
   private val telemetryClient: TelemetryClient,
 ) {
 
+  @RequiresCom("The com is used to prompt licences to create a licence - if no com exists or is unallocated then what would we do?")
   @Async
   fun runJob(clock: Clock = Clock.systemDefaultZone()) {
     log.info("Running job")

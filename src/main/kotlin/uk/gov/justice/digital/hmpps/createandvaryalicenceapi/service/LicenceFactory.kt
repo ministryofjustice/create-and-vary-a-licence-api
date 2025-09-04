@@ -23,6 +23,7 @@ import java.time.LocalDateTime
 
 object LicenceFactory {
 
+  @RequiresCom("Do we allow a Prrd licence to be created where there is no COM?")
   fun createPrrd(
     licenceType: LicenceType,
     nomsId: String,
@@ -123,6 +124,7 @@ object LicenceFactory {
     createdBy = creator,
   )
 
+  @RequiresCom("Do we allow a hard stop licence to be created where there is no COM?")
   fun createHardStop(
     licenceType: LicenceType,
     nomsId: String,
@@ -214,58 +216,65 @@ object LicenceFactory {
     }
   }
 
+  @RequiresCom("Called from LicenceService createVariation - Do we allow a variation to be created where there is no COM?, This is not licence kind specific")
   fun createVariation(licence: Licence, creator: CommunityOffenderManager): Licence {
     with(licence) {
-      return VariationLicence(
-        typeCode = this.typeCode,
-        version = this.version,
-        statusCode = VARIATION_IN_PROGRESS,
-        variationOfId = licence.id,
-        createdBy = creator,
-        nomsId = this.nomsId,
-        bookingNo = this.bookingNo,
-        bookingId = this.bookingId,
-        crn = this.crn,
-        pnc = this.pnc,
-        cro = this.cro,
-        prisonCode = this.prisonCode,
-        prisonDescription = this.prisonDescription,
-        prisonTelephone = this.prisonTelephone,
-        forename = this.forename,
-        middleNames = this.middleNames,
-        surname = this.surname,
-        dateOfBirth = this.dateOfBirth,
-        conditionalReleaseDate = this.conditionalReleaseDate,
-        actualReleaseDate = this.actualReleaseDate,
-        sentenceStartDate = this.sentenceStartDate,
-        sentenceEndDate = this.sentenceEndDate,
-        licenceStartDate = this.licenceStartDate,
-        licenceExpiryDate = this.licenceExpiryDate,
-        topupSupervisionStartDate = this.topupSupervisionStartDate,
-        topupSupervisionExpiryDate = this.topupSupervisionExpiryDate,
-        postRecallReleaseDate = this.postRecallReleaseDate,
-        probationAreaCode = this.probationAreaCode,
-        probationAreaDescription = this.probationAreaDescription,
-        probationPduCode = this.probationPduCode,
-        probationPduDescription = this.probationPduDescription,
-        probationLauCode = this.probationLauCode,
-        probationLauDescription = this.probationLauDescription,
-        probationTeamCode = this.probationTeamCode,
-        probationTeamDescription = this.probationTeamDescription,
-        appointmentPersonType = this.appointmentPersonType,
-        appointmentPerson = this.appointmentPerson,
-        appointmentTime = this.appointmentTime,
-        appointmentTimeType = this.appointmentTimeType,
-        appointmentAddress = this.appointmentAddress,
-        licenceAppointmentAddress = AddressMapper.copy(this.licenceAppointmentAddress),
-        appointmentContact = this.appointmentContact,
-        responsibleCom = this.responsibleCom,
-        dateCreated = LocalDateTime.now(),
-        licenceVersion = getVariationVersion(this.licenceVersion!!),
-      )
+      val responsibleCom = licence.getCom()
+      if (responsibleCom != null) {
+        return VariationLicence(
+          typeCode = this.typeCode,
+          version = this.version,
+          statusCode = VARIATION_IN_PROGRESS,
+          variationOfId = licence.id,
+          createdBy = creator,
+          nomsId = this.nomsId,
+          bookingNo = this.bookingNo,
+          bookingId = this.bookingId,
+          crn = this.crn,
+          pnc = this.pnc,
+          cro = this.cro,
+          prisonCode = this.prisonCode,
+          prisonDescription = this.prisonDescription,
+          prisonTelephone = this.prisonTelephone,
+          forename = this.forename,
+          middleNames = this.middleNames,
+          surname = this.surname,
+          dateOfBirth = this.dateOfBirth,
+          conditionalReleaseDate = this.conditionalReleaseDate,
+          actualReleaseDate = this.actualReleaseDate,
+          sentenceStartDate = this.sentenceStartDate,
+          sentenceEndDate = this.sentenceEndDate,
+          licenceStartDate = this.licenceStartDate,
+          licenceExpiryDate = this.licenceExpiryDate,
+          topupSupervisionStartDate = this.topupSupervisionStartDate,
+          topupSupervisionExpiryDate = this.topupSupervisionExpiryDate,
+          postRecallReleaseDate = this.postRecallReleaseDate,
+          probationAreaCode = this.probationAreaCode,
+          probationAreaDescription = this.probationAreaDescription,
+          probationPduCode = this.probationPduCode,
+          probationPduDescription = this.probationPduDescription,
+          probationLauCode = this.probationLauCode,
+          probationLauDescription = this.probationLauDescription,
+          probationTeamCode = this.probationTeamCode,
+          probationTeamDescription = this.probationTeamDescription,
+          appointmentPersonType = this.appointmentPersonType,
+          appointmentPerson = this.appointmentPerson,
+          appointmentTime = this.appointmentTime,
+          appointmentTimeType = this.appointmentTimeType,
+          appointmentAddress = this.appointmentAddress,
+          licenceAppointmentAddress = AddressMapper.copy(this.licenceAppointmentAddress),
+          appointmentContact = this.appointmentContact,
+          responsibleCom = responsibleCom,
+          dateCreated = LocalDateTime.now(),
+          licenceVersion = getVariationVersion(this.licenceVersion!!),
+        )
+      } else {
+        throw IllegalStateException("Responsible COM is missing for licence ${this.id}")
+      }
     }
   }
 
+  @RequiresCom("Do we allow a HDC licence to be created where there is no COM?")
   fun createHdc(
     licenceType: LicenceType,
     nomsId: String,
@@ -318,6 +327,7 @@ object LicenceFactory {
     createdBy = creator,
   )
 
+  @RequiresCom("Fired from LicenceService when creating a variation - Do we allow a HDC variation to be created where there is no COM?")
   fun createHdcVariation(licence: HdcLicence, creator: CommunityOffenderManager): HdcVariationLicence {
     with(licence) {
       return HdcVariationLicence(

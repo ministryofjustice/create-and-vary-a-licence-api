@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
@@ -107,26 +108,31 @@ class UpdateSentenceDateService(
     }
   }
 
+  @RequiresCom("Notify COM of date change event for a licence, if a COM is not set, should this be a team email?")
   private fun notifyComOfUpdate(
     licence: Licence,
     dateChanges: DateChanges,
     isNotApprovedForHdc: Boolean,
   ) {
-    val notifyCom = licence is HdcLicence || isNotApprovedForHdc
-    if (!notifyCom) {
-      log.info("Not notifying COM as now approved for HDC for ${licence.id}")
-      return
-    }
-    log.info("Notifying COM ${licence.responsibleCom.email} of date change event for ${licence.id}")
+    if (licence is HasCom) {
+      val notifyCom = licence is HdcLicence || isNotApprovedForHdc
+      if (!notifyCom) {
+        log.info("Not notifying COM as now approved for HDC for ${licence.id}")
+        return
+      }
+      log.info("Notifying COM ${licence.responsibleCom.email} of date change event for ${licence.id}")
 
-    notifyService.sendDatesChangedEmail(
-      licence.id.toString(),
-      licence.responsibleCom.email,
-      "${licence.responsibleCom.firstName} ${licence.responsibleCom.lastName}",
-      "${licence.forename} ${licence.surname}",
-      licence.crn,
-      dateChanges.filter { it.notifyOfChange(licence.kind) }.map { it.toDescription() },
-    )
+      notifyService.sendDatesChangedEmail(
+        licence.id.toString(),
+        licence.responsibleCom.email,
+        "${licence.responsibleCom.firstName} ${licence.responsibleCom.lastName}",
+        "${licence.forename} ${licence.surname}",
+        licence.crn,
+        dateChanges.filter { it.notifyOfChange(licence.kind) }.map { it.toDescription() },
+      )
+    } else {
+      throw IllegalStateException("Licence ${licence.id} has no responsible COM")
+    }
   }
 
   private fun logUpdate(licenceId: Long, isMaterial: Boolean, dateChanges: List<DateChange>) {

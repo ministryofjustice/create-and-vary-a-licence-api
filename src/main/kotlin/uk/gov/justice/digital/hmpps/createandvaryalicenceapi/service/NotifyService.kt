@@ -82,6 +82,7 @@ class NotifyService(
     }
   }
 
+  @RequiresCom("If a COM is not present, where should this email be sent to?")
   fun sendVariationApprovedEmail(
     creatorEmail: String,
     creatorName: String,
@@ -129,6 +130,7 @@ class NotifyService(
     }
   }
 
+  @RequiresCom("If a COM is not present, where should this email be sent to?")
   fun sendVariationReferredEmail(
     creatorEmail: String,
     creatorName: String,
@@ -153,6 +155,7 @@ class NotifyService(
     }
   }
 
+  @RequiresCom("If a COM is not present, where should this email be sent to?")
   fun sendDatesChangedEmail(
     licenceId: String,
     emailAddress: String?,
@@ -196,6 +199,7 @@ class NotifyService(
     }
   }
 
+  @RequiresCom("If a COM is not present, where should this email be sent to?")
   fun sendHardStopLicenceApprovedEmail(
     emailAddress: String?,
     firstName: String,
@@ -219,6 +223,7 @@ class NotifyService(
     }
   }
 
+  @RequiresCom("If a COM is not present, where should this email be sent to?")
   fun sendEditedLicenceTimedOutEmail(
     emailAddress: String?,
     comName: String,
