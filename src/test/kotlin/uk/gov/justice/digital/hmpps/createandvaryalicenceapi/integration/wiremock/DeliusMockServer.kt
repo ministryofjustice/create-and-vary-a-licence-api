@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
@@ -7,8 +10,12 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 
 class DeliusMockServer : WireMockServer(8093) {
+
+  private val objectMapper = ObjectMapper().registerModule(JavaTimeModule())
+    .registerKotlinModule()
 
   fun stubAssignDeliusRole(userName: String) {
     stubFor(
@@ -262,6 +269,20 @@ class DeliusMockServer : WireMockServer(8093) {
                 }]
               """.trimMargin(),
             ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetManagersForGetApprovalCaseload(managers: List<CommunityManager>) {
+    val jsonBody = objectMapper.writeValueAsString(managers)
+
+    stubFor(
+      post(urlEqualTo("/probation-case/responsible-community-manager"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonBody)
+            .withStatus(200),
         ),
     )
   }
@@ -612,6 +633,102 @@ class DeliusMockServer : WireMockServer(8093) {
                   "unallocated": null
                 },
                 "team": null
+              },
+              {
+                "crn": "X12353",
+                "nomisId": "AB1234J",
+                "allocationDate": null,
+                "staff": {
+                  "id": null,
+                  "code": "X1234",
+                  "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                  },
+                  "unallocated": null
+                },
+                "team": {
+                  "id": 1,
+                  "code": "TEAM1",
+                  "description": "Team 1",
+                  "district": {
+                    "code": "DISTRICT1",
+                    "description": "District 1"
+                  },
+                  "borough": {
+                    "code": "BOROUGH1",
+                    "description": "Borough 1"
+                  },
+                  "provider": {
+                    "code": "REGION1",
+                    "description": "Region 1"
+                  }
+                }
+              },
+              {
+                "crn": "X12354",
+                "nomisId": "AB1234K",
+                "allocationDate": null,
+                "staff": {
+                  "id": null,
+                  "code": "X1234",
+                  "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                  },
+                  "unallocated": null
+                },
+                "team": {
+                  "id": 2,
+                  "code": "TEAM2",
+                  "description": "Team 2",
+                  "district": {
+                    "code": "DISTRICT2",
+                    "description": "District 2"
+                  },
+                  "borough": {
+                    "code": "BOROUGH2",
+                    "description": "Borough 2"
+                  },
+                  "provider": {
+                    "code": "REGION2",
+                    "description": "Region 2"
+                  }
+                }
+              },
+              {
+                "crn": "X12355",
+                "nomisId": "AB1234L",
+                "allocationDate": null,
+                "staff": {
+                  "id": null,
+                  "code": "X1234",
+                  "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                  },
+                  "unallocated": null
+                },
+                "team": {
+                  "id": 2,
+                  "code": "TEAM2",
+                  "description": "Team 2",
+                  "district": {
+                    "code": "DISTRICT2",
+                    "description": "District 2"
+                  },
+                  "borough": {
+                    "code": "BOROUGH2",
+                    "description": "Borough 2"
+                  },
+                  "provider": {
+                    "code": "REGION2",
+                    "description": "Region 2"
+                  }
+                }
               }
             ]
           """.trimIndent(),
@@ -657,6 +774,38 @@ class DeliusMockServer : WireMockServer(8093) {
                   "unallocated": null
                 },
                 "team": null
+              },
+              {
+                "crn": "X12353",
+                "nomisId": "AB1234G",
+                "allocationDate": null,
+                "staff": {
+                  "id": null,
+                  "code": "X1234",
+                  "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                  },
+                  "unallocated": null
+                },
+                "team": {
+                  "id": 1,
+                  "code": "TEAM1",
+                  "description": "Team 1",
+                  "district": {
+                    "code": "DISTRICT1",
+                    "description": "District 1"
+                  },
+                  "borough": {
+                    "code": "BOROUGH1",
+                    "description": "Borough 1"
+                  },
+                  "provider": {
+                    "code": "REGION1",
+                    "description": "Region 1"
+                  }
+                }
               }
             ]
           """.trimIndent(),
