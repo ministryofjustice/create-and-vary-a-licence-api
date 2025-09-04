@@ -140,7 +140,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 10, 10))
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -198,7 +198,7 @@ class LicenceCreationServiceTest {
         offender,
       )
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -220,7 +220,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult.copy(croNumber = null),
       )
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -242,7 +242,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -264,7 +264,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -281,7 +281,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -306,7 +306,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -336,7 +336,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -358,7 +358,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -403,7 +403,7 @@ class LicenceCreationServiceTest {
       ).thenReturn(listOf(existingLicence))
 
       val exception = assertThrows<ResourceAlreadyExistsException> {
-        service.createCrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -432,7 +432,7 @@ class LicenceCreationServiceTest {
       ).thenReturn(listOf(approvedLicence, notApprovedLicence))
 
       val exception = assertThrows<ResourceAlreadyExistsException> {
-        service.createCrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -455,7 +455,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createCrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -475,7 +475,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createCrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -497,7 +497,7 @@ class LicenceCreationServiceTest {
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createCrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -520,7 +520,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
       whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
 
-      service.createCrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CommunityOffenderManager>().apply {
         verify(staffRepository, times(1)).saveAndFlush(capture())
@@ -556,7 +556,7 @@ class LicenceCreationServiceTest {
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createCrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -608,7 +608,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 10, 10))
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -668,7 +668,7 @@ class LicenceCreationServiceTest {
         offender,
       )
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -690,7 +690,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult.copy(croNumber = null),
       )
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -712,7 +712,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -734,7 +734,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -751,7 +751,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -776,7 +776,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -806,7 +806,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -828,7 +828,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -873,7 +873,7 @@ class LicenceCreationServiceTest {
       ).thenReturn(listOf(existingLicence))
 
       val exception = assertThrows<ResourceAlreadyExistsException> {
-        service.createPrrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -902,7 +902,7 @@ class LicenceCreationServiceTest {
       ).thenReturn(listOf(approvedLicence, notApprovedLicence))
 
       val exception = assertThrows<ResourceAlreadyExistsException> {
-        service.createPrrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -926,7 +926,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createPrrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -947,7 +947,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createPrrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -971,7 +971,7 @@ class LicenceCreationServiceTest {
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createPrrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -995,7 +995,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
       whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
 
-      service.createPrrdLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CommunityOffenderManager>().apply {
         verify(staffRepository, times(1)).saveAndFlush(capture())
@@ -1032,7 +1032,7 @@ class LicenceCreationServiceTest {
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createPrrdLicence(PRISON_NUMBER)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
