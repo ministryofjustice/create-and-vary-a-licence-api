@@ -153,7 +153,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     assertThat(com.lastName).isEqualTo(lastName)
 
     val licence = licenceRepository.findById(3L).orElseThrow()
-    assertThat(licence.responsibleCom.id).isEqualTo(com.id)
+    assertThat(licence.getCom()!!.id).isEqualTo(com.id)
   }
 
   private companion object {
