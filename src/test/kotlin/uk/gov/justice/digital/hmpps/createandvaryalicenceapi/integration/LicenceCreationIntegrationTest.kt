@@ -70,7 +70,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     // When
     val result = webTestClient.post()
       .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = PRRD))
+      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -94,27 +94,6 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(standardConditionRepository.count()).isEqualTo(9)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
-  }
-
-  @Test
-  fun `When creating a PRRD licence with no post recall release date, exception should be thrown`() {
-    // Given
-    prisonApiMockServer.stubGetPrison()
-    prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = null)
-    deliusMockServer.stubGetProbationCase()
-    deliusMockServer.stubGetOffenderManager()
-
-    // When
-    val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = PRRD))
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-
-    // Then
-    result.expectStatus().isBadRequest
   }
 
   @Test

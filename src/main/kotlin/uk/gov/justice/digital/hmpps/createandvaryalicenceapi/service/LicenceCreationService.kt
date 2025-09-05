@@ -64,18 +64,16 @@ class LicenceCreationService(
   }
 
   @Transactional
-  fun createPrrdLicence(prisonNumber: String): LicenceCreationResponse {
+  fun createLicence(prisonNumber: String): LicenceCreationResponse {
     verifyNoInFlightLicence(prisonNumber)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
-    nomisRecord.postRecallReleaseDate ?: throw ValidationException("PostRecallReleaseDate not set for $prisonNumber for PRRDLicence")
 
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
-    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
       ?: createCom(currentResponsibleOfficerDetails.id)
@@ -83,59 +81,36 @@ class LicenceCreationService(
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
       ?: error("Staff with username $username not found")
 
-    val licence = LicenceFactory.createPrrd(
-      licenceType = getLicenceType(nomisRecord),
-      nomsId = nomisRecord.prisonerNumber,
-      version = licencePolicyService.currentPolicy().version,
-      nomisRecord = nomisRecord,
-      prisonInformation = prisonInformation,
-      currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
-      deliusRecord = deliusRecord,
-      responsibleCom = responsibleCom,
-      creator = createdBy,
-      licenceStartDate = licenceStartDate,
-    )
+    val licenceKind = determineReleaseDateKind(nomisRecord.postRecallReleaseDate, nomisRecord.conditionalReleaseDate)
+    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, licenceKind)
 
-    val createdLicence = licenceRepository.saveAndFlush(licence)
-
-    val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
-    standardConditionRepository.saveAllAndFlush(standardConditions)
-
-    recordLicenceCreation(createdBy, createdLicence)
-
-    return LicenceCreationResponse(createdLicence.id)
-  }
-
-  @Transactional
-  fun createCrdLicence(prisonNumber: String): LicenceCreationResponse {
-    verifyNoInFlightLicence(prisonNumber)
-
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
-    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
-    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
-    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
-    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.CRD)
-
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
-      ?: createCom(currentResponsibleOfficerDetails.id)
-
-    val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
-      ?: error("Staff with username $username not found")
-
-    val licence = LicenceFactory.createCrd(
-      licenceType = getLicenceType(nomisRecord),
-      nomsId = nomisRecord.prisonerNumber,
-      version = licencePolicyService.currentPolicy().version,
-      nomisRecord = nomisRecord,
-      prisonInformation = prisonInformation,
-      currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
-      deliusRecord = deliusRecord,
-      responsibleCom = responsibleCom,
-      creator = createdBy,
-      licenceStartDate = licenceStartDate,
-    )
+    val licence = when (licenceKind) {
+      LicenceKind.PRRD -> LicenceFactory.createPrrd(
+        licenceType = getLicenceType(nomisRecord),
+        nomsId = nomisRecord.prisonerNumber,
+        version = licencePolicyService.currentPolicy().version,
+        nomisRecord = nomisRecord,
+        prisonInformation = prisonInformation,
+        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
+        deliusRecord = deliusRecord,
+        responsibleCom = responsibleCom,
+        creator = createdBy,
+        licenceStartDate = licenceStartDate,
+      )
+      LicenceKind.CRD -> LicenceFactory.createCrd(
+        licenceType = getLicenceType(nomisRecord),
+        nomsId = nomisRecord.prisonerNumber,
+        version = licencePolicyService.currentPolicy().version,
+        nomisRecord = nomisRecord,
+        prisonInformation = prisonInformation,
+        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
+        deliusRecord = deliusRecord,
+        responsibleCom = responsibleCom,
+        creator = createdBy,
+        licenceStartDate = licenceStartDate,
+      )
+      else -> throw ValidationException("Generic licence creation route not suitable for $prisonNumber - releaseDateKind not PRRD or CRD.")
+    }
 
     val createdLicence = licenceRepository.saveAndFlush(licence)
 
