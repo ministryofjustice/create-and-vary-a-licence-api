@@ -1,14 +1,20 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
-import jakarta.persistence.criteria.Join
 import jakarta.persistence.criteria.JoinType
 import jakarta.validation.ValidationException
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.and
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.`includedIn`
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.includedIn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RequiresCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 data class LicenceQueryObject(
@@ -22,6 +28,16 @@ data class LicenceQueryObject(
   val sortOrder: String? = null,
 )
 
+private val LICENCE_KINDS_WITH_RESPONSIBLE_COM: List<Class<out Licence>> = listOf(
+  CrdLicence::class.java,
+  HardStopLicence::class.java,
+  HdcLicence::class.java,
+  HdcVariationLicence::class.java,
+  PrrdLicence::class.java,
+  VariationLicence::class.java,
+)
+
+@RequiresCom("Initially used to fetch the responsibleCOM for the joins in the specification")
 fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasStatusCodeIn(statusCodes),
   hasPrisonCodeIn(prisonCodes),
@@ -30,8 +46,12 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasPdusIn(pdus),
   hasProbationAreaCodeIn(probationAreaCodes),
 )
-  .and { root, query, _ ->
-    root.fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.INNER)
+  .and { root, query, criteriaBuilder ->
+
+    for (licenceKind in LICENCE_KINDS_WITH_RESPONSIBLE_COM) {
+      criteriaBuilder.treat(root, licenceKind).fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
+    }
+    query.distinct(true)
     query.restriction
   }
 
@@ -60,9 +80,19 @@ fun hasNomsIdIn(nomsIds: List<String>?): Specification<Licence>? = nomsIds?.let 
 }
 
 fun hasResponsibleComIn(staffIds: List<Int>?): Specification<Licence>? = staffIds?.let {
-  return Specification<Licence> { root, _, builder ->
-    val joinOffenderManager: Join<Licence, CommunityOffenderManager> = root.join("responsibleCom", JoinType.INNER)
-    builder.and(joinOffenderManager.get<Int>("staffIdentifier").`in`(it))
+  return Specification<Licence> { root, query, criteriaBuilder ->
+    if (staffIds.isEmpty()) return@Specification null
+
+    query.distinct(true)
+
+    val predicates = LICENCE_KINDS_WITH_RESPONSIBLE_COM.map { licenceKind ->
+      criteriaBuilder.treat(root, licenceKind)
+        .join<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
+        .get<Int>("staffIdentifier").`in`(it)
+    }
+
+    // licence matches if ANY subclass’ responsibleCom is in the set
+    criteriaBuilder.or(*predicates.toTypedArray())
   }
 }
 
