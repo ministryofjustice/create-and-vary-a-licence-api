@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull
 enum class LicenceType {
   @Deprecated("No longer required, PRRD licence type is now determined dynamically")
   PRRD,
+
   @Deprecated("No longer required, CRD licence type is now determined dynamically")
   CRD,
   HARD_STOP,
