@@ -272,6 +272,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   ) {
     verify(offenderService).updateOffenderWithResponsibleCom(
       crn,
+      null,
       CommunityOffenderManager(
         id = id,
         staffIdentifier = staffIdentifier,

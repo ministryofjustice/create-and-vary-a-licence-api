@@ -25,9 +25,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Additi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.ca
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.com
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.DayOfWeek
 import java.time.LocalDateTime
@@ -82,7 +85,7 @@ class AuditServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(auditEventRepository, times(1)).findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(
-      aUserRequest.licenceId!!,
+      aUserRequest.licenceId,
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
@@ -106,7 +109,7 @@ class AuditServiceTest {
     assertThat(response[0].summary).isEqualTo("Summary1")
 
     verify(auditEventRepository, times(1)).findAllByUsernameAndEventTimeBetweenOrderByEventTimeDesc(
-      aUserRequest.username!!,
+      aUserRequest.username,
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
@@ -860,6 +863,116 @@ class AuditServiceTest {
             mapOf(
               "isToBeTaggedForProgramme" to true,
               "programmeName" to "valid name",
+            ),
+          ),
+        )
+    }
+  }
+
+  @Nested
+  inner class `audits events when COM updated` {
+    @Test
+    fun `records an audit event when the COM allocated to an offender is updated`() {
+      val existingCom = com()
+      val updatedCom = existingCom.copy(firstName = "new name", email = "new email", staffIdentifier = 1000L)
+      val user = ca()
+
+      service.recordAuditEventComUpdated(
+        aLicenceEntity,
+        existingCom,
+        updatedCom,
+        user,
+      )
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      verify(auditEventRepository).save(auditCaptor.capture())
+      val auditEvent = auditCaptor.value
+      assertThat(auditEvent.username).isEqualTo(user.username)
+
+      assertThat(auditEvent.summary)
+        .isEqualTo(
+          "COM updated to ${updatedCom.firstName} ${updatedCom.lastName} on licence for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        )
+      assertThat(auditCaptor.value.detail)
+        .isEqualTo(
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+            "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+        )
+      assertThat(auditCaptor.value.changes)
+        .extracting("type", "changes")
+        .isEqualTo(
+          listOf(
+            "COM updated to new name Y on licence",
+            mapOf(
+              "newEmail" to "new email",
+              "newStaffIdentifier" to 1000L,
+              "newUsername" to "tcom",
+              "oldEmail" to "testemail@probation.gov.uk",
+              "oldStaffIdentifier" to 2000L,
+              "oldUsername" to "tcom",
+            ),
+          ),
+        )
+    }
+  }
+
+  @Nested
+  inner class `audits events when probation team updated` {
+    @Test
+    fun `records an audit event when the the probation team on a licence is updated`() {
+      val user = ca()
+
+      val updateTeamRequest = UpdateProbationTeamRequest(
+        probationAreaCode = "N02",
+        probationPduCode = "PDU2",
+        probationLauCode = "LAU2",
+        probationTeamCode = "TEAM2",
+        probationTeamDescription = "team desc",
+        probationAreaDescription = "area desc",
+      )
+
+      service.recordAuditEventProbationTeamUpdated(
+        aLicenceEntity,
+        updateTeamRequest,
+        user,
+      )
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      verify(auditEventRepository).save(auditCaptor.capture())
+      val auditEvent = auditCaptor.value
+      assertThat(auditEvent.username).isEqualTo(user.username)
+
+      assertThat(auditEvent.summary)
+        .isEqualTo(
+          "Probation team updated to ${updateTeamRequest.probationTeamDescription} at ${updateTeamRequest.probationAreaDescription} on licence for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        )
+      assertThat(auditCaptor.value.detail)
+        .isEqualTo(
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+            "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+        )
+      assertThat(auditCaptor.value.changes)
+        .extracting("type", "changes")
+        .isEqualTo(
+          listOf(
+            "Probation team updated to team desc at area desc on licence",
+            mapOf(
+              "newAreaCode" to "N02",
+              "newAreaDescription" to "area desc",
+              "newLauCode" to "LAU2",
+              "newLauDescription" to null,
+              "newPduCode" to "PDU2",
+              "newPduDescription" to null,
+              "newTeamCode" to "TEAM2",
+              "newTeamDescription" to "team desc",
+              "oldAreaCode" to "N01",
+              "oldAreaDescription" to "Wales",
+              "oldLauCode" to "N01A2",
+              "oldLauDescription" to "Cardiff South",
+              "oldPduCode" to "N01A",
+              "oldPduDescription" to "Cardiff",
+              "oldTeamCode" to "NA01A2-A",
+              "oldTeamDescription" to "Cardiff South Team A",
             ),
           ),
         )
