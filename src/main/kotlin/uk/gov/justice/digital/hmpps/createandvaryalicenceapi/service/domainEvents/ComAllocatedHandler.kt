@@ -48,7 +48,9 @@ class ComAllocatedHandler(
     log.info("Processing COM allocation for CRN ${offenderManager.crn} code is ${offenderManager.code}")
 
     deliusApiClient.assignDeliusRole(offenderManager.username!!)
-
+    val existingCom =
+      staffService.findCommunityOffenderManager(offenderManager.staffIdentifier, offenderManager.username)
+        .firstOrNull()
     val newCom = staffService.updateComDetails(
       UpdateComRequest(
         staffIdentifier = offenderManager.staffIdentifier,
@@ -59,7 +61,7 @@ class ComAllocatedHandler(
       ),
     )
 
-    offenderService.updateOffenderWithResponsibleCom(offenderManager.crn, newCom)
+    offenderService.updateOffenderWithResponsibleCom(offenderManager.crn, existingCom, newCom)
 
     offenderService.updateProbationTeam(
       offenderManager.crn,
