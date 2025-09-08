@@ -185,6 +185,7 @@ class SubjectAccessRequestResponseBuilderTest {
         version = "2.1",
         typeCode = AP,
         appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
+        appointmentAddress = "Test Address String",
       ),
       earliestReleaseDate = LocalDate.of(2024, 1, 3),
       isEligibleForEarlyRelease = true,
