@@ -114,19 +114,7 @@ SELECT
 CREATE INDEX idx_licence_appointment_licence_id ON licence_appointment(licence_id);
 CREATE INDEX idx_licence_appointment_appointment_id ON licence_appointment(appointment_id);
 
--- 11. Drop migrated appointment columns from licence
-ALTER TABLE licence
-DROP COLUMN appointment_person_type,
-    DROP COLUMN appointment_person,
-    DROP COLUMN appointment_time_type,
-    DROP COLUMN appointment_time,
-    DROP COLUMN appointment_address,
-    DROP COLUMN appointment_contact;
-
--- 12. Drop old join table no longer needed
-DROP TABLE licence_appointment_address;
-
--- 13. Trigger function for automatic date_last_updated
+-- 11. Trigger function for automatic date_last_updated
 CREATE OR REPLACE FUNCTION appointment_update_last_updated_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -135,8 +123,20 @@ RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- 14. Trigger to update date_last_updated before any update
+-- 12. Trigger to update date_last_updated before any update
 CREATE TRIGGER set_appointment_last_updated_timestamp
 	BEFORE UPDATE ON appointment
 	FOR EACH ROW
 	EXECUTE FUNCTION appointment_update_last_updated_timestamp();
+
+-- 13. Drop migrated appointment columns from licence
+ALTER TABLE licence
+DROP COLUMN appointment_person_type,
+    DROP COLUMN appointment_person,
+    DROP COLUMN appointment_time_type,
+    DROP COLUMN appointment_time,
+    DROP COLUMN appointment_address,
+    DROP COLUMN appointment_contact;
+
+-- 14. Drop old join table no longer needed
+DROP TABLE licence_appointment_address;
