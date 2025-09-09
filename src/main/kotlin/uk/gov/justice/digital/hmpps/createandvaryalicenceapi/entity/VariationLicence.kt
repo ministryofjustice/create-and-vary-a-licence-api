@@ -5,10 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -53,13 +50,7 @@ class VariationLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointmentPersonType: AppointmentPersonType? = null,
-  appointmentPerson: String? = null,
-  appointmentTime: LocalDateTime? = null,
-  appointmentTimeType: AppointmentTimeType? = null,
-  appointmentAddress: String? = null,
-  licenceAppointmentAddress: Address? = null,
-  appointmentContact: String? = null,
+  appointment: Appointment? = null,
   override var spoDiscussion: String? = null,
   override var vloDiscussion: String? = null,
   approvedDate: LocalDateTime? = null,
@@ -122,13 +113,7 @@ class VariationLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointmentPersonType = appointmentPersonType,
-  appointmentPerson = appointmentPerson,
-  appointmentTime = appointmentTime,
-  appointmentTimeType = appointmentTimeType,
-  appointmentAddress = appointmentAddress,
-  licenceAppointmentAddress = licenceAppointmentAddress,
-  appointmentContact = appointmentContact,
+  appointment = appointment,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
   approvedByName = approvedByName,
@@ -182,13 +167,7 @@ class VariationLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointmentPersonType: AppointmentPersonType? = this.appointmentPersonType,
-    appointmentPerson: String? = this.appointmentPerson,
-    appointmentTime: LocalDateTime? = this.appointmentTime,
-    appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
-    appointmentAddress: String? = this.appointmentAddress,
-    licenceAppointmentAddress: Address? = AddressMapper.copy(this.licenceAppointmentAddress),
-    appointmentContact: String? = this.appointmentContact,
+    appointment: Appointment? = AppointmentMapper.copy(this.appointment),
     spoDiscussion: String? = this.spoDiscussion,
     vloDiscussion: String? = this.vloDiscussion,
     approvedDate: LocalDateTime? = this.approvedDate,
@@ -245,13 +224,7 @@ class VariationLicence(
       probationLauDescription = probationLauDescription,
       probationTeamCode = probationTeamCode,
       probationTeamDescription = probationTeamDescription,
-      appointmentPersonType = appointmentPersonType,
-      appointmentPerson = appointmentPerson,
-      appointmentTime = appointmentTime,
-      appointmentTimeType = appointmentTimeType,
-      appointmentAddress = appointmentAddress,
-      licenceAppointmentAddress = licenceAppointmentAddress,
-      appointmentContact = appointmentContact,
+      appointment = appointment,
       spoDiscussion = spoDiscussion,
       vloDiscussion = vloDiscussion,
       approvedDate = approvedDate,
@@ -322,13 +295,14 @@ class VariationLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=$appointmentPersonType, " +
-    "appointmentPerson=$appointmentPerson, " +
-    "appointmentTime=$appointmentTime, " +
-    "appointmentTimeType=$appointmentTimeType, " +
-    "appointmentAddress=$appointmentAddress, " +
-    "licenceAppointmentAddress=$licenceAppointmentAddress, " +
-    "appointmentContact=$appointmentContact, " +
+    "appointmentPersonType=${appointment?.personType}, " +
+    "appointmentPerson=${appointment?.person}, " +
+    "appointmentTime=${appointment?.time}, " +
+    "appointmentTimeType=${appointment?.timeType}, " +
+    "appointmentAddress=${appointment?.addressText}, " +
+    "licenceAppointmentAddress=${appointment?.address}, " +
+    "appointmentContact=${appointment?.telephoneContactNumber}, " +
+    "alternativeTelephoneContactNumber=${appointment?.alternativeTelephoneContactNumber}, " +
     "spoDiscussion=$spoDiscussion, " +
     "vloDiscussion=$vloDiscussion, " +
     "approvedDate=$approvedDate, " +

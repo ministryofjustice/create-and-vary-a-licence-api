@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
@@ -45,6 +46,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.S
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -386,7 +388,7 @@ object TestData {
       lastName = "Y",
     ),
     createdBy = com(),
-    appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+    appointment = createAppointment(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }
@@ -411,6 +413,32 @@ object TestData {
     source = source,
     createdTimestamp = created,
     lastUpdatedTimestamp = updated,
+  )
+
+  fun createAppointment(
+    id: Long? = null,
+    personType: AppointmentPersonType? = AppointmentPersonType.SPECIFIC_PERSON,
+    person: String? = if (personType == AppointmentPersonType.SPECIFIC_PERSON) "Test Officer" else null,
+    timeType: AppointmentTimeType? = AppointmentTimeType.SPECIFIC_DATE_TIME,
+    time: LocalDateTime? = LocalDateTime.now().plusDays(1),
+    telephoneContactNumber: String? = "07123456789",
+    alternativeTelephoneContactNumber: String? = "07000000000",
+    addressText: String? = "Meeting at Testville Probation Office",
+    address: Address? = createAddress(),
+    created: LocalDateTime = LocalDateTime.now(),
+    updated: LocalDateTime = created,
+  ): Appointment = Appointment(
+    id = id,
+    personType = personType,
+    person = person,
+    timeType = timeType,
+    time = time,
+    telephoneContactNumber = telephoneContactNumber,
+    alternativeTelephoneContactNumber = alternativeTelephoneContactNumber,
+    addressText = addressText,
+    address = address,
+    dateCreated = created,
+    dateLastUpdated = updated,
   )
 
   fun createHdcLicence() = HdcLicence(
@@ -555,7 +583,7 @@ object TestData {
       lastName = "Y",
     ),
     createdBy = com(),
-    appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+    appointment = createAppointment(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it), curfewTimes = mutableListOf())
   }

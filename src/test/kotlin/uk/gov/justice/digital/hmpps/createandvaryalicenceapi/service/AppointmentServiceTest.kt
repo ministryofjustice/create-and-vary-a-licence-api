@@ -84,19 +84,22 @@ class AppointmentServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value).extracting(
-      "appointmentPersonType",
-      "appointmentPerson",
-      "updatedByUsername",
-      "updatedBy",
-    ).isEqualTo(listOf(SPECIFIC_PERSON, "John Smith", aCom.username, aCom))
+    val licence = licenceCaptor.value
+    val appointment = licence.appointment
+    assertThat(appointment).isNotNull
+    assertThat(appointment!!.personType).isEqualTo(SPECIFIC_PERSON)
+    assertThat(appointment.person).isEqualTo("John Smith")
+    assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
+    assertThat(licence.updatedBy!!.username).isEqualTo(aCom.username)
   }
 
   @Test
   fun `update initial appointment clears specific person if not a appointment type is not with a specific person `() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(appointmentPerson = "Duty Officer")))
+    // Given
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(appointment = TestData.createAppointment())))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
+    // When
     service.updateAppointmentPerson(
       1L,
       AppointmentPersonRequest(
@@ -105,15 +108,17 @@ class AppointmentServiceTest {
       ),
     )
 
+    // Then
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value).extracting(
-      "appointmentPersonType",
-      "appointmentPerson",
-      "updatedByUsername",
-      "updatedBy",
-    ).isEqualTo(listOf(DUTY_OFFICER, null, aCom.username, aCom))
+    val licence = licenceCaptor.value
+    val appointment = licence.appointment
+    assertThat(appointment).isNotNull
+    assertThat(appointment!!.personType).isEqualTo(DUTY_OFFICER)
+    assertThat(appointment.person).isNull()
+    assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
+    assertThat(licence.updatedBy).isEqualTo(aCom)
   }
 
   @Test
@@ -152,8 +157,12 @@ class AppointmentServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value).extracting("appointmentTime", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(tenDaysFromNow, aCom.username, aCom))
+    val licence = licenceCaptor.value
+    val appointment = licence.appointment
+    assertThat(appointment).isNotNull
+    assertThat(appointment!!.time).isEqualTo(tenDaysFromNow)
+    assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
+    assertThat(licence.updatedBy!!.username).isEqualTo(aCom.username)
   }
 
   @Test
@@ -186,8 +195,12 @@ class AppointmentServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value).extracting("appointmentContact", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf("0114 2565555", aCom.username, aCom))
+    val licence = licenceCaptor.value
+    val appointment = licence.appointment
+    assertThat(appointment).isNotNull
+    assertThat(appointment!!.telephoneContactNumber).isEqualTo("0114 2565555")
+    assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
+    assertThat(licence.updatedBy!!.username).isEqualTo(aCom.username)
   }
 
   @Test
@@ -226,12 +239,13 @@ class AppointmentServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value).extracting(
-      "appointmentPersonType",
-      "appointmentPerson",
-      "updatedByUsername",
-      "updatedBy",
-    ).isEqualTo(listOf(SPECIFIC_PERSON, "John Smith", SYSTEM_USER, aPreviousUser))
+    val licence = licenceCaptor.value
+    val appointment = licence.appointment
+    assertThat(appointment).isNotNull
+    assertThat(appointment!!.personType).isEqualTo(SPECIFIC_PERSON)
+    assertThat(appointment.person).isEqualTo("John Smith")
+    assertThat(licence.updatedByUsername).isEqualTo(SYSTEM_USER)
+    assertThat(licence.updatedBy).isEqualTo(aPreviousUser)
   }
 
   private companion object {

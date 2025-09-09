@@ -206,7 +206,13 @@ data class HardStopLicence(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
     example = "0114 2557665",
   )
-  override val appointmentContact: String? = null,
+  override val appointmentTelephoneNumber: String? = null,
+
+  @field:Schema(
+    description = "An alternative UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "07700 900000",
+  )
+  override val appointmentAlternativeTelephoneNumber: String? = null,
 
   @field:Schema(
     description = "The date time when the hardstop licence was reviewed by a probation practitioner",

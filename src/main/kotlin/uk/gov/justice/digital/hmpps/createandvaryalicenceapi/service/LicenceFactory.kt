@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
@@ -252,13 +252,7 @@ object LicenceFactory {
         probationLauDescription = this.probationLauDescription,
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
-        appointmentPersonType = this.appointmentPersonType,
-        appointmentPerson = this.appointmentPerson,
-        appointmentTime = this.appointmentTime,
-        appointmentTimeType = this.appointmentTimeType,
-        appointmentAddress = this.appointmentAddress,
-        licenceAppointmentAddress = AddressMapper.copy(this.licenceAppointmentAddress),
-        appointmentContact = this.appointmentContact,
+        appointment = AppointmentMapper.copy(this.appointment),
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),
         licenceVersion = getVariationVersion(this.licenceVersion!!),
@@ -358,13 +352,7 @@ object LicenceFactory {
         probationLauDescription = this.probationLauDescription,
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
-        appointmentPersonType = this.appointmentPersonType,
-        appointmentPerson = this.appointmentPerson,
-        appointmentTime = this.appointmentTime,
-        appointmentTimeType = this.appointmentTimeType,
-        appointmentAddress = this.appointmentAddress,
-        licenceAppointmentAddress = AddressMapper.copy(this.licenceAppointmentAddress),
-        appointmentContact = this.appointmentContact,
+        appointment = AppointmentMapper.copy(this.appointment),
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),
         licenceVersion = getVariationVersion(this.licenceVersion!!),

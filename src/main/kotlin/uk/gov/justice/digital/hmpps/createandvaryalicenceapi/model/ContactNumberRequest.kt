@@ -11,4 +11,10 @@ data class ContactNumberRequest(
   )
   @field:NotBlank
   val telephone: String?,
+
+  @field:Schema(
+    description = "An alternative UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "07700 900000",
+  )
+  val telephoneAlternative: String? = null,
 )
