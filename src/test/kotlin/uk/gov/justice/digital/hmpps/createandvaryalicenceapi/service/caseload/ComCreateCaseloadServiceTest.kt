@@ -25,11 +25,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
@@ -69,6 +68,7 @@ class ComCreateCaseloadServiceTest {
   fun reset() {
     reset(deliusApiClient, licenceService, hdcService, eligibilityService)
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
   }
 
   @Test
@@ -108,7 +108,7 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `it calls the licence service when Nomis records are found`() {
     val cases = mapOf(
-      TestData.managedOffenderCrn() to CaseloadItem(
+      managedOffenderCrn() to CaseloadItem(
         prisoner = Prisoner(
           prisonerNumber = "ABC123",
           firstName = "Person",
@@ -142,7 +142,12 @@ class ComCreateCaseloadServiceTest {
           lastName = "One",
           dateOfBirth = LocalDate.of(1970, 1, 1),
         ),
-        cvl = CvlFields(isInHardStopPeriod = true, licenceType = LicenceType.AP, licenceStartDate = twoDaysFromNow, isDueToBeReleasedInTheNextTwoWorkingDays = true),
+        cvl = CvlFields(
+          isInHardStopPeriod = true,
+          licenceType = LicenceType.AP,
+          licenceStartDate = twoDaysFromNow,
+          isDueToBeReleasedInTheNextTwoWorkingDays = true,
+        ),
       ),
     )
 
@@ -172,7 +177,6 @@ class ComCreateCaseloadServiceTest {
       ),
     )
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -207,14 +211,45 @@ class ComCreateCaseloadServiceTest {
     ).thenReturn(managedOffenders)
 
     val caseloadItems = listOf(
-      createCaseloadItem("AB1234E", nineDaysFromNow, paroleEligibilityDate = yesterday, bookingId = "1", licenceStartDate = nineDaysFromNow),
-      createCaseloadItem("AB1234F", tenDaysFromNow, paroleEligibilityDate = tenDaysFromNow, bookingId = "2", licenceStartDate = tenDaysFromNow),
-      createCaseloadItem("AB1234G", tenDaysFromNow, legalStatus = "DEAD", bookingId = "3", licenceStartDate = tenDaysFromNow),
-      createCaseloadItem("AB1234H", tenDaysFromNow, indeterminateSentence = true, bookingId = "4", licenceStartDate = tenDaysFromNow),
+      createCaseloadItem(
+        "AB1234E",
+        nineDaysFromNow,
+        paroleEligibilityDate = yesterday,
+        bookingId = "1",
+        licenceStartDate = nineDaysFromNow,
+        firstName = "A",
+      ),
+      createCaseloadItem(
+        "AB1234F",
+        tenDaysFromNow,
+        paroleEligibilityDate = tenDaysFromNow,
+        bookingId = "2",
+        licenceStartDate = tenDaysFromNow,
+      ),
+      createCaseloadItem(
+        "AB1234G",
+        tenDaysFromNow,
+        legalStatus = "DEAD",
+        bookingId = "3",
+        licenceStartDate = tenDaysFromNow,
+      ),
+      createCaseloadItem(
+        "AB1234H",
+        tenDaysFromNow,
+        indeterminateSentence = true,
+        bookingId = "4",
+        licenceStartDate = tenDaysFromNow,
+      ),
       createCaseloadItem("AB1234I", tenDaysFromNow, bookingId = "5", licenceStartDate = tenDaysFromNow),
       createCaseloadItem("AB1234J", tenDaysFromNow, bookingId = "6", licenceStartDate = tenDaysFromNow),
       createCaseloadItem("AB1234K", tenDaysFromNow, bookingId = "123", licenceStartDate = tenDaysFromNow),
-      createCaseloadItem("AB1234L", nineDaysFromNow, bookingId = "123", licenceStartDate = nineDaysFromNow),
+      createCaseloadItem(
+        "AB1234L",
+        nineDaysFromNow,
+        bookingId = "123",
+        licenceStartDate = nineDaysFromNow,
+        firstName = "E",
+      ),
       // This case tests that recalls are overridden if the PRRD < the conditionalReleaseDate - so NOT_STARTED
       createCaseloadItem(
         "AB1234M",
@@ -240,24 +275,53 @@ class ComCreateCaseloadServiceTest {
         recall = true,
         bookingId = "9",
         licenceStartDate = nineDaysFromNow,
+        firstName = "G",
       ),
       // This case tests that recalls are overridden if no PRRD exists and there is only the conditionalReleaseDate - so NOT_STARTED
-      createCaseloadItem("AB1234Q", nineDaysFromNow, recall = true, bookingId = "10", licenceStartDate = nineDaysFromNow),
+      createCaseloadItem(
+        "AB1234Q",
+        nineDaysFromNow,
+        recall = true,
+        bookingId = "10",
+        licenceStartDate = nineDaysFromNow,
+        firstName = "P",
+      ),
       // This case tests that the case is included when the status is INACTIVE TRN
-      createCaseloadItem("AB1234R", nineDaysFromNow, status = "INACTIVE TRN", bookingId = "11", licenceStartDate = nineDaysFromNow),
+      createCaseloadItem(
+        "AB1234R",
+        nineDaysFromNow,
+        status = "INACTIVE TRN",
+        bookingId = "11",
+        licenceStartDate = nineDaysFromNow,
+        firstName = "S",
+      ),
     )
 
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
 
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(eligibilityService.isEligibleForCvl(eq(caseloadItems[1].prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(
+    whenever(
+      eligibilityService.isEligibleForCvl(
+        eq(caseloadItems[1].prisoner.toPrisonerSearchPrisoner()),
+        anyOrNull(),
+      ),
+    ).thenReturn(
       false,
     )
-    whenever(eligibilityService.isEligibleForCvl(eq(caseloadItems[2].prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(
+    whenever(
+      eligibilityService.isEligibleForCvl(
+        eq(caseloadItems[2].prisoner.toPrisonerSearchPrisoner()),
+        anyOrNull(),
+      ),
+    ).thenReturn(
       false,
     )
-    whenever(eligibilityService.isEligibleForCvl(eq(caseloadItems[9].prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(
+    whenever(
+      eligibilityService.isEligibleForCvl(
+        eq(caseloadItems[9].prisoner.toPrisonerSearchPrisoner()),
+        anyOrNull(),
+      ),
+    ).thenReturn(
       false,
     )
 
@@ -266,6 +330,15 @@ class ComCreateCaseloadServiceTest {
     assertThat(caseload).hasSize(6)
     verifyCase(
       case = caseload[0],
+      expectedCrn = "X12352",
+      expectedPrisonerNumber = "AB1234M",
+      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceType = LicenceType.AP,
+      expectedReleaseDate = tenDaysFromNow,
+      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
+    )
+    verifyCase(
+      case = caseload[1],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -274,7 +347,7 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
     )
     verifyCase(
-      case = caseload[1],
+      case = caseload[2],
       expectedCrn = "X12351",
       expectedPrisonerNumber = "AB1234L",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -284,7 +357,7 @@ class ComCreateCaseloadServiceTest {
 
     )
     verifyCase(
-      case = caseload[2],
+      case = caseload[3],
       expectedCrn = "X12354",
       expectedPrisonerNumber = "AB1234P",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -294,7 +367,7 @@ class ComCreateCaseloadServiceTest {
 
     )
     verifyCase(
-      case = caseload[3],
+      case = caseload[4],
       expectedCrn = "X12355",
       expectedPrisonerNumber = "AB1234Q",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -304,24 +377,13 @@ class ComCreateCaseloadServiceTest {
 
     )
     verifyCase(
-      case = caseload[4],
+      case = caseload[5],
       expectedCrn = "X12356",
       expectedPrisonerNumber = "AB1234R",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-
-    )
-    verifyCase(
-      case = caseload[5],
-      expectedCrn = "X12352",
-      expectedPrisonerNumber = "AB1234M",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.AP,
-      expectedReleaseDate = tenDaysFromNow,
-      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-
     )
   }
 
@@ -396,7 +458,6 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
@@ -511,13 +572,37 @@ class ComCreateCaseloadServiceTest {
       case5,
     )
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
-    whenever(eligibilityService.isEligibleForCvl(eq(case1.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(true)
-    whenever(eligibilityService.isEligibleForCvl(eq(case2.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(false)
-    whenever(eligibilityService.isEligibleForCvl(eq(case3.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(false)
-    whenever(eligibilityService.isEligibleForCvl(eq(case4.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(true)
-    whenever(eligibilityService.isEligibleForCvl(eq(case5.prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(true)
+    whenever(
+      eligibilityService.isEligibleForCvl(
+        eq(case1.prisoner.toPrisonerSearchPrisoner()),
+        anyOrNull(),
+      ),
+    ).thenReturn(true)
+    whenever(
+      eligibilityService.isEligibleForCvl(
+        eq(case2.prisoner.toPrisonerSearchPrisoner()),
+        anyOrNull(),
+      ),
+    ).thenReturn(false)
+    whenever(
+      eligibilityService.isEligibleForCvl(
+        eq(case3.prisoner.toPrisonerSearchPrisoner()),
+        anyOrNull(),
+      ),
+    ).thenReturn(false)
+    whenever(
+      eligibilityService.isEligibleForCvl(
+        eq(case4.prisoner.toPrisonerSearchPrisoner()),
+        anyOrNull(),
+      ),
+    ).thenReturn(true)
+    whenever(
+      eligibilityService.isEligibleForCvl(
+        eq(case5.prisoner.toPrisonerSearchPrisoner()),
+        anyOrNull(),
+      ),
+    ).thenReturn(true)
 
     whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
@@ -549,25 +634,6 @@ class ComCreateCaseloadServiceTest {
     assertThat(caseload).hasSize(3)
     verifyCase(
       case = caseload[0],
-      expectedCrn = "X12348",
-      expectedPrisonerNumber = "AB1234E",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.AP,
-      expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
-      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-    )
-    verifyCase(
-      case = caseload[1],
-      expectedCrn = "X12351",
-      expectedPrisonerNumber = "AB1234H",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
-      expectedReleaseDate = tenDaysFromNow,
-      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-    )
-    verifyCase(
-      case = caseload[2],
       expectedCrn = "X12352",
       expectedPrisonerNumber = "AB1234I",
       expectedLicenceStatus = LicenceStatus.SUBMITTED,
@@ -578,6 +644,25 @@ class ComCreateCaseloadServiceTest {
         name = "John Doe",
       ),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS,
+    )
+    verifyCase(
+      case = caseload[1],
+      expectedCrn = "X12348",
+      expectedPrisonerNumber = "AB1234E",
+      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceType = LicenceType.AP,
+      expectedReleaseDate = tenDaysFromNow,
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
+      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
+    )
+    verifyCase(
+      case = caseload[2],
+      expectedCrn = "X12351",
+      expectedPrisonerNumber = "AB1234H",
+      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceType = LicenceType.PSS,
+      expectedReleaseDate = tenDaysFromNow,
+      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
     )
   }
 
@@ -622,7 +707,6 @@ class ComCreateCaseloadServiceTest {
     )
 
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf(selectedTeam))
 
@@ -675,7 +759,6 @@ class ComCreateCaseloadServiceTest {
     whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
 
     // When
@@ -703,7 +786,6 @@ class ComCreateCaseloadServiceTest {
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
 
     // When
@@ -747,7 +829,12 @@ class ComCreateCaseloadServiceTest {
       ),
     )
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
-    whenever(eligibilityService.isEligibleForCvl(eq(caseloadItems[0].prisoner.toPrisonerSearchPrisoner()), anyOrNull())).thenReturn(true)
+    whenever(
+      eligibilityService.isEligibleForCvl(
+        eq(caseloadItems[0].prisoner.toPrisonerSearchPrisoner()),
+        anyOrNull(),
+      ),
+    ).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(caseloadItems[0].prisoner.bookingId?.toLong()!!)))
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
@@ -764,7 +851,13 @@ class ComCreateCaseloadServiceTest {
 
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
       listOf(
-        createCaseloadItem("AB1234E", yesterday, bookingId = "5", postRecallReleaseDate = tenDaysFromNow, licenceStartDate = tenDaysFromNow),
+        createCaseloadItem(
+          "AB1234E",
+          yesterday,
+          bookingId = "5",
+          postRecallReleaseDate = tenDaysFromNow,
+          licenceStartDate = tenDaysFromNow,
+        ),
       ),
     )
 
@@ -793,13 +886,18 @@ class ComCreateCaseloadServiceTest {
 
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
       listOf(
-        createCaseloadItem("AB1234E", yesterday, bookingId = "5", postRecallReleaseDate = tenDaysFromNow, licenceStartDate = tenDaysFromNow),
+        createCaseloadItem(
+          "AB1234E",
+          yesterday,
+          bookingId = "5",
+          postRecallReleaseDate = tenDaysFromNow,
+          licenceStartDate = tenDaysFromNow,
+        ),
       ),
     )
 
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(false)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
@@ -871,7 +969,6 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -924,7 +1021,6 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -968,7 +1064,6 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -1011,7 +1106,6 @@ class ComCreateCaseloadServiceTest {
     whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       emptyList(),
     )
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -1055,7 +1149,6 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -1110,7 +1203,6 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -1144,11 +1236,12 @@ class ComCreateCaseloadServiceTest {
     indeterminateSentence: Boolean? = false,
     licenceStartDate: LocalDate? = null,
     isInHardStopPeriod: Boolean = false,
+    firstName: String? = "Person",
   ): CaseloadItem = CaseloadItem(
     prisoner = Prisoner(
       prisonerNumber = prisonerNumber,
       conditionalReleaseDate = conditionalReleaseDate,
-      firstName = "Person",
+      firstName = firstName,
       lastName = "One",
       dateOfBirth = LocalDate.of(1970, 1, 1),
       status = status,
@@ -1164,7 +1257,11 @@ class ComCreateCaseloadServiceTest {
       legalStatus = legalStatus,
       indeterminateSentence = indeterminateSentence,
     ),
-    cvl = CvlFields(licenceType = LicenceType.PSS, licenceStartDate = licenceStartDate, isInHardStopPeriod = isInHardStopPeriod),
+    cvl = CvlFields(
+      licenceType = LicenceType.PSS,
+      licenceStartDate = licenceStartDate,
+      isInHardStopPeriod = isInHardStopPeriod,
+    ),
   )
 
   private fun verifyCase(
@@ -1191,11 +1288,6 @@ class ComCreateCaseloadServiceTest {
       assertThat(licenceCreationType).isEqualTo(expectedLicenceCreationType)
     }
   }
-
-  private fun createProbationCase(crn: String, nomsNumber: String? = null) = ProbationCase(
-    nomisId = nomsNumber,
-    crn = crn,
-  )
 
   private fun createLicenceSummary(
     crn: String,
@@ -1238,10 +1330,6 @@ class ComCreateCaseloadServiceTest {
     probationPduCode = null,
     probationAreaCode = null,
     probationTeamCode = null,
-    probationAreaDescription = null,
-    probationTeamDescription = null,
-    probationLauDescription = null,
-    probationPduDescription = null,
     versionOf = versionOfId,
   )
 
