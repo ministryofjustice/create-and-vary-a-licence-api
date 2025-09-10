@@ -1225,6 +1225,15 @@ INSERT INTO licence_appointment_address (licence_id, address_id)
 ALTER TABLE address ENABLE TRIGGER set_address_last_updated_timestamp;
 
 DROP TABLE IF EXISTS tmp_stage_8;
+
+-- Important!!
+-- Reset the serial to the max id in the table
+SELECT setval(
+  pg_get_serial_sequence('address', 'id'),
+  (SELECT COALESCE(MAX(id), 1) FROM address),
+  true
+);
+
 */
 --
 -- sql to allow us to check migrated data
