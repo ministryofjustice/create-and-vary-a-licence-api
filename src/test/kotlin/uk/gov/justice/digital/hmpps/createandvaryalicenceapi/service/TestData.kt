@@ -726,13 +726,20 @@ object TestData {
       "A01B02C",
       Name("Staff", surname = "Surname"),
     ),
-    team = TeamDetail("A01B02", "Test Team", Detail("B01", "Test borough"), Detail("D01", "Test district"), Detail("P01", "Test provider")),
+    team = TeamDetail(
+      "A01B02",
+      "Test Team",
+      Detail("B01", "Test borough"),
+      Detail("D01", "Test district"),
+      Detail("P01", "Test provider"),
+    ),
     allocationDate = LocalDate.of(2023, 5, 24),
   )
 
   fun caCase() = CaCase(
     licenceId = 1,
     kind = LicenceKind.CRD,
+    releaseDateKind = LicenceKind.CRD,
     name = "A Prisoner",
     prisonerNumber = "A1234AA",
     releaseDate = LocalDate.of(2021, 10, 22),
