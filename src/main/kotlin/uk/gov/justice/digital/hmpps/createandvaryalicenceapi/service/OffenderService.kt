@@ -36,6 +36,7 @@ OffenderService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
+  @RequiresCom("When updating responsible COM for a CRN, should anything additional happen if the COM was null to begin with, is it licence dependent?")
   @Transactional
   fun updateOffenderWithResponsibleCom(
     crn: String,
