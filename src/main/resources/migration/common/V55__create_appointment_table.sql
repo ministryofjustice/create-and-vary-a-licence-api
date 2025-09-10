@@ -96,7 +96,11 @@ SELECT
 FROM tmp_appointment;
 
 -- 7. Ensure appointment id sequence is correct
-SELECT setval(pg_get_serial_sequence('appointment', 'id'), MAX(id)) FROM appointment;
+SELECT setval(
+			   pg_get_serial_sequence('appointment', 'id'),
+			   (SELECT COALESCE(MAX(id), 1) FROM address),
+			   true
+	   );
 
 -- 8. Populate the new licence_appointment join table
 INSERT INTO licence_appointment (licence_id, appointment_id)
