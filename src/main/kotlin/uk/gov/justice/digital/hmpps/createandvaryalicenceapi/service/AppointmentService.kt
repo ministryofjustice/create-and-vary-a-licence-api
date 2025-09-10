@@ -209,7 +209,7 @@ class AppointmentService(
       addressText = addressString
       address = addressMapper.toEntity(request)
     }
-    addSavedAddresses(staff, request)
+    addPreferredAddress(staff, request)
 
     return buildAuditDetails(
       field = "appointmentAddress",
@@ -232,7 +232,7 @@ class AppointmentService(
     val previousAddress = licence.appointment?.addressText ?: ""
     val newAddressString = request.toString()
 
-    addSavedAddresses(staff, request)
+    addPreferredAddress(staff, request)
 
     addressMapper.update(address, request)
     if (licence.appointment == null) {
@@ -249,7 +249,7 @@ class AppointmentService(
     )
   }
 
-  private fun addSavedAddresses(
+  private fun addPreferredAddress(
     staff: Staff?,
     request: AddAddressRequest,
   ) {
