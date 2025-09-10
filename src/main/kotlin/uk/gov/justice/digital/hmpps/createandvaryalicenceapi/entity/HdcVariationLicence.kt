@@ -10,7 +10,6 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RequiresCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -162,9 +161,8 @@ class HdcVariationLicence(
 ),
   Variation,
   HdcCase,
-  HasCom {
+  AlwaysHasCom {
 
-  @RequiresCom("Do variations always have to have a COM, Does a HDC variation licence always need a COM set?")
   override fun getCom(): CommunityOffenderManager = responsibleCom
 
   override fun setCom(com: CommunityOffenderManager) {

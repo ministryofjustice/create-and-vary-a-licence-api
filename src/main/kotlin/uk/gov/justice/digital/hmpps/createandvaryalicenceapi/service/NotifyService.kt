@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Notif
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -82,7 +83,7 @@ class NotifyService(
     }
   }
 
-  @RequiresCom("If a COM is not present, where should this email be sent to?")
+  @TimeServedConsiderations("If a COM is not present, where should this email be sent to?")
   fun sendVariationApprovedEmail(
     creatorEmail: String,
     creatorName: String,
@@ -130,7 +131,7 @@ class NotifyService(
     }
   }
 
-  @RequiresCom("If a COM is not present, where should this email be sent to?")
+  @TimeServedConsiderations("If a COM is not present, where should this email be sent to?")
   fun sendVariationReferredEmail(
     creatorEmail: String,
     creatorName: String,
@@ -155,7 +156,7 @@ class NotifyService(
     }
   }
 
-  @RequiresCom("If a COM is not present, where should this email be sent to?")
+  @TimeServedConsiderations("If a COM is not present, where should this email be sent to?")
   fun sendDatesChangedEmail(
     licenceId: String,
     emailAddress: String?,
@@ -199,7 +200,7 @@ class NotifyService(
     }
   }
 
-  @RequiresCom("If a COM is not present, where should this email be sent to?")
+  @TimeServedConsiderations("If a COM is not present, where should this email be sent to?")
   fun sendHardStopLicenceApprovedEmail(
     emailAddress: String?,
     firstName: String,
@@ -223,7 +224,7 @@ class NotifyService(
     }
   }
 
-  @RequiresCom("If a COM is not present, where should this email be sent to?")
+  @TimeServedConsiderations("If a COM is not present, where should this email be sent to?")
   fun sendEditedLicenceTimedOutEmail(
     emailAddress: String?,
     comName: String,

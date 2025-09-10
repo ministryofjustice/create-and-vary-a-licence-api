@@ -95,7 +95,6 @@ class CrdLicence(
   override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
   override var versionOfId: Long? = null,
 
-  // Require a COM at creation and never allow setting to null
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "responsible_com_id", nullable = false)
   override var responsibleCom: CommunityOffenderManager,
@@ -159,7 +158,7 @@ class CrdLicence(
 ),
   SupportsHardStop,
   HasElectronicMonitoringResponseProvider,
-  HasCom {
+  AlwaysHasCom {
 
   override fun getCom(): CommunityOffenderManager = responsibleCom
 

@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RequiresCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.WorkLoadApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.mapper.OffenderManagerMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.OffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 
 @Service
 class ComAllocatedHandler(
@@ -45,7 +45,7 @@ class ComAllocatedHandler(
     }
   }
 
-  @RequiresCom("If we have a null offender manager, we don't process the COM allocation, however, if this was the unallocated COM member on a team or belonging to an unallocated team, what would we do?")
+  @TimeServedConsiderations("If we have a null offender manager, we don't process the COM allocation, however, if this was the unallocated COM member on a team or belonging to an unallocated team, what would we do?")
   fun processComAllocation(offenderManager: OffenderManager) {
     log.info("Processing COM allocation for CRN ${offenderManager.crn} code is ${offenderManager.code}")
 

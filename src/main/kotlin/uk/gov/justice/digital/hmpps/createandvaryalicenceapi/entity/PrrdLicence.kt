@@ -9,7 +9,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RequiresCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -159,9 +158,8 @@ class PrrdLicence(
 ),
   SupportsHardStop,
   HasElectronicMonitoringResponseProvider,
-  HasCom {
+  AlwaysHasCom {
 
-  @RequiresCom("Does a PRRD licence always need a COM set?")
   override fun getCom(): CommunityOffenderManager = responsibleCom
 
   override fun setCom(com: CommunityOffenderManager) {

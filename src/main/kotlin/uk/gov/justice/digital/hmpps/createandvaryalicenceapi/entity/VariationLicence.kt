@@ -6,13 +6,13 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RequiresCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -148,9 +148,9 @@ class VariationLicence(
   updatedBy = updatedBy,
 ),
   Variation,
-  HasCom {
+  AlwaysHasCom {
 
-  @RequiresCom("Do variations always need a COM set? , Does a variation licence always need a COM set?")
+  @TimeServedConsiderations("Always needs a COM but need a wider discussion about variations")
   override fun getCom(): CommunityOffenderManager = responsibleCom
 
   override fun setCom(com: CommunityOffenderManager) {

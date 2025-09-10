@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Releas
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
@@ -57,7 +58,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
-@RequiresCom("Without a COM, where can we get this data when setting the COM username or do we just surface results as null", "findLicencesMatchingCriteria, findSubmittedVariationsByRegion, findLicencesForCrnsAndStatuses, createVariation, editLicence")
+@TimeServedConsiderations("Without a COM, we would just surface null and handle on the frontend")
 fun transformToLicenceSummary(
   licence: Licence,
   hardStopDate: LocalDate?,
@@ -115,7 +116,6 @@ fun transformToLicenceSummary(
   homeDetentionCurfewActualDate = if (licence.isHdcLicence()) licence.homeDetentionCurfewActualDate else null,
 )
 
-@RequiresCom("Is COM required for hardstop, if so the responsibleCOM would never be null")
 fun toHardstop(
   licence: HardStopLicence,
   earliestReleaseDate: LocalDate?,
@@ -205,7 +205,7 @@ fun toHardstop(
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
-@RequiresCom("Is COM required for variation, if so the responsibleCOM would never be null")
+@TimeServedConsiderations("Is COM required for variation, if so the responsibleCOM would never be null")
 fun toVariation(
   licence: VariationLicence,
   earliestReleaseDate: LocalDate?,
@@ -287,7 +287,6 @@ fun toVariation(
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
-@RequiresCom("Is COM required for PRRD, if so the responsibleCOM would never be null")
 fun toPrrd(
   licence: PrrdLicence,
   earliestReleaseDate: LocalDate?,
@@ -382,7 +381,6 @@ fun toPrrd(
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
-@RequiresCom("Is COM required for CRD, if so the responsibleCOM would never be null")
 fun toCrd(
   licence: CrdLicence,
   earliestReleaseDate: LocalDate?,
@@ -477,7 +475,6 @@ fun toCrd(
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
-@RequiresCom("Is COM required for HDC, if so the responsibleCOM would never be null")
 fun toHdc(
   licence: HdcLicence,
   earliestReleaseDate: LocalDate?,
@@ -576,7 +573,6 @@ fun toHdc(
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
-@RequiresCom("Is COM required for HDC variation, if so the responsibleCOM would never be null")
 fun toHdcVariation(
   licence: HdcVariationLicence,
   earliestReleaseDate: LocalDate?,
@@ -869,7 +865,6 @@ fun Licence.getSubmittedByFullName(): String? {
   }
 }
 
-@RequiresCom("Without a COM, where can we get this data when setting the COM username or do we just surface results as null")
 fun transformToApprovalLicenceSummary(
   licence: EntityLicence,
   hardStopDate: LocalDate?,

@@ -1,5 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-interface HasCom {
+interface AlwaysHasCom {
   var responsibleCom: CommunityOffenderManager
 }

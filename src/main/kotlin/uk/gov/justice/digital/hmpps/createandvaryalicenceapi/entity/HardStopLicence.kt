@@ -6,7 +6,6 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RequiresCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -147,9 +146,8 @@ class HardStopLicence(
   bespokeConditions = bespokeConditions.toMutableList(),
   updatedBy = updatedBy,
 ),
-  HasCom {
+  AlwaysHasCom {
 
-  @RequiresCom("Does a Hard stop licence always need a COM set?")
   override fun getCom(): CommunityOffenderManager = responsibleCom
 
   override fun setCom(com: CommunityOffenderManager) {

@@ -8,11 +8,11 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
@@ -68,6 +68,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -92,7 +93,7 @@ class LicenceService(
   private val exclusionZoneService: ExclusionZoneService,
 ) {
 
-  @RequiresCom("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
+  @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
   @Transactional
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
@@ -348,20 +349,16 @@ class LicenceService(
     )
   }
 
-  @RequiresCom("Email fired when status is updated to approved and it is a HardStop licence. Do we need to send an email here if the COM is not set - should a COM always be set on a hard stop licence?")
-  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: EntityLicence) {
-    if (licenceEntity is HasCom) {
-      notifyService.sendHardStopLicenceApprovedEmail(
-        licenceEntity.responsibleCom.email,
-        licenceEntity.forename!!,
-        licenceEntity.surname!!,
-        licenceEntity.crn,
-        licenceEntity.licenceStartDate,
-        licenceEntity.id.toString(),
-      )
-    } else {
-      throw IllegalStateException("Licence ${licenceEntity.id} does not have a responsible COM")
-    }
+  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: HardStopLicence) {
+    val com = licenceEntity.responsibleCom
+    notifyService.sendHardStopLicenceApprovedEmail(
+      com.email,
+      licenceEntity.forename!!,
+      licenceEntity.surname!!,
+      licenceEntity.crn,
+      licenceEntity.licenceStartDate,
+      licenceEntity.id.toString(),
+    )
   }
 
   private fun deactivatePreviousLicenceVersion(licence: EntityLicence, fullName: String?, staffMember: Staff?) {
@@ -470,7 +467,6 @@ class LicenceService(
     }
   }
 
-  @RequiresCom("Initially used to fetch the responsibleCOM for the joins in the specification")
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {
     try {
       val matchingLicences =
@@ -701,13 +697,13 @@ class LicenceService(
     )
   }
 
-  @RequiresCom("Do we refer this variation if it does not have a COM - should variations always have a COM?")
+  @TimeServedConsiderations("Do we refer this variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
     val responsibleCom = licenceEntity.getCom()
-    if (licenceEntity is HasCom) {
+    if (licenceEntity is AlwaysHasCom) {
       val username = SecurityContextHolder.getContext().authentication.name
       val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -749,12 +745,12 @@ class LicenceService(
     }
   }
 
-  @RequiresCom("Do we approve a variation if it does not have a COM - should variations always have a COM?")
+  @TimeServedConsiderations("Do we approve a variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
-    if (licenceEntity is HasCom) {
+    if (licenceEntity is AlwaysHasCom) {
       val username = SecurityContextHolder.getContext().authentication.name
       val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -1059,49 +1055,44 @@ class LicenceService(
     )
   }
 
-  @RequiresCom("Do we timeout a time served case?, Do we timeout a licence if it has no COM allocated?", "UpdateSentenceDates and TimeoutLicencesService")
   @Transactional
   fun timeout(licence: EntityLicence, reason: String? = null) {
     check(licence is SupportsHardStop) { "Can only timeout licence kinds that support hard stop: ${licence.id}" }
-    if (licence is HasCom) {
-      licence.timeOut()
-      licenceRepository.saveAndFlush(licence)
-      auditEventRepository.saveAndFlush(
-        AuditEvent(
-          licenceId = licence.id,
-          username = "SYSTEM",
-          fullName = "SYSTEM",
-          eventType = AuditEventType.SYSTEM_EVENT,
-          summary = "Licence automatically timed out for ${licence.forename} ${licence.surname} ${reason ?: ""}",
-          detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
-        ),
-      )
-      licenceEventRepository.saveAndFlush(
-        LicenceEvent(
-          licenceId = licence.id,
-          eventType = LicenceEventType.TIMED_OUT,
-          username = "SYSTEM",
-          forenames = "SYSTEM",
-          surname = "SYSTEM",
-          eventDescription = "Licence automatically timed out for ${licence.forename} ${licence.surname} ${reason ?: ""}",
-        ),
-      )
+    licence.timeOut()
+    licenceRepository.saveAndFlush(licence)
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = licence.id,
+        username = "SYSTEM",
+        fullName = "SYSTEM",
+        eventType = AuditEventType.SYSTEM_EVENT,
+        summary = "Licence automatically timed out for ${licence.forename} ${licence.surname} ${reason ?: ""}",
+        detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
+      ),
+    )
+    licenceEventRepository.saveAndFlush(
+      LicenceEvent(
+        licenceId = licence.id,
+        eventType = LicenceEventType.TIMED_OUT,
+        username = "SYSTEM",
+        forenames = "SYSTEM",
+        surname = "SYSTEM",
+        eventDescription = "Licence automatically timed out for ${licence.forename} ${licence.surname} ${reason ?: ""}",
+      ),
+    )
 
-      if (licence.versionOfId != null) {
-        with(licence) {
-          notifyService.sendEditedLicenceTimedOutEmail(
-            responsibleCom.email,
-            "${responsibleCom.firstName} ${responsibleCom.lastName}",
-            this.forename!!,
-            this.surname!!,
-            this.crn,
-            this.licenceStartDate,
-            this.id.toString(),
-          )
-        }
+    if (licence.versionOfId != null && licence is AlwaysHasCom) {
+      with(licence) {
+        notifyService.sendEditedLicenceTimedOutEmail(
+          responsibleCom.email,
+          "${responsibleCom.firstName} ${responsibleCom.lastName}",
+          this.forename!!,
+          this.surname!!,
+          this.crn,
+          this.licenceStartDate,
+          this.id.toString(),
+        )
       }
-    } else {
-      throw IllegalStateException("Licence ${licence.id} does not have a responsible COM")
     }
   }
 
