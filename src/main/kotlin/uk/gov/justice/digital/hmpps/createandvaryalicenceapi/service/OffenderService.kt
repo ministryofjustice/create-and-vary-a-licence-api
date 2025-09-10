@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 
 @Service
 class
@@ -36,7 +37,7 @@ OffenderService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  @RequiresCom("When updating responsible COM for a CRN, should anything additional happen if the COM was null to begin with, is it licence dependent?")
+  @TimeServedConsiderations("When updating responsible COM for a CRN, should anything additional happen if the COM was null to begin with, is it licence dependent?")
   @Transactional
   fun updateOffenderWithResponsibleCom(
     crn: String,
