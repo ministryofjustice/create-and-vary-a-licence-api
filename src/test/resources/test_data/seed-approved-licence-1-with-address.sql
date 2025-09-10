@@ -86,7 +86,7 @@ INSERT INTO appointment (
 			 current_timestamp           -- date_last_updated
 		 );
 
--- 3. Link licence to appointment (new join table)
+-- 3. Link licence <> appointment
 INSERT INTO licence_appointment (licence_id, appointment_id)
 VALUES (
 		   (SELECT max(id) FROM licence),
