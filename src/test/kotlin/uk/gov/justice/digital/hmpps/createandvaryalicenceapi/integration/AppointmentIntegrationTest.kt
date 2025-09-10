@@ -187,7 +187,7 @@ class AppointmentIntegrationTest(
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.appointmentTelephoneNumber).isEqualTo(aContactNumberRequest.telephone)
+    assertThat(result?.appointmentContact).isEqualTo(aContactNumberRequest.telephone)
   }
 
   @Test
@@ -213,7 +213,7 @@ class AppointmentIntegrationTest(
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.appointmentTelephoneNumber).isEqualTo("+44 20 7946 0958 #98765")
+    assertThat(result?.appointmentContact).isEqualTo("+44 20 7946 0958 #98765")
   }
 
   @Test

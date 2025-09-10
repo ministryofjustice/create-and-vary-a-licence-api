@@ -110,8 +110,8 @@ class AppointmentService(
     val staffMember = getStaffUser()
 
     licenceEntity.updateAppointmentContactNumber(
-      appointmentContact = request.telephone,
-      appointmentAlternativeTelephoneNumber = request.telephoneAlternative,
+      telephoneContactNumber = request.telephone,
+      alternativeTelephoneContactNumber = request.telephoneAlternative,
       staffMember = staffMember,
     )
 

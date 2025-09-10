@@ -181,15 +181,15 @@ abstract class Licence(
   }
 
   fun updateAppointmentContactNumber(
-    appointmentContact: String?,
-    appointmentAlternativeTelephoneNumber: String?,
+    telephoneContactNumber: String?,
+    alternativeTelephoneContactNumber: String?,
     staffMember: Staff?,
   ) {
     if (this.appointment == null) {
       this.appointment = Appointment()
     }
-    this.appointment?.telephoneContactNumber = appointmentContact
-    this.appointment?.alternativeTelephoneContactNumber = appointmentAlternativeTelephoneNumber
+    this.appointment?.telephoneContactNumber = telephoneContactNumber
+    this.appointment?.alternativeTelephoneContactNumber = alternativeTelephoneContactNumber
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy

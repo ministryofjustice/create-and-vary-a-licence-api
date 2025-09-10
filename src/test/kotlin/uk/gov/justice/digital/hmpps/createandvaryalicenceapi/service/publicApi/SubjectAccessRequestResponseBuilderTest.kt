@@ -39,7 +39,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(appointmentTime).isEqualTo(crdLicence.appointmentTime)
       assertThat(appointmentTimeType).isEqualTo(SarAppointmentTimeType.valueOf(crdLicence.appointmentTimeType!!.name))
       assertThat(appointmentAddress).isEqualTo(crdLicence.appointmentAddress)
-      assertThat(appointmentContact).isEqualTo(crdLicence.appointmentTelephoneNumber)
+      assertThat(appointmentContact).isEqualTo(crdLicence.appointmentContact)
       assertThat(approvedDate).isEqualTo(crdLicence.approvedDate)
       assertThat(approvedByUsername).isEqualTo(crdLicence.approvedByUsername)
       assertThat(submittedDate).isEqualTo(crdLicence.submittedDate)

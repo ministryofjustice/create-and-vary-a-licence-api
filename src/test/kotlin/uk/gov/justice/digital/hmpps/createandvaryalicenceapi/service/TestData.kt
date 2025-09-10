@@ -509,6 +509,8 @@ object TestData {
     appointmentTimeType = null,
     appointmentAddress = null,
     appointmentContact = null,
+    appointmentTelephoneNumber = null,
+    appointmentAlternativeTelephoneNumber = null,
     approvedDate = null,
     approvedByUsername = null,
     submittedDate = null,
