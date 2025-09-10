@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.Clock
 import java.time.LocalDate
 
@@ -167,6 +168,7 @@ class CaCaseloadService(
 
       CaCase(
         kind = licence?.kind,
+        releaseDateKind = determineReleaseDateKind(licence?.postRecallReleaseDate, licence?.conditionalReleaseDate),
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
         name = "${licence?.forename} ${licence?.surname}",
@@ -294,6 +296,11 @@ class CaCaseloadService(
     val releaseDate = licenceStartDates[case.nomisRecord?.prisonerNumber]
 
     CaCase(
+      kind = null,
+      releaseDateKind = determineReleaseDateKind(
+        case.nomisRecord?.postRecallReleaseDate,
+        case.nomisRecord?.conditionalReleaseDate,
+      ),
       name = case.nomisRecord.let { "${it?.firstName} ${it?.lastName}".convertToTitleCase() },
       prisonerNumber = case.nomisRecord?.prisonerNumber!!,
       releaseDate = releaseDate,
@@ -336,6 +343,7 @@ class CaCaseloadService(
       val licence = findLatestLicenceSummary(licencesForOffender)
       val releaseDate = licence?.licenceStartDate
       CaCase(
+        releaseDateKind = determineReleaseDateKind(licence?.postRecallReleaseDate, licence?.conditionalReleaseDate),
         kind = licence?.kind,
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
