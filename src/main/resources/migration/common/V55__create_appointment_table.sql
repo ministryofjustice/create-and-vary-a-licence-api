@@ -98,7 +98,7 @@ FROM tmp_appointment;
 -- 7. Ensure appointment id sequence is correct
 SELECT setval(
 			   pg_get_serial_sequence('appointment', 'id'),
-			   (SELECT COALESCE(MAX(id), 1) FROM address),
+			   (SELECT COALESCE(MAX(id), 1) FROM appointment),
 			   true
 	   );
 
