@@ -55,7 +55,6 @@ class ComVaryCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
           comUsername = "johndoe",
         ),
@@ -106,7 +105,6 @@ class ComVaryCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.ACTIVE,
           comUsername = "johndoe",
         ),
@@ -114,7 +112,6 @@ class ComVaryCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
           comUsername = "johndoe",
         ),
@@ -167,7 +164,6 @@ class ComVaryCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
-          licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.ACTIVE,
           licenceStartDate = tenDaysFromNow,
           comUsername = "johndoe",
@@ -219,6 +215,10 @@ class ComVaryCaseloadServiceTest {
         crn = "X12349",
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
+      ManagedOffenderCrn(
+        crn = "X12350",
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
+      ),
     )
 
     whenever(
@@ -236,16 +236,26 @@ class ComVaryCaseloadServiceTest {
           licenceExpiryDate = elevenDaysFromNow,
           comUsername = "joebloggs",
           licenceStartDate = tenDaysFromNow,
+          forename = "B",
         ),
         createLicenceSummary(
           crn = "X12349",
           nomisId = "AB1234F",
           kind = LicenceKind.VARIATION,
-          licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
           licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
+          forename = "A",
+        ),
+        createLicenceSummary(
+          crn = "X12350",
+          nomisId = "AB1234G",
+          kind = LicenceKind.VARIATION,
+          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+          licenceExpiryDate = elevenDaysFromNow,
+          comUsername = "johndoe",
+          licenceStartDate = elevenDaysFromNow,
         ),
       ),
     )
@@ -270,18 +280,18 @@ class ComVaryCaseloadServiceTest {
     val caseload = service.getTeamVaryCaseload(listOf("team A", "team B"), listOf(selectedTeam))
 
     verify(deliusApiClient).getManagedOffendersByTeam("team C")
-    assertThat(caseload).hasSize(2)
+    assertThat(caseload).hasSize(3)
     verifyCase(
       caseload[0],
-      expectedCrn = "X12348",
-      expectedPrisonerNumber = "AB1234E",
-      expectedLicenceType = LicenceType.PSS,
+      expectedCrn = "X12350",
+      expectedPrisonerNumber = "AB1234G",
+      expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-      expectedReleaseDate = tenDaysFromNow,
+      expectedReleaseDate = elevenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
-        staffCode = "X1234",
-        name = "Joe Bloggs",
-        staffUsername = "joebloggs",
+        staffCode = "X54321",
+        name = "John Doe",
+        staffUsername = "johndoe",
       ),
     )
     verifyCase(
@@ -295,6 +305,19 @@ class ComVaryCaseloadServiceTest {
         staffCode = "X54321",
         name = "John Doe",
         staffUsername = "johndoe",
+      ),
+    )
+    verifyCase(
+      caseload[2],
+      expectedCrn = "X12348",
+      expectedPrisonerNumber = "AB1234E",
+      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+      expectedReleaseDate = tenDaysFromNow,
+      expectedProbationPractitioner = ProbationPractitioner(
+        staffCode = "X1234",
+        name = "Joe Bloggs",
+        staffUsername = "joebloggs",
       ),
     )
   }
@@ -318,7 +341,6 @@ class ComVaryCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
-          licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.ACTIVE,
           licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
@@ -382,15 +404,15 @@ class ComVaryCaseloadServiceTest {
   private fun createLicenceSummary(
     crn: String,
     nomisId: String,
-    licenceType: LicenceType,
+    licenceType: LicenceType = LicenceType.AP,
     licenceStatus: LicenceStatus,
     kind: LicenceKind = LicenceKind.CRD,
     licenceExpiryDate: LocalDate? = null,
     comUsername: String? = null,
     conditionalReleaseDate: LocalDate? = null,
-    confirmedReleaseDate: LocalDate? = null,
     licenceStartDate: LocalDate? = null,
     isReviewNeeded: Boolean = false,
+    forename: String? = null,
   ): LicenceSummary = LicenceSummary(
     crn = crn,
     nomisId = nomisId,
@@ -401,17 +423,14 @@ class ComVaryCaseloadServiceTest {
     licenceExpiryDate = licenceExpiryDate,
     comUsername = comUsername,
     isReviewNeeded = isReviewNeeded,
-    isDueForEarlyRelease = false,
-    isInHardStopPeriod = false,
-    isDueToBeReleasedInTheNextTwoWorkingDays = false,
     conditionalReleaseDate = conditionalReleaseDate,
-    actualReleaseDate = confirmedReleaseDate,
+    actualReleaseDate = null,
     licenceStartDate = licenceStartDate,
     dateCreated = LocalDateTime.now(),
     updatedByFullName = "X Y",
     bookingId = null,
     dateOfBirth = null,
-    forename = null,
+    forename = forename,
     surname = null,
     prisonCode = null,
     prisonDescription = null,
@@ -419,9 +438,5 @@ class ComVaryCaseloadServiceTest {
     probationPduCode = null,
     probationAreaCode = null,
     probationTeamCode = null,
-    probationAreaDescription = null,
-    probationTeamDescription = null,
-    probationLauDescription = null,
-    probationPduDescription = null,
   )
 }
