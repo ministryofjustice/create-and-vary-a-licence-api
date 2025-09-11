@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.WorkLoadApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.mapper.OffenderManagerMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.OffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 
 @Service
 class ComAllocatedHandler(
@@ -44,9 +45,11 @@ class ComAllocatedHandler(
     }
   }
 
+  @TimeServedConsiderations("If we have a null offender manager, we don't process the COM allocation, however, if this was the unallocated COM member on a team or belonging to an unallocated team, what would we do?")
   fun processComAllocation(offenderManager: OffenderManager) {
     log.info("Processing COM allocation for CRN ${offenderManager.crn} code is ${offenderManager.code}")
 
+    // If they were allocated unallocated and then allocated to a real com, need to fire an audit event
     deliusApiClient.assignDeliusRole(offenderManager.username!!)
     val existingCom =
       staffService.findCommunityOffenderManager(offenderManager.staffIdentifier, offenderManager.username)
@@ -96,7 +99,7 @@ class ComAllocatedHandler(
     return if (isDeliusEvent) {
       getOffenderManagerFromDelius(crn)
     } else {
-      getOffenderManagerFromApop(event.detailUrl)
+      getOffenderManagerFromApop(event.detailUrl!!)
     }
   }
 

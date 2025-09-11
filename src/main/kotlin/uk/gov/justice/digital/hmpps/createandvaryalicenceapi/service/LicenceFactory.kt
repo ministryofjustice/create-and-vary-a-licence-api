@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
@@ -18,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -214,7 +216,9 @@ object LicenceFactory {
     }
   }
 
+  @TimeServedConsiderations("Called from LicenceService createVariation - Do we allow a variation to be created where there is no COM?, This is not licence kind specific")
   fun createVariation(licence: Licence, creator: CommunityOffenderManager): Licence {
+    check(licence is AlwaysHasCom) { "Can only vary a licence that has a responsible COM: ${licence.id}" }
     with(licence) {
       return VariationLicence(
         typeCode = this.typeCode,

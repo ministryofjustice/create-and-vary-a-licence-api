@@ -144,3 +144,4 @@ DROP COLUMN appointment_person_type,
 
 -- 14. Drop old join table no longer needed
 DROP TABLE licence_appointment_address;
+DROP TABLE tmp_appointment;

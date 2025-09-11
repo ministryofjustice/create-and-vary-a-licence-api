@@ -122,10 +122,6 @@ abstract class Licence(
   var bespokeConditions: MutableList<BespokeCondition> = mutableListOf(),
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "responsible_com_id", nullable = false)
-  var responsibleCom: CommunityOffenderManager,
-
-  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "updated_by_id", nullable = true)
   var updatedBy: Staff? = null,
 ) : AbstractIdEntity(idInternal = id),
@@ -388,4 +384,7 @@ abstract class Licence(
   }
 
   override fun hashCode(): Int = Objects.hash(id)
+
+  abstract fun getCom(): CommunityOffenderManager?
+  abstract fun setCom(com: CommunityOffenderManager)
 }

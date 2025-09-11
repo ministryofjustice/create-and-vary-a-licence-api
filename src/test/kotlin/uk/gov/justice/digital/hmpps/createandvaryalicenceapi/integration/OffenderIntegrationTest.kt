@@ -84,7 +84,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isOk
 
     val licence = licenceRepository.findById(1L).orElseThrow()
-    assertThat(licence.responsibleCom)
+    assertThat(licence.getCom())
       .extracting("staffIdentifier", "username", "email", "firstName", "lastName")
       .isEqualTo(listOf(2000L, "TEST-CLIENT", "joebloggs@probation.gov.uk", "Joseph", "Bloggs"))
   }
@@ -153,7 +153,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     assertThat(com.lastName).isEqualTo(lastName)
 
     val licence = licenceRepository.findById(3L).orElseThrow()
-    assertThat(licence.responsibleCom.id).isEqualTo(com.id)
+    assertThat(licence.getCom()!!.id).isEqualTo(com.id)
   }
 
   private companion object {

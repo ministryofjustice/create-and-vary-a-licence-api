@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isTodayOrInTheFuture
 
@@ -185,6 +186,7 @@ class ComCreateCaseloadService(
     }
   }
 
+  @TimeServedConsiderations("If the COM is an unallocated member of the team, do we need to handle anything differently here?")
   private fun getResponsibleComs(
     caseload: List<ManagedOffenderCrn>,
     crnsToDisplayLicences: Map<String, CaseLoadLicenceSummary>,
@@ -198,7 +200,7 @@ class ComCreateCaseloadService(
       if (responsibleCom != null) {
         case.crn!! to ProbationPractitioner(
           responsibleCom.code,
-          name = responsibleCom.name?.fullName(),
+          name = responsibleCom.name.fullName(),
         )
       } else {
         if (case.staff == null || case.staff.unallocated == true) {
