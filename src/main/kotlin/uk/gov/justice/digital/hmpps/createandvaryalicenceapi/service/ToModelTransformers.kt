@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Releas
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
@@ -57,6 +58,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
+@TimeServedConsiderations("Without a COM, we would just surface null and handle on the frontend")
 fun transformToLicenceSummary(
   licence: Licence,
   hardStopDate: LocalDate?,
@@ -93,7 +95,7 @@ fun transformToLicenceSummary(
   topupSupervisionStartDate = licence.topupSupervisionStartDate,
   topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
   postRecallReleaseDate = licence.postRecallReleaseDate,
-  comUsername = licence.responsibleCom.username,
+  comUsername = licence.getCom()?.username,
   bookingId = licence.bookingId,
   dateCreated = licence.dateCreated,
   approvedByName = licence.approvedByName,
@@ -154,7 +156,7 @@ fun toHardstop(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -203,6 +205,7 @@ fun toHardstop(
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
+@TimeServedConsiderations("Is COM required for variation, if so the responsibleCOM would never be null")
 fun toVariation(
   licence: VariationLicence,
   earliestReleaseDate: LocalDate?,
@@ -238,7 +241,7 @@ fun toVariation(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -324,7 +327,7 @@ fun toPrrd(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -418,7 +421,7 @@ fun toCrd(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -514,7 +517,7 @@ fun toHdc(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -607,7 +610,7 @@ fun toHdcVariation(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -890,7 +893,7 @@ fun transformToApprovalLicenceSummary(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  comUsername = licence.responsibleCom.username,
+  comUsername = licence.getCom()?.username,
   conditionalReleaseDate = licence.conditionalReleaseDate,
   actualReleaseDate = licence.actualReleaseDate,
   sentenceStartDate = licence.sentenceStartDate,

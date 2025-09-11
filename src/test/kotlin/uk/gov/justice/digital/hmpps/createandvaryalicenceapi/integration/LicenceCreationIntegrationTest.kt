@@ -87,7 +87,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     val licence = licenceRepository.findAll().first()
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
-    assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+    assertThat(licence.getCom()!!.username).isEqualTo("AAA")
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
@@ -125,7 +125,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     assertThat(licenceRepository.count()).isEqualTo(1)
     val licence = licenceRepository.findAll().first()
-    assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+    assertThat(licence.getCom()!!.username).isEqualTo("AAA")
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
@@ -355,7 +355,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(licenceRepository.count()).isEqualTo(1)
       val licence = licenceRepository.findAll().first()
-      assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+      assertThat(licence.getCom()!!.username).isEqualTo("AAA")
       assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
       assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -396,7 +396,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(licenceRepository.count()).isEqualTo(1)
       val licence = licenceRepository.findAll().first()
-      assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+      assertThat(licence.getCom()!!.username).isEqualTo("AAA")
       assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
       assertThat(licence.typeCode).isEqualTo(LicenceType.AP_PSS)
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)

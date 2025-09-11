@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
@@ -67,6 +68,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -91,6 +93,7 @@ class LicenceService(
   private val exclusionZoneService: ExclusionZoneService,
 ) {
 
+  @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
   @Transactional
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
@@ -346,7 +349,7 @@ class LicenceService(
     )
   }
 
-  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: EntityLicence) {
+  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: HardStopLicence) {
     val com = licenceEntity.responsibleCom
     notifyService.sendHardStopLicenceApprovedEmail(
       com.email,
@@ -694,10 +697,12 @@ class LicenceService(
     )
   }
 
+  @TimeServedConsiderations("Do we refer this variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
+    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -736,10 +741,12 @@ class LicenceService(
     )
   }
 
+  @TimeServedConsiderations("Do we approve a variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
+    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -1044,7 +1051,6 @@ class LicenceService(
   @Transactional
   fun timeout(licence: EntityLicence, reason: String? = null) {
     check(licence is SupportsHardStop) { "Can only timeout licence kinds that support hard stop: ${licence.id}" }
-
     licence.timeOut()
     licenceRepository.saveAndFlush(licence)
     auditEventRepository.saveAndFlush(
@@ -1068,12 +1074,11 @@ class LicenceService(
       ),
     )
 
-    if (licence.versionOfId != null) {
-      val com = licence.responsibleCom
+    if (licence.versionOfId != null && licence is AlwaysHasCom) {
       with(licence) {
         notifyService.sendEditedLicenceTimedOutEmail(
-          com.email,
-          "${com.firstName} ${com.lastName}",
+          responsibleCom.email,
+          "${responsibleCom.firstName} ${responsibleCom.lastName}",
           this.forename!!,
           this.surname!!,
           this.crn,

@@ -75,7 +75,6 @@ class PrrdLicence(
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
-  responsibleCom: CommunityOffenderManager,
   updatedBy: Staff? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -95,6 +94,10 @@ class PrrdLicence(
   )
   override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
   override var versionOfId: Long? = null,
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "responsible_com_id", nullable = false)
+  override var responsibleCom: CommunityOffenderManager,
 ) : Licence(
   id = id,
   kind = LicenceKind.PRRD,
@@ -151,11 +154,17 @@ class PrrdLicence(
   standardConditions = standardConditions.toMutableList(),
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
-  responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
   SupportsHardStop,
-  HasElectronicMonitoringResponseProvider {
+  HasElectronicMonitoringResponseProvider,
+  AlwaysHasCom {
+
+  override fun getCom(): CommunityOffenderManager = responsibleCom
+
+  override fun setCom(com: CommunityOffenderManager) {
+    this.responsibleCom = com
+  }
 
   fun copy(
     id: Long? = this.id,
@@ -211,7 +220,7 @@ class PrrdLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.responsibleCom!!,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     versionOfId: Long? = this.versionOfId,
