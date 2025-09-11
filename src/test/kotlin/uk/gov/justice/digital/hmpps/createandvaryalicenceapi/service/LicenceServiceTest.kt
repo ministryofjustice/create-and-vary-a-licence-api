@@ -58,16 +58,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
@@ -102,9 +99,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as HdcVariationLicenceModel
 
 class LicenceServiceTest {
-  private val standardConditionRepository = mock<StandardConditionRepository>()
-  private val additionalConditionRepository = mock<AdditionalConditionRepository>()
-  private val bespokeConditionRepository = mock<BespokeConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
   private val crdLicenceRepository = mock<CrdLicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
@@ -125,9 +119,6 @@ class LicenceServiceTest {
       licenceRepository,
       crdLicenceRepository,
       staffRepository,
-      standardConditionRepository,
-      additionalConditionRepository,
-      bespokeConditionRepository,
       licenceEventRepository,
       licencePolicyService,
       additionalConditionUploadDetailRepository,
@@ -153,8 +144,6 @@ class LicenceServiceTest {
 
     reset(
       licenceRepository,
-      standardConditionRepository,
-      bespokeConditionRepository,
       licenceEventRepository,
       additionalConditionUploadDetailRepository,
       auditEventRepository,
@@ -1356,7 +1345,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     service.submitLicence(1L, emptyList())
 
@@ -1402,7 +1391,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createPrrdLicence()))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     // When
     service.submitLicence(1L, emptyList())
@@ -1418,7 +1407,7 @@ class LicenceServiceTest {
     assertThat(licence.submittedBy!!.username).isEqualTo("tcom")
     assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
-    verify(eligibilityService, never()).isEligibleForCvl(any())
+    verify(eligibilityService, never()).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -1441,7 +1430,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHardStopRecallLicence()))
     whenever(staffRepository.findByUsernameIgnoreCase("tca")).thenReturn(caseAdmin)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     // When
     service.submitLicence(1L, emptyList())
@@ -1457,7 +1446,7 @@ class LicenceServiceTest {
     assertThat(licence.submittedBy!!.username).isEqualTo("tca")
     assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
-    verify(eligibilityService, never()).isEligibleForCvl(any())
+    verify(eligibilityService, never()).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -1480,7 +1469,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardStopLicence))
     whenever(staffRepository.findByUsernameIgnoreCase("tca")).thenReturn(caseAdmin)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     service.submitLicence(1L, emptyList())
 
@@ -1548,7 +1537,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(false)
 
     val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
 
@@ -1569,7 +1558,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
 
@@ -2071,7 +2060,7 @@ class LicenceServiceTest {
 
     service.createVariation(1L)
 
-    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     with(licenceCaptor.value as VariationLicence) {
       assertThat(kind).isEqualTo(LicenceKind.VARIATION)
       assertThat(version).isEqualTo("2.1")
@@ -2111,7 +2100,7 @@ class LicenceServiceTest {
 
     service.createVariation(1L)
 
-    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     with(licenceCaptor.value as HdcVariationLicence) {
       assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
       assertThat(version).isEqualTo("2.1")
@@ -2161,14 +2150,16 @@ class LicenceServiceTest {
         typeCode = LicenceType.AP_PSS,
       ),
     )
-    val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+    val newLicenceCaptor = argumentCaptor<Licence>()
 
     service.createVariation(1L)
 
-    verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
-    assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
-    assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
-    assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
+    verify(licenceRepository, times(1)).saveAndFlush(newLicenceCaptor.capture())
+    val newLicence = newLicenceCaptor.firstValue
+
+    assertThat(newLicence.additionalConditions.size).isEqualTo(2)
+    assertThat(newLicence.additionalConditions.first().conditionType).isEqualTo(LicenceType.AP.toString())
+    assertThat(newLicence.additionalConditions.last().conditionType).isEqualTo(LicenceType.PSS.toString())
   }
 
   @Test
@@ -2193,7 +2184,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2205,7 +2196,7 @@ class LicenceServiceTest {
     val auditEventCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     service.editLicence(1L)
 
-    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     with(licenceCaptor.value as CrdLicence) {
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -2244,7 +2235,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     val approvedLicence = createPrrdLicence().copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2257,7 +2248,7 @@ class LicenceServiceTest {
     service.editLicence(1L)
 
     // Then
-    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     with(licenceCaptor.value as PrrdLicence) {
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -2265,7 +2256,7 @@ class LicenceServiceTest {
       assertThat(licenceVersion).isEqualTo("1.1")
     }
 
-    verify(eligibilityService, never()).isEligibleForCvl(any())
+    verify(eligibilityService, never()).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -2290,7 +2281,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2302,12 +2293,15 @@ class LicenceServiceTest {
 
     whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
 
-    val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+    val newLicenceCaptor = argumentCaptor<Licence>()
     service.editLicence(1L)
-    verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
-    assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
-    assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
-    assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
+
+    verify(licenceRepository, times(1)).saveAndFlush(newLicenceCaptor.capture())
+    val newLicence = newLicenceCaptor.firstValue
+
+    assertThat(newLicence.additionalConditions.size).isEqualTo(2)
+    assertThat(newLicence.additionalConditions.first().conditionType).isEqualTo(LicenceType.AP.toString())
+    assertThat(newLicence.additionalConditions.last().conditionType).isEqualTo(LicenceType.PSS.toString())
   }
 
   @Test
@@ -2332,7 +2326,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2391,7 +2385,7 @@ class LicenceServiceTest {
   @Test
   fun `attempting to edit a licence that is ineligible for CVL results in validation exception`() {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(false)
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2489,6 +2483,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).delete(aLicenceEntity)
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+    verify(exclusionZoneService, times(1)).deleteDocumentsFor(aLicenceEntity.additionalConditions)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -3695,7 +3690,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hdcLicence))
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+      whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
       service.submitLicence(
         1L,
@@ -3747,7 +3742,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+      whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
       service.submitLicence(
         1L,
@@ -3822,7 +3817,7 @@ class LicenceServiceTest {
         Optional.of(approvedLicence),
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+      whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
       whenever(licenceRepository.save(any())).thenReturn(anHdcLicenceEntity)
 
@@ -3832,7 +3827,7 @@ class LicenceServiceTest {
 
       service.editLicence(1L)
 
-      verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       with(licenceCaptor.value as HdcLicence) {
         assertThat(version).isEqualTo("2.1")
         assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -3876,16 +3871,20 @@ class LicenceServiceTest {
         Optional.of(approvedLicence),
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+      whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchPrisoner), anyOrNull())).thenReturn(true)
 
       whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
 
-      val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+      val newLicenceCaptor = argumentCaptor<Licence>()
+
       service.editLicence(1L)
-      verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
-      assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
-      assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
-      assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
+
+      verify(licenceRepository, times(1)).saveAndFlush(newLicenceCaptor.capture())
+      val newLicence = newLicenceCaptor.firstValue
+
+      assertThat(newLicence.additionalConditions.size).isEqualTo(2)
+      assertThat(newLicence.additionalConditions.first().conditionType).isEqualTo(LicenceType.AP.toString())
+      assertThat(newLicence.additionalConditions.last().conditionType).isEqualTo(LicenceType.PSS.toString())
     }
 
     @Test

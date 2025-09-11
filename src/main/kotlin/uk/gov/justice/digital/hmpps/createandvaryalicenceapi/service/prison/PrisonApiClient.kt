@@ -1,21 +1,17 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.coerce404ToEmptyOrThrow
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
 @Service
 class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebClient: WebClient) {
 
   companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
     private const val HDC_BATCH_SIZE = 500
     private const val COURT_OUTCOME_BATCH_SIZE = 500
   }
@@ -26,7 +22,7 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono(PrisonerHdcStatus::class.java)
-    .onErrorResume { coerce404ResponseToNull(it) }
+    .coerce404ToEmptyOrThrow()
     .block()
     ?: PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN")
 
@@ -75,16 +71,5 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
       .block()
 
     return prisonApiResponse ?: error("Unexpected null response from Prison API for nomsId $nomsId")
-  }
-
-  private fun <API_RESPONSE_BODY_TYPE> coerce404ResponseToNull(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> = with(exception) {
-    when {
-      this is WebClientResponseException && statusCode == NOT_FOUND -> {
-        log.info("No resource found when calling prisoner-api ${request?.uri?.path}")
-        Mono.empty()
-      }
-
-      else -> Mono.error(exception)
-    }
   }
 }

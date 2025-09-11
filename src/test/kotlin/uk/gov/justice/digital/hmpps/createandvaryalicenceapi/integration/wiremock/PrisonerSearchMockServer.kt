@@ -7,6 +7,11 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
@@ -14,7 +19,7 @@ import java.time.LocalDate
 
 class PrisonerSearchMockServer : WireMockServer(8099) {
 
-  private val mapper = ObjectMapper().registerModule(JavaTimeModule())
+  private val objectMapper = ObjectMapper().registerModule(JavaTimeModule())
     .registerKotlinModule()
 
   fun stubSearchPrisonersByBookingIds() {
@@ -217,7 +222,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           postRecallReleaseDate = postRecallReleaseDate,
         ),
       )
-      jsonString = mapper.writeValueAsString(prisoners)
+      jsonString = objectMapper.writeValueAsString(prisoners)
     } else {
       jsonString = prisonerSearchResponse
     }
@@ -378,14 +383,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
 
   fun stubSearchPrisonersByReleaseDate(page: Int, inHardStop: Boolean = true) {
     val releaseDate = if (inHardStop) LocalDate.now().plusDays(1) else nextWorkingDates().drop(4).first()
-    stubFor(
-      post(urlEqualTo("/api/prisoner-search/release-date-by-prison?size=2000&page=$page"))
-        .willReturn(
-          aResponse().withHeader(
-            "Content-Type",
-            "application/json",
-          ).withBody(
-            """{ "content": [
+    val jsonBody = """{ "content": [
                 {
                   "prisonerNumber": "A1234AA",
                   "bookingId": "123",
@@ -528,7 +526,25 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
               "numberOfElements": 5,
               "empty": false
             }
-            """.trimIndent(),
+    """.trimIndent()
+    stubSearchPrisonersByReleaseDate(jsonBody, page)
+  }
+
+  fun stubSearchPrisonersByReleaseDate(prisoners: List<PrisonerSearchPrisoner>) {
+    val pageable: Pageable = PageRequest.of(0, 100, Sort.by("releaseDate").ascending())
+    val prisonerPage: Page<PrisonerSearchPrisoner> = PageImpl(prisoners, pageable, prisoners.size.toLong())
+    stubSearchPrisonersByReleaseDate(objectMapper.writeValueAsString(prisonerPage), 0)
+  }
+
+  fun stubSearchPrisonersByReleaseDate(jsonBody: String, page: Int) {
+    stubFor(
+      post(urlEqualTo("/api/prisoner-search/release-date-by-prison?size=2000&page=$page"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            jsonBody.trimIndent(),
           ).withStatus(200),
         ),
     )

@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -31,12 +30,11 @@ class RemoveExpiredConditionsServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceConditionService = mock<LicenceConditionService>()
 
-  private val service = Mockito.spy(
+  private val service =
     RemoveExpiredConditionsService(
       licenceRepository,
       licenceConditionService,
-    ),
-  )
+    )
 
   @BeforeEach
   fun reset() {

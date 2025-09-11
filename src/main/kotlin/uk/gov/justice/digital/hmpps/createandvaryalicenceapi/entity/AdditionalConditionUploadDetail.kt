@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -24,12 +23,8 @@ data class AdditionalConditionUploadDetail(
   @param:NotNull
   val additionalConditionId: Long,
 
-  @Basic
-  val originalData: ByteArray? = null,
   var originalDataDsUuid: String? = null,
 
-  @Basic
-  val fullSizeImage: ByteArray? = null,
   var fullSizeImageDsUuid: String? = null,
 ) {
   override fun equals(other: Any?): Boolean {

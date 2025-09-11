@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
@@ -32,20 +33,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isLicenceReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.getLicenceConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -69,6 +68,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -80,9 +80,6 @@ class LicenceService(
   private val licenceRepository: LicenceRepository,
   private val crdLicenceRepository: CrdLicenceRepository,
   private val staffRepository: StaffRepository,
-  private val standardConditionRepository: StandardConditionRepository,
-  private val additionalConditionRepository: AdditionalConditionRepository,
-  private val bespokeConditionRepository: BespokeConditionRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val licencePolicyService: LicencePolicyService,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
@@ -96,6 +93,7 @@ class LicenceService(
   private val exclusionZoneService: ExclusionZoneService,
 ) {
 
+  @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
   @Transactional
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
@@ -106,7 +104,7 @@ class LicenceService(
     val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
 
     val conditionsSubmissionStatus =
-      isLicenceReadyToSubmit(
+      getLicenceConditionPolicyData(
         entityLicence.additionalConditions,
         licencePolicyService.getAllAdditionalConditions(),
       )
@@ -118,7 +116,7 @@ class LicenceService(
     licence: EntityLicence,
     earliestReleaseDate: LocalDate?,
     isEligibleForEarlyRelease: Boolean,
-    conditionSubmissionStatus: Map<String, Boolean>,
+    conditionPolicyData: Map<String, ConditionPolicyData>,
   ): Licence = when (licence) {
     is PrrdLicence -> toPrrd(
       licence = licence,
@@ -129,7 +127,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is CrdLicence -> toCrd(
@@ -141,14 +139,14 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is VariationLicence -> toVariation(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is HardStopLicence -> toHardstop(
@@ -160,7 +158,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is HdcLicence -> toHdc(
@@ -172,14 +170,14 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     is HdcVariationLicence -> toHdcVariation(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      conditionSubmissionStatus = conditionSubmissionStatus,
+      conditionPolicyData = conditionPolicyData,
     )
 
     else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
@@ -351,7 +349,7 @@ class LicenceService(
     )
   }
 
-  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: EntityLicence) {
+  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: HardStopLicence) {
     val com = licenceEntity.responsibleCom
     notifyService.sendHardStopLicenceApprovedEmail(
       com.email,
@@ -376,6 +374,7 @@ class LicenceService(
         licenceToDeactivate.statusCode = INACTIVE
         licenceToDeactivate.updatedBy = staffMember ?: licenceToDeactivate.updatedBy
       }
+
       else -> error("Trying to inactivate non-crd licence: $previousVersionId")
     }
 
@@ -408,7 +407,7 @@ class LicenceService(
       }
 
       is CrdLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+        assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         licenceEntity
           .submit(submitter as CommunityOffenderManager)
       }
@@ -416,13 +415,13 @@ class LicenceService(
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
         if (determineReleaseDateKind(licenceEntity.postRecallReleaseDate, licenceEntity.conditionalReleaseDate) != PRRD) {
-          assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+          assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         }
         licenceEntity.submit(submitter as PrisonUser)
       }
 
       is HdcLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+        assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
@@ -616,7 +615,7 @@ class LicenceService(
     }
 
     if (licence.kind != PRRD) {
-      assertCaseIsEligible(licence.id, licence.nomsId)
+      assertCaseIsEligible(licence, licence.nomsId)
     }
 
     val creator = getCommunityOffenderManagerForCurrentUser()
@@ -698,10 +697,12 @@ class LicenceService(
     )
   }
 
+  @TimeServedConsiderations("Do we refer this variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
+    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -740,10 +741,12 @@ class LicenceService(
     )
   }
 
+  @TimeServedConsiderations("Do we approve a variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
+    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -839,7 +842,8 @@ class LicenceService(
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
     )
-
+    log.info("Deleting documents for Licence id={}", licenceEntity.id)
+    exclusionZoneService.deleteDocumentsFor(licenceEntity.additionalConditions)
     licenceRepository.delete(licenceEntity)
   }
 
@@ -880,77 +884,68 @@ class LicenceService(
   ): EntityLicence {
     val newStatus = kind.initialStatus()
 
+    licenceCopy.bespokeConditions.clear()
+    licenceCopy.standardConditions.clear()
+    licenceCopy.additionalConditions.clear()
+
     licenceCopy.version = licencePolicyService.currentPolicy().version
-    val newLicence = licenceRepository.save(licenceCopy)
-
-    val standardConditions = licence.standardConditions.map {
-      it.copy(id = null, licence = newLicence)
-    }
-
-    val bespokeConditions = licence.bespokeConditions.map {
-      it.copy(id = null, licence = newLicence)
-    }
-
-    standardConditionRepository.saveAll(standardConditions)
+    licenceCopy.standardConditions.addAll(
+      licence.standardConditions.map { it.copy(id = null, licence = licenceCopy) },
+    )
 
     val isNowInPssPeriod =
       licence is Variation && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()
 
     if (!isNowInPssPeriod) {
-      bespokeConditionRepository.saveAll(bespokeConditions)
-    }
-
-    val licenceConditions: List<AdditionalCondition> =
-      if (isNowInPssPeriod) {
-        licence.additionalConditions.filter { it.isNotAp() }
-      } else {
-        licence.additionalConditions
-      }
-
-    val additionalConditions = licenceConditions.map {
-      it.copy(
-        id = null,
-        licence = newLicence,
-        additionalConditionData = it.additionalConditionData.map { conditionData -> conditionData.copy(id = null) }.toMutableList(),
-        additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { conditionSummary ->
-          conditionSummary.copy(
-            id = null,
-          )
-        },
+      licenceCopy.bespokeConditions.addAll(
+        licence.bespokeConditions.map { it.copy(id = null, licence = licenceCopy) },
       )
     }
 
-    val copyOfAdditionalConditions = additionalConditionRepository.saveAll(additionalConditions)
+    val copiedAdditionalConditions = licence.additionalConditions
+      .run { if (isNowInPssPeriod) filter { it.isNotAp() } else this }
+      .map { condition ->
 
-    val newAdditionalConditions = copyOfAdditionalConditions.map { condition ->
-      val updatedAdditionalConditionData = condition.additionalConditionData.map {
-        it.copy(additionalCondition = condition)
+        val copiedCondition = condition.copy(
+          id = null,
+          licence = licenceCopy,
+          additionalConditionData = mutableListOf(),
+          additionalConditionUploadSummary = mutableListOf(),
+        )
+
+        val data = condition.additionalConditionData.map {
+          it.copy(id = null, additionalCondition = copiedCondition)
+        }
+        val summary = condition.additionalConditionUploadSummary.map {
+          it.copy(id = null, additionalCondition = copiedCondition)
+        }
+
+        copiedCondition.additionalConditionData.addAll(data)
+        copiedCondition.additionalConditionUploadSummary.addAll(summary)
+        copiedCondition
       }
 
-      val updatedAdditionalConditionUploadSummary = condition.additionalConditionUploadSummary.map {
+    // This needs to be saved here before the below code uses the condition.id
+    licenceCopy.additionalConditions.addAll(copiedAdditionalConditions)
+    licenceRepository.saveAndFlush(licenceCopy)
+
+    copiedAdditionalConditions.forEach { condition ->
+      condition.additionalConditionUploadSummary.forEach {
         var uploadDetail = additionalConditionUploadDetailRepository.getReferenceById(it.uploadDetailId)
-        uploadDetail =
-          uploadDetail.copy(id = null, licenceId = newLicence.id, additionalConditionId = condition.id!!)
-        uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
-        it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id!!)
+        uploadDetail = uploadDetail.copy(id = null, licenceId = licenceCopy.id, additionalConditionId = condition.id!!)
+        val savedUploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
+        it.uploadDetailId = savedUploadDetail.id!!
       }
-
-      condition.copy(
-        additionalConditionData = updatedAdditionalConditionData.toMutableList(),
-        additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary,
-      )
     }
-
-    additionalConditionRepository.saveAll(newAdditionalConditions)
 
     val licenceEventMessage = when (licenceCopy.statusCode) {
-      VARIATION_IN_PROGRESS -> "A variation was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
-      IN_PROGRESS -> "A new licence version was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
+      VARIATION_IN_PROGRESS -> "A variation was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"
+      IN_PROGRESS -> "A new licence version was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"
       else -> error("Invalid new licence status of ${licenceCopy.statusCode} when creating a licence copy ")
     }
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
-        licenceId = newLicence.id,
+        licenceId = licenceCopy.id,
         eventType = kind.copyEventType(),
         username = creator.username,
         forenames = creator.firstName,
@@ -960,8 +955,8 @@ class LicenceService(
     )
 
     val auditEventSummary = when (newStatus) {
-      VARIATION_IN_PROGRESS -> "Licence varied for ${newLicence.forename} ${newLicence.surname}"
-      IN_PROGRESS -> "New licence version created for ${newLicence.forename} ${newLicence.surname}"
+      VARIATION_IN_PROGRESS -> "Licence varied for ${licenceCopy.forename} ${licenceCopy.surname}"
+      IN_PROGRESS -> "New licence version created for ${licenceCopy.forename} ${licenceCopy.surname}"
       else -> error("Invalid new licence status of $newStatus when creating a licence copy ")
     }
     auditEventRepository.saveAndFlush(
@@ -970,11 +965,11 @@ class LicenceService(
         username = creator.username,
         fullName = "${creator.firstName} ${creator.lastName}",
         summary = auditEventSummary,
-        detail = "Old ID ${licence.id}, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}",
+        detail = "Old ID ${licence.id}, new ID ${licenceCopy.id} type ${licenceCopy.typeCode} status ${licenceCopy.statusCode.name} version ${licenceCopy.version}",
       ),
     )
 
-    return newLicence
+    return licenceCopy
   }
 
   private fun getCommunityOffenderManagerForCurrentUser(): CommunityOffenderManager {
@@ -1056,7 +1051,6 @@ class LicenceService(
   @Transactional
   fun timeout(licence: EntityLicence, reason: String? = null) {
     check(licence is SupportsHardStop) { "Can only timeout licence kinds that support hard stop: ${licence.id}" }
-
     licence.timeOut()
     licenceRepository.saveAndFlush(licence)
     auditEventRepository.saveAndFlush(
@@ -1080,12 +1074,11 @@ class LicenceService(
       ),
     )
 
-    if (licence.versionOfId != null) {
-      val com = licence.responsibleCom
+    if (licence.versionOfId != null && licence is AlwaysHasCom) {
       with(licence) {
         notifyService.sendEditedLicenceTimedOutEmail(
-          com.email,
-          "${com.firstName} ${com.lastName}",
+          responsibleCom.email,
+          "${responsibleCom.firstName} ${responsibleCom.lastName}",
           this.forename!!,
           this.surname!!,
           this.crn,
@@ -1116,14 +1109,14 @@ class LicenceService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 
-  private fun assertCaseIsEligible(licenceId: Long, nomisId: String?) {
+  private fun assertCaseIsEligible(licence: EntityLicence, nomisId: String?) {
     if (nomisId == null) {
-      throw ValidationException("Unable to perform action, licence $licenceId is missing NOMS ID")
+      throw ValidationException("Unable to perform action, licence ${licence.id} is missing NOMS ID")
     }
 
     val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).first()
-    if (!eligibilityService.isEligibleForCvl(prisoner)) {
-      throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
+    if (!eligibilityService.isEligibleForCvl(prisoner, licence.probationAreaCode)) {
+      throw ValidationException("Unable to perform action, licence ${licence.id} is ineligible for CVL")
     }
   }
 

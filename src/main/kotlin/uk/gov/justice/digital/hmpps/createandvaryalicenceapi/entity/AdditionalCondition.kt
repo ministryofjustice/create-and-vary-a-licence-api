@@ -53,7 +53,7 @@ data class AdditionalCondition(
   )
   @Fetch(FetchMode.SUBSELECT)
   @OrderBy("id")
-  val additionalConditionUploadSummary: List<AdditionalConditionUploadSummary> = emptyList(),
+  val additionalConditionUploadSummary: MutableList<AdditionalConditionUploadSummary> = mutableListOf(),
 ) {
 
   override fun toString(): String = "AdditionalCondition(" +

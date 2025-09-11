@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -22,7 +21,7 @@ data class AdditionalConditionUploadSummary(
 
   @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)
-  val additionalCondition: AdditionalCondition,
+  var additionalCondition: AdditionalCondition,
 
   val filename: String? = null,
 
@@ -39,12 +38,10 @@ data class AdditionalConditionUploadSummary(
 
   val description: String? = null,
 
-  @Basic
-  val thumbnailImage: ByteArray? = null,
   val thumbnailImageDsUuid: String? = null,
 
   @param:NotNull
-  val uploadDetailId: Long,
+  var uploadDetailId: Long,
 ) {
 
   @Transient

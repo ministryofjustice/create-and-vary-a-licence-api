@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.publicApi
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -11,6 +13,8 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
@@ -22,6 +26,9 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
+
+  @Autowired
+  lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
 
   @Nested
   inner class `Get licences by CRN` {
@@ -133,15 +140,28 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     @ParameterizedTest
     @CsvSource("ROLE_VIEW_LICENCES", "ROLE_SAR_DATA_ACCESS")
     fun `Get exclusion zone image by condition ID`(role: String) {
+      // Given upload detail has UUID stored
+      additionalConditionUploadDetailRepository.save(
+        additionalConditionUploadDetailRepository.findById(1).orElseThrow()
+          .copy(fullSizeImageDsUuid = "44f8163c-6c97-4ff2-932b-ae24feb0c112"),
+      )
+      // Given document service has the file uploaded to it
+      documentApiMockServer.stubDownloadDocumentFile(
+        withUUID = "44f8163c-6c97-4ff2-932b-ae24feb0c112",
+        document = byteArrayOf(9, 9, 9),
+      )
+
       val result = webTestClient.get()
         .uri("/public/licences/2/conditions/1/image-upload")
         .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
         .headers(setAuthorisation(roles = listOf(role)))
         .exchange()
         .expectStatus().isOk
+        .expectHeader().contentType(MediaType.IMAGE_JPEG)
+        .expectBody().returnResult()
 
-      assertThat(result.expectHeader().contentType(MediaType.IMAGE_JPEG)).isNotNull
-      assertThat(result.expectBody()).isNotNull
+      // Then I get back the image that was previously uploaded to the document service
+      assertThat(result.responseBody).isEqualTo(byteArrayOf(9, 9, 9))
     }
 
     @Test
@@ -160,6 +180,22 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody
 
       assertThat(result?.userMessage).contains("Access Denied")
+    }
+  }
+
+  private companion object {
+    val documentApiMockServer = DocumentApiMockServer()
+
+    @JvmStatic
+    @BeforeAll
+    fun startMocks() {
+      documentApiMockServer.start()
+    }
+
+    @JvmStatic
+    @AfterAll
+    fun stopMocks() {
+      documentApiMockServer.stop()
     }
   }
 }

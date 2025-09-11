@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Releas
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
@@ -56,6 +58,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
+@TimeServedConsiderations("Without a COM, we would just surface null and handle on the frontend")
 fun transformToLicenceSummary(
   licence: Licence,
   hardStopDate: LocalDate?,
@@ -92,7 +95,7 @@ fun transformToLicenceSummary(
   topupSupervisionStartDate = licence.topupSupervisionStartDate,
   topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
   postRecallReleaseDate = licence.postRecallReleaseDate,
-  comUsername = licence.responsibleCom.username,
+  comUsername = licence.getCom()?.username,
   bookingId = licence.bookingId,
   dateCreated = licence.dateCreated,
   approvedByName = licence.approvedByName,
@@ -122,7 +125,7 @@ fun toHardstop(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHardstopLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -153,7 +156,7 @@ fun toHardstop(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -163,13 +166,15 @@ fun toHardstop(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointmentPersonType,
-  appointmentPerson = licence.appointmentPerson,
-  appointmentTime = licence.appointmentTime,
-  appointmentTimeType = licence.appointmentTimeType,
-  appointmentAddress = licence.appointmentAddress,
-  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointmentContact,
+  appointmentPersonType = licence.appointment?.personType,
+  appointmentPerson = licence.appointment?.person,
+  appointmentTime = licence.appointment?.time,
+  appointmentTimeType = licence.appointment?.timeType,
+  appointmentAddress = licence.appointment?.addressText,
+  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
+  appointmentContact = licence.appointment?.telephoneContactNumber,
+  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
   reviewDate = licence.reviewDate,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
@@ -184,9 +189,9 @@ fun toHardstop(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
   isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
@@ -202,11 +207,12 @@ fun toHardstop(
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
+@TimeServedConsiderations("Is COM required for variation, if so the responsibleCOM would never be null")
 fun toVariation(
   licence: VariationLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ): ModelVariationLicence = ModelVariationLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -237,7 +243,7 @@ fun toVariation(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -247,13 +253,15 @@ fun toVariation(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointmentPersonType,
-  appointmentPerson = licence.appointmentPerson,
-  appointmentTime = licence.appointmentTime,
-  appointmentTimeType = licence.appointmentTimeType,
-  appointmentAddress = licence.appointmentAddress,
-  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointmentContact,
+  appointmentPersonType = licence.appointment?.personType,
+  appointmentPerson = licence.appointment?.person,
+  appointmentTime = licence.appointment?.time,
+  appointmentTimeType = licence.appointment?.timeType,
+  appointmentAddress = licence.appointment?.addressText,
+  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
+  appointmentContact = licence.appointment?.telephoneContactNumber,
+  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
   spoDiscussion = licence.spoDiscussion,
   vloDiscussion = licence.vloDiscussion,
   approvedDate = licence.approvedDate,
@@ -269,9 +277,9 @@ fun toVariation(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   variationOf = licence.variationOfId,
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
@@ -292,7 +300,7 @@ fun toPrrd(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = PrrdLicenceResponse(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -323,7 +331,7 @@ fun toPrrd(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -333,13 +341,15 @@ fun toPrrd(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointmentPersonType,
-  appointmentPerson = licence.appointmentPerson,
-  appointmentTime = licence.appointmentTime,
-  appointmentTimeType = licence.appointmentTimeType,
-  appointmentAddress = licence.appointmentAddress,
-  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointmentContact,
+  appointmentPersonType = licence.appointment?.personType,
+  appointmentPerson = licence.appointment?.person,
+  appointmentTime = licence.appointment?.time,
+  appointmentTimeType = licence.appointment?.timeType,
+  appointmentAddress = licence.appointment?.addressText,
+  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
+  appointmentContact = licence.appointment?.telephoneContactNumber,
+  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
   approvedByName = licence.approvedByName,
@@ -353,9 +363,9 @@ fun toPrrd(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
   isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
@@ -386,7 +396,7 @@ fun toCrd(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelCrdLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -417,7 +427,7 @@ fun toCrd(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -427,13 +437,15 @@ fun toCrd(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointmentPersonType,
-  appointmentPerson = licence.appointmentPerson,
-  appointmentTime = licence.appointmentTime,
-  appointmentTimeType = licence.appointmentTimeType,
-  appointmentAddress = licence.appointmentAddress,
-  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointmentContact,
+  appointmentPersonType = licence.appointment?.personType,
+  appointmentPerson = licence.appointment?.person,
+  appointmentTime = licence.appointment?.time,
+  appointmentTimeType = licence.appointment?.timeType,
+  appointmentAddress = licence.appointment?.addressText,
+  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
+  appointmentContact = licence.appointment?.telephoneContactNumber,
+  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
   approvedByName = licence.approvedByName,
@@ -447,9 +459,9 @@ fun toCrd(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
   isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
@@ -480,7 +492,7 @@ fun toHdc(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHdcLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -513,7 +525,7 @@ fun toHdc(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -523,13 +535,15 @@ fun toHdc(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointmentPersonType,
-  appointmentPerson = licence.appointmentPerson,
-  appointmentTime = licence.appointmentTime,
-  appointmentTimeType = licence.appointmentTimeType,
-  appointmentAddress = licence.appointmentAddress,
-  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointmentContact,
+  appointmentPersonType = licence.appointment?.personType,
+  appointmentPerson = licence.appointment?.person,
+  appointmentTime = licence.appointment?.time,
+  appointmentTimeType = licence.appointment?.timeType,
+  appointmentAddress = licence.appointment?.addressText,
+  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
+  appointmentContact = licence.appointment?.telephoneContactNumber,
+  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
   approvedByName = licence.approvedByName,
@@ -543,9 +557,9 @@ fun toHdc(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
   isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
@@ -573,7 +587,7 @@ fun toHdcVariation(
   licence: HdcVariationLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHdcVariationLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -606,7 +620,7 @@ fun toHdcVariation(
   comUsername = licence.responsibleCom.username,
   comStaffId = licence.responsibleCom.staffIdentifier,
   comEmail = licence.responsibleCom.email,
-  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  responsibleComFullName = with(licence.responsibleCom) { "${this.firstName} ${this.lastName}" },
   updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
@@ -616,13 +630,15 @@ fun toHdcVariation(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPerson = licence.appointmentPerson,
-  appointmentPersonType = licence.appointmentPersonType,
-  appointmentTime = licence.appointmentTime,
-  appointmentTimeType = licence.appointmentTimeType,
-  appointmentAddress = licence.appointmentAddress,
-  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointmentContact,
+  appointmentPerson = licence.appointment?.person,
+  appointmentPersonType = licence.appointment?.personType,
+  appointmentTime = licence.appointment?.time,
+  appointmentTimeType = licence.appointment?.timeType,
+  appointmentAddress = licence.appointment?.addressText,
+  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
+  appointmentContact = licence.appointment?.telephoneContactNumber,
+  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
   spoDiscussion = licence.spoDiscussion,
   vloDiscussion = licence.vloDiscussion,
   approvedDate = licence.approvedDate,
@@ -638,9 +654,9 @@ fun toHdcVariation(
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
   additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
     "AP",
-    conditionSubmissionStatus,
+    conditionPolicyData,
   ),
-  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   variationOf = licence.variationOfId,
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
@@ -668,15 +684,16 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition = ModelSt
 // Transform a list of entity additional conditions to model additional conditions
 fun List<EntityAdditionalCondition>.transformToModelAdditional(
   conditionType: String,
-  conditionSubmissionStatus: Map<String, Boolean>,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
 ): List<ModelAdditionalCondition> = filter { condition -> condition.conditionType == conditionType }.map {
   transform(
     it,
-    conditionSubmissionStatus[it.conditionCode]!!,
+    conditionPolicyData[it.conditionCode]!!.readyToSubmit,
+    conditionPolicyData[it.conditionCode]!!.requiresInput,
   )
 }
 
-fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition = ModelAdditionalCondition(
+fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean, requiresInput: Boolean): ModelAdditionalCondition = ModelAdditionalCondition(
   id = entity.id,
   code = entity.conditionCode,
   version = entity.conditionVersion,
@@ -687,6 +704,7 @@ fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelA
   data = entity.additionalConditionData.transformToModelAdditionalData(),
   uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
   readyToSubmit = readyToSubmit,
+  requiresInput = requiresInput,
 )
 
 // Transform a list of entity additional condition data to model additional condition data
@@ -720,7 +738,7 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
   imageType = entity.imageType,
   imageSize = entity.imageSize,
   description = entity.description,
-  thumbnailImage = (entity.preloadedThumbnailImage ?: entity.thumbnailImage)?.toBase64(),
+  thumbnailImage = entity.preloadedThumbnailImage?.toBase64(),
   uploadDetailId = entity.uploadDetailId,
 )
 
@@ -887,7 +905,7 @@ fun transformToApprovalLicenceSummary(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  comUsername = licence.responsibleCom.username,
+  comUsername = licence.getCom()?.username,
   conditionalReleaseDate = licence.conditionalReleaseDate,
   actualReleaseDate = licence.actualReleaseDate,
   sentenceStartDate = licence.sentenceStartDate,

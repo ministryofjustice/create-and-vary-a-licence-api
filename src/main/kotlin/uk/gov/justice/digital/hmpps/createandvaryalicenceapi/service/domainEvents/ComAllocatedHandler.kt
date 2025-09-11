@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.WorkLoadApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.mapper.OffenderManagerMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.OffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 
 @Service
 class ComAllocatedHandler(
@@ -44,11 +45,15 @@ class ComAllocatedHandler(
     }
   }
 
+  @TimeServedConsiderations("If we have a null offender manager, we don't process the COM allocation, however, if this was the unallocated COM member on a team or belonging to an unallocated team, what would we do?")
   fun processComAllocation(offenderManager: OffenderManager) {
     log.info("Processing COM allocation for CRN ${offenderManager.crn} code is ${offenderManager.code}")
 
+    // If they were allocated unallocated and then allocated to a real com, need to fire an audit event
     deliusApiClient.assignDeliusRole(offenderManager.username!!)
-
+    val existingCom =
+      staffService.findCommunityOffenderManager(offenderManager.staffIdentifier, offenderManager.username)
+        .firstOrNull()
     val newCom = staffService.updateComDetails(
       UpdateComRequest(
         staffIdentifier = offenderManager.staffIdentifier,
@@ -59,7 +64,7 @@ class ComAllocatedHandler(
       ),
     )
 
-    offenderService.updateOffenderWithResponsibleCom(offenderManager.crn, newCom)
+    offenderService.updateOffenderWithResponsibleCom(offenderManager.crn, existingCom, newCom)
 
     offenderService.updateProbationTeam(
       offenderManager.crn,
@@ -92,13 +97,13 @@ class ComAllocatedHandler(
   private fun getOffenderManager(crn: String, event: HMPPSDomainEvent): OffenderManager? {
     val isDeliusEvent = event.detailUrl.isNullOrBlank()
     return if (isDeliusEvent) {
-      getOffenderManagerForDeliusEvent(crn)
+      getOffenderManagerFromDelius(crn)
     } else {
-      getOffenderManagerForApop(event.detailUrl!!)
+      getOffenderManagerFromApop(event.detailUrl!!)
     }
   }
 
-  fun getOffenderManagerForDeliusEvent(crn: String): OffenderManager? {
+  fun getOffenderManagerFromDelius(crn: String): OffenderManager? {
     log.info("Getting offender manager from Delius for CRN: {}", crn)
 
     val response = deliusApiClient.getOffenderManager(crn)
@@ -110,7 +115,15 @@ class ComAllocatedHandler(
     }
   }
 
-  private fun getOffenderManagerForApop(detailUrl: String): OffenderManager {
+  fun syncComAllocation(crn: String) {
+    log.info("Syncing COM allocation for CRN: {}", crn)
+    val offenderManager = getOffenderManagerFromDelius(crn)
+    if (isValidOffenderManager(offenderManager, crn)) {
+      processComAllocation(offenderManager!!)
+    }
+  }
+
+  private fun getOffenderManagerFromApop(detailUrl: String): OffenderManager {
     val personUuid = getPersonUuid(detailUrl)
     log.info("Getting offender manager from APOP for personUuid: {}", personUuid)
 

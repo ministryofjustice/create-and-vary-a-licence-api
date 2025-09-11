@@ -16,7 +16,7 @@ data class OmuContact(
   @field:Positive
   open val id: Long? = null,
   val prisonCode: String,
-  val email: String,
+  var email: String,
   var dateCreated: LocalDateTime,
-  val dateLastUpdated: LocalDateTime? = null,
+  var dateLastUpdated: LocalDateTime? = null,
 )

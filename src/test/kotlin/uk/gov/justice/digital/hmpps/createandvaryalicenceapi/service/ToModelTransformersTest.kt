@@ -44,26 +44,21 @@ class ToModelTransformersTest {
     val (fileA, fileB) = Pair(byteArrayOf(1, 2, 3), byteArrayOf(4, 5, 6))
 
     assertThat(
-      transform(additionalConditionUploadSummaryWith(thumbnailImage = fileA, preloadedThumbnailImage = fileB)),
-    ).hasFieldOrPropertyWithValue("thumbnailImage", fileB.toBase64())
-
-    assertThat(
-      transform(additionalConditionUploadSummaryWith(thumbnailImage = fileA, preloadedThumbnailImage = null)),
+      transform(additionalConditionUploadSummaryWith(preloadedThumbnailImage = fileA)),
     ).hasFieldOrPropertyWithValue("thumbnailImage", fileA.toBase64())
 
     assertThat(
-      transform(additionalConditionUploadSummaryWith(thumbnailImage = null, preloadedThumbnailImage = fileB)),
+      transform(additionalConditionUploadSummaryWith(preloadedThumbnailImage = fileB)),
     ).hasFieldOrPropertyWithValue("thumbnailImage", fileB.toBase64())
 
     assertThat(
-      transform(additionalConditionUploadSummaryWith(thumbnailImage = null, preloadedThumbnailImage = null)),
+      transform(additionalConditionUploadSummaryWith(preloadedThumbnailImage = null)),
     ).hasFieldOrPropertyWithValue("thumbnailImage", null)
   }
 
-  private fun additionalConditionUploadSummaryWith(thumbnailImage: ByteArray? = null, preloadedThumbnailImage: ByteArray? = null): AdditionalConditionUploadSummary = AdditionalConditionUploadSummary(
+  private fun additionalConditionUploadSummaryWith(preloadedThumbnailImage: ByteArray? = null): AdditionalConditionUploadSummary = AdditionalConditionUploadSummary(
     id = 1L,
     additionalCondition = mock(),
-    thumbnailImage = thumbnailImage,
     uploadDetailId = 2L,
   ).also { it.preloadedThumbnailImage = preloadedThumbnailImage }
 

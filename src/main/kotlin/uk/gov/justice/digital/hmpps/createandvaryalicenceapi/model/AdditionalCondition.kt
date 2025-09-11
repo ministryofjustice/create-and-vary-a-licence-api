@@ -39,4 +39,7 @@ data class AdditionalCondition(
 
   @field:Schema(description = "Whether the condition is ready to submit for approval")
   val readyToSubmit: Boolean?,
+
+  @field:Schema(description = "Whether the condition requires input from the user")
+  val requiresInput: Boolean?,
 )

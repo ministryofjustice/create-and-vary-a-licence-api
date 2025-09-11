@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Creat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
@@ -70,7 +69,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     // When
     val result = webTestClient.post()
       .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = PRRD))
+      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -87,34 +86,13 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     val licence = licenceRepository.findAll().first()
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
-    assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+    assertThat(licence.getCom()!!.username).isEqualTo("AAA")
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
     assertThat(standardConditionRepository.count()).isEqualTo(9)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
-  }
-
-  @Test
-  fun `When creating a PRRD licence with no post recall release date, exception should be thrown`() {
-    // Given
-    prisonApiMockServer.stubGetPrison()
-    prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = null)
-    deliusMockServer.stubGetProbationCase()
-    deliusMockServer.stubGetOffenderManager()
-
-    // When
-    val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = PRRD))
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-
-    // Then
-    result.expectStatus().isBadRequest
   }
 
   @Test
@@ -146,7 +124,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     assertThat(licenceRepository.count()).isEqualTo(1)
     val licence = licenceRepository.findAll().first()
-    assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+    assertThat(licence.getCom()!!.username).isEqualTo("AAA")
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
@@ -376,7 +354,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(licenceRepository.count()).isEqualTo(1)
       val licence = licenceRepository.findAll().first()
-      assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+      assertThat(licence.getCom()!!.username).isEqualTo("AAA")
       assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
       assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -417,7 +395,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(licenceRepository.count()).isEqualTo(1)
       val licence = licenceRepository.findAll().first()
-      assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+      assertThat(licence.getCom()!!.username).isEqualTo("AAA")
       assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
       assertThat(licence.typeCode).isEqualTo(LicenceType.AP_PSS)
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)

@@ -1,5 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
@@ -11,6 +18,7 @@ enum class LicenceKind(
   val submittedEventType: () -> LicenceEventType,
   val activatedDomainEventType: () -> LicenceDomainEventType,
   val inactivatedDomainEventType: () -> LicenceDomainEventType,
+  val clazz: () -> Class<out Licence>,
 ) {
   PRRD(
     { IN_PROGRESS },
@@ -19,7 +27,9 @@ enum class LicenceKind(
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.PRRD_LICENCE_ACTIVATED },
     { LicenceDomainEventType.PRRD_LICENCE_INACTIVATED },
+    { PrrdLicence::class.java },
   ),
+
   CRD(
     { IN_PROGRESS },
     { LicenceEventType.CREATED },
@@ -27,6 +37,7 @@ enum class LicenceKind(
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.LICENCE_ACTIVATED },
     { LicenceDomainEventType.LICENCE_INACTIVATED },
+    { CrdLicence::class.java },
   ),
 
   VARIATION(
@@ -36,6 +47,7 @@ enum class LicenceKind(
     { LicenceEventType.VARIATION_SUBMITTED },
     { LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED },
     { LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED },
+    { VariationLicence::class.java },
   ),
 
   HARD_STOP(
@@ -45,6 +57,7 @@ enum class LicenceKind(
     { LicenceEventType.HARD_STOP_SUBMITTED },
     { LicenceDomainEventType.LICENCE_ACTIVATED },
     { LicenceDomainEventType.LICENCE_INACTIVATED },
+    { HardStopLicence::class.java },
   ),
 
   HDC(
@@ -54,6 +67,8 @@ enum class LicenceKind(
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_INACTIVATED },
+    { HdcLicence::class.java },
+
   ) {
     override fun isHdc() = true
   },
@@ -65,6 +80,7 @@ enum class LicenceKind(
     { LicenceEventType.VARIATION_SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_INACTIVATED },
+    { HdcVariationLicence::class.java },
   ) {
     override fun isHdc() = true
   },

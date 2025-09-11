@@ -5,12 +5,14 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -275,6 +277,61 @@ class AuditService(
       },
     )
 
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
+  }
+
+  fun recordAuditEventComUpdated(
+    licence: Licence,
+    existingCom: CommunityOffenderManager?,
+    newCom: CommunityOffenderManager,
+    staffMember: Staff?,
+  ) {
+    val summary =
+      "COM updated to ${newCom.firstName} ${newCom.lastName} on licence"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to mapOf(
+        "oldUsername" to (existingCom?.username ?: ""),
+        "newUsername" to newCom.username,
+        "oldStaffIdentifier" to (existingCom?.staffIdentifier ?: ""),
+        "newStaffIdentifier" to newCom.staffIdentifier,
+        "oldEmail" to (existingCom?.email ?: ""),
+        "newEmail" to newCom.email,
+      ),
+    )
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
+  }
+
+  fun recordAuditEventProbationTeamUpdated(
+    licence: Licence,
+    request: UpdateProbationTeamRequest,
+    staffMember: Staff?,
+  ) {
+    val summary =
+      "Probation team updated to ${request.probationTeamDescription} at ${request.probationAreaDescription} on licence"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to mapOf(
+        "oldAreaCode" to licence.probationAreaCode,
+        "newAreaCode" to request.probationAreaCode,
+        "oldAreaDescription" to licence.probationAreaDescription,
+        "newAreaDescription" to request.probationAreaDescription,
+        "oldPduCode" to licence.probationPduCode,
+        "newPduCode" to request.probationPduCode,
+        "oldPduDescription" to licence.probationPduDescription,
+        "newPduDescription" to request.probationPduDescription,
+        "oldLauCode" to licence.probationLauCode,
+        "newLauCode" to request.probationLauCode,
+        "oldLauDescription" to licence.probationLauDescription,
+        "newLauDescription" to request.probationLauDescription,
+        "oldTeamCode" to licence.probationTeamCode,
+        "newTeamCode" to request.probationTeamCode,
+        "oldTeamDescription" to licence.probationTeamDescription,
+        "newTeamDescription" to request.probationTeamDescription,
+      ),
+    )
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 

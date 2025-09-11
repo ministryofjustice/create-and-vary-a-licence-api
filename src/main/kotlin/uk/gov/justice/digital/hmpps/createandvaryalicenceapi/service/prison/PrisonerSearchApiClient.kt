@@ -72,7 +72,6 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
     var pageNumber = 0
 
     while (pageNumber >= 0) {
-      // eslint-disable-next-line no-await-in-loop
       val page = prisonerSearchApiWebClient
         .post()
         .uri("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber")

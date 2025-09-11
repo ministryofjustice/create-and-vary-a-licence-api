@@ -44,7 +44,9 @@ class DocumentApiClientUploadTest {
       1,
       postRequestedFor(urlEqualTo("/documents/EXCLUSION_ZONE_MAP/$uuid"))
         .withRequestBodyPart(aMultipart("file").withBody(binaryEqualTo(file.contentAsByteArray)).build())
-        .withRequestBodyPart(aMultipart("metadata").withBody(equalToJson("""{"aKey":"1","bKey":"2","cKey":"3"}""")).build()),
+        .withRequestBodyPart(
+          aMultipart("metadata").withBody(equalToJson("""{"aKey":"1","bKey":"2","cKey":"3"}""")).build(),
+        ),
     )
   }
 
@@ -65,7 +67,7 @@ class DocumentApiClientUploadTest {
     givenDocumentApiRespondsWith(status = responseStatusCode, responseBody = errorResponse)
 
     assertThatThrownBy { uploadDocument() }
-      .isInstanceOf(IllegalStateException::class.java)
+      .isInstanceOf(RuntimeException::class.java)
       .hasMessageContaining(
         "Error during uploading document (UUID=%s, StatusCode=%d, Response=%s)".format(
           uuid,
@@ -80,8 +82,8 @@ class DocumentApiClientUploadTest {
     givenDocumentApiRespondsWith(status = 401, responseBody = "")
 
     assertThatThrownBy { uploadDocument() }
-      .isInstanceOf(IllegalStateException::class.java)
-      .hasMessageContaining("Error during uploading document (UUID=$uuid)")
+      .isInstanceOf(RuntimeException::class.java)
+      .hasMessageContaining("Error during uploading document (UUID=$uuid, StatusCode=401, Response=null)")
   }
 
   private fun uploadDocument() = documentApiClient.uploadDocument(

@@ -31,5 +31,25 @@
     "isEligibleForEarlyRelease": false,
     "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
+  },
+  {
+    "prisonerNumber": "AB1234G",
+    "bookingId": "3",
+    "firstName": "Test3",
+    "lastName": "Person3",
+    "dateOfBirth": "1985-01-01",
+    "status": "ACTIVE IN",
+    "recall": true,
+    "licenceExpiryDate": "$sled",
+    "sentenceExpiryDate": "$sled",
+    "topupSupervisionExpiryDate": "2023-06-22",
+    "postRecallReleaseDate": "$releaseDate",
+    "prisonId":  "PRISON1",
+    "licenceType": "PSS",
+    "indeterminateSentence": false,
+    "isInHardStopPeriod": false,
+    "isEligibleForEarlyRelease": false,
+    "isDueForEarlyRelease": false,
+    "isDueToBeReleasedInTheNextTwoWorkingDays": false
   }
 ]

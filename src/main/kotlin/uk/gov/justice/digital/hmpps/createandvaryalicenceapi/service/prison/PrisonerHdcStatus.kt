@@ -9,5 +9,4 @@ data class PrisonerHdcStatus(
   val refusedReason: String? = null,
 ) {
   fun isApproved() = approvalStatus == "APPROVED"
-  fun isNotApproved() = !isApproved()
 }

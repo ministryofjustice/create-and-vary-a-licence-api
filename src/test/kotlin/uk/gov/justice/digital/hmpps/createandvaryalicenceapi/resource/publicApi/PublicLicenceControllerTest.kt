@@ -172,7 +172,7 @@ class PublicLicenceControllerTest {
       isInHardStopPeriod = true,
       isDueForEarlyRelease = true,
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
-      conditionSubmissionStatus = emptyMap(),
+      conditionPolicyData = emptyMap(),
     ).transformToPublicLicence()
 
     val aLicenceSummary = LicenceSummary(

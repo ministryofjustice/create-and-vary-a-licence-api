@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.mockito.Mockito.spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -19,23 +21,26 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
-import java.util.Optional
+import java.util.*
 
 class ExclusionZoneServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val documentService = mock<DocumentService>()
+  private val documentCountsRepository: DocumentCountsRepository = Mockito.mock()
 
   private val service = ExclusionZoneService(
     licenceRepository,
     additionalConditionRepository,
     additionalConditionUploadDetailRepository,
     documentService,
+    documentCountsRepository,
   )
 
   @BeforeEach
@@ -45,13 +50,19 @@ class ExclusionZoneServiceTest {
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       documentService,
+      documentCountsRepository,
     )
   }
 
   @Test
   fun `service uploads an exclusion zone file`() {
+    // Given
+    val additionalCondition = anAdditionalConditionEntityWithoutUpload.copy(
+      additionalConditionUploadSummary = spy(mutableListOf()),
+    )
+
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithoutUpload))
+    whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(additionalCondition))
     whenever(additionalConditionUploadDetailRepository.saveAndFlush(any())).thenReturn(
       anAdditionalConditionUploadDetailEntity,
     )
@@ -66,16 +77,21 @@ class ExclusionZoneServiceTest {
       fileResource.file.inputStream(),
     )
 
+    // When
     service.uploadExclusionZoneFile(1L, 1L, multiPartFile)
 
+    // Then
     verify(licenceRepository, times(1)).findById(1L)
     verify(additionalConditionRepository, times(1)).findById(1L)
     verify(additionalConditionUploadDetailRepository, times(1)).saveAndFlush(any())
-    verify(additionalConditionRepository, times(1)).saveAndFlush(any())
+    verify(additionalCondition.additionalConditionUploadSummary, times(1)).clear()
+    verify(additionalCondition.additionalConditionUploadSummary, times(1)).add(any())
   }
 
   @Test
   fun `service returns a full-sized exclusion zone image`() {
+    val documentServiceFile = ClassPathResource("test_map.jpg").inputStream.readAllBytes()
+
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
     whenever(additionalConditionUploadDetailRepository.findById(1L)).thenReturn(
@@ -83,10 +99,12 @@ class ExclusionZoneServiceTest {
         anAdditionalConditionUploadDetailEntity,
       ),
     )
+    whenever(documentService.downloadDocument(UUID.fromString(anAdditionalConditionUploadDetailEntity.fullSizeImageDsUuid)))
+      .thenReturn(documentServiceFile)
 
     val image = service.getExclusionZoneImage(1L, 1L)
 
-    assertThat(image).isEqualTo(ClassPathResource("test_map.jpg").inputStream.readAllBytes())
+    assertThat(image).isEqualTo(documentServiceFile)
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(additionalConditionRepository, times(1)).findById(1L)
@@ -121,7 +139,7 @@ class ExclusionZoneServiceTest {
       conditionText = "text",
       conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = emptyList(),
+      additionalConditionUploadSummary = mutableListOf(),
     )
 
     val someUploadSummaryData = AdditionalConditionUploadSummary(
@@ -129,7 +147,6 @@ class ExclusionZoneServiceTest {
       filename = "test.pdf",
       fileType = "application/pdf",
       description = "Description",
-      thumbnailImage = ByteArray(0),
       // Any additional condition is Ok here
       additionalCondition = anAdditionalConditionEntityWithoutUpload,
       uploadDetailId = 1,
@@ -145,15 +162,14 @@ class ExclusionZoneServiceTest {
       conditionText = "text",
       conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = listOf(someUploadSummaryData),
+      additionalConditionUploadSummary = mutableListOf(someUploadSummaryData),
     )
 
     val anAdditionalConditionUploadDetailEntity = AdditionalConditionUploadDetail(
       id = 1,
       licenceId = 1,
       additionalConditionId = 1,
-      fullSizeImage = ClassPathResource("test_map.jpg").inputStream.readAllBytes(),
-      originalData = ClassPathResource("Test_map_2021-12-06_112550.pdf").inputStream.readAllBytes(),
+      fullSizeImageDsUuid = "9f7f2002-cdd6-4e3a-8f3f-135271433300",
     )
   }
 }
