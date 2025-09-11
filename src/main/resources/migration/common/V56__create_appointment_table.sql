@@ -69,7 +69,8 @@ WHERE l.appointment_person_type IS NOT NULL
    OR l.appointment_time_type IS NOT NULL
    OR l.appointment_time IS NOT NULL
    OR l.appointment_address IS NOT NULL
-   OR l.appointment_contact IS NOT NULL;
+   OR l.appointment_contact IS NOT NULL
+ORDER BY l.id;
 
 -- 6. Insert into final appointment table from tmp_appointment (fast bulk insert)
 INSERT INTO appointment (
@@ -93,7 +94,7 @@ SELECT
 	telephone_contact_number,
 	date_created,
 	date_last_updated
-FROM tmp_appointment;
+FROM tmp_appointment ORDER BY id;
 
 -- 7. Ensure appointment id sequence is correct
 SELECT setval(
@@ -104,7 +105,7 @@ SELECT setval(
 
 -- 8. Populate the new licence_appointment join table
 INSERT INTO licence_appointment (licence_id, appointment_id)
-	SELECT licence_id, id	FROM tmp_appointment;
+	SELECT licence_id, id	FROM tmp_appointment ORDER BY licence_id;
 
 -- 9. Migrate appointment addresses
 INSERT INTO appointment_address (appointment_id, address_id)
@@ -112,7 +113,8 @@ SELECT
 	tmp.id,
 		laa.address_id
 	FROM tmp_appointment tmp
-			 JOIN licence_appointment_address laa ON tmp.licence_id = laa.licence_id;
+			 JOIN licence_appointment_address laa ON tmp.licence_id = laa.licence_id
+		ORDER BY tmp.licence_id;
 
 -- 10. Index for performance
 CREATE INDEX idx_licence_appointment_licence_id ON licence_appointment(licence_id);
