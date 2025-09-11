@@ -200,7 +200,7 @@ class ComCreateCaseloadService(
       if (responsibleCom != null) {
         case.crn!! to ProbationPractitioner(
           responsibleCom.code,
-          name = responsibleCom.name?.fullName(),
+          name = responsibleCom.name.fullName(),
         )
       } else {
         if (case.staff == null || case.staff.unallocated == true) {

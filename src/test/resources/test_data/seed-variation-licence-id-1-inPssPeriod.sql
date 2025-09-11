@@ -1,3 +1,5 @@
+-- 1. Insert the licence
+
 insert into licence (kind,
                      type_code,
                      version,
@@ -27,8 +29,7 @@ insert into licence (kind,
                      probation_team_code,
                      responsible_com_id,
                      created_by_com_id,
-                     licence_version,
-					 appointment_address)
+                     licence_version)
 values (
         'VARIATION',
         'AP_PSS',
@@ -59,8 +60,7 @@ values (
         'TEAM1',
         1,
         1,
-        '1.0',
-        '123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA');
+        '1.0');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');

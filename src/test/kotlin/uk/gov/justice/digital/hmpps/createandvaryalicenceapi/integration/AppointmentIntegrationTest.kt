@@ -313,9 +313,9 @@ class AppointmentIntegrationTest(
     val licence = getLicence()
     val savedAddress = getAndAssertAddress(licence)
     assertThat(savedAddress.id).isEqualTo(1)
-    assertThat(addressRepository.findAll().size).isEqualTo(2)
+    assertThat(addressRepository.findAll().size).isEqualTo(3)
     val staff = staffRepository.findByUsernameIgnoreCase("test-client")
-    assertThat(staff?.savedAppointmentAddresses).contains(savedAddress)
+    assertThat(staff?.savedAppointmentAddresses?.last()?.id).isEqualTo(3)
     val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(licence.id)).last()
     assertThat(auditEvent.changes).containsEntry("savedToStaffMember", "test-client")
   }
@@ -344,10 +344,10 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
     val licence = getLicence(id = 2)
     val savedAddress = getAndAssertAddress(licence)
-    assertThat(savedAddress.id).isEqualTo(2)
-    assertThat(addressRepository.findAll().size).isEqualTo(2)
-    assertThat(licence.getCom()!!.savedAppointmentAddresses.size).isEqualTo(1)
-    assertThat(licence.getCom()!!.savedAppointmentAddresses.first().id).isEqualTo(1)
+    assertThat(savedAddress.id).isEqualTo(4)
+    assertThat(addressRepository.findAll().size).isEqualTo(4)
+    assertThat(licence.getCom()!!.savedAppointmentAddresses.size).isEqualTo(2)
+    assertThat(licence.getCom()!!.savedAppointmentAddresses.first().id).isEqualTo(2)
   }
 
   @Test
@@ -366,11 +366,11 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
     val licence = getLicence()
     val savedAddress = getAndAssertAddress(licence)
-    assertThat(addressRepository.findAll().size).isEqualTo(1)
+    assertThat(addressRepository.findAll().size).isEqualTo(2)
     assertThat(savedAddress.id).isEqualTo(1)
     val savedAppointmentAddresses = licence.getCom()!!.savedAppointmentAddresses
     assertThat(savedAppointmentAddresses.size).isEqualTo(1)
-    assertThat(savedAppointmentAddresses.first().id).isEqualTo(savedAddress.id)
+    assertThat(savedAppointmentAddresses.last().id).isEqualTo(2)
     val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
     assertThat(auditEvent.changes).doesNotContainEntry("savedToStaffMember", "test-client")
   }
@@ -645,11 +645,12 @@ class AppointmentIntegrationTest(
   }
 
   private fun getAndAssertAddress(licence: LicenceEntity = getLicence()): Address {
-    assertThat(licence.licenceAppointmentAddress).isNotNull
-    assertThat(licence.appointmentAddress).isNotNull
-    val licenceAppointmentAddress = licence.licenceAppointmentAddress!!
-
-    val expectedAppointmentAddress = with(licenceAppointmentAddress) {
+    assertThat(licence.appointment).isNotNull
+    val appointment = licence.appointment!!
+    assertThat(appointment.address).isNotNull
+    assertThat(appointment.addressText).isNotNull
+    val address = appointment.address!!
+    val expectedAppointmentAddress = with(address) {
       listOf(
         firstLine,
         secondLine.orEmpty(),
@@ -658,8 +659,8 @@ class AppointmentIntegrationTest(
         postcode,
       ).joinToString(",")
     }
-    assertThat(licence.appointmentAddress).isEqualTo(expectedAppointmentAddress)
-    return licenceAppointmentAddress
+    assertThat(appointment.addressText).isEqualTo(expectedAppointmentAddress)
+    return address
   }
 
   fun buildAddAddressRequest(
@@ -696,6 +697,7 @@ class AppointmentIntegrationTest(
 
     val aContactNumberRequest = ContactNumberRequest(
       telephone = "0114 2565555",
+      telephoneAlternative = "07700 900000",
     )
 
     val govUkApiMockServer = GovUkMockServer()
