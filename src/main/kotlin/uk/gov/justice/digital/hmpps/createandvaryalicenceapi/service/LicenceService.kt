@@ -702,47 +702,43 @@ class LicenceService(
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
-    val responsibleCom = licenceEntity.getCom()
-    if (licenceEntity is AlwaysHasCom) {
-      val username = SecurityContextHolder.getContext().authentication.name
-      val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
+    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-      licenceEntity.referVariation(staffMember)
+    licenceEntity.referVariation(staffMember)
 
-      licenceRepository.saveAndFlush(licenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
-      licenceEventRepository.saveAndFlush(
-        EntityLicenceEvent(
-          licenceId = licenceId,
-          eventType = LicenceEventType.VARIATION_REFERRED,
-          username = staffMember?.username ?: SYSTEM_USER,
-          forenames = staffMember?.firstName,
-          surname = staffMember?.lastName,
-          eventDescription = referVariationRequest.reasonForReferral,
-        ),
-      )
+    licenceEventRepository.saveAndFlush(
+      EntityLicenceEvent(
+        licenceId = licenceId,
+        eventType = LicenceEventType.VARIATION_REFERRED,
+        username = staffMember?.username ?: SYSTEM_USER,
+        forenames = staffMember?.firstName,
+        surname = staffMember?.lastName,
+        eventDescription = referVariationRequest.reasonForReferral,
+      ),
+    )
 
-      auditEventRepository.saveAndFlush(
-        AuditEvent(
-          licenceId = licenceId,
-          username = staffMember?.username ?: SYSTEM_USER,
-          fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
-          summary = "Licence variation rejected for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        ),
-      )
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = licenceId,
+        username = staffMember?.username ?: SYSTEM_USER,
+        fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
+        summary = "Licence variation rejected for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+      ),
+    )
 
-      notifyService.sendVariationReferredEmail(
-        licenceEntity.createdBy?.email ?: "",
-        "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-        licenceEntity.responsibleCom.email ?: "",
-        "${licenceEntity.responsibleCom.firstName} ${licenceEntity.responsibleCom.lastName}",
-        "${licenceEntity.forename} ${licenceEntity.surname}",
-        licenceId.toString(),
-      )
-    } else {
-      throw IllegalStateException("Licence ${licenceEntity.id} does not have a responsible COM")
-    }
+    notifyService.sendVariationReferredEmail(
+      licenceEntity.createdBy?.email ?: "",
+      "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
+      licenceEntity.responsibleCom.email ?: "",
+      "${licenceEntity.responsibleCom.firstName} ${licenceEntity.responsibleCom.lastName}",
+      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceId.toString(),
+    )
   }
 
   @TimeServedConsiderations("Do we approve a variation if it does not have a COM - should variations always have a COM?")
@@ -750,46 +746,43 @@ class LicenceService(
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
-    if (licenceEntity is AlwaysHasCom) {
-      val username = SecurityContextHolder.getContext().authentication.name
-      val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
+    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-      licenceEntity.approveVariation(username, staffMember)
+    licenceEntity.approveVariation(username, staffMember)
 
-      licenceRepository.saveAndFlush(licenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
-      licenceEventRepository.saveAndFlush(
-        EntityLicenceEvent(
-          licenceId = licenceId,
-          eventType = LicenceEventType.VARIATION_APPROVED,
-          username = staffMember?.username ?: SYSTEM_USER,
-          forenames = staffMember?.firstName,
-          surname = staffMember?.lastName,
-          eventDescription = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
-        ),
-      )
+    licenceEventRepository.saveAndFlush(
+      EntityLicenceEvent(
+        licenceId = licenceId,
+        eventType = LicenceEventType.VARIATION_APPROVED,
+        username = staffMember?.username ?: SYSTEM_USER,
+        forenames = staffMember?.firstName,
+        surname = staffMember?.lastName,
+        eventDescription = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
+      ),
+    )
 
-      auditEventRepository.saveAndFlush(
-        AuditEvent(
-          licenceId = licenceId,
-          username = staffMember?.username ?: SYSTEM_USER,
-          fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
-          summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        ),
-      )
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = licenceId,
+        username = staffMember?.username ?: SYSTEM_USER,
+        fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
+        summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+      ),
+    )
 
-      notifyService.sendVariationApprovedEmail(
-        licenceEntity.createdBy?.email ?: "",
-        "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-        licenceEntity.responsibleCom.email ?: "",
-        "${licenceEntity.responsibleCom.firstName} ${licenceEntity.responsibleCom.lastName}",
-        "${licenceEntity.forename} ${licenceEntity.surname}",
-        licenceId.toString(),
-      )
-    } else {
-      throw IllegalStateException("Licence ${licenceEntity.id} does not have a responsible COM")
-    }
+    notifyService.sendVariationApprovedEmail(
+      licenceEntity.createdBy?.email ?: "",
+      "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
+      licenceEntity.responsibleCom.email ?: "",
+      "${licenceEntity.responsibleCom.firstName} ${licenceEntity.responsibleCom.lastName}",
+      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceId.toString(),
+    )
   }
 
   @Transactional
