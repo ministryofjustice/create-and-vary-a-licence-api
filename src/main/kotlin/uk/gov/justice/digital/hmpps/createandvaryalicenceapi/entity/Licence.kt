@@ -83,7 +83,7 @@ abstract class Licence(
   var probationTeamCode: String? = null,
   var probationTeamDescription: String? = null,
 
-  @OneToOne(cascade = [CascadeType.PERSIST], fetch = FetchType.LAZY)
+  @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinTable(
     name = "licence_appointment",
     joinColumns = [JoinColumn(name = "licence_id")],
