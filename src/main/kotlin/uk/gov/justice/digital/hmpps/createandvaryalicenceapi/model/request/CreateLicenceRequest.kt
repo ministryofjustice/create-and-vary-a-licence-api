@@ -11,6 +11,7 @@ enum class LicenceType {
   CRD,
   HARD_STOP,
   HDC,
+  TIME_SERVED,
 }
 
 @Schema(description = "Request object for creating a new licence")

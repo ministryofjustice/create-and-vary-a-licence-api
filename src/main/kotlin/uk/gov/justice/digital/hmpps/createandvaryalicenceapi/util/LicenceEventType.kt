@@ -22,4 +22,10 @@ enum class LicenceEventType {
   VERSION_CREATED,
   NOT_STARTED,
   TIMED_OUT,
+  TIME_SERVED_CREATED,
+  TIME_SERVED_SUBMITTED,
+
+  @TimeServedConsiderations("Assuming that time served licences will need reviewing once created?")
+  TIME_SERVED_REVIEWED_WITHOUT_VARIATION,
+  TIME_SERVED_REVIEWED_WITH_VARIATION,
 }

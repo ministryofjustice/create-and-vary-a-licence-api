@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
@@ -101,6 +102,7 @@ class ReleaseDateService(
     }
   }
 
+  @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
     licenceKind: LicenceKind? = null,
@@ -110,6 +112,7 @@ class ReleaseDateService(
     else -> calculateCrdLicenceStartDate(nomisRecord, iS91DeterminationService.isIS91Case(nomisRecord))
   }
 
+  @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
   fun getLicenceStartDates(prisoners: List<PrisonerSearchPrisoner>): Map<String, LocalDate?> {
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
     return prisoners.associate {

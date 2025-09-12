@@ -223,6 +223,7 @@ class LicenceCreationService(
     return LicenceCreationResponse(createdLicence.id)
   }
 
+  @TimeServedConsiderations("Any special logic for time served cases needed here - seems this is just for hard stop?")
   fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner): LicenceKind {
     val today = LocalDate.now()
 
