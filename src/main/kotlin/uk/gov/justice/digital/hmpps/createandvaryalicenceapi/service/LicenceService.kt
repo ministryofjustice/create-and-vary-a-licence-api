@@ -401,7 +401,7 @@ class LicenceService(
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val updatedLicence = when (licenceEntity) {
+    when (licenceEntity) {
       is PrrdLicence -> {
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
@@ -429,16 +429,14 @@ class LicenceService(
       else -> error("Unexpected licence type: $licenceEntity")
     }
 
-    licenceRepository.saveAndFlush(updatedLicence)
-
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = updatedLicence.kind.submittedEventType(),
+        eventType = licenceEntity.kind.submittedEventType(),
         username = username,
         forenames = submitter.firstName,
         surname = submitter.lastName,
-        eventDescription = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
+        eventDescription = "Licence submitted for approval for ${licenceEntity.forename} ${licenceEntity.surname}",
       ),
     )
 
@@ -447,20 +445,20 @@ class LicenceService(
         licenceId = licenceId,
         username = username,
         fullName = submitter.fullName,
-        summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
-        detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
+        summary = "Licence submitted for approval for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
     )
 
     // Notify the head of PDU of this submitted licence variation
-    if (updatedLicence is Variation) {
+    if (licenceEntity is Variation) {
       notifyRequest?.forEach {
         notifyService.sendVariationForApprovalEmail(
           it,
           licenceId.toString(),
-          updatedLicence.forename!!,
-          updatedLicence.surname!!,
-          updatedLicence.crn!!,
+          licenceEntity.forename!!,
+          licenceEntity.surname!!,
+          licenceEntity.crn!!,
           submitter.fullName,
         )
       }
