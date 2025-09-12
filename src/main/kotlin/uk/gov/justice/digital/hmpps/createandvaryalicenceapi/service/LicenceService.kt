@@ -429,6 +429,8 @@ class LicenceService(
       else -> error("Unexpected licence type: $licenceEntity")
     }
 
+    licenceRepository.saveAndFlush(licenceEntity)
+
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
