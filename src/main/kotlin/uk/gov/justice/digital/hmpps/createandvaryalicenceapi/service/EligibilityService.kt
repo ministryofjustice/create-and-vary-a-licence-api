@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.Clock
 import java.time.LocalDate
+import kotlin.collections.contains
 
 typealias EligibilityCheck = (PrisonerSearchPrisoner) -> Boolean
 typealias EligibilityCheckAndReason = Pair<EligibilityCheck, String>
