@@ -89,8 +89,7 @@ enum class LicenceKind(
   TIME_SERVED(
     { IN_PROGRESS },
     { LicenceEventType.TIME_SERVED_CREATED },
-    @TimeServedConsiderations("Time served licences can not be copied?")
-    { error("Time served licences can not be copied") },
+    @TimeServedConsiderations("Time served licences can not be copied?") { error("Time served licences can not be copied") },
     { LicenceEventType.TIME_SERVED_SUBMITTED },
     { LicenceDomainEventType.LICENCE_ACTIVATED },
     { LicenceDomainEventType.LICENCE_INACTIVATED },
