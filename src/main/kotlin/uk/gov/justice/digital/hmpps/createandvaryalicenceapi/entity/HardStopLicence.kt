@@ -251,14 +251,14 @@ class HardStopLicence(
     updatedBy = updatedBy,
   )
 
-  fun submit(submittedBy: PrisonUser) = copy(
-    statusCode = LicenceStatus.SUBMITTED,
-    submittedBy = submittedBy,
-    updatedByUsername = submittedBy.username,
-    submittedDate = LocalDateTime.now(),
-    dateLastUpdated = LocalDateTime.now(),
-    updatedBy = submittedBy,
-  )
+  fun submit(prisonUser: PrisonUser) {
+    statusCode = LicenceStatus.SUBMITTED
+    submittedBy = prisonUser
+    updatedByUsername = prisonUser.username
+    submittedDate = LocalDateTime.now()
+    dateLastUpdated = LocalDateTime.now()
+    updatedBy = submittedBy
+  }
 
   fun markAsReviewed(staff: Staff?) {
     reviewDate = LocalDateTime.now()
