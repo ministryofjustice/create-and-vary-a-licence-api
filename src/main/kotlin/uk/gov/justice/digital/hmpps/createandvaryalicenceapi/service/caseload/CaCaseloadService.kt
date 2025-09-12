@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
@@ -276,40 +277,38 @@ class CaCaseloadService(
 
     val eligibleCases = filterOffendersEligibleForLicence(casesWithoutLicences)
 
-    return createNotStartedLicenceForCase(eligibleCases, licenceStartDates)
+    return createNotStartedLicenceForCase(eligibleCases)
   }
 
   private fun createNotStartedLicenceForCase(
     cases: List<ManagedCaseDto>,
-    licenceStartDates: Map<String, LocalDate?>,
   ): List<CaCase> = cases.map { case ->
+    val sentenceDateHolder = case.nomisRecord!!.toPrisonerSearchPrisoner().toSentenceDateHolder(case.licenceStartDate)
 
     // Default status (if not overridden below) will show the case as clickable on case lists
     var licenceStatus = NOT_STARTED
 
-    if (case.cvlFields.isInHardStopPeriod) {
+    if (releaseDateService.isInHardStopPeriod(sentenceDateHolder)) {
       licenceStatus = TIMED_OUT
     }
 
     val com = case.deliusRecord?.managedOffenderCrn?.staff
 
-    val releaseDate = licenceStartDates[case.nomisRecord?.prisonerNumber]
-
     CaCase(
       kind = null,
       releaseDateKind = determineReleaseDateKind(
-        case.nomisRecord?.postRecallReleaseDate,
-        case.nomisRecord?.conditionalReleaseDate,
+        case.nomisRecord.postRecallReleaseDate,
+        case.nomisRecord.conditionalReleaseDate,
       ),
-      name = case.nomisRecord.let { "${it?.firstName} ${it?.lastName}".convertToTitleCase() },
-      prisonerNumber = case.nomisRecord?.prisonerNumber!!,
-      releaseDate = releaseDate,
-      releaseDateLabel = ReleaseDateLabelFactory.fromPrisoner(releaseDate, case.nomisRecord),
+      name = case.nomisRecord.let { "${it.firstName} ${it.lastName}".convertToTitleCase() },
+      prisonerNumber = case.nomisRecord.prisonerNumber!!,
+      releaseDate = case.licenceStartDate,
+      releaseDateLabel = ReleaseDateLabelFactory.fromPrisoner(case.licenceStartDate, case.nomisRecord),
       licenceStatus = licenceStatus,
       nomisLegalStatus = case.nomisRecord.legalStatus,
-      isDueForEarlyRelease = case.cvlFields.isDueForEarlyRelease,
-      isInHardStopPeriod = case.cvlFields.isInHardStopPeriod,
-      tabType = Tabs.determineCaViewCasesTab(case.cvlFields, releaseDate, licence = null, clock),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
+      tabType = Tabs.determineCaViewCasesTab(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder), case.licenceStartDate, licence = null, clock),
       probationPractitioner = ProbationPractitioner(
         staffCode = com?.code,
         name = com?.name?.fullName(),
@@ -357,7 +356,7 @@ class CaCaseloadService(
         isDueForEarlyRelease = licence.isDueForEarlyRelease,
         isInHardStopPeriod = licence.isInHardStopPeriod,
         tabType = Tabs.determineCaViewCasesTab(
-          caseloadItem.cvl,
+          releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.toSentenceDateHolder()),
           releaseDate,
           licence,
           clock,
@@ -403,7 +402,7 @@ class CaCaseloadService(
         if (com != null) {
           ManagedCaseDto(
             nomisRecord = prisoner.toPrisoner(),
-            cvlFields = caseloadService.prisonerToCaseloadItem(prisoner, licenceStartDate).cvl,
+            licenceStartDate = licenceStartDate,
             deliusRecord = DeliusRecord(
               com.case,
               ManagedOffenderCrn(

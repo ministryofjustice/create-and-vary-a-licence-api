@@ -683,16 +683,7 @@ object TestData {
   )
 
   fun caseLoadItem() = CaseloadItem(
-    cvl = CvlFields(
-      licenceType = AP,
-      hardStopDate = LocalDate.of(2023, 10, 12),
-      hardStopWarningDate = LocalDate.of(2023, 10, 11),
-      isInHardStopPeriod = true,
-      isDueForEarlyRelease = true,
-      isEligibleForEarlyRelease = true,
-      isDueToBeReleasedInTheNextTwoWorkingDays = true,
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-    ),
+    licenceStartDate = LocalDate.of(2021, 10, 22),
     prisoner = Prisoner(
       prisonerNumber = "A1234AA",
       bookingId = "123456",
