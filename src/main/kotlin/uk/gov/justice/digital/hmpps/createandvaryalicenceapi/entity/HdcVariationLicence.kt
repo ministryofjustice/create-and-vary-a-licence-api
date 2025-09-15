@@ -279,14 +279,14 @@ class HdcVariationLicence(
     return hdcVariationLicence
   }
 
-  fun submit(submittedBy: CommunityOffenderManager) = copy(
-    statusCode = LicenceStatus.VARIATION_SUBMITTED,
-    submittedBy = submittedBy,
-    updatedByUsername = submittedBy.username,
-    submittedDate = LocalDateTime.now(),
-    dateLastUpdated = LocalDateTime.now(),
-    updatedBy = submittedBy,
-  )
+  fun submit(communityOffenderManager: CommunityOffenderManager) {
+    statusCode = LicenceStatus.VARIATION_SUBMITTED
+    submittedBy = communityOffenderManager
+    updatedByUsername = communityOffenderManager.username
+    submittedDate = LocalDateTime.now()
+    dateLastUpdated = LocalDateTime.now()
+    updatedBy = submittedBy
+  }
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
