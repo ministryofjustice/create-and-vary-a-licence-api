@@ -46,12 +46,7 @@ data class PrisonerWithCvlFields(
   val cvl: CvlFields,
 )
 
-@Schema(description = "An item in the caseload")
 data class CaseloadItem(
-  @field:Schema(description = "Details about a prisoner")
   val prisoner: Prisoner,
-
-  @field:Schema(description = "Date that the licence is due to activate", example = "05/05/2023")
-  @field:JsonFormat(pattern = "dd/MM/yyyy")
   val licenceStartDate: LocalDate? = null,
 )
