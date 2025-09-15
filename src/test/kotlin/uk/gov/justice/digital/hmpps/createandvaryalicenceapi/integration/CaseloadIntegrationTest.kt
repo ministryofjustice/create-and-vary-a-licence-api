@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ReleaseDateSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PageResponse
@@ -79,7 +80,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(CaseloadItem::class.java)
+        .expectBody(PrisonerWithCvlFields::class.java)
         .returnResult().responseBody!!
 
       with(caseloadItem) {
@@ -88,6 +89,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
           assertThat(licenceType).isEqualTo(LicenceType.AP)
           assertThat(hardStopDate).isNotNull
           assertThat(hardStopWarningDate).isNotNull
+          assertThat(licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
         }
       }
     }
@@ -176,11 +178,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
       assertThat(caseload).hasSize(5)
       with(caseload.first()) {
         assertThat(prisoner).isNotNull()
-        with(cvl) {
-          assertThat(licenceType).isEqualTo(LicenceType.AP)
-          assertThat(hardStopDate).isNotNull
-          assertThat(hardStopWarningDate).isNotNull
-        }
+        assertThat(licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
       }
     }
   }
@@ -235,11 +233,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
       assertThat(caseload).hasSize(5)
       with(caseload?.first()) {
         assertThat(this?.prisoner).isNotNull
-        with(this?.cvl) {
-          assertThat(this?.licenceType).isEqualTo(LicenceType.AP)
-          assertThat(this?.hardStopDate).isNotNull
-          assertThat(this?.hardStopWarningDate).isNotNull
-        }
+        assertThat(this?.licenceStartDate).isEqualTo(this?.prisoner?.confirmedReleaseDate)
       }
     }
   }
@@ -293,11 +287,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
       assertThat(caseload.content).hasSize(5)
       with(caseload.content.first()) {
         assertThat(prisoner).isNotNull
-        with(cvl) {
-          assertThat(licenceType).isEqualTo(LicenceType.AP)
-          assertThat(hardStopDate).isNotNull
-          assertThat(hardStopWarningDate).isNotNull
-        }
+        assertThat(licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
       }
     }
 

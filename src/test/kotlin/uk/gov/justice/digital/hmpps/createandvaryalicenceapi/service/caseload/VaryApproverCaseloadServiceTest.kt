@@ -13,12 +13,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aProbationCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 
 class VaryApproverCaseloadServiceTest {
   private val caseloadService = mock<CaseloadService>()
@@ -54,7 +54,7 @@ class VaryApproverCaseloadServiceTest {
       listOf(
         CaseloadItem(
           prisoner = aPrisoner(),
-          cvl = someCvlFields(licenceType = LicenceType.PSS),
+          licenceStartDate = LocalDate.now().plusDays(10),
         ),
       ),
     )
@@ -103,7 +103,7 @@ class VaryApproverCaseloadServiceTest {
       listOf(
         CaseloadItem(
           prisoner = aPrisoner(),
-          cvl = someCvlFields(licenceType = LicenceType.PSS),
+          licenceStartDate = LocalDate.now().plusDays(10),
         ),
       ),
     )
@@ -147,7 +147,7 @@ class VaryApproverCaseloadServiceTest {
       listOf(
         CaseloadItem(
           prisoner = aPrisoner(),
-          cvl = someCvlFields(licenceType = LicenceType.PSS),
+          licenceStartDate = LocalDate.now().plusDays(10),
         ),
       ),
     )
