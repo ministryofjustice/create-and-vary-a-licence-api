@@ -104,7 +104,7 @@ class ComVaryCaseloadService(
         isDueForEarlyRelease = false,
         isReviewNeeded = licence.isReviewNeeded,
       )
-    }.sortedWith(compareByDescending<ComCase> { it.releaseDate }.thenBy { it.name.split(' ')[0] })
+    }.sortedWith(compareByDescending<ComCase> { it.releaseDate }.thenBy { it.name })
   }
 
   private fun findVaryLicenceToDisplay(licences: List<LicenceSummary>): LicenceSummary? = when {

@@ -236,7 +236,7 @@ class ComVaryCaseloadServiceTest {
           licenceExpiryDate = elevenDaysFromNow,
           comUsername = "joebloggs",
           licenceStartDate = tenDaysFromNow,
-          forename = "B",
+          forename = "ABCX XYZ",
         ),
         createLicenceSummary(
           crn = "X12349",
@@ -246,7 +246,7 @@ class ComVaryCaseloadServiceTest {
           licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
-          forename = "A",
+          forename = "ABC XYZ",
         ),
         createLicenceSummary(
           crn = "X12350",

@@ -217,7 +217,7 @@ class ComCreateCaseloadServiceTest {
         paroleEligibilityDate = yesterday,
         bookingId = "1",
         licenceStartDate = nineDaysFromNow,
-        firstName = "A",
+        firstName = "ABC DEF",
       ),
       createCaseloadItem(
         "AB1234F",
@@ -248,7 +248,7 @@ class ComCreateCaseloadServiceTest {
         nineDaysFromNow,
         bookingId = "123",
         licenceStartDate = nineDaysFromNow,
-        firstName = "E",
+        firstName = "ABC XYZ",
       ),
       // This case tests that recalls are overridden if the PRRD < the conditionalReleaseDate - so NOT_STARTED
       createCaseloadItem(
