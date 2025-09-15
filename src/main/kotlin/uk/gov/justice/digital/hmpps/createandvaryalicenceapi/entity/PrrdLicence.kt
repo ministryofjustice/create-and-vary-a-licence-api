@@ -269,14 +269,14 @@ class PrrdLicence(
     updatedByUsername = "SYSTEM"
   }
 
-  fun submit(submittedBy: CommunityOffenderManager) = copy(
-    statusCode = LicenceStatus.SUBMITTED,
-    submittedBy = submittedBy,
-    updatedByUsername = submittedBy.username,
-    submittedDate = LocalDateTime.now(),
-    dateLastUpdated = LocalDateTime.now(),
-    updatedBy = submittedBy,
-  )
+  fun submit(communityOffenderManager: CommunityOffenderManager) {
+    statusCode = LicenceStatus.SUBMITTED
+    submittedBy = communityOffenderManager
+    updatedByUsername = communityOffenderManager.username
+    submittedDate = LocalDateTime.now()
+    dateLastUpdated = LocalDateTime.now()
+    updatedBy = submittedBy
+  }
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
