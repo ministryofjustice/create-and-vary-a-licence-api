@@ -344,7 +344,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(oldLicence).isNotNull
 
     assertThat(newLicence!!.licenceVersion).isEqualTo("2.0")
-    assertThat(newLicence.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+    assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
 
     assertThat(newLicence).isInstanceOf(EntityVariationLicence::class.java)
     assertThat((newLicence as EntityVariationLicence).variationOfId).isEqualTo(1)
@@ -473,7 +473,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence).isNotNull
     newLicence?.let {
       assertThat(it.licenceVersion).isEqualTo("2.0")
-      assertThat(it.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+      assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
       assertThat(it).isInstanceOf(HdcVariationLicence::class.java)
       assertThat((it as HdcVariationLicence).variationOfId).isEqualTo(1)
       assertLicenceHasExpectedAddress(it)
@@ -1028,7 +1028,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence.licenceVersion).isEqualTo("1.1")
     if (noAddress) {
       assertLicenceHasExpectedAddress(newLicence, newAddress = true)
-      assertThat(newLicence.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
+      assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
     }
 
     val versionOfId = when (newLicence) {
@@ -1066,8 +1066,9 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     newAddress: Boolean = true,
     uprn: String? = null,
   ) {
-    assertThat(licence.appointmentAddress).isEqualTo(appointmentAddress)
-    val address = licence.licenceAppointmentAddress
+    assertThat(licence.appointment).isNotNull
+    assertThat(licence.appointment!!.addressText).isEqualTo(appointmentAddress)
+    val address = licence.appointment?.address
     assertThat(address).isNotNull
     address?.let {
       if (newAddress) {

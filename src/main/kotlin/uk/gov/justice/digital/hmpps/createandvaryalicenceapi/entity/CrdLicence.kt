@@ -7,11 +7,8 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -56,13 +53,7 @@ class CrdLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointmentPersonType: AppointmentPersonType? = null,
-  appointmentPerson: String? = null,
-  appointmentTime: LocalDateTime? = null,
-  appointmentTimeType: AppointmentTimeType? = null,
-  appointmentAddress: String? = null,
-  licenceAppointmentAddress: Address? = null,
-  appointmentContact: String? = null,
+  appointment: Appointment? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
   approvedByName: String? = null,
@@ -75,7 +66,6 @@ class CrdLicence(
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
-  responsibleCom: CommunityOffenderManager,
   updatedBy: Staff? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -95,6 +85,10 @@ class CrdLicence(
   )
   override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
   override var versionOfId: Long? = null,
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "responsible_com_id", nullable = false)
+  override var responsibleCom: CommunityOffenderManager,
 ) : Licence(
   id = id,
   kind = LicenceKind.CRD,
@@ -132,13 +126,7 @@ class CrdLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointmentPersonType = appointmentPersonType,
-  appointmentPerson = appointmentPerson,
-  appointmentTime = appointmentTime,
-  appointmentTimeType = appointmentTimeType,
-  appointmentAddress = appointmentAddress,
-  licenceAppointmentAddress = licenceAppointmentAddress,
-  appointmentContact = appointmentContact,
+  appointment = appointment,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
   approvedByName = approvedByName,
@@ -151,11 +139,17 @@ class CrdLicence(
   standardConditions = standardConditions.toMutableList(),
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
-  responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
   SupportsHardStop,
-  HasElectronicMonitoringResponseProvider {
+  HasElectronicMonitoringResponseProvider,
+  AlwaysHasCom {
+
+  override fun getCom(): CommunityOffenderManager = responsibleCom
+
+  override fun setCom(com: CommunityOffenderManager) {
+    this.responsibleCom = com
+  }
 
   fun copy(
     id: Long? = this.id,
@@ -193,13 +187,7 @@ class CrdLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointmentPersonType: AppointmentPersonType? = this.appointmentPersonType,
-    appointmentPerson: String? = this.appointmentPerson,
-    appointmentTime: LocalDateTime? = this.appointmentTime,
-    appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
-    appointmentAddress: String? = this.appointmentAddress,
-    licenceAppointmentAddress: Address? = AddressMapper.copy(this.licenceAppointmentAddress),
-    appointmentContact: String? = this.appointmentContact,
+    appointment: Appointment? = AppointmentMapper.copy(this.appointment),
     approvedDate: LocalDateTime? = this.approvedDate,
     approvedByUsername: String? = this.approvedByUsername,
     approvedByName: String? = this.approvedByName,
@@ -254,13 +242,7 @@ class CrdLicence(
     probationLauDescription = probationLauDescription,
     probationTeamCode = probationTeamCode,
     probationTeamDescription = probationTeamDescription,
-    appointmentPersonType = appointmentPersonType,
-    appointmentPerson = appointmentPerson,
-    appointmentTime = appointmentTime,
-    appointmentTimeType = appointmentTimeType,
-    appointmentAddress = appointmentAddress,
-    licenceAppointmentAddress = licenceAppointmentAddress,
-    appointmentContact = appointmentContact,
+    appointment = appointment,
     approvedDate = approvedDate,
     approvedByUsername = approvedByUsername,
     approvedByName = approvedByName,
@@ -340,13 +322,14 @@ class CrdLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=$appointmentPersonType, " +
-    "appointmentPerson=$appointmentPerson, " +
-    "appointmentTime=$appointmentTime, " +
-    "appointmentTimeType=$appointmentTimeType, " +
-    "appointmentAddress=$appointmentAddress, " +
-    "licenceAppointmentAddress=$licenceAppointmentAddress, " +
-    "appointmentContact=$appointmentContact, " +
+    "appointmentPersonType=${appointment?.personType}, " +
+    "appointmentPerson=${appointment?.person}, " +
+    "appointmentTime=${appointment?.time}, " +
+    "appointmentTimeType=${appointment?.timeType}, " +
+    "appointmentAddress=${appointment?.addressText}, " +
+    "licenceAppointmentAddress=${appointment?.address}, " +
+    "appointmentContact=${appointment?.telephoneContactNumber}, " +
+    "alternativeTelephoneContactNumber=${appointment?.alternativeTelephoneContactNumber}, " +
     "approvedDate=$approvedDate, " +
     "approvedByUsername=$approvedByUsername, " +
     "approvedByName=$approvedByName, " +

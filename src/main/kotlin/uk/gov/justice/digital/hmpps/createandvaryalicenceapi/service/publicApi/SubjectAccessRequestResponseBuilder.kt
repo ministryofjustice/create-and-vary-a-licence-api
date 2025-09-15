@@ -44,6 +44,8 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
         appointmentTimeType = SarAppointmentTimeType.from(licence.appointmentTimeType),
         appointmentAddress = licence.appointmentAddress,
         appointmentContact = licence.appointmentContact,
+        appointmentTelephoneNumber = licence.appointmentTelephoneNumber,
+        appointmentAlternativeTelephoneNumber = licence.appointmentAlternativeTelephoneNumber,
         approvedDate = licence.approvedDate,
         approvedByUsername = licence.approvedByUsername,
         submittedDate = licence.submittedDate,

@@ -216,11 +216,24 @@ data class HdcVariationLicence(
   )
   override val licenceAppointmentAddress: AddressResponse? = null,
 
+  @Deprecated("Use appointmentTelephoneNumber instead")
   @field:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
     example = "0114 2557665",
   )
   override val appointmentContact: String? = null,
+
+  @field:Schema(
+    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "0114 2557665",
+  )
+  override val appointmentTelephoneNumber: String? = null,
+
+  @field:Schema(
+    description = "An alternative UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "07700 900000",
+  )
+  override val appointmentAlternativeTelephoneNumber: String? = null,
 
   @field:Schema(description = "Have you have discussed this variation request with your SPO?", example = "Yes")
   val spoDiscussion: String? = null,

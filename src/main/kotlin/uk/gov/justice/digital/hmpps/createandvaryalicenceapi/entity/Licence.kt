@@ -17,11 +17,9 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
-import jakarta.persistence.UniqueConstraint
 import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -85,14 +83,13 @@ abstract class Licence(
   var probationTeamCode: String? = null,
   var probationTeamDescription: String? = null,
 
-  @Enumerated(EnumType.STRING)
-  var appointmentPersonType: AppointmentPersonType? = null,
-  var appointmentPerson: String? = null,
-  @Enumerated(EnumType.STRING)
-  var appointmentTimeType: AppointmentTimeType? = null,
-  var appointmentTime: LocalDateTime? = null,
-  var appointmentAddress: String? = null,
-  var appointmentContact: String? = null,
+  @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+  @JoinTable(
+    name = "licence_appointment",
+    joinColumns = [JoinColumn(name = "licence_id")],
+    inverseJoinColumns = [JoinColumn(name = "appointment_id")],
+  )
+  var appointment: Appointment? = null,
   var approvedDate: LocalDateTime? = null,
   var approvedByUsername: String? = null,
   var approvedByName: String? = null,
@@ -102,19 +99,6 @@ abstract class Licence(
   var dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
   var licenceVersion: String? = "1.0",
-
-  @OneToOne(
-    cascade = [CascadeType.ALL],
-    fetch = FetchType.LAZY,
-    orphanRemoval = true,
-  )
-  @JoinTable(
-    name = "LICENCE_APPOINTMENT_ADDRESS",
-    joinColumns = [JoinColumn(name = "licence_id")],
-    inverseJoinColumns = [JoinColumn(name = "address_id")],
-    uniqueConstraints = [UniqueConstraint(columnNames = ["licence_id", "address_id"])],
-  )
-  var licenceAppointmentAddress: Address? = null,
 
   @OneToMany(
     mappedBy = "licence",
@@ -136,10 +120,6 @@ abstract class Licence(
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   var bespokeConditions: MutableList<BespokeCondition> = mutableListOf(),
-
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "responsible_com_id", nullable = false)
-  var responsibleCom: CommunityOffenderManager,
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "updated_by_id", nullable = true)
@@ -186,15 +166,26 @@ abstract class Licence(
     this.updatedBy = staffMember ?: this.updatedBy
   }
 
-  fun updateAppointmentAddress(appointmentAddress: String?, staffMember: Staff?) {
-    this.appointmentAddress = appointmentAddress
+  fun updateAppointmentAddress(appointmentAddressText: String?, staffMember: Staff?) {
+    if (this.appointment == null) {
+      this.appointment = Appointment()
+    }
+    this.appointment?.addressText = appointmentAddressText
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
 
-  fun updateAppointmentContactNumber(appointmentContact: String?, staffMember: Staff?) {
-    this.appointmentContact = appointmentContact
+  fun updateAppointmentContactNumber(
+    telephoneContactNumber: String?,
+    alternativeTelephoneContactNumber: String?,
+    staffMember: Staff?,
+  ) {
+    if (this.appointment == null) {
+      this.appointment = Appointment()
+    }
+    this.appointment?.telephoneContactNumber = telephoneContactNumber
+    this.appointment?.alternativeTelephoneContactNumber = alternativeTelephoneContactNumber
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
@@ -205,8 +196,11 @@ abstract class Licence(
     appointmentTimeType: AppointmentTimeType,
     staffMember: Staff?,
   ) {
-    this.appointmentTime = appointmentTime
-    this.appointmentTimeType = appointmentTimeType
+    if (this.appointment == null) {
+      this.appointment = Appointment()
+    }
+    this.appointment?.time = appointmentTime
+    this.appointment?.timeType = appointmentTimeType
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
@@ -217,8 +211,11 @@ abstract class Licence(
     appointmentPerson: String?,
     staffMember: Staff?,
   ) {
-    this.appointmentPersonType = appointmentPersonType
-    this.appointmentPerson = if (appointmentPersonType == SPECIFIC_PERSON) appointmentPerson else null
+    if (this.appointment == null) {
+      this.appointment = Appointment()
+    }
+    this.appointment?.personType = appointmentPersonType
+    this.appointment?.person = if (appointmentPersonType == SPECIFIC_PERSON) appointmentPerson else null
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
@@ -387,4 +384,7 @@ abstract class Licence(
   }
 
   override fun hashCode(): Int = Objects.hash(id)
+
+  abstract fun getCom(): CommunityOffenderManager?
+  abstract fun setCom(com: CommunityOffenderManager)
 }
