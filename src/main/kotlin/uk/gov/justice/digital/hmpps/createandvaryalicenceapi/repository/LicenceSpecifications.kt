@@ -15,10 +15,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedCons
 data class LicenceQueryObject(
   val prisonCodes: List<String>? = null,
   val statusCodes: List<LicenceStatus>? = null,
-  val staffIds: List<Int>? = null,
   val nomsIds: List<String>? = null,
   val pdus: List<String>? = null,
-  val probationAreaCodes: List<String>? = null,
   val sortBy: String? = null,
   val sortOrder: String? = null,
 )
@@ -28,14 +26,12 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasStatusCodeIn(statusCodes),
   hasPrisonCodeIn(prisonCodes),
   hasNomsIdIn(nomsIds),
-  hasResponsibleComIn(staffIds),
   hasPdusIn(pdus),
-  hasProbationAreaCodeIn(probationAreaCodes),
 )
   .and { root, query, criteriaBuilder ->
-    val licenceKinds = LicenceKind.entries.map { it.clazz }
-    for (kind in licenceKinds) {
-      criteriaBuilder.treat(root, kind()).fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
+    val licenceClasses = LicenceKind.entries.map { it.clazz }
+    for (clazz in licenceClasses) {
+      criteriaBuilder.treat(root, clazz).fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
     }
     query.distinct(true)
     query.restriction
@@ -65,29 +61,6 @@ fun hasNomsIdIn(nomsIds: List<String>?): Specification<Licence>? = nomsIds?.let 
   Licence::nomsId.includedIn(it)
 }
 
-fun hasResponsibleComIn(staffIds: List<Int>?): Specification<Licence>? = staffIds?.let {
-  return Specification<Licence> { root, query, criteriaBuilder ->
-    if (staffIds.isEmpty()) return@Specification null
-
-    query.distinct(true)
-
-    val licenceKinds = LicenceKind.entries.map { it.clazz }
-
-    val predicates = licenceKinds.map { kind ->
-      criteriaBuilder.treat(root, kind())
-        .join<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
-        .get<Int>("staffIdentifier").`in`(it)
-    }
-
-    // licence matches if ANY subclass’ responsibleCom is in the set
-    criteriaBuilder.or(*predicates.toTypedArray())
-  }
-}
-
 fun hasPdusIn(pduCodes: List<String>?): Specification<Licence>? = pduCodes?.let {
   Licence::probationPduCode.includedIn(it)
-}
-
-fun hasProbationAreaCodeIn(areaCodes: List<String>?): Specification<Licence>? = areaCodes?.let {
-  Licence::probationAreaCode.includedIn(it)
 }
