@@ -63,24 +63,9 @@ data class CaseLoadLicenceSummary(
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val hardStopDate: LocalDate? = null,
 
-  @field:Schema(description = "The conditional release date on the licence", example = "12/12/2022")
-  @field:JsonFormat(pattern = "dd/MM/yyyy")
-  override val conditionalReleaseDate: LocalDate?,
-
-  @field:Schema(description = "The actual release date on the licence", example = "12/12/2022")
-  @field:JsonFormat(pattern = "dd/MM/yyyy")
-  override val actualReleaseDate: LocalDate?,
-
-  @field:Schema(
-    description = "The release date after being recalled",
-    example = "06/06/2023",
-  )
-  @field:JsonFormat(pattern = "dd/MM/yyyy")
-  override val postRecallReleaseDate: LocalDate? = null,
-
   @field:Schema(description = "The date that the licence will start", example = "13/09/2022")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
-  override val licenceStartDate: LocalDate? = null,
+  val licenceStartDate: LocalDate? = null,
 
   @field:Schema(
     description = "The offenders release date, this will be equal to the licence start date",
@@ -97,4 +82,6 @@ data class CaseLoadLicenceSummary(
 
   @field:Schema(description = "How this licence will need to be created", example = "PRISON_WILL_CREATE_THIS_LICENCE")
   val licenceCreationType: LicenceCreationType? = null,
-) : SentenceDateHolder
+
+  val isDueForEarlyRelease: Boolean = false,
+)

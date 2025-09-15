@@ -139,11 +139,8 @@ class ComCreateCaseloadService(
       releaseDate = nomisRecord.licenceStartDate,
       kind = licenceKind,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
-      conditionalReleaseDate = prisoner.conditionalReleaseDate,
-      actualReleaseDate = prisoner.confirmedReleaseDate,
-      postRecallReleaseDate = prisoner.postRecallReleaseDate,
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
     )
   }
 
@@ -238,9 +235,6 @@ class ComCreateCaseloadService(
     updatedByFullName = licenceSummary.updatedByFullName,
     hardStopWarningDate = licenceSummary.hardStopWarningDate,
     hardStopDate = licenceSummary.hardStopDate,
-    conditionalReleaseDate = licenceSummary.conditionalReleaseDate,
-    actualReleaseDate = licenceSummary.actualReleaseDate,
-    postRecallReleaseDate = licenceSummary.postRecallReleaseDate,
     licenceStartDate = licenceSummary.licenceStartDate,
     releaseDate = licenceSummary.licenceStartDate,
     isDueToBeReleasedInTheNextTwoWorkingDays = licenceSummary.isDueToBeReleasedInTheNextTwoWorkingDays,
@@ -286,7 +280,7 @@ class ComCreateCaseloadService(
       hardStopDate = licence.hardStopDate,
       hardStopWarningDate = licence.hardStopWarningDate,
       kind = licence.kind,
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+      isDueForEarlyRelease = licence.isDueForEarlyRelease,
       licenceCreationType = licence.licenceCreationType,
       isReviewNeeded = licence.isReviewNeeded,
     )
