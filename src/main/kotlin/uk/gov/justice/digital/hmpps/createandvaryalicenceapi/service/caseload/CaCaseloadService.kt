@@ -169,7 +169,7 @@ class CaCaseloadService(
 
       CaCase(
         kind = licence?.kind,
-        releaseDateKind = licence?.kind,
+        releaseDateKind = determineReleaseDateKind(licence?.postRecallReleaseDate, licence?.conditionalReleaseDate),
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
         name = "${licence?.forename} ${licence?.surname}",
@@ -308,14 +308,7 @@ class CaCaseloadService(
       nomisLegalStatus = case.nomisRecord.legalStatus,
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
-      tabType = Tabs.determineCaViewCasesTab(
-        releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-          sentenceDateHolder,
-        ),
-        case.licenceStartDate,
-        licence = null,
-        clock,
-      ),
+      tabType = Tabs.determineCaViewCasesTab(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder), case.licenceStartDate, licence = null, clock),
       probationPractitioner = ProbationPractitioner(
         staffCode = com?.code,
         name = com?.name?.fullName(),
@@ -349,7 +342,7 @@ class CaCaseloadService(
       val licence = findLatestLicenceSummary(licencesForOffender)
       val releaseDate = licence?.licenceStartDate
       CaCase(
-        releaseDateKind = licence?.kind,
+        releaseDateKind = determineReleaseDateKind(licence?.postRecallReleaseDate, licence?.conditionalReleaseDate),
         kind = licence?.kind,
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
