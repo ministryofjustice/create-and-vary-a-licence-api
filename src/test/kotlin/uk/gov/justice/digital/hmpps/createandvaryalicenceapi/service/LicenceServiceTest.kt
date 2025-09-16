@@ -273,7 +273,6 @@ class LicenceServiceTest {
     val licenceQueryObject = LicenceQueryObject(
       prisonCodes = listOf("MDI"),
       statusCodes = listOf(LicenceStatus.APPROVED),
-      staffIds = listOf(1, 2, 3),
       nomsIds = listOf("A1234AA"),
     )
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
@@ -377,7 +376,6 @@ class LicenceServiceTest {
     val licenceQueryObject = LicenceQueryObject(
       prisonCodes = listOf("MDI"),
       statusCodes = listOf(LicenceStatus.APPROVED),
-      staffIds = listOf(1, 2, 3),
       nomsIds = listOf("A1234AA"),
     )
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(

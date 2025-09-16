@@ -13,6 +13,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
@@ -37,6 +39,7 @@ class ComCreateCaseloadService(
   private val eligibilityService: EligibilityService,
   private val hdcService: HdcService,
   private val licenceCreationService: LicenceCreationService,
+  private val releaseDateService: ReleaseDateService,
 ) {
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
@@ -121,9 +124,10 @@ class ComCreateCaseloadService(
     val licenceType = LicenceType.getLicenceType(prisoner)
     val licenceKind = licenceCreationService.determineLicenceKind(prisoner)
     val name = "${prisoner.firstName} ${prisoner.lastName}".trim().convertToTitleCase()
+    val sentenceDateHolder = prisoner.toSentenceDateHolder(nomisRecord.licenceStartDate)
 
     var licenceStatus = NOT_STARTED
-    if (nomisRecord.cvl.isInHardStopPeriod) {
+    if (releaseDateService.isInHardStopPeriod(sentenceDateHolder)) {
       licenceStatus = TIMED_OUT
     }
     return CaseLoadLicenceSummary(
@@ -132,11 +136,11 @@ class ComCreateCaseloadService(
       crn = deliusRecord.crn,
       nomisId = prisoner.prisonerNumber,
       name = name,
-      releaseDate = nomisRecord.cvl.licenceStartDate,
+      releaseDate = nomisRecord.licenceStartDate,
       kind = licenceKind,
-      hardStopDate = nomisRecord.cvl.hardStopDate,
-      hardStopWarningDate = nomisRecord.cvl.hardStopWarningDate,
-      isDueToBeReleasedInTheNextTwoWorkingDays = nomisRecord.cvl.isDueToBeReleasedInTheNextTwoWorkingDays,
+      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
     )
   }
 
@@ -276,7 +280,7 @@ class ComCreateCaseloadService(
       hardStopDate = licence.hardStopDate,
       hardStopWarningDate = licence.hardStopWarningDate,
       kind = licence.kind,
-      isDueForEarlyRelease = nomisRecord.cvl.isDueForEarlyRelease,
+      isDueForEarlyRelease = licence.isDueForEarlyRelease,
       licenceCreationType = licence.licenceCreationType,
       isReviewNeeded = licence.isReviewNeeded,
     )

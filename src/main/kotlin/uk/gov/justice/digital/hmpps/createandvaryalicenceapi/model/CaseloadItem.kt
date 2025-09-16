@@ -38,10 +38,15 @@ data class CvlFields(
   val licenceStartDate: LocalDate? = null,
 )
 
-@Schema(description = "An item in the caseload")
-data class CaseloadItem(
+@Schema(description = "A combination of the NOMIS prisoner record and additional CVL fields")
+data class PrisonerWithCvlFields(
   @field:Schema(description = "Details about a prisoner")
   val prisoner: Prisoner,
   @field:Schema(description = "Additional CVL specific information including derived fields")
   val cvl: CvlFields,
+)
+
+data class CaseloadItem(
+  val prisoner: Prisoner,
+  val licenceStartDate: LocalDate? = null,
 )

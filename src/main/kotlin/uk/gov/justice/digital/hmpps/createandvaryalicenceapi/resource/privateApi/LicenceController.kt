@@ -260,9 +260,7 @@ class LicenceController(
     @RequestParam(name = "sortOrder", required = false) sortOrder: String?,
   ): List<LicenceSummary> = licenceService.findLicencesMatchingCriteria(
     LicenceQueryObject(
-      prisonCodes = body.prison,
       statusCodes = body.status,
-      staffIds = body.staffId,
       nomsIds = body.nomsId,
       pdus = body.pdu,
       sortBy = sortBy,

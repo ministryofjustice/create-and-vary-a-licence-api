@@ -67,13 +67,13 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-matching-candidates.sql",
   )
-  fun `Get licences matches - by list of staff identifiers`() {
+  fun `Get licences matches - by list of prison numbers`() {
     val result = webTestClient.post()
       .uri("/licence/match")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(
         MatchLicencesRequest(
-          staffId = listOf(125, 126),
+          nomsId = listOf("C1234CC", "C1234DD", "C1234EE", "C1234FF"),
         ),
       )
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -98,67 +98,6 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-matching-candidates.sql",
   )
-  fun `Get licence matches - by list of staff identifiers and statuses`() {
-    val result = webTestClient.post()
-      .uri("/licence/match")
-      .accept(MediaType.APPLICATION_JSON)
-      .bodyValue(
-        MatchLicencesRequest(
-          staffId = listOf(125),
-          status = listOf(LicenceStatus.ACTIVE),
-        ),
-      )
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.size).isEqualTo(1)
-    assertThat(result)
-      .extracting<Tuple> { tuple(it.licenceId, it.nomisId, it.licenceStatus, it.surname) }
-      .containsExactly(tuple(3L, "C1234CC", LicenceStatus.ACTIVE, "Three"))
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-matching-candidates.sql",
-  )
-  fun `Get licence matches - by list of prisons and statuses`() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-    val result = webTestClient.post()
-      .uri("/licence/match")
-      .accept(MediaType.APPLICATION_JSON)
-      .bodyValue(
-        MatchLicencesRequest(
-          prison = listOf("MDI", "BMI"),
-          status = listOf(LicenceStatus.APPROVED, LicenceStatus.SUBMITTED),
-        ),
-      )
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.size).isEqualTo(3)
-    assertThat(result)
-      .extracting<Tuple> {
-        tuple(it.licenceId, it.licenceStatus, it.nomisId, it.surname, it.forename, it.prisonCode, it.prisonDescription)
-      }
-      .contains(
-        tuple(1L, LicenceStatus.SUBMITTED, "A1234AA", "One", "Person", "MDI", "Moorland HMP"),
-        tuple(2L, LicenceStatus.SUBMITTED, "B1234BB", "Two", "Person", "MDI", "Moorland HMP"),
-        tuple(4L, LicenceStatus.APPROVED, "C1234DD", "Four", "Person", "BMI", "Birmingham HMP"),
-      )
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-matching-candidates.sql",
-  )
   fun `Get licence matches - no matching filters`() {
     val result = webTestClient.post()
       .uri("/licence/match")
@@ -166,7 +105,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .bodyValue(
         MatchLicencesRequest(
-          prison = listOf("XXX"),
+          nomsId = listOf("XXX"),
           status = listOf(LicenceStatus.APPROVED, LicenceStatus.SUBMITTED, LicenceStatus.IN_PROGRESS),
         ),
       )
@@ -217,6 +156,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
+      govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
     @JvmStatic

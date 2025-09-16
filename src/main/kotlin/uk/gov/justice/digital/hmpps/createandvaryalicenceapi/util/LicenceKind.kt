@@ -13,75 +13,77 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 
 enum class LicenceKind(
+  val clazz: Class<out Licence>,
   val initialStatus: () -> LicenceStatus,
   val creationEventType: () -> LicenceEventType,
   val copyEventType: () -> LicenceEventType,
   val submittedEventType: () -> LicenceEventType,
   val activatedDomainEventType: () -> LicenceDomainEventType,
   val inactivatedDomainEventType: () -> LicenceDomainEventType,
-  val clazz: () -> Class<out Licence>,
+
 ) {
   PRRD(
+    PrrdLicence::class.java,
     { IN_PROGRESS },
     { LicenceEventType.CREATED },
     { LicenceEventType.VERSION_CREATED },
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.PRRD_LICENCE_ACTIVATED },
     { LicenceDomainEventType.PRRD_LICENCE_INACTIVATED },
-    { PrrdLicence::class.java },
+
   ),
 
   CRD(
+    CrdLicence::class.java,
     { IN_PROGRESS },
     { LicenceEventType.CREATED },
     { LicenceEventType.VERSION_CREATED },
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.LICENCE_ACTIVATED },
     { LicenceDomainEventType.LICENCE_INACTIVATED },
-    { CrdLicence::class.java },
   ),
 
   VARIATION(
+    VariationLicence::class.java,
     { VARIATION_IN_PROGRESS },
     { error("Variation licences are only copied from existing licences") },
     { LicenceEventType.VARIATION_CREATED },
     { LicenceEventType.VARIATION_SUBMITTED },
     { LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED },
     { LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED },
-    { VariationLicence::class.java },
   ),
 
   HARD_STOP(
+    HardStopLicence::class.java,
     { IN_PROGRESS },
     { LicenceEventType.HARD_STOP_CREATED },
     { error("Hard stop licences can not be copied") },
     { LicenceEventType.HARD_STOP_SUBMITTED },
     { LicenceDomainEventType.LICENCE_ACTIVATED },
     { LicenceDomainEventType.LICENCE_INACTIVATED },
-    { HardStopLicence::class.java },
   ),
 
   HDC(
+    HdcLicence::class.java,
     { IN_PROGRESS },
     { LicenceEventType.CREATED },
     { LicenceEventType.VERSION_CREATED },
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_INACTIVATED },
-    { HdcLicence::class.java },
 
   ) {
     override fun isHdc() = true
   },
 
   HDC_VARIATION(
+    HdcVariationLicence::class.java,
     { VARIATION_IN_PROGRESS },
     { error("HDC variation licences are only copied from existing HDC licences") },
     { LicenceEventType.VARIATION_CREATED },
     { LicenceEventType.VARIATION_SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_INACTIVATED },
-    { HdcVariationLicence::class.java },
   ) {
     override fun isHdc() = true
   },
