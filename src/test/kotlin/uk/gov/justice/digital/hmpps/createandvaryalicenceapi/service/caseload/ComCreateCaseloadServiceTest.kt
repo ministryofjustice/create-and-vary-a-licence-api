@@ -14,7 +14,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
@@ -26,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
@@ -38,7 +38,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
-import kotlin.collections.first
 
 class ComCreateCaseloadServiceTest {
   private val caseloadService = mock<CaseloadService>()
@@ -47,6 +46,7 @@ class ComCreateCaseloadServiceTest {
   private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
   private val licenceCreationService = mock<LicenceCreationService>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
   private val service = ComCreateCaseloadService(
     caseloadService,
@@ -55,6 +55,7 @@ class ComCreateCaseloadServiceTest {
     eligibilityService,
     hdcService,
     licenceCreationService,
+    releaseDateService,
   )
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
@@ -116,11 +117,7 @@ class ComCreateCaseloadServiceTest {
           dateOfBirth = LocalDate.of(1970, 1, 1),
           conditionalReleaseDate = tenDaysFromNow,
         ),
-        cvl = CvlFields(
-          hardStopDate = LocalDate.of(2023, Month.FEBRUARY, 3),
-          hardStopWarningDate = LocalDate.of(2023, Month.FEBRUARY, 1),
-          licenceType = LicenceType.PSS,
-        ),
+        licenceStartDate = tenDaysFromNow,
       ),
     )
 
@@ -134,6 +131,8 @@ class ComCreateCaseloadServiceTest {
 
   @Test
   fun `it sets not started licences to timed out when in the hard stop period`() {
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+
     val cases = mapOf(
       aManagedOffenderCrn() to CaseloadItem(
         prisoner = Prisoner(
@@ -141,13 +140,9 @@ class ComCreateCaseloadServiceTest {
           firstName = "Person",
           lastName = "One",
           dateOfBirth = LocalDate.of(1970, 1, 1),
+          conditionalReleaseDate = twoDaysFromNow,
         ),
-        cvl = CvlFields(
-          isInHardStopPeriod = true,
-          licenceType = LicenceType.AP,
-          licenceStartDate = twoDaysFromNow,
-          isDueToBeReleasedInTheNextTwoWorkingDays = true,
-        ),
+        licenceStartDate = twoDaysFromNow,
       ),
     )
 
@@ -1098,7 +1093,6 @@ class ComCreateCaseloadServiceTest {
           licenceStartDate = twoDaysFromNow,
           licenceExpiryDate = tenDaysFromNow,
           topupSupervisionExpiryDate = elevenDaysFromNow,
-          isInHardStopPeriod = true,
         ),
       ),
     )
@@ -1235,7 +1229,6 @@ class ComCreateCaseloadServiceTest {
     legalStatus: String? = null,
     indeterminateSentence: Boolean? = false,
     licenceStartDate: LocalDate? = null,
-    isInHardStopPeriod: Boolean = false,
     firstName: String? = "Person",
   ): CaseloadItem = CaseloadItem(
     prisoner = Prisoner(
@@ -1257,11 +1250,7 @@ class ComCreateCaseloadServiceTest {
       legalStatus = legalStatus,
       indeterminateSentence = indeterminateSentence,
     ),
-    cvl = CvlFields(
-      licenceType = LicenceType.PSS,
-      licenceStartDate = licenceStartDate,
-      isInHardStopPeriod = isInHardStopPeriod,
-    ),
+    licenceStartDate = licenceStartDate,
   )
 
   private fun verifyCase(
