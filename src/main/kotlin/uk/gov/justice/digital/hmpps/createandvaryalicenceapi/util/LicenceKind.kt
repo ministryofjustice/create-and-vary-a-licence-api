@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -86,6 +87,16 @@ enum class LicenceKind(
   ) {
     override fun isHdc() = true
   },
+
+  TIME_SERVED(
+    TimeServedLicence::class.java,
+    { IN_PROGRESS },
+    { LicenceEventType.TIME_SERVED_CREATED },
+    { error("Time served licences cannot be copied") },
+    { LicenceEventType.TIME_SERVED_SUBMITTED },
+    { LicenceDomainEventType.TIME_SERVED_LICENCE_ACTIVATED },
+    { LicenceDomainEventType.TIME_SERVED_LICENCE_INACTIVATED },
+  ),
   ;
 
   open fun isHdc(): Boolean = false
