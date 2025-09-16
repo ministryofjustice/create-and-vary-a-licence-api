@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTim
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -21,7 +20,6 @@ data class TimeServedLicence(
     example = LicenceKinds.TIME_SERVED,
     allowableValues = [LicenceKinds.TIME_SERVED],
   )
-  @TimeServedConsiderations("Copied from hard stop, are all of these fields needed?")
   override val kind: String = LicenceKinds.TIME_SERVED,
 
   override val isVariation: Boolean = false,

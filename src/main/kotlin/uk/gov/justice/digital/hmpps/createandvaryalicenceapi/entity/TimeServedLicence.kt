@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.Appo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -66,7 +65,6 @@ class TimeServedLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   updatedBy: Staff? = null,
 
-  @TimeServedConsiderations("Are these or any other fields from hard stop, still required for time served licences")
   var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
 
@@ -252,15 +250,14 @@ class TimeServedLicence(
     updatedBy = updatedBy,
   )
 
-  @TimeServedConsiderations("Are these functions needed for time served licences?")
-  fun submit(submittedBy: PrisonUser) = copy(
-    statusCode = LicenceStatus.SUBMITTED,
-    submittedBy = submittedBy,
-    updatedByUsername = submittedBy.username,
-    submittedDate = LocalDateTime.now(),
-    dateLastUpdated = LocalDateTime.now(),
-    updatedBy = submittedBy,
-  )
+  fun submit(prisonUser: PrisonUser) {
+    statusCode = LicenceStatus.SUBMITTED
+    submittedBy = prisonUser
+    updatedByUsername = prisonUser.username
+    submittedDate = LocalDateTime.now()
+    dateLastUpdated = LocalDateTime.now()
+    updatedBy = submittedBy
+  }
 
   fun markAsReviewed(staff: Staff?) {
     reviewDate = LocalDateTime.now()
