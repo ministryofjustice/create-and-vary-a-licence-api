@@ -25,8 +25,8 @@ enum class SarLicenceEventType(@JsonValue val description: String) {
   VERSION_CREATED("Version created"),
   NOT_STARTED("Not started"),
   TIMED_OUT("Timed out"),
+
   @TimeServedConsiderations("We need the same review events for both hardstop and time served")
   TIME_SERVED_CREATED("Time served created"),
-  TIME_SERVED_SUBMITTED("Time served submitted")
-
+  TIME_SERVED_SUBMITTED("Time served submitted"),
 }
