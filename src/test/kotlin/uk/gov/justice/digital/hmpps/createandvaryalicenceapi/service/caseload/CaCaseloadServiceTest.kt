@@ -983,7 +983,6 @@ class CaCaseloadServiceTest {
   fun `should have correct releaseDateLabel when postRecallReleaseDate is the same as licenceStartDate`() {
     // Given
     val licenceSummary = aLicenceSummary.copy(
-      kind = LicenceKind.PRRD,
       licenceStartDate = tenDaysFromNow,
       postRecallReleaseDate = tenDaysFromNow,
     )
