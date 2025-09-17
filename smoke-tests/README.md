@@ -9,7 +9,7 @@ brew install k6
 ```
 
 To edit and run scripts in Intellij, install the K6 plugin.
-
+dsdsdds
 I haven't been able to get the scripts to run in Intellij. If you'd like to try, then configure the plug in enter the
 path to the k6 binary in Intellij settings under
 
