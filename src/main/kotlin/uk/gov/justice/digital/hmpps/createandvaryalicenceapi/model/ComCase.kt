@@ -18,7 +18,7 @@ enum class LicenceCreationType {
 @Schema(description = "Describes an COM case")
 data class ComCase(
   @field:Schema(description = "The full name of the person on licence", example = "John Doe")
-  val name: String?,
+  val name: String,
 
   @field:Schema(description = "The case reference number (CRN) for the person on this licence", example = "X12444")
   val crnNumber: String?,
@@ -37,7 +37,7 @@ data class ComCase(
   val licenceStatus: LicenceStatus?,
 
   @field:Schema(description = "The licence type code", example = "AP")
-  val licenceType: LicenceType?,
+  val licenceType: LicenceType,
 
   @field:Schema(description = "Is a review of this licence is required", example = "true")
   val isReviewNeeded: Boolean,
@@ -54,7 +54,7 @@ data class ComCase(
   val hardStopWarningDate: LocalDate? = null,
 
   @field:Schema(description = "Type of this licence", example = LicenceKinds.CRD)
-  val kind: LicenceKind?,
+  val kind: LicenceKind,
 
   @field:Schema(description = "Is the prisoner due for early release", example = "false")
   val isDueForEarlyRelease: Boolean,

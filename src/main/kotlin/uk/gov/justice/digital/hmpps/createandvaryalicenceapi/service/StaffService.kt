@@ -28,6 +28,8 @@ class StaffService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
+  fun findCommunityOffenderManager(staffIdentifier: Long, username: String): List<CommunityOffenderManager> = staffRepository.findCommunityOffenderManager(staffIdentifier, username)
+
   /**
    * Check if record already exists. If so, check if any of the details have changed before performing an update.
    * Check if the username and staffId do not match. This should not happen, unless a Delius account is updated to point
@@ -42,11 +44,7 @@ class StaffService(
       comDetails.staffUsername,
     )
 
-    val comResult = staffRepository.findCommunityOffenderManager(
-      comDetails.staffIdentifier,
-      comDetails.staffUsername,
-    )
-
+    val comResult = findCommunityOffenderManager(comDetails.staffIdentifier, comDetails.staffUsername)
     if (comResult.isEmpty()) {
       log.info(
         "No existing COM found. Creating new record for staffIdentifier={} username={}",
@@ -110,10 +108,12 @@ class StaffService(
         log.info("No existing prison user found — creating new record")
         staffRepository.saveAndFlush(request.toEntity())
       }
+
       found.isUpdateRequest(request) -> {
         log.info("Prison user found — applying updates")
         found.updatedWith(request)
       }
+
       else -> {
         log.info("No update needed for prison user with username=${request.staffUsername}")
       }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.Clock
 import java.time.DayOfWeek.MONDAY
 import java.time.LocalDate
@@ -19,6 +20,7 @@ class PromptComService(
   private val telemetryClient: TelemetryClient,
 ) {
 
+  @TimeServedConsiderations("The com is used to prompt licences to create a licence - if no com exists or is unallocated then what would we do?")
   @Async
   fun runJob(clock: Clock = Clock.systemDefaultZone()) {
     log.info("Running job")

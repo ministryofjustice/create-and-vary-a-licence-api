@@ -9,11 +9,8 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -60,13 +57,7 @@ class HdcLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointmentPersonType: AppointmentPersonType? = null,
-  appointmentPerson: String? = null,
-  appointmentTime: LocalDateTime? = null,
-  appointmentTimeType: AppointmentTimeType? = null,
-  appointmentAddress: String? = null,
-  licenceAppointmentAddress: Address? = null,
-  appointmentContact: String? = null,
+  appointment: Appointment? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
   approvedByName: String? = null,
@@ -80,7 +71,6 @@ class HdcLicence(
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
-  responsibleCom: CommunityOffenderManager,
   updatedBy: Staff? = null,
 
   @OneToMany(
@@ -103,6 +93,10 @@ class HdcLicence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "responsible_com_id", nullable = false)
+  override var responsibleCom: CommunityOffenderManager,
 
   @OneToOne(
     mappedBy = "licence",
@@ -149,13 +143,7 @@ class HdcLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointmentPersonType = appointmentPersonType,
-  appointmentPerson = appointmentPerson,
-  appointmentTime = appointmentTime,
-  appointmentTimeType = appointmentTimeType,
-  appointmentAddress = appointmentAddress,
-  licenceAppointmentAddress = licenceAppointmentAddress,
-  appointmentContact = appointmentContact,
+  appointment = appointment,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
   approvedByName = approvedByName,
@@ -168,11 +156,17 @@ class HdcLicence(
   standardConditions = standardConditions.toMutableList(),
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
-  responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
   HasElectronicMonitoringResponseProvider,
-  HdcCase {
+  HdcCase,
+  AlwaysHasCom {
+
+  override fun getCom(): CommunityOffenderManager = responsibleCom
+
+  override fun setCom(com: CommunityOffenderManager) {
+    this.responsibleCom = com
+  }
 
   fun copy(
     id: Long? = this.id,
@@ -212,13 +206,7 @@ class HdcLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointmentPersonType: AppointmentPersonType? = this.appointmentPersonType,
-    appointmentPerson: String? = this.appointmentPerson,
-    appointmentTime: LocalDateTime? = this.appointmentTime,
-    appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
-    appointmentAddress: String? = this.appointmentAddress,
-    licenceAppointmentAddress: Address? = AddressMapper.copy(this.licenceAppointmentAddress),
-    appointmentContact: String? = this.appointmentContact,
+    appointment: Appointment? = AppointmentMapper.copy(this.appointment),
     approvedDate: LocalDateTime? = this.approvedDate,
     approvedByUsername: String? = this.approvedByUsername,
     approvedByName: String? = this.approvedByName,
@@ -277,13 +265,7 @@ class HdcLicence(
     probationLauDescription = probationLauDescription,
     probationTeamCode = probationTeamCode,
     probationTeamDescription = probationTeamDescription,
-    appointmentPersonType = appointmentPersonType,
-    appointmentPerson = appointmentPerson,
-    appointmentTime = appointmentTime,
-    appointmentTimeType = appointmentTimeType,
-    appointmentAddress = appointmentAddress,
-    licenceAppointmentAddress = licenceAppointmentAddress,
-    appointmentContact = appointmentContact,
+    appointment = appointment,
     approvedDate = approvedDate,
     approvedByUsername = approvedByUsername,
     approvedByName = approvedByName,
@@ -306,14 +288,14 @@ class HdcLicence(
     electronicMonitoringProvider = electronicMonitoringProvider,
   )
 
-  fun submit(submittedBy: CommunityOffenderManager) = copy(
-    statusCode = LicenceStatus.SUBMITTED,
-    submittedBy = submittedBy,
-    updatedByUsername = submittedBy.username,
-    submittedDate = LocalDateTime.now(),
-    dateLastUpdated = LocalDateTime.now(),
-    updatedBy = submittedBy,
-  )
+  fun submit(communityOffenderManager: CommunityOffenderManager) {
+    statusCode = LicenceStatus.SUBMITTED
+    submittedBy = communityOffenderManager
+    updatedByUsername = communityOffenderManager.username
+    submittedDate = LocalDateTime.now()
+    dateLastUpdated = LocalDateTime.now()
+    updatedBy = submittedBy
+  }
 
   fun updateCurfewTimes(
     updatedCurfewTimes: List<HdcCurfewTimes>,
@@ -371,13 +353,14 @@ class HdcLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=$appointmentPersonType, " +
-    "appointmentPerson=$appointmentPerson, " +
-    "appointmentTime=$appointmentTime, " +
-    "appointmentTimeType=$appointmentTimeType, " +
-    "appointmentAddress=$appointmentAddress, " +
-    "licenceAppointmentAddress=$licenceAppointmentAddress, " +
-    "appointmentContact=$appointmentContact, " +
+    "appointmentPersonType=${appointment?.personType}, " +
+    "appointmentPerson=${appointment?.person}, " +
+    "appointmentTime=${appointment?.time}, " +
+    "appointmentTimeType=${appointment?.timeType}, " +
+    "appointmentAddress=${appointment?.addressText}, " +
+    "licenceAppointmentAddress=${appointment?.address}, " +
+    "appointmentContact=${appointment?.telephoneContactNumber}, " +
+    "alternativeTelephoneContactNumber=${appointment?.alternativeTelephoneContactNumber}, " +
     "approvedDate=$approvedDate, " +
     "approvedByUsername=$approvedByUsername, " +
     "approvedByName=$approvedByName, " +

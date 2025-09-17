@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab.ATTENTION_NEEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab.FUTURE_RELEASES
@@ -23,13 +22,13 @@ object Tabs {
   )
 
   fun determineCaViewCasesTab(
-    cvlFields: CvlFields,
+    isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
     licenceStartDate: LocalDate?,
     licence: LicenceSummary?,
     now: Clock,
   ) = when {
     isAttentionNeeded(licence?.licenceStatus ?: NOT_STARTED, licenceStartDate, now) -> ATTENTION_NEEDED
-    isDueToBeReleasedInTheNextTwoWorkingDays(licence, cvlFields) -> RELEASES_IN_NEXT_TWO_WORKING_DAYS
+    isDueToBeReleasedInTheNextTwoWorkingDays(licence, isDueToBeReleasedInTheNextTwoWorkingDays) -> RELEASES_IN_NEXT_TWO_WORKING_DAYS
     else -> FUTURE_RELEASES
   }
 
@@ -42,5 +41,5 @@ object Tabs {
     return missingStartDate || startDateInPast
   }
 
-  private fun isDueToBeReleasedInTheNextTwoWorkingDays(licence: LicenceSummary?, cvlFields: CvlFields) = licence?.isDueToBeReleasedInTheNextTwoWorkingDays ?: cvlFields.isDueToBeReleasedInTheNextTwoWorkingDays
+  private fun isDueToBeReleasedInTheNextTwoWorkingDays(licence: LicenceSummary?, isDueToBeReleasedInTheNextTwoWorkingDays: Boolean) = licence?.isDueToBeReleasedInTheNextTwoWorkingDays ?: isDueToBeReleasedInTheNextTwoWorkingDays
 }

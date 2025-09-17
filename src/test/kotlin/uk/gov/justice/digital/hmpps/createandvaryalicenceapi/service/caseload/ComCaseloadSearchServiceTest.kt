@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
@@ -84,7 +85,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchResult), anyOrNull())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -134,7 +135,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchResult), anyOrNull())).thenReturn(true)
 
     val request = request.copy(
       sortBy = listOf(
@@ -184,7 +185,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(licences)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -268,7 +269,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchResult), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -324,7 +325,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -346,7 +347,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -368,7 +369,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -389,7 +390,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -410,7 +411,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchResult), anyOrNull())).thenReturn(false)
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -427,7 +428,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -442,7 +443,7 @@ class ComCaseloadSearchServiceTest {
   fun `search for offenders in prison without a licence and ineligible for CVL`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(false)
+    whenever(eligibilityService.isEligibleForCvl(eq(aPrisonerSearchResult), anyOrNull())).thenReturn(false)
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -460,7 +461,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -506,7 +507,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -537,7 +538,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -568,7 +569,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -588,7 +589,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -603,7 +604,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -638,7 +639,7 @@ class ComCaseloadSearchServiceTest {
   fun `hard stop dates are populated for non-started licences`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 2, 14)))
 
@@ -677,7 +678,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(licences)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
@@ -706,7 +707,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -727,7 +728,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(hardStopLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -745,7 +746,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -766,7 +767,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -788,7 +789,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to licenceStartDate))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     // When
@@ -796,7 +797,7 @@ class ComCaseloadSearchServiceTest {
 
     // Then
     assertThat(result.results.first().releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
-    verify(eligibilityService).isEligibleForCvl(any())
+    verify(eligibilityService).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -817,7 +818,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to licenceStartDate))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(prrdLicence))
 
@@ -844,7 +845,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to licenceStartDate))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(prrdLicence))
 
@@ -852,7 +853,7 @@ class ComCaseloadSearchServiceTest {
     service.searchForOffenderOnStaffCaseload(request)
 
     // Then
-    verify(eligibilityService, never()).isEligibleForCvl(any())
+    verify(eligibilityService, never()).isEligibleForCvl(any(), anyOrNull())
   }
 
   @Test
@@ -865,7 +866,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -883,7 +884,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 16)))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -900,7 +901,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(hardStopLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -918,7 +919,7 @@ class ComCaseloadSearchServiceTest {
     )
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -935,7 +936,7 @@ class ComCaseloadSearchServiceTest {
     )
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -953,7 +954,7 @@ class ComCaseloadSearchServiceTest {
     )
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)

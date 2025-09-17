@@ -29,10 +29,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -109,10 +108,10 @@ class LicenceController(
     @RequestBody @Valid
     request: CreateLicenceRequest,
   ): LicenceCreationResponse = when (request.type) {
-    PRRD -> licenceCreationService.createPrrdLicence(request.nomsId)
-    CRD -> licenceCreationService.createCrdLicence(request.nomsId)
     HARD_STOP -> licenceCreationService.createHardStopLicence(request.nomsId)
+    TIME_SERVED -> TODO("Implement Time-Served licence creation")
     HDC -> licenceCreationService.createHdcLicence(request.nomsId)
+    else -> licenceCreationService.createLicence(request.nomsId)
   }
 
   @Tag(name = Tags.LICENCES)
@@ -261,9 +260,7 @@ class LicenceController(
     @RequestParam(name = "sortOrder", required = false) sortOrder: String?,
   ): List<LicenceSummary> = licenceService.findLicencesMatchingCriteria(
     LicenceQueryObject(
-      prisonCodes = body.prison,
       statusCodes = body.status,
-      staffIds = body.staffId,
       nomsIds = body.nomsId,
       pdus = body.pdu,
       sortBy = sortBy,

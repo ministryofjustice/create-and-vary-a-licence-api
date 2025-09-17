@@ -30,7 +30,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 import kotlin.collections.first
 
-private const val GET_PRISON_CASELOAD = "/caseload/case-admin/prison-view"
 private const val GET_PROBATION_CASELOAD = "/caseload/case-admin/probation-view"
 private const val SEARCH_PRISONERS_CA_CASELOAD = "/caseload/case-admin/case-search"
 private val caCaseloadSearch = CaCaseloadSearch(prisonCodes = setOf("BAI"), searchString = null)
@@ -44,68 +43,6 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
   fun setupClient() {
     webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
     govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
-
-  @Nested
-  inner class `Get Prison OMU Caseload` {
-    @Test
-    fun `Get forbidden (403) when incorrect roles are supplied`() {
-      val result = webTestClient.post()
-        .uri(GET_PRISON_CASELOAD)
-        .bodyValue(caCaseloadSearch)
-        .accept(APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
-        .exchange()
-        .expectStatus().isForbidden
-        .expectStatus().isEqualTo(FORBIDDEN.value())
-        .expectBody(ErrorResponse::class.java)
-        .returnResult().responseBody
-
-      assertThat(result?.userMessage).contains("Access Denied")
-    }
-
-    @Test
-    fun `Unauthorized (401) when no token is supplied`() {
-      webTestClient.post()
-        .uri(GET_PRISON_CASELOAD)
-        .bodyValue(caCaseloadSearch)
-        .accept(APPLICATION_JSON)
-        .exchange()
-        .expectStatus().isEqualTo(UNAUTHORIZED.value())
-    }
-
-    @Test
-    @Sql(
-      "classpath:test_data/seed-ca-caseload-licences.sql",
-    )
-    fun `Successfully retrieve ca caseload`() {
-      prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
-      prisonApiMockServer.getHdcStatuses()
-      prisonApiMockServer.stubGetCourtOutcomes()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-      deliusMockServer.stubGetStaffDetailsByUsername()
-      deliusMockServer.stubGetManagersForGetApprovalCaseload()
-
-      val caseload = webTestClient.post()
-        .uri(GET_PRISON_CASELOAD)
-        .bodyValue(caCaseloadSearch)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-        .expectStatus().isEqualTo(OK.value())
-        .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<CaCase>>())
-        .returnResult().responseBody!!
-
-      assertThat(caseload).hasSize(3)
-      with(caseload.first()) {
-        assertThat(name).isEqualTo("Person Two")
-        assertThat(prisonerNumber).isEqualTo("A1234AB")
-        assertThat(licenceStatus).isEqualTo(LicenceStatus.SUBMITTED)
-        assertThat(tabType).isEqualTo(CaViewCasesTab.FUTURE_RELEASES)
-        assertThat(isInHardStopPeriod).isFalse()
-        assertThat(kind).isEqualTo(LicenceKind.CRD)
-      }
-    }
   }
 
   @Nested

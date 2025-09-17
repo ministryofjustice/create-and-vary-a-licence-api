@@ -10,8 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.data.domain.Page
-import org.springframework.data.web.PagedModel
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
@@ -28,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ReleaseDateSearch
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
@@ -117,7 +114,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = CaseloadItem::class)),
+            array = ArraySchema(schema = Schema(implementation = PrisonerWithCvlFields::class)),
           ),
         ],
       ),
@@ -154,111 +151,6 @@ class CaseloadController(
     ],
   )
   fun findByNumber(@Parameter(required = true) @PathVariable nomsId: String) = caseloadService.getPrisoner(nomsId)
-
-  @PostMapping("/prisoner-search/release-date-by-prison")
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Returns prisoners by release date and prison id",
-    description = "Match prisoners in a subset of prisons with a release date within a given range",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returning A list of prisoners",
-        content = [
-          Content(
-            mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = CaseloadItem::class)),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  @Deprecated("use paginated version")
-  fun findByReleaseDate(
-    @Parameter(required = true) @Valid @RequestBody criteria: ReleaseDateSearch,
-  ): List<CaseloadItem> = caseloadService.getPrisonersByReleaseDate(
-    criteria.earliestReleaseDate!!,
-    criteria.latestReleaseDate!!,
-    criteria.prisonIds!!,
-    page = 0,
-  ).content
-
-  @PostMapping("/release-date-by-prison")
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Returns prisoners by release date and prison id",
-    description = "Match prisoners in a subset of prisons with a release date within a given range",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returning A page of search results",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = SearchResultsPage::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun findByReleaseDatePaginated(
-    @Parameter(required = true) @Valid @RequestBody criteria: ReleaseDateSearch,
-    @Parameter(
-      description = "page of results to return (0 indexed), defaults to first page",
-      required = false,
-    ) @Valid @RequestParam(value = "page") page: Int = 0,
-  ): Page<CaseloadItem> = caseloadService.getPrisonersByReleaseDate(
-    criteria.earliestReleaseDate!!,
-    criteria.latestReleaseDate!!,
-    criteria.prisonIds!!,
-    page,
-  )
 
   @PostMapping("/caseload/prison-approver/approval-needed")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -758,5 +650,3 @@ class CaseloadController(
     @Parameter(required = true) @Valid @RequestBody varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest,
   ): List<VaryApproverCase> = varyApproverCaseloadService.getVaryApproverCaseload(varyApproverCaseloadSearchRequest)
 }
-
-class SearchResultsPage : PagedModel<CaseloadItem>(Page.empty())

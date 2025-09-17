@@ -1,16 +1,15 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.LocalDate
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 
 @Service
 class CaseloadService(
@@ -24,29 +23,21 @@ class CaseloadService(
     val licenceStartDates =
       releaseDateService.getLicenceStartDates(prisoners)
 
-    return prisoners.map { prisonerToCaseloadItem(it, licenceStartDates[it.prisonerNumber]) }
-  }
-
-  fun getPrisonersByReleaseDate(
-    earliestReleaseDate: LocalDate,
-    latestReleaseDate: LocalDate,
-    prisonIds: Set<String>,
-    page: Int = 0,
-  ): Page<CaseloadItem> {
-    val prisoners =
-      prisonerSearchApiClient.searchPrisonersByReleaseDate(earliestReleaseDate, latestReleaseDate, prisonIds, page)
-    val licenceStartDates = releaseDateService.getLicenceStartDates(prisoners.mapNotNull { it })
     return prisoners.map {
-      val licenceStartDate = licenceStartDates[it.prisonerNumber]
-      prisonerToCaseloadItem(it, licenceStartDate)
+      CaseloadItem(
+        prisoner = it.toPrisoner(),
+        licenceStartDate = licenceStartDates[it.prisonerNumber],
+      )
     }
   }
 
-  fun getPrisoner(nomisId: String) = getPrisonersByNumber(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
-
-  fun prisonerToCaseloadItem(prisoner: PrisonerSearchPrisoner, licenceStartDate: LocalDate?): CaseloadItem {
+  fun getPrisoner(nomisId: String): PrisonerWithCvlFields {
+    val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
+    val licenceKind = determineReleaseDateKind(prisoner.postRecallReleaseDate, prisoner.conditionalReleaseDate)
+    val licenceStartDate = releaseDateService.getLicenceStartDate(prisoner, licenceKind)
     val sentenceDateHolder = prisoner.toSentenceDateHolder(licenceStartDate)
-    return CaseloadItem(
+
+    return PrisonerWithCvlFields(
       prisoner = prisoner.toPrisoner(),
       cvl = CvlFields(
         licenceType = LicenceType.getLicenceType(prisoner),
@@ -58,7 +49,7 @@ class CaseloadService(
         isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           sentenceDateHolder,
         ),
-        licenceStartDate = sentenceDateHolder.licenceStartDate,
+        licenceStartDate = licenceStartDate,
       ),
     )
   }

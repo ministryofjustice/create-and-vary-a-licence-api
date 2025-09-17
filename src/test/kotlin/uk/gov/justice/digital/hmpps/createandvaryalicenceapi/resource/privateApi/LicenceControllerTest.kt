@@ -161,7 +161,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create a PRRD licence`() {
-    whenever(licenceCreationService.createPrrdLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
 
     val result = mvc.perform(
       post("/licence/create")
@@ -175,12 +175,12 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(LicenceCreationResponse(1))))
 
-    verify(licenceCreationService, times(1)).createPrrdLicence(aCreateLicenceRequest.nomsId)
+    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
   fun `create a CRD licence`() {
-    whenever(licenceCreationService.createCrdLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
 
     val result = mvc.perform(
       post("/licence/create")
@@ -194,7 +194,7 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(LicenceCreationResponse(1))))
 
-    verify(licenceCreationService, times(1)).createCrdLicence(aCreateLicenceRequest.nomsId)
+    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
@@ -239,7 +239,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create a licence where another is in progress`() {
-    whenever(licenceCreationService.createCrdLicence(aCreateLicenceRequest.nomsId))
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId))
       .thenThrow(ValidationException("A licence already exists for this person"))
 
     val result = mvc.perform(
@@ -254,72 +254,7 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).contains("A licence already exists for this person")
 
-    verify(licenceCreationService, times(1)).createCrdLicence(aCreateLicenceRequest.nomsId)
-  }
-
-  @Test
-  fun `match licences by prison code and status`() {
-    val licenceQueryObject = LicenceQueryObject(
-      prisonCodes = listOf("LEI"),
-      statusCodes = listOf(LicenceStatus.APPROVED),
-      sortBy = "id",
-    )
-    whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
-
-    val result = mvc.perform(
-      post("/licence/match")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(
-          mapper.writeValueAsBytes(
-            MatchLicencesRequest(
-              prison = listOf("LEI"),
-              status = listOf(LicenceStatus.APPROVED),
-            ),
-          ),
-        ),
-    )
-      .andExpect(status().isOk)
-      .andExpect(content().contentType(APPLICATION_JSON))
-      .andReturn()
-
-    assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
-
-    verify(licenceService, times(1)).findLicencesMatchingCriteria(licenceQueryObject)
-  }
-
-  @Test
-  fun `match licences by staffId and status`() {
-    val licenceQueryObject = LicenceQueryObject(
-      staffIds = listOf(1, 2, 3),
-      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
-      sortBy = "id",
-    )
-
-    whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
-
-    val result = mvc.perform(
-      post("/licence/match")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(
-          mapper.writeValueAsBytes(
-            MatchLicencesRequest(
-              staffId = listOf(1, 2, 3),
-              status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
-            ),
-          ),
-        ),
-    )
-      .andExpect(status().isOk)
-      .andExpect(content().contentType(APPLICATION_JSON))
-      .andReturn()
-
-    assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
-
-    verify(licenceService, times(1)).findLicencesMatchingCriteria(licenceQueryObject)
+    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test

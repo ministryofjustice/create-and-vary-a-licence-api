@@ -5,13 +5,11 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -53,13 +51,7 @@ class VariationLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointmentPersonType: AppointmentPersonType? = null,
-  appointmentPerson: String? = null,
-  appointmentTime: LocalDateTime? = null,
-  appointmentTimeType: AppointmentTimeType? = null,
-  appointmentAddress: String? = null,
-  licenceAppointmentAddress: Address? = null,
-  appointmentContact: String? = null,
+  appointment: Appointment? = null,
   override var spoDiscussion: String? = null,
   override var vloDiscussion: String? = null,
   approvedDate: LocalDateTime? = null,
@@ -73,7 +65,6 @@ class VariationLicence(
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
-  responsibleCom: CommunityOffenderManager,
   override var variationOfId: Long? = null,
   licenceVersion: String? = "1.0",
   updatedBy: Staff? = null,
@@ -85,6 +76,10 @@ class VariationLicence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   override var createdBy: CommunityOffenderManager? = null,
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "responsible_com_id", nullable = false)
+  override var responsibleCom: CommunityOffenderManager,
 ) : Licence(
   id = id,
   kind = LicenceKind.VARIATION,
@@ -122,13 +117,7 @@ class VariationLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointmentPersonType = appointmentPersonType,
-  appointmentPerson = appointmentPerson,
-  appointmentTime = appointmentTime,
-  appointmentTimeType = appointmentTimeType,
-  appointmentAddress = appointmentAddress,
-  licenceAppointmentAddress = licenceAppointmentAddress,
-  appointmentContact = appointmentContact,
+  appointment = appointment,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
   approvedByName = approvedByName,
@@ -141,10 +130,17 @@ class VariationLicence(
   standardConditions = standardConditions.toMutableList(),
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
-  responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
-  Variation {
+  Variation,
+  AlwaysHasCom {
+
+  @TimeServedConsiderations("Always needs a COM but need a wider discussion about variations")
+  override fun getCom(): CommunityOffenderManager = responsibleCom
+
+  override fun setCom(com: CommunityOffenderManager) {
+    this.responsibleCom = com
+  }
 
   fun copy(
     id: Long? = this.id,
@@ -182,13 +178,7 @@ class VariationLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointmentPersonType: AppointmentPersonType? = this.appointmentPersonType,
-    appointmentPerson: String? = this.appointmentPerson,
-    appointmentTime: LocalDateTime? = this.appointmentTime,
-    appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
-    appointmentAddress: String? = this.appointmentAddress,
-    licenceAppointmentAddress: Address? = AddressMapper.copy(this.licenceAppointmentAddress),
-    appointmentContact: String? = this.appointmentContact,
+    appointment: Appointment? = AppointmentMapper.copy(this.appointment),
     spoDiscussion: String? = this.spoDiscussion,
     vloDiscussion: String? = this.vloDiscussion,
     approvedDate: LocalDateTime? = this.approvedDate,
@@ -245,13 +235,7 @@ class VariationLicence(
       probationLauDescription = probationLauDescription,
       probationTeamCode = probationTeamCode,
       probationTeamDescription = probationTeamDescription,
-      appointmentPersonType = appointmentPersonType,
-      appointmentPerson = appointmentPerson,
-      appointmentTime = appointmentTime,
-      appointmentTimeType = appointmentTimeType,
-      appointmentAddress = appointmentAddress,
-      licenceAppointmentAddress = licenceAppointmentAddress,
-      appointmentContact = appointmentContact,
+      appointment = appointment,
       spoDiscussion = spoDiscussion,
       vloDiscussion = vloDiscussion,
       approvedDate = approvedDate,
@@ -275,14 +259,14 @@ class VariationLicence(
     return variationLicence
   }
 
-  fun submit(submittedBy: CommunityOffenderManager) = copy(
-    statusCode = LicenceStatus.VARIATION_SUBMITTED,
-    submittedBy = submittedBy,
-    updatedByUsername = submittedBy.username,
-    submittedDate = LocalDateTime.now(),
-    dateLastUpdated = LocalDateTime.now(),
-    updatedBy = submittedBy,
-  )
+  fun submit(communityOffenderManager: CommunityOffenderManager) {
+    statusCode = LicenceStatus.VARIATION_SUBMITTED
+    submittedBy = communityOffenderManager
+    updatedByUsername = communityOffenderManager.username
+    submittedDate = LocalDateTime.now()
+    dateLastUpdated = LocalDateTime.now()
+    updatedBy = submittedBy
+  }
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
@@ -322,13 +306,14 @@ class VariationLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=$appointmentPersonType, " +
-    "appointmentPerson=$appointmentPerson, " +
-    "appointmentTime=$appointmentTime, " +
-    "appointmentTimeType=$appointmentTimeType, " +
-    "appointmentAddress=$appointmentAddress, " +
-    "licenceAppointmentAddress=$licenceAppointmentAddress, " +
-    "appointmentContact=$appointmentContact, " +
+    "appointmentPersonType=${appointment?.personType}, " +
+    "appointmentPerson=${appointment?.person}, " +
+    "appointmentTime=${appointment?.time}, " +
+    "appointmentTimeType=${appointment?.timeType}, " +
+    "appointmentAddress=${appointment?.addressText}, " +
+    "licenceAppointmentAddress=${appointment?.address}, " +
+    "appointmentContact=${appointment?.telephoneContactNumber}, " +
+    "alternativeTelephoneContactNumber=${appointment?.alternativeTelephoneContactNumber}, " +
     "spoDiscussion=$spoDiscussion, " +
     "vloDiscussion=$vloDiscussion, " +
     "approvedDate=$approvedDate, " +

@@ -79,10 +79,8 @@ class ExclusionZoneService(
       uploadDetailId = savedDetail.id!!,
     )
 
-    val updatedAdditionalCondition =
-      additionalCondition.copy(additionalConditionUploadSummary = mutableListOf(uploadSummary))
-
-    additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+    additionalCondition.additionalConditionUploadSummary.clear()
+    additionalCondition.additionalConditionUploadSummary.add(uploadSummary)
   }
 
   fun getExclusionZoneImage(licenceId: Long, conditionId: Long): ByteArray? {

@@ -17,7 +17,7 @@ data class CaseLoadLicenceSummary(
   val licenceStatus: LicenceStatus,
 
   @field:Schema(description = "Kind of licence", example = "CRD")
-  val kind: LicenceKind? = null,
+  val kind: LicenceKind,
 
   @field:Schema(description = "Licence type code", example = "AP")
   val licenceType: LicenceType,
@@ -26,10 +26,10 @@ data class CaseLoadLicenceSummary(
   val crn: String?,
 
   @field:Schema(description = "The prison nomis identifier for this offender", example = "A1234AA")
-  val nomisId: String?,
+  val nomisId: String,
 
   @field:Schema(description = "The full name of the person on licence", example = "John Doe")
-  val name: String?,
+  val name: String,
 
   @field:Schema(description = "The username of the responsible probation officer", example = "jsmith")
   val comUsername: String? = null,
@@ -81,4 +81,6 @@ data class CaseLoadLicenceSummary(
 
   @field:Schema(description = "How this licence will need to be created", example = "PRISON_WILL_CREATE_THIS_LICENCE")
   val licenceCreationType: LicenceCreationType? = null,
+
+  val isDueForEarlyRelease: Boolean = false,
 )

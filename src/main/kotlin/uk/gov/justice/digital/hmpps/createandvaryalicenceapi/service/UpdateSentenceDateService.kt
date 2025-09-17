@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -29,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 
 @Service
 class UpdateSentenceDateService(
@@ -107,11 +109,13 @@ class UpdateSentenceDateService(
     }
   }
 
+  @TimeServedConsiderations("Notify COM of date change event for a licence, if a COM is not set, should this be a team email?")
   private fun notifyComOfUpdate(
     licence: Licence,
     dateChanges: DateChanges,
     isNotApprovedForHdc: Boolean,
   ) {
+    check(licence is AlwaysHasCom) { "Licence ${licence.id} does not have a responsible COM to notify of an update" }
     val notifyCom = licence is HdcLicence || isNotApprovedForHdc
     if (!notifyCom) {
       log.info("Not notifying COM as now approved for HDC for ${licence.id}")

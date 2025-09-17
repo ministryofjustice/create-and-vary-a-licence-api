@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
@@ -67,6 +68,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -91,6 +93,7 @@ class LicenceService(
   private val exclusionZoneService: ExclusionZoneService,
 ) {
 
+  @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
   @Transactional
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
@@ -346,7 +349,7 @@ class LicenceService(
     )
   }
 
-  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: EntityLicence) {
+  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: HardStopLicence) {
     val com = licenceEntity.responsibleCom
     notifyService.sendHardStopLicenceApprovedEmail(
       com.email,
@@ -398,31 +401,27 @@ class LicenceService(
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val updatedLicence = when (licenceEntity) {
+    when (licenceEntity) {
       is PrrdLicence -> {
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
       is CrdLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+        assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         licenceEntity
           .submit(submitter as CommunityOffenderManager)
       }
 
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
-        if (determineReleaseDateKind(
-            licenceEntity.postRecallReleaseDate,
-            licenceEntity.conditionalReleaseDate,
-          ) != PRRD
-        ) {
-          assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+        if (determineReleaseDateKind(licenceEntity.postRecallReleaseDate, licenceEntity.conditionalReleaseDate) != PRRD) {
+          assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         }
         licenceEntity.submit(submitter as PrisonUser)
       }
 
       is HdcLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+        assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
@@ -430,16 +429,16 @@ class LicenceService(
       else -> error("Unexpected licence type: $licenceEntity")
     }
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = updatedLicence.kind.submittedEventType(),
+        eventType = licenceEntity.kind.submittedEventType(),
         username = username,
         forenames = submitter.firstName,
         surname = submitter.lastName,
-        eventDescription = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
+        eventDescription = "Licence submitted for approval for ${licenceEntity.forename} ${licenceEntity.surname}",
       ),
     )
 
@@ -448,20 +447,20 @@ class LicenceService(
         licenceId = licenceId,
         username = username,
         fullName = submitter.fullName,
-        summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
-        detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
+        summary = "Licence submitted for approval for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
     )
 
     // Notify the head of PDU of this submitted licence variation
-    if (updatedLicence is Variation) {
+    if (licenceEntity is Variation) {
       notifyRequest?.forEach {
         notifyService.sendVariationForApprovalEmail(
           it,
           licenceId.toString(),
-          updatedLicence.forename!!,
-          updatedLicence.surname!!,
-          updatedLicence.crn!!,
+          licenceEntity.forename!!,
+          licenceEntity.surname!!,
+          licenceEntity.crn!!,
           submitter.fullName,
         )
       }
@@ -616,7 +615,7 @@ class LicenceService(
     }
 
     if (licence.kind != PRRD) {
-      assertCaseIsEligible(licence.id, licence.nomsId)
+      assertCaseIsEligible(licence, licence.nomsId)
     }
 
     val creator = getCommunityOffenderManagerForCurrentUser()
@@ -698,10 +697,12 @@ class LicenceService(
     )
   }
 
+  @TimeServedConsiderations("Do we refer this variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
+    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -740,10 +741,12 @@ class LicenceService(
     )
   }
 
+  @TimeServedConsiderations("Do we approve a variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
+    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -1048,7 +1051,6 @@ class LicenceService(
   @Transactional
   fun timeout(licence: EntityLicence, reason: String? = null) {
     check(licence is SupportsHardStop) { "Can only timeout licence kinds that support hard stop: ${licence.id}" }
-
     licence.timeOut()
     licenceRepository.saveAndFlush(licence)
     auditEventRepository.saveAndFlush(
@@ -1072,12 +1074,11 @@ class LicenceService(
       ),
     )
 
-    if (licence.versionOfId != null) {
-      val com = licence.responsibleCom
+    if (licence.versionOfId != null && licence is AlwaysHasCom) {
       with(licence) {
         notifyService.sendEditedLicenceTimedOutEmail(
-          com.email,
-          "${com.firstName} ${com.lastName}",
+          responsibleCom.email,
+          "${responsibleCom.firstName} ${responsibleCom.lastName}",
           this.forename!!,
           this.surname!!,
           this.crn,
@@ -1108,14 +1109,14 @@ class LicenceService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 
-  private fun assertCaseIsEligible(licenceId: Long, nomisId: String?) {
+  private fun assertCaseIsEligible(licence: EntityLicence, nomisId: String?) {
     if (nomisId == null) {
-      throw ValidationException("Unable to perform action, licence $licenceId is missing NOMS ID")
+      throw ValidationException("Unable to perform action, licence ${licence.id} is missing NOMS ID")
     }
 
     val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).first()
-    if (!eligibilityService.isEligibleForCvl(prisoner)) {
-      throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
+    if (!eligibilityService.isEligibleForCvl(prisoner, licence.probationAreaCode)) {
+      throw ValidationException("Unable to perform action, licence ${licence.id} is ineligible for CVL")
     }
   }
 

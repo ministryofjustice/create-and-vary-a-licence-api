@@ -359,7 +359,7 @@ VALUES ('ENGLAND','Kent'),
 	   ('WALES','Denbighshire'),
 	   ('WALES','Cardiff'),
 	   ('WALES','Carmarthenshire'),
-	   ('Conwy','Conwy'),
+	   ('WALES','Conwy'),
 	   ('WALES','Flintshire'),
 	   ('WALES','Swansea'),
 	   ('WALES','Gwent'),
@@ -378,7 +378,26 @@ VALUES ('ENGLAND','Kent'),
 	   ('WALES','Brecknockshire'),
 	   ('WALES','Gwynedd'),
 	   ('WALES','Montgomeryshire'),
-	   ('WALES','Pembrokeshire');
+	   ('WALES','Pembrokeshire'),
+	   ('WALES','Morgannwg'),
+	   ('WALES','Sir Ddinbych'),
+	   ('WALES','Caerdydd'),
+	   ('WALES','Sir Gaerfyrddin'),
+	   ('WALES','Sir y Fflint'),
+	   ('WALES','Abertawe'),
+	   ('WALES','Ynys Môn'),
+	   ('WALES','Meirionnydd'),
+	   ('WALES','Ceredigion'),
+	   ('WALES','De Morgannwg'),
+	   ('WALES','Morgannwg Ganol'),
+	   ('WALES','Sir Faesyfed'),
+	   ('WALES','Sir Fynwy'),
+	   ('WALES','Gorllewin Morgannwg'),
+	   ('WALES','Sir Gaernarfon'),
+	   ('WALES','Bro Morgannwg'),
+	   ('WALES','Sir Frycheiniog'),
+	   ('WALES','Sir Drefaldwyn'),
+	   ('WALES','Sir Benfro');
 
 -- Stage 3 get's county and country (if not all ready aquuired)
 
@@ -823,7 +842,33 @@ VALUES
 ('Yeovil','Town','ENGLAND','Somerset','BA'),
 ('Leamington Spa','Town','ENGLAND','Warwickshire','CV'),
 ('Stevenage','Town','ENGLAND','Hertfordshire','SG'),
-('Wallsend','Town','ENGLAND','Tyne and Wear','NE');
+('Wallsend','Town','ENGLAND','Tyne and Wear','NE'),
+('Aberystwyth', 'Town', 'Wales', 'Ceredigion', 'SY'),
+('Bedford', 'Town', 'England', 'Bedfordshire', 'MK'),
+('Chorley', 'Town', 'England', 'Lancashire', 'PR'),
+('Dorchester', 'Town', 'England', 'Dorset', 'DT'),
+('Gainsborough', 'Town', 'England', 'Lincolnshire', 'DN'),
+('Hexham', 'Town', 'England', 'Northumberland', 'NE'),
+('Redcar', 'Town', 'England', 'North Yorkshire', 'TS'),
+('Rhyl', 'Town', 'Wales', 'Denbighshire', 'LL'),
+('Skipton', 'Town', 'England', 'North Yorkshire', 'BD'),
+('Worthing', 'Town', 'England', 'West Sussex', 'BN'),
+-- extra
+('Grays', 'Town', 'England', 'Essex', 'RM'),
+('Winsford', 'Town', 'England', 'Cheshire', 'CW'),
+('Aston', 'Town', 'England', 'West Midlands', 'B6'),
+('Sandbach', 'Town', 'England', 'Cheshire', 'CW'),
+('St Helens', 'Town', 'England', 'Merseyside', 'WA'),
+('Weston-super-Mare', 'Town', 'England', 'North Somerset', 'BS'),
+('Goole', 'Town', 'England', 'East Riding of Yorkshire', 'DN'),
+('Wellingborough', 'Town', 'England', 'Northamptonshire', 'NN'),
+('Ebbw Vale', 'Town', 'Wales', 'Blaenau Gwent', 'NP'),
+('Redhill', 'Town', 'England', 'Surrey', 'RH'),
+('Maesteg', 'Town', 'Wales', 'Bridgend County Borough', 'CF'),
+('North Shields', 'Town', 'England', 'Tyne and Wear', 'NE'),
+('Leek', 'Town', 'England', 'Staffordshire', 'ST'),
+-- Spelling mistakes
+('Sheffeild', 'City', 'England', 'South Yorkshire', 'S');
 
 
 -- Stage 4 gets urban.urban_postcode_prefix not already aquired and country, county, urban_name
@@ -1161,8 +1206,12 @@ ALTER TABLE address DISABLE TRIGGER set_address_last_updated_timestamp;
 INSERT INTO address (id,reference, first_line, second_line, town_or_city, county, postcode,
    source, created_timestamp, last_updated_timestamp
 ) SELECT
-	  licence_id,reference::text as reference, first_line, second_line, town_or_city, county, postcode,
-	   source, created_timestamp, last_updated_timestamp
+	  licence_id,reference::text as reference, first_line, second_line, town_or_city,
+	  CASE
+        WHEN county = town_or_city THEN NULL
+        ELSE county
+      END AS county,
+	  postcode, source, created_timestamp, last_updated_timestamp
 	FROM tmp_stage_8 order by licence_id;
 
 INSERT INTO licence_appointment_address (licence_id, address_id)
@@ -1176,6 +1225,15 @@ INSERT INTO licence_appointment_address (licence_id, address_id)
 ALTER TABLE address ENABLE TRIGGER set_address_last_updated_timestamp;
 
 DROP TABLE IF EXISTS tmp_stage_8;
+
+-- Important!!
+-- Reset the serial to the max id in the table
+SELECT setval(
+  pg_get_serial_sequence('address', 'id'),
+  (SELECT COALESCE(MAX(id), 1) FROM address),
+  true
+);
+
 */
 --
 -- sql to allow us to check migrated data
@@ -1216,9 +1274,10 @@ DROP TABLE IF EXISTS tmp_stage_8;
 -- put DESC at the end to get the long addresses...
 --
 -- Select
---		(Select count(*) from licence l where l.appointment_address is not null) as licence_count_with_address,
---		(Select count(*) from address) as address_count,
---		(Select count(*) from licence_appointment_address laa ) as join_table_count;
+--	(Select count(*) from licence l) as licence_count,
+--	(Select count(*) from licence l where l.appointment_address is not null) as licence_count_with_address,
+--	(Select count(*) from address) as address_count,
+--	(Select count(*) from licence_appointment_address laa ) as join_table_count;
 --
 -- SELECT a.first_line,a.second_line,a.town_or_city,a.county,a.postcode ,l.appointment_address
 -- 		FROM address a

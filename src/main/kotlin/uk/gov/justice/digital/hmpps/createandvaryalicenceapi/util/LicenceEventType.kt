@@ -22,4 +22,10 @@ enum class LicenceEventType {
   VERSION_CREATED,
   NOT_STARTED,
   TIMED_OUT,
+  TIME_SERVED_CREATED,
+  TIME_SERVED_SUBMITTED,
+
+  @TimeServedConsiderations("We need the same review events for both hardstop and time served.. we could migrate the data but it'd be a bit fiddly")
+  TIME_SERVED_REVIEWED_WITHOUT_VARIATION,
+  TIME_SERVED_REVIEWED_WITH_VARIATION,
 }

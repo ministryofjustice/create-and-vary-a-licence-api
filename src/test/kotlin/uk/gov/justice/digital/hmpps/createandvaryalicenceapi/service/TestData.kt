@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
@@ -45,7 +44,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.S
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -386,7 +385,7 @@ object TestData {
       lastName = "Y",
     ),
     createdBy = com(),
-    appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+    appointment = createAppointment(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }
@@ -411,6 +410,32 @@ object TestData {
     source = source,
     createdTimestamp = created,
     lastUpdatedTimestamp = updated,
+  )
+
+  fun createAppointment(
+    id: Long? = null,
+    personType: AppointmentPersonType? = AppointmentPersonType.SPECIFIC_PERSON,
+    person: String? = if (personType == AppointmentPersonType.SPECIFIC_PERSON) "Test Officer" else null,
+    timeType: AppointmentTimeType? = AppointmentTimeType.SPECIFIC_DATE_TIME,
+    time: LocalDateTime? = LocalDateTime.now().plusDays(1),
+    telephoneContactNumber: String? = "07123456789",
+    alternativeTelephoneContactNumber: String? = "07000000000",
+    addressText: String? = "Meeting at Testville Probation Office",
+    address: Address? = createAddress(),
+    created: LocalDateTime = LocalDateTime.now(),
+    updated: LocalDateTime = created,
+  ): Appointment = Appointment(
+    id = id,
+    personType = personType,
+    person = person,
+    timeType = timeType,
+    time = time,
+    telephoneContactNumber = telephoneContactNumber,
+    alternativeTelephoneContactNumber = alternativeTelephoneContactNumber,
+    addressText = addressText,
+    address = address,
+    dateCreated = created,
+    dateLastUpdated = updated,
   )
 
   fun createHdcLicence() = HdcLicence(
@@ -481,6 +506,8 @@ object TestData {
     appointmentTimeType = null,
     appointmentAddress = null,
     appointmentContact = null,
+    appointmentTelephoneNumber = null,
+    appointmentAlternativeTelephoneNumber = null,
     approvedDate = null,
     approvedByUsername = null,
     submittedDate = null,
@@ -555,7 +582,7 @@ object TestData {
       lastName = "Y",
     ),
     createdBy = com(),
-    appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+    appointment = createAppointment(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it), curfewTimes = mutableListOf())
   }
@@ -636,6 +663,10 @@ object TestData {
         code = "N01A2",
         description = "Cardiff South",
       ),
+      provider = Detail(
+        code = "N01",
+        description = "Wales",
+      ),
     ),
     provider = Detail(
       code = "N01",
@@ -649,16 +680,7 @@ object TestData {
   )
 
   fun caseLoadItem() = CaseloadItem(
-    cvl = CvlFields(
-      licenceType = AP,
-      hardStopDate = LocalDate.of(2023, 10, 12),
-      hardStopWarningDate = LocalDate.of(2023, 10, 11),
-      isInHardStopPeriod = true,
-      isDueForEarlyRelease = true,
-      isEligibleForEarlyRelease = true,
-      isDueToBeReleasedInTheNextTwoWorkingDays = true,
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-    ),
+    licenceStartDate = LocalDate.of(2021, 10, 22),
     prisoner = Prisoner(
       prisonerNumber = "A1234AA",
       bookingId = "123456",
@@ -692,13 +714,20 @@ object TestData {
       "A01B02C",
       Name("Staff", surname = "Surname"),
     ),
-    team = TeamDetail("A01B02", "Test Team", Detail("B01", "Test borough"), Detail("D01", "Test district")),
+    team = TeamDetail(
+      "A01B02",
+      "Test Team",
+      Detail("B01", "Test borough"),
+      Detail("D01", "Test district"),
+      Detail("P01", "Test provider"),
+    ),
     allocationDate = LocalDate.of(2023, 5, 24),
   )
 
   fun caCase() = CaCase(
     licenceId = 1,
     kind = LicenceKind.CRD,
+    releaseDateKind = LicenceKind.CRD,
     name = "A Prisoner",
     prisonerNumber = "A1234AA",
     releaseDate = LocalDate.of(2021, 10, 22),
@@ -982,24 +1011,10 @@ object TestData {
     status = "INACTIVE OUT",
   )
 
-  fun someCvlFields(licenceType: LicenceType) = CvlFields(
-    licenceType = licenceType,
-  )
-
   fun aDeliusUser() = StaffNameResponse(
     id = 1,
     username = "joebloggs",
     code = "X1234",
     name = Name(forename = "Delius", surname = "User"),
-  )
-
-  fun anAuditEvent() = AuditEvent(
-    licenceId = 1L,
-    eventTime = LocalDateTime.now(),
-    username = "auditor",
-    fullName = "Auditor Name",
-    eventType = AuditEventType.SYSTEM_EVENT,
-    summary = "Licence created",
-    detail = "Details of creation",
   )
 }

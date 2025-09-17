@@ -20,11 +20,12 @@ object LicenceKinds {
   const val HARD_STOP = "HARD_STOP"
   const val HDC = "HDC"
   const val HDC_VARIATION = "HDC_VARIATION"
+  const val TIME_SERVED = "TIME_SERVED"
 }
 
 @Schema(
   description = "Describes a licence within this service, A discriminator exists to distinguish between different types of licence",
-  oneOf = [PrrdLicenceResponse::class, CrdLicence::class, VariationLicence::class, HardStopLicence::class, HdcLicence::class, HdcVariationLicence::class],
+  oneOf = [PrrdLicenceResponse::class, CrdLicence::class, VariationLicence::class, HardStopLicence::class, HdcLicence::class, HdcVariationLicence::class, TimeServedLicence::class],
   discriminatorProperty = "kind",
   discriminatorMapping = [
     DiscriminatorMapping(value = LicenceKinds.PRRD, schema = PrrdLicenceResponse::class),
@@ -32,7 +33,7 @@ object LicenceKinds {
     DiscriminatorMapping(value = LicenceKinds.VARIATION, schema = VariationLicence::class),
     DiscriminatorMapping(value = LicenceKinds.HARD_STOP, schema = HardStopLicence::class),
     DiscriminatorMapping(value = LicenceKinds.HDC, schema = HdcLicence::class),
-    DiscriminatorMapping(value = LicenceKinds.HDC_VARIATION, schema = HdcVariationLicence::class),
+    DiscriminatorMapping(value = LicenceKinds.TIME_SERVED, schema = TimeServedLicence::class),
   ],
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "kind")
@@ -206,11 +207,24 @@ sealed interface Licence {
   )
   val licenceAppointmentAddress: AddressResponse?
 
+  @get:Deprecated("Use appointmentTelephoneNumber instead")
   @get:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
     example = "0114 2557665",
   )
   val appointmentContact: String?
+
+  @get:Schema(
+    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "0114 2557665",
+  )
+  val appointmentTelephoneNumber: String?
+
+  @get:Schema(
+    description = "An alternative UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "07700 900000",
+  )
+  val appointmentAlternativeTelephoneNumber: String?
 
   @get:Schema(description = "The date and time that this prison approved this licence", example = "24/08/2022 11:30:33")
   val approvedDate: LocalDateTime?

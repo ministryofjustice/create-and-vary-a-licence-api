@@ -66,11 +66,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("staff-create-case-load-prisoners").replace(
           "\$releaseDate",
           releaseDate,
-        ),
+        ).replace("\$sled", sled),
       )
       prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -83,7 +84,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ComCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(3)
+      assertThat(caseload).hasSize(4)
+      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
+        "AB1234E",
+        "AB1234H",
+        "AB1234I",
+        "AB1234J",
+      )
       with(caseload.first()) {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
@@ -124,10 +131,14 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("team-create-case-load-prisoners").replace(
           "\$releaseDate",
           releaseDate,
+        ).replace(
+          "\$sled",
+          sled,
         ),
       )
       prisonApiMockServer.stubGetCourtOutcomes()
@@ -146,7 +157,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ComCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(2)
+      assertThat(caseload).hasSize(3)
+      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
+        "AB1234E",
+        "AB1234F",
+        "AB1234G",
+      )
       with(caseload.first()) {
         assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(crnNumber).isEqualTo("X12348")
