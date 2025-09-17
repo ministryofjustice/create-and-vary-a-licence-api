@@ -35,6 +35,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -63,6 +65,8 @@ class CaCaseloadServiceTest {
   private val eligibilityService = mock<EligibilityService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val workingDaysService = mock<WorkingDaysService>()
+  private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
 
   private val service = CaCaseloadService(
     caseloadService,
@@ -73,6 +77,7 @@ class CaCaseloadServiceTest {
     deliusApiClient,
     prisonerSearchApiClient,
     releaseDateService,
+    releaseDateLabelFactory,
   )
 
   private val prisonStatuses = listOf(
@@ -631,7 +636,7 @@ class CaCaseloadServiceTest {
         licenceStartDate = tenDaysFromNow,
         postRecallReleaseDate = tenDaysFromNow,
       )
-
+      whenever(workingDaysService.getLastWorkingDay(licenceSummary.postRecallReleaseDate)).thenReturn(licenceSummary.postRecallReleaseDate)
       whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(listOf(licenceSummary))
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
@@ -986,6 +991,7 @@ class CaCaseloadServiceTest {
       licenceStartDate = tenDaysFromNow,
       postRecallReleaseDate = tenDaysFromNow,
     )
+    whenever(workingDaysService.getLastWorkingDay(licenceSummary.postRecallReleaseDate)).thenReturn(licenceSummary.postRecallReleaseDate)
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(listOf(licenceSummary))
 
     // When
@@ -994,7 +1000,7 @@ class CaCaseloadServiceTest {
     // Then
     assertThat(prisonOmuCaseload).hasSize(1)
     assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
-    assertThat(prisonOmuCaseload[0].releaseDateKind).isEqualTo(LicenceKind.PRRD)
+    assertThat(prisonOmuCaseload[0].kind).isEqualTo(LicenceKind.PRRD)
   }
 
   @Nested
@@ -1430,15 +1436,15 @@ class CaCaseloadServiceTest {
   private companion object {
     private fun createClock(timestamp: String) = Clock.fixed(Instant.parse(timestamp), ZoneId.systemDefault())
 
-    val dateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(15, 13, 39))
-    val instant = dateTime.atZone(ZoneId.systemDefault()).toInstant()
+    val dateTime: LocalDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(15, 13, 39))
+    val instant: Instant = dateTime.atZone(ZoneId.systemDefault()).toInstant()
     val clock: Clock = createClock(instant.toString())
 
-    val oneDayFromNow = LocalDate.now(clock).plusDays(1)
-    val twoDaysFromNow = LocalDate.now(clock).plusDays(2)
-    val tenDaysFromNow = LocalDate.now(clock).plusDays(10)
-    val twoMonthsFromNow = LocalDate.now(clock).plusMonths(2)
-    val fiveDaysFromNow = LocalDate.now(clock).plusDays(5)
+    val oneDayFromNow: LocalDate = LocalDate.now(clock).plusDays(1)
+    val twoDaysFromNow: LocalDate = LocalDate.now(clock).plusDays(2)
+    val tenDaysFromNow: LocalDate = LocalDate.now(clock).plusDays(10)
+    val twoMonthsFromNow: LocalDate = LocalDate.now(clock).plusMonths(2)
+    val fiveDaysFromNow: LocalDate = LocalDate.now(clock).plusDays(5)
 
     val aLicenceSummary = LicenceSummary(
       kind = LicenceKind.CRD,

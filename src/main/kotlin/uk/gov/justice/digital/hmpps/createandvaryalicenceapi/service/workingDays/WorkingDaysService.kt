@@ -19,6 +19,12 @@ class WorkingDaysService(private val bankHolidayService: BankHolidayService) {
     .drop(1)
     .filterNot { isNonWorkingDay(it) }
 
+  fun getLastWorkingDay(date: LocalDate?): LocalDate? = when {
+    date == null -> null
+    isNonWorkingDay(date) -> workingDaysBefore(date).take(1).last()
+    else -> date
+  }
+
   fun isWeekend(date: LocalDate): Boolean = date.dayOfWeek in weekend
 
   fun isNonWorkingDay(date: LocalDate): Boolean = isWeekend(date) || getBankHolidays().contains(date)
