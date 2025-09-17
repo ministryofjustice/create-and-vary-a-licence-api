@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
@@ -20,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
@@ -47,7 +45,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.T
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -1014,24 +1011,10 @@ object TestData {
     status = "INACTIVE OUT",
   )
 
-  fun someCvlFields(licenceType: LicenceType) = CvlFields(
-    licenceType = licenceType,
-  )
-
   fun aDeliusUser() = StaffNameResponse(
     id = 1,
     username = "joebloggs",
     code = "X1234",
     name = Name(forename = "Delius", surname = "User"),
-  )
-
-  fun anAuditEvent() = AuditEvent(
-    licenceId = 1L,
-    eventTime = LocalDateTime.now(),
-    username = "auditor",
-    fullName = "Auditor Name",
-    eventType = AuditEventType.SYSTEM_EVENT,
-    summary = "Licence created",
-    detail = "Details of creation",
   )
 }
