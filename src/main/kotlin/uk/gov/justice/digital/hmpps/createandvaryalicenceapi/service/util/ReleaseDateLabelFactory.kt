@@ -19,14 +19,14 @@ class ReleaseDateLabelFactory(
 ) {
 
   fun getLabel(
-    licenceStartDate: LocalDate?,
+    releaseDate: LocalDate?,
     confirmedReleaseDate: LocalDate?,
     postRecallDate: LocalDate?,
     hdcReleaseDate: LocalDate?,
   ): String {
     val prrdLicenceStartDate = postRecallDate?.let { workingDaysService.getLastWorkingDay(postRecallDate) }
 
-    val label = when (licenceStartDate) {
+    val label = when (releaseDate) {
       null -> LABEL_FOR_CRD_RELEASE_DATE
       confirmedReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
       prrdLicenceStartDate -> LABEL_FOR_PRRD_RELEASE_DATE
@@ -37,28 +37,28 @@ class ReleaseDateLabelFactory(
   }
 
   fun fromLicenceSummary(licence: LicenceSummary): String = getLabel(
-    licenceStartDate = licence.licenceStartDate,
+    releaseDate = licence.licenceStartDate,
     confirmedReleaseDate = licence.actualReleaseDate,
     postRecallDate = licence.postRecallReleaseDate,
     hdcReleaseDate = licence.homeDetentionCurfewActualDate,
   )
 
   fun fromLicence(licence: Licence): String = getLabel(
-    licenceStartDate = licence.licenceStartDate,
+    releaseDate = licence.licenceStartDate,
     confirmedReleaseDate = licence.actualReleaseDate,
     postRecallDate = licence.postRecallReleaseDate,
     hdcReleaseDate = if (licence.isHdcLicence()) licence.homeDetentionCurfewActualDate else null,
   )
 
   fun fromPrisoner(releaseDate: LocalDate?, nomis: Prisoner): String = getLabel(
-    licenceStartDate = releaseDate,
+    releaseDate = releaseDate,
     confirmedReleaseDate = nomis.confirmedReleaseDate,
     postRecallDate = nomis.postRecallReleaseDate,
     hdcReleaseDate = nomis.homeDetentionCurfewActualDate,
   )
 
   fun fromPrisonerSearch(licenceStartDate: LocalDate?, offender: PrisonerSearchPrisoner): String = getLabel(
-    licenceStartDate = licenceStartDate,
+    releaseDate = licenceStartDate,
     confirmedReleaseDate = offender.confirmedReleaseDate,
     postRecallDate = offender.postRecallReleaseDate,
     hdcReleaseDate = offender.homeDetentionCurfewActualDate,
