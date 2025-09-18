@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util
 
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
@@ -13,7 +13,7 @@ const val LABEL_FOR_CONFIRMED_RELEASE_DATE = "Confirmed release date"
 const val LABEL_FOR_HDC_RELEASE_DATE = "HDCAD"
 const val LABEL_FOR_PRRD_RELEASE_DATE = "Post-recall release date (PRRD)"
 
-@Service
+@Component
 class ReleaseDateLabelFactory(
   private val workingDaysService: WorkingDaysService,
 ) {
