@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -693,7 +692,11 @@ fun List<EntityAdditionalCondition>.transformToModelAdditional(
   )
 }
 
-fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean, requiresInput: Boolean): ModelAdditionalCondition = ModelAdditionalCondition(
+fun transform(
+  entity: EntityAdditionalCondition,
+  readyToSubmit: Boolean,
+  requiresInput: Boolean,
+): ModelAdditionalCondition = ModelAdditionalCondition(
   id = entity.id,
   code = entity.conditionCode,
   version = entity.conditionVersion,
@@ -781,40 +784,6 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent
   surname = entity.surname,
   eventDescription = entity.eventDescription,
   eventTime = entity.eventTime,
-)
-
-fun CaseloadResult.transformToModelFoundProbationRecord(
-  licence: Licence,
-  hardStopDate: LocalDate?,
-  hardStopWarningDate: LocalDate?,
-  isInHardStopPeriod: Boolean,
-  isDueForEarlyRelease: Boolean,
-  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-): ModelFoundProbationRecord = ModelFoundProbationRecord(
-  kind = licence.kind,
-  bookingId = licence.bookingId,
-  name = "${name.forename} ${name.surname}".convertToTitleCase(),
-  crn = licence.crn,
-  nomisId = licence.nomsId,
-  comName = staff.name?.fullName()?.convertToTitleCase(),
-  comStaffCode = staff.code,
-  teamName = team.description,
-  releaseDate = licence.licenceStartDate,
-  licenceId = licence.id,
-  versionOf = getVersionOf(licence),
-  licenceType = licence.typeCode,
-  licenceStatus = licence.statusCode,
-  isOnProbation = licence.statusCode.isOnProbation(),
-  hardStopDate = hardStopDate,
-  hardStopWarningDate = hardStopWarningDate,
-  isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
-  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-  releaseDateLabel = ReleaseDateLabelFactory.fromLicence(licence),
-  isReviewNeeded = when (licence) {
-    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-    else -> false
-  },
 )
 
 fun CaseloadResult.transformToUnstartedRecord(

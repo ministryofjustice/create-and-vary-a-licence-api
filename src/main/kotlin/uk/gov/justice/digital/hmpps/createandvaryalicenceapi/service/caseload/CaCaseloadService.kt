@@ -62,6 +62,7 @@ class CaCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val releaseDateService: ReleaseDateService,
+  private val releaseDateLabelFactory: ReleaseDateLabelFactory,
 ) {
   fun getPrisonOmuCaseload(prisonCaseload: Set<String>, searchString: String?): List<CaCase> {
     val statuses = listOf(
@@ -175,7 +176,7 @@ class CaCaseloadService(
         name = "${licence?.forename} ${licence?.surname}",
         prisonerNumber = licence?.nomisId!!,
         releaseDate = licence.licenceStartDate,
-        releaseDateLabel = ReleaseDateLabelFactory.fromLicenceSummary(licence),
+        releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
         licenceStatus = licence.licenceStatus,
         lastWorkedOnBy = licence.updatedByFullName,
         isDueForEarlyRelease = licence.isDueForEarlyRelease,
@@ -303,12 +304,19 @@ class CaCaseloadService(
       name = case.nomisRecord.let { "${it.firstName} ${it.lastName}".convertToTitleCase() },
       prisonerNumber = case.nomisRecord.prisonerNumber!!,
       releaseDate = case.licenceStartDate,
-      releaseDateLabel = ReleaseDateLabelFactory.fromPrisoner(case.licenceStartDate, case.nomisRecord),
+      releaseDateLabel = releaseDateLabelFactory.fromPrisoner(case.licenceStartDate, case.nomisRecord),
       licenceStatus = licenceStatus,
       nomisLegalStatus = case.nomisRecord.legalStatus,
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
-      tabType = Tabs.determineCaViewCasesTab(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder), case.licenceStartDate, licence = null, clock),
+      tabType = Tabs.determineCaViewCasesTab(
+        releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+          sentenceDateHolder,
+        ),
+        case.licenceStartDate,
+        licence = null,
+        clock,
+      ),
       probationPractitioner = ProbationPractitioner(
         staffCode = com?.code,
         name = com?.name?.fullName(),
@@ -349,7 +357,7 @@ class CaCaseloadService(
         name = licence.let { "${it?.forename} ${it?.surname}" },
         prisonerNumber = licence?.nomisId!!,
         releaseDate = releaseDate,
-        releaseDateLabel = ReleaseDateLabelFactory.fromLicenceSummary(licence),
+        releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
         licenceStatus = licence.licenceStatus,
         nomisLegalStatus = caseloadItem.prisoner.legalStatus,
         lastWorkedOnBy = licence.updatedByFullName,
