@@ -50,11 +50,11 @@ class ComVaryCaseloadService(
     val comUsernames = casesToLicences.mapNotNull { (_, licence) -> licence.comUsername }.distinct()
     val coms = deliusApiClient.getStaffDetailsByUsername(comUsernames)
     return casesToLicences.map { (case, licence) ->
-      val com = coms.find { c -> licence.comUsername?.lowercase() == c.username?.lowercase() }
+      val com = coms.find { c -> licence.comUsername.equals(c.username, ignoreCase = true) }
       when {
         com != null -> case.crn to ProbationPractitioner(
           com.code,
-          name = com.name?.fullName(),
+          name = com.name.fullName(),
           staffUsername = com.username,
         )
 
@@ -104,7 +104,7 @@ class ComVaryCaseloadService(
         isDueForEarlyRelease = false,
         isReviewNeeded = licence.isReviewNeeded,
       )
-    }
+    }.sortedWith(compareByDescending<ComCase> { it.releaseDate }.thenBy { it.name })
   }
 
   private fun findVaryLicenceToDisplay(licences: List<LicenceSummary>): LicenceSummary? = when {
