@@ -46,4 +46,7 @@ values (1,'CRD','1.0', '100','A1234AA', 'Person', 'One', 'AP', 'SUBMITTED', 'MDI
         '2022-07-27 15:00:00', null, 1, 'Test Approver', CURRENT_DATE),
        (10,'CRD','1.0', 'B12345', 'F2504MG', 'Person', 'Eight', 'AP', 'APPROVED', 'MDI', 'Moorland HMP',
         CURRENT_DATE - 10, 1, 1,
-        '2022-07-27 15:00:00', null, 1, 'Test Approver', CURRENT_DATE);
+        '2022-07-27 15:00:00', null, 1, 'Test Approver', CURRENT_DATE),
+	   (11,'CRD','1.0', 'D12345', 'C1234BC', 'Person', '9', 'AP', 'APPROVED', 'MDI', 'Moorland HMP',
+		CURRENT_DATE - 5, 1, 1,
+		'2022-07-27 15:00:00', null, 1, 'Test Approver', CURRENT_DATE);

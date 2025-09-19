@@ -21,5 +21,6 @@ insert into licence (
 (5,'CRD','1.0','500','A1234AE','MDI',1,1,1,'APPROVED','Person', 'Five', '2023-09-29','AP'),
 (6,'CRD','1.0','600',null,'ABC',1,1,1,'SUBMITTED','Person', 'Six', '2023-09-29','AP'),
 (7,'CRD','1.0','B12345','A1234BC','ABC',1,1,1,'SUBMITTED','Person', 'Seven', null,'AP'),
-(8,'CRD','1.0','C12345','B1234BC','ABC',1,1,1,'SUBMITTED','Person', 'Eight', '2024-03-14','AP');
+(8,'CRD','1.0','C12345','B1234BC','ABC',1,1,1,'SUBMITTED','Person', 'Eight', '2024-03-14','AP'),
+(9,'CRD','1.0','D12345','C1234BC','ABC',1,1,1,'SUBMITTED','Person', 'Z', '2022-01-01','AP');
 

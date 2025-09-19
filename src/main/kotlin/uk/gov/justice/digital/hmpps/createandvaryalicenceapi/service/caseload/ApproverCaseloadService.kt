@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDate
 
 @Service
 class ApproverCaseloadService(
@@ -20,7 +21,20 @@ class ApproverCaseloadService(
   private val deliusApiClient: DeliusApiClient,
 ) {
 
-  fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
+  fun getSortedNeededApprovalCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getApprovalNeeded(prisons))
+
+  fun getSortedRecentlyApprovedCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getRecentlyApproved(prisons))
+
+  private fun sortByLicenceStartAndName(
+    approvalCaseList: List<ApprovalCase>,
+  ): List<ApprovalCase> = approvalCaseList.sortedWith(
+    compareBy<ApprovalCase, LocalDate?>(
+      nullsFirst(naturalOrder()),
+    ) { it.releaseDate }
+      .thenBy { it.name?.lowercase().orEmpty() },
+  )
+
+  private fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
     val licences = prisonApproverService.getLicencesForApproval(prisons.filterOutAdminPrisonCode())
     if (licences.isEmpty()) {
       return emptyList()
@@ -28,7 +42,7 @@ class ApproverCaseloadService(
     return createApprovalCaseload(licences)
   }
 
-  fun getRecentlyApproved(prisons: List<String>): List<ApprovalCase> {
+  private fun getRecentlyApproved(prisons: List<String>): List<ApprovalCase> {
     val licences = prisonApproverService.findRecentlyApprovedLicences(prisons.filterOutAdminPrisonCode())
     if (licences.isEmpty()) {
       return emptyList()
@@ -104,10 +118,9 @@ class ApproverCaseloadService(
     }
   }
 
-  fun searchForOffenderOnApproverCaseload(body: ApproverSearchRequest): ApproverSearchResponse {
-    val approvalNeededResults = applySearch(getApprovalNeeded(body.prisonCaseloads), body.query)
-    val recentlyApprovedResults = applySearch(getRecentlyApproved(body.prisonCaseloads), body.query)
-
+  fun searchForOffenderOnApproverCaseload(approverSearchRequest: ApproverSearchRequest): ApproverSearchResponse {
+    val approvalNeededResults = applySearch(getApprovalNeeded(approverSearchRequest.prisonCaseloads), approverSearchRequest.query)
+    val recentlyApprovedResults = applySearch(getRecentlyApproved(approverSearchRequest.prisonCaseloads), approverSearchRequest.query)
     return ApproverSearchResponse(approvalNeededResults, recentlyApprovedResults)
   }
 }
