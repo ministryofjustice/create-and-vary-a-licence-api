@@ -23,7 +23,7 @@ class ApproverCaseloadService(
 ) {
 
   fun getSortedApprovalNeededCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getApprovalNeeded(prisons))
-  fun getSortedRecentlyApprovedCases(prisons: List<String>): List<ApprovalCase> = sortByApprovedOnStartAndName(getRecentlyApproved(prisons))
+  fun getSortedRecentlyApprovedCases(prisons: List<String>): List<ApprovalCase> = sortByApprovedOnAndName(getRecentlyApproved(prisons))
 
   private fun sortByLicenceStartAndName(
     approvalCaseList: List<ApprovalCase>,
@@ -35,7 +35,7 @@ class ApproverCaseloadService(
     return approvalCaseList.sortedWith(comparator)
   }
 
-  private fun sortByApprovedOnStartAndName(
+  private fun sortByApprovedOnAndName(
     approvalCaseList: List<ApprovalCase>,
   ): List<ApprovalCase> {
     val comparator = compareBy<ApprovalCase, LocalDateTime?>(
