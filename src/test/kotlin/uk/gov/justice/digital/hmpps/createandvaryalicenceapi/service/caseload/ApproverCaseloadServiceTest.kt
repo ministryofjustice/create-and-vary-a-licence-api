@@ -52,7 +52,7 @@ class ApproverCaseloadServiceTest {
         whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
-        val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+        val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
         assertThat(approvalCases).hasSize(1)
 
@@ -139,30 +139,11 @@ class ApproverCaseloadServiceTest {
           ),
         )
 
-        val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+        val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
         assertThat(approvalCases).hasSize(2)
 
-        with(approvalCases.first()) {
-          assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Person One")
-          assertThat(prisonerNumber).isEqualTo("A1234AA")
-          assertThat(submittedByFullName).isEqualTo("X Y")
-          assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
-          assertThat(urgentApproval).isFalse()
-          assertThat(approvedBy).isEqualTo("jim smith")
-          assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          assertThat(isDueForEarlyRelease).isFalse()
-          with(probationPractitioner!!) {
-            assertThat(staffCode).isEqualTo("AB012C")
-            assertThat(name).isEqualTo("Test Test")
-          }
-          assertThat(kind).isEqualTo(LicenceKind.CRD)
-          assertThat(prisonCode).isEqualTo("MDI")
-          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
-        }
-
-        with(approvalCases.last()) {
+        with(approvalCases[0]) {
           assertThat(licenceId).isEqualTo(2L)
           assertThat(name).isEqualTo("John Doe")
           assertThat(prisonerNumber).isEqualTo("B1234BB")
@@ -179,6 +160,25 @@ class ApproverCaseloadServiceTest {
           assertThat(kind).isEqualTo(LicenceKind.CRD)
           assertThat(prisonCode).isEqualTo("ABC")
           assertThat(prisonDescription).isEqualTo("ABC (HMP)")
+        }
+
+        with(approvalCases[1]) {
+          assertThat(licenceId).isEqualTo(1L)
+          assertThat(name).isEqualTo("Person One")
+          assertThat(prisonerNumber).isEqualTo("A1234AA")
+          assertThat(submittedByFullName).isEqualTo("X Y")
+          assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
+          assertThat(urgentApproval).isFalse()
+          assertThat(approvedBy).isEqualTo("jim smith")
+          assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
+          assertThat(isDueForEarlyRelease).isFalse()
+          with(probationPractitioner!!) {
+            assertThat(staffCode).isEqualTo("AB012C")
+            assertThat(name).isEqualTo("Test Test")
+          }
+          assertThat(kind).isEqualTo(LicenceKind.CRD)
+          assertThat(prisonCode).isEqualTo("MDI")
+          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
         }
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
@@ -248,7 +248,7 @@ class ApproverCaseloadServiceTest {
           ),
         )
 
-        val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+        val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
@@ -332,7 +332,7 @@ class ApproverCaseloadServiceTest {
           ),
         )
 
-        val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+        val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
@@ -346,7 +346,7 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `CADM prison caseload is filtered out`() {
       val aListOfPrisonCodes = listOf("ABC", "DEF", "CADM")
-      service.getApprovalNeeded(aListOfPrisonCodes)
+      service.getSortedApprovalNeededCases(aListOfPrisonCodes)
       verify(prisonApproverService, times(1)).getLicencesForApproval(listOf("ABC", "DEF"))
     }
 
@@ -360,7 +360,7 @@ class ApproverCaseloadServiceTest {
         ),
       )
 
-      val caseload = service.getApprovalNeeded(aListOfPrisonCodes)
+      val caseload = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
       verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
       verify(deliusApiClient, times(1)).getOffenderManagers(emptyList())
@@ -385,7 +385,7 @@ class ApproverCaseloadServiceTest {
       whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
       whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
-      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+      val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
       assertThat(approvalCases).hasSize(1)
 
@@ -422,7 +422,7 @@ class ApproverCaseloadServiceTest {
         whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
-        val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
+        val approvalCases = service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
 
         assertThat(approvalCases).hasSize(1)
 
@@ -469,6 +469,7 @@ class ApproverCaseloadServiceTest {
               comUsername = "jdoe",
               licenceStatus = LicenceStatus.APPROVED,
               licenceStartDate = LocalDate.now().minusDays(14),
+              approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 3L,
@@ -481,6 +482,7 @@ class ApproverCaseloadServiceTest {
               comUsername = "tcom",
               licenceStatus = LicenceStatus.ACTIVE,
               licenceStartDate = LocalDate.now().minusDays(14),
+              approvedDate = LocalDateTime.of(2023, 9, 29, 16, 38, 42),
             ),
           ),
         )
@@ -520,11 +522,30 @@ class ApproverCaseloadServiceTest {
           ),
         )
 
-        val caseload = service.getRecentlyApproved(aListOfPrisonCodes)
+        val caseload = service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
 
         assertThat(caseload).hasSize(2)
 
-        with(caseload.first()) {
+        with(caseload[0]) {
+          assertThat(licenceId).isEqualTo(3L)
+          assertThat(name).isEqualTo("Jane Doe")
+          assertThat(prisonerNumber).isEqualTo("C1234CC")
+          assertThat(submittedByFullName).isEqualTo("X Y")
+          assertThat(releaseDate).isEqualTo(LocalDate.now().minusDays(14))
+          assertThat(urgentApproval).isFalse()
+          assertThat(approvedBy).isEqualTo("jim smith")
+          assertThat(approvedOn).isEqualTo(LocalDateTime.of(2023, 9, 29, 16, 38, 42))
+          assertThat(isDueForEarlyRelease).isFalse()
+          with(probationPractitioner!!) {
+            assertThat(staffCode).isEqualTo("AB012C")
+            assertThat(name).isEqualTo("Test Test")
+          }
+          assertThat(kind).isEqualTo(LicenceKind.CRD)
+          assertThat(prisonCode).isEqualTo("MDI")
+          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
+        }
+
+        with(caseload[1]) {
           assertThat(licenceId).isEqualTo(2L)
           assertThat(name).isEqualTo("John Doe")
           assertThat(prisonerNumber).isEqualTo("B1234BB")
@@ -541,25 +562,6 @@ class ApproverCaseloadServiceTest {
           assertThat(kind).isEqualTo(LicenceKind.CRD)
           assertThat(prisonCode).isEqualTo("ABC")
           assertThat(prisonDescription).isEqualTo("ABC (HMP)")
-        }
-
-        with(caseload.last()) {
-          assertThat(licenceId).isEqualTo(3L)
-          assertThat(name).isEqualTo("Jane Doe")
-          assertThat(prisonerNumber).isEqualTo("C1234CC")
-          assertThat(submittedByFullName).isEqualTo("X Y")
-          assertThat(releaseDate).isEqualTo(LocalDate.now().minusDays(14))
-          assertThat(urgentApproval).isFalse()
-          assertThat(approvedBy).isEqualTo("jim smith")
-          assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          assertThat(isDueForEarlyRelease).isFalse()
-          with(probationPractitioner!!) {
-            assertThat(staffCode).isEqualTo("AB012C")
-            assertThat(name).isEqualTo("Test Test")
-          }
-          assertThat(kind).isEqualTo(LicenceKind.CRD)
-          assertThat(prisonCode).isEqualTo("MDI")
-          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
         }
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
@@ -586,6 +588,7 @@ class ApproverCaseloadServiceTest {
               comUsername = "jdoe",
               licenceStatus = LicenceStatus.APPROVED,
               licenceStartDate = LocalDate.now().minusDays(13),
+              approvedDate = LocalDateTime.of(2023, 9, 29, 16, 38, 42),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 3L,
@@ -598,6 +601,7 @@ class ApproverCaseloadServiceTest {
               comUsername = "tcom",
               licenceStatus = LicenceStatus.ACTIVE,
               licenceStartDate = LocalDate.now().minusDays(14),
+              approvedDate = LocalDateTime.of(2023, 9, 28, 16, 38, 42),
             ),
           ),
         )
@@ -636,105 +640,21 @@ class ApproverCaseloadServiceTest {
           ),
         )
 
-        val caseload = service.getRecentlyApproved(aListOfPrisonCodes)
+        val caseload = service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
         verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
         assertThat(caseload).hasSize(2)
-        assertThat(caseload).extracting<Long> { it.licenceId }.containsExactly(3, 2)
-      }
-
-      @Test
-      fun `null release dates are surfaced above other release dates for the recently approved caseload`() {
-        val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
-        val comUsernames = listOf("tcom", "jdoe", "tcom")
-
-        whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
-          listOf(
-            aLicenceSummaryApproverView.copy(
-              licenceStartDate = LocalDate.of(2024, 6, 21),
-            ),
-            aLicenceSummaryApproverView.copy(
-              licenceId = 2L,
-              bookingId = 12345,
-              nomisId = "B1234BB",
-              crn = "Y12345",
-              forename = "John",
-              surname = "Doe",
-              prisonCode = "ABC",
-              prisonDescription = "ABC (HMP)",
-              comUsername = "jdoe",
-              licenceStatus = LicenceStatus.APPROVED,
-              licenceStartDate = LocalDate.of(2024, 6, 20),
-            ),
-            aLicenceSummaryApproverView.copy(
-              licenceId = 3L,
-              bookingId = 67890,
-              nomisId = "C1234CC",
-              crn = "Z12345",
-              forename = "Jane",
-              surname = "Doe",
-              prisonCode = "MDI",
-              comUsername = "tcom",
-              licenceStatus = LicenceStatus.ACTIVE,
-              licenceStartDate = null,
-            ),
-          ),
-        )
-        whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
-          listOf(
-            aCommunityManager,
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
-                crn = "Y12345",
-                croNumber = "DE01/234567F",
-                pncNumber = null,
-                nomisId = "B1234BB",
-              ),
-            ),
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
-                crn = "Z12345",
-                croNumber = "GH01/234567I",
-                pncNumber = null,
-                nomisId = "C1234CC",
-              ),
-            ),
-          ),
-        )
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
-          listOf(
-            aStaffNameResponse,
-            aStaffNameResponse.copy(
-              id = 3000,
-              username = "jdoe",
-              name = Name(
-                forename = "Test2",
-                surname = "Test2",
-              ),
-              code = "DE012F",
-            ),
-            aStaffNameResponse,
-          ),
-        )
-
-        val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
-
-        verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
-        verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
-        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
-
-        assertThat(approvalCases).hasSize(3)
-        assertThat(approvalCases).extracting<Long> { it.licenceId }.containsExactly(3, 2, 1)
+        assertThat(caseload).extracting<Long> { it.licenceId }.containsExactly(2, 3)
       }
     }
 
     @Test
     fun `CADM prison code is filtered out`() {
       val aListOfPrisonCodes = listOf("ABC", "DEF", "CADM")
-      service.getRecentlyApproved(aListOfPrisonCodes)
+      service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
       verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(listOf("ABC", "DEF"))
     }
 
@@ -753,7 +673,7 @@ class ApproverCaseloadServiceTest {
       whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
       whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
-      val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
+      val approvalCases = service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
 
       assertThat(approvalCases).hasSize(1)
 
@@ -781,7 +701,7 @@ class ApproverCaseloadServiceTest {
       whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
       whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
-      val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
+      val approvalCases = service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
 
       assertThat(approvalCases).hasSize(1)
 
