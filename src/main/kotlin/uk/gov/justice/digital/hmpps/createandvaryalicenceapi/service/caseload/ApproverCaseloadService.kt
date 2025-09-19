@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.f
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class ApproverCaseloadService(
@@ -22,25 +23,27 @@ class ApproverCaseloadService(
 ) {
 
   fun getSortedApprovalNeededCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getApprovalNeeded(prisons))
-
-  fun getSortedRecentlyApprovedCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getRecentlyApproved(prisons), false)
+  fun getSortedRecentlyApprovedCases(prisons: List<String>): List<ApprovalCase> = sortByApprovedOnStartAndName(getRecentlyApproved(prisons))
 
   private fun sortByLicenceStartAndName(
     approvalCaseList: List<ApprovalCase>,
-    ascending: Boolean = true,
   ): List<ApprovalCase> {
     val comparator = compareBy<ApprovalCase, LocalDate?>(
-      nullsFirst(naturalOrder())
+      nullsFirst(naturalOrder()),
     ) { it.releaseDate }
       .thenBy { it.name?.lowercase().orEmpty() }
-
-    return if (ascending) {
-      approvalCaseList.sortedWith(comparator)
-    } else {
-      approvalCaseList.sortedWith(comparator.reversed())
-    }
+    return approvalCaseList.sortedWith(comparator)
   }
 
+  private fun sortByApprovedOnStartAndName(
+    approvalCaseList: List<ApprovalCase>,
+  ): List<ApprovalCase> {
+    val comparator = compareBy<ApprovalCase, LocalDateTime?>(
+      nullsFirst(naturalOrder()),
+    ) { it.approvedOn }
+      .thenBy { it.name?.lowercase().orEmpty() }
+    return approvalCaseList.sortedWith(comparator.reversed())
+  }
 
   private fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
     val licences = prisonApproverService.getLicencesForApproval(prisons.filterOutAdminPrisonCode())

@@ -21,7 +21,7 @@ values (1,'CRD','1.0', '100','A1234AA', 'Person', 'One', 'AP', 'SUBMITTED', 'MDI
         '2022-07-27 15:00:00', null, 1, null, null),
        (2,'CRD','1.0', 'A12345','B1234BB', 'Person', 'Two', 'AP', 'APPROVED', 'MDI', 'Moorland HMP', CURRENT_DATE - 10,
         1, 1,
-        '2022-07-27 15:00:00', null, 1, 'Test Approver', CURRENT_DATE),
+        '2022-07-27 15:00:00', null, 1, 'Test Approver', CURRENT_DATE - 10),
        (3,'CRD','1.0', '300','C1234CC', 'Person', 'Three', 'AP', 'ACTIVE', 'LEI', 'Leeds HMP', CURRENT_DATE-5,
         2, 1,
         '2022-07-27 15:00:00', null, 2, 'Test Approver', CURRENT_DATE-10),
@@ -49,4 +49,4 @@ values (1,'CRD','1.0', '100','A1234AA', 'Person', 'One', 'AP', 'SUBMITTED', 'MDI
         '2022-07-27 15:00:00', null, 1, 'Test Approver', CURRENT_DATE),
 	   (11,'CRD','1.0', 'D12345', 'C1234BC', 'Person', '9', 'AP', 'APPROVED', 'MDI', 'Moorland HMP',
 		CURRENT_DATE - 5, 1, 1,
-		'2022-07-27 15:00:00', null, 1, 'Test Approver', CURRENT_DATE);
+		'2022-07-27 15:00:00', null, 1, 'Test Approver', CURRENT_DATE - 5);
