@@ -21,7 +21,7 @@ class ApproverCaseloadService(
   private val deliusApiClient: DeliusApiClient,
 ) {
 
-  fun getSortedNeededApprovalCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getApprovalNeeded(prisons))
+  fun getSortedApprovalNeededCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getApprovalNeeded(prisons))
 
   fun getSortedRecentlyApprovedCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getRecentlyApproved(prisons))
 

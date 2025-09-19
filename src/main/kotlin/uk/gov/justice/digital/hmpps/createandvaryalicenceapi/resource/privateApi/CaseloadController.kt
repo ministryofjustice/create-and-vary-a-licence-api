@@ -193,7 +193,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getApprovalNeeded(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getSortedNeededApprovalCases(prisonCodes)
+  fun getApprovalNeeded(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getSortedApprovalNeededCases(prisonCodes)
 
   @PostMapping("/caseload/prison-approver/recently-approved")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

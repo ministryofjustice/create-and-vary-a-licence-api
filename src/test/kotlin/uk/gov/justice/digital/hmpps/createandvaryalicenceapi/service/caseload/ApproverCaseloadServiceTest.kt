@@ -52,7 +52,7 @@ class ApproverCaseloadServiceTest {
         whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
-        val approvalCases = service.getSortedNeededApprovalCases(aListOfPrisonCodes)
+        val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
         assertThat(approvalCases).hasSize(1)
 
@@ -139,7 +139,7 @@ class ApproverCaseloadServiceTest {
           ),
         )
 
-        val approvalCases = service.getSortedNeededApprovalCases(aListOfPrisonCodes)
+        val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
         assertThat(approvalCases).hasSize(2)
 
@@ -248,7 +248,7 @@ class ApproverCaseloadServiceTest {
           ),
         )
 
-        val approvalCases = service.getSortedNeededApprovalCases(aListOfPrisonCodes)
+        val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
@@ -332,7 +332,7 @@ class ApproverCaseloadServiceTest {
           ),
         )
 
-        val approvalCases = service.getSortedNeededApprovalCases(aListOfPrisonCodes)
+        val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
@@ -346,7 +346,7 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `CADM prison caseload is filtered out`() {
       val aListOfPrisonCodes = listOf("ABC", "DEF", "CADM")
-      service.getSortedNeededApprovalCases(aListOfPrisonCodes)
+      service.getSortedApprovalNeededCases(aListOfPrisonCodes)
       verify(prisonApproverService, times(1)).getLicencesForApproval(listOf("ABC", "DEF"))
     }
 
@@ -360,7 +360,7 @@ class ApproverCaseloadServiceTest {
         ),
       )
 
-      val caseload = service.getSortedNeededApprovalCases(aListOfPrisonCodes)
+      val caseload = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
       verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
       verify(deliusApiClient, times(1)).getOffenderManagers(emptyList())
@@ -385,7 +385,7 @@ class ApproverCaseloadServiceTest {
       whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
       whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
-      val approvalCases = service.getSortedNeededApprovalCases(aListOfPrisonCodes)
+      val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
       assertThat(approvalCases).hasSize(1)
 

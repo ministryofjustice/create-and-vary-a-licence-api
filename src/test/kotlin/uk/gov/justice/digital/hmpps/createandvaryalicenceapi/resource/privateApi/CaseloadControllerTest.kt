@@ -99,7 +99,7 @@ class CaseloadControllerTest {
       licenceId = 1L,
     )
 
-    whenever(approverCaseloadService.getSortedNeededApprovalCases(request)).thenReturn(listOf(approvalCase))
+    whenever(approverCaseloadService.getSortedApprovalNeededCases(request)).thenReturn(listOf(approvalCase))
 
     val response = mvc.perform(
       post("/caseload/prison-approver/approval-needed")
@@ -112,7 +112,7 @@ class CaseloadControllerTest {
       .andReturn().response.contentAsString
 
     assertThat(mapper.readValue(response, Array<ApprovalCase>::class.java)).isEqualTo(arrayOf(approvalCase))
-    verify(approverCaseloadService, times(1)).getSortedNeededApprovalCases(request)
+    verify(approverCaseloadService, times(1)).getSortedApprovalNeededCases(request)
   }
 
   @Test
