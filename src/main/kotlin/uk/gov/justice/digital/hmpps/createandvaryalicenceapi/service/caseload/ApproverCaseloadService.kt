@@ -23,16 +23,24 @@ class ApproverCaseloadService(
 
   fun getSortedApprovalNeededCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getApprovalNeeded(prisons))
 
-  fun getSortedRecentlyApprovedCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getRecentlyApproved(prisons))
+  fun getSortedRecentlyApprovedCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getRecentlyApproved(prisons), false)
 
   private fun sortByLicenceStartAndName(
     approvalCaseList: List<ApprovalCase>,
-  ): List<ApprovalCase> = approvalCaseList.sortedWith(
-    compareBy<ApprovalCase, LocalDate?>(
-      nullsFirst(naturalOrder()),
+    ascending: Boolean = true,
+  ): List<ApprovalCase> {
+    val comparator = compareBy<ApprovalCase, LocalDate?>(
+      nullsFirst(naturalOrder())
     ) { it.releaseDate }
-      .thenBy { it.name?.lowercase().orEmpty() },
-  )
+      .thenBy { it.name?.lowercase().orEmpty() }
+
+    return if (ascending) {
+      approvalCaseList.sortedWith(comparator)
+    } else {
+      approvalCaseList.sortedWith(comparator.reversed())
+    }
+  }
+
 
   private fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
     val licences = prisonApproverService.getLicencesForApproval(prisons.filterOutAdminPrisonCode())
