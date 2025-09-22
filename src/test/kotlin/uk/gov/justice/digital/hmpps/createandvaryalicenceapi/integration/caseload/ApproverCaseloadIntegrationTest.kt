@@ -137,7 +137,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     @Sql(
       "classpath:test_data/seed-recently-approved-licences.sql",
     )
-    fun `Successfully retrieve recently approved caseload in the dsc approval date and name order`() {
+    fun `Successfully retrieve recently approved caseload in the desc approval date and name order`() {
       deliusMockServer.stubGetManagersForRecentlyApprovedCaseload()
       deliusMockServer.stubGetStaffDetailsByUsername()
 
