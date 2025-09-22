@@ -59,7 +59,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     @Sql(
       "classpath:test_data/seed-submitted-licences.sql",
     )
-    fun `Successfully retrieve approval caseload`() {
+    fun `Successfully retrieve approval caseload in the asc release date and name order`() {
       deliusMockServer.stubGetManagersForGetApprovalCaseload()
       deliusMockServer.stubGetStaffDetailsByUsername()
 
@@ -73,10 +73,32 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ApprovalCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(3)
-      with(caseload.first()) {
+      assertThat(caseload).hasSize(4)
+      with(caseload[0]) {
+        assertThat(releaseDate).isNull()
         assertThat(name).isEqualTo("Person Seven")
         assertThat(prisonerNumber).isEqualTo("A1234BC")
+        assertThat(approvedBy).isNull()
+        assertThat(approvedOn).isNull()
+      }
+      with(caseload[1]) {
+        assertThat(releaseDate).isEqualTo(LocalDate.of(2022, 1, 1))
+        assertThat(name).isEqualTo("Person Two")
+        assertThat(prisonerNumber).isEqualTo("A1234AB")
+        assertThat(approvedBy).isNull()
+        assertThat(approvedOn).isNull()
+      }
+      with(caseload[2]) {
+        assertThat(releaseDate).isEqualTo(LocalDate.of(2022, 1, 1))
+        assertThat(name).isEqualTo("Person Z")
+        assertThat(prisonerNumber).isEqualTo("C1234BC")
+        assertThat(approvedBy).isNull()
+        assertThat(approvedOn).isNull()
+      }
+      with(caseload[3]) {
+        assertThat(releaseDate).isEqualTo(LocalDate.of(2024, 3, 14))
+        assertThat(name).isEqualTo("Person Eight")
+        assertThat(prisonerNumber).isEqualTo("B1234BC")
         assertThat(approvedBy).isNull()
         assertThat(approvedOn).isNull()
       }
@@ -115,7 +137,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     @Sql(
       "classpath:test_data/seed-recently-approved-licences.sql",
     )
-    fun `Successfully retrieve recently approved caseload`() {
+    fun `Successfully retrieve recently approved caseload in the desc approval date and name order`() {
       deliusMockServer.stubGetManagersForRecentlyApprovedCaseload()
       deliusMockServer.stubGetStaffDetailsByUsername()
 
@@ -129,20 +151,30 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ApprovalCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(2)
-      with(caseload.first()) {
-        assertThat(name).isEqualTo("Person Two")
-        assertThat(prisonerNumber).isEqualTo("B1234BB")
-        assertThat(approvedBy).isNotNull()
-        assertThat(approvedOn).isNotNull()
-        assertThat(releaseDate).isBeforeOrEqualTo(LocalDate.now().minusDays(10))
-      }
-      with(caseload.last()) {
+      assertThat(caseload).hasSize(3)
+      with(caseload[0]) {
         assertThat(name).isEqualTo("Person Eight")
+        assertThat(approvedOn?.toLocalDate()).isEqualTo(LocalDate.now())
         assertThat(prisonerNumber).isEqualTo("F2504MG")
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
-        assertThat(releaseDate).isBeforeOrEqualTo(LocalDate.now().minusDays(10))
+        assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
+      }
+      with(caseload[1]) {
+        assertThat(name).isEqualTo("Person 9")
+        assertThat(approvedOn?.toLocalDate()).isEqualTo(LocalDate.now().minusDays(5))
+        assertThat(prisonerNumber).isEqualTo("C1234BC")
+        assertThat(approvedBy).isNotNull()
+        assertThat(approvedOn).isNotNull()
+        assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
+      }
+      with(caseload[2]) {
+        assertThat(name).isEqualTo("Person Two")
+        assertThat(approvedOn?.toLocalDate()).isEqualTo(LocalDate.now().minusDays(10))
+        assertThat(prisonerNumber).isEqualTo("B1234BB")
+        assertThat(approvedBy).isNotNull()
+        assertThat(approvedOn).isNotNull()
+        assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
       }
     }
   }
