@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.f
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -125,10 +126,13 @@ class CaCaseloadService(
   }
 
   fun searchForOffenderOnPrisonCaseAdminCaseload(body: PrisonUserSearchRequest): PrisonCaseAdminSearchResult {
-    val inPrisonResults = getPrisonOmuCaseload(body.prisonCaseloads, body.query)
-    val onProbationResults = getProbationOmuCaseload(body.prisonCaseloads, body.query)
+    val prisonCases = getPrisonOmuCaseload(body.prisonCaseloads, body.query)
 
-    return PrisonCaseAdminSearchResult(inPrisonResults, onProbationResults)
+    val (attentionNeededCases, inPrisonCases) = prisonCases.partition { it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
+
+    val probationCases = getProbationOmuCaseload(body.prisonCaseloads, body.query)
+
+    return PrisonCaseAdminSearchResult(inPrisonCases, probationCases, attentionNeededCases)
   }
 
   fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
