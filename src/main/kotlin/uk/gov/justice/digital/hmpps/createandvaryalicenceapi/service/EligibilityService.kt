@@ -7,6 +7,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import java.time.Clock
 import java.time.LocalDate
 
+data class EligibilityAssessment(
+  val genericIneligibilityReasons: List<String> = emptyList(),
+  val crdIneligibilityReasons: List<String> = emptyList(),
+  val prrdIneligibilityReasons: List<String> = emptyList(),
+  val isEligible: Boolean,
+)
+
 @Service
 class EligibilityService(
   private val clock: Clock,
