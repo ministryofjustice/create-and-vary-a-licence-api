@@ -91,9 +91,9 @@ enum class LicenceKind(
   TIME_SERVED(
     TimeServedLicence::class.java,
     { IN_PROGRESS },
-    { LicenceEventType.TIME_SERVED_CREATED },
+    { LicenceEventType.CREATED },
     { error("Time served licences cannot be copied") },
-    { LicenceEventType.TIME_SERVED_SUBMITTED },
+    { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.TIME_SERVED_LICENCE_ACTIVATED },
     { LicenceDomainEventType.TIME_SERVED_LICENCE_INACTIVATED },
   ),
