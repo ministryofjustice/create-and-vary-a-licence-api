@@ -221,6 +221,31 @@ class DeliusMockServer : WireMockServer(8093) {
                   "email": "user@test.com"
                 },
                 {
+                  "code": "staff-code-1",
+                  "case": {
+                    "crn": "D12345",
+                    "nomisId": "C1234BC"
+                  },
+                  "name": {
+                    "forename": "Test1",
+                    "surname": "Test1"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-1",
+                    "description": "staff-description-1",
+                    "borough": { "code": "borough-code-1", "description": "borough-description-1" },
+                    "district": { "code": "district-code-1", "description": "district-description-1" },
+                    "provider": { "code": "probationArea-code-1", "description": "probationArea-description-1" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-1", 
+                    "description": "probationArea-description-1"
+                  },
+                  "unallocated": false,
+                  "email": "user@test.com"
+                },
+                {
                   "code": "staff-code-2",
                   "case": {
                     "crn": "B12345",
@@ -300,6 +325,40 @@ class DeliusMockServer : WireMockServer(8093) {
                 "case": {
                   "crn": "A12345",
                   "nomisId": "B1234BB"
+                },
+                "name": {
+                  "forename": "Test1",
+                  "surname": "Test1"
+                },
+                "allocationDate": "2022-01-02",
+                "team": {
+                  "code": "team-code-1",
+                  "description": "staff-description-1",
+                  "borough": {
+                    "code": "borough-code-1",
+                    "description": "borough-description-1"
+                  },
+                  "district": {
+                    "code": "district-code-1",
+                    "description": "district-description-1"
+                  },
+                  "provider": {
+                    "code": "probationArea-code-1",
+                    "description": "probationArea-description-1"
+                  }
+                },
+                "provider": {
+                  "code": "probationArea-code-1",
+                  "description": "probationArea-description-1"
+                },
+                "unallocated": false,
+                "email": "user@test.com"
+              },
+              {
+                "code": "staff-code-1",
+                "case": {
+                  "crn": "D12345",
+                  "nomisId": "C1234BC"
                 },
                 "name": {
                   "forename": "Test1",

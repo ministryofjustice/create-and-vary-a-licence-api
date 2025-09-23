@@ -99,7 +99,7 @@ class CaseloadControllerTest {
       licenceId = 1L,
     )
 
-    whenever(approverCaseloadService.getApprovalNeeded(request)).thenReturn(listOf(approvalCase))
+    whenever(approverCaseloadService.getSortedApprovalNeededCases(request)).thenReturn(listOf(approvalCase))
 
     val response = mvc.perform(
       post("/caseload/prison-approver/approval-needed")
@@ -112,7 +112,7 @@ class CaseloadControllerTest {
       .andReturn().response.contentAsString
 
     assertThat(mapper.readValue(response, Array<ApprovalCase>::class.java)).isEqualTo(arrayOf(approvalCase))
-    verify(approverCaseloadService, times(1)).getApprovalNeeded(request)
+    verify(approverCaseloadService, times(1)).getSortedApprovalNeededCases(request)
   }
 
   @Test
@@ -126,7 +126,7 @@ class CaseloadControllerTest {
       licenceId = 1L,
     )
 
-    whenever(approverCaseloadService.getRecentlyApproved(request)).thenReturn(listOf(approvalCase))
+    whenever(approverCaseloadService.getSortedRecentlyApprovedCases(request)).thenReturn(listOf(approvalCase))
 
     val response = mvc.perform(
       post("/caseload/prison-approver/recently-approved")
@@ -139,7 +139,7 @@ class CaseloadControllerTest {
       .andReturn().response.contentAsString
 
     assertThat(mapper.readValue(response, Array<ApprovalCase>::class.java)).isEqualTo(arrayOf(approvalCase))
-    verify(approverCaseloadService, times(1)).getRecentlyApproved(request)
+    verify(approverCaseloadService, times(1)).getSortedRecentlyApprovedCases(request)
   }
 
   @Test
