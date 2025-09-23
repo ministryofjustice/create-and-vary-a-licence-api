@@ -28,7 +28,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
-import kotlin.collections.first
 
 private const val GET_PROBATION_CASELOAD = "/caseload/case-admin/probation-view"
 private const val SEARCH_PRISONERS_CA_CASELOAD = "/caseload/case-admin/case-search"
@@ -162,8 +161,9 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<PrisonCaseAdminSearchResult>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.inPrisonResults).hasSize(3)
+      assertThat(caseload.inPrisonResults).hasSize(2)
       assertThat(caseload.onProbationResults).hasSize(2)
+      assertThat(caseload.attentionNeededResults).hasSize(1)
 
       with(caseload.inPrisonResults.first()) {
         assertThat(name).isEqualTo("Person Two")
