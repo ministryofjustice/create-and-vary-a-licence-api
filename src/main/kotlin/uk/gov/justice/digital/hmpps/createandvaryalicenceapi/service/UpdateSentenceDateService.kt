@@ -156,7 +156,7 @@ class UpdateSentenceDateService(
       },
     )
 
-    if (licence.kind == LicenceKind.PRRD && licence.statusCode == IN_PROGRESS) {
+    if (licence.kind == LicenceKind.PRRD) {
       val prrdChange = dateChanges.firstOrNull { it.type == LicenceDateType.PRRD }
       if (prrdChange != null) {
         if (prrdChange.oldDate != null && prrdChange.newDate == null) {
