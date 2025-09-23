@@ -160,10 +160,10 @@ class UpdateSentenceDateService(
       val prrdChange = dateChanges.firstOrNull { it.type == LicenceDateType.PRRD }
       if (prrdChange != null) {
         if (prrdChange.oldDate != null && prrdChange.newDate == null) {
-          log.info("PRRD licence with id ${licence.id}, status ${licence.statusCode} has had a PRRD added")
+          log.info("PRRD licence with id ${licence.id}, status ${licence.statusCode} has had a PRRD removed")
         }
         if (prrdChange.oldDate == null && prrdChange.newDate != null) {
-          log.info("PRRD licence with id ${licence.id}, status ${licence.statusCode} has had a PRRD removed")
+          log.info("PRRD licence with id ${licence.id}, status ${licence.statusCode} has had a PRRD added")
         }
       }
     }
