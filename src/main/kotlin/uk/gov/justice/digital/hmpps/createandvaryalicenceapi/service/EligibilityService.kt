@@ -34,9 +34,6 @@ class EligibilityService(
       val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner)
       val prrdIneligibilityReasons = if (permitRecalls) getPrrdIneligibilityReasons(prisoner) else emptyList()
 
-      println(!hasConditionalReleaseDate(prisoner))
-      println(crdIneligibilityReasons)
-
       val isEligible = genericIneligibilityReasons.isEmpty() && (crdIneligibilityReasons.isEmpty() || (permitRecalls && prrdIneligibilityReasons.isEmpty()))
 
       return@map prisoner.prisonerNumber to EligibilityAssessment(
@@ -78,8 +75,6 @@ class EligibilityService(
       !isRecallCase(prisoner) to "is a recall case",
     )
 
-    println(eligibilityCriteria)
-
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
   }
 
@@ -87,10 +82,8 @@ class EligibilityService(
     val eligibilityCriteria = listOf(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
-      prrdIsBeforeSled(prisoner) to "post recall release date is not before SLED",
+      hasPrrdBeforeSled(prisoner) to "post recall release date is not before SLED",
     )
-
-    println(eligibilityCriteria)
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
   }
@@ -145,7 +138,7 @@ class EligibilityService(
 
   private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
 
-  private fun prrdIsBeforeSled(prisoner: PrisonerSearchPrisoner): Boolean {
+  private fun hasPrrdBeforeSled(prisoner: PrisonerSearchPrisoner): Boolean {
     if (prisoner.postRecallReleaseDate == null) return true
 
     return prisoner.postRecallReleaseDate.isBefore(prisoner.licenceExpiryDate) &&
