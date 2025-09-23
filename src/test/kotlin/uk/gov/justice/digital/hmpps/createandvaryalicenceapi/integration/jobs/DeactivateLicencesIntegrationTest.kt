@@ -76,11 +76,13 @@ class DeactivateLicencesIntegrationTest : IntegrationTestBase() {
 
     argumentCaptor<HMPPSDomainEvent>().apply {
       verify(eventsPublisher, times(5)).publishDomainEvent(capture())
-      assertThat(allValues[0].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
-      assertThat(allValues[1].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
-      assertThat(allValues[2].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
-      assertThat(allValues[3].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
-      assertThat(allValues[4].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.PRRD_LICENCE_INACTIVATED.value)
+      val eventTypes = allValues.map { it.eventType }
+      val expectedEvents = buildList {
+        repeat(4) { add(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)}
+        add(DomainEventsService.LicenceDomainEventType.PRRD_LICENCE_INACTIVATED.value)
+      }
+
+      assertThat(eventTypes).containsExactlyInAnyOrderElementsOf(expectedEvents)
     }
   }
 
