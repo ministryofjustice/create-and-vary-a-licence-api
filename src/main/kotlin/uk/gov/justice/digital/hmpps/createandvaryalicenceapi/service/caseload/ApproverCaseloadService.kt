@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.f
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Service
 class ApproverCaseloadService(
@@ -38,11 +37,9 @@ class ApproverCaseloadService(
   private fun sortByApprovedOnAndName(
     approvalCaseList: List<ApprovalCase>,
   ): List<ApprovalCase> {
-    val comparator = compareBy<ApprovalCase, LocalDateTime?>(
-      nullsFirst(naturalOrder()),
-    ) { it.approvedOn }
+    val comparator = compareByDescending<ApprovalCase> { it.approvedOn }
       .thenBy { it.name?.lowercase().orEmpty() }
-    return approvalCaseList.sortedWith(comparator.reversed())
+    return approvalCaseList.sortedWith(comparator)
   }
 
   private fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
