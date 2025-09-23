@@ -149,7 +149,8 @@ class CaseloadControllerTest {
       setOf("MDI"),
     )
 
-    val result = PrisonCaseAdminSearchResult(listOf(TestData.caCase().copy(prisonerNumber = "ABC")), emptyList())
+    val result =
+      PrisonCaseAdminSearchResult(listOf(TestData.caCase().copy(prisonerNumber = "ABC")), emptyList(), emptyList())
 
     whenever(caCaseloadService.searchForOffenderOnPrisonCaseAdminCaseload(request)).thenReturn(result)
 
