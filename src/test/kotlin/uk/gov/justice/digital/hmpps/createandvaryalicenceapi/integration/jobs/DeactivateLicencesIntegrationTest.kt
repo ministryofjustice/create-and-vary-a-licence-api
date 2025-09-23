@@ -78,7 +78,7 @@ class DeactivateLicencesIntegrationTest : IntegrationTestBase() {
       verify(eventsPublisher, times(5)).publishDomainEvent(capture())
       val eventTypes = allValues.map { it.eventType }
       val expectedEvents = buildList {
-        repeat(4) { add(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)}
+        repeat(4) { add(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value) }
         add(DomainEventsService.LicenceDomainEventType.PRRD_LICENCE_INACTIVATED.value)
       }
 
