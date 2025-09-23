@@ -66,7 +66,7 @@ class DeactivateLicencesIntegrationTest : IntegrationTestBase() {
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
       }
-      .contains(
+      .containsExactlyInAnyOrder(
         tuple(1L, INACTIVE),
         tuple(6L, INACTIVE),
         tuple(7L, INACTIVE),
