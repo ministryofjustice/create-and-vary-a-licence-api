@@ -745,7 +745,7 @@ class UpdateSentenceDateServiceTest {
     logger.addAppender(logAppender)
     service.updateSentenceDates(1L)
 
-    assertThat(logAppender.events.map { it.message }).contains("PRRD licence with id 1, status IN_PROGRESS has had a PRRD added")
+    assertThat(logAppender.events.map { it.message }).contains("PRRD licence with id 1, status IN_PROGRESS has had a PRRD removed")
     logger.detachAppender(logAppender)
     verify(licenceService, times(1)).timeout(any(), any())
   }
@@ -779,7 +779,7 @@ class UpdateSentenceDateServiceTest {
 
     service.updateSentenceDates(1L)
 
-    assertThat(logAppender.events.map { it.message }).contains("PRRD licence with id 1, status IN_PROGRESS has had a PRRD removed")
+    assertThat(logAppender.events.map { it.message }).contains("PRRD licence with id 1, status IN_PROGRESS has had a PRRD added")
     logger.detachAppender(logAppender)
 
     verify(licenceService, times(1)).timeout(any(), any())
