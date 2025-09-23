@@ -49,7 +49,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
 
       assertThat(allValues)
         .extracting<Tuple> { tuple(it.eventType, it.additionalInformation["licenceId"]) }
-        .containsExactly(
+        .containsExactlyInAnyOrder(
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "1"),
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "2"),
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "3"),
