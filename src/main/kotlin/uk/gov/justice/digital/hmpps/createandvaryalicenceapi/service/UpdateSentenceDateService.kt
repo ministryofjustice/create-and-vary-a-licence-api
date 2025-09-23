@@ -123,16 +123,13 @@ class UpdateSentenceDateService(
   private fun selectCorrectKindForHardStopIfNeeded(
     licence: Licence,
     prisonerSearchPrisoner: PrisonerSearchPrisoner,
-  ): LicenceKind {
-    val kind = if (licence.kind == HARD_STOP) {
-      determineReleaseDateKind(
-        prisonerSearchPrisoner.postRecallReleaseDate,
-        prisonerSearchPrisoner.conditionalReleaseDate,
-      )
-    } else {
-      licence.kind
-    }
-    return kind
+  ): LicenceKind = if (licence.kind == HARD_STOP) {
+    determineReleaseDateKind(
+      prisonerSearchPrisoner.postRecallReleaseDate,
+      prisonerSearchPrisoner.conditionalReleaseDate,
+    )
+  } else {
+    licence.kind
   }
 
   @TimeServedConsiderations("Notify COM of date change event for a licence, if a COM is not set, should this be a team email?")

@@ -106,12 +106,12 @@ class ReleaseDateService(
     nomisRecord: PrisonerSearchPrisoner,
     licenceKind: LicenceKind? = null,
   ): LocalDate? {
-    val kind = licenceKind ?: determineReleaseDateKind(
+    val lsdKind = licenceKind ?: determineReleaseDateKind(
       nomisRecord.postRecallReleaseDate,
       nomisRecord.conditionalReleaseDate,
     )
 
-    return when (kind) {
+    return when (lsdKind) {
       HDC -> nomisRecord.homeDetentionCurfewActualDate
       PRRD -> nomisRecord.calculatePrrdLicenceStartDate()
       else -> calculateCrdLicenceStartDate(

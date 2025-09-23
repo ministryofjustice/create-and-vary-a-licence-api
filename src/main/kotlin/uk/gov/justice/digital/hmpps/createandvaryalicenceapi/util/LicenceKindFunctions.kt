@@ -7,6 +7,7 @@ fun determineReleaseDateKind(prrdDate: LocalDate?, crdDate: LocalDate?): Licence
   val usePrrd = prrdDate?.isTodayOrInTheFuture() == true && (crdDate == null || prrdDate.isAfter(crdDate))
   if (usePrrd) {
     return LicenceKind.PRRD
+  } else {
+    return LicenceKind.CRD
   }
-  return LicenceKind.CRD
 }
