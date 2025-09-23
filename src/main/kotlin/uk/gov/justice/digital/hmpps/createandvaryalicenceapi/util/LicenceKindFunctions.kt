@@ -3,8 +3,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util
 import java.time.LocalDate
 
 @TimeServedConsiderations("Any consideration here for time served licences when determining kind")
-fun determineReleaseDateKind(prrd: LocalDate?, crd: LocalDate?): LicenceKind = when {
-  // hdcad?.isTodayOrInTheFuture() == true -> LicenceKind.HDC
-  prrd?.isTodayOrInTheFuture() == true && (crd == null || prrd.isAfter(crd)) -> LicenceKind.PRRD
-  else -> LicenceKind.CRD
+fun determineReleaseDateKind(prrdDate: LocalDate?, crdDate: LocalDate?): LicenceKind {
+  val usePrrd = prrdDate?.isTodayOrInTheFuture() == true && (crdDate == null || prrdDate.isAfter(crdDate))
+  if (usePrrd) {
+    return LicenceKind.PRRD
+  }
+  return LicenceKind.CRD
 }
