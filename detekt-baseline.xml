@@ -90,7 +90,8 @@
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
     <ID>ReturnCount:ComAllocatedHandler.kt$ComAllocatedHandler$fun isValidOffenderManager(offenderManager: OffenderManager?, crn: String): Boolean</ID>
-    <ID>ReturnCount:EligibilityService.kt$EligibilityService$fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner, areaCode: String? = null): List&lt;String&gt;</ID>
+    <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun isEligibleIfOnAnExtendedDeterminateSentence(prisoner: PrisonerSearchPrisoner): Boolean</ID>
+    <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun isRecallCase(prisoner: PrisonerSearchPrisoner): Boolean</ID>
     <ID>ReturnCount:LsdRecalculationService.kt$LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate(numberOfLicences: Long, lastUpdatedLicenceId: Long = 0): Long</ID>
     <ID>ReturnCount:NotifyService.kt$NotifyService$private fun sendEmail( templateId: String, emailAddress: String, values: Map&lt;String, Any&gt;, ): Boolean</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
