@@ -811,7 +811,7 @@ class LicenceService(
       licenceEventRepository.saveAndFlush(
         EntityLicenceEvent(
           licenceId = licenceId,
-          eventType = LicenceEventType.HARD_STOP_REVIEWED_WITH_VARIATION,
+          eventType = LicenceEventType.REVIEWED_WITH_VARIATION,
           username = user.username,
           forenames = user.firstName,
           surname = user.lastName,
@@ -1029,7 +1029,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = LicenceEventType.HARD_STOP_REVIEWED_WITHOUT_VARIATION,
+        eventType = LicenceEventType.REVIEWED_WITHOUT_VARIATION,
         username = staffMember?.username ?: SYSTEM_USER,
         forenames = staffMember?.firstName,
         surname = staffMember?.lastName,
