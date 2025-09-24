@@ -589,6 +589,9 @@ object TestData {
 
   fun prisonerSearchResult(
     conditionalReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
+    conditionalReleaseDateOverrideDate: LocalDate? = null,
+    sentenceStartDate: LocalDate? = LocalDate.of(2018, 10, 22),
+    confirmedReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
     postRecallReleaseDate: LocalDate? = null,
   ) = PrisonerSearchPrisoner(
     prisonerNumber = "A1234AA",
@@ -598,8 +601,9 @@ object TestData {
     licenceExpiryDate = LocalDate.of(2021, 10, 22),
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
     releaseDate = LocalDate.of(2021, 10, 22),
-    confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+    confirmedReleaseDate = confirmedReleaseDate,
     conditionalReleaseDate = conditionalReleaseDate,
+    conditionalReleaseDateOverrideDate = conditionalReleaseDateOverrideDate,
     legalStatus = "SENTENCED",
     indeterminateSentence = false,
     recall = false,
@@ -609,7 +613,7 @@ object TestData {
     firstName = "A",
     lastName = "Prisoner",
     dateOfBirth = LocalDate.of(1985, 12, 28),
-    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceStartDate = sentenceStartDate,
     sentenceExpiryDate = LocalDate.of(2021, 10, 22),
     postRecallReleaseDate = postRecallReleaseDate,
   )
