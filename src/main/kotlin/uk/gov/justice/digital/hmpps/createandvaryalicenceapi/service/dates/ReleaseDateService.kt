@@ -102,6 +102,7 @@ class ReleaseDateService(
     }
   }
 
+  @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
     licenceKind: LicenceKind? = null,
