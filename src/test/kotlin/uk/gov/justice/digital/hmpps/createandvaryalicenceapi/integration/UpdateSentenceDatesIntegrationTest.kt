@@ -5,6 +5,10 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -24,9 +28,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   @Autowired
@@ -41,8 +47,11 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
 
+  @Autowired
+  lateinit var workingDaysService: WorkingDaysService
+
   @BeforeEach
-  fun reset() {
+  fun setup() {
     govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
   }
 
@@ -193,6 +202,80 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
     assertThat(result?.postRecallReleaseDate).isEqualTo(postRecallReleaseDate)
+  }
+
+  fun updateHardStopDateScenarios(): List<Arguments> {
+    val workingDays = workingDaysService.workingDaysAfter(LocalDate.now())
+
+    val tests = mutableListOf<Arguments>()
+
+    val prrdDate = workingDays.elementAt(0)
+    val lastWorkingDay = workingDaysService.getLastWorkingDay(prrdDate)
+
+    tests.add(
+      // PRRD calculation for LSD, confirmedReleaseDate is null, last working day from Prrd date expected outcome
+      Arguments.of(null, null, prrdDate, lastWorkingDay),
+    )
+
+    val confirmedAfterPrrdDate = workingDays.elementAt(1)
+    tests.add(
+      // PRRD calculation for LSD, confirmedReleaseDate after prrdDate, last working day from Prrd date expected outcome
+      Arguments.of(null, confirmedAfterPrrdDate, prrdDate, lastWorkingDay),
+    )
+
+    val confirmedBeforeCrdDate = workingDays.elementAt(2)
+    val crdDate = workingDays.elementAt(3)
+    tests.add(
+      // Crd PRRD calculation for LSD, confirmedReleaseDate expected outcome
+      Arguments.of(crdDate, confirmedBeforeCrdDate, prrdDate, confirmedBeforeCrdDate),
+    )
+
+    tests.add(
+      // Crd PRRD calculation for LSD, crd date expected outcome
+      Arguments.of(crdDate, null, null, crdDate),
+    )
+
+    return tests
+  }
+
+  @ParameterizedTest
+  @MethodSource("updateHardStopDateScenarios")
+  @Sql(
+    "classpath:test_data/seed-prison-case-administrator.sql",
+    "classpath:test_data/seed-hard-stop-licence-1.sql",
+  )
+  fun `Update sentence dates for Hard stop licence - licence start date calculation`(
+    conditionalReleaseDate: LocalDate?,
+    confirmedReleaseDate: LocalDate?,
+    postRecallReleaseDate: LocalDate?,
+    expectedLicenceStartDate: LocalDate,
+  ) {
+    // Given
+    prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+
+    mockPrisonerSearchResponse(
+      SentenceDetail(
+        conditionalReleaseDate = conditionalReleaseDate,
+        confirmedReleaseDate = confirmedReleaseDate,
+        postRecallReleaseDate = postRecallReleaseDate,
+      ),
+    )
+
+    // When
+    val result = webTestClient.put()
+      .uri("/licence/id/1/sentence-dates")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+
+    val licenceOptional = licenceRepository.findById(1)
+    assertThat(licenceOptional.isPresent).isTrue()
+    val licence = licenceOptional.get()
+    assertThat(licence.licenceStartDate).isEqualTo(expectedLicenceStartDate)
   }
 
   @Test

@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.f
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -62,6 +63,7 @@ class CaCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val releaseDateService: ReleaseDateService,
+  private val releaseDateLabelFactory: ReleaseDateLabelFactory,
 ) {
   fun getPrisonOmuCaseload(prisonCaseload: Set<String>, searchString: String?): List<CaCase> {
     val statuses = listOf(
@@ -124,10 +126,13 @@ class CaCaseloadService(
   }
 
   fun searchForOffenderOnPrisonCaseAdminCaseload(body: PrisonUserSearchRequest): PrisonCaseAdminSearchResult {
-    val inPrisonResults = getPrisonOmuCaseload(body.prisonCaseloads, body.query)
-    val onProbationResults = getProbationOmuCaseload(body.prisonCaseloads, body.query)
+    val prisonCases = getPrisonOmuCaseload(body.prisonCaseloads, body.query)
 
-    return PrisonCaseAdminSearchResult(inPrisonResults, onProbationResults)
+    val (attentionNeededCases, inPrisonCases) = prisonCases.partition { it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
+
+    val probationCases = getProbationOmuCaseload(body.prisonCaseloads, body.query)
+
+    return PrisonCaseAdminSearchResult(inPrisonCases, probationCases, attentionNeededCases)
   }
 
   fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
@@ -175,7 +180,7 @@ class CaCaseloadService(
         name = "${licence?.forename} ${licence?.surname}",
         prisonerNumber = licence?.nomisId!!,
         releaseDate = licence.licenceStartDate,
-        releaseDateLabel = ReleaseDateLabelFactory.fromLicenceSummary(licence),
+        releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
         licenceStatus = licence.licenceStatus,
         lastWorkedOnBy = licence.updatedByFullName,
         isDueForEarlyRelease = licence.isDueForEarlyRelease,
@@ -303,12 +308,19 @@ class CaCaseloadService(
       name = case.nomisRecord.let { "${it.firstName} ${it.lastName}".convertToTitleCase() },
       prisonerNumber = case.nomisRecord.prisonerNumber!!,
       releaseDate = case.licenceStartDate,
-      releaseDateLabel = ReleaseDateLabelFactory.fromPrisoner(case.licenceStartDate, case.nomisRecord),
+      releaseDateLabel = releaseDateLabelFactory.fromPrisoner(case.licenceStartDate, case.nomisRecord),
       licenceStatus = licenceStatus,
       nomisLegalStatus = case.nomisRecord.legalStatus,
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
-      tabType = Tabs.determineCaViewCasesTab(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder), case.licenceStartDate, licence = null, clock),
+      tabType = Tabs.determineCaViewCasesTab(
+        releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+          sentenceDateHolder,
+        ),
+        case.licenceStartDate,
+        licence = null,
+        clock,
+      ),
       probationPractitioner = ProbationPractitioner(
         staffCode = com?.code,
         name = com?.name?.fullName(),
@@ -349,7 +361,7 @@ class CaCaseloadService(
         name = licence.let { "${it?.forename} ${it?.surname}" },
         prisonerNumber = licence?.nomisId!!,
         releaseDate = releaseDate,
-        releaseDateLabel = ReleaseDateLabelFactory.fromLicenceSummary(licence),
+        releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
         licenceStatus = licence.licenceStatus,
         nomisLegalStatus = caseloadItem.prisoner.legalStatus,
         lastWorkedOnBy = licence.updatedByFullName,

@@ -33,6 +33,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -52,6 +54,9 @@ class ComCaseloadSearchServiceTest {
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val licenceCreationService = mock<LicenceCreationService>()
+  private val workingDaysService = mock<WorkingDaysService>()
+
+  private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
 
   private val service = ComCaseloadSearchService(
     licenceRepository,
@@ -61,6 +66,7 @@ class ComCaseloadSearchServiceTest {
     eligibilityService,
     releaseDateService,
     clock,
+    releaseDateLabelFactory,
   )
 
   @BeforeEach
@@ -508,7 +514,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -539,7 +545,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -570,7 +576,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -791,6 +797,7 @@ class ComCaseloadSearchServiceTest {
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to licenceStartDate))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(workingDaysService.getLastWorkingDay(prisoner.postRecallReleaseDate)).thenReturn(prisoner.postRecallReleaseDate)
 
     // When
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -821,6 +828,7 @@ class ComCaseloadSearchServiceTest {
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(prrdLicence))
+    whenever(workingDaysService.getLastWorkingDay(prisoner.postRecallReleaseDate)).thenReturn(licenceStartDate)
 
     // When
     val result = service.searchForOffenderOnStaffCaseload(request)

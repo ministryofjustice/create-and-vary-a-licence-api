@@ -106,10 +106,20 @@ class ReleaseDateService(
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
     licenceKind: LicenceKind? = null,
-  ): LocalDate? = when (licenceKind ?: determineReleaseDateKind(nomisRecord.postRecallReleaseDate, nomisRecord.conditionalReleaseDate)) {
-    HDC -> nomisRecord.homeDetentionCurfewActualDate
-    PRRD -> nomisRecord.calculatePrrdLicenceStartDate()
-    else -> calculateCrdLicenceStartDate(nomisRecord, iS91DeterminationService.isIS91Case(nomisRecord))
+  ): LocalDate? {
+    val lsdKind = licenceKind ?: determineReleaseDateKind(
+      nomisRecord.postRecallReleaseDate,
+      nomisRecord.conditionalReleaseDate,
+    )
+
+    return when (lsdKind) {
+      HDC -> nomisRecord.homeDetentionCurfewActualDate
+      PRRD -> nomisRecord.calculatePrrdLicenceStartDate()
+      else -> calculateCrdLicenceStartDate(
+        nomisRecord,
+        iS91DeterminationService.isIS91Case(nomisRecord),
+      )
+    }
   }
 
   @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
@@ -154,7 +164,7 @@ class ReleaseDateService(
     return 2.workingDaysBefore(hardStopDate)
   }
 
-  private fun Int.workingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(this).last()
+  fun Int.workingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(this).last()
 
   private fun getEarliestDateBefore(
     days: Int,

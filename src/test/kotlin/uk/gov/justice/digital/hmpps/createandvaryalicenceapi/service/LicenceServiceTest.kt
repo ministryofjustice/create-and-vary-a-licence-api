@@ -3150,7 +3150,7 @@ class LicenceServiceTest {
         assertThat(firstValue.eventDescription).isEqualTo("Licence reviewed without being varied for John Smith")
         assertThat(firstValue.forenames).isEqualTo("X")
         assertThat(firstValue.surname).isEqualTo("Y")
-        assertThat(firstValue.eventType).isEqualTo(LicenceEventType.HARD_STOP_REVIEWED_WITHOUT_VARIATION)
+        assertThat(firstValue.eventType).isEqualTo(LicenceEventType.REVIEWED_WITHOUT_VARIATION)
       }
     }
 
@@ -3301,7 +3301,7 @@ class LicenceServiceTest {
         assertThat(firstValue.eventType).isEqualTo(LicenceEventType.ACTIVATED)
 
         assertThat(secondValue.eventDescription).isEqualTo("Licence reviewed with variation for John Smith")
-        assertThat(secondValue.eventType).isEqualTo(LicenceEventType.HARD_STOP_REVIEWED_WITH_VARIATION)
+        assertThat(secondValue.eventType).isEqualTo(LicenceEventType.REVIEWED_WITH_VARIATION)
 
         assertThat(thirdValue.eventDescription).isEqualTo("Licence updated to INACTIVE for John Smith")
         assertThat(thirdValue.eventType).isEqualTo(LicenceEventType.SUPERSEDED)

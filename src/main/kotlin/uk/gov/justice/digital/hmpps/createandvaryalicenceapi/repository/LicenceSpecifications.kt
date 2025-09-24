@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.includedIn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 
 data class LicenceQueryObject(
   val prisonCodes: List<String>? = null,
@@ -21,7 +20,6 @@ data class LicenceQueryObject(
   val sortOrder: String? = null,
 )
 
-@TimeServedConsiderations("Initially used to fetch the responsibleCOM for the joins in the specification")
 fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasStatusCodeIn(statusCodes),
   hasPrisonCodeIn(prisonCodes),

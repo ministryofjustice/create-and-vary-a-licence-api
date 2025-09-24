@@ -193,7 +193,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getApprovalNeeded(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getApprovalNeeded(prisonCodes)
+  fun getApprovalNeeded(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getSortedApprovalNeededCases(prisonCodes)
 
   @PostMapping("/caseload/prison-approver/recently-approved")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -236,7 +236,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getRecentlyApproved(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getRecentlyApproved(prisonCodes)
+  fun getRecentlyApproved(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getSortedRecentlyApprovedCases(prisonCodes)
 
   @PostMapping("/caseload/prison-approver/case-search")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -286,8 +286,8 @@ class CaseloadController(
   )
   fun searchForOffenderOnApproverCaseload(
     @Valid @RequestBody
-    body: ApproverSearchRequest,
-  ) = approverCaseloadService.searchForOffenderOnApproverCaseload(body)
+    approverSearchRequest: ApproverSearchRequest,
+  ) = approverCaseloadService.searchForOffenderOnApproverCaseload(approverSearchRequest)
 
   @PostMapping("/caseload/case-admin/prison-view")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

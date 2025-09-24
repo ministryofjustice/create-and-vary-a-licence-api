@@ -19,11 +19,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSente
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.HardstopChangeType.NO_LONGER_IN_HARDSTOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.DateChange
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.DateChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.reifySentenceDates
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -31,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 
 @Service
 class UpdateSentenceDateService(
@@ -49,7 +53,10 @@ class UpdateSentenceDateService(
     val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val prisoner = prisonApiClient.getPrisonerDetail(licence.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
-    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, licence.kind)
+
+    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(licence, prisonerSearchPrisoner)
+
+    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
@@ -60,7 +67,7 @@ class UpdateSentenceDateService(
     val dateChanges = licence.getDateChanges(sentenceDates, licenceStartDate)
 
     logUpdate(
-      licenceId,
+      licence,
       dateChanges.isMaterial,
       dateChanges.filter { !it.type.hdcOnly || licence is HdcLicence },
     )
@@ -109,6 +116,22 @@ class UpdateSentenceDateService(
     }
   }
 
+  /*
+   * This code is to make sure that hard stop licence do not default to CRD LSD Calculations in getLicenceStartDate
+   * and if they are PRRD the LSD is calculated appropriately
+   */
+  private fun selectCorrectKindForHardStopIfNeeded(
+    licence: Licence,
+    prisonerSearchPrisoner: PrisonerSearchPrisoner,
+  ): LicenceKind = if (licence.kind == HARD_STOP) {
+    determineReleaseDateKind(
+      prisonerSearchPrisoner.postRecallReleaseDate,
+      prisonerSearchPrisoner.conditionalReleaseDate,
+    )
+  } else {
+    licence.kind
+  }
+
   @TimeServedConsiderations("Notify COM of date change event for a licence, if a COM is not set, should this be a team email?")
   private fun notifyComOfUpdate(
     licence: Licence,
@@ -133,16 +156,16 @@ class UpdateSentenceDateService(
     )
   }
 
-  private fun logUpdate(licenceId: Long, isMaterial: Boolean, dateChanges: List<DateChange>) {
+  private fun logUpdate(licence: Licence, isMaterial: Boolean, dateChanges: List<DateChange>) {
     log.info(
       buildString {
-        append("Licence dates - ID $licenceId ")
+        append("Licence dates - ID ${licence.id} ")
         dateChanges.forEach { append("${it.type.name} ${it.oldDate} ") }
       },
     )
     log.info(
       buildString {
-        append("Event dates - ID $licenceId ")
+        append("Event dates - ID ${licence.id} ")
         dateChanges.forEach { append("${it.type.name} ${it.newDate} ") }
       },
     )
@@ -153,6 +176,18 @@ class UpdateSentenceDateService(
         append("isMaterial $isMaterial")
       },
     )
+
+    if (licence.kind == LicenceKind.PRRD) {
+      val prrdChange = dateChanges.firstOrNull { it.type == LicenceDateType.PRRD }
+      if (prrdChange != null) {
+        if (prrdChange.oldDate != null && prrdChange.newDate == null) {
+          log.info("PRRD licence with id ${licence.id}, status ${licence.statusCode} has had a PRRD removed")
+        }
+        if (prrdChange.oldDate == null && prrdChange.newDate != null) {
+          log.info("PRRD licence with id ${licence.id}, status ${licence.statusCode} has had a PRRD added")
+        }
+      }
+    }
   }
 
   private fun recordAuditEvent(licenceEntity: Licence, dateChanges: DateChanges) {
