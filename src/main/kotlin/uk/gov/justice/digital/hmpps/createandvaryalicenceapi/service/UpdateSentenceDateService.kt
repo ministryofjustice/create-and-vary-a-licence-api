@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Licen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.reifySentenceDates
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -33,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 
 @Service
 class UpdateSentenceDateService(
@@ -51,7 +53,10 @@ class UpdateSentenceDateService(
     val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val prisoner = prisonApiClient.getPrisonerDetail(licence.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
-    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, licence.kind)
+
+    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(licence, prisonerSearchPrisoner)
+
+    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
@@ -109,6 +114,22 @@ class UpdateSentenceDateService(
       )
       notifyComOfUpdate(licence, dateChanges, isNotApprovedForHdc)
     }
+  }
+
+  /*
+   * This code is to make sure that hard stop licence do not default to CRD LSD Calculations in getLicenceStartDate
+   * and if they are PRRD the LSD is calculated appropriately
+   */
+  private fun selectCorrectKindForHardStopIfNeeded(
+    licence: Licence,
+    prisonerSearchPrisoner: PrisonerSearchPrisoner,
+  ): LicenceKind = if (licence.kind == HARD_STOP) {
+    determineReleaseDateKind(
+      prisonerSearchPrisoner.postRecallReleaseDate,
+      prisonerSearchPrisoner.conditionalReleaseDate,
+    )
+  } else {
+    licence.kind
   }
 
   @TimeServedConsiderations("Notify COM of date change event for a licence, if a COM is not set, should this be a team email?")
