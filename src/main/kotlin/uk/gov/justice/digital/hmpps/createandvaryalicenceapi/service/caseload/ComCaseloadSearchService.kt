@@ -168,7 +168,6 @@ class ComCaseloadSearchService(
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
       isInHardStopPeriod = inHardStopPeriod,
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
       ),
@@ -181,7 +180,6 @@ class ComCaseloadSearchService(
     hardStopDate = releaseDateService.getHardStopDate(licence),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
-    isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
   )
 
@@ -198,7 +196,6 @@ class ComCaseloadSearchService(
     hardStopDate: LocalDate?,
     hardStopWarningDate: LocalDate?,
     isInHardStopPeriod: Boolean,
-    isDueForEarlyRelease: Boolean,
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   ): FoundProbationRecord = FoundProbationRecord(
     kind = licence.kind,
@@ -218,7 +215,6 @@ class ComCaseloadSearchService(
     hardStopDate = hardStopDate,
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
-    isDueForEarlyRelease = isDueForEarlyRelease,
     isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
     releaseDateLabel = releaseDateLabelFactory.fromLicence(licence),
     isReviewNeeded = when (licence) {

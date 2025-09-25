@@ -41,9 +41,6 @@ data class ApprovalCase(
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val approvedOn: LocalDateTime? = null,
 
-  @field:Schema(description = "Is the prisoner due for early release", example = "false")
-  val isDueForEarlyRelease: Boolean? = null,
-
   @field:Schema(description = "The details for the active supervising probation officer")
   val probationPractitioner: ProbationPractitioner? = null,
 

@@ -56,9 +56,6 @@ data class ComCase(
   @field:Schema(description = "Type of this licence", example = LicenceKinds.CRD)
   val kind: LicenceKind,
 
-  @field:Schema(description = "Is the prisoner due for early release", example = "false")
-  val isDueForEarlyRelease: Boolean,
-
   @field:Schema(description = "How this licence will need to be created", example = "PRISON_WILL_CREATE_THIS_LICENCE")
   val licenceCreationType: LicenceCreationType? = null,
 )

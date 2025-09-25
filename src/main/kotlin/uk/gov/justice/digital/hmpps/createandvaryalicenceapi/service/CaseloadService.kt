@@ -45,7 +45,6 @@ class CaseloadService(
         hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
         isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
         isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(sentenceDateHolder),
-        isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
         isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           sentenceDateHolder,
         ),

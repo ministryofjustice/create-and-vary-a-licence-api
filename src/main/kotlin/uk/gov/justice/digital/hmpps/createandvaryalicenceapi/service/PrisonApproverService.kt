@@ -81,7 +81,6 @@ class PrisonApproverService(
     hardStopDate = releaseDateService.getHardStopDate(this),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
-    isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 }

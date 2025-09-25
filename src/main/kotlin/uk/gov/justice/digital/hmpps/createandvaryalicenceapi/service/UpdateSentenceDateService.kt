@@ -55,7 +55,6 @@ class UpdateSentenceDateService(
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
 
     val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(licence, prisonerSearchPrisoner)
-
     val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
 
     val username = SecurityContextHolder.getContext().authentication.name

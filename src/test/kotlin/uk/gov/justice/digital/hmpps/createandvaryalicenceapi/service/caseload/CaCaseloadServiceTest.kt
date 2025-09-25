@@ -411,7 +411,6 @@ class CaCaseloadServiceTest {
             isDueToBeReleasedInTheNextTwoWorkingDays = true,
             conditionalReleaseDate = twoMonthsFromNow,
             actualReleaseDate = twoDaysFromNow,
-            isDueForEarlyRelease = true,
           ),
         ),
       )
@@ -483,7 +482,6 @@ class CaCaseloadServiceTest {
             licenceStartDate = twoDaysFromNow,
             conditionalReleaseDate = twoMonthsFromNow,
             actualReleaseDate = twoDaysFromNow,
-            isDueForEarlyRelease = true,
           ),
         ),
       )
@@ -542,7 +540,7 @@ class CaCaseloadServiceTest {
             tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             nomisLegalStatus = "SENTENCED",
             lastWorkedOnBy = "X Y",
-            isDueForEarlyRelease = true,
+
             isInHardStopPeriod = false,
             prisonCode = "BAI",
             prisonDescription = "Moorland (HMP)",
@@ -856,7 +854,7 @@ class CaCaseloadServiceTest {
                 staffIdentifier = null,
                 staffUsername = null,
               ),
-              isDueForEarlyRelease = false,
+
               lastWorkedOnBy = null,
             ),
           ),
@@ -1771,7 +1769,7 @@ class CaCaseloadServiceTest {
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
       licenceVersion = "1.0",
       isReviewNeeded = false,
-      isDueForEarlyRelease = false,
+
       isInHardStopPeriod = false,
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       updatedByFullName = "X Y",

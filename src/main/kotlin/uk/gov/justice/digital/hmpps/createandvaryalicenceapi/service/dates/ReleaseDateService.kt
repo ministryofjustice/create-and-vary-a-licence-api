@@ -37,16 +37,6 @@ class ReleaseDateService(
     return today >= hardStopDate && today <= sentenceDateHolder.licenceStartDate
   }
 
-  fun isDueForEarlyRelease(sentenceDateHolder: SentenceDateHolder): Boolean {
-    val actualReleaseDate = sentenceDateHolder.actualReleaseDate
-    val latestReleaseDate = sentenceDateHolder.latestReleaseDate
-
-    if (actualReleaseDate == null || latestReleaseDate == null) {
-      return false
-    }
-    return actualReleaseDate < 1.workingDaysBefore(latestReleaseDate)
-  }
-
   fun isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder: SentenceDateHolder): Boolean {
     val licenceStartDate = sentenceDateHolder.licenceStartDate ?: return false
     return LocalDate.now(clock) >= 2.workingDaysBefore(licenceStartDate) && LocalDate.now(clock) <= licenceStartDate
@@ -92,13 +82,10 @@ class ReleaseDateService(
   }
 
   fun getHardStopDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
-    val actualReleaseDate = sentenceDateHolder.actualReleaseDate
-    val latestReleaseDate = sentenceDateHolder.latestReleaseDate
-
+    val licenceStartDate = sentenceDateHolder.licenceStartDate
     return when {
-      latestReleaseDate == null -> null
-      actualReleaseDate != null && isExcludedFromHardstop(actualReleaseDate, latestReleaseDate) -> null
-      else -> calculateHardStopDate(latestReleaseDate)
+      licenceStartDate == null -> null
+      else -> calculateHardStopDate(licenceStartDate)
     }
   }
 
@@ -146,17 +133,10 @@ class ReleaseDateService(
     nomisRecord.determineLicenceStartDate()
   }
 
-  private fun calculateHardStopDate(conditionalReleaseDate: LocalDate): LocalDate {
-    val date =
-      if (conditionalReleaseDate.isNonWorkingDay()) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate
-    return 2.workingDaysBefore(date)
-  }
-
-  private fun isExcludedFromHardstop(actualReleaseDate: LocalDate, latestReleaseDate: LocalDate): Boolean {
-    if (latestReleaseDate.isNonWorkingDay()) {
-      return actualReleaseDate != 1.workingDaysBefore(latestReleaseDate)
-    }
-    return actualReleaseDate != latestReleaseDate
+  private fun calculateHardStopDate(licenceStartDate: LocalDate): LocalDate {
+    val adjustedLsd =
+      if (licenceStartDate.isNonWorkingDay()) 1.workingDaysBefore(licenceStartDate) else licenceStartDate
+    return 2.workingDaysBefore(adjustedLsd)
   }
 
   fun getHardStopWarningDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {

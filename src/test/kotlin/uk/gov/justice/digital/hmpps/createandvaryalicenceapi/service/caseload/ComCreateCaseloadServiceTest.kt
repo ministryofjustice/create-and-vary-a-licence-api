@@ -1301,7 +1301,7 @@ class ComCreateCaseloadServiceTest {
     licenceExpiryDate = licenceExpiryDate,
     comUsername = comUsername,
     isReviewNeeded = isReviewNeeded,
-    isDueForEarlyRelease = false,
+
     isInHardStopPeriod = false,
     isDueToBeReleasedInTheNextTwoWorkingDays = false,
     conditionalReleaseDate = conditionalReleaseDate,

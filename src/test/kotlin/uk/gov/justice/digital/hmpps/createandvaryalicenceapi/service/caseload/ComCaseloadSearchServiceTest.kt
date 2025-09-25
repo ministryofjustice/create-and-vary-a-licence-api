@@ -514,7 +514,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId.toLong())))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -545,7 +545,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId.toLong())))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -576,7 +576,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId.toLong())))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -652,7 +652,6 @@ class ComCaseloadSearchServiceTest {
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
-    whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -662,7 +661,6 @@ class ComCaseloadSearchServiceTest {
       assertThat(isInHardStopPeriod).isEqualTo(true)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
       assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
-      assertThat(isDueForEarlyRelease).isEqualTo(true)
       assertThat(isDueToBeReleasedInTheNextTwoWorkingDays).isEqualTo(true)
     }
   }
@@ -690,7 +688,6 @@ class ComCaseloadSearchServiceTest {
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
-    whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -700,7 +697,6 @@ class ComCaseloadSearchServiceTest {
       assertThat(isInHardStopPeriod).isEqualTo(true)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
       assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
-      assertThat(isDueForEarlyRelease).isEqualTo(true)
       assertThat(isDueToBeReleasedInTheNextTwoWorkingDays).isEqualTo(true)
     }
   }

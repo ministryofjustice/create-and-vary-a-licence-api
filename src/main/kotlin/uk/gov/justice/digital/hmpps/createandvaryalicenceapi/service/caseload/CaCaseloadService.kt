@@ -183,7 +183,6 @@ class CaCaseloadService(
         releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
         licenceStatus = licence.licenceStatus,
         lastWorkedOnBy = licence.updatedByFullName,
-        isDueForEarlyRelease = licence.isDueForEarlyRelease,
         isInHardStopPeriod = licence.isInHardStopPeriod,
         probationPractitioner = ProbationPractitioner(
           staffUsername = licence.comUsername,
@@ -311,7 +310,6 @@ class CaCaseloadService(
       releaseDateLabel = releaseDateLabelFactory.fromPrisoner(case.licenceStartDate, case.nomisRecord),
       licenceStatus = licenceStatus,
       nomisLegalStatus = case.nomisRecord.legalStatus,
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
       tabType = Tabs.determineCaViewCasesTab(
         releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
@@ -365,7 +363,6 @@ class CaCaseloadService(
         licenceStatus = licence.licenceStatus,
         nomisLegalStatus = caseloadItem.prisoner.legalStatus,
         lastWorkedOnBy = licence.updatedByFullName,
-        isDueForEarlyRelease = licence.isDueForEarlyRelease,
         isInHardStopPeriod = licence.isInHardStopPeriod,
         tabType = Tabs.determineCaViewCasesTab(
           releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.toSentenceDateHolder()),
