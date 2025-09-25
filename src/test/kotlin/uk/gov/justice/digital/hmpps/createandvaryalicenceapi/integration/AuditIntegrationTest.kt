@@ -66,6 +66,32 @@ class AuditIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-licence-id-2.sql",
+    "classpath:test_data/seed-audit-events.sql",
+  )
+  fun `Get audit events for a licence`() {
+    val result = webTestClient.post()
+      .uri("/audit/retrieve")
+      .bodyValue(AuditRequest(licenceId = 2L, startTime = null, endTime = null))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(AuditEvent::class.java)
+      .returnResult().responseBody
+
+    assertThat(result).hasSize(2)
+    assertThat(result)
+      .extracting<Tuple> { tuple(it.licenceId, it.username, it.summary, it.detail) }
+      .contains(
+        tuple(2L, "CVL_OMU", "Licence viewed for Person Two", "ID 2 type AP status INACTIVE version 2.0"),
+        tuple(2L, "CVL_OMU", "Licence viewed for Person Two", "ID 2 type AP status SUBMITTED version 2.0"),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
     "classpath:test_data/seed-audit-events.sql",
   )
   fun `Get audit events for a licence and user`() {
@@ -79,8 +105,6 @@ class AuditIntegrationTest : IntegrationTestBase() {
       .expectBodyList(AuditEvent::class.java)
       .returnResult().responseBody
 
-    log.info("Response was ${mapper.writeValueAsString(result)}")
-
     assertThat(result).hasSize(3)
     assertThat(result)
       .extracting<Tuple> { tuple(it.licenceId, it.username, it.summary, it.detail) }
@@ -88,6 +112,70 @@ class AuditIntegrationTest : IntegrationTestBase() {
         tuple(1L, "USER", "Summary1", "Detail1"),
         tuple(1L, "USER", "Summary2", "Detail2"),
         tuple(1L, "USER", "Summary3", "Detail3"),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-audit-events.sql",
+  )
+  fun `Get audit events for a licence for all dates`() {
+    val result = webTestClient.post()
+      .uri("/audit/retrieve")
+      .bodyValue(AuditRequest(licenceId = 1L, startTime = null, endTime = null))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(AuditEvent::class.java)
+      .returnResult().responseBody
+
+    log.info("Response was ${mapper.writeValueAsString(result)}")
+
+    assertThat(result).hasSize(4)
+    assertThat(result)
+      .extracting<Tuple> { tuple(it.licenceId, it.username, it.summary, it.detail) }
+      .contains(
+        tuple(1L, "USER", "Summary1", "Detail1"),
+        tuple(1L, "USER", "Summary2", "Detail2"),
+        tuple(1L, "USER", "Summary3", "Detail3"),
+        tuple(1L, "CVL_OMU", "Licence viewed for Person One", "ID 1 type AP status APPROVED version 2.0"),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-audit-events.sql",
+  )
+  fun `Get audit events by date range`() {
+    val result = webTestClient.post()
+      .uri("/audit/retrieve")
+      .bodyValue(
+        AuditRequest(
+          licenceId = null,
+          startTime = LocalDateTime.now().minusDays(1),
+          endTime = LocalDateTime.now().plusMinutes(8),
+        ),
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(AuditEvent::class.java)
+      .returnResult().responseBody
+
+    log.info("Response was ${mapper.writeValueAsString(result)}")
+
+    assertThat(result).hasSize(4)
+    assertThat(result)
+      .extracting<Tuple> { tuple(it.licenceId, it.username, it.summary, it.detail) }
+      .contains(
+        tuple(1L, "USER", "Summary1", "Detail1"),
+        tuple(1L, "USER", "Summary2", "Detail2"),
+        tuple(1L, "USER", "Summary3", "Detail3"),
+        tuple(4L, "CVL_OMU", "Licence viewed for Person Seven", "ID 4 type AP status IN_PROGRESS version 3.0"),
       )
   }
 

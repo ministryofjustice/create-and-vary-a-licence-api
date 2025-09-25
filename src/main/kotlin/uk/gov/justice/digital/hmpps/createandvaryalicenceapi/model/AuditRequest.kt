@@ -17,9 +17,9 @@ data class AuditRequest(
     example = "13/11/2021 23:14:13",
   )
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val startTime: LocalDateTime = LocalDateTime.now().minusMonths(1),
+  val startTime: LocalDateTime? = LocalDateTime.now().minusMonths(1),
 
   @field:Schema(description = "The end time to query for events (default is now)", example = "12/01/2022 23:14:13")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val endTime: LocalDateTime = LocalDateTime.now(),
+  val endTime: LocalDateTime? = LocalDateTime.now(),
 )
