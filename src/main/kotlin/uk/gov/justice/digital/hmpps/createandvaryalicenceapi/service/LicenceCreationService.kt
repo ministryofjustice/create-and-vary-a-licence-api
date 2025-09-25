@@ -228,7 +228,7 @@ class LicenceCreationService(
     val today = LocalDate.now()
 
     var kind = determineReleaseDateKind(nomisRecord.postRecallReleaseDate, nomisRecord.conditionalReleaseDate)
-    // added below line to create lsd, why was this null? I assume there was a reason for this?
+
     val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, kind)
 
     val hardstopDate = releaseDateService.getHardStopDate(nomisRecord.toSentenceDateHolder(licenceStartDate))
