@@ -292,7 +292,7 @@ class CaCaseloadService(
     // Default status (if not overridden below) will show the case as clickable on case lists
     var licenceStatus = NOT_STARTED
 
-    if (releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate) ) {
+    if (releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate)) {
       licenceStatus = TIMED_OUT
     }
 
@@ -310,7 +310,7 @@ class CaCaseloadService(
       releaseDateLabel = releaseDateLabelFactory.fromPrisoner(case.licenceStartDate, case.nomisRecord),
       licenceStatus = licenceStatus,
       nomisLegalStatus = case.nomisRecord.legalStatus,
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate) ,
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate),
       tabType = Tabs.determineCaViewCasesTab(
         releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           sentenceDateHolder,

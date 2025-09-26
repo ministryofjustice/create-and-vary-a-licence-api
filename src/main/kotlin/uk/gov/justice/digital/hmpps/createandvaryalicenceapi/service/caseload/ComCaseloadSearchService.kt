@@ -158,7 +158,7 @@ class ComCaseloadSearchService(
     licenceStartDate: LocalDate?,
   ): FoundProbationRecord {
     val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate)
-    val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate) 
+    val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate)
 
     return this.transformToUnstartedRecord(
       releaseDate = licenceStartDate,
@@ -166,7 +166,7 @@ class ComCaseloadSearchService(
       licenceType = getLicenceType(prisonOffender),
       licenceStatus = if (inHardStopPeriod) TIMED_OUT else NOT_STARTED,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder.licenceStartDate) ,
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder.licenceStartDate),
       isInHardStopPeriod = inHardStopPeriod,
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
@@ -178,8 +178,8 @@ class ComCaseloadSearchService(
   private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(
     licence = licence,
     hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate) ,
-    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate) ,
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
   )
 

@@ -43,7 +43,7 @@ class CaseloadService(
         licenceType = LicenceType.getLicenceType(prisoner),
         hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
         hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder.licenceStartDate),
-        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate) ,
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate),
         isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(sentenceDateHolder),
         isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           sentenceDateHolder,
