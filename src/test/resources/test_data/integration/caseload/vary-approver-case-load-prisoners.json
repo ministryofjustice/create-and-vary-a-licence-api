@@ -14,7 +14,6 @@
     "hardStopWarningDate": null,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -29,7 +28,6 @@
     "licenceType": "PSS",
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   }
 ]
