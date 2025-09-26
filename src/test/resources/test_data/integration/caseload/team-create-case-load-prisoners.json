@@ -13,7 +13,6 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -29,7 +28,6 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -49,7 +47,6 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   }
 ]
