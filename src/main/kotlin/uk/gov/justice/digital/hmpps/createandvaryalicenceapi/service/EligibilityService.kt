@@ -7,13 +7,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import java.time.Clock
 import java.time.LocalDate
 
-typealias EligibilityCheck = (PrisonerSearchPrisoner) -> Boolean
-typealias EligibilityCheckAndReason = Pair<EligibilityCheck, String>
-
-operator fun EligibilityCheck.not(): EligibilityCheck = { !this(it) }
-infix fun EligibilityCheck.describedAs(message: String): EligibilityCheckAndReason = this to message
-
-fun Collection<EligibilityCheckAndReason>.getIneligibilityReasons(prisoner: PrisonerSearchPrisoner) = mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
+data class EligibilityAssessment(
+  val genericIneligibilityReasons: List<String> = emptyList(),
+  val crdIneligibilityReasons: List<String> = emptyList(),
+  val prrdIneligibilityReasons: List<String> = emptyList(),
+  val isEligible: Boolean,
+)
 
 @Service
 class EligibilityService(
@@ -23,143 +22,155 @@ class EligibilityService(
   @param:Value("\${recall.regions}") private val recallEnabledRegions: List<String> = emptyList(),
 ) {
 
-  val genericChecks = listOf(
-    !isPersonParoleEligible() describedAs "is eligible for parole",
-    isNotDead() describedAs "has died",
-    !isOnIndeterminateSentence() describedAs "is on indeterminate sentence",
-    hasActivePrisonStatus() describedAs "is not active in prison",
-    !isBreachOfTopUpSupervision() describedAs "is breach of top up supervision case",
-  )
+  fun getEligibility(
+    prisoners: List<PrisonerSearchPrisoner>,
+    nomisIdsToAreaCodes: Map<String, String?>,
+  ): Map<String, EligibilityAssessment> {
+    return prisoners.map { prisoner ->
+      val permitRecalls =
+        (recallEnabled || (recallEnabledPrisons.contains(prisoner.prisonId) && recallEnabledRegions.contains(nomisIdsToAreaCodes[prisoner.prisonerNumber])))
 
-  val crdChecks = listOf(
-    hasConditionalReleaseDate() describedAs "has no conditional release date",
-    hasCrdTodayOrInTheFuture() describedAs "CRD in the past",
-    isEligibleIfOnAnExtendedDeterminateSentence() describedAs "is on non-eligible EDS",
-    !isRecallCase() describedAs "is a recall case",
-  )
+      val genericIneligibilityReasons = getGenericIneligibilityReasons(prisoner)
+      val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner)
+      val prrdIneligibilityReasons = if (permitRecalls) getPrrdIneligibilityReasons(prisoner) else emptyList()
 
-  val recallChecks = listOf(
-    hasPostRecallReleaseDate() describedAs "has no post recall release date",
-    hasPrrdTodayOrInTheFuture() describedAs "post recall release date is in the past",
-    prrdIsBeforeSled() describedAs "post recall release date is not before SLED",
-  )
+      val isEligible = genericIneligibilityReasons.isEmpty() && (crdIneligibilityReasons.isEmpty() || (permitRecalls && prrdIneligibilityReasons.isEmpty()))
 
-  fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner, areaCode: String? = null): Boolean = getIneligibilityReasons(prisoner, areaCode).isEmpty()
+      return@map prisoner.prisonerNumber to EligibilityAssessment(
+        genericIneligibilityReasons,
+        crdIneligibilityReasons,
+        prrdIneligibilityReasons,
+        isEligible,
+      )
+    }.toMap()
+  }
+
+  fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner, areaCode: String? = null): Boolean {
+    val eligibility = getEligibility(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))[prisoner.prisonerNumber]!!
+    return eligibility.isEligible
+  }
 
   fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner, areaCode: String? = null): List<String> {
-    val genericIneligibilityReasons = genericChecks.getIneligibilityReasons(prisoner)
-    val crdIneligibilityReasons = crdChecks.getIneligibilityReasons(prisoner)
+    val eligibility = getEligibility(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))[prisoner.prisonerNumber]!!
+    return if (eligibility.isEligible) emptyList() else eligibility.genericIneligibilityReasons + eligibility.crdIneligibilityReasons + eligibility.prrdIneligibilityReasons
+  }
 
-    // If eligible for CRD licence, return as eligible
-    if (genericIneligibilityReasons.isEmpty() && crdIneligibilityReasons.isEmpty()) {
-      return emptyList()
-    }
+  fun getGenericIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
+    val eligibilityCriteria = listOf(
+      !isPersonParoleEligible(prisoner) to "is eligible for parole",
+      !isDead(prisoner) to "has died",
+      !isOnIndeterminateSentence(prisoner) to "is on indeterminate sentence",
+      hasActivePrisonStatus(prisoner) to "is not active in prison",
+      !isBreachOfTopUpSupervision(prisoner) to "is breach of top up supervision case",
+    )
 
-    var recallIneligibilityReasons = emptyList<String>()
+    return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
+  }
 
-    if (recallEnabled || (recallEnabledPrisons.contains(prisoner.prisonId) && recallEnabledRegions.contains(areaCode))) {
-      recallIneligibilityReasons = recallChecks.getIneligibilityReasons(prisoner)
-      // If eligible for PRRD licence, return as eligible
-      if (genericIneligibilityReasons.isEmpty() && recallIneligibilityReasons.isEmpty()) {
-        return emptyList()
-      }
-    }
+  fun getCrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
+    val eligibilityCriteria = listOf(
+      hasConditionalReleaseDate(prisoner) to "has no conditional release date",
+      hasCrdTodayOrInTheFuture(prisoner) to "CRD in the past",
+      isEligibleIfOnAnExtendedDeterminateSentence(prisoner) to "is on non-eligible EDS",
+      !isRecallCase(prisoner) to "is a recall case",
+    )
 
-    // If not eligible for either, return the combined list of reasons
-    return (genericIneligibilityReasons + crdIneligibilityReasons + recallIneligibilityReasons).distinct()
+    return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
+  }
+
+  fun getPrrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
+    val eligibilityCriteria = listOf(
+      hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
+      hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
+      hasPrrdBeforeSled(prisoner) to "post recall release date is not before SLED",
+    )
+
+    return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
   }
 
   // CRD-specific eligibility rules
-  private fun hasConditionalReleaseDate(): EligibilityCheck = { it.conditionalReleaseDate != null }
+  private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate != null
 
-  private fun hasCrdTodayOrInTheFuture(): EligibilityCheck = early@{
-    val releaseDate = it.conditionalReleaseDate ?: return@early true
-    releaseDate.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
-  }
+  private fun hasCrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null || dateIsTodayOrFuture(prisoner.conditionalReleaseDate)
 
-  private fun isRecallCase(): EligibilityCheck = early@{
+  private fun isRecallCase(prisoner: PrisonerSearchPrisoner): Boolean {
     // If a CRD but no PRRD it should NOT be treated as a recall
-    if (it.conditionalReleaseDate != null && it.postRecallReleaseDate == null) {
-      return@early false
+    if (prisoner.conditionalReleaseDate != null && prisoner.postRecallReleaseDate == null) {
+      return false
     }
 
-    if (it.conditionalReleaseDate != null && it.postRecallReleaseDate != null) {
+    if (prisoner.conditionalReleaseDate != null && prisoner.postRecallReleaseDate != null) {
       // If the PRRD > CRD - it should be treated as a recall otherwise it is not treated as a recall
-      return@early it.postRecallReleaseDate.isAfter(it.conditionalReleaseDate)
+      return prisoner.postRecallReleaseDate.isAfter(prisoner.conditionalReleaseDate)
     }
 
     // Trust the Nomis recall flag as a fallback position - the above rules should always override
-    if (it.recall == null) {
-      log.warn("${it.prisonerNumber} missing recall flag")
+    if (prisoner.recall == null) {
+      log.warn("${prisoner.prisonerNumber} missing recall flag")
     }
-    return@early it.recall ?: false
+    return prisoner.recall ?: false
   }
 
-  private fun isEligibleIfOnAnExtendedDeterminateSentence(): EligibilityCheck = early@{
+  private fun isEligibleIfOnAnExtendedDeterminateSentence(prisoner: PrisonerSearchPrisoner): Boolean {
     // If you don’t have a PED, you automatically pass this check as you’re not an EDS case
-    if (it.paroleEligibilityDate == null) {
-      return@early true
+    if (prisoner.paroleEligibilityDate == null) {
+      return true
     }
 
     // if ARD is not between CRD - 4 days and CRD inclusive (to account for bank holidays and weekends), not eligible
-    if (it.confirmedReleaseDate != null && it.conditionalReleaseDate != null) {
-      val dateStart = it.conditionalReleaseDate.minusDays(4)
-      if (it.confirmedReleaseDate.isBefore(dateStart) || it.confirmedReleaseDate.isAfter(it.conditionalReleaseDate)) {
-        return@early false
+    if (prisoner.confirmedReleaseDate != null && prisoner.conditionalReleaseDate != null) {
+      val dateStart = prisoner.conditionalReleaseDate.minusDays(4)
+      if (prisoner.confirmedReleaseDate.isBefore(dateStart) || prisoner.confirmedReleaseDate.isAfter(prisoner.conditionalReleaseDate)) {
+        return false
       }
     }
 
     // an APD with a PED in the past means they were a successful parole applicant on a later attempt, so not eligible
-    if (it.actualParoleDate != null) {
-      return@early false
+    if (prisoner.actualParoleDate != null) {
+      return false
     }
 
-    return@early true
+    return true
   }
 
   // PRRD-specific eligibility rules
-  private fun hasPostRecallReleaseDate(): EligibilityCheck = { it.postRecallReleaseDate != null }
+  private fun hasPostRecallReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate != null
 
-  private fun hasPrrdTodayOrInTheFuture(): EligibilityCheck = early@{
-    if (it.postRecallReleaseDate == null) return@early true
+  private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
 
-    dateIsTodayOrFuture(it.postRecallReleaseDate)
-  }
+  private fun hasPrrdBeforeSled(prisoner: PrisonerSearchPrisoner): Boolean {
+    if (prisoner.postRecallReleaseDate == null) return true
 
-  private fun prrdIsBeforeSled(): EligibilityCheck = early@{
-    if (it.postRecallReleaseDate == null) return@early true
-
-    it.postRecallReleaseDate.isBefore(it.licenceExpiryDate) && it.postRecallReleaseDate.isBefore(it.sentenceExpiryDate)
+    return prisoner.postRecallReleaseDate.isBefore(prisoner.licenceExpiryDate) &&
+      prisoner.postRecallReleaseDate.isBefore(
+        prisoner.sentenceExpiryDate,
+      )
   }
 
   // Shared eligibility rules
-  private fun isPersonParoleEligible(): EligibilityCheck = early@{
-    if (it.paroleEligibilityDate != null) {
-      if (it.paroleEligibilityDate.isAfter(LocalDate.now(clock))) {
-        return@early true
+  private fun isPersonParoleEligible(prisoner: PrisonerSearchPrisoner): Boolean {
+    if (prisoner.paroleEligibilityDate != null) {
+      if (prisoner.paroleEligibilityDate.isAfter(LocalDate.now(clock))) {
+        return true
       }
     }
-    return@early false
+    return false
   }
 
-  private fun isNotDead(): EligibilityCheck = { it.legalStatus != "DEAD" }
+  private fun isDead(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.legalStatus == "DEAD"
 
-  private fun isOnIndeterminateSentence(): EligibilityCheck = {
-    if (it.indeterminateSentence == null) {
-      log.warn("${it.prisonerNumber} missing indeterminateSentence")
+  private fun isOnIndeterminateSentence(prisoner: PrisonerSearchPrisoner): Boolean {
+    if (prisoner.indeterminateSentence == null) {
+      log.warn("${prisoner.prisonerNumber} missing indeterminateSentence")
     }
-    it.indeterminateSentence ?: false
+    return prisoner.indeterminateSentence ?: false
   }
 
-  private fun hasActivePrisonStatus(): EligibilityCheck = { prisoner ->
-    prisoner.status?.let {
-      it.startsWith("ACTIVE") || it == "INACTIVE TRN"
-    } ?: false
-  }
+  private fun hasActivePrisonStatus(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.status?.let {
+    it.startsWith("ACTIVE") || it == "INACTIVE TRN"
+  } ?: false
 
-  private fun isBreachOfTopUpSupervision(): EligibilityCheck = early@{
-    it.imprisonmentStatus == "BOTUS"
-  }
+  private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.imprisonmentStatus == "BOTUS"
 
   private fun dateIsTodayOrFuture(date: LocalDate?): Boolean {
     if (date == null) return false
