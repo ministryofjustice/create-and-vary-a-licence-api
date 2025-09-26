@@ -283,7 +283,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = null,
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isFalse
     }
 
     @Test
@@ -294,7 +294,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = LocalDate.now(now),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isTrue
     }
 
     @Test
@@ -305,7 +305,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = LocalDate.now(now).minusDays(1),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isFalse
     }
 
     @Test
@@ -317,7 +317,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = cutOff,
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isTrue
     }
   }
 
@@ -460,11 +460,7 @@ class ReleaseDateServiceTest {
       val friday = LocalDate.parse("2024-05-17")
       val monday = LocalDate.parse("2024-05-13")
 
-      val licence = createCrdLicence().copy(
-        licenceStartDate = friday,
-      )
-
-      val hardStopDate = service.getHardStopWarningDate(licence)
+      val hardStopDate = service.getHardStopWarningDate(friday)
       assertThat(hardStopDate).isEqualTo(monday)
     }
 
@@ -473,11 +469,7 @@ class ReleaseDateServiceTest {
       val wednesday = LocalDate.parse("2024-05-15")
       val thursday = LocalDate.parse("2024-05-09")
 
-      val licence = createCrdLicence().copy(
-        licenceStartDate = wednesday,
-      )
-
-      val hardStopDate = service.getHardStopWarningDate(licence)
+      val hardStopDate = service.getHardStopWarningDate(wednesday)
       assertThat(hardStopDate).isEqualTo(thursday)
     }
   }

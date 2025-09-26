@@ -83,7 +83,7 @@ class PromptComListBuilder(
     }
   }
 
-  fun CaseWithEmailAndStartDate.isNotInHardStop(): Boolean = !releaseDateService.isInHardStopPeriod(this.first.prisoner.toSentenceDateHolder(this.third))
+  fun CaseWithEmailAndStartDate.isNotInHardStop(): Boolean = !releaseDateService.isInHardStopPeriod(this.first.prisoner.toSentenceDateHolder(this.third).licenceStartDate)
 
   fun excludeInHardStop(cases: List<CaseWithEmailAndStartDate>) = cases.filter { it.isNotInHardStop() }
 

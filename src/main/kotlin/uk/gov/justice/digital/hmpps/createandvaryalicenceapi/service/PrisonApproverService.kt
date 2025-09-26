@@ -79,8 +79,8 @@ class PrisonApproverService(
   private fun Licence.toApprovalSummaryView(): LicenceSummaryApproverView = transformToApprovalLicenceSummary(
     licence = this,
     hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
-    hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
-    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 }

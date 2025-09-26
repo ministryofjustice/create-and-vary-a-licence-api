@@ -122,9 +122,9 @@ class LicenceService(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
       conditionPolicyData = conditionPolicyData,
     )
@@ -133,9 +133,9 @@ class LicenceService(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
       conditionPolicyData = conditionPolicyData,
     )
@@ -151,9 +151,9 @@ class LicenceService(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
       conditionPolicyData = conditionPolicyData,
     )
@@ -162,9 +162,9 @@ class LicenceService(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
       isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
       conditionPolicyData = conditionPolicyData,
     )
@@ -1099,8 +1099,8 @@ class LicenceService(
   private fun EntityLicence.toSummary() = transformToLicenceSummary(
     this,
     hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
-    hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
-    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 

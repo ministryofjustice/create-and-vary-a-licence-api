@@ -80,7 +80,7 @@ class TimeOutLicencesServiceTest {
         aLicenceEntity,
       ),
     )
-    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity)).thenReturn(
+    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity.licenceStartDate)).thenReturn(
       true,
     )
 
@@ -105,10 +105,10 @@ class TimeOutLicencesServiceTest {
         anIneligibleLicence,
       ),
     )
-    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity)).thenReturn(
+    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity.licenceStartDate)).thenReturn(
       true,
     )
-    whenever(releaseDateService.isInHardStopPeriod(anIneligibleLicence)).thenReturn(
+    whenever(releaseDateService.isInHardStopPeriod(anIneligibleLicence.licenceStartDate)).thenReturn(
       false,
     )
 
