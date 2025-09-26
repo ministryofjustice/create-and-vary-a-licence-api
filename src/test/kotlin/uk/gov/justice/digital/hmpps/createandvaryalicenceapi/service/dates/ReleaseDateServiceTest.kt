@@ -391,7 +391,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = null,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isNull()
     }
 
@@ -404,7 +404,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = thursday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(tuesday)
     }
 
@@ -418,7 +418,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = saturday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(wednesday)
     }
 
@@ -432,7 +432,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = sunday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(wednesday)
     }
 
@@ -447,7 +447,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = easterMonday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(tuesdayBefore)
     }
   }

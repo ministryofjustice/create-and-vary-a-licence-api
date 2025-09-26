@@ -83,7 +83,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(deliusApiClient.getTeamManagedOffenders(2000, "Test"))
       .thenReturn(CaseloadResponse(listOf(caseloadResult())))
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.CRD)
   }
 
   @Test

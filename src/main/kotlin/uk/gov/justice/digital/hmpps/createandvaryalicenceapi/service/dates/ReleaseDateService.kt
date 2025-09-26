@@ -28,7 +28,7 @@ class ReleaseDateService(
 ) {
   fun isInHardStopPeriod(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
-    val hardStopDate = getHardStopDate(sentenceDateHolder)
+    val hardStopDate = getHardStopDate(sentenceDateHolder.licenceStartDate)
     val today = LocalDate.now(now)
     if (hardStopDate == null || sentenceDateHolder.licenceStartDate == null) {
       return false
@@ -81,12 +81,9 @@ class ReleaseDateService(
     return workingDaysService.isNonWorkingDay(releaseDate)
   }
 
-  fun getHardStopDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
-    val licenceStartDate = sentenceDateHolder.licenceStartDate
-    return when {
-      licenceStartDate == null -> null
-      else -> calculateHardStopDate(licenceStartDate)
-    }
+  fun getHardStopDate(licenceStartDate: LocalDate?): LocalDate? = when {
+    licenceStartDate == null -> null
+    else -> calculateHardStopDate(licenceStartDate)
   }
 
   @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
@@ -140,7 +137,7 @@ class ReleaseDateService(
   }
 
   fun getHardStopWarningDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
-    val hardStopDate = getHardStopDate(sentenceDateHolder) ?: return null
+    val hardStopDate = getHardStopDate(sentenceDateHolder.licenceStartDate) ?: return null
     return 2.workingDaysBefore(hardStopDate)
   }
 

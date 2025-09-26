@@ -133,7 +133,7 @@ class ComCreateCaseloadService(
   ): CaseLoadLicenceSummary {
     val prisoner = nomisRecord.prisoner.toPrisonerSearchPrisoner()
     val licenceType = LicenceType.getLicenceType(prisoner)
-    val licenceKind = licenceCreationService.determineLicenceKind(prisoner)
+    val licenceKind = licenceCreationService.determineLicenceKind(prisoner, nomisRecord.licenceStartDate)
     val name = "${prisoner.firstName} ${prisoner.lastName}".trim().convertToTitleCase()
     val sentenceDateHolder = prisoner.toSentenceDateHolder(nomisRecord.licenceStartDate)
 
@@ -149,7 +149,7 @@ class ComCreateCaseloadService(
       name = name,
       releaseDate = nomisRecord.licenceStartDate,
       kind = licenceKind,
-      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
+      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
       ),

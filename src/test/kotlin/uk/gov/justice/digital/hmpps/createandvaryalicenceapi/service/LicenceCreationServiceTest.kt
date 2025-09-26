@@ -1709,8 +1709,9 @@ class LicenceCreationServiceTest {
         conditionalReleaseDate = LocalDate.now().minusDays(1),
         postRecallReleaseDate = LocalDate.now().plusDays(1),
       )
+    val licenceStartDate = prisoner.postRecallReleaseDate
 
-    val licenceKind = service.determineLicenceKind(prisoner)
+    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
 
     assertThat(licenceKind).isEqualTo(LicenceKind.PRRD)
   }
@@ -1722,9 +1723,10 @@ class LicenceCreationServiceTest {
         postRecallReleaseDate = LocalDate.now().plusDays(1),
         conditionalReleaseDate = LocalDate.now().plusDays(2),
       )
+    val licenceStartDate = prisoner.postRecallReleaseDate
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
 
-    val licenceKind = service.determineLicenceKind(prisoner)
+    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
 
     assertThat(licenceKind).isEqualTo(LicenceKind.CRD)
   }
@@ -1732,9 +1734,12 @@ class LicenceCreationServiceTest {
   @Test
   fun `should determine a licence with null PRRD and a hard stop date of today as a hard stop licence`() {
     val prisoner = prisonerSearchResult(conditionalReleaseDate = LocalDate.now().plusDays(2))
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now())
 
-    val licenceKind = service.determineLicenceKind(prisoner)
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now())
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now())
+    val licenceStartDate = prisoner.conditionalReleaseDate
+
+    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
 
     assertThat(licenceKind).isEqualTo(LicenceKind.HARD_STOP)
   }
@@ -1743,8 +1748,9 @@ class LicenceCreationServiceTest {
   fun `should determine a licence with null PRRD and hard stop date in future as a CRD licence`() {
     val prisoner = prisonerSearchResult(conditionalReleaseDate = LocalDate.now().plusDays(2))
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
+    val licenceStartDate = prisoner.conditionalReleaseDate
 
-    val licenceKind = service.determineLicenceKind(prisoner)
+    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
 
     assertThat(licenceKind).isEqualTo(LicenceKind.CRD)
   }
@@ -1754,8 +1760,9 @@ class LicenceCreationServiceTest {
     val prisoner =
       prisonerSearchResult(conditionalReleaseDate = null, postRecallReleaseDate = LocalDate.now().plusDays(2))
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
+    val licenceStartDate = prisoner.postRecallReleaseDate
 
-    val licenceKind = service.determineLicenceKind(prisoner)
+    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
 
     assertThat(licenceKind).isEqualTo(LicenceKind.PRRD)
   }

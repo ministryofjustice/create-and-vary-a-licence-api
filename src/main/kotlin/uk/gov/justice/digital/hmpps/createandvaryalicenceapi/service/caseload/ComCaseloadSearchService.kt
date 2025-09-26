@@ -165,7 +165,7 @@ class ComCaseloadSearchService(
       bookingId = prisonOffender.bookingId?.toLong(),
       licenceType = getLicenceType(prisonOffender),
       licenceStatus = if (inHardStopPeriod) TIMED_OUT else NOT_STARTED,
-      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
+      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
       isInHardStopPeriod = inHardStopPeriod,
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
@@ -177,7 +177,7 @@ class ComCaseloadSearchService(
 
   private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(
     licence = licence,
-    hardStopDate = releaseDateService.getHardStopDate(licence),
+    hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),

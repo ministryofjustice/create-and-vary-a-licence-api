@@ -58,7 +58,7 @@ class CaseloadServiceTest {
         "A1234AA" to LocalDate.of(2021, 10, 22),
       ),
     )
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.CRD)
   }
 
   @Test

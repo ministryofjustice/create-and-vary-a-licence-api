@@ -57,7 +57,7 @@ class PromptComListBuilderTest {
       licenceCreationService,
     )
 
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.CRD)
   }
 
   @Nested
