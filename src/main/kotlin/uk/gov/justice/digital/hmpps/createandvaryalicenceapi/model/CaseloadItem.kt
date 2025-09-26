@@ -27,9 +27,6 @@ data class CvlFields(
   @field:Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
   val isEligibleForEarlyRelease: Boolean = false,
 
-  @field:Schema(description = "Is the prisoner due for early release")
-  val isDueForEarlyRelease: Boolean = false,
-
   @field:Schema(description = "Is the prisoner due to be released in the next two working days")
   val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
 

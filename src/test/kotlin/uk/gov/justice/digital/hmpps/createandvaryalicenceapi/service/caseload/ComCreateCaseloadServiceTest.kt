@@ -68,7 +68,7 @@ class ComCreateCaseloadServiceTest {
   @BeforeEach
   fun reset() {
     reset(deliusApiClient, licenceService, hdcService, eligibilityService)
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.CRD)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
   }
 
@@ -754,7 +754,7 @@ class ComCreateCaseloadServiceTest {
     whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.PRRD)
 
     // When
     val caseload = service.getTeamCreateCaseload(listOf(), listOf(selectedTeam))
@@ -781,7 +781,7 @@ class ComCreateCaseloadServiceTest {
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.PRRD)
 
     // When
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -856,7 +856,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.PRRD)
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(false)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -891,7 +891,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.PRRD)
     whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(false)
     whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
@@ -1081,7 +1081,7 @@ class ComCreateCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
     )
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.HARD_STOP)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.HARD_STOP)
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
@@ -1301,7 +1301,7 @@ class ComCreateCaseloadServiceTest {
     licenceExpiryDate = licenceExpiryDate,
     comUsername = comUsername,
     isReviewNeeded = isReviewNeeded,
-    isDueForEarlyRelease = false,
+
     isInHardStopPeriod = false,
     isDueToBeReleasedInTheNextTwoWorkingDays = false,
     conditionalReleaseDate = conditionalReleaseDate,

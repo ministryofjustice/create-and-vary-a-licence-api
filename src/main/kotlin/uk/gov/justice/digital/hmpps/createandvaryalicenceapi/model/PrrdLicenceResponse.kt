@@ -314,9 +314,6 @@ data class PrrdLicenceResponse(
   @field:Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
 
-  @field:Schema(description = "Is the prisoner due for early release")
-  val isDueForEarlyRelease: Boolean = false,
-
   @field:Schema(description = "Is the prisoner due to be released in the next two working days")
   val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
 

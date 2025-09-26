@@ -170,7 +170,6 @@ class PublicLicenceControllerTest {
       hardStopDate = LocalDate.of(2024, 1, 1),
       hardStopWarningDate = LocalDate.of(2023, 12, 28),
       isInHardStopPeriod = true,
-      isDueForEarlyRelease = true,
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       conditionPolicyData = emptyMap(),
     ).transformToPublicLicence()

@@ -81,6 +81,4 @@ data class CaseLoadLicenceSummary(
 
   @field:Schema(description = "How this licence will need to be created", example = "PRISON_WILL_CREATE_THIS_LICENCE")
   val licenceCreationType: LicenceCreationType? = null,
-
-  val isDueForEarlyRelease: Boolean = false,
 )

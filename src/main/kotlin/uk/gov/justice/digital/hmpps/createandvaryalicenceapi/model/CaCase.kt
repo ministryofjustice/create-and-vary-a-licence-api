@@ -61,9 +61,6 @@ data class CaCase(
   @field:Schema(description = "The full name of the person who last updated this licence", example = "Jane Jones")
   val lastWorkedOnBy: String? = null,
 
-  @field:Schema(description = "Is the prisoner due for early release", example = "false")
-  val isDueForEarlyRelease: Boolean? = null,
-
   @field:Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
 

@@ -83,7 +83,6 @@ class ApproverCaseloadService(
         urgentApproval = licenceSummary?.isDueToBeReleasedInTheNextTwoWorkingDays,
         approvedBy = licenceSummary?.approvedByName,
         approvedOn = licenceSummary?.approvedDate,
-        isDueForEarlyRelease = licenceSummary?.isDueForEarlyRelease,
         kind = licenceSummary?.kind,
         prisonCode = licenceSummary?.prisonCode,
         prisonDescription = licenceSummary?.prisonDescription,

@@ -165,10 +165,9 @@ class ComCaseloadSearchService(
       bookingId = prisonOffender.bookingId?.toLong(),
       licenceType = getLicenceType(prisonOffender),
       licenceStatus = if (inHardStopPeriod) TIMED_OUT else NOT_STARTED,
-      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
+      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
       isInHardStopPeriod = inHardStopPeriod,
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
       ),
@@ -178,10 +177,9 @@ class ComCaseloadSearchService(
 
   private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(
     licence = licence,
-    hardStopDate = releaseDateService.getHardStopDate(licence),
+    hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
-    isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
   )
 
@@ -198,7 +196,6 @@ class ComCaseloadSearchService(
     hardStopDate: LocalDate?,
     hardStopWarningDate: LocalDate?,
     isInHardStopPeriod: Boolean,
-    isDueForEarlyRelease: Boolean,
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   ): FoundProbationRecord = FoundProbationRecord(
     kind = licence.kind,
@@ -218,7 +215,6 @@ class ComCaseloadSearchService(
     hardStopDate = hardStopDate,
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
-    isDueForEarlyRelease = isDueForEarlyRelease,
     isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
     releaseDateLabel = releaseDateLabelFactory.fromLicence(licence),
     isReviewNeeded = when (licence) {
