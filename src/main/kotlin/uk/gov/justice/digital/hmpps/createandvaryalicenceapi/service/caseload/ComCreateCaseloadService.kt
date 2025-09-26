@@ -138,7 +138,7 @@ class ComCreateCaseloadService(
     val sentenceDateHolder = prisoner.toSentenceDateHolder(nomisRecord.licenceStartDate)
 
     var licenceStatus = NOT_STARTED
-    if (releaseDateService.isInHardStopPeriod(sentenceDateHolder)) {
+    if (releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate) ) {
       licenceStatus = TIMED_OUT
     }
     return CaseLoadLicenceSummary(

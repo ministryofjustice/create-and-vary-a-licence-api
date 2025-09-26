@@ -26,15 +26,15 @@ class ReleaseDateService(
   @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
 ) {
-  fun isInHardStopPeriod(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): Boolean {
+  fun isInHardStopPeriod(licenceStartDate: LocalDate?, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
-    val hardStopDate = getHardStopDate(sentenceDateHolder.licenceStartDate)
+    val hardStopDate = getHardStopDate(licenceStartDate)
     val today = LocalDate.now(now)
-    if (hardStopDate == null || sentenceDateHolder.licenceStartDate == null) {
+    if (hardStopDate == null || licenceStartDate == null) {
       return false
     }
 
-    return today >= hardStopDate && today <= sentenceDateHolder.licenceStartDate
+    return today >= hardStopDate && today <= licenceStartDate
   }
 
   fun isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder: SentenceDateHolder): Boolean {
@@ -136,8 +136,8 @@ class ReleaseDateService(
     return 2.workingDaysBefore(adjustedLsd)
   }
 
-  fun getHardStopWarningDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
-    val hardStopDate = getHardStopDate(sentenceDateHolder.licenceStartDate) ?: return null
+  fun getHardStopWarningDate(licenceStartDate: LocalDate?): LocalDate? {
+    val hardStopDate = getHardStopDate(licenceStartDate) ?: return null
     return 2.workingDaysBefore(hardStopDate)
   }
 

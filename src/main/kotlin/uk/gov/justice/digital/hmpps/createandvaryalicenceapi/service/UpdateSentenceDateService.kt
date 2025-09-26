@@ -206,8 +206,8 @@ class UpdateSentenceDateService(
   }
 
   private fun getHardstopChangeType(previous: SentenceDateHolder, new: Licence): HardstopChangeType {
-    val previouslyInHardstop = releaseDateService.isInHardStopPeriod(previous)
-    val nowInHardstop = releaseDateService.isInHardStopPeriod(new)
+    val previouslyInHardstop = releaseDateService.isInHardStopPeriod(previous.licenceStartDate)
+    val nowInHardstop = releaseDateService.isInHardStopPeriod(new.licenceStartDate)
     val isPotentialHardStopInProgress = new is SupportsHardStop && new.statusCode == IN_PROGRESS
     return when {
       isPotentialHardStopInProgress && !previouslyInHardstop && nowInHardstop -> NOW_IN_HARDSTOP
