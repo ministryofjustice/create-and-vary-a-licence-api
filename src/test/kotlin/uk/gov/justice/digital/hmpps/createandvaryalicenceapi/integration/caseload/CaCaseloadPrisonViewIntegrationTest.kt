@@ -125,24 +125,18 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     )
 
     val test3 = createPrisonerSearchResult(
-      prisonerNumber = "A3456AB",
-      conditionalReleaseDate = nextWorking.plusDays(7),
-      confirmedReleaseDate = nextWorking.plusDays(1),
-    )
-
-    val test4 = createPrisonerSearchResult(
       prisonerNumber = "A456AB",
       conditionalReleaseDate = nextWorking.plusMonths(1),
       confirmedReleaseDate = nextWorking.plusMonths(1),
     )
 
-    val test5 = createPrisonerSearchResult(
+    val test4 = createPrisonerSearchResult(
       prisonerNumber = "A5678AB",
       conditionalReleaseDate = nextWorking,
       confirmedReleaseDate = nextWorking,
     )
 
-    val prisoners = listOf(test1, test2, test3, test4, test5)
+    val prisoners = listOf(test1, test2, test3, test4)
     val managers = prisoners.mapIndexed { index, prisonerSearchPrisoner ->
       createCommunityManager(index.toLong(), prisonerSearchPrisoner.prisonerNumber)
     }
@@ -162,38 +156,30 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
       .expectBody(typeReference<List<CaCase>>())
       .returnResult().responseBody!!
 
-    assertThat(caseload).hasSize(4)
+    assertThat(caseload).hasSize(3)
     with(caseload[0]) {
       assertThat(prisonerNumber).isEqualTo(test1.prisonerNumber)
-      assertThat(licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
       assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
-      assertThat(isInHardStopPeriod).isFalse()
+      assertThat(isInHardStopPeriod).isTrue()
       assertThat(releaseDateLabel).isEqualTo("CRD")
       assertThat(releaseDate).isEqualTo(test1.conditionalReleaseDate)
     }
     with(caseload[1]) {
-      assertThat(prisonerNumber).isEqualTo(test5.prisonerNumber)
+      assertThat(prisonerNumber).isEqualTo(test4.prisonerNumber)
       assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
       assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
       assertThat(isInHardStopPeriod).isTrue()
       assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
-      assertThat(releaseDate).isEqualTo(test5.conditionalReleaseDate)
+      assertThat(releaseDate).isEqualTo(test4.conditionalReleaseDate)
     }
     with(caseload[2]) {
       assertThat(prisonerNumber).isEqualTo(test3.prisonerNumber)
       assertThat(licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
-      assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
-      assertThat(isInHardStopPeriod).isFalse()
-      assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
-      assertThat(releaseDate).isEqualTo(test3.confirmedReleaseDate)
-    }
-    with(caseload[3]) {
-      assertThat(prisonerNumber).isEqualTo(test4.prisonerNumber)
-      assertThat(licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
       assertThat(tabType).isEqualTo(CaViewCasesTab.FUTURE_RELEASES)
       assertThat(isInHardStopPeriod).isFalse()
       assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
-      assertThat(releaseDate).isEqualTo(test4.conditionalReleaseDate)
+      assertThat(releaseDate).isEqualTo(test3.conditionalReleaseDate)
     }
   }
 

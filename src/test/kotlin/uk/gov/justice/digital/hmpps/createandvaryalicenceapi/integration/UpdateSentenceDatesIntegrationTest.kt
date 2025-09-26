@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Sent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
+import kotlin.jvm.optionals.getOrNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
@@ -319,7 +320,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-licence-id-2.sql",
   )
   fun `Update sentence dates should set licence status to timed out when the licence is in hard stop period`() {
     prisonApiMockServer.stubGetHdcLatest()
@@ -337,28 +338,20 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     )
 
     webTestClient.put()
-      .uri("/licence/id/1/sentence-dates")
+      .uri("/licence/id/2/sentence-dates")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
 
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
+    val licence = licenceRepository.findById(2L).getOrNull()
+    assertThat(licence).isNotNull
+    assertThat(licence!!.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
   }
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-licence-id-2.sql",
   )
   fun `Update sentence dates should inactivate licence where licence was in hard stop period but is no longer in hard stop period`() {
     prisonApiMockServer.stubGetHdcLatest()
@@ -375,27 +368,18 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
       ),
     )
 
-    webTestClient.put()
-      .uri("/licence/id/1/sentence-dates")
+    val result = webTestClient.put()
+      .uri("/licence/id/2/sentence-dates")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
 
-    val previousLicence = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
-
+    result.expectStatus().isOk
     assertThat(auditEventRepository.count()).isEqualTo(1)
     assertThat(licenceEventRepository.count()).isEqualTo(1)
-    assertThat(previousLicence?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
 
+    val previousLicence = licenceRepository.findById(2L).getOrNull()
+    assertThat(previousLicence?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
     mockPrisonerSearchResponse(
       SentenceDetail(
         conditionalReleaseDate = LocalDate.now().plusWeeks(1),
@@ -409,21 +393,14 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     )
 
     webTestClient.put()
-      .uri("/licence/id/1/sentence-dates")
+      .uri("/licence/id/2/sentence-dates")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
 
-    val currentLicence = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
+    val currentLicence = licenceRepository.findById(2L).getOrNull()
+    assertThat(currentLicence).isNotNull
 
     argumentCaptor<HMPPSDomainEvent>().apply {
       verify(eventsPublisher, times(1)).publishDomainEvent(capture())

@@ -133,12 +133,12 @@ class ComCreateCaseloadService(
   ): CaseLoadLicenceSummary {
     val prisoner = nomisRecord.prisoner.toPrisonerSearchPrisoner()
     val licenceType = LicenceType.getLicenceType(prisoner)
-    val licenceKind = licenceCreationService.determineLicenceKind(prisoner)
+    val licenceKind = licenceCreationService.determineLicenceKind(prisoner, nomisRecord.licenceStartDate)
     val name = "${prisoner.firstName} ${prisoner.lastName}".trim().convertToTitleCase()
     val sentenceDateHolder = prisoner.toSentenceDateHolder(nomisRecord.licenceStartDate)
 
     var licenceStatus = NOT_STARTED
-    if (releaseDateService.isInHardStopPeriod(sentenceDateHolder)) {
+    if (releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate)) {
       licenceStatus = TIMED_OUT
     }
     return CaseLoadLicenceSummary(
@@ -149,11 +149,10 @@ class ComCreateCaseloadService(
       name = name,
       releaseDate = nomisRecord.licenceStartDate,
       kind = licenceKind,
-      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
+      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
       ),
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
     )
   }
 
@@ -294,7 +293,6 @@ class ComCreateCaseloadService(
       hardStopDate = licence.hardStopDate,
       hardStopWarningDate = licence.hardStopWarningDate,
       kind = licence.kind,
-      isDueForEarlyRelease = licence.isDueForEarlyRelease,
       licenceCreationType = licence.licenceCreationType,
       isReviewNeeded = licence.isReviewNeeded,
     )

@@ -63,7 +63,6 @@ fun transformToLicenceSummary(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
-  isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
 ): LicenceSummary = LicenceSummary(
   kind = licence.kind,
@@ -109,7 +108,6 @@ fun transformToLicenceSummary(
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   updatedByFullName = licence.getUpdatedByFullName(),
   homeDetentionCurfewActualDate = if (licence.isHdcLicence()) licence.homeDetentionCurfewActualDate else null,
@@ -122,7 +120,6 @@ fun toHardstop(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
-  isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHardstopLicence(
@@ -199,7 +196,6 @@ fun toHardstop(
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
@@ -297,7 +293,6 @@ fun toPrrd(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
-  isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = PrrdLicenceResponse(
@@ -375,7 +370,6 @@ fun toPrrd(
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
   electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
@@ -393,7 +387,6 @@ fun toCrd(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
-  isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelCrdLicence(
@@ -471,7 +464,6 @@ fun toCrd(
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
   electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
@@ -489,7 +481,6 @@ fun toHdc(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
-  isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHdcLicence(
@@ -569,7 +560,6 @@ fun toHdc(
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
   curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
@@ -794,7 +784,6 @@ fun CaseloadResult.transformToUnstartedRecord(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
-  isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   releaseDateLabel: String,
 ): ModelFoundProbationRecord = ModelFoundProbationRecord(
@@ -814,7 +803,6 @@ fun CaseloadResult.transformToUnstartedRecord(
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   releaseDateLabel = releaseDateLabel,
   isReviewNeeded = false,
@@ -851,7 +839,6 @@ fun transformToApprovalLicenceSummary(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
-  isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
 ): LicenceSummaryApproverView = LicenceSummaryApproverView(
   licenceId = licence.id,
@@ -899,7 +886,6 @@ fun transformToApprovalLicenceSummary(
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
 )
 

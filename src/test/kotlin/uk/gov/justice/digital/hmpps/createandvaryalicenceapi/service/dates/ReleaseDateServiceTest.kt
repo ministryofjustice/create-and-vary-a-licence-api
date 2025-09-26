@@ -15,17 +15,14 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.BankHolidayService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
-import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.temporal.TemporalAdjusters
 
 class ReleaseDateServiceTest {
   private val iS91DeterminationService = mock<IS91DeterminationService>()
@@ -277,55 +274,16 @@ class ReleaseDateServiceTest {
 
   @Nested
   inner class `Licence is in hard stop` {
+
     @Test
-    fun `licence is not in hard stop period if there is no release date`() {
+    fun `returns false if licence start date is absent`() {
       val now = createClock("2018-03-12T00:00:00Z")
 
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = null,
+        licenceStartDate = null,
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
-    }
-
-    @Test
-    fun `licence is not in hard stop period if ARD is after the timeout threshold`() {
-      val now = createClock("2018-03-12T00:00:00Z")
-      val cutOff = getCutOffDateForLicenceTimeOut(now)
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = cutOff.plusDays(1),
-        conditionalReleaseDate = cutOff.plusDays(1),
-      )
-
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
-    }
-
-    @Test
-    fun `licence is in hard stop period if ARD is before the timeout threshold`() {
-      val now = createClock("2018-03-12T00:00:00Z")
-      val cutOff = getCutOffDateForLicenceTimeOut(now)
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = cutOff.minusDays(1),
-        conditionalReleaseDate = cutOff.minusDays(1),
-      )
-
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
-    }
-
-    @Test
-    fun `licence is in hard stop period if ARD is at the timeout threshold`() {
-      val now = createClock("2018-03-12T00:00:00Z")
-      val cutOff = getCutOffDateForLicenceTimeOut(now)
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = cutOff,
-        conditionalReleaseDate = cutOff,
-      )
-
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isFalse
     }
 
     @Test
@@ -333,11 +291,10 @@ class ReleaseDateServiceTest {
       val now = createClock("2018-03-12T00:00:00Z")
 
       val licence = createCrdLicence().copy(
-        actualReleaseDate = LocalDate.now(now),
-        conditionalReleaseDate = LocalDate.now(now),
+        licenceStartDate = LocalDate.now(now),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isTrue
     }
 
     @Test
@@ -346,51 +303,21 @@ class ReleaseDateServiceTest {
 
       val licence = createCrdLicence().copy(
         licenceStartDate = LocalDate.now(now).minusDays(1),
-        actualReleaseDate = LocalDate.now(now).minusDays(1),
-        conditionalReleaseDate = LocalDate.now(now).minusDays(1),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isFalse
     }
 
     @Test
-    fun `licence is in hard stop period if ARD is absent but CRD is at the timeout threshold`() {
+    fun `licence is in hard stop period if LSD is at the timeout threshold`() {
       val now = createClock("2018-03-12T00:00:00Z")
       val cutOff = getCutOffDateForLicenceTimeOut(now)
 
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = cutOff,
+        licenceStartDate = cutOff,
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
-    }
-
-    @Test
-    fun `returns false if CRD is absent`() {
-      val now = createClock("2018-03-12T00:00:00Z")
-      val cutOff = getCutOffDateForLicenceTimeOut(now)
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = cutOff,
-        licenceStartDate = null,
-      )
-
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
-    }
-
-    @Test
-    fun `returns false if licence start date is absent`() {
-      val now = createClock("2018-03-12T00:00:00Z")
-      val cutOff = getCutOffDateForLicenceTimeOut(now)
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = cutOff,
-        conditionalReleaseDate = null,
-      )
-
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isTrue
     }
   }
 
@@ -457,333 +384,83 @@ class ReleaseDateServiceTest {
   }
 
   @Nested
-  inner class `Licence is due for early release` {
-    val date = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
-
-    @Test
-    fun `missing crd`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = date,
-        conditionalReleaseDate = null,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `missing ard`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = date,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `ard and crd the same`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = date,
-        conditionalReleaseDate = date,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `ard is one day before crd`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = date.minusDays(1),
-        conditionalReleaseDate = date,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `ard is two days before crd`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = date.minusDays(2),
-        conditionalReleaseDate = date,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isTrue
-    }
-
-    @Test
-    fun `ard is two days before crd when one is a non working day`() {
-      val sunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = sunday.minusDays(2),
-        conditionalReleaseDate = sunday,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `ard is three days before crd`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = date.minusDays(3),
-        conditionalReleaseDate = date,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isTrue
-    }
-
-    @Test
-    fun `crd is one day before ard`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = date,
-        conditionalReleaseDate = date.minusDays(1),
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `crd is two days before ard`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = date,
-        conditionalReleaseDate = date.minusDays(2),
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `crd is three days before ard`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = date,
-        conditionalReleaseDate = date.minusDays(3),
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `ard is one day before prrd`() {
-      val licence = createPrrdLicence().copy(
-        actualReleaseDate = date.minusDays(1),
-        postRecallReleaseDate = date,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `ard is two days before prrd`() {
-      val licence = createPrrdLicence().copy(
-        actualReleaseDate = date.minusDays(2),
-        postRecallReleaseDate = date,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isTrue
-    }
-
-    @Test
-    fun `ard is two days before prrd when one is a non working day`() {
-      val sunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
-      val licence = createPrrdLicence().copy(
-        actualReleaseDate = sunday.minusDays(2),
-        postRecallReleaseDate = sunday,
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-
-    @Test
-    fun `prrd is one day before ard`() {
-      val licence = createPrrdLicence().copy(
-        actualReleaseDate = date,
-        postRecallReleaseDate = date.minusDays(1),
-      )
-
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse
-    }
-  }
-
-  @Nested
   inner class `Get hard stop date` {
     @Test
-    fun `should return null if no release dates provided`() {
+    fun `should return null if no LSD provided`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = null,
+        licenceStartDate = null,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isNull()
     }
 
     @Test
-    fun `should return null if no conditional release date provided`() {
-      val actualReleaseDate = LocalDate.parse("2024-03-27")
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = actualReleaseDate,
-        conditionalReleaseDate = null,
-      )
-
-      val hardStopDate = service.getHardStopDate(licence)
-      assertThat(hardStopDate).isNull()
-    }
-
-    @Test
-    fun `should return null if actual release date is after conditional release date`() {
-      val date = LocalDate.parse("2024-03-27")
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = date.plusDays(1),
-        conditionalReleaseDate = date,
-      )
-
-      val hardStopDate = service.getHardStopDate(licence)
-      assertThat(hardStopDate).isNull()
-    }
-
-    @Test
-    fun `if CRD is on a thursday, then hard stop should be 2 days before`() {
+    fun `if LSD is on a thursday, then hard stop should be 2 days before`() {
       val thursday = LocalDate.parse("2024-05-16")
       val tuesday = thursday.minusDays(2)
 
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = thursday,
+        licenceStartDate = thursday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(tuesday)
     }
 
     @Test
-    fun `if CRD is on a thursday and ARD is on the same day, then hard stop remains 2 days before`() {
-      val thursday = LocalDate.parse("2024-05-16")
-      val tuesday = thursday.minusDays(2)
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = thursday,
-        conditionalReleaseDate = thursday,
-      )
-
-      val hardStopDate = service.getHardStopDate(licence)
-      assertThat(hardStopDate).isEqualTo(tuesday)
-    }
-
-    @Test
-    fun `if CRD is on a thursday and ARD is on a different day, then there is no hard stop date`() {
-      val thursday = LocalDate.parse("2024-05-16")
-      val wednesday = thursday.minusDays(1)
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = wednesday,
-        conditionalReleaseDate = thursday,
-      )
-
-      val hardStopDate = service.getHardStopDate(licence)
-      assertThat(hardStopDate).isNull()
-    }
-
-    @Test
-    fun `if CRD is on a saturday, then hard stop should be 2 days before first working day before`() {
+    fun `if LSD is on a saturday, then hard stop should be 2 days before first working day before`() {
       val saturday = LocalDate.parse("2024-05-18")
       val workingDayBefore = saturday.minusDays(1)
       val wednesday = workingDayBefore.minusDays(2)
 
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = saturday,
+        licenceStartDate = saturday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(wednesday)
     }
 
     @Test
-    fun `if CRD is on a sunday, then hard stop should be 2 days before first working day before`() {
+    fun `if LSD is on a sunday, then hard stop should be 2 days before first working day before`() {
       val sunday = LocalDate.parse("2024-05-19")
       val workingDayBefore = sunday.minusDays(2)
       val wednesday = workingDayBefore.minusDays(2)
 
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = sunday,
+        licenceStartDate = sunday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(wednesday)
     }
 
     @Test
-    fun `if CRD is on a weekend, and ARD is on the first working day before then hard stop should be 2 days before first working day`() {
-      val sunday = LocalDate.parse("2024-05-19")
-      val workingDayBefore = sunday.minusDays(2)
-      val wednesday = workingDayBefore.minusDays(2)
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = workingDayBefore,
-        conditionalReleaseDate = sunday,
-      )
-
-      val hardStopDate = service.getHardStopDate(licence)
-      assertThat(hardStopDate).isEqualTo(wednesday)
-    }
-
-    @Test
-    fun `if CRD is on a weekend, and ARD is on the second working day before then hard stop should be null`() {
-      val sunday = LocalDate.parse("2024-05-19")
-      val thursday = sunday.minusDays(3)
-
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = thursday,
-        conditionalReleaseDate = sunday,
-      )
-
-      val hardStopDate = service.getHardStopDate(licence)
-      assertThat(hardStopDate).isNull()
-    }
-
-    @Test
-    fun `if CRD is on a Easter Monday, then hard stop should be 6 days before`() {
+    fun `if LSD is on a Easter Monday, then hard stop should be 6 days before`() {
       // first working day before the monday is the thursday (4 days)
       // two days before the first working day is the Tuesday
       val easterMonday = LocalDate.parse("2018-04-02")
-      val tuesdayBefore = LocalDate.parse("2018-03-27")
+      val tuesdayBefore = easterMonday.minusDays(6)
 
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = easterMonday,
+        licenceStartDate = easterMonday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(tuesdayBefore)
     }
   }
 
   @Nested
   inner class `Get hard stop warning date` {
-    @Test
-    fun `should return null if not eligible for hard stop date`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = null,
-      )
-
-      val hardStopDate = service.getHardStopWarningDate(licence)
-      assertThat(hardStopDate).isNull()
-    }
 
     @Test
     fun `should return 2 days before hard stop date if set`() {
       val friday = LocalDate.parse("2024-05-17")
       val monday = LocalDate.parse("2024-05-13")
 
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = friday,
-      )
-
-      val hardStopDate = service.getHardStopWarningDate(licence)
+      val hardStopDate = service.getHardStopWarningDate(friday)
       assertThat(hardStopDate).isEqualTo(monday)
     }
 
@@ -792,12 +469,7 @@ class ReleaseDateServiceTest {
       val wednesday = LocalDate.parse("2024-05-15")
       val thursday = LocalDate.parse("2024-05-09")
 
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = wednesday,
-      )
-
-      val hardStopDate = service.getHardStopWarningDate(licence)
+      val hardStopDate = service.getHardStopWarningDate(wednesday)
       assertThat(hardStopDate).isEqualTo(thursday)
     }
   }

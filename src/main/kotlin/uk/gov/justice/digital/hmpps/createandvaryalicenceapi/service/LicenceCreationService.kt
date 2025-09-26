@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
@@ -224,13 +223,13 @@ class LicenceCreationService(
   }
 
   @TimeServedConsiderations("Any special logic for time served cases needed here - seems this is just for hard stop?")
-  fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner): LicenceKind {
+  fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner, licenceStartDate: LocalDate?): LicenceKind {
     val today = LocalDate.now()
 
     var kind = determineReleaseDateKind(nomisRecord.postRecallReleaseDate, nomisRecord.conditionalReleaseDate)
 
-    val hardstopDate = releaseDateService.getHardStopDate(nomisRecord.toSentenceDateHolder(null))
-    if (hardstopDate != null && hardstopDate <= today) {
+    val hardStopDate = releaseDateService.getHardStopDate(licenceStartDate)
+    if (hardStopDate != null && hardStopDate <= today) {
       kind = LicenceKind.HARD_STOP
     }
 

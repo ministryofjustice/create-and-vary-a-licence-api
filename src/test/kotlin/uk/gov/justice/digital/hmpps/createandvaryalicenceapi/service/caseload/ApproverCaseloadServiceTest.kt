@@ -65,7 +65,6 @@ class ApproverCaseloadServiceTest {
           assertThat(urgentApproval).isFalse()
           assertThat(approvedBy).isEqualTo("jim smith")
           assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          assertThat(isDueForEarlyRelease).isFalse()
           with(probationPractitioner!!) {
             assertThat(staffCode).isEqualTo("AB012C")
             assertThat(name).isEqualTo("Test Test")
@@ -152,7 +151,6 @@ class ApproverCaseloadServiceTest {
           assertThat(urgentApproval).isFalse()
           assertThat(approvedBy).isEqualTo("jim smith")
           assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          assertThat(isDueForEarlyRelease).isFalse()
           with(probationPractitioner!!) {
             assertThat(staffCode).isEqualTo("DE012F")
             assertThat(name).isEqualTo("Test2 Test2")
@@ -171,7 +169,6 @@ class ApproverCaseloadServiceTest {
           assertThat(urgentApproval).isFalse()
           assertThat(approvedBy).isEqualTo("jim smith")
           assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          assertThat(isDueForEarlyRelease).isFalse()
           with(probationPractitioner!!) {
             assertThat(staffCode).isEqualTo("AB012C")
             assertThat(name).isEqualTo("Test Test")
@@ -435,7 +432,6 @@ class ApproverCaseloadServiceTest {
           assertThat(urgentApproval).isFalse()
           assertThat(approvedBy).isEqualTo("jim smith")
           assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          assertThat(isDueForEarlyRelease).isFalse()
           with(probationPractitioner!!) {
             assertThat(staffCode).isEqualTo("AB012C")
             assertThat(name).isEqualTo("Test Test")
@@ -535,7 +531,6 @@ class ApproverCaseloadServiceTest {
           assertThat(urgentApproval).isFalse()
           assertThat(approvedBy).isEqualTo("jim smith")
           assertThat(approvedOn).isEqualTo(LocalDateTime.of(2023, 9, 29, 16, 38, 42))
-          assertThat(isDueForEarlyRelease).isFalse()
           with(probationPractitioner!!) {
             assertThat(staffCode).isEqualTo("AB012C")
             assertThat(name).isEqualTo("Test Test")
@@ -554,7 +549,6 @@ class ApproverCaseloadServiceTest {
           assertThat(urgentApproval).isFalse()
           assertThat(approvedBy).isEqualTo("jim smith")
           assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          assertThat(isDueForEarlyRelease).isFalse()
           with(probationPractitioner!!) {
             assertThat(staffCode).isEqualTo("DE012F")
             assertThat(name).isEqualTo("Test2 Test2")

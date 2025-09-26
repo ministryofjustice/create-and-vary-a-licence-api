@@ -46,7 +46,6 @@ class CaseloadServiceTest {
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
-    whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
     whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
@@ -59,7 +58,7 @@ class CaseloadServiceTest {
         "A1234AA" to LocalDate.of(2021, 10, 22),
       ),
     )
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.CRD)
   }
 
   @Test
@@ -122,7 +121,6 @@ class CaseloadServiceTest {
           hardStopDate = LocalDate.of(2023, 10, 12),
           hardStopWarningDate = LocalDate.of(2023, 10, 11),
           isInHardStopPeriod = true,
-          isDueForEarlyRelease = true,
           isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
           licenceStartDate = LocalDate.of(2021, 10, 22),
