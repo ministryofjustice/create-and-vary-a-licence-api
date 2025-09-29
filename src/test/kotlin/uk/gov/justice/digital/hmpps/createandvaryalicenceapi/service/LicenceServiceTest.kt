@@ -3110,6 +3110,25 @@ class LicenceServiceTest {
       .isEqualTo(listOf(2L, LicenceEventType.SUPERSEDED, "SYSTEM", "SYSTEM"))
   }
 
+  @Test
+  fun `should get access permissions for a licence`() {
+    val variationLicence = aLicenceEntity.copy(
+      id = 2L,
+      statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+      licenceVersion = "2.0",
+    )
+    whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        aLicenceEntity,
+        variationLicence,
+      ),
+    )
+
+    val permissions = service.getLicencePermissions(licenceId = aLicenceEntity.id, teamCodes = listOf("invalid-team"))
+    assertThat(permissions.view).isFalse
+  }
+
   @Nested
   inner class `Marking reviewed when no variation required` {
     @Test
