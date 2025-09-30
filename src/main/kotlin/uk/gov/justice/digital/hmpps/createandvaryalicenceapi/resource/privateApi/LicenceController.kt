@@ -1207,9 +1207,9 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "User has access",
+        description = "The permissions the user has for the licence are returned",
         content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class)),
+          Content(mediaType = "application/json", schema = Schema(implementation = LicencePermissionsResponse::class)),
         ],
       ),
       ApiResponse(

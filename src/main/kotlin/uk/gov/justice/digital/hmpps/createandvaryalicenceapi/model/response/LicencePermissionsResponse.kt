@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 
-@Schema(description = "Request object containing permissions a user has for a licence")
+@Schema(description = "Response object containing permissions a user has for a licence")
 data class LicencePermissionsResponse(
 
   @field:Schema(
