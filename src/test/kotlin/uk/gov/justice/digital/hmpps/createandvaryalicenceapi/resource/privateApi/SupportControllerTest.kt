@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LastMinuteHandoverCaseService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
 
 @ExtendWith(SpringExtension::class)
@@ -34,6 +35,9 @@ class SupportControllerTest {
   @MockitoBean
   private lateinit var supportService: SupportService
 
+  @MockitoBean
+  private lateinit var lastMinuteHandoverCaseService: LastMinuteHandoverCaseService
+
   @Autowired
   private lateinit var mvc: MockMvc
 
@@ -45,7 +49,7 @@ class SupportControllerTest {
     reset(supportService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(SupportController(supportService))
+      .standaloneSetup(SupportController(supportService, lastMinuteHandoverCaseService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }

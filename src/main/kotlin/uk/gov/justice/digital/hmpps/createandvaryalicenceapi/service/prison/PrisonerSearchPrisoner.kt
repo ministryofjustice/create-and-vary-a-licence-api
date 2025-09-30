@@ -86,4 +86,8 @@ data class PrisonerSearchPrisoner(
   val topupSupervisionStartDate: LocalDate? = null,
 
   val croNumber: String? = null,
-)
+
+) {
+
+  fun fullName() = listOfNotNull(firstName, middleNames, lastName).filter { it.isNotBlank() }.joinToString(" ")
+}

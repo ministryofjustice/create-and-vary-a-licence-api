@@ -44,6 +44,10 @@ hmpps:
     api:
       url: "https://hdc-api-dev.hmpps.service.justice.gov.uk"
 
+  cases:
+    last-minute:
+      prisons:
+
 notify:
   enabled: false
 

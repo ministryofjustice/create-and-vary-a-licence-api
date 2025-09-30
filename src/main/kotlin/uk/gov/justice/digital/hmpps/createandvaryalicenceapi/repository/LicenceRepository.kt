@@ -11,6 +11,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
+interface PrisonNumberAndStatus {
+  val prisonNumber: String
+  val statusCode: LicenceStatus
+}
+
 @Repository
 interface LicenceRepository :
   JpaRepository<Licence, Long>,
@@ -52,6 +57,17 @@ interface LicenceRepository :
     nomsIds: List<String>,
     status: List<LicenceStatus>,
   ): Set<Long>
+
+  @Query(
+    """
+    SELECT l.nomsId AS prisonNumber, l.statusCode AS statusCode
+    FROM Licence l
+    WHERE l.nomsId IN :nomsIds
+    """,
+  )
+  fun findStatesByPrisonNumbers(
+    nomsIds: List<String>,
+  ): List<PrisonNumberAndStatus>
 
   @Query(
     """
