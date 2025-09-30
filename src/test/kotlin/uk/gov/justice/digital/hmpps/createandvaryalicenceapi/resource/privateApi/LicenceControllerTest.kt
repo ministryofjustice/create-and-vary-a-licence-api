@@ -36,7 +36,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
@@ -55,10 +54,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.SentenceDates
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -132,7 +131,7 @@ class LicenceControllerTest {
 
   @Test
   fun `get variation submitted for region`() {
-    whenever(licenceService.findSubmittedVariationsByRegion("N01A")).thenReturn(listOf(aLicenceSummary))
+    whenever(licenceService.findSubmittedVariationsByRegion("N01A")).thenReturn(listOf(aLicenceSummary()))
 
     val result = mvc.perform(get("/licence/variations/submitted/area/N01A").accept(APPLICATION_JSON))
       .andExpect(status().isOk)
@@ -140,7 +139,7 @@ class LicenceControllerTest {
       .andReturn()
 
     assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary())))
 
     verify(licenceService, times(1)).findSubmittedVariationsByRegion("N01A")
   }
@@ -272,7 +271,7 @@ class LicenceControllerTest {
       pdu = pduList,
     )
 
-    whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
+    whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary()))
 
     // When
     val result = mvc.perform(
@@ -292,7 +291,7 @@ class LicenceControllerTest {
       .andReturn()
 
     assertThat(result.andReturn().response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary())))
 
     verify(licenceService, times(1)).findLicencesMatchingCriteria(licenceQueryObject)
   }
@@ -325,7 +324,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create variation`() {
-    whenever(licenceService.createVariation(4L)).thenReturn(aLicenceSummary)
+    whenever(licenceService.createVariation(4L)).thenReturn(aLicenceSummary())
 
     mvc.perform(
       post("/licence/id/4/create-variation")
@@ -340,7 +339,7 @@ class LicenceControllerTest {
   @Test
   fun `edit a licence`() {
     val licenceId = 42L
-    whenever(licenceService.editLicence(licenceId)).thenReturn(aLicenceSummary)
+    whenever(licenceService.editLicence(licenceId)).thenReturn(aLicenceSummary())
 
     mvc.perform(
       post("/licence/id/$licenceId/edit")
@@ -592,44 +591,6 @@ class LicenceControllerTest {
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(nomsId = "NOMSID")
-
-    val aLicenceSummary = LicenceSummary(
-      kind = LicenceKind.CRD,
-      licenceId = 1,
-      licenceType = LicenceType.AP,
-      licenceStatus = LicenceStatus.IN_PROGRESS,
-      nomisId = "A1234AA",
-      forename = "Person",
-      surname = "One",
-      crn = "X12345",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      conditionalReleaseDate = LocalDate.of(2022, 12, 28),
-      actualReleaseDate = LocalDate.of(2022, 12, 30),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      comUsername = "jsmith",
-      bookingId = 54321,
-      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      approvedByName = "jim smith",
-      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-      licenceVersion = "1.0",
-      isReviewNeeded = false,
-      updatedByFullName = "X Y",
-    )
 
     val aStatusUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
