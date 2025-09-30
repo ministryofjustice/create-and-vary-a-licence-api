@@ -20,13 +20,6 @@ class VaryApproverCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceService: LicenceService,
 ) {
-  fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
-    val licences: List<LicenceSummary> = findLicences(varyApproverCaseloadSearchRequest)
-    var cases = mapLicencesToOffenders(licences)
-    cases = addProbationPractitionerCases(cases)
-    return buildCaseload(cases, varyApproverCaseloadSearchRequest.searchTerm)
-  }
-
   fun findLicences(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest) = if (varyApproverCaseloadSearchRequest.probationPduCodes != null) {
     licenceService.findLicencesMatchingCriteria(
       LicenceQueryObject(
@@ -136,14 +129,24 @@ class VaryApproverCaseloadService(
     }
   }
 
+  private fun processLicences(
+    licences: List<LicenceSummary>,
+    searchTerm: String?
+  ): List<VaryApproverCase> {
+    val cases = mapLicencesToOffenders(licences)
+    val enrichedCases = addProbationPractitionerCases(cases)
+    return buildCaseload(enrichedCases, searchTerm)
+  }
+
+  fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
+    val licences: List<LicenceSummary> = findLicences(varyApproverCaseloadSearchRequest)
+    return processLicences(licences, varyApproverCaseloadSearchRequest.searchTerm)
+  }
+
   fun searchForOffenderOnVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): VaryApproverCaseloadSearchResponse {
     val (pduLicences, regionLicences) = searchLicences(varyApproverCaseloadSearchRequest)
-    var pduCases = mapLicencesToOffenders(pduLicences)
-    pduCases = addProbationPractitionerCases(pduCases)
-    var regionCases = mapLicencesToOffenders(regionLicences)
-    regionCases = addProbationPractitionerCases(regionCases)
-    val pduCasesResults = buildCaseload(pduCases, varyApproverCaseloadSearchRequest.searchTerm)
-    val regionCasesResults = buildCaseload(regionCases, varyApproverCaseloadSearchRequest.searchTerm)
+    val pduCasesResults = processLicences(pduLicences, varyApproverCaseloadSearchRequest.searchTerm)
+    val regionCasesResults = processLicences(regionLicences, varyApproverCaseloadSearchRequest.searchTerm)
     return VaryApproverCaseloadSearchResponse(pduCasesResults, regionCasesResults)
   }
 }
