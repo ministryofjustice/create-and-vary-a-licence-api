@@ -74,12 +74,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
@@ -114,6 +116,7 @@ class LicenceServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val eligibilityService = mock<EligibilityService>()
   private val exclusionZoneService = mock<ExclusionZoneService>()
+  private val deliusApiClient = mock<DeliusApiClient>()
 
   private val service =
     LicenceService(
@@ -131,6 +134,7 @@ class LicenceServiceTest {
       prisonerSearchApiClient,
       eligibilityService,
       exclusionZoneService,
+      deliusApiClient,
     )
 
   @BeforeEach
@@ -3049,6 +3053,7 @@ class LicenceServiceTest {
         variationLicence,
       ),
     )
+    whenever(deliusApiClient.getOffenderManager(aLicenceEntity.crn!!)).thenReturn(offenderManager())
 
     val permissions = service.getLicencePermissions(licenceId = aLicenceEntity.id, teamCodes = listOf("invalid-team"))
     assertThat(permissions.view).isFalse
