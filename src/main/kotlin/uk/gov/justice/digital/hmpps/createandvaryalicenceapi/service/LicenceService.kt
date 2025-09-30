@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicencePermissionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
@@ -49,6 +50,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -91,6 +93,7 @@ class LicenceService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val eligibilityService: EligibilityService,
   private val exclusionZoneService: ExclusionZoneService,
+  private val deliusApiClient: DeliusApiClient,
 ) {
 
   @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
@@ -410,7 +413,11 @@ class LicenceService(
 
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
-        if (determineReleaseDateKind(licenceEntity.postRecallReleaseDate, licenceEntity.conditionalReleaseDate) != PRRD) {
+        if (determineReleaseDateKind(
+            licenceEntity.postRecallReleaseDate,
+            licenceEntity.conditionalReleaseDate,
+          ) != PRRD
+        ) {
           assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
         }
         licenceEntity.submit(submitter as PrisonUser)
@@ -1094,6 +1101,19 @@ class LicenceService(
     }
     val deactivationReason = body.reason.message
     inactivateLicences(licences, deactivationReason, false)
+  }
+
+  @Transactional
+  fun getLicencePermissions(licenceId: Long, teamCodes: List<String>): LicencePermissionsResponse {
+    val licenceEntity = getLicence(licenceId)
+    val offenderManager = deliusApiClient.getOffenderManager(licenceEntity.crn!!)
+      ?: error("No active offender manager found for CRN: ${licenceEntity.crn}")
+
+    val licences = findLicencesMatchingCriteria(LicenceQueryObject(nomsIds = listOf(licenceEntity.nomsId!!)))
+    val viewAccess = licences.any {
+      teamCodes.contains(offenderManager.team.code)
+    }
+    return LicencePermissionsResponse(viewAccess)
   }
 
   private fun EntityLicence.toSummary() = transformToLicenceSummary(

@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import java.util.Optional
@@ -35,8 +36,7 @@ class ElectronicMonitoringProgrammeServiceTest {
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
   private val aLicenceEntity = TestData.createCrdLicence()
-  private val aVariationLicence = TestData.createVariationLicence()
-  private val aCom = TestData.com()
+  private val aCom = communityOffenderManager()
   private val serviceWithFeatureEnabled = ElectronicMonitoringProgrammeService(
     licenceRepository,
     policyService,
@@ -110,7 +110,12 @@ class ElectronicMonitoringProgrammeServiceTest {
     fun `should handle updated conditions when feature toggle is enabled`() {
       val licenceEntity = aLicenceEntity
 
-      whenever(policyService.isElectronicMonitoringResponseRequired(conditionCodes, licenceEntity.version!!)).thenReturn(true)
+      whenever(
+        policyService.isElectronicMonitoringResponseRequired(
+          conditionCodes,
+          licenceEntity.version!!,
+        ),
+      ).thenReturn(true)
 
       serviceWithFeatureEnabled.handleUpdatedConditionsIfEnabled(licenceEntity, conditionCodes)
 
@@ -130,24 +135,52 @@ class ElectronicMonitoringProgrammeServiceTest {
     fun `should handle removed conditions when feature toggle is enabled`() {
       val licenceEntity = aLicenceEntity
 
-      whenever(policyService.getConditionsRequiringElectronicMonitoringResponse(licenceEntity.version!!, conditionCodes)).thenReturn(
+      whenever(
+        policyService.getConditionsRequiringElectronicMonitoringResponse(
+          licenceEntity.version!!,
+          conditionCodes,
+        ),
+      ).thenReturn(
         listOf(policyApCondition),
       )
-      whenever(policyService.isElectronicMonitoringResponseRequired(licenceEntity.additionalConditions.map { it.conditionCode }.toSet(), licenceEntity.version!!)).thenReturn(true)
+      whenever(
+        policyService.isElectronicMonitoringResponseRequired(
+          licenceEntity.additionalConditions.map { it.conditionCode }
+            .toSet(),
+          licenceEntity.version!!,
+        ),
+      ).thenReturn(true)
 
       serviceWithFeatureEnabled.handleRemovedConditionsIfEnabled(licenceEntity, conditionCodes)
 
-      verify(policyService, times(1)).isElectronicMonitoringResponseRequired(licenceEntity.additionalConditions.map { it.conditionCode }.toSet(), licenceEntity.version!!)
+      verify(
+        policyService,
+        times(1),
+      ).isElectronicMonitoringResponseRequired(
+        licenceEntity.additionalConditions.map { it.conditionCode }.toSet(),
+        licenceEntity.version!!,
+      )
     }
 
     @Test
     fun `should not handle removed conditions when feature toggle is disabled`() {
       val licenceEntity = aLicenceEntity
 
-      whenever(policyService.getConditionsRequiringElectronicMonitoringResponse(licenceEntity.version!!, conditionCodes)).thenReturn(
+      whenever(
+        policyService.getConditionsRequiringElectronicMonitoringResponse(
+          licenceEntity.version!!,
+          conditionCodes,
+        ),
+      ).thenReturn(
         listOf(policyApCondition),
       )
-      whenever(policyService.isElectronicMonitoringResponseRequired(licenceEntity.additionalConditions.map { it.conditionCode }.toSet(), licenceEntity.version!!)).thenReturn(true)
+      whenever(
+        policyService.isElectronicMonitoringResponseRequired(
+          licenceEntity.additionalConditions.map { it.conditionCode }
+            .toSet(),
+          licenceEntity.version!!,
+        ),
+      ).thenReturn(true)
 
       service.handleRemovedConditionsIfEnabled(licenceEntity, conditionCodes)
 

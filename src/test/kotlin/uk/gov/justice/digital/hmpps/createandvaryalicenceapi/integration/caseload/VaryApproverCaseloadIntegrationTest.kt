@@ -19,12 +19,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.text.Charsets.UTF_8
 
 private const val DELIUS_STAFF_IDENTIFIER = 3492L
 private const val GET_VARY_APPROVER_CASELOAD = "/caseload/vary-approver"
+private const val SEARCH_VARY_APPROVER_CASELOAD = "/caseload/vary-approver/case-search"
 
 class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
 
@@ -91,6 +93,75 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
 
       assertThat(caseload).hasSize(1)
       with(caseload.first()) {
+        assertThat(crnNumber).isEqualTo("X12349")
+        assertThat(name).isEqualTo("Test2 Person2")
+      }
+    }
+  }
+
+  @Nested
+  inner class VaryApproverCaseloadSearch {
+    private val caseSearchRequest = VaryApproverCaseloadSearchRequest(probationPduCodes = null, probationAreaCode = "N55", searchTerm = "Test")
+
+    @Test
+    fun `Get forbidden (403) when incorrect roles are supplied`() {
+      val result = webTestClient.post()
+        .uri(SEARCH_VARY_APPROVER_CASELOAD)
+        .accept(APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
+        .bodyValue(caseSearchRequest)
+        .exchange()
+        .expectStatus().isForbidden
+        .expectStatus().isEqualTo(FORBIDDEN.value())
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.userMessage).contains("Access Denied")
+    }
+
+    @Test
+    fun `Unauthorized (401) when no token is supplied`() {
+      webTestClient.post()
+        .uri(SEARCH_VARY_APPROVER_CASELOAD)
+        .accept(APPLICATION_JSON)
+        .bodyValue(caseSearchRequest)
+        .exchange()
+        .expectStatus().isEqualTo(UNAUTHORIZED.value())
+    }
+
+    @Sql(
+      "classpath:test_data/seed-variation-submitted-licence.sql",
+    )
+    @Test
+    fun `Successfully search for vary approver case`() {
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetProbationCases()
+      deliusMockServer.stubGetManagersForGetApprovalCaseload()
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        readFile("vary-approver-case-load-prisoners").replace(
+          "\$releaseDate",
+          releaseDate,
+        ),
+      )
+      prisonApiMockServer.stubGetCourtOutcomes()
+
+      val result = webTestClient.post()
+        .uri(SEARCH_VARY_APPROVER_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .bodyValue(caseSearchRequest)
+        .accept(APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<VaryApproverCaseloadSearchResponse>())
+        .returnResult().responseBody!!
+
+      assertThat(result.pduCasesResponse).hasSize(0)
+      assertThat(result.regionCasesResponse).hasSize(1)
+
+      with(result.regionCasesResponse.first()) {
         assertThat(crnNumber).isEqualTo("X12349")
         assertThat(name).isEqualTo("Test2 Person2")
       }

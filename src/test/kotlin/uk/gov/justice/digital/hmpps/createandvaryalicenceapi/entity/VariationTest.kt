@@ -1,7 +1,7 @@
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.com
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import java.time.LocalDate
 
@@ -10,7 +10,7 @@ class VariationTest {
   @Test
   fun `recordUpdate tracks lastUpdatedDate and staff member responsible`() {
     val testLicence = createHdcVariationLicence()
-    val com = com().copy(username = "TestCom")
+    val com = communityOffenderManager()
     testLicence.recordUpdate(com)
 
     assertThat(testLicence.dateLastUpdated!!.toLocalDate()).isEqualTo(LocalDate.now())
@@ -20,18 +20,18 @@ class VariationTest {
 
   @Test
   fun `recordUpdate defaults to SYSTEM_USER if no staff member is passed in`() {
-    val testLicence = createHdcVariationLicence().copy(updatedBy = com())
+    val testLicence = createHdcVariationLicence().copy(updatedBy = communityOffenderManager())
     testLicence.recordUpdate(null)
 
     assertThat(testLicence.dateLastUpdated!!.toLocalDate()).isEqualTo(LocalDate.now())
     assertThat(testLicence.updatedByUsername).isEqualTo(SYSTEM_USER)
-    assertThat(testLicence.updatedBy).isEqualTo(com())
+    assertThat(testLicence.updatedBy).isEqualTo(communityOffenderManager())
   }
 
   @Test
   fun `updateSpoDiscussion updates the licence correctly and calls recordUpdate`() {
     val testLicence = createHdcVariationLicence()
-    val com = com().copy(username = "TestCom")
+    val com = communityOffenderManager()
     testLicence.updateSpoDiscussion("Yes", com)
 
     assertThat(testLicence.spoDiscussion).isEqualTo("Yes")
@@ -41,7 +41,7 @@ class VariationTest {
   @Test
   fun `updateVloDiscussion updates the licence correctly and calls recordUpdate`() {
     val testLicence = createHdcVariationLicence()
-    val com = com().copy(username = "TestCom")
+    val com = communityOffenderManager()
     testLicence.updateVloDiscussion("Yes", com)
 
     assertThat(testLicence.vloDiscussion).isEqualTo("Yes")

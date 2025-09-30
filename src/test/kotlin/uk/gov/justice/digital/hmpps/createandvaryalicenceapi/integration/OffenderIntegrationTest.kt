@@ -122,6 +122,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
   )
   fun `Synchronises COM allocation info with Delius`() {
     val crn = "CRN1"
+    val staffCode = "STAFF_1"
     val userName = "username"
     val emailAddress = "emailAddress@Delius"
     val staffIdentifier = 123L
@@ -129,10 +130,11 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     val lastName = "surname"
 
     deliusMockServer.stubGetOffenderManager(
-      crn,
+      crn = crn,
+      staffCode = staffCode,
       userName = userName,
-      emailAddress,
-      staffIdentifier,
+      emailAddress = emailAddress,
+      staffIdentifier = staffIdentifier,
       firstName = firstName,
       lastName = lastName,
     )

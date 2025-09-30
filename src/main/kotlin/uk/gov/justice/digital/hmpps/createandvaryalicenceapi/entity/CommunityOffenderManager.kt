@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
@@ -10,6 +11,8 @@ import java.time.LocalDateTime
 class CommunityOffenderManager(
   id: Long? = null,
   var staffIdentifier: Long,
+  @Column(name = "delius_staff_code")
+  var staffCode: String?,
   username: String,
   email: String?,
   firstName: String?,
@@ -28,6 +31,7 @@ class CommunityOffenderManager(
   fun copy(
     id: Long? = this.id,
     staffIdentifier: Long = this.staffIdentifier,
+    staffCode: String? = this.staffCode,
     username: String = this.username,
     email: String? = this.email,
     firstName: String? = this.firstName,
@@ -36,6 +40,7 @@ class CommunityOffenderManager(
   ) = CommunityOffenderManager(
     id = id,
     staffIdentifier = staffIdentifier,
+    staffCode = staffCode,
     username = username,
     email = email,
     firstName = firstName,
@@ -52,8 +57,15 @@ class CommunityOffenderManager(
 
   override fun hashCode(): Int = super.hashCode()
 
-  override fun toString(): String = "CommunityOffenderManager(" +
-    "staffIdentifier=$staffIdentifier" +
-    ")" +
-    " ${super.toString()}"
+  override fun toString(): String = "${javaClass.simpleName}(" +
+    "id=$id, " +
+    "staffIdentifier=$staffIdentifier, " +
+    "staffCode=$staffCode," +
+    "kind=$kind, " +
+    "username='$username', " +
+    "email=$email, " +
+    "firstName=$firstName, " +
+    "lastName=$lastName, " +
+    "lastUpdatedTimestamp=$lastUpdatedTimestamp" +
+    ")"
 }

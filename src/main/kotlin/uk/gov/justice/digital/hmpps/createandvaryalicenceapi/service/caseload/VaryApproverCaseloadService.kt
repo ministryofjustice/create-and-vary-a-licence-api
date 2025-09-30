@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
@@ -19,13 +20,6 @@ class VaryApproverCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceService: LicenceService,
 ) {
-  fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
-    val licences: List<LicenceSummary> = findLicences(varyApproverCaseloadSearchRequest)
-    var cases = mapLicencesToOffenders(licences)
-    cases = addProbationPractitionerCases(cases)
-    return buildCaseload(cases, varyApproverCaseloadSearchRequest.searchTerm)
-  }
-
   fun findLicences(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest) = if (varyApproverCaseloadSearchRequest.probationPduCodes != null) {
     licenceService.findLicencesMatchingCriteria(
       LicenceQueryObject(
@@ -37,6 +31,25 @@ class VaryApproverCaseloadService(
     licenceService.findSubmittedVariationsByRegion(varyApproverCaseloadSearchRequest.probationAreaCode)
   } else {
     emptyList()
+  }
+
+  fun searchLicences(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): Pair<List<LicenceSummary>, List<LicenceSummary>> {
+    val pduLicences = if (varyApproverCaseloadSearchRequest.probationPduCodes != null) {
+      licenceService.findLicencesMatchingCriteria(
+        LicenceQueryObject(
+          statusCodes = listOf(LicenceStatus.VARIATION_SUBMITTED),
+          pdus = varyApproverCaseloadSearchRequest.probationPduCodes,
+        ),
+      )
+    } else {
+      emptyList()
+    }
+    val regionLicences = if (varyApproverCaseloadSearchRequest.probationAreaCode != null) {
+      licenceService.findSubmittedVariationsByRegion(varyApproverCaseloadSearchRequest.probationAreaCode)
+    } else {
+      emptyList()
+    }
+    return Pair(pduLicences, regionLicences)
   }
 
   private fun mapLicencesToOffenders(licences: List<LicenceSummary>): List<AcoCase> {
@@ -114,6 +127,27 @@ class VaryApproverCaseloadService(
         case.name?.lowercase()?.contains(searchString) ?: false ||
         case.probationPractitioner?.lowercase()?.contains(searchString) ?: false
     }
+  }
+
+  private fun processLicences(
+    licences: List<LicenceSummary>,
+    searchTerm: String?,
+  ): List<VaryApproverCase> {
+    val cases = mapLicencesToOffenders(licences)
+    val enrichedCases = addProbationPractitionerCases(cases)
+    return buildCaseload(enrichedCases, searchTerm)
+  }
+
+  fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
+    val licences: List<LicenceSummary> = findLicences(varyApproverCaseloadSearchRequest)
+    return processLicences(licences, varyApproverCaseloadSearchRequest.searchTerm)
+  }
+
+  fun searchForOffenderOnVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): VaryApproverCaseloadSearchResponse {
+    val (pduLicences, regionLicences) = searchLicences(varyApproverCaseloadSearchRequest)
+    val pduCasesResults = processLicences(pduLicences, varyApproverCaseloadSearchRequest.searchTerm)
+    val regionCasesResults = processLicences(regionLicences, varyApproverCaseloadSearchRequest.searchTerm)
+    return VaryApproverCaseloadSearchResponse(pduCasesResults, regionCasesResults)
   }
 }
 

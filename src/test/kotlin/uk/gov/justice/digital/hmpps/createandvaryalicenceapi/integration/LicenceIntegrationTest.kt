@@ -25,15 +25,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicencePermissionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
@@ -373,9 +376,15 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     )
     assertNoOverlaps(doNotContainSameValeCallbacks, newLicence.additionalConditions, oldLicence.additionalConditions)
 
-    val uploadDetailOld = additionalConditionUploadDetailRepository.getReferenceById(oldLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
-    val uploadDetailNew = additionalConditionUploadDetailRepository.getReferenceById(newLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
-    assertListsEqual(listOf(uploadDetailNew), listOf(uploadDetailOld), listOf("id", "licenceId", "additionalConditionId"))
+    val uploadDetailOld =
+      additionalConditionUploadDetailRepository.getReferenceById(oldLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
+    val uploadDetailNew =
+      additionalConditionUploadDetailRepository.getReferenceById(newLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
+    assertListsEqual(
+      listOf(uploadDetailNew),
+      listOf(uploadDetailOld),
+      listOf("id", "licenceId", "additionalConditionId"),
+    )
     assertListsNotEqual(listOf(uploadDetailNew), listOf(uploadDetailOld), listOf("originalData", "fullSizeImage"))
 
     assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
@@ -812,6 +821,25 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     }
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/seed-a-licence-with-a-variation.sql",
+  )
+  fun `Should check if a COM has permission to view a licence`() {
+    deliusMockServer.stubGetOffenderManager()
+
+    val result = webTestClient.post()
+      .uri("/licence/id/1/permissions")
+      .bodyValue(LicencePermissionsRequest(teamCodes = listOf("team-code-1")))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(LicencePermissionsResponse::class.java)
+      .returnResult().responseBody
+    assertThat(result?.view).isEqualTo(true)
+  }
+
   @Nested
   inner class CheckReviewingLicences {
     @Test
@@ -1121,12 +1149,14 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val govUkApiMockServer = GovUkMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+    val deliusMockServer = DeliusMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
       prisonerSearchApiMockServer.start()
+      deliusMockServer.start()
     }
 
     @JvmStatic
@@ -1134,6 +1164,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       govUkApiMockServer.stop()
       prisonerSearchApiMockServer.stop()
+      deliusMockServer.stop()
     }
   }
 }
