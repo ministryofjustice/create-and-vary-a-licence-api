@@ -179,6 +179,7 @@ class SubjectAccessRequestServiceTest {
 
     val aCom = CommunityOffenderManager(
       staffIdentifier = 2000,
+      staffCode = "test-code",
       username = "testcom",
       email = "testcom@probation.gov.uk",
       firstName = "Test",

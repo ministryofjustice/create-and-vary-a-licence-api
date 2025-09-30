@@ -17,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
@@ -29,8 +28,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.ca
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.com
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.DayOfWeek
 import java.time.LocalDateTime
@@ -873,8 +875,8 @@ class AuditServiceTest {
   inner class `audits events when COM updated` {
     @Test
     fun `records an audit event when the COM allocated to an offender is updated`() {
-      val existingCom = com()
-      val updatedCom = existingCom.copy(firstName = "new name", email = "new email", staffIdentifier = 1000L)
+      val existingCom = communityOffenderManager()
+      val updatedCom = anotherCommunityOffenderManager()
       val user = ca()
 
       service.recordAuditEventComUpdated(
@@ -902,14 +904,14 @@ class AuditServiceTest {
         .extracting("type", "changes")
         .isEqualTo(
           listOf(
-            "COM updated to new name Y on licence",
+            "COM updated to ${updatedCom.firstName} ${updatedCom.lastName} on licence",
             mapOf(
-              "newEmail" to "new email",
-              "newStaffIdentifier" to 1000L,
-              "newUsername" to "tcom",
-              "oldEmail" to "testemail@probation.gov.uk",
-              "oldStaffIdentifier" to 2000L,
-              "oldUsername" to "tcom",
+              "newEmail" to updatedCom.email,
+              "newStaffIdentifier" to updatedCom.staffIdentifier,
+              "newUsername" to updatedCom.username,
+              "oldEmail" to existingCom.email,
+              "oldStaffIdentifier" to existingCom.staffIdentifier,
+              "oldUsername" to existingCom.username,
             ),
           ),
         )
@@ -997,17 +999,11 @@ class AuditServiceTest {
       endTime = LocalDateTime.now(),
     )
 
-    val aCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    )
+    val aCom = communityOffenderManager()
 
-    val aLicenceEntity = TestData.createCrdLicence()
+    val aLicenceEntity = createCrdLicence()
 
-    val aHdcLicenceEntity = TestData.createHdcLicence()
+    val aHdcLicenceEntity = createHdcLicence()
 
     val someAdditionalConditionData = mutableListOf(
       AdditionalConditionData(

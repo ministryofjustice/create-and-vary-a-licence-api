@@ -206,15 +206,15 @@ class NotifyService(
     firstName: String,
     lastName: String,
     crn: String?,
-    crd: LocalDate?,
+    lsd: LocalDate?,
     licenceId: String,
   ) {
-    if (emailAddress != null && crd != null) {
+    if (emailAddress != null && lsd != null) {
       val values: Map<String, String> = mapOf(
         "firstName" to firstName,
         "lastName" to lastName,
         "crn" to crn!!,
-        "releaseDate" to crd.format(dateFormat),
+        "releaseDate" to lsd.format(dateFormat),
       )
       if (sendEmail(hardStopLicenceApprovedTemplateId, emailAddress, values)) {
         log.info("Notification sent to $emailAddress HARD STOP LICENCE APPROVED for $licenceId $firstName $lastName")

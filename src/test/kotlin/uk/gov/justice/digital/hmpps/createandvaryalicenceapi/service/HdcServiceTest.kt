@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
@@ -32,7 +34,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
-import java.time.DayOfWeek
+import java.time.DayOfWeek.FRIDAY
+import java.time.DayOfWeek.MONDAY
+import java.time.DayOfWeek.SATURDAY
+import java.time.DayOfWeek.SUNDAY
+import java.time.DayOfWeek.THURSDAY
+import java.time.DayOfWeek.TUESDAY
+import java.time.DayOfWeek.WEDNESDAY
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -318,7 +326,11 @@ class HdcServiceTest {
         homeDetentionCurfewActualDate = LocalDate.now(),
         homeDetentionCurfewEligibilityDate = LocalDate.now(),
       )
-      whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(hdcPrisonerStatus().copy(approvalStatus = "APPROVED"))
+      whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
+        hdcPrisonerStatus().copy(
+          approvalStatus = "APPROVED",
+        ),
+      )
       whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(someHdcLicenceData)
       assertDoesNotThrow {
         service.checkEligibleForHdcLicence(aPrisonerSearchResult, someHdcLicenceData)
@@ -368,8 +380,16 @@ class HdcServiceTest {
         homeDetentionCurfewActualDate = LocalDate.now(),
         homeDetentionCurfewEligibilityDate = LocalDate.now(),
       )
-      whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(hdcPrisonerStatus().copy(approvalStatus = "APPROVED"))
-      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(someHdcLicenceData.copy(curfewAddress = null))
+      whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
+        hdcPrisonerStatus().copy(
+          approvalStatus = "APPROVED",
+        ),
+      )
+      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
+        someHdcLicenceData.copy(
+          curfewAddress = null,
+        ),
+      )
       val exception = assertThrows<IllegalStateException> {
         service.checkEligibleForHdcLicence(
           aPrisonerSearchResult,
@@ -387,8 +407,16 @@ class HdcServiceTest {
         homeDetentionCurfewActualDate = LocalDate.now(),
         homeDetentionCurfewEligibilityDate = LocalDate.now(),
       )
-      whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(hdcPrisonerStatus().copy(approvalStatus = "APPROVED"))
-      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(someHdcLicenceData.copy(curfewAddress = null))
+      whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
+        hdcPrisonerStatus().copy(
+          approvalStatus = "APPROVED",
+        ),
+      )
+      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
+        someHdcLicenceData.copy(
+          curfewAddress = null,
+        ),
+      )
       val exception = assertThrows<IllegalStateException> {
         service.checkEligibleForHdcLicence(
           aPrisonerSearchResult,
@@ -428,7 +456,7 @@ class HdcServiceTest {
 
       assertThat(licenceCaptor.value.curfewTimes)
         .extracting<Tuple> {
-          Tuple.tuple(
+          tuple(
             it?.fromDay,
             it?.fromTime,
             it?.untilDay,
@@ -436,13 +464,13 @@ class HdcServiceTest {
           )
         }
         .contains(
-          Tuple.tuple(DayOfWeek.MONDAY, LocalTime.of(21, 0), DayOfWeek.TUESDAY, LocalTime.of(9, 0)),
-          Tuple.tuple(DayOfWeek.TUESDAY, LocalTime.of(21, 0), DayOfWeek.WEDNESDAY, LocalTime.of(9, 0)),
-          Tuple.tuple(DayOfWeek.WEDNESDAY, LocalTime.of(21, 0), DayOfWeek.THURSDAY, LocalTime.of(9, 0)),
-          Tuple.tuple(DayOfWeek.THURSDAY, LocalTime.of(21, 0), DayOfWeek.FRIDAY, LocalTime.of(9, 0)),
-          Tuple.tuple(DayOfWeek.FRIDAY, LocalTime.of(21, 0), DayOfWeek.SATURDAY, LocalTime.of(9, 0)),
-          Tuple.tuple(DayOfWeek.SATURDAY, LocalTime.of(21, 0), DayOfWeek.SUNDAY, LocalTime.of(9, 0)),
-          Tuple.tuple(DayOfWeek.SUNDAY, LocalTime.of(21, 0), DayOfWeek.MONDAY, LocalTime.of(9, 0)),
+          tuple(MONDAY, LocalTime.of(21, 0), TUESDAY, LocalTime.of(9, 0)),
+          tuple(TUESDAY, LocalTime.of(21, 0), WEDNESDAY, LocalTime.of(9, 0)),
+          tuple(WEDNESDAY, LocalTime.of(21, 0), THURSDAY, LocalTime.of(9, 0)),
+          tuple(THURSDAY, LocalTime.of(21, 0), FRIDAY, LocalTime.of(9, 0)),
+          tuple(FRIDAY, LocalTime.of(21, 0), SATURDAY, LocalTime.of(9, 0)),
+          tuple(SATURDAY, LocalTime.of(21, 0), SUNDAY, LocalTime.of(9, 0)),
+          tuple(SUNDAY, LocalTime.of(21, 0), MONDAY, LocalTime.of(9, 0)),
         )
     }
   }
@@ -450,7 +478,7 @@ class HdcServiceTest {
   private companion object {
     val aLicenceEntity = createHdcLicence()
 
-    val aCom = TestData.com()
+    val aCom = communityOffenderManager()
 
     val anEntityCurfewAddress = EntityHdcCurfewAddress(
       1L,
@@ -482,9 +510,9 @@ class HdcServiceTest {
           1L,
           aLicenceEntity,
           1,
-          DayOfWeek.MONDAY,
+          MONDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.TUESDAY,
+          TUESDAY,
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
@@ -492,9 +520,9 @@ class HdcServiceTest {
           1L,
           aLicenceEntity,
           2,
-          DayOfWeek.TUESDAY,
+          TUESDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.WEDNESDAY,
+          WEDNESDAY,
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
@@ -502,9 +530,9 @@ class HdcServiceTest {
           1L,
           aLicenceEntity,
           3,
-          DayOfWeek.WEDNESDAY,
+          WEDNESDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.THURSDAY,
+          THURSDAY,
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
@@ -512,9 +540,9 @@ class HdcServiceTest {
           1L,
           aLicenceEntity,
           4,
-          DayOfWeek.THURSDAY,
+          THURSDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.FRIDAY,
+          FRIDAY,
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
@@ -522,9 +550,9 @@ class HdcServiceTest {
           1L,
           aLicenceEntity,
           5,
-          DayOfWeek.FRIDAY,
+          FRIDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.SATURDAY,
+          SATURDAY,
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
@@ -532,9 +560,9 @@ class HdcServiceTest {
           1L,
           aLicenceEntity,
           6,
-          DayOfWeek.SATURDAY,
+          SATURDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.SUNDAY,
+          SUNDAY,
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
@@ -542,9 +570,9 @@ class HdcServiceTest {
           1L,
           aLicenceEntity,
           7,
-          DayOfWeek.SUNDAY,
+          SUNDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.MONDAY,
+          MONDAY,
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
@@ -555,57 +583,57 @@ class HdcServiceTest {
         ModelHdcCurfewTimes(
           1L,
           1,
-          DayOfWeek.MONDAY,
+          MONDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.TUESDAY,
+          TUESDAY,
           LocalTime.of(8, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           2,
-          DayOfWeek.TUESDAY,
+          TUESDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.WEDNESDAY,
+          WEDNESDAY,
           LocalTime.of(8, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           3,
-          DayOfWeek.WEDNESDAY,
+          WEDNESDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.THURSDAY,
+          THURSDAY,
           LocalTime.of(8, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           4,
-          DayOfWeek.THURSDAY,
+          THURSDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.FRIDAY,
+          FRIDAY,
           LocalTime.of(8, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           5,
-          DayOfWeek.FRIDAY,
+          FRIDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.SATURDAY,
+          SATURDAY,
           LocalTime.of(8, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           6,
-          DayOfWeek.SATURDAY,
+          SATURDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.SUNDAY,
+          SUNDAY,
           LocalTime.of(8, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           7,
-          DayOfWeek.SUNDAY,
+          SUNDAY,
           LocalTime.of(20, 0),
-          DayOfWeek.MONDAY,
+          MONDAY,
           LocalTime.of(8, 0),
         ),
       )
@@ -615,57 +643,57 @@ class HdcServiceTest {
         ModelHdcCurfewTimes(
           1L,
           1,
-          DayOfWeek.MONDAY,
+          MONDAY,
           LocalTime.of(21, 0),
-          DayOfWeek.TUESDAY,
+          TUESDAY,
           LocalTime.of(9, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           2,
-          DayOfWeek.TUESDAY,
+          TUESDAY,
           LocalTime.of(21, 0),
-          DayOfWeek.WEDNESDAY,
+          WEDNESDAY,
           LocalTime.of(9, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           3,
-          DayOfWeek.WEDNESDAY,
+          WEDNESDAY,
           LocalTime.of(21, 0),
-          DayOfWeek.THURSDAY,
+          THURSDAY,
           LocalTime.of(9, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           4,
-          DayOfWeek.THURSDAY,
+          THURSDAY,
           LocalTime.of(21, 0),
-          DayOfWeek.FRIDAY,
+          FRIDAY,
           LocalTime.of(9, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           5,
-          DayOfWeek.FRIDAY,
+          FRIDAY,
           LocalTime.of(21, 0),
-          DayOfWeek.SATURDAY,
+          SATURDAY,
           LocalTime.of(9, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           6,
-          DayOfWeek.SATURDAY,
+          SATURDAY,
           LocalTime.of(21, 0),
-          DayOfWeek.SUNDAY,
+          SUNDAY,
           LocalTime.of(9, 0),
         ),
         ModelHdcCurfewTimes(
           1L,
           7,
-          DayOfWeek.SUNDAY,
+          SUNDAY,
           LocalTime.of(21, 0),
-          DayOfWeek.MONDAY,
+          MONDAY,
           LocalTime.of(9, 0),
         ),
       )

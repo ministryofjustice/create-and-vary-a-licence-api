@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.com
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
@@ -64,7 +64,7 @@ class ComAllocatedHandlerTest {
     val eventJson = buildEventJson(crn, detailUrl = null)
     val deliusResponse = mock<CommunityManager>()
     val offenderManager = buildOffenderManager()
-    val existingCom = com()
+    val existingCom = communityOffenderManager()
     val com = mock<CommunityOffenderManager>()
 
     whenever(deliusApiClient.getOffenderManager(crn)).thenReturn(deliusResponse)

@@ -49,6 +49,13 @@ class PrisonUser(
 
   override fun hashCode(): Int = super.hashCode()
 
-  override fun toString(): String = "PrisonUser()" +
-    " ${super.toString()}"
+  override fun toString(): String = "${javaClass.simpleName}(" +
+    "id=$id, " +
+    "kind=$kind, " +
+    "username='$username', " +
+    "email=$email, " +
+    "firstName=$firstName, " +
+    "lastName=$lastName, " +
+    "lastUpdatedTimestamp=$lastUpdatedTimestamp" +
+    ")"
 }

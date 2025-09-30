@@ -14,7 +14,6 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
@@ -24,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.AdditionalInformationPrisonerUpdated
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.COM_ALLOCATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
@@ -65,6 +65,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   fun `An COM allocated event from Delius is processed`() {
     // Given
     val crn = "X666322"
+    val staffCode = "AB00001"
     val userName = "username"
     val emailAddress = "emailAddress@Delius"
     val staffIdentifier = 123L
@@ -72,10 +73,11 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val lastName = "surname"
 
     deliusMockServer.stubGetOffenderManager(
-      crn,
+      crn = crn,
+      staffCode = staffCode,
       userName = userName,
-      emailAddress,
-      staffIdentifier,
+      emailAddress = emailAddress,
+      staffIdentifier = staffIdentifier,
       firstName = firstName,
       lastName = lastName,
     )
@@ -88,15 +90,17 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     // Then
     verifyUpdateComDetails(
-      staffIdentifier,
-      userName,
-      emailAddress,
+      staffIdentifier = staffIdentifier,
+      email = emailAddress,
+      staffCode = staffCode,
+      userName = userName,
       firstName = firstName,
       lastName = lastName,
     )
     verifyUpdateOffenderWithResponsibleCom(
       crn = crn,
       id = 9,
+      staffCode = staffCode,
       staffIdentifier = staffIdentifier,
       username = userName,
       email = emailAddress,
@@ -115,13 +119,13 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       districtDescription = "district-description-1",
     )
 
-    assertComExistsInDb(staffIdentifier, userName, emailAddress, firstName, lastName)
+    assertComExistsInDb(staffIdentifier, staffCode, userName, emailAddress, firstName, lastName)
   }
 
   @Test
   fun `An COM allocated event from APOP is processed`() {
     // Given
-    val staffCode = "STAFF01CODE"
+    val staffCode = "AB00001"
     val crn = "X666322"
     val userName = "username"
     val emailAddress = "testUser@test.justice.gov.uk"
@@ -142,10 +146,11 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     // Then
     verify(comAllocatedHandler).handleEvent(message)
-    verifyUpdateComDetails(staffIdentifier, userName, emailAddress, firstName, lastName)
+    verifyUpdateComDetails(staffIdentifier, userName, staffCode, emailAddress, firstName, lastName)
     verifyUpdateOffenderWithResponsibleCom(
       crn = crn,
       id = 9,
+      staffCode = staffCode,
       staffIdentifier = staffIdentifier,
       username = userName,
       email = emailAddress,
@@ -162,7 +167,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       districtDescription = "District description",
     )
 
-    assertComExistsInDb(staffIdentifier, userName, emailAddress, firstName, lastName)
+    assertComExistsInDb(staffIdentifier, staffCode, userName, emailAddress, firstName, lastName)
   }
 
   @Test
@@ -210,6 +215,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   private fun assertComExistsInDb(
     staffIdentifier: Long,
+    staffCode: String,
     userName: String,
     emailAddress: String,
     firstName: String = "Test",
@@ -218,6 +224,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val persisted = staffRepository.findByStaffIdentifier(staffIdentifier)
     assertThat(persisted).isNotNull
     assertThat(persisted!!.username).isEqualTo(userName.uppercase())
+    assertThat(persisted.staffCode).isEqualTo(staffCode)
     assertThat(persisted.email).isEqualTo(emailAddress)
     assertThat(persisted.firstName).isEqualTo(firstName)
     assertThat(persisted.lastName).isEqualTo(lastName)
@@ -246,6 +253,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   private fun verifyUpdateComDetails(
     staffIdentifier: Long = 123456,
     userName: String,
+    staffCode: String,
     email: String,
     firstName: String = "Test",
     lastName: String = "User",
@@ -253,6 +261,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     verify(staffService).updateComDetails(
       UpdateComRequest(
         staffIdentifier = staffIdentifier,
+        staffCode = staffCode,
         staffUsername = userName.trim().uppercase(),
         staffEmail = email,
         firstName = firstName,
@@ -264,6 +273,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   private fun verifyUpdateOffenderWithResponsibleCom(
     crn: String,
     id: Long,
+    staffCode: String,
     staffIdentifier: Long,
     username: String,
     email: String,
@@ -273,14 +283,14 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     verify(offenderService).updateOffenderWithResponsibleCom(
       crn,
       null,
-      CommunityOffenderManager(
+      communityOffenderManager().copy(
         id = id,
+        staffCode = staffCode,
         staffIdentifier = staffIdentifier,
-        username = username.uppercase(),
+        username = username,
         email = email,
         firstName = firstName,
         lastName = lastName,
-        lastUpdatedTimestamp = null,
       ),
     )
   }
