@@ -131,7 +131,7 @@ class VaryApproverCaseloadService(
 
   private fun processLicences(
     licences: List<LicenceSummary>,
-    searchTerm: String?
+    searchTerm: String?,
   ): List<VaryApproverCase> {
     val cases = mapLicencesToOffenders(licences)
     val enrichedCases = addProbationPractitionerCases(cases)
