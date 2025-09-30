@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceType
@@ -708,6 +709,16 @@ object TestData {
     kind = LicenceKind.CRD,
     prisonCode = "MDI",
     prisonDescription = "Moorland (HMP)",
+  )
+
+  fun varyApprovalCase() = VaryApproverCase(
+    licenceId = 1,
+    name = "A Prisoner",
+    crnNumber = "X12348",
+    licenceType = LicenceType.AP,
+    variationRequestDate = LocalDate.of(2023, 11, 24),
+    releaseDate = LocalDate.of(2021, 10, 22),
+    probationPractitioner = "Delius User",
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(

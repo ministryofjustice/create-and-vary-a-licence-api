@@ -21,7 +21,7 @@ data class VaryApproverCaseloadSearchRequest(
 
   @field:Schema(
     description = "Search text to filter caseload",
-    example = "2022-04-20",
+    example = "Joe Bloggs",
     requiredMode = NOT_REQUIRED,
   )
   val searchTerm: String? = null,

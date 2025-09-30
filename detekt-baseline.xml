@@ -4,6 +4,7 @@
   <CurrentIssues>
     <ID>ForbiddenComment:HdcService.kt$HdcService.HdcStatuses$* For CA: * Always show started cases regardless of HDC status. * TODO: will need to fix when we start to show prospective HDC cases in caselist * If licence hasn't been started, only show !approved licences.</ID>
     <ID>ForbiddenComment:HdcService.kt$HdcService.HdcStatuses$* For COM: * If licence hasn't been started base on whether licence is approved. * TODO: will need to fix when we start to show prospective HDC cases in caselist * If licence has been started then show when (approved and HDC) or (!approved and !hdc)</ID>
+    <ID>LargeClass:CaseloadController.kt$CaseloadController</ID>
     <ID>LargeClass:LicenceController.kt$LicenceController</ID>
     <ID>LargeClass:LicenceService.kt$LicenceService</ID>
     <ID>LongMethod:CrdLicence.kt$CrdLicence$override fun toString(): String</ID>
