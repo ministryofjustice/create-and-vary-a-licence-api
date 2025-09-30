@@ -403,7 +403,7 @@ class NotifyServiceTest {
         firstName = "John",
         lastName = "Doe",
         crn = "A123456",
-        crd = LocalDate.of(2024, 4, 17),
+        lsd = LocalDate.of(2024, 4, 17),
         licenceId = "1",
       )
 
@@ -424,7 +424,7 @@ class NotifyServiceTest {
         firstName = "John",
         lastName = "Doe",
         crn = "A123456",
-        crd = null,
+        lsd = null,
         licenceId = "1",
       )
       verifyNoInteractions(notificationClient)
@@ -437,7 +437,7 @@ class NotifyServiceTest {
         firstName = "John",
         lastName = "Doe",
         crn = "A123456",
-        crd = LocalDate.of(2024, 4, 17),
+        lsd = LocalDate.of(2024, 4, 17),
         licenceId = "1",
       )
       verifyNoInteractions(notificationClient)

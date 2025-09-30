@@ -7,7 +7,6 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
@@ -127,15 +126,6 @@ class SupportServiceTest {
       sentenceExpiryDate = LocalDate.parse("2024-09-14"),
       topupSupervisionStartDate = null,
       croNumber = null,
-    )
-
-    val aPrisonerHdcStatus = PrisonerHdcStatus(
-      approvalStatusDate = null,
-      approvalStatus = "REJECTED",
-      refusedReason = null,
-      checksPassedDate = null,
-      bookingId = 123456,
-      passed = true,
     )
   }
 }

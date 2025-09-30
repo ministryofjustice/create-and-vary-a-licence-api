@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createAppointment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -21,11 +23,11 @@ class VariationLicenceTest {
     val dateLastUpdated = LocalDateTime.now().plusDays(3)
     val licenceActivatedDate = LocalDateTime.now().plusDays(4)
     val supersededDate = LocalDateTime.now().plusDays(5)
-    val aCom = TestData.com()
+    val aCom = communityOffenderManager()
     val postRecallReleaseDate = LocalDate.now()
-    val appointment = TestData.createAppointment(time = appointmentTime, timeType = appointmentTimeType)
+    val appointment = createAppointment(time = appointmentTime, timeType = appointmentTimeType)
 
-    val variationLicence = TestData.createVariationLicence()
+    val variationLicence = createVariationLicence()
       .copy(
         licenceVersion = "1.2",
         spoDiscussion = "yes1",

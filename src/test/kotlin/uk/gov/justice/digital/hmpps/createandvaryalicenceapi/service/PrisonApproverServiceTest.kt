@@ -16,11 +16,11 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.ca
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.com
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -30,7 +30,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 
 class PrisonApproverServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -64,8 +63,8 @@ class PrisonApproverServiceTest {
         aRecentlyApprovedLicence.copy(
           statusCode = LicenceStatus.APPROVED,
           submittedDate = LocalDateTime.of(2023, 1, 2, 3, 40),
-          submittedBy = com(),
-          updatedBy = com(),
+          submittedBy = communityOffenderManager(),
+          updatedBy = communityOffenderManager(),
         ),
       ),
     )
@@ -94,8 +93,8 @@ class PrisonApproverServiceTest {
         TestData.createPrrdLicence().copy(
           statusCode = LicenceStatus.APPROVED,
           submittedDate = LocalDateTime.of(2023, 1, 2, 3, 40),
-          submittedBy = com(),
-          updatedBy = com(),
+          submittedBy = communityOffenderManager(),
+          updatedBy = communityOffenderManager(),
         ),
       ),
     )
@@ -112,15 +111,15 @@ class PrisonApproverServiceTest {
 
   @Test
   fun `find recently approved licences matching criteria - returns the original licence for an active variation`() {
-    val aRecentlyApprovedLicence = TestData.createCrdLicence().copy(
+    val aRecentlyApprovedLicence = createCrdLicence().copy(
       id = 1,
       actualReleaseDate = LocalDate.now().minusDays(1),
       conditionalReleaseDate = LocalDate.now(),
       approvedByName = "jim smith",
       statusCode = LicenceStatus.INACTIVE,
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-      submittedBy = com(),
-      updatedBy = com(),
+      submittedBy = communityOffenderManager(),
+      updatedBy = communityOffenderManager(),
       submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
@@ -154,8 +153,8 @@ class PrisonApproverServiceTest {
           surname = activeVariationLicence.surname,
           forename = activeVariationLicence.forename,
           licenceStatus = LicenceStatus.INACTIVE,
-          submittedByFullName = com().fullName,
-          updatedByFullName = com().fullName,
+          submittedByFullName = communityOffenderManager().fullName,
+          updatedByFullName = communityOffenderManager().fullName,
           submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
         ),
       ),
@@ -173,7 +172,7 @@ class PrisonApproverServiceTest {
       statusCode = LicenceStatus.INACTIVE,
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
       submittedBy = ca(),
-      updatedBy = com(),
+      updatedBy = communityOffenderManager(),
       submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
@@ -208,8 +207,8 @@ class PrisonApproverServiceTest {
           surname = activeVariationLicence.surname,
           forename = activeVariationLicence.forename,
           licenceStatus = LicenceStatus.INACTIVE,
-          submittedByFullName = com().fullName,
-          updatedByFullName = com().fullName,
+          submittedByFullName = communityOffenderManager().fullName,
+          updatedByFullName = communityOffenderManager().fullName,
           submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
         ),
       ),
@@ -226,8 +225,8 @@ class PrisonApproverServiceTest {
       approvedByName = "jim smith",
       statusCode = LicenceStatus.INACTIVE,
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-      submittedBy = com(),
-      updatedBy = com(),
+      submittedBy = communityOffenderManager(),
+      updatedBy = communityOffenderManager(),
       submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
@@ -262,8 +261,8 @@ class PrisonApproverServiceTest {
           surname = activeVariationLicence.surname,
           forename = activeVariationLicence.forename,
           licenceStatus = LicenceStatus.INACTIVE,
-          submittedByFullName = com().fullName,
-          updatedByFullName = com().fullName,
+          submittedByFullName = communityOffenderManager().fullName,
+          updatedByFullName = communityOffenderManager().fullName,
           submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
         ),
       ),
@@ -374,93 +373,17 @@ class PrisonApproverServiceTest {
   }
 
   private companion object {
-    val aCom = com()
+    val aCom = communityOffenderManager()
 
-    val aLicenceEntity = TestData.createCrdLicence().copy(
-      id = 1,
-      typeCode = LicenceType.AP,
-      version = "1.1",
-      statusCode = LicenceStatus.IN_PROGRESS,
-      nomsId = "A1234AA",
-      bookingNo = "123456",
-      bookingId = 54321,
-      crn = "X12345",
-      pnc = "2019/123445",
-      cro = "12345",
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      forename = "Person",
-      surname = "One",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      standardConditions = emptyList(),
-      responsibleCom = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "tcom",
-        email = "testemail@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      ),
-      createdBy = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "tcom",
-        email = "testemail@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      ),
-      approvedByName = "jim smith",
+    val aLicenceEntity = createCrdLicence().copy(
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-    ).let {
-      it.copy(
-        standardConditions = listOf(
-          EntityStandardCondition(
-            id = 1,
-            conditionCode = "goodBehaviour",
-            conditionSequence = 1,
-            conditionText = "Be of good behaviour",
-            conditionType = "AP",
-            licence = it,
-          ),
-          EntityStandardCondition(
-            id = 2,
-            conditionCode = "notBreakLaw",
-            conditionSequence = 2,
-            conditionText = "Do not break any law",
-            conditionType = "AP",
-            licence = it,
-          ),
-          EntityStandardCondition(
-            id = 3,
-            conditionCode = "attendMeetings",
-            conditionSequence = 3,
-            conditionText = "Attend meetings",
-            conditionType = "AP",
-            licence = it,
-          ),
-        ),
-      )
-    }
+      approvedByName = "jim smith",
+    )
 
     val aLicenceSummaryApproverView = LicenceSummaryApproverView(
       licenceId = 1,
-      forename = "Person",
-      surname = "One",
+      forename = "John",
+      surname = "Smith",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       licenceStatus = LicenceStatus.SUBMITTED,
       kind = LicenceKind.CRD,
@@ -478,7 +401,7 @@ class PrisonApproverServiceTest {
       probationLauDescription = "Cardiff South",
       probationTeamCode = "NA01A2-A",
       probationTeamDescription = "Cardiff South Team A",
-      comUsername = "tcom",
+      comUsername = aCom.username,
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
       sentenceStartDate = LocalDate.of(2018, 10, 22),
@@ -508,12 +431,6 @@ class PrisonApproverServiceTest {
       conditionalReleaseDate = LocalDate.now(),
     )
 
-    val aPreviousUser = CommunityOffenderManager(
-      staffIdentifier = 4000,
-      username = "test",
-      email = "test@test.com",
-      firstName = "Test",
-      lastName = "Test",
-    )
+    val aPreviousUser = communityOffenderManager()
   }
 }

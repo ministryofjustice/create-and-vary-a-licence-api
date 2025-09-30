@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonU
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TeamCountsDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 
 class StaffServiceTest {
@@ -55,13 +56,7 @@ class StaffServiceTest {
         lastName = "Y",
       )
 
-      val foundCom = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "joebloggs",
-        email = "jbloggs@probation.gov.uk",
-        firstName = "A",
-        lastName = "B",
-      )
+      val foundCom = communityOffenderManager()
       whenever(staffRepository.findCommunityOffenderManager(any(), any())).thenReturn(listOf(foundCom))
 
       val spyService = spy(service)
@@ -72,20 +67,13 @@ class StaffServiceTest {
       // Then
       verify(staffRepository, times(1)).findCommunityOffenderManager(3000, "jbloggs")
       verify(staffRepository, times(0)).saveAndFlush(any<CommunityOffenderManager>())
-      verify(spyService, times(1)).isUpdateRequest(foundCom, updateRequest)
       assertComMatchesRequest(result, updateRequest)
     }
 
     @Test
     fun `does not update COM with same details`() {
       // Given
-      val foundCom = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "joebloggs",
-        email = "jbloggs@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      )
+      val foundCom = communityOffenderManager()
       whenever(staffRepository.findCommunityOffenderManager(any(), any())).thenReturn(listOf(foundCom))
 
       val updateRequest = UpdateComRequest(
@@ -103,7 +91,6 @@ class StaffServiceTest {
       // Then
       verify(staffRepository, times(1)).findCommunityOffenderManager(2000, "JOEBLOGGS")
       verify(staffRepository, times(0)).saveAndFlush(any<CommunityOffenderManager>())
-      verify(spyService, times(1)).isUpdateRequest(foundCom, updateRequest)
     }
 
     @Test
@@ -126,7 +113,6 @@ class StaffServiceTest {
       // Then
       verify(staffRepository, times(1)).findCommunityOffenderManager(3000, "jbloggs")
       verify(staffRepository, times(1)).saveAndFlush(any<CommunityOffenderManager>())
-      verify(spyService, times(0)).isUpdateRequest(any(), any())
       assertComMatchesRequest(result, updateRequest)
     }
 
@@ -143,17 +129,9 @@ class StaffServiceTest {
 
     @Test
     fun `retrieves review counts for COM and their teams`() {
-      val com = CommunityOffenderManager(
-        staffIdentifier = 3000,
-        username = "JBLOGGS",
-        email = "jbloggs123@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      )
+      val com = communityOffenderManager()
 
-      val teamCodes = listOf(
-        "A01B02",
-      )
+      val teamCodes = listOf("A01B02")
 
       val teamCountsDto = listOf(
         TeamCountsDto(
@@ -168,8 +146,8 @@ class StaffServiceTest {
 
       val result = service.getReviewCounts(com.staffIdentifier)
 
-      verify(staffRepository, times(1)).findByStaffIdentifier(3000)
-      verify(deliusApiClient, times(1)).getTeamsCodesForUser(3000)
+      verify(staffRepository, times(1)).findByStaffIdentifier(com.staffIdentifier)
+      verify(deliusApiClient, times(1)).getTeamsCodesForUser(com.staffIdentifier)
       verify(licenceRepository, times(1)).getLicenceReviewCountForCom(com)
       verify(licenceRepository, times(1)).getLicenceReviewCountForTeams(teamCodes)
 

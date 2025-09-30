@@ -10,6 +10,9 @@ data class UpdateComRequest(
   @field:NotNull
   val staffIdentifier: Long,
 
+  @field:Schema(description = "The Delius staff code for the COM", example = "X012345")
+  val staffCode: String? = null,
+
   @field:Schema(description = "The Delius username for the COM", example = "jbloggs")
   @field:NotNull
   val staffUsername: String,

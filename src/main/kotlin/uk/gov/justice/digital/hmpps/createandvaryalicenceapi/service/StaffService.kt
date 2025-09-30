@@ -38,22 +38,15 @@ class StaffService(
    */
   @Transactional
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
-    log.info(
-      "Attempting to update COM details for staffIdentifier={} username={}",
-      comDetails.staffIdentifier,
-      comDetails.staffUsername,
-    )
+    log.info("Attempting to update COM details for {}", comDetails.summary())
 
     val comResult = findCommunityOffenderManager(comDetails.staffIdentifier, comDetails.staffUsername)
     if (comResult.isEmpty()) {
-      log.info(
-        "No existing COM found. Creating new record for staffIdentifier={} username={}",
-        comDetails.staffIdentifier,
-        comDetails.staffUsername,
-      )
+      log.info("No existing COM found. Creating new record for {}", comDetails.summary())
       return staffRepository.saveAndFlush(
         CommunityOffenderManager(
           username = comDetails.staffUsername.uppercase(),
+          staffCode = comDetails.staffCode,
           staffIdentifier = comDetails.staffIdentifier,
           email = comDetails.staffEmail,
           firstName = comDetails.firstName,
@@ -63,24 +56,16 @@ class StaffService(
     }
 
     if (comResult.count() > 1) {
-      log.warn(
-        "Multiple COM records found for staffIdentifier={} username={}. Using the first match.",
-        comDetails.staffIdentifier,
-        comDetails.staffUsername,
-      )
+      log.warn("Multiple COM records found for {}", comDetails.summary())
     }
 
     val com = comResult.first()
 
-    if (isUpdateRequest(com, comDetails)) {
-      log.info(
-        "Updating COM record (id={}) for staffIdentifier={} username={}",
-        com.id,
-        comDetails.staffIdentifier,
-        comDetails.staffUsername,
-      )
+    if (com.isUpdateRequest(comDetails)) {
+      log.info("Updating COM record (id={}) for {}", com.id, comDetails.summary())
       with(com) {
         staffIdentifier = comDetails.staffIdentifier
+        staffCode = comDetails.staffCode
         username = comDetails.staffUsername.uppercase()
         email = comDetails.staffEmail
         firstName = comDetails.firstName
@@ -89,14 +74,15 @@ class StaffService(
       }
     } else {
       log.info(
-        "No changes detected for COM record (id={}) - skipping update for staffIdentifier={} username={}",
+        "No changes detected for COM record (id={}) - skipping update for {}",
         com.id,
-        comDetails.staffIdentifier,
-        comDetails.staffUsername,
+        comDetails.summary(),
       )
     }
     return com
   }
+
+  private fun UpdateComRequest.summary() = "staffIdentifier='$staffIdentifier' staffCode='$staffCode' username='$staffUsername'"
 
   @Transactional
   fun updatePrisonUser(request: UpdatePrisonUserRequest) {
@@ -170,14 +156,14 @@ class StaffService(
     return this
   }
 
-  fun isUpdateRequest(
-    com: CommunityOffenderManager,
+  fun CommunityOffenderManager.isUpdateRequest(
     comUpdateRequest: UpdateComRequest,
-  ) = (comUpdateRequest.firstName != com.firstName) ||
-    (comUpdateRequest.lastName != com.lastName) ||
-    (comUpdateRequest.staffEmail != com.email) ||
-    (!comUpdateRequest.staffUsername.equals(com.username, ignoreCase = true)) ||
-    (comUpdateRequest.staffIdentifier != com.staffIdentifier)
+  ) = (comUpdateRequest.firstName != this.firstName) ||
+    (comUpdateRequest.lastName != this.lastName) ||
+    (comUpdateRequest.staffEmail != this.email) ||
+    (!comUpdateRequest.staffUsername.equals(this.username, ignoreCase = true)) ||
+    (comUpdateRequest.staffIdentifier != this.staffIdentifier) ||
+    (comUpdateRequest.staffCode != this.staffCode)
 
   private fun PrisonUser.isUpdateRequest(caDetails: UpdatePrisonUserRequest) = (caDetails.firstName != this.firstName) ||
     (caDetails.lastName != this.lastName) ||
