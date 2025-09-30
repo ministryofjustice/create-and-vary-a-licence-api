@@ -21,33 +21,36 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
     private const val BY_BOOKING_ID_BATCH_SIZE = 1000
   }
 
-  fun searchPrisonersByBookingIds(bookingIds: Collection<Long>) = batchRequests(BY_BOOKING_ID_BATCH_SIZE, bookingIds) { batch ->
-    prisonerSearchApiWebClient
-      .post()
-      .uri("/prisoner-search/booking-ids")
-      .accept(MediaType.APPLICATION_JSON)
-      .bodyValue(PrisonerSearchByBookingIdsRequest(batch.toList()))
-      .retrieve()
-      .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
-      .block()
-  }
+  fun searchPrisonersByBookingIds(bookingIds: Collection<Long>) =
+    batchRequests(BY_BOOKING_ID_BATCH_SIZE, bookingIds) { batch ->
+      prisonerSearchApiWebClient
+        .post()
+        .uri("/prisoner-search/booking-ids")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(PrisonerSearchByBookingIdsRequest(batch.toList()))
+        .retrieve()
+        .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
+        .block()
+    }
 
-  fun searchPrisonersByNomisIds(nomisIds: List<String>) = batchRequests(BY_PRISON_NUMBER_BATCH_SIZE, nomisIds) { batch ->
-    prisonerSearchApiWebClient
-      .post()
-      .uri("/prisoner-search/prisoner-numbers")
-      .accept(MediaType.APPLICATION_JSON)
-      .bodyValue(PrisonerSearchByPrisonerNumbersRequest(batch))
-      .retrieve()
-      .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
-      .block()
-  }
+  fun searchPrisonersByNomisIds(nomisIds: List<String>) =
+    batchRequests(BY_PRISON_NUMBER_BATCH_SIZE, nomisIds) { batch ->
+      prisonerSearchApiWebClient
+        .post()
+        .uri("/prisoner-search/prisoner-numbers")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(PrisonerSearchByPrisonerNumbersRequest(batch))
+        .retrieve()
+        .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
+        .block()
+    }
 
   fun searchPrisonersByReleaseDate(
     earliestReleaseDate: LocalDate,
     latestReleaseDate: LocalDate,
-    prisonIds: List<String>
-  ): List<PrisonerSearchPrisoner> = getAllByReleaseDate(earliestReleaseDate, latestReleaseDate, PAGE_SIZE, prisonIds.toSet())
+    prisonIds: List<String>,
+  ): List<PrisonerSearchPrisoner> =
+    getAllByReleaseDate(earliestReleaseDate, latestReleaseDate, PAGE_SIZE, prisonIds.toSet())
 
   fun searchPrisonersByReleaseDate(
     earliestReleaseDate: LocalDate,
@@ -59,7 +62,12 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
     return searchForPrisoners(PAGE_SIZE, page, earliestReleaseDate, latestReleaseDate, prisonIds)
   }
 
-  fun getAllByReleaseDate(from: LocalDate, to: LocalDate, pageSize: Int = PAGE_SIZE, prisonIds: Set<String> = emptySet()): List<PrisonerSearchPrisoner> {
+  fun getAllByReleaseDate(
+    from: LocalDate,
+    to: LocalDate,
+    pageSize: Int = PAGE_SIZE,
+    prisonIds: Set<String> = emptySet(),
+  ): List<PrisonerSearchPrisoner> {
     val result = mutableListOf<PrisonerSearchPrisoner>()
     var pageNumber = 0
     while (pageNumber >= 0) {
