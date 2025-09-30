@@ -97,6 +97,7 @@ class LicenceCreationService(
         creator = createdBy,
         licenceStartDate = licenceStartDate,
       )
+
       LicenceKind.CRD -> LicenceFactory.createCrd(
         licenceType = getLicenceType(nomisRecord),
         nomsId = nomisRecord.prisonerNumber,
@@ -109,6 +110,7 @@ class LicenceCreationService(
         creator = createdBy,
         licenceStartDate = licenceStartDate,
       )
+
       else -> throw ValidationException("Generic licence creation route not suitable for $prisonNumber - releaseDateKind not PRRD or CRD.")
     }
 
@@ -284,6 +286,7 @@ class LicenceCreationService(
     return staffRepository.saveAndFlush(
       CommunityOffenderManager(
         staffIdentifier = staffId,
+        staffCode = com.code,
         username = com.username?.uppercase() ?: missing(staffId, "username"),
         email = com.email,
         firstName = com.name.forename,

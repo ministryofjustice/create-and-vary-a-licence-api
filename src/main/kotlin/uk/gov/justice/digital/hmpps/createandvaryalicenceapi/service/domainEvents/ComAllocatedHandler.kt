@@ -57,6 +57,7 @@ class ComAllocatedHandler(
     val newCom = staffService.updateComDetails(
       UpdateComRequest(
         staffIdentifier = offenderManager.staffIdentifier,
+        staffCode = offenderManager.code,
         staffUsername = offenderManager.username,
         staffEmail = offenderManager.email,
         firstName = offenderManager.forename,

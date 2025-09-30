@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.assertj.core.api.AssertionsForClassTypes
+import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -19,7 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
@@ -62,13 +62,13 @@ class EventControllerTest {
     whenever(eventService.findEventsMatchingCriteria(eventQueryObject)).thenReturn(listOf(aLicenceEvent))
 
     val result = mvc.perform(
-      MockMvcRequestBuilders.get("/events/match?licenceId=1&eventType=SUBMITTED").accept(MediaType.APPLICATION_JSON),
+      get("/events/match?licenceId=1&eventType=SUBMITTED").accept(MediaType.APPLICATION_JSON),
     )
       .andExpect(MockMvcResultMatchers.status().isOk)
       .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
       .andReturn()
 
-    AssertionsForClassTypes.assertThat(result.response.contentAsString)
+    assertThat(result.response.contentAsString)
       .isEqualTo(mapper.writeValueAsString(listOf(aLicenceEvent)))
 
     verify(eventService, times(1)).findEventsMatchingCriteria(eventQueryObject)

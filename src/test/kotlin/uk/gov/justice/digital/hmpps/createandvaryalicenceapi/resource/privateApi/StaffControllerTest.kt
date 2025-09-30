@@ -26,13 +26,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -81,13 +81,7 @@ class StaffControllerTest {
       lastName = "Bloggs",
     )
 
-    val expectedCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "joebloggs",
-      email = "joebloggs@probation.gov.uk",
-      firstName = "Joseph",
-      lastName = "Bloggs",
-    )
+    val expectedCom = communityOffenderManager()
     whenever(staffService.updateComDetails(any())).thenReturn(expectedCom)
 
     val request = put("/com/update")

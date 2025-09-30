@@ -145,6 +145,7 @@ class DeliusMockServer : WireMockServer(8093) {
   fun stubGetOffenderManager(
     crn: String = "X12345",
     userName: String = "AZ12345",
+    staffCode: String = "staff-1",
     emailAddress: String = "user@test.com",
     staffIdentifier: Long = 125,
     firstName: String = "firstName",
@@ -155,7 +156,7 @@ class DeliusMockServer : WireMockServer(8093) {
         aResponse().withHeader("Content-Type", "application/json").withBody(
           // language=json
           """{
-            "code": "staff-code-1",
+            "code": "$staffCode",
             "id": $staffIdentifier,
             "case": { "crn": "$crn" },
             "name": { "forename": "$firstName", "surname": "$lastName" },

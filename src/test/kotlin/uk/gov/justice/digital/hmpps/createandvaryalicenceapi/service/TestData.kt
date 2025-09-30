@@ -62,13 +62,24 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 object TestData {
   private val TEN_DAYS_FROM_NOW = LocalDate.now().plusDays(10)
 
-  fun com() = CommunityOffenderManager(
+  fun communityOffenderManager() = CommunityOffenderManager(
     id = 1,
     staffIdentifier = 2000,
-    username = "tcom",
-    email = "testemail@probation.gov.uk",
+    staffCode = "test-code-1",
+    username = "tcom1",
+    email = "testemail1@probation.gov.uk",
     firstName = "X",
     lastName = "Y",
+  )
+
+  fun anotherCommunityOffenderManager() = CommunityOffenderManager(
+    id = 2,
+    staffIdentifier = 3000,
+    staffCode = "test-code-2",
+    username = "tcom2",
+    email = "testemail2@probation.gov.uk",
+    firstName = "A",
+    lastName = "B",
   )
 
   fun ca() = PrisonUser(
@@ -163,20 +174,8 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
     postRecallReleaseDate = LocalDate.now(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
@@ -216,20 +215,8 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }
@@ -268,13 +255,7 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
     createdBy = PrisonUser(
       username = "tca",
       email = "testemail@probation.gov.uk",
@@ -322,13 +303,7 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
     createdBy = PrisonUser(
       username = "tca",
       email = "testemail@probation.gov.uk",
@@ -377,14 +352,8 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = com(),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
     appointment = createAppointment(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
@@ -473,20 +442,8 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
   ).let {
     it.copy(
       standardConditions = someEntityStandardConditions(it),
@@ -574,15 +531,9 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = com(),
     appointment = createAppointment(),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it), curfewTimes = mutableListOf())
   }
@@ -1020,3 +971,12 @@ object TestData {
     name = Name(forename = "Delius", surname = "User"),
   )
 }
+
+private fun communityOffenderManager(): CommunityOffenderManager = CommunityOffenderManager(
+  staffIdentifier = 2000,
+  staffCode = "test-code",
+  username = "tcom",
+  email = "testemail@probation.gov.uk",
+  firstName = "X",
+  lastName = "Y",
+)

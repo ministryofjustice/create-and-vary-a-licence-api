@@ -14,10 +14,10 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -242,20 +242,8 @@ class LsdRecalculationServiceTest {
       probationTeamDescription = "Cardiff South Team A",
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       standardConditions = emptyList(),
-      responsibleCom = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "tcom",
-        email = "testemail@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      ),
-      createdBy = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "tcom",
-        email = "testemail@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      ),
+      responsibleCom = communityOffenderManager(),
+      createdBy = communityOffenderManager(),
       approvedByName = "jim smith",
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )

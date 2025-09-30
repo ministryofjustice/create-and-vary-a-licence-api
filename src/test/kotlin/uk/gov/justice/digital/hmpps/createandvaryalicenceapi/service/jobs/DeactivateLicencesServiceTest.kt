@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -47,7 +48,7 @@ class DeactivateLicencesServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("tcom")
+    whenever(authentication.name).thenReturn(aCom.username)
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -102,8 +103,8 @@ class DeactivateLicencesServiceTest {
       .isEqualTo(
         listOf(
           1L,
-          "tcom",
-          "tcom",
+          aCom.username,
+          aCom.username,
           AuditEventType.SYSTEM_EVENT,
           "Licence deactivated automatically as it passed release date for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode} status ${LicenceStatus.INACTIVE} version ${aLicenceEntity.version}",
@@ -116,9 +117,9 @@ class DeactivateLicencesServiceTest {
         listOf(
           1L,
           LicenceEventType.INACTIVE,
-          "tcom",
-          "tcom",
-          "tcom",
+          aCom.username,
+          aCom.username,
+          aCom.username,
           "Licence deactivated automatically as it passed release date for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )
@@ -126,6 +127,6 @@ class DeactivateLicencesServiceTest {
 
   private companion object {
     val aLicenceEntity = TestData.createCrdLicence().copy()
-    val aCom = TestData.com()
+    val aCom = communityOffenderManager()
   }
 }
