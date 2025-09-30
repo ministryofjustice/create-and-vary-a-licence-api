@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
@@ -825,9 +826,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-a-licence-with-a-variation.sql",
   )
   fun `Should check if a COM has permission to view a licence`() {
+    deliusMockServer.stubGetOffenderManager()
+
     val result = webTestClient.post()
       .uri("/licence/id/1/permissions")
-      .bodyValue(LicencePermissionsRequest(teamCodes = listOf("team 2")))
+      .bodyValue(LicencePermissionsRequest(teamCodes = listOf("team-code-1")))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -1146,12 +1149,14 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val govUkApiMockServer = GovUkMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+    val deliusMockServer = DeliusMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
       prisonerSearchApiMockServer.start()
+      deliusMockServer.start()
     }
 
     @JvmStatic
@@ -1159,6 +1164,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       govUkApiMockServer.stop()
       prisonerSearchApiMockServer.stop()
+      deliusMockServer.stop()
     }
   }
 }
