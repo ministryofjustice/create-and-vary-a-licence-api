@@ -119,7 +119,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
 
   fun nextWorkingDate() = nextWorkingDates().first()
 
-  private fun nextWorkingDates(): Sequence<LocalDate> = generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }
+  fun nextWorkingDates(): Sequence<LocalDate> = generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }
 
   fun stubSearchPrisonersByNomisIds(
     prisonerSearchResponse: String? = null,

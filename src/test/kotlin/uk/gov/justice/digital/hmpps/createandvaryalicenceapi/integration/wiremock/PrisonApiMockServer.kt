@@ -94,6 +94,32 @@ class PrisonApiMockServer : WireMockServer(8091) {
     )
   }
 
+  fun getHdcStatuses(statuses: List<Pair<String, Boolean>>) {
+    val jsonArray = statuses.joinToString(
+      prefix = "[",
+      postfix = "]",
+      separator = ",",
+    ) { (bookingId, passed) ->
+      """
+      {
+        "bookingId": "$bookingId",
+        "passed": $passed,
+        "approvalStatus": "APPROVED"
+      }
+      """.trimIndent()
+    }
+
+    stubFor(
+      post(urlEqualTo("/api/offender-sentences/home-detention-curfews/latest"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonArray)
+            .withStatus(200),
+        ),
+    )
+  }
+
   fun stubGetPrisonerDetail(nomsId: String = "A1234AA", releaseDate: LocalDate? = LocalDate.of(2021, 10, 22)) {
     stubFor(
       get(urlEqualTo("/api/offenders/$nomsId")).willReturn(
