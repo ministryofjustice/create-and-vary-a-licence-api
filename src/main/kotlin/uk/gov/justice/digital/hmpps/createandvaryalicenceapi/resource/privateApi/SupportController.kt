@@ -127,7 +127,7 @@ class SupportController(
 
   @Tag(name = Tags.OFFENDER)
   @GetMapping(
-    value = ["/support/report/tag-cases"],
+    value = ["/support/report/last-minute-handover-cases"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

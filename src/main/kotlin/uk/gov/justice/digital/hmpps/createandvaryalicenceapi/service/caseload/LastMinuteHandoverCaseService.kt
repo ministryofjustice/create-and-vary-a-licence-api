@@ -152,7 +152,7 @@ class LastMinuteHandoverCaseService(
       prisonCode = prisoner.prisonId,
       prisonerName = prisoner.fullName(),
       crn = communityManager?.case?.crn,
-      probationRegion = communityManager?.team?.district?.code,
+      probationRegion = communityManager?.provider?.code,
       probationPractitioner = communityManager?.name?.fullName(),
       status = getStatus(candidate),
     )
