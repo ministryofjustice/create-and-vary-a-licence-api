@@ -52,8 +52,10 @@ class LastMinuteHandoverCaseService(
 
     return result.candidates
       .map { createTagReportCaseResponse(result, it) }
-      .sortedWith(compareBy<LastMinuteHandoverCaseResponse> { it.releaseDate }
-        .thenBy { it.prisonerName })
+      .sortedWith(
+        compareBy<LastMinuteHandoverCaseResponse> { it.releaseDate }
+          .thenBy { it.prisonerName },
+      )
   }
 
   private fun getPrisonerData(): Map<String, PrisonerSearchPrisoner> {
@@ -82,7 +84,7 @@ class LastMinuteHandoverCaseService(
     return copy(
       inProgressEligiblePrisoners = inProgress,
       eligiblePrisoners = eligible,
-      candidates = filteredCandidates
+      candidates = filteredCandidates,
     )
   }
 
@@ -128,7 +130,7 @@ class LastMinuteHandoverCaseService(
 
   private fun createTagReportCaseResponse(
     data: LastMinuteReportDataBuilder,
-    candidate: Map.Entry<String, PrisonerSearchPrisoner>
+    candidate: Map.Entry<String, PrisonerSearchPrisoner>,
   ): LastMinuteHandoverCaseResponse {
     val prisoner = candidate.value
     val communityManager = data.deliusData[candidate.key]
@@ -141,7 +143,7 @@ class LastMinuteHandoverCaseService(
       crn = communityManager?.case?.crn,
       probationRegion = communityManager?.provider?.code,
       probationPractitioner = communityManager?.name?.fullName(),
-      status = if (data.inProgressEligiblePrisoners.contains(candidate.key)) IN_PROGRESS else NOT_STARTED
+      status = if (data.inProgressEligiblePrisoners.contains(candidate.key)) IN_PROGRESS else NOT_STARTED,
     )
   }
 
@@ -149,5 +151,3 @@ class LastMinuteHandoverCaseService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
-
-
