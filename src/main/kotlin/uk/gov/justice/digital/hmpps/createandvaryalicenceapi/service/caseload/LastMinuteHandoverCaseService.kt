@@ -127,24 +127,25 @@ class LastMinuteHandoverCaseService(
     return copy(licenceStartDates = licenceStartDates, candidates = filteredCandidates)
   }
 
-  private fun LastMinuteReportDataBuilder.toResponses(): List<LastMinuteHandoverCaseResponse> = candidates.map { (prisonerNumber, prisoner) ->
-    val communityManager = deliusData[prisonerNumber]
-    val releaseDate = requireNotNull(licenceStartDates[prisonerNumber]) {
-      "Licence start date missing for prisoner $prisonerNumber"
-    }
-    val status = if (prisonerNumber in inProgressEligiblePrisoners) IN_PROGRESS else NOT_STARTED
+  private fun LastMinuteReportDataBuilder.toResponses(): List<LastMinuteHandoverCaseResponse> =
+    candidates.map { (prisonerNumber, prisoner) ->
+      val communityManager = deliusData[prisonerNumber]
+      val releaseDate = requireNotNull(licenceStartDates[prisonerNumber]) {
+        "Licence start date missing for prisoner $prisonerNumber"
+      }
+      val status = if (prisonerNumber in inProgressEligiblePrisoners) IN_PROGRESS else NOT_STARTED
 
-    LastMinuteHandoverCaseResponse(
-      releaseDate = releaseDate,
-      prisonerNumber = prisonerNumber,
-      prisonCode = prisoner.prisonId,
-      prisonerName = prisoner.fullName(),
-      crn = communityManager?.case?.crn,
-      probationRegion = communityManager?.provider?.code,
-      probationPractitioner = communityManager?.name?.fullName(),
-      status = status,
-    )
-  }
+      LastMinuteHandoverCaseResponse(
+        releaseDate = releaseDate,
+        prisonerNumber = prisonerNumber,
+        prisonCode = prisoner.prisonId,
+        prisonerName = prisoner.fullName(),
+        crn = communityManager?.case?.crn,
+        probationRegion = communityManager?.provider?.description,
+        probationPractitioner = communityManager?.name?.fullName(),
+        status = status
+      )
+    }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
