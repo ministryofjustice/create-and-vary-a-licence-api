@@ -50,8 +50,7 @@ class LastMinuteHandoverCaseService(
       .withDeliusData()
       .withLicenceStartDates()
 
-    return result.candidates
-      .map { createTagReportCaseResponse(result, it) }
+    return result.toResponses()
       .sortedWith(
         compareBy<LastMinuteHandoverCaseResponse> { it.releaseDate }
           .thenBy { it.prisonerName },
@@ -128,18 +127,14 @@ class LastMinuteHandoverCaseService(
     return copy(licenceStartDates = licenceStartDates, candidates = filteredCandidates)
   }
 
-  private fun createTagReportCaseResponse(
-    data: LastMinuteReportDataBuilder,
-    candidate: Map.Entry<String, PrisonerSearchPrisoner>
-  ): LastMinuteHandoverCaseResponse {
-    val (prisonerNumber, prisoner) = candidate
-    val communityManager = data.deliusData[prisonerNumber]
-    val releaseDate = requireNotNull(data.licenceStartDates[prisonerNumber]) {
+  private fun LastMinuteReportDataBuilder.toResponses(): List<LastMinuteHandoverCaseResponse> = candidates.map { (prisonerNumber, prisoner) ->
+    val communityManager = deliusData[prisonerNumber]
+    val releaseDate = requireNotNull(licenceStartDates[prisonerNumber]) {
       "Licence start date missing for prisoner $prisonerNumber"
     }
-    val status = if (prisonerNumber in data.inProgressEligiblePrisoners) IN_PROGRESS else NOT_STARTED
+    val status = if (prisonerNumber in inProgressEligiblePrisoners) IN_PROGRESS else NOT_STARTED
 
-    return LastMinuteHandoverCaseResponse(
+    LastMinuteHandoverCaseResponse(
       releaseDate = releaseDate,
       prisonerNumber = prisonerNumber,
       prisonCode = prisoner.prisonId,
@@ -147,7 +142,7 @@ class LastMinuteHandoverCaseService(
       crn = communityManager?.case?.crn,
       probationRegion = communityManager?.provider?.code,
       probationPractitioner = communityManager?.name?.fullName(),
-      status = status
+      status = status,
     )
   }
 
