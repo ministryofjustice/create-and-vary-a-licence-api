@@ -31,7 +31,7 @@ class LastMinuteHandoverCaseService(
   private val overrideClock: Clock = Clock.systemDefaultZone(),
 ) {
 
-  private data class LastMinuteReportData(
+  private data class LastMinuteReportDataBuilder(
     val prisoners: Map<String, PrisonerSearchPrisoner>,
     val inProgressEligiblePrisoners: Set<String> = emptySet(),
     val eligiblePrisoners: Set<String> = emptySet(),
@@ -43,7 +43,7 @@ class LastMinuteHandoverCaseService(
   fun getLastMinuteCases(): List<LastMinuteHandoverCaseResponse> {
     log.info("Getting last minute handover cases")
 
-    val result = LastMinuteReportData(getPrisonerData())
+    val result = LastMinuteReportDataBuilder(getPrisonerData())
       .withEligibleCandidates()
       .withPreSubmissionState()
       .withoutHdc()
@@ -65,12 +65,12 @@ class LastMinuteHandoverCaseService(
     return prisoners.associateBy { it.prisonerNumber }
   }
 
-  private fun LastMinuteReportData.withEligibleCandidates(): LastMinuteReportData {
+  private fun LastMinuteReportDataBuilder.withEligibleCandidates(): LastMinuteReportDataBuilder {
     val candidates = prisoners.filter { eligibilityService.isEligibleForCvl(it.value) }
     return copy(candidates = candidates)
   }
 
-  private fun LastMinuteReportData.withPreSubmissionState(): LastMinuteReportData {
+  private fun LastMinuteReportDataBuilder.withPreSubmissionState(): LastMinuteReportDataBuilder {
     val prisonerNumbers = candidates.keys
     val results = licenceRepository.findStatesByPrisonNumbers(prisonerNumbers.toList())
 
@@ -86,7 +86,7 @@ class LastMinuteHandoverCaseService(
     )
   }
 
-  private fun LastMinuteReportData.withoutHdc(): LastMinuteReportData {
+  private fun LastMinuteReportDataBuilder.withoutHdc(): LastMinuteReportDataBuilder {
     val prisonersList = candidates.values.toList()
     val hdcStatuses = hdcService.getHdcStatus(prisonersList)
 
@@ -96,7 +96,7 @@ class LastMinuteHandoverCaseService(
     return copy(candidates = filteredCandidates)
   }
 
-  private fun LastMinuteReportData.withDeliusData(): LastMinuteReportData {
+  private fun LastMinuteReportDataBuilder.withDeliusData(): LastMinuteReportDataBuilder {
     val prisonersList = candidates.values.toList()
     log.info("Adding Delius data for ${prisonersList.size} prisoners")
 
@@ -112,7 +112,7 @@ class LastMinuteHandoverCaseService(
     return copy(deliusData = filteredDeliusData)
   }
 
-  private fun LastMinuteReportData.withLicenceStartDates(): LastMinuteReportData {
+  private fun LastMinuteReportDataBuilder.withLicenceStartDates(): LastMinuteReportDataBuilder {
     val today = LocalDate.now(overrideClock)
     val nextWeek = today.plusWeeks(1)
     val prisonersList = candidates.values.toList()
@@ -127,7 +127,7 @@ class LastMinuteHandoverCaseService(
   }
 
   private fun createTagReportCaseResponse(
-    data: LastMinuteReportData,
+    data: LastMinuteReportDataBuilder,
     candidate: Map.Entry<String, PrisonerSearchPrisoner>
   ): LastMinuteHandoverCaseResponse {
     val prisoner = candidate.value
