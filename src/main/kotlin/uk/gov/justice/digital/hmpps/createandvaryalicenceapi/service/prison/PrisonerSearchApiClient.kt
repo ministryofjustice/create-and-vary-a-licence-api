@@ -46,29 +46,23 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
   fun searchPrisonersByReleaseDate(
     earliestReleaseDate: LocalDate,
     latestReleaseDate: LocalDate,
-    prisonIds: List<String>,
-  ): List<PrisonerSearchPrisoner> = getAllByReleaseDate(earliestReleaseDate, latestReleaseDate, PAGE_SIZE, prisonIds.toSet())
-
-  fun searchPrisonersByReleaseDate(
-    earliestReleaseDate: LocalDate,
-    latestReleaseDate: LocalDate,
     prisonIds: Set<String>,
     page: Int = 0,
   ): Page<PrisonerSearchPrisoner> {
     if (prisonIds.isEmpty()) return Page.empty()
-    return searchForPrisoners(PAGE_SIZE, page, earliestReleaseDate, latestReleaseDate, prisonIds)
+    return searchForPrisoners(earliestReleaseDate, latestReleaseDate, prisonIds, PAGE_SIZE, page)
   }
 
   fun getAllByReleaseDate(
     from: LocalDate,
     to: LocalDate,
-    pageSize: Int = PAGE_SIZE,
     prisonIds: Set<String> = emptySet(),
+    pageSize: Int = PAGE_SIZE,
   ): List<PrisonerSearchPrisoner> {
     val result = mutableListOf<PrisonerSearchPrisoner>()
     var pageNumber = 0
     while (pageNumber >= 0) {
-      val page = searchForPrisoners(pageSize, pageNumber, from, to, prisonIds)
+      val page = searchForPrisoners(from, to, prisonIds, pageSize, pageNumber)
       pageNumber = if (pageNumber < page.totalPages - 1) pageNumber + 1 else -1
       result.addAll(page.content)
     }
@@ -76,11 +70,11 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
   }
 
   private fun searchForPrisoners(
-    pageSize: Int,
-    pageNumber: Int,
     earliestReleaseDate: LocalDate,
     latestReleaseDate: LocalDate,
     prisonIds: Set<String>,
+    pageSize: Int,
+    pageNumber: Int,
   ): Page<PrisonerSearchPrisoner> {
     val page = prisonerSearchApiWebClient
       .post()
