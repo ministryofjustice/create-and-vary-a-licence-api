@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import java.time.Clock
 import java.time.LocalDate
+import kotlin.comparisons.nullsLast
 
 @Service
 class LastMinuteHandoverCaseService(
@@ -52,8 +53,9 @@ class LastMinuteHandoverCaseService(
 
     return result.toResponses()
       .sortedWith(
-        compareBy<LastMinuteHandoverCaseResponse> { it.releaseDate }
-          .thenBy { it.prisonerName },
+        compareBy<LastMinuteHandoverCaseResponse, String?>(nullsLast()) { it.probationRegion }
+          .thenBy { it.prisonCode }
+          .thenBy { it.releaseDate }
       )
   }
 
