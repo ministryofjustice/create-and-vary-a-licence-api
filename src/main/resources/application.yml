@@ -165,3 +165,9 @@ feature:
   toggle:
     electronicMonitoringResponseHandling: false
     recall: ${RECALL_ENABLED}
+
+
+hmpps:
+  cases:
+    last-minute:
+      prisons: CFI,SWI,PBI,PFI,SUI,RNI,FEI
