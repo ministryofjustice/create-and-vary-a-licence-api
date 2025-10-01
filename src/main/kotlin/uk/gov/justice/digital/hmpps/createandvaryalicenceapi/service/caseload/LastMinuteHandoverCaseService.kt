@@ -130,20 +130,24 @@ class LastMinuteHandoverCaseService(
 
   private fun createTagReportCaseResponse(
     data: LastMinuteReportDataBuilder,
-    candidate: Map.Entry<String, PrisonerSearchPrisoner>,
+    candidate: Map.Entry<String, PrisonerSearchPrisoner>
   ): LastMinuteHandoverCaseResponse {
-    val prisoner = candidate.value
-    val communityManager = data.deliusData[candidate.key]
+    val (prisonerNumber, prisoner) = candidate
+    val communityManager = data.deliusData[prisonerNumber]
+    val releaseDate = requireNotNull(data.licenceStartDates[prisonerNumber]) {
+      "Licence start date missing for prisoner $prisonerNumber"
+    }
+    val status = if (prisonerNumber in data.inProgressEligiblePrisoners) IN_PROGRESS else NOT_STARTED
 
     return LastMinuteHandoverCaseResponse(
-      releaseDate = data.licenceStartDates[candidate.key]!!,
-      prisonerNumber = prisoner.prisonerNumber,
+      releaseDate = releaseDate,
+      prisonerNumber = prisonerNumber,
       prisonCode = prisoner.prisonId,
       prisonerName = prisoner.fullName(),
       crn = communityManager?.case?.crn,
       probationRegion = communityManager?.provider?.code,
       probationPractitioner = communityManager?.name?.fullName(),
-      status = if (data.inProgressEligiblePrisoners.contains(candidate.key)) IN_PROGRESS else NOT_STARTED,
+      status = status
     )
   }
 
