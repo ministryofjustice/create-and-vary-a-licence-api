@@ -27,142 +27,127 @@ class LastMinuteHandoverCaseService(
   private val deliusApiClient: DeliusApiClient,
   private val releaseDateService: ReleaseDateService,
   @param:Value("\${hmpps.cases.last-minute.prisons}")
-  private val lastMinutePrisonCodes: List<String> = listOf(),
+  private val lastMinutePrisonCodes: List<String> = emptyList(),
   private val overrideClock: Clock = Clock.systemDefaultZone(),
 ) {
 
   private data class LastMinuteReportData(
-    val prisoners: Map<String, PrisonerSearchPrisoner> = mapOf(),
-  ) {
-    var inProgressEligiblePrisoners: Set<String> = setOf()
-    var eligiblePrisoners: Set<String> = setOf()
-    var licenceStartDates: Map<String, LocalDate> = mapOf()
-    var deliusData: Map<String, CommunityManager> = mapOf()
-    var candidates: Map<String, PrisonerSearchPrisoner> = mapOf()
-  }
+    val prisoners: Map<String, PrisonerSearchPrisoner>,
+    val inProgressEligiblePrisoners: Set<String> = emptySet(),
+    val eligiblePrisoners: Set<String> = emptySet(),
+    val licenceStartDates: Map<String, LocalDate> = emptyMap(),
+    val deliusData: Map<String, CommunityManager> = emptyMap(),
+    val candidates: Map<String, PrisonerSearchPrisoner> = emptyMap(),
+  )
 
   fun getLastMinuteCases(): List<LastMinuteHandoverCaseResponse> {
     log.info("Getting last minute handover cases")
 
-    val lastMinuteReportData = LastMinuteReportData(getPrisonerData())
-    processIneligibleCases(lastMinuteReportData)
-    processPreSubmissionState(lastMinuteReportData)
-    excludePrisonersWithHdc(lastMinuteReportData)
-    addDeliusOffenderManagerData(lastMinuteReportData)
-    processLicenceStartDates(lastMinuteReportData)
+    val result = LastMinuteReportData(getPrisonerData())
+      .withEligibleCandidates()
+      .withPreSubmissionState()
+      .withoutHdc()
+      .withDeliusData()
+      .withLicenceStartDates()
 
-    with(lastMinuteReportData) {
-      return candidates.map { candidate ->
-        createTagReportCaseResponse(candidate)
-      }.sortedBy {
-        it.releaseDate
-        it.prisonerName
-      }
-    }
+    return result.candidates
+      .map { createTagReportCaseResponse(result, it) }
+      .sortedWith(compareBy<LastMinuteHandoverCaseResponse> { it.releaseDate }
+        .thenBy { it.prisonerName })
   }
 
   private fun getPrisonerData(): Map<String, PrisonerSearchPrisoner> {
-    val today = getToday()
-    val nextWeek = getNextWeek()
+    val today = LocalDate.now(overrideClock)
+    val nextWeek = today.plusWeeks(1)
     log.info("Getting prisoner data for $today <> $nextWeek prisons : $lastMinutePrisonCodes")
     val prisoners = prisonerSearchApiClient.searchPrisonersByReleaseDate(today, nextWeek, lastMinutePrisonCodes)
     log.info("Found ${prisoners.size} prisoners")
     return prisoners.associateBy { it.prisonerNumber }
   }
 
-  private fun getToday(): LocalDate = LocalDate.now(overrideClock)
-  private fun getNextWeek(): LocalDate = getToday().plusWeeks(1)
-
-  private fun processIneligibleCases(lastMinuteReportData: LastMinuteReportData) {
-    log.info("Processing ineligible cases")
-    with(lastMinuteReportData) {
-      candidates = prisoners.filter { eligibilityService.isEligibleForCvl(it.value) }
-    }
+  private fun LastMinuteReportData.withEligibleCandidates(): LastMinuteReportData {
+    val candidates = prisoners.filter { eligibilityService.isEligibleForCvl(it.value) }
+    return copy(candidates = candidates)
   }
 
-  private fun processPreSubmissionState(lastMinuteReportData: LastMinuteReportData) {
-    log.info("Processing pre-submission cases")
-    with(lastMinuteReportData) {
-      val prisonerNumbers = candidates.keys.toList()
-      val results = licenceRepository.findStatesByPrisonNumbers(prisonerNumbers)
-      log.info("Found ${prisonerNumbers.size}  prisoner results")
-      val inProgress = results.filter { it.statusCode == IN_PROGRESS }
-        .map { it.prisonNumber }
-        .toSet()
+  private fun LastMinuteReportData.withPreSubmissionState(): LastMinuteReportData {
+    val prisonerNumbers = candidates.keys
+    val results = licenceRepository.findStatesByPrisonNumbers(prisonerNumbers.toList())
 
-      val notStarted = prisonerNumbers - results.map { it.prisonNumber }.toSet()
+    val inProgress = results.filter { it.statusCode == IN_PROGRESS }.map { it.prisonNumber }.toSet()
+    val notStarted = prisonerNumbers - results.map { it.prisonNumber }.toSet()
+    val eligible = inProgress + notStarted
 
-      inProgressEligiblePrisoners = inProgress
-      eligiblePrisoners = inProgress + notStarted
-      candidates =
-        candidates.filter { eligiblePrisoners.contains(it.value.prisonerNumber) }
-    }
+    val filteredCandidates = candidates.filterKeys { it in eligible }
+    return copy(
+      inProgressEligiblePrisoners = inProgress,
+      eligiblePrisoners = eligible,
+      candidates = filteredCandidates
+    )
   }
 
-  private fun excludePrisonersWithHdc(lastMinuteReportData: LastMinuteReportData) {
-    log.info("Excluding prisoners with HDC")
-    with(lastMinuteReportData) {
-      val prisoners = candidates.values.toList()
-      val hdcStatuses = hdcService.getHdcStatus(prisoners)
-      candidates = candidates.filterNot { hdcStatuses.isApprovedForHdc(it.value.bookingId?.toLong()!!) }
+  private fun LastMinuteReportData.withoutHdc(): LastMinuteReportData {
+    val prisonersList = candidates.values.toList()
+    val hdcStatuses = hdcService.getHdcStatus(prisonersList)
+
+    val filteredCandidates = candidates.filterValues {
+      it.bookingId?.let { id -> !hdcStatuses.isApprovedForHdc(id.toLong()) } ?: true
     }
+    return copy(candidates = filteredCandidates)
   }
 
-  private fun addDeliusOffenderManagerData(lastMinuteReportData: LastMinuteReportData) {
-    with(lastMinuteReportData) {
-      val prisoners = candidates.values
-      log.info("Adding delius data ${prisoners.size} prisoners")
+  private fun LastMinuteReportData.withDeliusData(): LastMinuteReportData {
+    val prisonersList = candidates.values.toList()
+    log.info("Adding Delius data for ${prisonersList.size} prisoners")
 
-      val result = deliusApiClient.getOffenderManagers(prisoners.map { it.prisonerNumber })
-      val prisonNumberOffenderManagerMap = result.filter { it.case.nomisId != null }.associateBy { it.case.nomisId!! }
-      log.info("Found ${prisonNumberOffenderManagerMap.size} delius records")
+    val deliusRecords = deliusApiClient.getOffenderManagers(prisonersList.map { it.prisonerNumber })
+      .mapNotNull { it.case.nomisId?.let { nomisId -> nomisId to it } }
+      .toMap()
 
-      deliusData = prisoners.mapNotNull { prisoner ->
-        prisonNumberOffenderManagerMap[prisoner.prisonerNumber]?.let { prisoner.prisonerNumber to it }
-      }.toMap()
-    }
+    val filteredDeliusData = prisonersList.mapNotNull { prisoner ->
+      deliusRecords[prisoner.prisonerNumber]?.let { prisoner.prisonerNumber to it }
+    }.toMap()
+
+    log.info("Found ${filteredDeliusData.size} Delius records")
+    return copy(deliusData = filteredDeliusData)
   }
 
-  private fun processLicenceStartDates(lastMinuteReportData: LastMinuteReportData) {
-    log.info("Processing licence start dates")
-    with(lastMinuteReportData) {
-      val startDate = getToday()
-      val endDate = getNextWeek()
-      val prisoners = candidates.values.toList()
+  private fun LastMinuteReportData.withLicenceStartDates(): LastMinuteReportData {
+    val today = LocalDate.now(overrideClock)
+    val nextWeek = today.plusWeeks(1)
+    val prisonersList = candidates.values.toList()
 
-      val lsd = releaseDateService.getLicenceStartDates(prisoners)
-        .mapNotNull { (key, value) -> value?.let { key to it } }
-        .toMap()
-        .filterValues { it in startDate..endDate }
+    val licenceStartDates = releaseDateService.getLicenceStartDates(prisonersList)
+      .mapNotNull { (key, date) -> date?.takeIf { it in today..nextWeek }?.let { key to it } }
+      .toMap()
 
-      licenceStartDates = lsd
-      candidates = candidates.filter { licenceStartDates.containsKey(it.key) }
-    }
+    val filteredCandidates = candidates.filterKeys { it in licenceStartDates.keys }
+
+    return copy(licenceStartDates = licenceStartDates, candidates = filteredCandidates)
   }
 
-  private fun LastMinuteReportData.createTagReportCaseResponse(
-    candidate: Map.Entry<String, PrisonerSearchPrisoner>,
+  private fun createTagReportCaseResponse(
+    data: LastMinuteReportData,
+    candidate: Map.Entry<String, PrisonerSearchPrisoner>
   ): LastMinuteHandoverCaseResponse {
-    val communityManager = deliusData[candidate.key]
     val prisoner = candidate.value
+    val communityManager = data.deliusData[candidate.key]
 
     return LastMinuteHandoverCaseResponse(
-      releaseDate = licenceStartDates[candidate.key]!!,
+      releaseDate = data.licenceStartDates[candidate.key]!!,
       prisonerNumber = prisoner.prisonerNumber,
       prisonCode = prisoner.prisonId,
       prisonerName = prisoner.fullName(),
       crn = communityManager?.case?.crn,
       probationRegion = communityManager?.provider?.code,
       probationPractitioner = communityManager?.name?.fullName(),
-      status = getStatus(candidate),
+      status = if (data.inProgressEligiblePrisoners.contains(candidate.key)) IN_PROGRESS else NOT_STARTED
     )
   }
-
-  private fun LastMinuteReportData.getStatus(
-    candidate: Map.Entry<String, PrisonerSearchPrisoner>,
-  ) = if (inProgressEligiblePrisoners.contains(candidate.key)) IN_PROGRESS else NOT_STARTED
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
+
+
