@@ -117,6 +117,7 @@ class LastMinuteReportBuilder(
       releaseDate = releaseDate,
       prisonerNumber = prisonerNumber,
       prisonCode = prisoner.prisonId,
+      prisonName = prisoner.prisonName,
       prisonerName = prisoner.fullName(),
       crn = communityManager?.case?.crn,
       probationRegion = communityManager?.provider?.description,
