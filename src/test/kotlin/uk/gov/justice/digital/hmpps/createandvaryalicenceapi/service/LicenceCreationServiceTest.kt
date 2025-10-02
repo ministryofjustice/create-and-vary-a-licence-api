@@ -174,8 +174,8 @@ class LicenceCreationServiceTest {
         assertThat(postRecallReleaseDate).isNull()
         assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
         assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
-        assertThat(probationAreaCode).isEqualTo(aCommunityManager.provider.code)
-        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.provider.description)
+        assertThat(probationAreaCode).isEqualTo(aCommunityManager.team.provider.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.team.provider.description)
         assertThat(probationPduCode).isEqualTo(aCommunityManager.team.borough.code)
         assertThat(probationPduDescription).isEqualTo(aCommunityManager.team.borough.description)
         assertThat(probationLauCode).isEqualTo(aCommunityManager.team.district.code)
@@ -636,8 +636,8 @@ class LicenceCreationServiceTest {
         assertThat(postRecallReleaseDate).isEqualTo(LocalDate.now())
         assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
         assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
-        assertThat(probationAreaCode).isEqualTo(aCommunityManager.provider.code)
-        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.provider.description)
+        assertThat(probationAreaCode).isEqualTo(aCommunityManager.team.provider.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.team.provider.description)
         assertThat(probationPduCode).isEqualTo(aCommunityManager.team.borough.code)
         assertThat(probationPduDescription).isEqualTo(aCommunityManager.team.borough.description)
         assertThat(probationLauCode).isEqualTo(aCommunityManager.team.district.code)
@@ -1113,8 +1113,8 @@ class LicenceCreationServiceTest {
         assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
         assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
         assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
-        assertThat(probationAreaCode).isEqualTo(aCommunityManager.provider.code)
-        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.provider.description)
+        assertThat(probationAreaCode).isEqualTo(aCommunityManager.team.provider.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.team.provider.description)
         assertThat(probationPduCode).isEqualTo(aCommunityManager.team.borough.code)
         assertThat(probationPduDescription).isEqualTo(aCommunityManager.team.borough.description)
         assertThat(probationLauCode).isEqualTo(aCommunityManager.team.district.code)
@@ -1620,8 +1620,8 @@ class LicenceCreationServiceTest {
         assertThat(postRecallReleaseDate).isNull()
         assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
         assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
-        assertThat(probationAreaCode).isEqualTo(aCommunityManager.provider.code)
-        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.provider.description)
+        assertThat(probationAreaCode).isEqualTo(aCommunityManager.team.provider.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.team.provider.description)
         assertThat(probationPduCode).isEqualTo(aCommunityManager.team.borough.code)
         assertThat(probationPduDescription).isEqualTo(aCommunityManager.team.borough.description)
         assertThat(probationLauCode).isEqualTo(aCommunityManager.team.district.code)
@@ -1810,8 +1810,8 @@ class LicenceCreationServiceTest {
           ),
         ),
         provider = Detail(
-          code = "N01",
-          description = "Wales",
+          code = "N02",
+          description = "Not Wales",
         ),
         case = ProbationCase("A12345"),
         name = Name("com", null, "user"),
