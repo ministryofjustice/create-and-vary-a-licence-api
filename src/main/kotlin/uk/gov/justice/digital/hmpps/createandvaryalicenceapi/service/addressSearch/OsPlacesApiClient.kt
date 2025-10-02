@@ -15,7 +15,7 @@ class OsPlacesApiClient(
   fun searchForAddressesByText(pageable: PageRequest, searchQuery: String): List<DeliveryPointAddress> {
     val searchResult = osPlacesApiWebClient
       .get()
-      .uri("/find?query=$searchQuery&key=$apiKey&offset=${pageable.offset}&maxresults=${pageable.pageSize}")
+      .uri("/find?query=$searchQuery&key=$apiKey&offset=${pageable.offset}&maxresults=${pageable.pageSize}&lr=EN")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(OsPlacesApiResponse::class.java)
