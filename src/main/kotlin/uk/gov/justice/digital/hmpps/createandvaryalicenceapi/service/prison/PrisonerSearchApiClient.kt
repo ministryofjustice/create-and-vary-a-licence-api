@@ -50,9 +50,35 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
     page: Int = 0,
   ): Page<PrisonerSearchPrisoner> {
     if (prisonIds.isEmpty()) return Page.empty()
-    val result = prisonerSearchApiWebClient
+    return searchForPrisoners(earliestReleaseDate, latestReleaseDate, prisonIds, PAGE_SIZE, page)
+  }
+
+  fun getAllByReleaseDate(
+    from: LocalDate,
+    to: LocalDate,
+    prisonIds: Set<String> = emptySet(),
+    pageSize: Int = PAGE_SIZE,
+  ): List<PrisonerSearchPrisoner> {
+    val result = mutableListOf<PrisonerSearchPrisoner>()
+    var pageNumber = 0
+    while (pageNumber >= 0) {
+      val page = searchForPrisoners(from, to, prisonIds, pageSize, pageNumber)
+      pageNumber = if (pageNumber < page.totalPages - 1) pageNumber + 1 else -1
+      result.addAll(page.content)
+    }
+    return result
+  }
+
+  private fun searchForPrisoners(
+    earliestReleaseDate: LocalDate,
+    latestReleaseDate: LocalDate,
+    prisonIds: Set<String>,
+    pageSize: Int,
+    pageNumber: Int,
+  ): Page<PrisonerSearchPrisoner> {
+    val page = prisonerSearchApiWebClient
       .post()
-      .uri("/prisoner-search/release-date-by-prison?size=$PAGE_SIZE&page=$page")
+      .uri("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(
         ReleaseDateSearch(
@@ -64,31 +90,6 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
       .retrieve()
       .bodyToMono(typeReference<PageResponse<PrisonerSearchPrisoner>>())
       .block()?.toPage() ?: Page.empty()
-    return result
-  }
-
-  fun getAllByReleaseDate(from: LocalDate, to: LocalDate, pageSize: Int = PAGE_SIZE): List<PrisonerSearchPrisoner> {
-    val result = mutableListOf<PrisonerSearchPrisoner>()
-    var pageNumber = 0
-
-    while (pageNumber >= 0) {
-      val page = prisonerSearchApiWebClient
-        .post()
-        .uri("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber")
-        .accept(MediaType.APPLICATION_JSON)
-        .bodyValue(
-          ReleaseDateSearch(
-            earliestReleaseDate = from,
-            latestReleaseDate = to,
-            prisonIds = emptySet(),
-          ),
-        )
-        .retrieve()
-        .bodyToMono(typeReference<PageResponse<PrisonerSearchPrisoner>>())
-        .block()?.toPage() ?: Page.empty()
-      pageNumber = if (pageNumber < page.totalPages - 1) pageNumber + 1 else -1
-      result.addAll(page.content)
-    }
-    return result
+    return page
   }
 }

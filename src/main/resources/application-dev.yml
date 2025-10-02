@@ -44,6 +44,11 @@ hmpps:
     api:
       url: "https://hdc-api-dev.hmpps.service.justice.gov.uk"
 
+  # Left this empty for now as in dev we do not have many prisoners from nomis
+  cases:
+    last-minute:
+      prisons:
+
 notify:
   enabled: false
 
