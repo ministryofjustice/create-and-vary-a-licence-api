@@ -98,6 +98,22 @@ object TestData {
     conditionVersion = "1.0",
   )
 
+  fun aCvlRecord(nomsId: String = "A1234AA", licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22), kind: LicenceKind?) = CvlCaseDto(
+    nomisId = nomsId,
+    licenceStartDate = licenceStartDate,
+    isEligible = true,
+    eligibleKind = kind,
+    ineligiblityReasons = anEligibilityAssessment(),
+  )
+
+  fun anEligibilityAssessment() = EligibilityAssessment(
+    genericIneligibilityReasons = emptyList(),
+    crdIneligibilityReasons = emptyList(),
+    prrdIneligibilityReasons = emptyList(),
+    isEligible = true,
+    eligibleKind = LicenceKind.CRD,
+  )
+
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
     licence = licence,
     id = 2L,
@@ -581,7 +597,11 @@ object TestData {
     sentenceDetail = SentenceDetail(
       confirmedReleaseDate = LocalDate.of(2021, 10, 22),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      sentenceExpiryDate = LocalDate.of(2023, 10, 22),
+      licenceExpiryDate = LocalDate.of(2023, 10, 22),
     ),
+    agencyId = "ABC",
+    status = "ACTIVE IN",
   )
 
   private fun anOffenceHistory() = OffenceHistory(
@@ -654,7 +674,6 @@ object TestData {
   fun caCase() = CaCase(
     licenceId = 1,
     kind = LicenceKind.CRD,
-    releaseDateKind = LicenceKind.CRD,
     name = "A Prisoner",
     prisonerNumber = "A1234AA",
     releaseDate = LocalDate.of(2021, 10, 22),
