@@ -32,7 +32,11 @@ class LsdRecalculationService(
     }
 
     val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
-    val prisonersToLSDs = releaseDateService.getLicenceStartDates(prisoners)
+    val nomisIdsToKinds = prisoners.associate { prisoner ->
+      val licence = licences.find { licence -> prisoner.prisonerNumber == licence.nomsId }!!
+      return@associate prisoner.prisonerNumber to licence.kind
+    }
+    val prisonersToLSDs = releaseDateService.getLicenceStartDates(prisoners, nomisIdsToKinds)
 
     licences.forEach {
       val licenceStartDate = prisonersToLSDs[it.nomsId]

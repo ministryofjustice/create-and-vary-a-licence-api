@@ -991,6 +991,10 @@ fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
     ?: this.sentenceDetail.paroleEligibilityDate,
   postRecallReleaseDate = this.sentenceDetail.postRecallReleaseOverrideDate
     ?: this.sentenceDetail.postRecallReleaseDate,
+  sentenceExpiryDate = this.sentenceDetail.sentenceExpiryDate,
+  licenceExpiryDate = this.sentenceDetail.licenceExpiryDate,
+  prisonId = agencyId,
+  status = status,
 )
 
 fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCurfewAddress = ModelHdcCurfewAddress(

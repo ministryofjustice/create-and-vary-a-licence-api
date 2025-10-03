@@ -563,7 +563,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 22),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isNull()
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isNull()
       }
 
       @Test
@@ -573,7 +573,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = null,
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
 
       @Test
@@ -583,7 +583,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 9, 1),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 9, 1))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 9, 1))
       }
 
       @Test
@@ -593,7 +593,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 22),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
 
       @Test
@@ -603,7 +603,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 23),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
 
       @Test
@@ -613,7 +613,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 23),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2018, 11, 30))
       }
 
       // Check to make sure it doesn't return workingCrd
@@ -624,7 +624,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2018, 12, 4),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 12, 4))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2018, 12, 4))
       }
     }
 
@@ -639,7 +639,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 10),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isNull()
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isNull()
       }
 
       @Test
@@ -651,7 +651,7 @@ class ReleaseDateServiceTest {
 
         whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isNull()
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isNull()
       }
 
       @ParameterizedTest(name = "returns CRD for {0}")
@@ -663,7 +663,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = null,
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
 
       @Test
@@ -675,7 +675,7 @@ class ReleaseDateServiceTest {
 
         whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
 
       @ParameterizedTest(name = "returns CRD for {0}")
@@ -687,7 +687,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 21),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
 
       @Test
@@ -699,7 +699,7 @@ class ReleaseDateServiceTest {
 
         whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
 
       @ParameterizedTest(name = "returns CRD for {0}")
@@ -711,7 +711,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 23),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
 
       @Test
@@ -723,7 +723,7 @@ class ReleaseDateServiceTest {
 
         whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
 
       @ParameterizedTest(name = "returns last working day before CRD for {0}")
@@ -737,7 +737,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = null,
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2018, 11, 30))
       }
 
       @Test
@@ -749,7 +749,7 @@ class ReleaseDateServiceTest {
 
         whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2018, 11, 30))
       }
 
       @ParameterizedTest(name = "returns last working day before CRD for {0}")
@@ -763,7 +763,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2018, 11, 29),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2018, 11, 30))
       }
 
       @Test
@@ -775,7 +775,7 @@ class ReleaseDateServiceTest {
 
         whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2018, 11, 30))
       }
 
       @ParameterizedTest(name = "returns ARD for {0}")
@@ -789,7 +789,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 12, 4),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 4))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 12, 4))
       }
 
       @Test
@@ -801,7 +801,7 @@ class ReleaseDateServiceTest {
 
         whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 4))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 12, 4))
       }
 
       @ParameterizedTest(name = "returns ARD for {0}")
@@ -815,7 +815,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 12, 3),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 3))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 12, 3))
       }
 
       @Test
@@ -827,7 +827,7 @@ class ReleaseDateServiceTest {
 
         whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 3))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 12, 3))
       }
     }
 
@@ -1005,6 +1005,22 @@ class ReleaseDateServiceTest {
           conditionalReleaseDate = LocalDate.of(2021, 10, 21),
           confirmedReleaseDate = LocalDate.of(2021, 10, 20),
         ),
+        // Ineligible case
+        prisonerSearchResult().copy(
+          prisonerNumber = "I1234GB",
+          bookingId = "789012",
+          conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 20),
+        ),
+      )
+
+      private val kinds = mapOf(
+        "I9123SL" to LicenceKind.CRD,
+        "R1234MD" to LicenceKind.CRD,
+        "C1234NV" to LicenceKind.CRD,
+        "I9123SB" to LicenceKind.CRD,
+        "S1234TD" to LicenceKind.CRD,
+        "I1234GB" to null,
       )
 
       @Test
@@ -1016,9 +1032,22 @@ class ReleaseDateServiceTest {
           "C1234NV" to LocalDate.of(2021, 10, 21),
           "I9123SB" to LocalDate.of(2021, 10, 21),
           "S1234TD" to LocalDate.of(2021, 10, 20),
+          "I1234GB" to null,
         )
-        assertThat(service.getLicenceStartDates(cases)).isEqualTo(expectedResponse)
+        assertThat(service.getLicenceStartDates(cases, kinds)).isEqualTo(expectedResponse)
       }
+    }
+
+    @Test
+    fun `returns null if the licence kind is null`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        conditionalReleaseDate = LocalDate.of(2021, 12, 4),
+        confirmedReleaseDate = LocalDate.of(2021, 12, 3),
+      )
+
+      whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(false)
+
+      assertThat(service.getLicenceStartDate(nomisRecord, null)).isNull()
     }
   }
 

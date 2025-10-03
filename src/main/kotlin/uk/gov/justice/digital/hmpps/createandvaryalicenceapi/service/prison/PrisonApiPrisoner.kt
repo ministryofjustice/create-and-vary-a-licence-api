@@ -88,6 +88,8 @@ data class PrisonApiPrisoner(
   val bookingId: Number,
   val legalStatus: String? = null,
   val offenceHistory: List<OffenceHistory>,
+  val agencyId: String,
+  val status: String,
 
   @field:JsonFormat(pattern = "yyyy-MM-dd")
   val dateOfBirth: LocalDate,

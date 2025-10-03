@@ -64,24 +64,26 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = nomisPostRecallReleaseDate)
     deliusMockServer.stubGetProbationCase()
-    deliusMockServer.stubGetOffenderManager()
+    deliusMockServer.stubGetOffenderManager(regionCode = "REGION1")
 
-    // When
+    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(0)
+
     val result = webTestClient.post()
       .uri("/licence/create")
       .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-
-    // Then
-    result.expectStatus().isOk
-
-    val licenceCreationResponse = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody(LicenceCreationResponse::class.java)
       .returnResult().responseBody
 
-    assertThat(licenceCreationResponse?.licenceId).isGreaterThan(0L)
+    log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
+
+    assertThat(result?.licenceId).isGreaterThan(0L)
     assertThat(licenceRepository.count()).isEqualTo(1)
 
     val licence = licenceRepository.findAll().first()

@@ -4,11 +4,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
 import java.time.LocalDate
 
@@ -17,12 +21,14 @@ class SupportServiceTest {
   private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
+  private val deliusApiClient = mock<DeliusApiClient>()
 
   private val service = SupportService(
     prisonerSearchApiClient,
     hdcService,
     eligibilityService,
     iS91DeterminationService,
+    deliusApiClient,
   )
 
   @BeforeEach
@@ -51,7 +57,18 @@ class SupportServiceTest {
     val hdcPrisoner = aPrisonerSearchResult.copy(homeDetentionCurfewEligibilityDate = LocalDate.now())
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
-    whenever(eligibilityService.getIneligibilityReasons(hdcPrisoner)).thenReturn(listOf("A reason"))
+    whenever(deliusApiClient.getOffenderManagers(listOf(hdcPrisoner.prisonerNumber))).thenReturn(listOf(offenderManager()))
+    whenever(eligibilityService.getEligibilityAssessments(eq(listOf(hdcPrisoner)), any())).thenReturn(
+      mapOf(
+        hdcPrisoner.prisonerNumber to EligibilityAssessment(
+          genericIneligibilityReasons = listOf("A reason"),
+          crdIneligibilityReasons = emptyList(),
+          prrdIneligibilityReasons = emptyList(),
+          isEligible = false,
+          eligibleKind = null,
+        ),
+      ),
+    )
     whenever(
       hdcService.isApprovedForHdc(
         hdcPrisoner.bookingId!!.toLong(),

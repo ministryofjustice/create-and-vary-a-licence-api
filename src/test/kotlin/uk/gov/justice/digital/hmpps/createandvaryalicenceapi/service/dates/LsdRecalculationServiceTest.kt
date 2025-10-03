@@ -99,7 +99,7 @@ class LsdRecalculationServiceTest {
       ),
     )
 
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
         "A1234BC" to LocalDate.of(2021, 10, 22),
         "B5678CD" to LocalDate.of(2021, 10, 22),
@@ -130,7 +130,7 @@ class LsdRecalculationServiceTest {
       ),
     )
 
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
         "A1234BC" to LocalDate.of(2021, 10, 22),
         "B5678CD" to LocalDate.of(2021, 10, 22),
@@ -153,7 +153,7 @@ class LsdRecalculationServiceTest {
       ),
     )
 
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
         "A1234BC" to LocalDate.of(2021, 10, 22),
         "B5678CD" to LocalDate.of(2021, 10, 22),
@@ -194,7 +194,7 @@ class LsdRecalculationServiceTest {
       ),
     )
 
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
         "A1234BC" to LocalDate.of(2021, 10, 22),
         "B5678CD" to LocalDate.of(2021, 10, 22),

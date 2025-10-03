@@ -5,9 +5,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -17,13 +16,12 @@ import java.time.LocalDate
 @Service
 class LastMinuteHandoverCaseService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val eligibilityService: EligibilityService,
   private val licenceRepository: LicenceRepository,
   private val hdcService: HdcService,
   private val deliusApiClient: DeliusApiClient,
-  private val releaseDateService: ReleaseDateService,
   @param:Value("\${hmpps.cases.last-minute.prisons}")
   private val lastMinutePrisonCodes: Set<String>,
+  private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -33,19 +31,19 @@ class LastMinuteHandoverCaseService(
     val prisoners = getPrisonerData()
 
     val builder = LastMinuteReportBuilder(
-      eligibilityService,
       licenceRepository,
       hdcService,
       deliusApiClient,
-      releaseDateService,
+      cvlRecordService,
       clock,
     )
 
     return builder.start(prisoners)
+      .enrichWithDeliusData()
+      .enrichWithCvlRecords()
       .withEligibleCandidates()
       .withPreSubmissionState()
       .filterOutHdcEligible()
-      .enrichWithDeliusData()
       .filterByLicenceStartDates()
       .build()
   }

@@ -11,6 +11,7 @@ insert into licence (id,
                      type_code,
                      status_code,
                      probation_team_code,
+                     probation_area_code,
                      review_date,
                      variation_of_id)
 values (1,
@@ -20,4 +21,13 @@ values (1,
 		'BOOKNO',
 		12345,
 		'CRN1',
-        1, null, 9, 'AP', 'ACTIVE', 'A01B02', null, null);
+        1,
+        null,
+        9,
+        'AP',
+        'ACTIVE',
+        'A01B02',
+        'REGION1',
+        null,
+        null
+       );
