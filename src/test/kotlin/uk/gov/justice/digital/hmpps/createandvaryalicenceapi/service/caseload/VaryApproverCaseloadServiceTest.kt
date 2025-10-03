@@ -219,6 +219,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
+      assertThat(approvedByName).isEqualTo("approver name")
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       assertThat(probationPractitioner).isEqualTo("Delius User")
     }
@@ -271,6 +272,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
+      assertThat(approvedByName).isEqualTo("approver name")
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       assertThat(probationPractitioner).isEqualTo("Delius User")
     }
@@ -326,6 +328,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
+      assertThat(approvedByName).isEqualTo("approver name")
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       assertThat(probationPractitioner).isEqualTo("Delius User")
     }
@@ -337,6 +340,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
+      assertThat(approvedByName).isEqualTo("approver name")
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       assertThat(probationPractitioner).isEqualTo("Delius User")
     }

@@ -110,6 +110,7 @@ class VaryApproverCaseloadService(
       crnNumber = acoCase.crn,
       licenceType = licence.licenceType,
       variationRequestDate = licence.dateCreated?.toLocalDate(),
+      approvedByName = licence.approvedByName,
       releaseDate = licence.licenceStartDate,
       probationPractitioner = acoCase.probationPractitioner,
     )
