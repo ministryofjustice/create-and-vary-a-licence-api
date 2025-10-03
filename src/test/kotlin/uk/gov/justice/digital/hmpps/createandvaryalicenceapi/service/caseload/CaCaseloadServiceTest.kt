@@ -15,16 +15,17 @@ import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -67,17 +68,18 @@ class CaCaseloadServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val workingDaysService = mock<WorkingDaysService>()
   private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
+  private val cvlRecordService = mock<CvlRecordService>()
 
   private val service = CaCaseloadService(
     caseloadService,
     licenceService,
     hdcService,
-    eligibilityService,
     clock,
     deliusApiClient,
     prisonerSearchApiClient,
     releaseDateService,
     releaseDateLabelFactory,
+    cvlRecordService,
   )
 
   private val prisonStatuses = listOf(
@@ -116,6 +118,7 @@ class CaCaseloadServiceTest {
       deliusApiClient,
       prisonerSearchApiClient,
       releaseDateService,
+      cvlRecordService,
     )
     whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
       listOf(
@@ -199,7 +202,6 @@ class CaCaseloadServiceTest {
     inner class `in the hard stop period` {
       @Test
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
-        whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
         whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
         whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
           listOf(
@@ -209,7 +211,7 @@ class CaCaseloadServiceTest {
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
-        whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(true)
+        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(nomsId = aLicenceSummary.nomisId, kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow)))
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
@@ -649,30 +651,44 @@ class CaCaseloadServiceTest {
     @Nested
     inner class `filtering rules` {
       @Test
-      fun `should filter out cases with a future PED`() {
+      fun `should filter ineligible cases`() {
+        whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false)
+        whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+          listOf(
+            aPrisonerSearchPrisoner,
+          ),
+        )
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
+          emptyList(),
+        )
+        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+          listOf(
+            aCvlRecord(nomsId = "A1234AA", kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow),
+            aCvlRecord(nomsId = "A1234AB", kind = null, licenceStartDate = null).copy(isEligible = false),
+          ),
+        )
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
-                paroleEligibilityDate = twoDaysFromNow,
+                bookingId = "1",
+                prisonerNumber = "A1234AA",
+                conditionalReleaseDate = fiveDaysFromNow,
               ),
               aPrisonerSearchPrisoner.copy(
+                bookingId = "2",
                 prisonerNumber = "A1234AB",
-                firstName = "Person",
-                lastName = "Two",
-                legalStatus = "SENTENCED",
-                paroleEligibilityDate = twoDaysFromNow,
-                dateOfBirth = LocalDate.of(1985, 12, 28),
-                mostSeriousOffence = "Robbery",
+                paroleEligibilityDate = fiveDaysFromNow,
               ),
             ),
           ),
         )
 
-        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
+        whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
-        assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
+        assertThat(prisonOmuCaseload).hasSize(1)
+        assertThat(prisonOmuCaseload[0].prisonerNumber).isEqualTo("A1234AA")
       }
 
       @Test
@@ -686,25 +702,13 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
-
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
-        assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
-      }
-
-      @Test
-      fun `should filter out cases on an indeterminate sentence`() {
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
-          PageImpl(
-            listOf(
-              aPrisonerSearchPrisoner.copy(
-                indeterminateSentence = true,
-              ),
-            ),
+        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+          listOf(
+            aCvlRecord(nomsId = "A1234AA", kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow),
           ),
         )
 
-        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(listOf(aLicenceSummary))
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
@@ -723,28 +727,11 @@ class CaCaseloadServiceTest {
         )
 
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
-
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
-        assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
-      }
-
-      @Test
-      fun `should filter out cases that are on an ineligible EDS`() {
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
-          PageImpl(
-            listOf(
-              aPrisonerSearchPrisoner.copy(
-                conditionalReleaseDate = twoMonthsFromNow,
-                confirmedReleaseDate = twoDaysFromNow,
-                status = "ACTIVE IN",
-                legalStatus = "SENTENCED",
-                actualParoleDate = twoDaysFromNow,
-              ),
-            ),
+        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+          listOf(
+            aCvlRecord(nomsId = aPrisonerSearchPrisoner.prisonerNumber, kind = null, licenceStartDate = null),
           ),
         )
-
-        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
@@ -785,9 +772,7 @@ class CaCaseloadServiceTest {
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
-        whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(
-          true,
-        )
+        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow)))
         val prisoner = aPrisonerSearchPrisoner.copy(
           prisonerNumber = "A1234AA",
           conditionalReleaseDate = fiveDaysFromNow,
@@ -803,13 +788,11 @@ class CaCaseloadServiceTest {
 
         whenever(hdcService.getHdcStatus(listOf(prisoner))).thenReturn(HdcStatuses(emptySet()))
 
-        whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
-
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           listOf(
             TestData.caCase().copy(
-              kind = null,
+              kind = LicenceKind.CRD,
               licenceId = null,
               name = "Person Four",
               prisonerNumber = "A1234AA",
@@ -833,9 +816,7 @@ class CaCaseloadServiceTest {
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
-        whenever(eligibilityService.isEligibleForCvl(any(), anyOrNull())).thenReturn(
-          true,
-        )
+        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
@@ -1170,7 +1151,6 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateKind = LicenceKind.CRD,
               releaseDateLabel = "CRD",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
@@ -1457,7 +1437,6 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateKind = LicenceKind.CRD,
               releaseDateLabel = "CRD",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
@@ -1489,7 +1468,6 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateKind = LicenceKind.CRD,
               releaseDateLabel = "CRD",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
@@ -1518,7 +1496,6 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateKind = LicenceKind.CRD,
               releaseDateLabel = "CRD",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
@@ -1547,7 +1524,6 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateKind = LicenceKind.CRD,
               releaseDateLabel = "CRD",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
@@ -1644,7 +1620,6 @@ class CaCaseloadServiceTest {
     // Then
     assertThat(prisonOmuCaseload).hasSize(1)
     assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
-    assertThat(prisonOmuCaseload[0].releaseDateKind).isEqualTo(LicenceKind.PRRD)
   }
 
   @Test
