@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 
 @Service
 class SupportService(
@@ -13,6 +14,7 @@ class SupportService(
   private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
   private val iS91DeterminationService: IS91DeterminationService,
+  private val deliusApiClient: DeliusApiClient,
 ) {
   fun getIneligibilityReasons(prisonNumber: String): List<String> {
     val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber))
@@ -20,7 +22,9 @@ class SupportService(
       error("Found ${prisoners.size} prisoners for: $prisonNumber")
     }
     val prisoner = prisoners.first()
-    val reasons = eligibilityService.getIneligibilityReasons(prisoner)
+    val deliusRecord = deliusApiClient.getOffenderManagers(listOf(prisoner.prisonerNumber)).first()
+    val eligibility = eligibilityService.getEligibilityAssessments(listOf(prisoner), mapOf(prisoner.prisonerNumber to deliusRecord.team.provider.code))[prisoner.prisonerNumber]!!
+    val reasons = eligibility.genericIneligibilityReasons + eligibility.crdIneligibilityReasons + eligibility.prrdIneligibilityReasons
     val hdcReasonIfPresent = if (prisoner.isApprovedForHdc()) listOf("Approved for HDC") else emptyList()
     return reasons + hdcReasonIfPresent
   }
