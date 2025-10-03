@@ -42,6 +42,12 @@ data class VaryApproverCase(
   val variationRequestDate: LocalDate?,
 
   @field:Schema(
+    description = "The full name of the person who approved the licence",
+    example = "John Smith",
+  )
+  val approvedByName: String? = null,
+
+  @field:Schema(
     description = "The date on which the prisoner leaves custody",
     example = "30/11/2022",
     requiredMode = NOT_REQUIRED,
