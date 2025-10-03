@@ -13,14 +13,16 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -28,9 +30,10 @@ import java.time.LocalDate
 class CaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val licenceCreationService = mock<LicenceCreationService>()
+  private val cvlRecordService = mock<CvlRecordService>()
+  private val deliusApiClient = mock<DeliusApiClient>()
   private val service =
-    CaseloadService(prisonerSearchApiClient, releaseDateService)
+    CaseloadService(prisonerSearchApiClient, releaseDateService, cvlRecordService, deliusApiClient)
 
   @BeforeEach
   fun reset() {
@@ -49,17 +52,16 @@ class CaseloadServiceTest {
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
         "A1234AA" to LocalDate.of(2021, 10, 22),
       ),
     )
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
         "A1234AA" to LocalDate.of(2021, 10, 22),
       ),
     )
-    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.CRD)
   }
 
   @Test
@@ -109,7 +111,8 @@ class CaseloadServiceTest {
 
   @Test
   fun getPrisoner() {
-    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2021, 10, 22))
+    whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager())
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2021, 10, 22)))
 
     val response = service.getPrisoner("A1234AA")
     assertThat(response).isEqualTo(

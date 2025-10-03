@@ -212,28 +212,29 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
     val prrdDate = workingDays.elementAt(0)
     val lastWorkingDay = workingDaysService.getLastWorkingDay(prrdDate)
+    val sentenceLicenceExpiryDate = workingDays.elementAt(4).plusYears(1)
 
     tests.add(
       // PRRD calculation for LSD, confirmedReleaseDate is null, last working day from Prrd date expected outcome
-      Arguments.of(null, null, prrdDate, lastWorkingDay),
+      Arguments.of(null, null, prrdDate, lastWorkingDay, sentenceLicenceExpiryDate),
     )
 
     val confirmedAfterPrrdDate = workingDays.elementAt(1)
     tests.add(
       // PRRD calculation for LSD, confirmedReleaseDate after prrdDate, last working day from Prrd date expected outcome
-      Arguments.of(null, confirmedAfterPrrdDate, prrdDate, lastWorkingDay),
+      Arguments.of(null, confirmedAfterPrrdDate, prrdDate, lastWorkingDay, sentenceLicenceExpiryDate),
     )
 
     val confirmedBeforeCrdDate = workingDays.elementAt(2)
     val crdDate = workingDays.elementAt(3)
     tests.add(
       // Crd PRRD calculation for LSD, confirmedReleaseDate expected outcome
-      Arguments.of(crdDate, confirmedBeforeCrdDate, prrdDate, confirmedBeforeCrdDate),
+      Arguments.of(crdDate, confirmedBeforeCrdDate, prrdDate, confirmedBeforeCrdDate, sentenceLicenceExpiryDate),
     )
 
     tests.add(
       // Crd PRRD calculation for LSD, crd date expected outcome
-      Arguments.of(crdDate, null, null, crdDate),
+      Arguments.of(crdDate, null, null, crdDate, sentenceLicenceExpiryDate),
     )
 
     return tests
@@ -250,6 +251,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     confirmedReleaseDate: LocalDate?,
     postRecallReleaseDate: LocalDate?,
     expectedLicenceStartDate: LocalDate,
+    sentenceLicenceExpiryDate: LocalDate,
   ) {
     // Given
     prisonApiMockServer.stubGetHdcLatest()
@@ -260,6 +262,8 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
         conditionalReleaseDate = conditionalReleaseDate,
         confirmedReleaseDate = confirmedReleaseDate,
         postRecallReleaseDate = postRecallReleaseDate,
+        sentenceExpiryDate = sentenceLicenceExpiryDate,
+        licenceExpiryDate = sentenceLicenceExpiryDate,
       ),
     )
 

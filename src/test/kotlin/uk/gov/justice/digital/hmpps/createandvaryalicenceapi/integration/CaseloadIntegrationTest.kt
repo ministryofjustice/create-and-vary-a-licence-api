@@ -11,18 +11,17 @@ import org.springframework.http.HttpStatus.OK
 import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 private const val GET_PRISONER = "/prisoner-search/nomisid/A1234AA"
 private const val FIND_PRISONERS = "/prisoner-search/prisoner-numbers"
-private const val FIND_PRISONERS_BY_RELEASE_DATE = "/prisoner-search/release-date-by-prison"
-private val FIND_PRISONERS_BY_RELEASE_DATE_PAGINATED = { page: Int -> "/release-date-by-prison?page=$page" }
 
 class CaseloadIntegrationTest : IntegrationTestBase() {
   @Nested
@@ -68,6 +67,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     fun success() {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
       prisonApiMockServer.stubGetCourtOutcomes()
+      deliusMockServer.stubGetOffenderManagerWithNomsId()
 
       val caseloadItem = webTestClient.get()
         .uri(GET_PRISONER)
@@ -94,6 +94,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     fun checkDateFormats() {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
       prisonApiMockServer.stubGetCourtOutcomes()
+      deliusMockServer.stubGetOffenderManagerWithNomsId()
 
       webTestClient.get()
         .uri(GET_PRISONER)
@@ -180,6 +181,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val govUkMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
+    val deliusMockServer = DeliusMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -188,6 +190,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
       govUkMockServer.start()
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
       prisonApiMockServer.start()
+      deliusMockServer.start()
     }
 
     @JvmStatic
@@ -196,6 +199,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
       prisonerSearchApiMockServer.stop()
       govUkMockServer.stop()
       prisonApiMockServer.stop()
+      deliusMockServer.stop()
     }
   }
 }
