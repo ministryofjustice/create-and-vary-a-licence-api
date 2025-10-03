@@ -18,10 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
@@ -635,33 +633,6 @@ object TestData {
     username = "aComUser",
   )
 
-  fun caseLoadItem() = CaseloadItem(
-    licenceStartDate = LocalDate.of(2021, 10, 22),
-    prisoner = Prisoner(
-      prisonerNumber = "A1234AA",
-      bookingId = "123456",
-      bookNumber = "12345A",
-      firstName = "Person",
-      lastName = "Two",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      status = "ACTIVE IN",
-      prisonId = "MDI",
-      locationDescription = "HMP Moorland",
-      legalStatus = "SENTENCED",
-      mostSeriousOffence = "Robbery",
-      recall = false,
-      indeterminateSentence = false,
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      releaseDate = LocalDate.of(2021, 10, 22),
-      confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceExpiryDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      paroleEligibilityDate = LocalDate.of(2021, 10, 22),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-    ),
-  )
-
   fun caseloadResult() = CaseloadResult(
     "A123456",
     "A1234AA",
@@ -965,14 +936,6 @@ object TestData {
     nomisId = nomisId,
     crn = crn,
     croNumber = "AB01/234567C",
-  )
-
-  fun aPrisoner() = Prisoner(
-    prisonerNumber = "AB1234E",
-    firstName = "First-1",
-    lastName = "Surname-2",
-    releaseDate = TEN_DAYS_FROM_NOW,
-    status = "INACTIVE OUT",
   )
 
   fun aDeliusUser() = StaffNameResponse(

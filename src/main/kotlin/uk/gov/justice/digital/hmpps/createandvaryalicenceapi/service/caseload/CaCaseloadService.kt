@@ -287,7 +287,7 @@ class CaCaseloadService(
   private fun createNotStartedLicenceForCase(
     cases: List<ManagedCaseDto>,
   ): List<CaCase> = cases.map { case ->
-    val sentenceDateHolder = case.nomisRecord!!.toPrisonerSearchPrisoner().toSentenceDateHolder(case.licenceStartDate)
+    val sentenceDateHolder = case.nomisRecord!!.toSentenceDateHolder(case.licenceStartDate)
 
     // Default status (if not overridden below) will show the case as clickable on case lists
     var licenceStatus = NOT_STARTED
@@ -305,9 +305,9 @@ class CaCaseloadService(
         case.nomisRecord.conditionalReleaseDate,
       ),
       name = case.nomisRecord.let { "${it.firstName} ${it.lastName}".convertToTitleCase() },
-      prisonerNumber = case.nomisRecord.prisonerNumber!!,
+      prisonerNumber = case.nomisRecord.prisonerNumber,
       releaseDate = case.licenceStartDate,
-      releaseDateLabel = releaseDateLabelFactory.fromPrisoner(case.licenceStartDate, case.nomisRecord),
+      releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(case.licenceStartDate, case.nomisRecord),
       licenceStatus = licenceStatus,
       nomisLegalStatus = case.nomisRecord.legalStatus,
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate),
@@ -338,21 +338,20 @@ class CaCaseloadService(
 
     if (eligibleOffenders.isEmpty()) return eligibleOffenders
 
-    val hdcStatuses = hdcService.getHdcStatus(eligibleOffenders.map { it.nomisRecord!!.toPrisonerSearchPrisoner() })
+    val hdcStatuses = hdcService.getHdcStatus(eligibleOffenders.map { it.nomisRecord!! })
 
     return eligibleOffenders.filter { hdcStatuses.canUnstartedCaseBeSeenByCa(it.nomisRecord!!.bookingId?.toLong()!!) }
   }
 
   private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> = licences.filter { l -> l.nomisLegalStatus != "DEAD" }
 
-  private fun enrichWithNomisData(licences: List<LicenceSummary>, caseloadItems: List<CaseloadItem>): List<CaCase> {
+  private fun enrichWithNomisData(licences: List<LicenceSummary>, caseloadItems: List<PrisonerSearchPrisoner>): List<CaCase> {
     return caseloadItems.map { caseloadItem ->
-      val licencesForOffender = licences.filter { l -> l.nomisId == caseloadItem.prisoner.prisonerNumber }
+      val licencesForOffender = licences.filter { l -> l.nomisId == caseloadItem.prisonerNumber }
       if (licencesForOffender.isEmpty()) return@map null
       val licence = findLatestLicenceSummary(licencesForOffender)
       val releaseDate = licence?.licenceStartDate
       CaCase(
-        releaseDateKind = determineReleaseDateKind(licence?.postRecallReleaseDate, licence?.conditionalReleaseDate),
         kind = licence?.kind,
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
@@ -361,7 +360,7 @@ class CaCaseloadService(
         releaseDate = releaseDate,
         releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
         licenceStatus = licence.licenceStatus,
-        nomisLegalStatus = caseloadItem.prisoner.legalStatus,
+        nomisLegalStatus = caseloadItem.legalStatus,
         lastWorkedOnBy = licence.updatedByFullName,
         isInHardStopPeriod = licence.isInHardStopPeriod,
         tabType = Tabs.determineCaViewCasesTab(

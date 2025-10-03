@@ -58,7 +58,7 @@ class VaryApproverCaseloadService(
     val nomisRecords = caseloadService.getPrisonersByNumber(nomisIds)
 
     return licences.mapNotNull { licence ->
-      val nomisRecord = nomisRecords.find { it.prisoner.prisonerNumber == licence.nomisId }
+      val nomisRecord = nomisRecords.find { it.prisonerNumber == licence.nomisId }
       val deliusRecord = deliusRecords.find { it.nomisId == licence.nomisId }
       if (nomisRecord != null && deliusRecord != null) {
         AcoCase(
@@ -105,7 +105,7 @@ class VaryApproverCaseloadService(
     val licence = acoCase.licence
     return VaryApproverCase(
       licenceId = licence.licenceId,
-      name = "${acoCase.nomisRecord.prisoner.firstName} ${acoCase.nomisRecord.prisoner.lastName}".trim()
+      name = "${acoCase.nomisRecord.firstName} ${acoCase.nomisRecord.lastName}".trim()
         .convertToTitleCase(),
       crnNumber = acoCase.crn,
       licenceType = licence.licenceType,
@@ -155,7 +155,7 @@ private fun applySort(cases: List<VaryApproverCase>): List<VaryApproverCase> = c
 
 private data class AcoCase(
   val crn: String,
-  val nomisRecord: CaseloadItem,
+  val nomisRecord: PrisonerSearchPrisoner,
   val licence: LicenceSummary,
   val probationPractitioner: String? = null,
 )

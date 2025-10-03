@@ -142,27 +142,23 @@ class CaCaseloadServiceTest {
     )
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
       listOf(
-        TestData.caseLoadItem(),
-        TestData.caseLoadItem().copy(
-          prisoner = Prisoner(
-            prisonerNumber = "A1234AB",
-            firstName = "Person",
-            lastName = "Two",
-            legalStatus = "SENTENCED",
-            dateOfBirth = LocalDate.of(1985, 12, 28),
-            mostSeriousOffence = "Robbery",
-          ),
+        TestData.prisonerSearchResult(),
+        TestData.prisonerSearchResult().copy(
+          prisonerNumber = "A1234AB",
+          firstName = "Person",
+          lastName = "Two",
+          legalStatus = "SENTENCED",
+          dateOfBirth = LocalDate.of(1985, 12, 28),
+          mostSeriousOffence = "Robbery",
         ),
-        TestData.caseLoadItem().copy(
-          prisoner = Prisoner(
-            prisonerNumber = "A1234AC",
-            firstName = "Person",
-            lastName = "Three",
-            legalStatus = "SENTENCED",
-            dateOfBirth = LocalDate.of(1985, 12, 28),
-            mostSeriousOffence = "Robbery",
-            releaseDate = null,
-          ),
+        TestData.prisonerSearchResult().copy(
+          prisonerNumber = "A1234AC",
+          firstName = "Person",
+          lastName = "Three",
+          legalStatus = "SENTENCED",
+          dateOfBirth = LocalDate.of(1985, 12, 28),
+          mostSeriousOffence = "Robbery",
+          releaseDate = null,
         ),
       ),
     )
@@ -207,10 +203,7 @@ class CaCaseloadServiceTest {
         whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
         whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
           listOf(
-            TestData.caseLoadItem().copy(
-              TestData.caseLoadItem().prisoner,
-              twoDaysFromNow,
-            ),
+            aPrisonerSearchPrisoner,
           ),
         )
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
@@ -417,19 +410,16 @@ class CaCaseloadServiceTest {
 
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
         listOf(
-          TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
-              firstName = "Person",
-              lastName = "Three",
-              prisonerNumber = "AB1234E",
-              conditionalReleaseDate = twoMonthsFromNow,
-              confirmedReleaseDate = twoDaysFromNow,
-              status = "ACTIVE IN",
-              legalStatus = "SENTENCED",
-              dateOfBirth = LocalDate.of(1985, 12, 28),
-              mostSeriousOffence = "Robbery",
-            ),
-            licenceStartDate = LocalDate.of(2021, 10, 22),
+          TestData.prisonerSearchResult().copy(
+            firstName = "Person",
+            lastName = "Three",
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = twoMonthsFromNow,
+            confirmedReleaseDate = twoDaysFromNow,
+            status = "ACTIVE IN",
+            legalStatus = "SENTENCED",
+            dateOfBirth = LocalDate.of(1985, 12, 28),
+            mostSeriousOffence = "Robbery",
           ),
         ),
       )
@@ -488,19 +478,16 @@ class CaCaseloadServiceTest {
 
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
         listOf(
-          TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
-              firstName = "Person",
-              lastName = "Three",
-              prisonerNumber = "AB1234E",
-              conditionalReleaseDate = twoMonthsFromNow,
-              confirmedReleaseDate = twoDaysFromNow,
-              status = "ACTIVE IN",
-              legalStatus = "SENTENCED",
-              dateOfBirth = LocalDate.of(1985, 12, 28),
-              mostSeriousOffence = "Robbery",
-            ),
-            licenceStartDate = LocalDate.of(2021, 10, 22),
+          TestData.prisonerSearchResult().copy(
+            firstName = "Person",
+            lastName = "Three",
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = twoMonthsFromNow,
+            confirmedReleaseDate = twoDaysFromNow,
+            status = "ACTIVE IN",
+            legalStatus = "SENTENCED",
+            dateOfBirth = LocalDate.of(1985, 12, 28),
+            mostSeriousOffence = "Robbery",
           ),
         ),
       )
@@ -573,31 +560,14 @@ class CaCaseloadServiceTest {
       )
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
         listOf(
-          TestData.caseLoadItem(),
-          TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
-              prisonerNumber = "A1234AB",
-              firstName = "Person",
-              lastName = "Two",
-              legalStatus = "SENTENCED",
-              dateOfBirth = LocalDate.of(1985, 12, 28),
-              mostSeriousOffence = "Robbery",
-            ),
-          ),
-        ),
-      )
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-        listOf(
-          TestData.caseLoadItem(),
-          TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
-              prisonerNumber = "A1234AB",
-              firstName = "Person",
-              lastName = "Two",
-              legalStatus = "SENTENCED",
-              dateOfBirth = LocalDate.of(1985, 12, 28),
-              mostSeriousOffence = "Robbery",
-            ),
+          TestData.prisonerSearchResult(),
+          TestData.prisonerSearchResult().copy(
+            prisonerNumber = "A1234AB",
+            firstName = "Person",
+            lastName = "Two",
+            legalStatus = "SENTENCED",
+            dateOfBirth = LocalDate.of(1985, 12, 28),
+            mostSeriousOffence = "Robbery",
           ),
         ),
       )
@@ -647,8 +617,7 @@ class CaCaseloadServiceTest {
       )
 
       whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(listOf(licenceSummary))
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
+      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
       val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
@@ -667,8 +636,7 @@ class CaCaseloadServiceTest {
       )
       whenever(workingDaysService.getLastWorkingDay(licenceSummary.postRecallReleaseDate)).thenReturn(licenceSummary.postRecallReleaseDate)
       whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(listOf(licenceSummary))
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
+      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
       val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
@@ -709,12 +677,11 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `Should filter out cases with a legal status of DEAD`() {
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
-          PageImpl(
-            listOf(
-              aPrisonerSearchPrisoner.copy(
-                legalStatus = "DEAD",
-              ),
+        whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+          listOf(
+            aPrisonerSearchPrisoner.copy(
+              prisonerNumber = "A1234AA",
+              legalStatus = "DEAD",
             ),
           ),
         )
@@ -1127,12 +1094,10 @@ class CaCaseloadServiceTest {
       )
 
       val prisoners = licenceSummaryList.associateBy { it.nomisId }.values.map {
-        TestData.caseLoadItem().copy(
-          prisoner = Prisoner(
-            prisonerNumber = it.nomisId,
-            firstName = it.forename,
-            dateOfBirth = LocalDate.of(1985, 12, 28),
-          ),
+        TestData.prisonerSearchResult().copy(
+          prisonerNumber = it.nomisId,
+          firstName = it.forename!!,
+          dateOfBirth = LocalDate.of(1985, 12, 28),
         )
       }
 
@@ -1644,12 +1609,10 @@ class CaCaseloadServiceTest {
       )
 
       val prisoners = licenceSummaryList.associateBy { it.nomisId }.values.map {
-        TestData.caseLoadItem().copy(
-          prisoner = Prisoner(
-            prisonerNumber = it.nomisId,
-            firstName = it.forename,
-            dateOfBirth = LocalDate.of(1985, 12, 28),
-          ),
+        TestData.prisonerSearchResult().copy(
+          prisonerNumber = it.nomisId,
+          firstName = it.forename!!,
+          dateOfBirth = LocalDate.of(1985, 12, 28),
         )
       }
 

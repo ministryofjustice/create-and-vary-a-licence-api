@@ -149,7 +149,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBodyList(CaseloadItem::class.java)
+        .expectBodyList(PrisonerSearchPrisoner::class.java)
         .returnResult().responseBody!!
 
       assertThat(caseload).isEmpty()
@@ -168,14 +168,11 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBodyList(CaseloadItem::class.java)
+        .expectBodyList(PrisonerSearchPrisoner::class.java)
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(5)
-      with(caseload.first()) {
-        assertThat(prisoner).isNotNull()
-        assertThat(licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
-      }
+      assertThat(caseload.first().prisonerNumber).isEqualTo("A1234AA")
     }
   }
 
