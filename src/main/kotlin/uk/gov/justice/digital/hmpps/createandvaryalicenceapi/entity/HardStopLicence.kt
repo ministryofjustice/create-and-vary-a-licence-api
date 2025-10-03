@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -68,15 +69,15 @@ class HardStopLicence(
   var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_ca_id", nullable = false)
   var createdBy: PrisonUser? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_ca_id", nullable = true)
   var submittedBy: PrisonUser? = null,
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "responsible_com_id", nullable = false)
   override var responsibleCom: CommunityOffenderManager,
 ) : Licence(

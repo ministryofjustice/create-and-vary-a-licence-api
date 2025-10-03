@@ -76,7 +76,7 @@ class TimeServedLicence(
   @JoinColumn(name = "submitted_by_ca_id", nullable = true)
   var submittedBy: PrisonUser? = null,
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "responsible_com_id", nullable = true)
   var responsibleCom: CommunityOffenderManager? = null,
 ) : Licence(

@@ -121,7 +121,7 @@ abstract class Licence(
   @OrderBy("conditionSequence")
   var bespokeConditions: MutableList<BespokeCondition> = mutableListOf(),
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "updated_by_id", nullable = true)
   var updatedBy: Staff? = null,
 ) : AbstractIdEntity(idInternal = id),
