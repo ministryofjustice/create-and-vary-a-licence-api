@@ -68,25 +68,25 @@ class PrrdLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   updatedBy: Staff? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
   var submittedBy: CommunityOffenderManager? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
   @OneToOne(
     mappedBy = "licence",
     cascade = [CascadeType.ALL],
-    fetch = FetchType.EAGER,
+    fetch = FetchType.LAZY,
     optional = true,
     orphanRemoval = true,
   )
   override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
   override var versionOfId: Long? = null,
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "responsible_com_id", nullable = false)
   override var responsibleCom: CommunityOffenderManager,
 ) : Licence(

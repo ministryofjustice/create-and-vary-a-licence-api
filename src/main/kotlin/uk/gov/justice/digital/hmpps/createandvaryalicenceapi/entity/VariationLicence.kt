@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -69,15 +70,15 @@ class VariationLicence(
   licenceVersion: String? = "1.0",
   updatedBy: Staff? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
   var submittedBy: CommunityOffenderManager? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   override var createdBy: CommunityOffenderManager? = null,
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "responsible_com_id", nullable = false)
   override var responsibleCom: CommunityOffenderManager,
 ) : Licence(

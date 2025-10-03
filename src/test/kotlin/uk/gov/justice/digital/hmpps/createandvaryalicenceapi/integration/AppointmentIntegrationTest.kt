@@ -11,8 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
@@ -39,10 +37,6 @@ import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as LicenceEntity
 
-@SpringBootTest(
-  webEnvironment = RANDOM_PORT,
-  properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"],
-)
 class AppointmentIntegrationTest(
   @param:Autowired private val licenceRepository: LicenceRepository,
 ) : IntegrationTestBase() {
@@ -267,7 +261,8 @@ class AppointmentIntegrationTest(
     val savedAddress = getAndAssertAddress(licence)
     assertThat(savedAddress.id).isEqualTo(2)
     assertThat(addressRepository.findAll().size).isEqualTo(2)
-    val staffAddress = licence.getCom()!!.savedAppointmentAddresses
+    val com = dbHelper.getComAndAddresses(licence)
+    val staffAddress = com.savedAppointmentAddresses
     assertThat(staffAddress.size).isEqualTo(1)
     assertThat(staffAddress).doesNotContain(savedAddress)
     val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
@@ -346,8 +341,9 @@ class AppointmentIntegrationTest(
     val savedAddress = getAndAssertAddress(licence)
     assertThat(savedAddress.id).isEqualTo(4)
     assertThat(addressRepository.findAll().size).isEqualTo(4)
-    assertThat(licence.getCom()!!.savedAppointmentAddresses.size).isEqualTo(2)
-    assertThat(licence.getCom()!!.savedAppointmentAddresses.first().id).isEqualTo(2)
+    val com = dbHelper.getComAndAddresses(licence)
+    assertThat(com.savedAppointmentAddresses.size).isEqualTo(2)
+    assertThat(com.savedAppointmentAddresses.first().id).isEqualTo(2)
   }
 
   @Test
@@ -368,7 +364,8 @@ class AppointmentIntegrationTest(
     val savedAddress = getAndAssertAddress(licence)
     assertThat(addressRepository.findAll().size).isEqualTo(2)
     assertThat(savedAddress.id).isEqualTo(1)
-    val savedAppointmentAddresses = licence.getCom()!!.savedAppointmentAddresses
+    val com = dbHelper.getComAndAddresses(licence)
+    val savedAppointmentAddresses = com.savedAppointmentAddresses
     assertThat(savedAppointmentAddresses.size).isEqualTo(1)
     assertThat(savedAppointmentAddresses.last().id).isEqualTo(2)
     val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
@@ -638,7 +635,7 @@ class AppointmentIntegrationTest(
     return errorResponse
   }
 
-  private fun getLicence(id: Long = 1): LicenceEntity {
+  fun getLicence(id: Long = 1): LicenceEntity {
     val licence = licenceRepository.findById(id).getOrNull()
     assertThat(licence).isNotNull
     return licence!!

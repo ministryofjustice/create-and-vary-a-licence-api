@@ -9,8 +9,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -52,10 +50,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as VariationLicenceDto
 
-@SpringBootTest(
-  webEnvironment = RANDOM_PORT,
-  properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"],
-)
 class LicenceIntegrationTest : IntegrationTestBase() {
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
