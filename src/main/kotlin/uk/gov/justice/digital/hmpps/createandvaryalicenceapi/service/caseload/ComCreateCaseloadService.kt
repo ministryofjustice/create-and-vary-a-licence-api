@@ -102,13 +102,10 @@ class ComCreateCaseloadService(
   ): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> = cases.filter { (deliusRecord, nomisRecord) ->
     val cvlRecord = cvlRecords.find { it.nomisId == nomisRecord.prisonerNumber }!!
     val licences = crnsToLicences[deliusRecord.crn]!!
-    val prrdLicence = licences.find {
-      cvlRecord.eligibleKind == LicenceKind.PRRD
-    }
+
     when {
       nomisRecord.bookingId == null -> false
       licences.any { it.licenceStatus == ACTIVE } -> false
-      prrdLicence != null && prrdLicence.licenceId != null -> true
       else -> cvlRecord.isEligible
     }
   }

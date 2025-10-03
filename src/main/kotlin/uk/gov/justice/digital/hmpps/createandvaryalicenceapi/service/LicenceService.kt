@@ -1122,7 +1122,6 @@ class LicenceService(
   )
 
   private fun assertCaseIsEligible(eligibilityAssessment: EligibilityAssessment, licenceId: Long) {
-    println(eligibilityAssessment)
     if (!eligibilityAssessment.isEligible) {
       throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
     }

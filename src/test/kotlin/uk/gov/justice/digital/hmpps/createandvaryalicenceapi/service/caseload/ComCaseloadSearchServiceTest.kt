@@ -846,35 +846,6 @@ class ComCaseloadSearchServiceTest {
   }
 
   @Test
-  fun `Ensures search for offenders in prison with a PRRD licence do not check eligibility for Cvl if new PRRD licence`() {
-    // Given
-
-    val licenceStartDate = LocalDate.of(2023, 9, 14)
-    val prrdLicence = createPrrdLicence().copy(
-      versionOfId = 2L,
-    )
-    val prisoner = aPrisonerSearchResult.copy(
-      confirmedReleaseDate = null,
-      postRecallReleaseDate = licenceStartDate,
-    )
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-
-    // Would cause the case to be filtered out if isEligible were checked
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.PRRD, licenceStartDate = licenceStartDate).copy(isEligible = false)))
-
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(prrdLicence))
-
-    // When
-    val result = service.searchForOffenderOnStaffCaseload(request)
-
-    // Then
-    assertThat(result.results.size).isEqualTo(1)
-  }
-
-  @Test
   fun `Release date label reads 'Confirmed release date' when licence start date matches ARD`() {
     val prisoner = aPrisonerSearchResult.copy(
       confirmedReleaseDate = LocalDate.of(2023, 9, 14),
