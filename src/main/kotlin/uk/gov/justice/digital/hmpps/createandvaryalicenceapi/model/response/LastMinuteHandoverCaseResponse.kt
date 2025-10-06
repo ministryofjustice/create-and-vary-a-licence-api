@@ -30,4 +30,7 @@ data class LastMinuteHandoverCaseResponse(
 
   @Schema(description = "Prison code where the prisoner is held", example = "LEI", nullable = true)
   val prisonCode: String?,
+
+  @Schema(description = "Name of the prison", example = "Bedford Prison")
+  val prisonName: String?,
 )
