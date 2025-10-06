@@ -32,7 +32,10 @@ class CaseloadService(
   }
 
   fun getPrisoner(nomisId: String): PrisonerWithCvlFields {
-    val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
+    val prisoner =
+      prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(
+        nomisId,
+      )
     val licenceKind = determineReleaseDateKind(prisoner.postRecallReleaseDate, prisoner.conditionalReleaseDate)
     val licenceStartDate = releaseDateService.getLicenceStartDate(prisoner, licenceKind)
     val sentenceDateHolder = prisoner.toSentenceDateHolder(licenceStartDate)
@@ -49,6 +52,7 @@ class CaseloadService(
           sentenceDateHolder,
         ),
         licenceStartDate = licenceStartDate,
+        licenceKind = licenceKind,
       ),
     )
   }

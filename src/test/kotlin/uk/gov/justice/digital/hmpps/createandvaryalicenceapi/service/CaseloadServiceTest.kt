@@ -124,6 +124,7 @@ class CaseloadServiceTest {
           isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
           licenceStartDate = LocalDate.of(2021, 10, 22),
+          licenceKind = LicenceKind.CRD,
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
