@@ -537,7 +537,7 @@ class LicenceCreationServiceTest {
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.responsibleCom.id).isEqualTo(newCom.id)
+        assertThat(firstValue.responsibleCom?.id).isEqualTo(newCom.id)
       }
     }
 
@@ -1016,7 +1016,7 @@ class LicenceCreationServiceTest {
 
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.responsibleCom.id).isEqualTo(newCom.id)
+        assertThat(firstValue.responsibleCom?.id).isEqualTo(newCom.id)
       }
     }
 
@@ -1508,7 +1508,7 @@ class LicenceCreationServiceTest {
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.responsibleCom.id).isEqualTo(newCom.id)
+        assertThat(firstValue.responsibleCom?.id).isEqualTo(newCom.id)
       }
     }
 

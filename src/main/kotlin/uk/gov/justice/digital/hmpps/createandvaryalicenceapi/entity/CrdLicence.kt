@@ -85,10 +85,7 @@ class CrdLicence(
   )
   override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
   override var versionOfId: Long? = null,
-
-  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-  @JoinColumn(name = "responsible_com_id", nullable = false)
-  override var responsibleCom: CommunityOffenderManager,
+  responsibleCom: CommunityOffenderManager,
 ) : Licence(
   id = id,
   kind = LicenceKind.CRD,
@@ -140,16 +137,11 @@ class CrdLicence(
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
   updatedBy = updatedBy,
+  responsibleCom = responsibleCom,
 ),
   SupportsHardStop,
   HasElectronicMonitoringResponseProvider,
   AlwaysHasCom {
-
-  override fun getCom(): CommunityOffenderManager = responsibleCom
-
-  override fun setCom(com: CommunityOffenderManager) {
-    this.responsibleCom = com
-  }
 
   fun copy(
     id: Long? = this.id,
@@ -199,7 +191,7 @@ class CrdLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.getCom(),
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     versionOfId: Long? = this.versionOfId,
@@ -350,6 +342,8 @@ class CrdLicence(
     "updatedBy=$updatedBy, " +
     "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
+
+  override fun getCom(): CommunityOffenderManager = responsibleCom!!
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

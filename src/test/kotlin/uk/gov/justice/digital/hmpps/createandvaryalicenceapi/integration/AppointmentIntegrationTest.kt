@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
@@ -24,31 +23,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AddressRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 import java.util.stream.Stream
-import kotlin.jvm.optionals.getOrNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as LicenceEntity
 
-class AppointmentIntegrationTest(
-  @param:Autowired private val licenceRepository: LicenceRepository,
-) : IntegrationTestBase() {
-
-  @Autowired
-  private lateinit var addressRepository: AddressRepository
-
-  @Autowired
-  lateinit var auditEventRepository: AuditEventRepository
-
-  @Autowired
-  lateinit var staffRepository: StaffRepository
+class AppointmentIntegrationTest : IntegrationTestBase() {
 
   @BeforeEach
   fun reset() {
@@ -236,7 +219,7 @@ class AppointmentIntegrationTest(
     assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(savedAddress.lastUpdatedTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
 
-    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    val auditEvent = testRepository.findAllAuditEventsByLicenceIdIn(listOf(1)).last()
     assertThat(auditEvent.summary).isEqualTo("Updated initial appointment details for Person One")
     assertThat(auditEvent.changes!!["previousValue"]).isNull()
     assertThat(auditEvent.changes!!["value"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
@@ -260,12 +243,11 @@ class AppointmentIntegrationTest(
     val licence = getLicence()
     val savedAddress = getAndAssertAddress(licence)
     assertThat(savedAddress.id).isEqualTo(2)
-    assertThat(addressRepository.findAll().size).isEqualTo(2)
-    val com = dbHelper.getComAndAddresses(licence)
-    val staffAddress = com.savedAppointmentAddresses
+    assertThat(testRepository.findAllAddresses().size).isEqualTo(2)
+    val staffAddress = licence.responsibleCom!!.savedAppointmentAddresses
     assertThat(staffAddress.size).isEqualTo(1)
     assertThat(staffAddress).doesNotContain(savedAddress)
-    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    val auditEvent = testRepository.findFirstAuditEvent()
     assertThat(auditEvent.changes).containsEntry("savedToStaffMember", "test-client")
   }
 
@@ -285,9 +267,9 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
     val licence = getLicence()
     val savedAddress = getAndAssertAddress(licence)
-    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
-    assertThat(staff?.savedAppointmentAddresses).doesNotContain(savedAddress)
-    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    val staff = testRepository.findStaff()
+    assertThat(staff.savedAppointmentAddresses).doesNotContain(savedAddress)
+    val auditEvent = testRepository.findFirstAuditEvent()
     assertThat(auditEvent.changes).doesNotContainEntry("savedToStaffMember", "test-client")
   }
 
@@ -308,10 +290,10 @@ class AppointmentIntegrationTest(
     val licence = getLicence()
     val savedAddress = getAndAssertAddress(licence)
     assertThat(savedAddress.id).isEqualTo(1)
-    assertThat(addressRepository.findAll().size).isEqualTo(3)
-    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
-    assertThat(staff?.savedAppointmentAddresses?.last()?.id).isEqualTo(3)
-    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(licence.id)).last()
+    assertThat(testRepository.findAllAddresses().size).isEqualTo(3)
+    val staff = testRepository.findStaff()
+    assertThat(staff.savedAppointmentAddresses.last().id).isEqualTo(3)
+    val auditEvent = testRepository.findFirstAuditEvent(licence.id)
     assertThat(auditEvent.changes).containsEntry("savedToStaffMember", "test-client")
   }
 
@@ -340,10 +322,10 @@ class AppointmentIntegrationTest(
     val licence = getLicence(id = 2)
     val savedAddress = getAndAssertAddress(licence)
     assertThat(savedAddress.id).isEqualTo(4)
-    assertThat(addressRepository.findAll().size).isEqualTo(4)
-    val com = dbHelper.getComAndAddresses(licence)
-    assertThat(com.savedAppointmentAddresses.size).isEqualTo(2)
-    assertThat(com.savedAppointmentAddresses.first().id).isEqualTo(2)
+    assertThat(testRepository.findAllAddresses().size).isEqualTo(4)
+    val savedAppointmentAddresses = licence.responsibleCom!!.savedAppointmentAddresses
+    assertThat(savedAppointmentAddresses.size).isEqualTo(2)
+    assertThat(savedAppointmentAddresses.first().id).isEqualTo(2)
   }
 
   @Test
@@ -362,13 +344,13 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
     val licence = getLicence()
     val savedAddress = getAndAssertAddress(licence)
-    assertThat(addressRepository.findAll().size).isEqualTo(2)
+    assertThat(testRepository.findAllAddresses().size).isEqualTo(2)
     assertThat(savedAddress.id).isEqualTo(1)
-    val com = dbHelper.getComAndAddresses(licence)
-    val savedAppointmentAddresses = com.savedAppointmentAddresses
-    assertThat(savedAppointmentAddresses.size).isEqualTo(1)
+    val savedAppointmentAddresses = licence.responsibleCom?.savedAppointmentAddresses
+    assertThat(savedAppointmentAddresses).isNotNull()
+    assertThat(savedAppointmentAddresses!!.size).isEqualTo(1)
     assertThat(savedAppointmentAddresses.last().id).isEqualTo(2)
-    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    val auditEvent = testRepository.findFirstAuditEvent()
     assertThat(auditEvent.changes).doesNotContainEntry("savedToStaffMember", "test-client")
   }
 
@@ -397,7 +379,7 @@ class AppointmentIntegrationTest(
     assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(savedAddress.lastUpdatedTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
 
-    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(licence.id)).last()
+    val auditEvent = testRepository.findFirstAuditEvent(licence.id)
     assertThat(auditEvent.summary).isEqualTo("Updated initial appointment details for Person One")
     assertThat(auditEvent.changes!!["previousValue"] as String).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
     assertThat(auditEvent.changes!!["value"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
@@ -426,12 +408,12 @@ class AppointmentIntegrationTest(
     assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
     assertThat(savedAddress.id).isEqualTo(1)
 
-    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
-    assertThat(staff?.savedAppointmentAddresses).anySatisfy {
+    val staff = testRepository.findStaff()
+    assertThat(staff.savedAppointmentAddresses).anySatisfy {
       assertThat(it.uprn).isEqualTo("NEW_UPRN")
     }
 
-    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    val auditEvent = testRepository.findFirstAuditEvent()
     assertThat(auditEvent.changes).containsEntry("savedToStaffMember", "test-client")
   }
 
@@ -456,10 +438,10 @@ class AppointmentIntegrationTest(
     assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
     assertThat(savedAddress.id).isEqualTo(1)
 
-    val staff = staffRepository.findByUsernameIgnoreCase("test-client")
-    assertThat(staff?.savedAppointmentAddresses).isEmpty()
+    val staff = testRepository.findStaff()
+    assertThat(staff.savedAppointmentAddresses).isEmpty()
 
-    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    val auditEvent = testRepository.findFirstAuditEvent()
     assertThat(auditEvent.changes).doesNotContainKey("savedToStaffMember")
   }
 
@@ -636,9 +618,9 @@ class AppointmentIntegrationTest(
   }
 
   fun getLicence(id: Long = 1): LicenceEntity {
-    val licence = licenceRepository.findById(id).getOrNull()
+    val licence = testRepository.findLicence(id)
     assertThat(licence).isNotNull
-    return licence!!
+    return licence
   }
 
   private fun getAndAssertAddress(licence: LicenceEntity = getLicence()): Address {

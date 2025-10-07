@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.EntityAlread
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
@@ -27,7 +28,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Licen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -35,9 +35,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
 class LicenceCreationIntegrationTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var licenceRepository: LicenceRepository
 
   @Autowired
   lateinit var standardConditionRepository: StandardConditionRepository
@@ -82,11 +79,12 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(licenceCreationResponse?.licenceId).isGreaterThan(0L)
-    assertThat(licenceRepository.count()).isEqualTo(1)
+    val licences = testRepository.findAllLicence()
+    assertThat(licences.count()).isEqualTo(1)
 
-    val licence = licenceRepository.findAll().first()
+    val licence = licences.first()
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
-    assertThat(licence.getCom()!!.username).isEqualTo("AAA")
+    assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
@@ -103,7 +101,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
 
-    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
@@ -122,9 +120,10 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.licenceId).isGreaterThan(0L)
 
-    assertThat(licenceRepository.count()).isEqualTo(1)
-    val licence = licenceRepository.findAll().first()
-    assertThat(licence.getCom()!!.username).isEqualTo("AAA")
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(1)
+    val licence = licences.first() as CrdLicence
+    assertThat(licence.getCom().username).isEqualTo("AAA")
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
@@ -167,7 +166,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody!!
 
     assertThat(result.licenceId).isEqualTo(secondAttempt.existingResourceId)
-    assertThat(licenceRepository.count()).isEqualTo(1)
+    assertThat(testRepository.countLicence()).isEqualTo(1)
   }
 
   @Test
@@ -179,7 +178,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
 
-    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
   }
 
@@ -196,7 +195,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.userMessage).contains("Access Denied")
-    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
   }
 
@@ -211,7 +210,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
 
-    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
@@ -230,13 +229,13 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     assertThat(result.licenceId).isGreaterThan(0L)
 
-    assertThat(licenceRepository.count()).isEqualTo(1)
-
-    val licence = licenceRepository.findAll().first() as HardStopLicence
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(1)
+    val licence = licences.first() as HardStopLicence
     assertThat(licence.kind).isEqualTo(LicenceKind.HARD_STOP)
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+    assertThat(licence.getCom().username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
     assertThat(standardConditionRepository.count()).isEqualTo(9)
     assertThat(auditEventRepository.count()).isEqualTo(1)
@@ -254,7 +253,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
 
-    assertThat(licenceRepository.count()).isEqualTo(1)
+    assertThat(testRepository.countLicence()).isEqualTo(1)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
@@ -273,12 +272,12 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     assertThat(result.licenceId).isGreaterThan(0L)
 
-    assertThat(licenceRepository.count()).isEqualTo(2)
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(2)
+    val crdLicence = licences.find { it.kind == LicenceKind.CRD } as CrdLicence
+    val hardStopLicence = licences.find { it.kind == LicenceKind.HARD_STOP } as HardStopLicence
 
-    val crdLicence = licenceRepository.findAll().find { it.kind == LicenceKind.CRD } as CrdLicence
-    val hardStopLicence = licenceRepository.findAll().find { it.kind == LicenceKind.HARD_STOP } as HardStopLicence
-
-    assertThat(hardStopLicence.responsibleCom.username).isEqualTo("AAA")
+    assertThat(hardStopLicence.getCom().username).isEqualTo("AAA")
     assertThat(hardStopLicence.createdBy!!.id).isEqualTo(9L)
     assertThat(hardStopLicence.substituteOfId).isEqualTo(crdLicence.id)
     assertThat(hardStopLicence.kind).isEqualTo(LicenceKind.HARD_STOP)
@@ -300,7 +299,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
 
-    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
   }
 
@@ -317,7 +316,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.userMessage).contains("Access Denied")
-    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
   }
 
@@ -332,7 +331,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetOffenderManager()
       hdcApiMockServer.stubGetHdcLicenceData(123)
 
-      assertThat(licenceRepository.count()).isEqualTo(0)
+      assertThat(testRepository.countLicence()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
       assertThat(auditEventRepository.count()).isEqualTo(0)
       assertThat(hdcCurfewAddressRepository.count()).isEqualTo(0)
@@ -352,9 +351,10 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(result?.licenceId).isGreaterThan(0L)
 
-      assertThat(licenceRepository.count()).isEqualTo(1)
-      val licence = licenceRepository.findAll().first()
-      assertThat(licence.getCom()!!.username).isEqualTo("AAA")
+      val licences = testRepository.findAllLicence()
+      assertThat(licences).hasSize(1)
+      val licence = licences.first() as HdcLicence
+      assertThat(licence.getCom().username).isEqualTo("AAA")
       assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
       assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -373,7 +373,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetOffenderManager()
       hdcApiMockServer.stubGetHdcLicenceData(123)
 
-      assertThat(licenceRepository.count()).isEqualTo(0)
+      assertThat(testRepository.countLicence()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
       assertThat(auditEventRepository.count()).isEqualTo(0)
       assertThat(hdcCurfewAddressRepository.count()).isEqualTo(0)
@@ -393,9 +393,10 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(result?.licenceId).isGreaterThan(0L)
 
-      assertThat(licenceRepository.count()).isEqualTo(1)
-      val licence = licenceRepository.findAll().first()
-      assertThat(licence.getCom()!!.username).isEqualTo("AAA")
+      val licences = testRepository.findAllLicence()
+      assertThat(licences).hasSize(1)
+      val licence = licences.first() as HdcLicence
+      assertThat(licence.getCom().username).isEqualTo("AAA")
       assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
       assertThat(licence.typeCode).isEqualTo(LicenceType.AP_PSS)
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -434,7 +435,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
 
-      assertThat(licenceRepository.count()).isEqualTo(0)
+      assertThat(testRepository.countLicence()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
       assertThat(hdcCurfewAddressRepository.count()).isEqualTo(0)
     }
@@ -452,7 +453,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody
 
       assertThat(result?.userMessage).contains("Access Denied")
-      assertThat(licenceRepository.count()).isEqualTo(0)
+      assertThat(testRepository.countLicence()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
       assertThat(hdcCurfewAddressRepository.count()).isEqualTo(0)
     }

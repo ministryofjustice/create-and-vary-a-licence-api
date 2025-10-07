@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.Appo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -77,10 +76,7 @@ class VariationLicence(
   @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   override var createdBy: CommunityOffenderManager? = null,
-
-  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-  @JoinColumn(name = "responsible_com_id", nullable = false)
-  override var responsibleCom: CommunityOffenderManager,
+  responsibleCom: CommunityOffenderManager,
 ) : Licence(
   id = id,
   kind = LicenceKind.VARIATION,
@@ -132,16 +128,10 @@ class VariationLicence(
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
   updatedBy = updatedBy,
+  responsibleCom = responsibleCom,
 ),
   Variation,
   AlwaysHasCom {
-
-  @TimeServedConsiderations("Always needs a COM but need a wider discussion about variations")
-  override fun getCom(): CommunityOffenderManager = responsibleCom
-
-  override fun setCom(com: CommunityOffenderManager) {
-    this.responsibleCom = com
-  }
 
   fun copy(
     id: Long? = this.id,
@@ -195,7 +185,7 @@ class VariationLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.getCom(),
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,
@@ -336,6 +326,8 @@ class VariationLicence(
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy" +
     ")"
+
+  override fun getCom(): CommunityOffenderManager = this.responsibleCom!!
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

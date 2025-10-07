@@ -76,10 +76,7 @@ class HardStopLicence(
   @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_ca_id", nullable = true)
   var submittedBy: PrisonUser? = null,
-
-  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-  @JoinColumn(name = "responsible_com_id", nullable = false)
-  override var responsibleCom: CommunityOffenderManager,
+  responsibleCom: CommunityOffenderManager,
 ) : Licence(
   id = id,
   kind = LicenceKind.HARD_STOP,
@@ -131,14 +128,9 @@ class HardStopLicence(
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
   updatedBy = updatedBy,
+  responsibleCom = responsibleCom,
 ),
   AlwaysHasCom {
-
-  override fun getCom(): CommunityOffenderManager = responsibleCom
-
-  override fun setCom(com: CommunityOffenderManager) {
-    this.responsibleCom = com
-  }
 
   fun copy(
     id: Long? = this.id,
@@ -188,7 +180,7 @@ class HardStopLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.getCom(),
     submittedBy: PrisonUser? = this.submittedBy,
     createdBy: PrisonUser? = this.createdBy,
     substituteOfId: Long? = this.substituteOfId,
@@ -334,6 +326,8 @@ class HardStopLicence(
     "licenceVersion=$licenceVersion, " +
     "updatedBy = $updatedBy" +
     ")"
+
+  override fun getCom(): CommunityOffenderManager = this.responsibleCom!!
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

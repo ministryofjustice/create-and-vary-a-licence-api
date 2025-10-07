@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.and
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.includedIn
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 data class LicenceQueryObject(
@@ -25,15 +24,13 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasPrisonCodeIn(prisonCodes),
   hasNomsIdIn(nomsIds),
   hasPdusIn(pdus),
-)
-  .and { root, query, criteriaBuilder ->
-    val licenceClasses = LicenceKind.entries.map { it.clazz }
-    for (clazz in licenceClasses) {
-      criteriaBuilder.treat(root, clazz).fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
-    }
+).and { root, query, criteriaBuilder ->
+  if (query.resultType == Licence::class.java) {
+    root.fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
     query.distinct(true)
-    query.restriction
   }
+  criteriaBuilder.conjunction()
+}
 
 fun LicenceQueryObject.getSort(): Sort = when {
   sortBy == null -> Sort.unsorted()

@@ -5,7 +5,6 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
-import org.hibernate.proxy.HibernateProxy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
@@ -17,8 +16,6 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpHeaders
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.stereotype.Component
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -37,17 +34,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.setPostgresContainerProperties
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.MissingTopicException
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
-import kotlin.jvm.optionals.getOrNull
 
 /*
 ** The abstract parent class for integration tests.
@@ -62,38 +55,10 @@ import kotlin.jvm.optionals.getOrNull
 **     - A logger.
 */
 
-@Component
-@Transactional(propagation = Propagation.NEVER)
-class DBHelper(
-  private val jdbcTemplate: JdbcTemplate,
-  private val comRepository: StaffRepository,
-) {
-
-  fun clearAll() {
-    jdbcTemplate.execute("DISCARD ALL")
-  }
-
-  fun getComAndAddresses(licence: Licence): CommunityOffenderManager {
-    // This is need because the getCom is an abstract method, and there is no
-    // concrete object to proxy, so enable_lazy_load_no_trans does not work!
-    val comProxy = licence.getCom() ?: throw IllegalStateException("No COM attached")
-
-    // Extract id without triggering lazy init
-    val comId = if (comProxy is HibernateProxy) {
-      comProxy.hibernateLazyInitializer.identifier as Long
-    } else {
-      // if not a proxy object
-      comProxy.id!!
-    }
-    return comRepository.findById(comId).getOrNull() as CommunityOffenderManager
-  }
-}
-
 @ExtendWith(OAuthExtension::class)
 @ActiveProfiles("test")
 @SpringBootTest(
   webEnvironment = RANDOM_PORT,
-  properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"],
 )
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
@@ -101,8 +66,8 @@ class DBHelper(
   Sql("classpath:test_data/seed-community-offender-manager.sql", executionPhase = BEFORE_TEST_METHOD),
   Sql("classpath:test_data/clear-all-data.sql", executionPhase = AFTER_TEST_METHOD),
 )
-@AutoConfigureWebTestClient(timeout = "25000") // 25 seconds
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
+@AutoConfigureWebTestClient(timeout = "25000") // 25 seconds
 abstract class IntegrationTestBase {
 
   @MockitoSpyBean
@@ -112,7 +77,7 @@ abstract class IntegrationTestBase {
   protected lateinit var hmppsQueueService: HmppsQueueService
 
   @Autowired
-  protected lateinit var dbHelper: DBHelper
+  protected lateinit var testRepository: TestRepository
 
   protected val domainEventsTopic by lazy {
     hmppsQueueService.findByTopicId("domainevents") ?: throw MissingQueueException("HmppsTopic domainevents not found")
@@ -148,6 +113,11 @@ abstract class IntegrationTestBase {
     roles: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
 
+  init {
+    // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets
+    System.setProperty("http.keepAlive", "false")
+  }
+
   @BeforeEach
   fun `Clear queues`() {
     domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
@@ -157,7 +127,7 @@ abstract class IntegrationTestBase {
 
   @AfterEach
   fun tearDown() {
-    dbHelper.clearAll()
+    testRepository.clearAll()
   }
 
   fun getNumberOfMessagesCurrentlyOnQueue(): Int? = domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueueUrl).get()

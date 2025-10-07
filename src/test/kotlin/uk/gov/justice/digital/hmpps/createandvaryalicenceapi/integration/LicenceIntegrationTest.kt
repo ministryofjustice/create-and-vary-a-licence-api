@@ -36,7 +36,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicencePermissionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
@@ -45,7 +44,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import kotlin.jvm.optionals.getOrNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as VariationLicenceDto
@@ -53,9 +51,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 class LicenceIntegrationTest : IntegrationTestBase() {
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
-
-  @Autowired
-  lateinit var licenceRepository: LicenceRepository
 
   @Autowired
   lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
@@ -207,9 +202,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     // Then
     result.expectStatus().isOk
-    val licence = licenceRepository.findById(1).getOrNull()
-    assertThat(licence).isNotNull
-    assertThat(licence!!).isInstanceOf(PrrdLicence::class.java)
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(PrrdLicence::class.java)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.APPROVED)
   }
 
@@ -303,9 +297,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     // Then
-    val licence = licenceRepository.findById(1).getOrNull()
-    assertThat(licence).isNotNull
-    assertThat(licence!!).isInstanceOf(PrrdLicence::class.java)
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(PrrdLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
     assertThat(licence.postRecallReleaseDate).isNotNull()
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
@@ -333,14 +326,12 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
     assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
     assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
-    assertThat(licenceRepository.count()).isEqualTo(2)
 
-    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
-    assertThat(newLicence).isNotNull
-    val oldLicence = licenceRepository.findById(licenceSummary.licenceId - 1).getOrNull()
-    assertThat(oldLicence).isNotNull
+    assertThat(testRepository.countLicence()).isEqualTo(2)
+    val oldLicence = testRepository.findLicence(1)
+    val newLicence = testRepository.findLicence(2)
 
-    assertThat(newLicence!!.licenceVersion).isEqualTo("2.0")
+    assertThat(newLicence.licenceVersion).isEqualTo("2.0")
     assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
 
     assertThat(newLicence).isInstanceOf(EntityVariationLicence::class.java)
@@ -349,7 +340,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence.variationOfId).isEqualTo(1)
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
 
-    assertThat(newLicence.standardConditions.size).isEqualTo(oldLicence!!.standardConditions.size)
+    assertThat(newLicence.standardConditions.size).isEqualTo(oldLicence.standardConditions.size)
     assertThat(newLicence.additionalConditions.size).isEqualTo(oldLicence.additionalConditions.size)
     assertThat(newLicence.bespokeConditions.size).isEqualTo(oldLicence.bespokeConditions.size)
 
@@ -404,8 +395,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    val newLicence = licenceRepository.findById(licenceSummary!!.licenceId).getOrNull()
-    assertThat(newLicence!!.bespokeConditions.size).isEqualTo(0)
+    val bespokeConditions = testRepository.getBespokeConditions(licenceSummary!!.licenceId, expectReturn = false)
+    assertThat(bespokeConditions.size).isEqualTo(0)
   }
 
   private fun <T> assertNoOverlaps(
@@ -470,11 +461,13 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
     assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
     assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
-    assertThat(licenceRepository.count()).isEqualTo(2)
 
-    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
-    assertThat(newLicence).isNotNull
-    newLicence?.let {
+    val licences = testRepository.findAllLicence()
+
+    assertThat(licences).hasSize(2)
+
+    val newLicence = licences.last()
+    newLicence.let {
       assertThat(it.licenceVersion).isEqualTo("2.0")
       assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
       assertThat(it).isInstanceOf(HdcVariationLicence::class.java)
@@ -505,8 +498,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licence).isNotNull
     assertThat(licence!!.kind).isEqualTo(LicenceKind.VARIATION)
 
-    val persistedLicence = licenceRepository.findById(licence.licenceId).getOrNull()
-    assertThat(persistedLicence).isNotNull
+    val persistedLicence = testRepository.findLicence(licence.licenceId)
     assertThat(persistedLicence).isInstanceOf(EntityVariationLicence::class.java)
     val persistedVariationLicence = persistedLicence as EntityVariationLicence
     assertThat(persistedVariationLicence.id).isEqualTo(2)
@@ -575,7 +567,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(testRepository.countLicence()).isEqualTo(0)
   }
 
   @Test
@@ -843,7 +835,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     )
     fun `Review licence successfully`() {
       run {
-        val licence = licenceRepository.findById(1L).get() as HardStopLicence
+        val licence = testRepository.findLicence(1L) as HardStopLicence
         assertThat(licence.reviewDate).isNull()
 
         val result = webTestClient.get()
@@ -867,7 +859,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
 
       run {
-        val licence = licenceRepository.findById(1L).get() as HardStopLicence
+        val licence = testRepository.findLicence(1L) as HardStopLicence
         assertThat(licence.reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
 
         val result = webTestClient.get()
@@ -923,10 +915,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
           .exchange()
           .expectStatus().isOk
 
-        val variation = licenceRepository.findById(2L).get() as EntityVariationLicence
+        val variation = testRepository.findLicence(2L) as EntityVariationLicence
         assertThat(variation.statusCode).isEqualTo(LicenceStatus.VARIATION_APPROVED)
 
-        val original = licenceRepository.findById(1L).get() as CrdLicence
+        val original = testRepository.findLicence(1L) as CrdLicence
         assertThat(original.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
       }
 
@@ -938,10 +930,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
 
       run {
-        val variation = licenceRepository.findById(2L).get() as EntityVariationLicence
+        val variation = testRepository.findLicence(2L) as EntityVariationLicence
         assertThat(variation.statusCode).isEqualTo(LicenceStatus.ACTIVE)
 
-        val original = licenceRepository.findById(1L).get() as CrdLicence
+        val original = testRepository.findLicence(1L) as CrdLicence
         assertThat(original.statusCode).isEqualTo(LicenceStatus.INACTIVE)
       }
     }
@@ -1016,7 +1008,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().is4xxClientError
 
-      assertThat(licenceRepository.count()).isEqualTo(1)
+      assertThat(testRepository.countLicence()).isEqualTo(1)
 
       val licence = webTestClient.get()
         .uri("/licence/id/1")
@@ -1042,11 +1034,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
     assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
     assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(licenceRepository.count()).isEqualTo(2)
 
-    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
-    assertThat(newLicence).isNotNull
-    assertThat(newLicence!!.kind).isEqualTo(expectedKind)
+    assertThat(testRepository.countLicence()).isEqualTo(2)
+
+    val newLicence = testRepository.findLicence(licenceSummary.licenceId)
+    assertThat(newLicence.kind).isEqualTo(expectedKind)
     assertThat(newLicence.licenceVersion).isEqualTo("1.1")
     if (noAddress) {
       assertLicenceHasExpectedAddress(newLicence, newAddress = true)
