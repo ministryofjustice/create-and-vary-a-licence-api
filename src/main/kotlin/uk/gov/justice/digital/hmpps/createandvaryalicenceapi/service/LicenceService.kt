@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
@@ -1108,7 +1107,7 @@ class LicenceService(
     inactivateLicences(licences, deactivationReason, false)
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   fun getLicencePermissions(licenceId: Long, teamCodes: List<String>): LicencePermissionsResponse {
     val licenceEntity = getLicence(licenceId)
     val offenderManager = deliusApiClient.getOffenderManager(licenceEntity.crn!!)
