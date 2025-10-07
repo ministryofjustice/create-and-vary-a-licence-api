@@ -160,7 +160,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       teamCode = teamCode,
       teamDescription = "Team description",
       areaCode = "PBC123",
-      areaDescription = "Some Provider",
+      areaDescription = "Provider description",
       boroughCode = "BC123",
       boroughDescription = "Borough description",
       districtCode = "DBC123",
