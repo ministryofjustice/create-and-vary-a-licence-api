@@ -395,7 +395,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    val bespokeConditions = testRepository.getBespokeConditions(licenceSummary!!.licenceId, expectReturn = false)
+    val bespokeConditions = testRepository.getBespokeConditions(licenceSummary!!.licenceId, assertNotEmpty = false)
     assertThat(bespokeConditions.size).isEqualTo(0)
   }
 
