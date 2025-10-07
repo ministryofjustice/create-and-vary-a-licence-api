@@ -325,15 +325,6 @@ class ComCreateCaseloadServiceTest {
     assertThat(caseload).hasSize(6)
     verifyCase(
       case = caseload[0],
-      expectedCrn = "X12352",
-      expectedPrisonerNumber = "AB1234M",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.AP,
-      expectedReleaseDate = tenDaysFromNow,
-      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-    )
-    verifyCase(
-      case = caseload[1],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -342,42 +333,48 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
     )
     verifyCase(
-      case = caseload[2],
+      case = caseload[1],
       expectedCrn = "X12351",
       expectedPrisonerNumber = "AB1234L",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-
     )
     verifyCase(
-      case = caseload[3],
+      case = caseload[2],
       expectedCrn = "X12354",
       expectedPrisonerNumber = "AB1234P",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-
     )
     verifyCase(
-      case = caseload[4],
+      case = caseload[3],
       expectedCrn = "X12355",
       expectedPrisonerNumber = "AB1234Q",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-
     )
     verifyCase(
-      case = caseload[5],
+      case = caseload[4],
       expectedCrn = "X12356",
       expectedPrisonerNumber = "AB1234R",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
+      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
+    )
+    verifyCase(
+      case = caseload[5],
+      expectedCrn = "X12352",
+      expectedPrisonerNumber = "AB1234M",
+      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceType = LicenceType.AP,
+      expectedReleaseDate = tenDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
     )
   }
@@ -629,6 +626,25 @@ class ComCreateCaseloadServiceTest {
     assertThat(caseload).hasSize(3)
     verifyCase(
       case = caseload[0],
+      expectedCrn = "X12348",
+      expectedPrisonerNumber = "AB1234E",
+      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceType = LicenceType.AP,
+      expectedReleaseDate = tenDaysFromNow,
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
+      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
+    )
+    verifyCase(
+      case = caseload[1],
+      expectedCrn = "X12351",
+      expectedPrisonerNumber = "AB1234H",
+      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceType = LicenceType.PSS,
+      expectedReleaseDate = tenDaysFromNow,
+      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
+    )
+    verifyCase(
+      case = caseload[2],
       expectedCrn = "X12352",
       expectedPrisonerNumber = "AB1234I",
       expectedLicenceStatus = LicenceStatus.SUBMITTED,
@@ -639,25 +655,6 @@ class ComCreateCaseloadServiceTest {
         name = "John Doe",
       ),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS,
-    )
-    verifyCase(
-      case = caseload[1],
-      expectedCrn = "X12348",
-      expectedPrisonerNumber = "AB1234E",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.AP,
-      expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
-      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-    )
-    verifyCase(
-      case = caseload[2],
-      expectedCrn = "X12351",
-      expectedPrisonerNumber = "AB1234H",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
-      expectedReleaseDate = tenDaysFromNow,
-      expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
     )
   }
 

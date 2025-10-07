@@ -296,7 +296,7 @@ class ComCreateCaseloadService(
       licenceCreationType = licence.licenceCreationType,
       isReviewNeeded = licence.isReviewNeeded,
     )
-  }.sortedWith(compareByDescending<ComCase> { it.releaseDate }.thenBy { it.name })
+  }.sortedWith(compareBy<ComCase> { it.releaseDate }.thenBy { it.name })
 
   private fun findExistingActiveAndPreReleaseLicences(crnList: List<String>): List<CaseLoadLicenceSummary> = if (crnList.isEmpty()) {
     emptyList()
