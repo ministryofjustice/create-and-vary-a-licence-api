@@ -24,10 +24,10 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasPrisonCodeIn(prisonCodes),
   hasNomsIdIn(nomsIds),
   hasPdusIn(pdus),
-).and { root, query, criteriaBuilder ->
+).and { root, query, _ ->
   root.fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
   query.distinct(true)
-  criteriaBuilder.conjunction()
+  null
 }
 
 fun LicenceQueryObject.getSort(): Sort = when {
