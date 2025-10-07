@@ -66,7 +66,7 @@ class TestRepository(
     jdbcTemplate.execute("DISCARD ALL")
   }
 
-  fun findLicence(id: Long = 1L, expectReturn: Boolean = true): Licence {
+  fun findLicence(id: Long = 1L): Licence {
     val licence = licenceRepository.findById(id).orElse(null)
     assertThat(licence).isNotNull
 
@@ -75,46 +75,46 @@ class TestRepository(
     return licence
   }
 
-  fun findAllLicence(expectReturn: Boolean = true): List<Licence> {
+  fun findAllLicence(assertNotEmpty: Boolean = true): List<Licence> {
     val licences = licenceRepository.findAll()
-    if (expectReturn) assertThat(licences).isNotEmpty
+    if (assertNotEmpty) assertThat(licences).isNotEmpty
     return licences
   }
   fun countLicence(): Long = licenceRepository.count()
 
-  fun findAllAuditEventsByLicenceIdIn(list: List<Long>, expectReturn: Boolean = true): List<AuditEvent> {
+  fun findAllAuditEventsByLicenceIdIn(list: List<Long>, assertNotEmpty: Boolean = true): List<AuditEvent> {
     val events = auditEventRepository.findAllByLicenceIdIn(list)
-    if (expectReturn) assertThat(events).isNotEmpty
+    if (assertNotEmpty) assertThat(events).isNotEmpty
     return events
   }
 
-  fun findFirstAuditEvent(licenceId: Long = 1L, expectReturn: Boolean = true): AuditEvent {
+  fun findFirstAuditEvent(licenceId: Long = 1L): AuditEvent {
     val event = auditEventRepository.findAllByLicenceIdIn(listOf(licenceId)).firstOrNull()
     assertThat(event).isNotNull
     return event!!
   }
 
-  fun findStaff(userName: String = "test-client", expectReturn: Boolean = true): Staff {
+  fun findStaff(userName: String = "test-client"): Staff {
     val staff = staffRepository.findByUsernameIgnoreCase(userName)
     assertThat(staff).isNotNull
     return staff!!
   }
 
-  fun findAllAddresses(expectReturn: Boolean = true): List<Address> {
+  fun findAllAddresses(assertNotEmpty: Boolean = true): List<Address> {
     val addresses = addressRepository.findAll()
-    if (expectReturn) assertThat(addresses).isNotEmpty
+    if (assertNotEmpty) assertThat(addresses).isNotEmpty
     return addresses
   }
 
-  fun getAdditionalConditions(licenceId: Long, expectReturn: Boolean = true): List<AdditionalCondition> {
+  fun getAdditionalConditions(licenceId: Long, assertNotEmpty: Boolean = true): List<AdditionalCondition> {
     val list = additionalConditionRepository.findByLicenceId(licenceId)
-    if (expectReturn) assertThat(list).isNotEmpty
+    if (assertNotEmpty) assertThat(list).isNotEmpty
     return list
   }
 
-  fun getBespokeConditions(licenceId: Long, expectReturn: Boolean = true): List<BespokeCondition> {
+  fun getBespokeConditions(licenceId: Long, assertNotEmpty: Boolean = true): List<BespokeCondition> {
     val list = bespokeConditionRepository.findByLicenceId(licenceId)
-    if (expectReturn) assertThat(list).isNotEmpty
+    if (assertNotEmpty) assertThat(list).isNotEmpty
     return list
   }
 }
