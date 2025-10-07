@@ -25,10 +25,8 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasNomsIdIn(nomsIds),
   hasPdusIn(pdus),
 ).and { root, query, criteriaBuilder ->
-  if (query.resultType == Licence::class.java) {
-    root.fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
-    query.distinct(true)
-  }
+  root.fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
+  query.distinct(true)
   criteriaBuilder.conjunction()
 }
 
