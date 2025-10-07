@@ -257,7 +257,7 @@ object LicenceFactory {
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
         appointment = AppointmentMapper.copy(this.appointment),
-        responsibleCom = this.responsibleCom,
+        responsibleCom = this.getCom(),
         dateCreated = LocalDateTime.now(),
         licenceVersion = getVariationVersion(this.licenceVersion!!),
       )
@@ -357,7 +357,7 @@ object LicenceFactory {
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
         appointment = AppointmentMapper.copy(this.appointment),
-        responsibleCom = this.responsibleCom,
+        responsibleCom = this.getCom(),
         dateCreated = LocalDateTime.now(),
         licenceVersion = getVariationVersion(this.licenceVersion!!),
       )

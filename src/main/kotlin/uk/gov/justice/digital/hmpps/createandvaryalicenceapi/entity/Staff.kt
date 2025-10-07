@@ -68,7 +68,7 @@ abstract class Staff(
 ) : Creator {
 
   val fullName
-    get() = "$firstName $lastName".convertToTitleCase()
+    get() = "${firstName ?: ""} ${lastName ?: ""}".trim().convertToTitleCase()
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

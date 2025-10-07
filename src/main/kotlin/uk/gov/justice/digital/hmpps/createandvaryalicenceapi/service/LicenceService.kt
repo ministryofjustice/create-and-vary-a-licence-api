@@ -97,7 +97,7 @@ class LicenceService(
 ) {
 
   @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
-  @Transactional
+  @Transactional(readOnly = true)
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
 
@@ -349,7 +349,7 @@ class LicenceService(
   }
 
   private fun notifyComAboutHardstopLicenceApproval(licenceEntity: HardStopLicence) {
-    val com = licenceEntity.responsibleCom
+    val com = licenceEntity.getCom()
     notifyService.sendHardStopLicenceApprovedEmail(
       com.email,
       licenceEntity.forename!!,
@@ -470,22 +470,26 @@ class LicenceService(
     }
   }
 
+  @Transactional(readOnly = true)
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {
     try {
-      val matchingLicences =
-        licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
+      val spec = licenceQueryObject.toSpecification()
+      val sort = licenceQueryObject.getSort()
+      val matchingLicences = licenceRepository.findAll(spec, sort)
       return matchingLicences.map { it.toSummary() }
     } catch (e: PropertyReferenceException) {
       throw ValidationException(e.message, e)
     }
   }
 
+  @Transactional(readOnly = true)
   fun findSubmittedVariationsByRegion(probationAreaCode: String): List<LicenceSummary> {
     val matchingLicences =
       licenceRepository.findByStatusCodeAndProbationAreaCode(VARIATION_SUBMITTED, probationAreaCode)
     return matchingLicences.map { it.toSummary() }
   }
 
+  @Transactional
   fun findLicencesForCrnsAndStatuses(crns: List<String>, statusCodes: List<LicenceStatus>): List<LicenceSummary> {
     val matchingLicences = licenceRepository.findAllByCrnInAndStatusCodeIn(crns, statusCodes)
     return matchingLicences.map { it.toSummary() }
@@ -737,8 +741,8 @@ class LicenceService(
     notifyService.sendVariationReferredEmail(
       licenceEntity.createdBy?.email ?: "",
       "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.responsibleCom.email ?: "",
-      "${licenceEntity.responsibleCom.firstName} ${licenceEntity.responsibleCom.lastName}",
+      licenceEntity.getCom().email ?: "",
+      licenceEntity.getCom().fullName,
       "${licenceEntity.forename} ${licenceEntity.surname}",
       licenceId.toString(),
     )
@@ -781,8 +785,8 @@ class LicenceService(
     notifyService.sendVariationApprovedEmail(
       licenceEntity.createdBy?.email ?: "",
       "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.responsibleCom.email ?: "",
-      "${licenceEntity.responsibleCom.firstName} ${licenceEntity.responsibleCom.lastName}",
+      licenceEntity.getCom().email ?: "",
+      licenceEntity.getCom().fullName,
       "${licenceEntity.forename} ${licenceEntity.surname}",
       licenceId.toString(),
     )
@@ -1080,8 +1084,8 @@ class LicenceService(
     if (licence.versionOfId != null && licence is AlwaysHasCom) {
       with(licence) {
         notifyService.sendEditedLicenceTimedOutEmail(
-          responsibleCom.email,
-          "${responsibleCom.firstName} ${responsibleCom.lastName}",
+          this.getCom().email,
+          this.getCom().fullName,
           this.forename!!,
           this.surname!!,
           this.crn,

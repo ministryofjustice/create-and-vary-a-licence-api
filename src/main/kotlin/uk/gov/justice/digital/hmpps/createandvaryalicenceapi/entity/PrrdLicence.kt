@@ -68,27 +68,24 @@ class PrrdLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   updatedBy: Staff? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
   var submittedBy: CommunityOffenderManager? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
   @OneToOne(
     mappedBy = "licence",
     cascade = [CascadeType.ALL],
-    fetch = FetchType.EAGER,
+    fetch = FetchType.LAZY,
     optional = true,
     orphanRemoval = true,
   )
   override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
   override var versionOfId: Long? = null,
-
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "responsible_com_id", nullable = false)
-  override var responsibleCom: CommunityOffenderManager,
+  responsibleCom: CommunityOffenderManager,
 ) : Licence(
   id = id,
   kind = LicenceKind.PRRD,
@@ -140,16 +137,11 @@ class PrrdLicence(
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
   updatedBy = updatedBy,
+  responsibleCom = responsibleCom,
 ),
   SupportsHardStop,
   HasElectronicMonitoringResponseProvider,
   AlwaysHasCom {
-
-  override fun getCom(): CommunityOffenderManager = responsibleCom
-
-  override fun setCom(com: CommunityOffenderManager) {
-    this.responsibleCom = com
-  }
 
   fun copy(
     id: Long? = this.id,
@@ -199,7 +191,7 @@ class PrrdLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.getCom(),
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     versionOfId: Long? = this.versionOfId,
@@ -344,6 +336,8 @@ class PrrdLicence(
     "updatedBy=$updatedBy, " +
     "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
+
+  override fun getCom(): CommunityOffenderManager = this.responsibleCom!!
 
   override fun createNewElectronicMonitoringProvider(): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
     licence = this,

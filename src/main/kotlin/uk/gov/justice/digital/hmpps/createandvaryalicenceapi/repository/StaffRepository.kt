@@ -37,7 +37,7 @@ interface StaffRepository : JpaRepository<Staff, Long> {
   @Query(
     """
       SELECT s FROM Staff s
-      LEFT JOIN FETCH s.savedAppointmentAddresses
+      LEFT JOIN s.savedAppointmentAddresses
       WHERE LOWER(s.username) = LOWER(:username)
   """,
   )

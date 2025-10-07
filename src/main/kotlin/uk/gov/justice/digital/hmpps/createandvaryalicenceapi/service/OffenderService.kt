@@ -54,7 +54,7 @@ OffenderService(
 
     val offenderLicences = licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
-    offenderLicences.forEach { it.setCom(newCom) }
+    offenderLicences.forEach { it.responsibleCom = newCom }
     licenceRepository.saveAllAndFlush(offenderLicences)
 
     val inProgressLicence = offenderLicences.find { it.kind != HARD_STOP && it.statusCode == IN_PROGRESS }

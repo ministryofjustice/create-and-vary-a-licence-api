@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
@@ -83,7 +84,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isOk
 
-    val licence = licenceRepository.findById(1L).orElseThrow()
+    val licence = testRepository.findLicence() as CrdLicence
     assertThat(licence.getCom())
       .extracting("staffIdentifier", "username", "email", "firstName", "lastName")
       .isEqualTo(listOf(2000L, "TEST-CLIENT", "joebloggs@probation.gov.uk", "Joseph", "Bloggs"))
@@ -154,8 +155,8 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     assertThat(com.firstName).isEqualTo(firstName)
     assertThat(com.lastName).isEqualTo(lastName)
 
-    val licence = licenceRepository.findById(3L).orElseThrow()
-    assertThat(licence.getCom()!!.id).isEqualTo(com.id)
+    val licence = licenceRepository.findById(3L).orElseThrow() as CrdLicence
+    assertThat(licence.getCom().id).isEqualTo(com.id)
   }
 
   private companion object {

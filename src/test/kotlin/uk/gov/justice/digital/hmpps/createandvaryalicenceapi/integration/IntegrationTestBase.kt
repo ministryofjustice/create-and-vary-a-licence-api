@@ -16,7 +16,6 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpHeaders
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -55,11 +54,11 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 **     - An ObjectMapper called mapper.
 **     - A logger.
 */
+
 @ExtendWith(OAuthExtension::class)
 @ActiveProfiles("test")
 @SpringBootTest(
   webEnvironment = RANDOM_PORT,
-  properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"],
 )
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
@@ -67,8 +66,8 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
   Sql("classpath:test_data/seed-community-offender-manager.sql", executionPhase = BEFORE_TEST_METHOD),
   Sql("classpath:test_data/clear-all-data.sql", executionPhase = AFTER_TEST_METHOD),
 )
-@AutoConfigureWebTestClient(timeout = "25000") // 25 seconds
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
+@AutoConfigureWebTestClient(timeout = "25000") // 25 seconds
 abstract class IntegrationTestBase {
 
   @MockitoSpyBean
@@ -76,6 +75,9 @@ abstract class IntegrationTestBase {
 
   @Autowired
   protected lateinit var hmppsQueueService: HmppsQueueService
+
+  @Autowired
+  protected lateinit var testRepository: TestRepository
 
   protected val domainEventsTopic by lazy {
     hmppsQueueService.findByTopicId("domainevents") ?: throw MissingQueueException("HmppsTopic domainevents not found")
@@ -103,9 +105,6 @@ abstract class IntegrationTestBase {
   @MockitoSpyBean
   protected lateinit var hmppsSqsPropertiesSpy: HmppsSqsProperties
 
-  @Autowired
-  lateinit var jdbcTemplate: JdbcTemplate
-
   fun HmppsSqsProperties.domaineventsTopicConfig() = topics["domainevents"]
     ?: throw MissingTopicException("domainevents has not been loaded from configuration properties")
 
@@ -113,6 +112,11 @@ abstract class IntegrationTestBase {
     user: String = "test-client",
     roles: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
+
+  init {
+    // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets
+    System.setProperty("http.keepAlive", "false")
+  }
 
   @BeforeEach
   fun `Clear queues`() {
@@ -123,8 +127,7 @@ abstract class IntegrationTestBase {
 
   @AfterEach
   fun tearDown() {
-    // Avoid memory bloat or leaks in Postgres during long test runs
-    jdbcTemplate.execute("DISCARD ALL")
+    testRepository.clearAll()
   }
 
   fun getNumberOfMessagesCurrentlyOnQueue(): Int? = domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueueUrl).get()
