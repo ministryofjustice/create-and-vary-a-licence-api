@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
@@ -33,6 +34,12 @@ data class CvlFields(
   @field:Schema(description = "Date that the licence is due to activate", example = "05/05/2023")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val licenceStartDate: LocalDate? = null,
+
+  @field:Schema(
+    description = "The kind of licence this person should have based on their current dates",
+    example = "CRD",
+  )
+  val licenceKind: LicenceKind?,
 )
 
 @Schema(description = "A combination of the NOMIS prisoner record and additional CVL fields")

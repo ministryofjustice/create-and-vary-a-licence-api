@@ -24,21 +24,22 @@ class CaseloadService(
   fun getPrisoner(nomisId: String): PrisonerWithCvlFields {
     val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
     val comRecord = deliusApiClient.getOffenderManager(nomisId)!!
-    val licenceStartDate = cvlRecordService.getCvlRecord(prisoner, comRecord.team.provider.code).licenceStartDate
-    val sentenceDateHolder = prisoner.toSentenceDateHolder(licenceStartDate)
+    val cvlRecord = cvlRecordService.getCvlRecord(prisoner, comRecord.team.provider.code)
+    val sentenceDateHolder = prisoner.toSentenceDateHolder(cvlRecord.licenceStartDate)
 
     return PrisonerWithCvlFields(
       prisoner = prisoner.toPrisoner(),
       cvl = CvlFields(
         licenceType = LicenceType.getLicenceType(prisoner),
-        hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
-        hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder.licenceStartDate),
-        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate),
+        hardStopDate = releaseDateService.getHardStopDate(cvlRecord.licenceStartDate),
+        hardStopWarningDate = releaseDateService.getHardStopWarningDate(cvlRecord.licenceStartDate),
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(cvlRecord.licenceStartDate),
         isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(sentenceDateHolder),
         isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           sentenceDateHolder,
         ),
-        licenceStartDate = licenceStartDate,
+        licenceStartDate = cvlRecord.licenceStartDate,
+        licenceKind = cvlRecord.eligibleKind,
       ),
     )
   }
