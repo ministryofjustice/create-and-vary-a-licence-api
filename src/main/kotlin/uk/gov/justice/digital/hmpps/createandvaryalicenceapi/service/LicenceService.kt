@@ -97,7 +97,7 @@ class LicenceService(
 ) {
 
   @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
-  @Transactional
+  @Transactional(readOnly = true)
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
 
@@ -470,7 +470,7 @@ class LicenceService(
     }
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {
     try {
       val spec = licenceQueryObject.toSpecification()
@@ -482,7 +482,7 @@ class LicenceService(
     }
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   fun findSubmittedVariationsByRegion(probationAreaCode: String): List<LicenceSummary> {
     val matchingLicences =
       licenceRepository.findByStatusCodeAndProbationAreaCode(VARIATION_SUBMITTED, probationAreaCode)
