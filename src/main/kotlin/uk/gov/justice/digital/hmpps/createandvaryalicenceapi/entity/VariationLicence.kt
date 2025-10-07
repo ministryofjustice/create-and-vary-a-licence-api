@@ -73,7 +73,7 @@ class VariationLicence(
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
   var submittedBy: CommunityOffenderManager? = null,
 
-  @ManyToOne(cascade = [CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE],fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   override var createdBy: CommunityOffenderManager? = null,
   responsibleCom: CommunityOffenderManager,

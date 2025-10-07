@@ -69,11 +69,11 @@ class HardStopLicence(
   var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
 
-  @ManyToOne(cascade = [CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE],fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_ca_id", nullable = false)
   var createdBy: PrisonUser? = null,
 
-  @ManyToOne(cascade = [CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE],fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_ca_id", nullable = true)
   var submittedBy: PrisonUser? = null,
   responsibleCom: CommunityOffenderManager,
