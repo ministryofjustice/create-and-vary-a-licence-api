@@ -24,7 +24,7 @@ class PromptComListBuilder(
 
   fun excludeIneligibleCases(candidates: Map<PrisonerSearchPrisoner, CommunityManager>, cvlRecords: List<CvlCaseDto>): Map<PrisonerSearchPrisoner, CommunityManager> {
     return candidates.filter { (nomisRecord, _) ->
-      val cvlRecord = cvlRecords.find { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }!!
+      val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }
       return@filter cvlRecord.isEligible
     }
   }

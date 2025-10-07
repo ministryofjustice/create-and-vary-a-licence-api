@@ -23,10 +23,9 @@ class SupportService(
     }
     val prisoner = prisoners.first()
     val deliusRecord = deliusApiClient.getOffenderManagers(listOf(prisoner.prisonerNumber)).first()
-    val eligibility = eligibilityService.getEligibilityAssessments(listOf(prisoner), mapOf(prisoner.prisonerNumber to deliusRecord.team.provider.code))[prisoner.prisonerNumber]!!
-    val reasons = eligibility.genericIneligibilityReasons + eligibility.crdIneligibilityReasons + eligibility.prrdIneligibilityReasons
+    val eligibility = eligibilityService.getEligibilityAssessment(prisoner, deliusRecord.team.provider.code)
     val hdcReasonIfPresent = if (prisoner.isApprovedForHdc()) listOf("Approved for HDC") else emptyList()
-    return reasons + hdcReasonIfPresent
+    return eligibility.ineligiblityReasons + hdcReasonIfPresent
   }
 
   fun getIS91Status(prisonNumber: String): Boolean {

@@ -8,7 +8,7 @@ data class CvlCaseDto(
   val licenceStartDate: LocalDate? = null,
   val isEligible: Boolean = false,
   val eligibleKind: LicenceKind? = null,
-  val ineligiblityReasons: EligibilityAssessment,
+  val ineligiblityReasons: List<String> = emptyList(),
 )
 
 data class EligibilityAssessment(
@@ -16,9 +16,10 @@ data class EligibilityAssessment(
   val crdIneligibilityReasons: List<String> = emptyList(),
   val prrdIneligibilityReasons: List<String> = emptyList(),
   val isEligible: Boolean,
-  val eligibleKind: LicenceKind? = when (isEligible) {
-    true if crdIneligibilityReasons.isEmpty() -> LicenceKind.CRD
-    true if prrdIneligibilityReasons.isEmpty() -> LicenceKind.PRRD
+  val eligibleKind: LicenceKind? = when {
+    isEligible && crdIneligibilityReasons.isEmpty() -> LicenceKind.CRD
+    isEligible && prrdIneligibilityReasons.isEmpty() -> LicenceKind.PRRD
     else -> null
   },
+  val ineligiblityReasons: List<String> = genericIneligibilityReasons + crdIneligibilityReasons + prrdIneligibilityReasons,
 )

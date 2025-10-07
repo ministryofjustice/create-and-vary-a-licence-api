@@ -290,7 +290,7 @@ class CaCaseloadService(
     cvlRecords: List<CvlCaseDto>,
   ): List<CaCase> = cases.map { case ->
     val sentenceDateHolder = case.nomisRecord!!.toSentenceDateHolder(case.licenceStartDate)
-    val cvlRecord = cvlRecords.find { it.nomisId == case.nomisRecord.prisonerNumber }!!
+    val cvlRecord = cvlRecords.first { it.nomisId == case.nomisRecord.prisonerNumber }
 
     // Default status (if not overridden below) will show the case as clickable on case lists
     var licenceStatus = NOT_STARTED
@@ -329,7 +329,7 @@ class CaCaseloadService(
 
   private fun filterOffendersEligibleForLicence(offenders: List<ManagedCaseDto>, cvlRecords: List<CvlCaseDto>): List<ManagedCaseDto> {
     val eligibleOffenders = offenders.filter { offender ->
-      val cvlRecord = cvlRecords.find { record -> offender.nomisRecord?.prisonerNumber == record.nomisId }!!
+      val cvlRecord = cvlRecords.first { record -> offender.nomisRecord?.prisonerNumber == record.nomisId }
       return@filter cvlRecord.isEligible
     }
 
@@ -409,7 +409,7 @@ class CaCaseloadService(
     cvlRecords: List<CvlCaseDto>,
   ): List<ManagedCaseDto> = nomisRecordsToComRecords
     .map { (nomisRecord, com) ->
-      val licenceStartDate = cvlRecords.find { it.nomisId == nomisRecord.prisonerNumber }!!.licenceStartDate
+      val licenceStartDate = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }.licenceStartDate
       ManagedCaseDto(
         nomisRecord = nomisRecord,
         licenceStartDate = licenceStartDate,

@@ -27,7 +27,7 @@ class CvlRecordService(
         licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber],
         isEligible = eligibility.isEligible,
         eligibleKind = eligibility.eligibleKind,
-        ineligiblityReasons = eligibility,
+        ineligiblityReasons = eligibility.ineligiblityReasons,
       )
     }
   }

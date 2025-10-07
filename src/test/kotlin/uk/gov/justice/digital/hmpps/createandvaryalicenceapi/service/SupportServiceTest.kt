@@ -58,15 +58,13 @@ class SupportServiceTest {
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
     whenever(deliusApiClient.getOffenderManagers(listOf(hdcPrisoner.prisonerNumber))).thenReturn(listOf(offenderManager()))
-    whenever(eligibilityService.getEligibilityAssessments(eq(listOf(hdcPrisoner)), any())).thenReturn(
-      mapOf(
-        hdcPrisoner.prisonerNumber to EligibilityAssessment(
-          genericIneligibilityReasons = listOf("A reason"),
-          crdIneligibilityReasons = emptyList(),
-          prrdIneligibilityReasons = emptyList(),
-          isEligible = false,
-          eligibleKind = null,
-        ),
+    whenever(eligibilityService.getEligibilityAssessment(eq(hdcPrisoner), any())).thenReturn(
+      EligibilityAssessment(
+        genericIneligibilityReasons = listOf("A reason"),
+        crdIneligibilityReasons = emptyList(),
+        prrdIneligibilityReasons = emptyList(),
+        isEligible = false,
+        eligibleKind = null,
       ),
     )
     whenever(

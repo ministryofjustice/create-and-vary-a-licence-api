@@ -70,7 +70,7 @@ class ComCreateCaseloadService(
     return cases.map { (deliusRecord, nomisRecord) ->
       val crn = deliusRecord.crn!!
       val offenderLicences = licences.filter { licence -> crn == licence.crn }
-      val cvlRecord = cvlRecords.find { it.nomisId == nomisRecord.prisonerNumber }!!
+      val cvlRecord = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }
       if (offenderLicences.isEmpty()) {
         return@map crn to listOf(createNotStartedLicence(deliusRecord, nomisRecord, cvlRecord))
       }
@@ -100,7 +100,7 @@ class ComCreateCaseloadService(
     crnsToLicences: Map<String, List<CaseLoadLicenceSummary>>,
     cvlRecords: List<CvlCaseDto>,
   ): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> = cases.filter { (deliusRecord, nomisRecord) ->
-    val cvlRecord = cvlRecords.find { it.nomisId == nomisRecord.prisonerNumber }!!
+    val cvlRecord = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }
     val licences = crnsToLicences[deliusRecord.crn]!!
 
     when {

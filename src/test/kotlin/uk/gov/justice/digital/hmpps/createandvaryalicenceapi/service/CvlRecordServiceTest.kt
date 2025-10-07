@@ -76,21 +76,21 @@ class CvlRecordServiceTest {
         licenceStartDate = LocalDate.of(2021, 10, 22),
         isEligible = true,
         eligibleKind = LicenceKind.CRD,
-        ineligiblityReasons = anEligibilityAssessment(),
+        ineligiblityReasons = anEligibilityAssessment().ineligiblityReasons,
       ),
       CvlCaseDto(
         nomisId = "A1234AB",
         licenceStartDate = LocalDate.of(2022, 11, 23),
         isEligible = true,
         eligibleKind = LicenceKind.PRRD,
-        ineligiblityReasons = prrdEligibilityAssessment,
+        ineligiblityReasons = prrdEligibilityAssessment.ineligiblityReasons,
       ),
       CvlCaseDto(
         nomisId = "A1234AC",
         licenceStartDate = null,
         isEligible = false,
         eligibleKind = null,
-        ineligiblityReasons = ineligibleEligibilityAssessment,
+        ineligiblityReasons = ineligibleEligibilityAssessment.ineligiblityReasons,
       ),
     )
   }
@@ -121,7 +121,7 @@ class CvlRecordServiceTest {
         licenceStartDate = LocalDate.of(2021, 10, 22),
         isEligible = true,
         eligibleKind = LicenceKind.CRD,
-        ineligiblityReasons = anEligibilityAssessment(),
+        ineligiblityReasons = anEligibilityAssessment().ineligiblityReasons,
       ),
     )
   }
@@ -132,6 +132,13 @@ class CvlRecordServiceTest {
     "A1234AB" to "AREA2",
     "A1234AC" to "AREA3",
   )
-  private val prrdEligibilityAssessment = anEligibilityAssessment().copy(crdIneligibilityReasons = listOf("Some reason"), eligibleKind = LicenceKind.PRRD)
-  private val ineligibleEligibilityAssessment = anEligibilityAssessment().copy(genericIneligibilityReasons = listOf("Some reason"), isEligible = false, eligibleKind = null)
+  private val prrdEligibilityAssessment = anEligibilityAssessment().copy(
+    crdIneligibilityReasons = listOf("Some reason"),
+    eligibleKind = LicenceKind.PRRD,
+  )
+  private val ineligibleEligibilityAssessment = anEligibilityAssessment().copy(
+    genericIneligibilityReasons = listOf("Some reason"),
+    isEligible = false,
+    eligibleKind = null,
+  )
 }

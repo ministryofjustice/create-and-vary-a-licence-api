@@ -103,7 +103,7 @@ object TestData {
     licenceStartDate = licenceStartDate,
     isEligible = true,
     eligibleKind = kind,
-    ineligiblityReasons = anEligibilityAssessment(),
+    ineligiblityReasons = emptyList(),
   )
 
   fun anEligibilityAssessment() = EligibilityAssessment(
@@ -112,6 +112,7 @@ object TestData {
     prrdIneligibilityReasons = emptyList(),
     isEligible = true,
     eligibleKind = LicenceKind.CRD,
+    ineligiblityReasons = emptyList(),
   )
 
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
