@@ -116,11 +116,11 @@ abstract class Licence(
   @OrderBy("conditionSequence")
   var bespokeConditions: MutableList<BespokeCondition> = mutableListOf(),
 
-  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE],fetch = FetchType.LAZY)
   @JoinColumn(name = "updated_by_id", nullable = true)
   var updatedBy: Staff? = null,
 
-  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE],fetch = FetchType.LAZY)
   @JoinColumn(name = "responsible_com_id", nullable = true)
   var responsibleCom: CommunityOffenderManager?,
 ) : AbstractIdEntity(idInternal = id),

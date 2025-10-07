@@ -68,11 +68,11 @@ class PrrdLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   updatedBy: Staff? = null,
 
-  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE],fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
   var submittedBy: CommunityOffenderManager? = null,
 
-  @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE],fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
