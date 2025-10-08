@@ -53,13 +53,15 @@ class ComCaseloadSearchService(
         CASELOAD_PAGE_SIZE,
         Sort.by(body.sortBy.map { Sort.Order(it.direction, it.field.probationSearchApiSortType) }),
       ),
-    )
+    ).content
 
-    val deliusRecordsToLicences = teamCaseloadResult.content.map { it to getLicence(it.crn) }
+    val deliusRecordsToLicences = teamCaseloadResult.map { it to getLicence(it.crn) }
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsToLicences)
 
-    val nomisIdsToAreaCodes = teamCaseloadResult.content.mapNotNull { if (it.nomisId != null) it.nomisId to it.team.provider.code else null }.toMap()
-    val cvlRecords = cvlRecordService.getCvlRecords(prisonerRecords.map { (_, nomisRecord) -> nomisRecord }, nomisIdsToAreaCodes)
+    val nomisIdsToAreaCodes = teamCaseloadResult
+      .filter { it.nomisId != null }
+      .associate { it.nomisId!! to it.team.provider.code }
+    val cvlRecords = cvlRecordService.getCvlRecords(prisonerRecords.values.toList(), nomisIdsToAreaCodes)
 
     val cvlSearchRecords = deliusRecordsToLicences.map { (caseloadResult, licence) ->
       val prisonRecord = prisonerRecords[caseloadResult.nomisId]
@@ -71,7 +73,7 @@ class ComCaseloadSearchService(
     }
 
     val searchResults = cvlSearchRecords.mapNotNull {
-      val cvlRecord = cvlRecords.find { cvlRecord -> it.prisonerSearchPrisoner?.prisonerNumber == cvlRecord.nomisId }
+      val cvlRecord: CvlCaseDto? = cvlRecords.find { cvlRecord -> it.prisonerSearchPrisoner?.prisonerNumber == cvlRecord.nomisId }
       when (it.licence) {
         null -> createNotStartedRecord(it.caseloadResult, it.prisonerSearchPrisoner, cvlRecord)
         else -> createRecord(it.caseloadResult, it.licence, it.prisonerSearchPrisoner, cvlRecord)
