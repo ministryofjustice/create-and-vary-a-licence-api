@@ -164,8 +164,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -312,8 +312,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aHdcLicenceEntity.responsibleCom.email,
-      "${aHdcLicenceEntity.responsibleCom.firstName} ${aHdcLicenceEntity.responsibleCom.lastName}",
+      aHdcLicenceEntity.getCom().email,
+      aHdcLicenceEntity.getCom().fullName,
       "${aHdcLicenceEntity.forename} ${aHdcLicenceEntity.surname}",
       aHdcLicenceEntity.crn,
       listOf(
@@ -385,8 +385,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      licence.responsibleCom.email,
-      "${licence.responsibleCom.firstName} ${licence.responsibleCom.lastName}",
+      licence.getCom().email,
+      licence.getCom().fullName,
       "${licence.forename} ${licence.surname}",
       licence.crn,
       listOf(
@@ -427,8 +427,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -469,8 +469,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -511,8 +511,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -553,8 +553,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -595,8 +595,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -709,8 +709,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(

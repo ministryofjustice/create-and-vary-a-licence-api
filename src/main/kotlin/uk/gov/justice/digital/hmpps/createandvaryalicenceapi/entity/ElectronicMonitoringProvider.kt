@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -19,7 +21,10 @@ data class ElectronicMonitoringProvider(
   @field:Positive
   open val id: Long? = null,
 
-  @OneToOne
+  @OneToOne(
+    cascade = [CascadeType.DETACH],
+    fetch = FetchType.LAZY,
+  )
   @JoinColumn(name = "licence_id", nullable = false, unique = true)
   val licence: Licence,
 

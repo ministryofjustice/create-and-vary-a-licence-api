@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.UUID
-import kotlin.jvm.optionals.getOrElse
 
 class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase() {
 
@@ -53,10 +52,9 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
   )
   @Test
   fun `deletes all documents attached to the given licence that are not attached to another copy of the licence`() {
-    val licence = licenceRepository.findById(2L)
-      .getOrElse { throw AssertionError("Licence not found") }
+    val additionalConditions = testRepository.getAdditionalConditions(2)
 
-    exclusionZoneService.deleteDocumentsFor(licence.additionalConditions)
+    exclusionZoneService.deleteDocumentsFor(additionalConditions)
 
     mapOf(
       "37eb7e31-a133-4259-96bc-93369b917eb8" to never(), // 2 references to this doc

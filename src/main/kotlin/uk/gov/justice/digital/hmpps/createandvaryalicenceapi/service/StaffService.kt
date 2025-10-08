@@ -122,6 +122,7 @@ class StaffService(
     )
   }
 
+  @Transactional
   fun getPreferredAddress(): List<AddressResponse> {
     val username = SecurityContextHolder.getContext().authentication.name
     val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses(username)

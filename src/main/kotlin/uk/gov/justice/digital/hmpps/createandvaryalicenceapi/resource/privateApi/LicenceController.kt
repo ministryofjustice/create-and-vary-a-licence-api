@@ -209,7 +209,7 @@ class LicenceController(
       ),
     ],
   )
-  fun submittedVariations(
+  fun findSubmittedVariations(
     @PathVariable("areaCode") probationAreaCode: String,
   ): List<LicenceSummary> = licenceService.findSubmittedVariationsByRegion(probationAreaCode)
 

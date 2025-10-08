@@ -35,6 +35,7 @@ data class AdditionalCondition(
   var expandedConditionText: String? = null,
   var conditionType: String,
 
+  // TODO consider lazy loading for these collections if performance issues arise
   @OneToMany(
     mappedBy = "additionalCondition",
     fetch = FetchType.EAGER,

@@ -18,8 +18,6 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
-import org.hibernate.annotations.Fetch
-import org.hibernate.annotations.FetchMode
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -107,29 +105,26 @@ abstract class Licence(
     orphanRemoval = true,
     targetEntity = StandardCondition::class,
   )
-  @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   var standardConditions: MutableList<StandardCondition> = mutableListOf(),
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-  @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   var additionalConditions: MutableList<AdditionalCondition> = mutableListOf(),
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-  @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   var bespokeConditions: MutableList<BespokeCondition> = mutableListOf(),
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "updated_by_id", nullable = true)
   var updatedBy: Staff? = null,
+
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
+  @JoinColumn(name = "responsible_com_id", nullable = true)
+  var responsibleCom: CommunityOffenderManager?,
 ) : AbstractIdEntity(idInternal = id),
   SentenceDateHolder {
-
-  companion object {
-    const val SYSTEM_USER = "SYSTEM_USER"
-  }
 
   fun isInPssPeriod(): Boolean {
     val led = licenceExpiryDate
@@ -385,6 +380,7 @@ abstract class Licence(
 
   override fun hashCode(): Int = Objects.hash(id)
 
-  abstract fun getCom(): CommunityOffenderManager?
-  abstract fun setCom(com: CommunityOffenderManager)
+  companion object {
+    const val SYSTEM_USER = "SYSTEM_USER"
+  }
 }
