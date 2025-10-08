@@ -9,14 +9,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAttachmentDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarStandardCondition
+import uk.gov.justice.hmpps.kotlin.sar.Attachment
+import uk.gov.justice.hmpps.kotlin.sar.HmppsSubjectAccessRequestContent
 import java.util.concurrent.atomic.AtomicInteger
 
 private const val UNAVAILABLE = "unavailable"
@@ -27,7 +27,7 @@ private const val UNAVAILABLE_SIZE = -1
 class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
   private val attachmentIdSeq = AtomicInteger()
   private val sarLicences: MutableList<SarLicence> = mutableListOf()
-  private val attachmentDetail: MutableList<SarAttachmentDetail> = mutableListOf()
+  private val attachmentDetail: MutableList<Attachment> = mutableListOf()
 
   fun addLicence(licence: Licence): SubjectAccessRequestResponseBuilder {
     sarLicences.add(
@@ -76,7 +76,7 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     return this
   }
 
-  fun build(auditEvents: List<AuditEvent>) = SarContent(
+  fun build(auditEvents: List<AuditEvent>) = HmppsSubjectAccessRequestContent(
     Content(
       licences = sarLicences,
       auditEvents = auditEvents.map { toSarAuditEvent(it) }.sortedBy { it.eventTime },
@@ -122,7 +122,7 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     entity: AdditionalConditionUploadSummary,
     licenceId: Long?,
     conditionId: Long?,
-  ) = SarAttachmentDetail(
+  ) = Attachment(
     attachmentNumber = attachmentNumber,
     name = entity.description ?: UNAVAILABLE,
     contentType = entity.imageType ?: UNAVAILABLE,

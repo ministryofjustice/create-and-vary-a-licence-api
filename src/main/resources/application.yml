@@ -171,3 +171,5 @@ hmpps:
   cases:
     last-minute:
       prisons: CFI,SWI,PBI,PFI,SUI,RNI,FEI
+  sar:
+    additionalAccessRole: CVL_ADMIN
