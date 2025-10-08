@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promp
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlCaseDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -22,7 +22,7 @@ class PromptComListBuilder(
   private val deliusApiClient: DeliusApiClient,
 ) {
 
-  fun excludeIneligibleCases(candidates: Map<PrisonerSearchPrisoner, CommunityManager>, cvlRecords: List<CvlCaseDto>): Map<PrisonerSearchPrisoner, CommunityManager> {
+  fun excludeIneligibleCases(candidates: Map<PrisonerSearchPrisoner, CommunityManager>, cvlRecords: List<CvlRecord>): Map<PrisonerSearchPrisoner, CommunityManager> {
     return candidates.filter { (nomisRecord, _) ->
       val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }
       return@filter cvlRecord.isEligible
@@ -71,7 +71,7 @@ class PromptComListBuilder(
     }
   }
 
-  fun enrichWithLicenceStartDates(cases: List<CaseWithEmail>, cvlRecords: List<CvlCaseDto>): List<CaseWithEmailAndStartDate> {
+  fun enrichWithLicenceStartDates(cases: List<CaseWithEmail>, cvlRecords: List<CvlRecord>): List<CaseWithEmailAndStartDate> {
     return cases.mapNotNull { (case, email) ->
       val cvlRecord = cvlRecords.find { cvlRecord -> cvlRecord.nomisId == case.prisoner.prisonerNumber }
       val licenceStartDate = cvlRecord?.licenceStartDate

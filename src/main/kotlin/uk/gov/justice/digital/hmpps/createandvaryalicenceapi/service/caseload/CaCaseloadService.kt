@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPrac
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlCaseDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
@@ -402,7 +402,7 @@ class CaCaseloadService(
 
   private fun buildManagedCaseDto(
     nomisRecordsToComRecords: List<Pair<PrisonerSearchPrisoner, CommunityManager>>,
-    cvlRecords: List<CvlCaseDto>,
+    cvlRecords: List<CvlRecord>,
   ): List<ManagedCaseDto> = nomisRecordsToComRecords
     .map { (nomisRecord, com) ->
       val cvlRecord = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }

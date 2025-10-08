@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlCaseDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -58,7 +58,7 @@ class LastMinuteReportBuilder(
   private lateinit var licenceStartDates: Map<String, LocalDate>
   private lateinit var deliusData: Map<String, CommunityManager>
   private lateinit var candidates: Map<String, PrisonerSearchPrisoner>
-  private lateinit var cvlRecords: List<CvlCaseDto>
+  private lateinit var cvlRecords: List<CvlRecord>
 
   fun start(prisoners: Map<String, PrisonerSearchPrisoner>) = apply {
     this.prisoners = prisoners

@@ -221,7 +221,7 @@ class LicenceCreationService(
   }
 
   @TimeServedConsiderations("Any special logic for time served cases needed here - seems this is just for hard stop?")
-  fun determineLicenceKind(cvlRecord: CvlCaseDto): LicenceKind {
+  fun determineLicenceKind(cvlRecord: CvlRecord): LicenceKind {
     val today = LocalDate.now()
 
     var kind = cvlRecord.eligibleKind ?: LicenceKind.CRD

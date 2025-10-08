@@ -98,7 +98,7 @@ object TestData {
     conditionVersion = "1.0",
   )
 
-  fun aCvlRecord(nomsId: String = "A1234AA", licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22), kind: LicenceKind?) = CvlCaseDto(
+  fun aCvlRecord(nomsId: String = "A1234AA", licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22), kind: LicenceKind?) = CvlRecord(
     nomisId = nomsId,
     licenceStartDate = licenceStartDate,
     isEligible = true,

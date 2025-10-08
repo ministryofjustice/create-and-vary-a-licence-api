@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbatio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlCaseDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
@@ -73,7 +73,7 @@ class ComCaseloadSearchService(
     }
 
     val searchResults = cvlSearchRecords.mapNotNull {
-      val cvlRecord: CvlCaseDto? = cvlRecords.find { cvlRecord -> it.prisonerSearchPrisoner?.prisonerNumber == cvlRecord.nomisId }
+      val cvlRecord: CvlRecord? = cvlRecords.find { cvlRecord -> it.prisonerSearchPrisoner?.prisonerNumber == cvlRecord.nomisId }
       when (it.licence) {
         null -> createNotStartedRecord(it.caseloadResult, it.prisonerSearchPrisoner, cvlRecord)
         else -> createRecord(it.caseloadResult, it.licence, it.prisonerSearchPrisoner, cvlRecord)
@@ -107,7 +107,7 @@ class ComCaseloadSearchService(
   private fun createNotStartedRecord(
     deliusOffender: CaseloadResult,
     prisonOffender: PrisonerSearchPrisoner?,
-    cvlRecord: CvlCaseDto?,
+    cvlRecord: CvlRecord?,
   ) = when {
     // no match for prisoner in Delius
     prisonOffender == null || cvlRecord == null -> null
@@ -120,7 +120,7 @@ class ComCaseloadSearchService(
     deliusOffender: CaseloadResult,
     licence: Licence,
     prisonOffender: PrisonerSearchPrisoner?,
-    cvlRecord: CvlCaseDto?,
+    cvlRecord: CvlRecord?,
   ): FoundProbationRecord? = when {
     licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
 

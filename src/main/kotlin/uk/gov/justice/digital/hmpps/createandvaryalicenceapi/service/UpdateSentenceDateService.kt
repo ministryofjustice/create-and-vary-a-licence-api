@@ -121,7 +121,7 @@ class UpdateSentenceDateService(
    */
   private fun selectCorrectKindForHardStopIfNeeded(
     licence: Licence,
-    cvlRecord: CvlCaseDto,
+    cvlRecord: CvlRecord,
   ): LicenceKind? = if (licence.kind == HARD_STOP) {
     cvlRecord.eligibleKind
   } else {

@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlCaseDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
@@ -64,7 +64,7 @@ class ComCreateCaseloadService(
     return transformToCreateCaseload(filteredCases, crnsToDisplayLicences, crnsToComs)
   }
 
-  fun mapCasesToLicences(cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>, cvlRecords: List<CvlCaseDto>): Map<String, List<CaseLoadLicenceSummary>> {
+  fun mapCasesToLicences(cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>, cvlRecords: List<CvlRecord>): Map<String, List<CaseLoadLicenceSummary>> {
     val crns = cases.map { (deliusRecord, _) -> deliusRecord.crn!! }
     val licences = findExistingActiveAndPreReleaseLicences(crns)
     return cases.map { (deliusRecord, nomisRecord) ->
@@ -98,7 +98,7 @@ class ComCreateCaseloadService(
   private fun filterCasesEligibleForCvl(
     cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>,
     crnsToLicences: Map<String, List<CaseLoadLicenceSummary>>,
-    cvlRecords: List<CvlCaseDto>,
+    cvlRecords: List<CvlRecord>,
   ): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> = cases.filter { (deliusRecord, nomisRecord) ->
     val cvlRecord = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }
     val licences = crnsToLicences[deliusRecord.crn]!!
@@ -126,7 +126,7 @@ class ComCreateCaseloadService(
   private fun createNotStartedLicence(
     deliusRecord: ManagedOffenderCrn,
     nomisRecord: PrisonerSearchPrisoner,
-    cvlRecord: CvlCaseDto,
+    cvlRecord: CvlRecord,
   ): CaseLoadLicenceSummary {
     val licenceType = LicenceType.getLicenceType(nomisRecord)
     val licenceKind = licenceCreationService.determineLicenceKind(cvlRecord)

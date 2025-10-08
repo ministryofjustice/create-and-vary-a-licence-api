@@ -24,7 +24,7 @@ class CvlRecordServiceTest {
   }
 
   @Test
-  fun `it builds the CvlCaseDtos for a list of cases`() {
+  fun `it builds the CvlRecords for a list of cases`() {
     whenever(
       eligibilityService.getEligibilityAssessments(
         listOf(
@@ -71,21 +71,21 @@ class CvlRecordServiceTest {
       nomisIdsToAreaCodes,
     )
     assertThat(results).containsExactlyInAnyOrder(
-      CvlCaseDto(
+      CvlRecord(
         nomisId = aPrisonerSearchPrisoner.prisonerNumber,
         licenceStartDate = LocalDate.of(2021, 10, 22),
         isEligible = true,
         eligibleKind = LicenceKind.CRD,
         ineligiblityReasons = anEligibilityAssessment().ineligiblityReasons,
       ),
-      CvlCaseDto(
+      CvlRecord(
         nomisId = "A1234AB",
         licenceStartDate = LocalDate.of(2022, 11, 23),
         isEligible = true,
         eligibleKind = LicenceKind.PRRD,
         ineligiblityReasons = prrdEligibilityAssessment.ineligiblityReasons,
       ),
-      CvlCaseDto(
+      CvlRecord(
         nomisId = "A1234AC",
         licenceStartDate = null,
         isEligible = false,
@@ -96,7 +96,7 @@ class CvlRecordServiceTest {
   }
 
   @Test
-  fun `it builds the CvlCaseDto for an individual case`() {
+  fun `it builds the CvlRecord for an individual case`() {
     whenever(
       eligibilityService.getEligibilityAssessments(
         listOf(aPrisonerSearchPrisoner),
@@ -116,7 +116,7 @@ class CvlRecordServiceTest {
     val result = service.getCvlRecord(aPrisonerSearchPrisoner, "AREA1")
 
     assertThat(result).isEqualTo(
-      CvlCaseDto(
+      CvlRecord(
         nomisId = aPrisonerSearchPrisoner.prisonerNumber,
         licenceStartDate = LocalDate.of(2021, 10, 22),
         isEligible = true,
