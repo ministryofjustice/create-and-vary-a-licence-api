@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="false">
+
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <property name="LOG_PATTERN"
               value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m | %mdc %n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
 
     <springProperty scope="context" name="app" source="spring.application.name"/>
 
+    <!-- Console appender -->
     <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
@@ -40,6 +42,15 @@
     <logger name="org.flywaydb.core.FlywayExecutor" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
     </logger>
+
+    <!--
+        Suppress HHH000179 warnings by setting logger to ERROR
+        Hibernate creates a proxy object for CommunityOffenderManager when it’s loaded lazily.
+        To check the actual class, Hibernate tries to convert (narrow) the proxy to the real class.
+        This triggers the HHH000179 warning.
+    -->
+    <logger name="org.hibernate.engine.internal.StatefulPersistenceContext" level="ERROR"/>
+
 
     <root level="INFO">
         <appender-ref ref="consoleAppender"/>
