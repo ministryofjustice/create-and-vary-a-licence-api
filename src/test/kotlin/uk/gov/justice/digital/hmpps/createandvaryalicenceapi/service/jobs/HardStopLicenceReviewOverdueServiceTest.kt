@@ -61,8 +61,8 @@ class HardStopLicenceReviewOverdueServiceTest {
     verify(hardStopLicenceRepository, times(1)).getHardStopLicencesNeedingReview()
 
     verify(notifyService, times(1)).sendHardStopLicenceReviewOverdueEmail(
-      aHardStopLicenceEntity.responsibleCom.email,
-      "${aHardStopLicenceEntity.responsibleCom.firstName} ${aHardStopLicenceEntity.responsibleCom.lastName}",
+      aHardStopLicenceEntity.getCom().email,
+      aHardStopLicenceEntity.getCom().fullName,
       aHardStopLicenceEntity.forename!!,
       aHardStopLicenceEntity.surname!!,
       aHardStopLicenceEntity.crn!!,

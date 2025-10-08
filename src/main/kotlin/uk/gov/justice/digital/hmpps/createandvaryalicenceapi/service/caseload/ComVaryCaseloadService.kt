@@ -103,7 +103,7 @@ class ComVaryCaseloadService(
         probationPractitioner = comDetails[case.crn],
         isReviewNeeded = licence.isReviewNeeded,
       )
-    }.sortedWith(compareByDescending<ComCase> { it.releaseDate }.thenBy { it.name })
+    }.sortedWith(compareBy<ComCase> { it.releaseDate }.thenBy { it.name })
   }
 
   private fun findVaryLicenceToDisplay(licences: List<LicenceSummary>): LicenceSummary? = when {

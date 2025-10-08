@@ -2359,8 +2359,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendVariationReferredEmail(
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
-      variation.responsibleCom.email ?: "",
-      "${variation.responsibleCom.firstName} ${variation.responsibleCom.lastName}",
+      variation.responsibleCom?.email ?: "",
+      variation.responsibleCom?.fullName ?: "",
       "${variation.forename} ${variation.surname}",
       "1",
     )
@@ -2407,8 +2407,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendVariationReferredEmail(
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
-      variation.responsibleCom.email ?: "",
-      "${variation.responsibleCom.firstName} ${variation.responsibleCom.lastName}",
+      variation.responsibleCom?.email ?: "",
+      variation.responsibleCom?.fullName ?: "",
       "${variation.forename} ${variation.surname}",
       "1",
     )
@@ -2482,8 +2482,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendVariationApprovedEmail(
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
-      variation.responsibleCom.email ?: "",
-      "${variation.responsibleCom.firstName} ${variation.responsibleCom.lastName}",
+      variation.responsibleCom?.email ?: "",
+      variation.responsibleCom?.fullName ?: "",
       "${variation.forename} ${variation.surname}",
       "2",
     )
@@ -2536,8 +2536,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendVariationApprovedEmail(
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
-      variation.responsibleCom.email ?: "",
-      "${variation.responsibleCom.firstName} ${variation.responsibleCom.lastName}",
+      variation.getCom().email ?: "",
+      variation.getCom().fullName,
       "${variation.forename} ${variation.surname}",
       "2",
     )
@@ -3439,8 +3439,8 @@ class LicenceServiceTest {
         )
 
       verify(notifyService, times(1)).sendEditedLicenceTimedOutEmail(
-        approvedThenEditedLicence.responsibleCom.email,
-        "${approvedThenEditedLicence.responsibleCom.firstName} ${approvedThenEditedLicence.responsibleCom.lastName}",
+        approvedThenEditedLicence.getCom().email ?: "",
+        approvedThenEditedLicence.getCom().fullName,
         approvedThenEditedLicence.forename!!,
         approvedThenEditedLicence.surname!!,
         approvedThenEditedLicence.crn!!,

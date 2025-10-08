@@ -259,9 +259,8 @@ class StaffIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isNoContent
 
-    val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses("Staff1")
-    assertThat(staff).isNotNull
-    assertThat(staff!!.savedAppointmentAddresses.any { it.reference == referenceToDelete }).isFalse()
+    val staff = testRepository.findStaff("Staff1")
+    assertThat(staff.savedAppointmentAddresses.any { it.reference == referenceToDelete }).isFalse()
     assertThat(addressRepository.findById(1)).isNotPresent()
   }
 

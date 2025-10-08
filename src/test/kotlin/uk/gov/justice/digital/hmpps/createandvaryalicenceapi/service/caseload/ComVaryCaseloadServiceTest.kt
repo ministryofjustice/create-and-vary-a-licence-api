@@ -283,19 +283,6 @@ class ComVaryCaseloadServiceTest {
     assertThat(caseload).hasSize(3)
     verifyCase(
       caseload[0],
-      expectedCrn = "X12350",
-      expectedPrisonerNumber = "AB1234G",
-      expectedLicenceType = LicenceType.AP,
-      expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-      expectedReleaseDate = elevenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(
-        staffCode = "X54321",
-        name = "John Doe",
-        staffUsername = "johndoe",
-      ),
-    )
-    verifyCase(
-      caseload[1],
       expectedCrn = "X12349",
       expectedPrisonerNumber = "AB1234F",
       expectedLicenceType = LicenceType.AP,
@@ -308,7 +295,7 @@ class ComVaryCaseloadServiceTest {
       ),
     )
     verifyCase(
-      caseload[2],
+      caseload[1],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceType = LicenceType.PSS,
@@ -318,6 +305,19 @@ class ComVaryCaseloadServiceTest {
         staffCode = "X1234",
         name = "Joe Bloggs",
         staffUsername = "joebloggs",
+      ),
+    )
+    verifyCase(
+      caseload[2],
+      expectedCrn = "X12350",
+      expectedPrisonerNumber = "AB1234G",
+      expectedLicenceType = LicenceType.AP,
+      expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+      expectedReleaseDate = elevenDaysFromNow,
+      expectedProbationPractitioner = ProbationPractitioner(
+        staffCode = "X54321",
+        name = "John Doe",
+        staffUsername = "johndoe",
       ),
     )
   }
