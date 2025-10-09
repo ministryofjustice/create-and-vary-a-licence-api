@@ -7,10 +7,7 @@
   },
   "instrumentation": {
     "logging": {
-      "level": "DEBUG",
-      "loggers": {
-        "org.hibernate.engine.internal.StatefulPersistenceContext": "ERROR"
-      }
+      "level": "DEBUG"
     }
   },
   "selfDiagnostics": {
