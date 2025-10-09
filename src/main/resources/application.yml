@@ -83,6 +83,7 @@ logging:
     org.springframework: INFO
     org.springframework.security: INFO
     uk.gov.justice.hmpps: INFO
+    org.hibernate.engine.internal.StatefulPersistenceContext: ERROR
 
 management:
   endpoints:
