@@ -4,13 +4,16 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.filter.Filter
 import ch.qos.logback.core.spi.FilterReply
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 
 private const val STATE_PACKAGE = "org.hibernate.engine.internal.StatefulPersistenceContext"
-
-private val SUPPRESSED_MESSAGES = setOf(
-  "HHH000179: Narrowing proxy to class uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager - this operation breaks ==",
-  "HHH000179: Narrowing proxy to class uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser - this operation breaks ==",
+private const val MESSAGE = "HHH000179: Narrowing proxy to class"
+private val SUPPRESSED_CLASSES = setOf(
+  CommunityOffenderManager::class.java.name,
+  PrisonUser::class.java.name
 )
+
 
 /**
  * A logback filter to suppress specific Hibernate proxy warnings that we cannot do anything about.
@@ -33,7 +36,9 @@ class HibernateProxyLoggingFilter : Filter<ILoggingEvent>() {
     event?.let {
       val loggerName = it.loggerName
       val msg = it.formattedMessage
-      if (it.level == Level.WARN && loggerName == STATE_PACKAGE && msg in SUPPRESSED_MESSAGES) {
+      if (it.level == Level.WARN && loggerName == STATE_PACKAGE &&
+        SUPPRESSED_CLASSES.any { className -> msg.contains(className) && msg.startsWith(MESSAGE) }
+      ) {
         return FilterReply.DENY
       }
     }
