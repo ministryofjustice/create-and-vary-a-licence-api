@@ -9,10 +9,12 @@
 
     <!-- Console appender -->
     <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.HibernateProxyLoggingFilter"/>
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
+
 
     <logger name="uk.gov.justice.digital.hmpps.createandvaryalicenceapi.CreateAndVaryALicenceApiKt" additivity="false"
             level="DEBUG">
@@ -42,15 +44,6 @@
     <logger name="org.flywaydb.core.FlywayExecutor" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
     </logger>
-
-    <!--
-        Suppress HHH000179 warnings by setting logger to ERROR
-        Hibernate creates a proxy object for CommunityOffenderManager when it’s loaded lazily.
-        To check the actual class, Hibernate tries to convert (narrow) the proxy to the real class.
-        This triggers the HHH000179 warning.
-    -->
-    <logger name="org.hibernate.engine.internal.StatefulPersistenceContext" level="ERROR"/>
-
 
     <root level="INFO">
         <appender-ref ref="consoleAppender"/>
