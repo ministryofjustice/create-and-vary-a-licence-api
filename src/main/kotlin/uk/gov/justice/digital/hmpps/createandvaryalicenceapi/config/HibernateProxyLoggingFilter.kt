@@ -11,9 +11,8 @@ private const val STATE_PACKAGE = "org.hibernate.engine.internal.StatefulPersist
 private const val MESSAGE = "HHH000179: Narrowing proxy to class"
 private val SUPPRESSED_CLASSES = setOf(
   CommunityOffenderManager::class.java.name,
-  PrisonUser::class.java.name
+  PrisonUser::class.java.name,
 )
-
 
 /**
  * A logback filter to suppress specific Hibernate proxy warnings that we cannot do anything about.
@@ -36,7 +35,8 @@ class HibernateProxyLoggingFilter : Filter<ILoggingEvent>() {
     event?.let {
       val loggerName = it.loggerName
       val msg = it.formattedMessage
-      if (it.level == Level.WARN && loggerName == STATE_PACKAGE &&
+      if (it.level == Level.WARN &&
+        loggerName == STATE_PACKAGE &&
         SUPPRESSED_CLASSES.any { className -> msg.contains(className) && msg.startsWith(MESSAGE) }
       ) {
         return FilterReply.DENY
