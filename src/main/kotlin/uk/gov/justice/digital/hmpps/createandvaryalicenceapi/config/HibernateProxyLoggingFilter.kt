@@ -33,13 +33,14 @@ class HibernateProxyLoggingFilter : Filter<ILoggingEvent>() {
 
   override fun decide(event: ILoggingEvent?): FilterReply {
     event?.let {
-      val loggerName = it.loggerName
-      val msg = it.formattedMessage
-      if (it.level == Level.WARN &&
-        loggerName == STATE_PACKAGE &&
-        SUPPRESSED_CLASSES.any { className -> msg.contains(className) && msg.startsWith(MESSAGE) }
-      ) {
-        return FilterReply.DENY
+      if (it.level == Level.WARN) {
+        val loggerName = it.loggerName
+        val msg = it.formattedMessage
+        if (loggerName == STATE_PACKAGE &&
+          SUPPRESSED_CLASSES.any { className -> msg.contains(className) && msg.startsWith(MESSAGE) }
+        ) {
+          return FilterReply.DENY
+        }
       }
     }
     return FilterReply.NEUTRAL
