@@ -12,6 +12,21 @@ private val SUPPRESSED_MESSAGES = setOf(
   "HHH000179: Narrowing proxy to class uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser - this operation breaks ==",
 )
 
+/**
+ * A logback filter to suppress specific Hibernate proxy warnings that we cannot do anything about.
+ *
+ * When Hibernate lazily loads a CommunityOffenderManager/Prison (which extends Staff),
+ * it gives a proxy object instead of the real entity.
+ *
+ * <p>This proxy may only know it is a Staff, not the actual subclass.</p>
+ *
+ * <p>If you do something that needs the real class—like casting, calling ::class,
+ * or accessing subclass properties—Hibernate must “narrow” the proxy to
+ * CommunityOffenderManager.</p>
+ *
+ * <p>This triggers the HHH000179 warning, meaning:
+ * “Hibernate had to convert the proxy to the real entity class.”</p>
+*/
 class HibernateProxyLoggingFilter : Filter<ILoggingEvent>() {
 
   override fun decide(event: ILoggingEvent?): FilterReply {
