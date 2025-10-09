@@ -11,12 +11,12 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 
+private const val MESSAGE = "HHH000179: Narrowing proxy to class"
+private val STATE_PACKAGE = StatefulPersistenceContext::class.java.name
+
 class HibernateProxyLoggingFilterTest {
 
   private val filter = HibernateProxyLoggingFilterConfig.HibernateProxyLoggingFilter()
-
-  private val MESSAGE = "HHH000179: Narrowing proxy to class"
-  private val STATE_PACKAGE = StatefulPersistenceContext::class.java.name
 
   @Test
   fun `should suppressed CommunityOffenderManager warning message`() {
