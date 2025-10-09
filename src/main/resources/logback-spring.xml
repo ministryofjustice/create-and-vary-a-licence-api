@@ -9,7 +9,6 @@
 
     <!-- Console appender -->
     <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-        <filter class="uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.HibernateProxyLoggingFilter"/>
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
