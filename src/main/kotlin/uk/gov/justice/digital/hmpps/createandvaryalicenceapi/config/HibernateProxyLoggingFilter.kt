@@ -25,7 +25,7 @@ private val SUPPRESSED_MESSAGES = setOf(
  * CommunityOffenderManager.</p>
  *
  * <p>This triggers the HHH000179 warning, meaning:
- * “Hibernate had to convert the proxy to the real entity class.”</p>
+ * "Hibernate had to convert the proxy to the real entity class."</p>
 */
 class HibernateProxyLoggingFilter : Filter<ILoggingEvent>() {
 
