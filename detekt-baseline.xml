@@ -2,6 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>ComplexCondition:HibernateProxyLoggingFilter.kt$HibernateProxyLoggingFilter$it.level == Level.WARN &amp;&amp; loggerName == STATE_PACKAGE &amp;&amp; SUPPRESSED_CLASSES.any { className -&gt; msg.contains(className) &amp;&amp; msg.startsWith(MESSAGE) }</ID>
     <ID>ForbiddenComment:HdcService.kt$HdcService.HdcStatuses$* For CA: * Always show started cases regardless of HDC status. * TODO: will need to fix when we start to show prospective HDC cases in caselist * If licence hasn't been started, only show !approved licences.</ID>
     <ID>ForbiddenComment:HdcService.kt$HdcService.HdcStatuses$* For COM: * If licence hasn't been started base on whether licence is approved. * TODO: will need to fix when we start to show prospective HDC cases in caselist * If licence has been started then show when (approved and HDC) or (!approved and !hdc)</ID>
     <ID>LargeClass:CaseloadController.kt$CaseloadController</ID>
@@ -84,7 +85,6 @@
     <ID>MagicNumber:HdcLicenceRepository.kt$HdcLicenceRepository$9</ID>
     <ID>MagicNumber:LicenceRepository.kt$LicenceRepository$14</ID>
     <ID>MagicNumber:PromptComService.kt$PromptComService.Companion$4</ID>
-    <ID>MagicNumber:SubjectAccessRequestController.kt$SubjectAccessRequestController$209</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
