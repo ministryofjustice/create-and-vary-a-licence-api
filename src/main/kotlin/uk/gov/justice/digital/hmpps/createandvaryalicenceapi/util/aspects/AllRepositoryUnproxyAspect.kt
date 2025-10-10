@@ -41,7 +41,9 @@ class AllRepositoryUnproxyAspect {
 
     return when (obj) {
       is HibernateProxy -> unproxyIfAbstract(obj)
-      is Collection<*> -> obj.map { unproxy(it) }
+      is Set<*> -> obj.mapTo(mutableSetOf()) { unproxy(it) }
+      is List<*> -> obj.map { unproxy(it) }
+      is Collection<*> -> obj.map { unproxy(it) } // fallback
       is Page<*> -> obj.map { unproxy(it) }
       is Optional<*> -> obj.map { unproxy(it) }
       else -> obj
