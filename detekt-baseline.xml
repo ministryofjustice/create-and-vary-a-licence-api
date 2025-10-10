@@ -86,8 +86,6 @@
     <ID>MagicNumber:PromptComService.kt$PromptComService.Companion$4</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
-    <ID>MayBeConst:HibernateProxyLoggingFilterConfig.kt$private val MESSAGE = "HHH000179: Narrowing proxy to class"</ID>
-    <ID>MayBeConst:HibernateProxyLoggingFilterConfig.kt$private val STATE_PACKAGE = "org.hibernate.engine.internal.StatefulPersistenceContext"</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
     <ID>ReturnCount:ComAllocatedHandler.kt$ComAllocatedHandler$fun isValidOffenderManager(offenderManager: OffenderManager?, crn: String): Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun isEligibleIfOnAnExtendedDeterminateSentence(prisoner: PrisonerSearchPrisoner): Boolean</ID>
