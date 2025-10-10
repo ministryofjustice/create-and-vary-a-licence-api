@@ -126,5 +126,4 @@ class AllRepositoryUnproxyAspectTest {
     // Then
     assertThat(result).isEqualTo(proxy)
   }
-
 }
