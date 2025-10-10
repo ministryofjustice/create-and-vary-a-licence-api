@@ -20,11 +20,11 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
+import org.hibernate.Hibernate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
 import java.time.LocalDateTime
-import java.util.Objects
 
 @Entity
 @Table(name = "staff")
@@ -72,12 +72,13 @@ abstract class Staff(
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is Staff) return false
-    if (id != other.id) return false
-    return true
+    if (other == null) return false
+    if (Hibernate.getClass(this) != Hibernate.getClass(other)) return false
+    other as Staff
+    return id != null && id == other.id
   }
 
-  override fun hashCode(): Int = Objects.hash(id)
+  override fun hashCode(): Int = id?.hashCode() ?: 0
 
   override fun toString(): String = "Staff(" +
     "id=$id, " +

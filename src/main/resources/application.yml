@@ -83,6 +83,7 @@ logging:
     org.springframework: INFO
     org.springframework.security: INFO
     uk.gov.justice.hmpps: INFO
+    org.hibernate.engine.internal.StatefulPersistenceContext: ERROR
 
 management:
   endpoints:
@@ -171,3 +172,5 @@ hmpps:
   cases:
     last-minute:
       prisons: CFI,SWI,PBI,PFI,SUI,RNI,FEI
+  sar:
+    additionalAccessRole: CVL_ADMIN
