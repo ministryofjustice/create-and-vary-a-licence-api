@@ -427,6 +427,23 @@ class EligibilityServiceTest {
     }
 
     @Test
+    fun `Person is eligible if LED null`() {
+      val result = service.getEligibilityAssessment(
+        aRecallPrisonerSearchResult.copy(
+          postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
+          licenceExpiryDate = null,
+        ),
+        "",
+      )
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
+    }
+
+    @Test
     fun `Person is ineligible if PRRD is after SED`() {
       val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
@@ -441,6 +458,23 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).containsExactly("post recall release date is not before SLED")
       assertThat(result.eligibleKind).isEqualTo(null)
+    }
+
+    @Test
+    fun `Person is eligible if SED null`() {
+      val result = service.getEligibilityAssessment(
+        aRecallPrisonerSearchResult.copy(
+          postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
+          sentenceExpiryDate = null,
+        ),
+        "",
+      )
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test

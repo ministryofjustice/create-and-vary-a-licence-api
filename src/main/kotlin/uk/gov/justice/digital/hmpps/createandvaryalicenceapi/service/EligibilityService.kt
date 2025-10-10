@@ -129,10 +129,10 @@ class EligibilityService(
   private fun hasPrrdBeforeSled(prisoner: PrisonerSearchPrisoner): Boolean {
     if (prisoner.postRecallReleaseDate == null) return true
 
-    return prisoner.postRecallReleaseDate.isBefore(prisoner.licenceExpiryDate) &&
-      prisoner.postRecallReleaseDate.isBefore(
-        prisoner.sentenceExpiryDate,
-      )
+    val isBeforeLed = prisoner.licenceExpiryDate == null || prisoner.postRecallReleaseDate.isBefore(prisoner.licenceExpiryDate)
+    val isBeforeSed = prisoner.sentenceExpiryDate == null || prisoner.postRecallReleaseDate.isBefore(prisoner.sentenceExpiryDate)
+
+    return isBeforeLed && isBeforeSed
   }
 
   // Shared eligibility rules
