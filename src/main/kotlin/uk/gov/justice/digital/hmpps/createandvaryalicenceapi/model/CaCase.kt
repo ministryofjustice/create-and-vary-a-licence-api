@@ -13,13 +13,6 @@ data class CaCase(
   @field:Schema(description = "Type of this licence", example = LicenceKinds.CRD)
   val kind: LicenceKind? = null,
 
-  @Deprecated("Temporarily exposed during PRRD rollout - not to be used")
-  @field:Schema(
-    description = "The raw release date kind of this licence, excluding hard stop/timed out logic. Temporarily exposed during PRRD rollout - not to be used widely",
-    example = LicenceKinds.CRD,
-  )
-  val releaseDateKind: LicenceKind,
-
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val licenceId: Long? = null,
 

@@ -18,10 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
@@ -98,6 +96,23 @@ object TestData {
     conditionCategory = "condition category",
     conditionText = "condition text",
     conditionVersion = "1.0",
+  )
+
+  fun aCvlRecord(nomsId: String = "A1234AA", licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22), kind: LicenceKind?) = CvlRecord(
+    nomisId = nomsId,
+    licenceStartDate = licenceStartDate,
+    isEligible = true,
+    eligibleKind = kind,
+    ineligiblityReasons = emptyList(),
+  )
+
+  fun anEligibilityAssessment() = EligibilityAssessment(
+    genericIneligibilityReasons = emptyList(),
+    crdIneligibilityReasons = emptyList(),
+    prrdIneligibilityReasons = emptyList(),
+    isEligible = true,
+    eligibleKind = LicenceKind.CRD,
+    ineligiblityReasons = emptyList(),
   )
 
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
@@ -583,7 +598,11 @@ object TestData {
     sentenceDetail = SentenceDetail(
       confirmedReleaseDate = LocalDate.of(2021, 10, 22),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      sentenceExpiryDate = LocalDate.of(2023, 10, 22),
+      licenceExpiryDate = LocalDate.of(2023, 10, 22),
     ),
+    agencyId = "ABC",
+    status = "ACTIVE IN",
   )
 
   private fun anOffenceHistory() = OffenceHistory(
@@ -635,33 +654,6 @@ object TestData {
     username = "aComUser",
   )
 
-  fun caseLoadItem() = CaseloadItem(
-    licenceStartDate = LocalDate.of(2021, 10, 22),
-    prisoner = Prisoner(
-      prisonerNumber = "A1234AA",
-      bookingId = "123456",
-      bookNumber = "12345A",
-      firstName = "Person",
-      lastName = "Two",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      status = "ACTIVE IN",
-      prisonId = "MDI",
-      locationDescription = "HMP Moorland",
-      legalStatus = "SENTENCED",
-      mostSeriousOffence = "Robbery",
-      recall = false,
-      indeterminateSentence = false,
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      releaseDate = LocalDate.of(2021, 10, 22),
-      confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceExpiryDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      paroleEligibilityDate = LocalDate.of(2021, 10, 22),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-    ),
-  )
-
   fun caseloadResult() = CaseloadResult(
     "A123456",
     "A1234AA",
@@ -683,7 +675,6 @@ object TestData {
   fun caCase() = CaCase(
     licenceId = 1,
     kind = LicenceKind.CRD,
-    releaseDateKind = LicenceKind.CRD,
     name = "A Prisoner",
     prisonerNumber = "A1234AA",
     releaseDate = LocalDate.of(2021, 10, 22),
@@ -965,14 +956,6 @@ object TestData {
     nomisId = nomisId,
     crn = crn,
     croNumber = "AB01/234567C",
-  )
-
-  fun aPrisoner() = Prisoner(
-    prisonerNumber = "AB1234E",
-    firstName = "First-1",
-    lastName = "Surname-2",
-    releaseDate = TEN_DAYS_FROM_NOW,
-    status = "INACTIVE OUT",
   )
 
   fun aDeliusUser() = StaffNameResponse(
