@@ -8,7 +8,7 @@ import org.hibernate.proxy.HibernateProxy
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
 import java.lang.reflect.Modifier
-import java.util.*
+import java.util.Optional
 
 /**
  * Aspect that intercepts all calls to Spring Data repositories and unproxies any returned entities
@@ -34,23 +34,23 @@ import java.util.*
 class AllRepositoryUnproxyAspect {
 
   @Around("execution(* org.springframework.data.repository.Repository+.*(..))")
-  fun unproxyRepositoryResult(joinPoint: ProceedingJoinPoint): Any? = unproxy(joinPoint.proceed())
+  fun unProxyRepositoryResult(joinPoint: ProceedingJoinPoint): Any? = unProxy(joinPoint.proceed())
 
-  fun unproxy(obj: Any?): Any? {
+  fun unProxy(obj: Any?): Any? {
     if (obj == null) return null
 
     return when (obj) {
-      is HibernateProxy -> unproxyIfAbstract(obj)
-      is Set<*> -> obj.mapTo(mutableSetOf()) { unproxy(it) }
-      is List<*> -> obj.map { unproxy(it) }
-      is Collection<*> -> obj.map { unproxy(it) } // fallback
-      is Page<*> -> obj.map { unproxy(it) }
-      is Optional<*> -> obj.map { unproxy(it) }
+      is HibernateProxy -> unProxyIfAbstract(obj)
+      is Set<*> -> obj.mapTo(mutableSetOf()) { unProxy(it) }
+      is List<*> -> obj.map { unProxy(it) }
+      is Collection<*> -> obj.map { unProxy(it) } // fallback
+      is Page<*> -> obj.map { unProxy(it) }
+      is Optional<*> -> obj.map { unProxy(it) }
       else -> obj
     }
   }
 
-  fun unproxyIfAbstract(proxy: HibernateProxy): Any {
+  fun unProxyIfAbstract(proxy: HibernateProxy): Any {
     val implClass = proxy.hibernateLazyInitializer.persistentClass
     return if (Modifier.isAbstract(implClass.modifiers)) {
       Hibernate.unproxy(proxy)
