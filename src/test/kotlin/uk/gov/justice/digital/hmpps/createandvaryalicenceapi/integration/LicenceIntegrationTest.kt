@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD
+import org.springframework.test.context.jdbc.SqlGroup
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
@@ -302,6 +304,29 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
     assertThat(licence.postRecallReleaseDate).isNotNull()
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+  }
+
+  @Test
+  @SqlGroup(
+    Sql("classpath:test_data/seed-prison-case-administrator.sql", executionPhase = BEFORE_TEST_METHOD),
+    Sql("classpath:test_data/seed-completed-hard-stop-licence-1.sql", executionPhase = BEFORE_TEST_METHOD),
+  )
+  fun `Submit Hard Stop licence`() {
+    // Given
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    webTestClient.put()
+      .uri("/licence/id/1/submit")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    // Then
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(HardStopLicence::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.HARD_STOP)
   }
 
   @Test
