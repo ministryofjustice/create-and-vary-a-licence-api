@@ -14,6 +14,8 @@ import java.util.Optional
 class AllRepositoryUnproxyAspectTest {
 
   private val aspect = AllRepositoryUnproxyAspect()
+  abstract class AbstractEntity
+  class ConcreteEntity
 
   @Test
   fun `unProxy returns null for null input`() {
@@ -125,7 +127,4 @@ class AllRepositoryUnproxyAspectTest {
     assertThat(result).isEqualTo(proxy)
   }
 
-  // Helper classes
-  abstract class AbstractEntity
-  class ConcreteEntity
 }
