@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -16,6 +16,12 @@ import java.time.LocalDate
 import kotlin.comparisons.nullsLast
 
 // Staged builder interfaces to force order of operations
+private interface DeliusStage {
+  fun enrichWithDeliusData(): CvlRecordStage
+}
+private interface CvlRecordStage {
+  fun enrichWithCvlRecords(): EligibleCandidatesStage
+}
 private interface EligibleCandidatesStage {
   fun withEligibleCandidates(): PreSubmissionStage
 }
@@ -23,10 +29,7 @@ private interface PreSubmissionStage {
   fun withPreSubmissionState(): HdcFilterStage
 }
 private interface HdcFilterStage {
-  fun filterOutHdcEligible(): DeliusStage
-}
-private interface DeliusStage {
-  fun enrichWithDeliusData(): LicenceStartStage
+  fun filterOutHdcEligible(): LicenceStartStage
 }
 private interface LicenceStartStage {
   fun filterByLicenceStartDates(): BuildStage
@@ -36,16 +39,16 @@ private interface BuildStage {
 }
 
 class LastMinuteReportBuilder(
-  private val eligibilityService: EligibilityService,
   private val licenceRepository: LicenceRepository,
   private val hdcService: HdcService,
   private val deliusApiClient: DeliusApiClient,
-  private val releaseDateService: ReleaseDateService,
+  private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
-) : EligibleCandidatesStage,
+) : CvlRecordStage,
+  DeliusStage,
+  EligibleCandidatesStage,
   PreSubmissionStage,
   HdcFilterStage,
-  DeliusStage,
   LicenceStartStage,
   BuildStage {
 
@@ -55,17 +58,21 @@ class LastMinuteReportBuilder(
   private lateinit var licenceStartDates: Map<String, LocalDate>
   private lateinit var deliusData: Map<String, CommunityManager>
   private lateinit var candidates: Map<String, PrisonerSearchPrisoner>
+  private lateinit var cvlRecords: List<CvlRecord>
 
   fun start(prisoners: Map<String, PrisonerSearchPrisoner>) = apply {
     this.prisoners = prisoners
     this.candidates = emptyMap()
     this.inProgressEligiblePrisoners = emptySet()
-    this.licenceStartDates = emptyMap()
+    this.cvlRecords = emptyList()
     this.deliusData = emptyMap()
   }
 
   override fun withEligibleCandidates() = apply {
-    candidates = prisoners.filter { eligibilityService.isEligibleForCvl(it.value) }
+    candidates = prisoners.filter { (nomisId, _) ->
+      val cvlRecord = cvlRecords.find { cvlRecord -> cvlRecord.nomisId == nomisId }
+      return@filter cvlRecord?.isEligible == true
+    }
   }
 
   override fun withPreSubmissionState() = apply {
@@ -86,21 +93,29 @@ class LastMinuteReportBuilder(
   }
 
   override fun enrichWithDeliusData() = apply {
-    val prisonersList = candidates.values.toList()
+    val nomisIds = prisoners.keys.toList()
 
-    val deliusRecords = deliusApiClient.getOffenderManagers(prisonersList.map { it.prisonerNumber })
+    val deliusRecords = deliusApiClient.getOffenderManagers(nomisIds)
       .mapNotNull { it.case.nomisId?.let { nomisId -> nomisId to it } }
       .toMap()
 
-    deliusData = prisonersList.mapNotNull { prisoner ->
-      deliusRecords[prisoner.prisonerNumber]?.let { prisoner.prisonerNumber to it }
+    deliusData = nomisIds.mapNotNull { nomisId ->
+      deliusRecords[nomisId]?.let { nomisId to it }
     }.toMap()
+  }
+
+  override fun enrichWithCvlRecords() = apply {
+    val nomisIdsToAreaCodes = prisoners.keys.associate {
+      val deliusRecord = deliusData[it]
+      return@associate it to deliusRecord!!.team.provider.code
+    }
+    cvlRecords = cvlRecordService.getCvlRecords(prisoners.values.toList(), nomisIdsToAreaCodes)
   }
 
   override fun filterByLicenceStartDates() = apply {
     val today = LocalDate.now(clock)
     val nextWeek = today.plusWeeks(1)
-    val dates = releaseDateService.getLicenceStartDates(candidates.values.toList())
+    val dates = cvlRecords.map { it.nomisId to it.licenceStartDate }
       .mapNotNull { (key, date) -> date?.takeIf { it in today..nextWeek }?.let { key to it } }
       .toMap()
     licenceStartDates = dates

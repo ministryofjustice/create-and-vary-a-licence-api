@@ -9,7 +9,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbatio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -23,14 +24,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.Clock
 import java.time.LocalDate
 
@@ -40,10 +39,10 @@ class ComCaseloadSearchService(
   private val deliusApiClient: DeliusApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val hdcService: HdcService,
-  private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
+  private val cvlRecordService: CvlRecordService,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = deliusApiClient.getTeamManagedOffenders(
@@ -54,13 +53,17 @@ class ComCaseloadSearchService(
         CASELOAD_PAGE_SIZE,
         Sort.by(body.sortBy.map { Sort.Order(it.direction, it.field.probationSearchApiSortType) }),
       ),
-    )
+    ).content
 
-    val deliusRecordsWithLicences = teamCaseloadResult.content.map { it to getLicence(it.crn) }
+    val deliusRecordsToLicences = teamCaseloadResult.map { it to getLicence(it.crn) }
+    val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsToLicences)
 
-    val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsWithLicences)
+    val nomisIdsToAreaCodes = teamCaseloadResult
+      .filter { it.nomisId != null }
+      .associate { it.nomisId!! to it.team.provider.code }
+    val cvlRecords = cvlRecordService.getCvlRecords(prisonerRecords.values.toList(), nomisIdsToAreaCodes)
 
-    val cvlSearchRecords = deliusRecordsWithLicences.map { (caseloadResult, licence) ->
+    val cvlSearchRecords = deliusRecordsToLicences.map { (caseloadResult, licence) ->
       val prisonRecord = prisonerRecords[caseloadResult.nomisId]
       CvlProbationSearchRecord(
         caseloadResult = caseloadResult,
@@ -69,16 +72,11 @@ class ComCaseloadSearchService(
       )
     }
 
-    val prisonersWithoutLicences = cvlSearchRecords.filter { searchRecord -> searchRecord.licence == null }.mapNotNull {
-      it.prisonerSearchPrisoner
-    }
-    val licenceStartDates = releaseDateService.getLicenceStartDates(prisonersWithoutLicences)
-
     val searchResults = cvlSearchRecords.mapNotNull {
-      val licenceStartDate = licenceStartDates[it.prisonerSearchPrisoner?.prisonerNumber]
+      val cvlRecord: CvlRecord? = cvlRecords.find { cvlRecord -> it.prisonerSearchPrisoner?.prisonerNumber == cvlRecord.nomisId }
       when (it.licence) {
-        null -> createNotStartedRecord(it.caseloadResult, it.prisonerSearchPrisoner, licenceStartDate)
-        else -> createRecord(it.caseloadResult, it.licence, it.prisonerSearchPrisoner)
+        null -> createNotStartedRecord(it.caseloadResult, it.prisonerSearchPrisoner, cvlRecord)
+        else -> createRecord(it.caseloadResult, it.licence, it.prisonerSearchPrisoner, cvlRecord)
       }
     }.filterOutPastReleaseDate().filterOutHdc(prisonerRecords)
 
@@ -109,36 +107,25 @@ class ComCaseloadSearchService(
   private fun createNotStartedRecord(
     deliusOffender: CaseloadResult,
     prisonOffender: PrisonerSearchPrisoner?,
-    licenceStartDate: LocalDate?,
+    cvlRecord: CvlRecord?,
   ) = when {
     // no match for prisoner in Delius
-    prisonOffender == null -> null
+    prisonOffender == null || cvlRecord == null -> null
 
-    !eligibilityService.isEligibleForCvl(prisonOffender, deliusOffender.team.provider.code) -> null
-
-    else -> deliusOffender.toUnstartedRecord(prisonOffender, licenceStartDate)
+    !cvlRecord.isEligible -> null
+    else -> deliusOffender.toUnstartedRecord(prisonOffender, cvlRecord.licenceStartDate)
   }
 
   private fun createRecord(
     deliusOffender: CaseloadResult,
     licence: Licence,
     prisonOffender: PrisonerSearchPrisoner?,
+    cvlRecord: CvlRecord?,
   ): FoundProbationRecord? = when {
     licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
 
-    prisonOffender != null &&
-      (
-        determineReleaseDateKind(
-          licence.postRecallReleaseDate,
-          licence.conditionalReleaseDate,
-        ) == LicenceKind.PRRD ||
-          eligibilityService.isEligibleForCvl(
-            prisonOffender,
-            deliusOffender.team.provider.code,
-          )
-        ) ->
-      deliusOffender.toStartedRecord(licence)
-
+    prisonOffender == null || cvlRecord == null -> null
+    cvlRecord.isEligible -> deliusOffender.toStartedRecord(licence)
     else -> null
   }
 
