@@ -330,7 +330,6 @@ class PrrdLicence(
     "responsibleCom=$responsibleCom, " +
     "submittedBy=$submittedBy, " +
     "createdBy=$createdBy, " +
-    "createdBy=$createdBy, " +
     "versionOfId=$versionOfId, " +
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy, " +

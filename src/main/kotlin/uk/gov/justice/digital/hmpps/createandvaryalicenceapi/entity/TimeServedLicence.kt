@@ -319,7 +319,6 @@ class TimeServedLicence(
     "responsibleCom=$responsibleCom, " +
     "submittedBy=$submittedBy, " +
     "createdBy=$createdBy, " +
-    "createdBy=$createdBy, " +
     "substituteOfId=$substituteOfId, " +
     "reviewDate=$reviewDate, " +
     "licenceVersion=$licenceVersion, " +
