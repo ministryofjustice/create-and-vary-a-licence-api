@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
-import org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD
 import org.springframework.test.context.jdbc.SqlGroup
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
@@ -24,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
@@ -254,32 +254,31 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Submit licence`() {
+  fun `Submit Crd licence`() {
+    // Given
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
-    webTestClient.put()
+    // When
+    val result = webTestClient.put()
       .uri("/licence/id/1/submit")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
 
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
-      .returnResult().responseBody
+    // Then
+    result.expectStatus().isOk
 
-    assertThat(result?.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
-    assertThat(result?.comUsername).isEqualTo("test-client")
-    assertThat(result?.comEmail).isEqualTo("testClient@probation.gov.uk")
-    assertThat(result?.comStaffId).isEqualTo(2000)
-    assertThat(result?.updatedByUsername).isEqualTo("test-client")
-    assertThat(result?.submittedByFullName).isEqualTo("Test Client")
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(CrdLicence::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.CRD)
+
+    licence as CrdLicence
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(licence.responsibleCom?.username).isEqualTo("test-client")
+    assertThat(licence.responsibleCom?.email).isEqualTo("testClient@probation.gov.uk")
+    assertThat(licence.responsibleCom?.staffIdentifier).isEqualTo(2000)
+    assertThat(licence.updatedByUsername).isEqualTo("test-client")
+    assertThat(licence.submittedBy?.fullName).isEqualTo("Test Client")
   }
 
   @Test
@@ -291,14 +290,15 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
     // When
-    webTestClient.put()
+    val result = webTestClient.put()
       .uri("/licence/id/1/submit")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
 
     // Then
+    result.expectStatus().isOk
+
     val licence = testRepository.findLicence(1)
     assertThat(licence).isInstanceOf(PrrdLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
@@ -308,25 +308,95 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @SqlGroup(
-    Sql("classpath:test_data/seed-prison-case-administrator.sql", executionPhase = BEFORE_TEST_METHOD),
-    Sql("classpath:test_data/seed-completed-hard-stop-licence-1.sql", executionPhase = BEFORE_TEST_METHOD),
+    Sql("classpath:test_data/seed-prison-case-administrator.sql"),
+    Sql("classpath:test_data/seed-completed-hard-stop-licence-1.sql"),
   )
   fun `Submit Hard Stop licence`() {
     // Given
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
     // When
-    webTestClient.put()
+    val result = webTestClient.put()
       .uri("/licence/id/1/submit")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
 
     // Then
+    result.expectStatus().isOk
     val licence = testRepository.findLicence(1)
     assertThat(licence).isInstanceOf(HardStopLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.HARD_STOP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+  }
+
+  @Test
+  @SqlGroup(
+    Sql("classpath:test_data/seed-completed-variation-licence-1.sql"),
+  )
+  fun `Submit VARIATION licence`() {
+    // Given
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = webTestClient.put()
+      .uri("/licence/id/1/submit") // use the correct ID for VARIATION
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(Variation::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.VARIATION)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
+  }
+
+  @Test
+  @SqlGroup(
+    Sql("classpath:test_data/seed-completed-hdc-licence-1.sql"),
+  )
+  fun `Submit HDC licence`() {
+    // Given
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = webTestClient.put()
+      .uri("/licence/id/1/submit") // correct ID for HDC
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(HdcLicence::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+  }
+
+  @Test
+  @SqlGroup(
+    Sql("classpath:test_data/seed-completed-hdc-variation-licence-1.sql"),
+  )
+  fun `Submit HDC_VARIATION licence`() {
+    // Given
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = webTestClient.put()
+      .uri("/licence/id/1/submit") // correct ID for HDC_VARIATION
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(HdcVariationLicence::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.HDC_VARIATION)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
   }
 
   @Test

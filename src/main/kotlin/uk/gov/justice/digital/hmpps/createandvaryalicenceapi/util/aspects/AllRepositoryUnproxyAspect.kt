@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.aspects
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
+import org.aspectj.lang.reflect.MethodSignature
 import org.hibernate.Hibernate
 import org.hibernate.proxy.HibernateProxy
 import org.springframework.data.domain.Page
@@ -34,19 +35,31 @@ import java.util.Optional
 class AllRepositoryUnproxyAspect {
 
   @Around("execution(* org.springframework.data.repository.Repository+.*(..))")
-  fun unProxyRepositoryResult(joinPoint: ProceedingJoinPoint): Any? = unProxy(joinPoint.proceed())
+  fun unProxyRepositoryResult(joinPoint: ProceedingJoinPoint): Any? {
+    val method = (joinPoint.signature as MethodSignature).method
+    val returnType = method.returnType
 
-  fun unProxy(obj: Any?): Any? {
-    if (obj == null) return null
+    if (isPrimitiveOrWrapperType(returnType)) {
+      return joinPoint.proceed()
+    }
 
-    return when (obj) {
-      is HibernateProxy -> unProxyIfAbstract(obj)
-      is Set<*> -> obj.mapTo(mutableSetOf()) { unProxy(it) }
-      is List<*> -> obj.map { unProxy(it) }
-      is Collection<*> -> obj.map { unProxy(it) } // fallback
-      is Page<*> -> obj.map { unProxy(it) }
-      is Optional<*> -> obj.map { unProxy(it) }
-      else -> obj
+    val returnedObject = joinPoint.proceed()
+    return unProxy(returnedObject)
+  }
+
+  fun unProxy(returnedObject: Any?): Any? {
+    if (returnedObject == null) return null
+    if (isPrimitiveOrWrapper(returnedObject)) return returnedObject
+
+    return when (returnedObject) {
+      is HibernateProxy -> unProxyIfAbstract(returnedObject)
+      is Set<*> -> returnedObject.mapTo(mutableSetOf()) { unProxy(it) }
+      is List<*> -> returnedObject.map { unProxy(it) }
+      is Collection<*> -> returnedObject.map { unProxy(it) }
+      is Page<*> -> returnedObject.map { unProxy(it) }
+      is Optional<*> -> returnedObject.map { unProxy(it) }
+      is Map<*, *> -> returnedObject.mapValues { unProxy(it.value) }
+      else -> returnedObject
     }
   }
 
@@ -58,4 +71,19 @@ class AllRepositoryUnproxyAspect {
       proxy
     }
   }
+
+  private fun isPrimitiveOrWrapper(returnedObject: Any): Boolean = isPrimitiveOrWrapperType(returnedObject.javaClass)
+
+  private fun isPrimitiveOrWrapperType(clazz: Class<*>): Boolean = clazz.isPrimitive ||
+    clazz == java.lang.String::class.java ||
+    clazz == java.lang.Integer::class.java ||
+    clazz == java.lang.Boolean::class.java ||
+    clazz == java.lang.Long::class.java ||
+    clazz.isEnum ||
+    clazz == java.lang.Double::class.java ||
+    clazz == java.lang.Character::class.java ||
+    clazz == java.lang.Float::class.java ||
+    clazz == java.lang.Short::class.java ||
+    clazz == java.lang.Byte::class.java ||
+    Number::class.java.isAssignableFrom(clazz)
 }
