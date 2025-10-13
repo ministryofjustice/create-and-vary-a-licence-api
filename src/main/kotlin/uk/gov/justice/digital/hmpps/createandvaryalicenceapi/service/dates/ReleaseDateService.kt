@@ -118,6 +118,18 @@ class ReleaseDateService(
     }
   }
 
+  fun isTimeServed(nomisRecord: PrisonerSearchPrisoner, overrideClock: Clock? = null): Boolean {
+    val clockToUse = overrideClock ?: clock
+    val today = LocalDate.now(clockToUse)
+
+    val conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate
+      ?: nomisRecord.conditionalReleaseDate
+
+    return nomisRecord.sentenceStartDate == today &&
+      nomisRecord.confirmedReleaseDate == today &&
+      conditionalReleaseDate == today
+  }
+
   private fun calculateCrdLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
     isIs91Case: Boolean,

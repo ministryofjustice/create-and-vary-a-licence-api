@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -58,6 +59,8 @@ class LicenceCreationService(
   private val deliusApiClient: DeliusApiClient,
   private val releaseDateService: ReleaseDateService,
   private val hdcService: HdcService,
+  @param:Value("\${feature.toggle.timeServed.enabled:false}")
+  private val isTimeServedLogicEnabled: Boolean = false,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -73,10 +76,11 @@ class LicenceCreationService(
 
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
-    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
+    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
-      ?: createCom(currentResponsibleOfficerDetails.id)
+    val responsibleCom = currentResponsibleOfficerDetails?.let {
+      staffRepository.findByStaffIdentifier(it.id) ?: createCom(it.id)
+    } ?: error("No active offender manager found for $prisonNumber")
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
       ?: error("Staff with username $username not found")
@@ -133,11 +137,12 @@ class LicenceCreationService(
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
-    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
+    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
     val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord)
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
-      ?: createCom(currentResponsibleOfficerDetails.id)
+    val responsibleCom = currentResponsibleOfficerDetails?.let {
+      staffRepository.findByStaffIdentifier(it.id) ?: createCom(it.id)
+    }
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
@@ -147,19 +152,49 @@ class LicenceCreationService(
       TIMED_OUT,
     ).firstOrNull()
 
-    val licence = LicenceFactory.createHardStop(
-      licenceType = getLicenceType(nomisRecord),
-      nomsId = nomisRecord.prisonerNumber,
-      version = licencePolicyService.currentPolicy().version,
-      nomisRecord = nomisRecord,
-      prisonInformation = prisonInformation,
-      currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
-      deliusRecord = deliusRecord,
-      responsibleCom = responsibleCom,
-      creator = createdBy,
-      timedOutLicence = timedOutLicence,
-      licenceStartDate = licenceStartDate,
-    )
+    val isTimeServed = if (isTimeServedLogicEnabled) {
+      releaseDateService.isTimeServed(nomisRecord)
+    } else {
+      false
+    }
+
+    if (!isTimeServedLogicEnabled || !isTimeServed) {
+      if (responsibleCom == null) {
+        error("No active offender manager found for $prisonNumber")
+      }
+    }
+    val licenceType = getLicenceType(nomisRecord)
+    val version = licencePolicyService.currentPolicy().version
+
+    val licence = if (isTimeServedLogicEnabled && isTimeServed) {
+      LicenceFactory.createTimeServe(
+        licenceType = licenceType,
+        nomsId = nomisRecord.prisonerNumber,
+        version = version,
+        nomisRecord = nomisRecord,
+        prisonInformation = prisonInformation,
+        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
+        deliusRecord = deliusRecord,
+        responsibleCom = responsibleCom,
+        creator = createdBy,
+        timedOutLicence = timedOutLicence,
+        licenceStartDate = licenceStartDate,
+      )
+    } else {
+      LicenceFactory.createHardStop(
+        licenceType = licenceType,
+        nomsId = nomisRecord.prisonerNumber,
+        version = version,
+        nomisRecord = nomisRecord,
+        prisonInformation = prisonInformation,
+        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails!!,
+        deliusRecord = deliusRecord,
+        responsibleCom = responsibleCom!!,
+        creator = createdBy,
+        timedOutLicence = timedOutLicence,
+        licenceStartDate = licenceStartDate,
+      )
+    }
 
     val createdLicence = licenceRepository.saveAndFlush(licence)
 
@@ -190,11 +225,12 @@ class LicenceCreationService(
 
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
-    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
+    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
     val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.HDC)
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
-      ?: createCom(currentResponsibleOfficerDetails.id)
+    val responsibleCom = currentResponsibleOfficerDetails?.let {
+      staffRepository.findByStaffIdentifier(it.id) ?: createCom(it.id)
+    } ?: error("No active offender manager found for $prisonNumber")
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
       ?: error("Staff with username $username not found")
@@ -298,9 +334,7 @@ class LicenceCreationService(
   @TimeServedConsiderations("If this is unallocated or not returned, return null here and copy error handling down into creation of each subtype")
   private fun getCurrentResponsibleOfficer(
     deliusRecord: ProbationCase,
-    prisonNumber: String,
-  ): CommunityManager = deliusApiClient.getOffenderManager(deliusRecord.crn)
-    ?: error("No active offender manager found for $prisonNumber")
+  ): CommunityManager? = deliusApiClient.getOffenderManager(deliusRecord.crn)
 
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
 }

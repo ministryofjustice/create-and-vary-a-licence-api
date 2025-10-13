@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
@@ -206,7 +207,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   fun `Create a Hard Stop licence`() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(10))
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
 
@@ -244,11 +245,53 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
+  )
+  fun `Create a Timeserved licence`() {
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(0)
+
+    val result = webTestClient.post()
+      .uri("/licence/create")
+      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceCreationResponse::class.java)
+      .returnResult().responseBody!!
+
+    log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
+
+    assertThat(result.licenceId).isGreaterThan(0L)
+
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(1)
+    val licence = licences.first() as TimeServedLicence
+    assertThat(licence.kind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
+    assertThat(licence.createdBy!!.id).isEqualTo(9L)
+    assertThat(standardConditionRepository.count()).isEqualTo(9)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-prison-case-administrator.sql",
     "classpath:test_data/seed-timed-out-licence.sql",
   )
   fun `Create a Hard Stop licence which is replacing timed out licence`() {
     prisonApiMockServer.stubGetPrison()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(1))
     prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()

@@ -166,6 +166,8 @@ feature:
   toggle:
     electronicMonitoringResponseHandling: false
     recall: ${RECALL_ENABLED}
+    timeServed:
+      enabled: false
 
 
 hmpps:
