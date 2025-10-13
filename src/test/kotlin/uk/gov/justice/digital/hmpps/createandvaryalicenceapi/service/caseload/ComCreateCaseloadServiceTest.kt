@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordSe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffenderCrn
@@ -44,7 +43,6 @@ class ComCreateCaseloadServiceTest {
   private val licenceService = mock<LicenceService>()
   private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
-  private val licenceCreationService = mock<LicenceCreationService>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val cvlRecordService = mock<CvlRecordService>()
 
@@ -53,7 +51,6 @@ class ComCreateCaseloadServiceTest {
     deliusApiClient,
     licenceService,
     hdcService,
-    licenceCreationService,
     releaseDateService,
     cvlRecordService,
   )
