@@ -19,7 +19,6 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
@@ -74,7 +73,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAdd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
-@ActiveProfiles("test")
 class LicenceCreationServiceTest {
   private val licencePolicyService = LicencePolicyService()
 
@@ -107,6 +105,7 @@ class LicenceCreationServiceTest {
     deliusApiClient,
     releaseDateService,
     hdcService,
+    isTimeServedLogicEnabled = true,
   )
 
   @Nested
