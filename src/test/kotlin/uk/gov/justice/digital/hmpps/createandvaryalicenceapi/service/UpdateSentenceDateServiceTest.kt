@@ -54,7 +54,6 @@ class UpdateSentenceDateServiceTest {
   private val staffRepository = mock<StaffRepository>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val licenceService = mock<LicenceService>()
-  private val cvlRecordService = mock<CvlRecordService>()
 
   val aCrdLicenceEntity = createCrdLicence()
   val anInProgressPrrdLicence = createPrrdLicence()
@@ -78,7 +77,6 @@ class UpdateSentenceDateServiceTest {
     staffRepository,
     releaseDateService,
     licenceService,
-    cvlRecordService,
   )
 
   @BeforeEach

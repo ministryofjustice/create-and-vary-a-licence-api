@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
@@ -17,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Eligibility
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.promptCase
@@ -40,6 +40,7 @@ class PromptComListBuilderTest {
 
   private val promptComListBuilder = PromptComListBuilder(
     licenceRepository,
+    eligibilityService,
     releaseDateService,
     hdcService,
     deliusApiClient,
@@ -55,6 +56,8 @@ class PromptComListBuilderTest {
       deliusApiClient,
       licenceCreationService,
     )
+
+    whenever(licenceCreationService.determineLicenceKind(any(), any())).thenReturn(LicenceKind.CRD)
   }
 
   @Nested
@@ -62,19 +65,21 @@ class PromptComListBuilderTest {
     @Test
     fun eligibleCase() {
       val prisoner = prisonerSearchResult()
-      val com = offenderManager()
 
-      val result = promptComListBuilder.excludeIneligibleCases(mapOf(prisoner to com), listOf(aCvlRecord(kind = null).copy(isEligible = true)))
+      whenever(eligibilityService.isEligibleForCvl(eq(prisoner), anyOrNull())).thenReturn(true)
 
-      assertThat(result).isEqualTo(mapOf(prisoner to com))
+      val result = promptComListBuilder.excludeIneligibleCases(listOf(prisoner))
+
+      assertThat(result).containsExactly(prisoner)
     }
 
     @Test
     fun ineligibleCase() {
       val prisoner = prisonerSearchResult()
-      val com = offenderManager()
 
-      val result = promptComListBuilder.excludeIneligibleCases(mapOf(prisoner to com), listOf(aCvlRecord(kind = null).copy(isEligible = false)))
+      whenever(eligibilityService.isEligibleForCvl(eq(prisoner), anyOrNull())).thenReturn(false)
+
+      val result = promptComListBuilder.excludeIneligibleCases(listOf(prisoner))
 
       assertThat(result).isEmpty()
     }
@@ -150,9 +155,13 @@ class PromptComListBuilderTest {
 
       val result = promptComListBuilder.enrichWithDeliusData(listOf(prisoner))
 
-      assertThat(result).isEqualTo(
-        mapOf(
-          prisoner to offenderManager(),
+      assertThat(result).containsExactly(
+        PromptCase(
+          prisoner = prisoner,
+          crn = "crn-1",
+          comStaffCode = "staff-code-1",
+          comName = "forenames surname",
+          comAllocationDate = LocalDate.of(2022, 1, 2),
         ),
       )
     }
@@ -221,9 +230,16 @@ class PromptComListBuilderTest {
     @Test
     fun present() {
       val promptCase = promptCase()
-      val cvlRecord = aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 1, 2))
 
-      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
+      whenever(
+        releaseDateService.getLicenceStartDates(listOf(promptCase.prisoner)),
+      ).thenReturn(
+        mapOf(
+          promptCase.prisoner.prisonerNumber to LocalDate.of(2022, 1, 2),
+        ),
+      )
+
+      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"))
       assertThat(result).containsExactly(
         promptCase to "com@test.com" to LocalDate.of(2022, 1, 2),
       )
@@ -233,9 +249,11 @@ class PromptComListBuilderTest {
     fun missingStartDate() {
       val promptCase = promptCase()
 
-      val cvlRecord = aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = null)
+      whenever(
+        releaseDateService.getLicenceStartDates(listOf(promptCase.prisoner)),
+      ).thenReturn(emptyMap())
 
-      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
+      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"))
       assertThat(result).isEmpty()
     }
   }

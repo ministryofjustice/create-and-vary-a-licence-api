@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Licen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.reifySentenceDates
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -33,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 
 @Service
 class UpdateSentenceDateService(
@@ -44,7 +46,6 @@ class UpdateSentenceDateService(
   private val staffRepository: StaffRepository,
   private val releaseDateService: ReleaseDateService,
   private val licenceService: LicenceService,
-  private val cvlRecordService: CvlRecordService,
 ) {
 
   @Transactional
@@ -52,9 +53,8 @@ class UpdateSentenceDateService(
     val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val prisoner = prisonApiClient.getPrisonerDetail(licence.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
-    val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, licence.probationAreaCode!!)
 
-    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(licence, cvlRecord)
+    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(licence, prisonerSearchPrisoner)
     val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -121,9 +121,12 @@ class UpdateSentenceDateService(
    */
   private fun selectCorrectKindForHardStopIfNeeded(
     licence: Licence,
-    cvlRecord: CvlRecord,
-  ): LicenceKind? = if (licence.kind == HARD_STOP) {
-    cvlRecord.eligibleKind
+    prisonerSearchPrisoner: PrisonerSearchPrisoner,
+  ): LicenceKind = if (licence.kind == HARD_STOP) {
+    determineReleaseDateKind(
+      prisonerSearchPrisoner.postRecallReleaseDate,
+      prisonerSearchPrisoner.conditionalReleaseDate,
+    )
   } else {
     licence.kind
   }

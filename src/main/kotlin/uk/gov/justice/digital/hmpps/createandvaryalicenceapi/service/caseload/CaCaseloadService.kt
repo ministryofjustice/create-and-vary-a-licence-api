@@ -3,18 +3,17 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCaseCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCaseDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.View.PRISON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.View.PROBATION
@@ -24,11 +23,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.Clock
 import java.time.LocalDate
 
@@ -57,12 +58,12 @@ class CaCaseloadService(
   private val caseloadService: CaseloadService,
   private val licenceService: LicenceService,
   private val hdcService: HdcService,
+  private val eligibilityService: EligibilityService,
   private val clock: Clock,
   private val deliusApiClient: DeliusApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val releaseDateService: ReleaseDateService,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
-  private val cvlRecordService: CvlRecordService,
 ) {
   fun getPrisonOmuCaseload(prisonCaseload: Set<String>, searchString: String?): List<CaCase> {
     val statuses = listOf(
@@ -173,6 +174,7 @@ class CaCaseloadService(
 
       CaCase(
         kind = licence?.kind,
+        releaseDateKind = determineReleaseDateKind(licence?.postRecallReleaseDate, licence?.conditionalReleaseDate),
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
         name = "${licence?.forename} ${licence?.surname}",
@@ -274,12 +276,8 @@ class CaCaseloadService(
       !licenceNomisIds.contains(p.prisonerNumber)
     }.toList()
 
-    val nomisRecordsToDeliusRecords = pairNomisRecordsWithDelius(prisonersWithoutLicences)
-    val nomisIdsToAreaCodes = nomisRecordsToDeliusRecords.associate { (nomisRecord, deliusRecord) -> nomisRecord.prisonerNumber to deliusRecord.team.provider.code }
-
-    val cvlRecords = cvlRecordService.getCvlRecords(prisonersWithoutLicences, nomisIdsToAreaCodes)
-
-    val casesWithoutLicences = buildManagedCaseDto(nomisRecordsToDeliusRecords, cvlRecords)
+    val licenceStartDates = releaseDateService.getLicenceStartDates(prisonersWithoutLicences)
+    val casesWithoutLicences = pairNomisRecordsWithDelius(prisonersWithoutLicences, licenceStartDates)
 
     val eligibleCases = filterOffendersEligibleForLicence(casesWithoutLicences)
 
@@ -289,7 +287,7 @@ class CaCaseloadService(
   private fun createNotStartedLicenceForCase(
     cases: List<ManagedCaseDto>,
   ): List<CaCase> = cases.map { case ->
-    val sentenceDateHolder = case.nomisRecord.toSentenceDateHolder(case.cvlRecord.licenceStartDate)
+    val sentenceDateHolder = case.nomisRecord!!.toPrisonerSearchPrisoner().toSentenceDateHolder(case.licenceStartDate)
 
     // Default status (if not overridden below) will show the case as clickable on case lists
     var licenceStatus = NOT_STARTED
@@ -298,14 +296,18 @@ class CaCaseloadService(
       licenceStatus = TIMED_OUT
     }
 
-    val com = case.deliusRecord.managedOffenderCrn.staff
+    val com = case.deliusRecord?.managedOffenderCrn?.staff
 
     CaCase(
-      kind = case.cvlRecord.eligibleKind,
+      kind = null,
+      releaseDateKind = determineReleaseDateKind(
+        case.nomisRecord.postRecallReleaseDate,
+        case.nomisRecord.conditionalReleaseDate,
+      ),
       name = case.nomisRecord.let { "${it.firstName} ${it.lastName}".convertToTitleCase() },
-      prisonerNumber = case.nomisRecord.prisonerNumber,
-      releaseDate = case.cvlRecord.licenceStartDate,
-      releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(case.cvlRecord.licenceStartDate, case.nomisRecord),
+      prisonerNumber = case.nomisRecord.prisonerNumber!!,
+      releaseDate = case.licenceStartDate,
+      releaseDateLabel = releaseDateLabelFactory.fromPrisoner(case.licenceStartDate, case.nomisRecord),
       licenceStatus = licenceStatus,
       nomisLegalStatus = case.nomisRecord.legalStatus,
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate),
@@ -313,7 +315,7 @@ class CaCaseloadService(
         releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           sentenceDateHolder,
         ),
-        case.cvlRecord.licenceStartDate,
+        case.licenceStartDate,
         licence = null,
         clock,
       ),
@@ -327,24 +329,30 @@ class CaCaseloadService(
   }
 
   private fun filterOffendersEligibleForLicence(offenders: List<ManagedCaseDto>): List<ManagedCaseDto> {
-    val eligibleOffenders = offenders.filter { it.cvlRecord.isEligible }
+    val eligibleOffenders = offenders.filter {
+      eligibilityService.isEligibleForCvl(
+        it.nomisRecord!!.toPrisonerSearchPrisoner(),
+        it.deliusRecord?.managedOffenderCrn?.team?.provider?.code,
+      )
+    }
 
     if (eligibleOffenders.isEmpty()) return eligibleOffenders
 
-    val hdcStatuses = hdcService.getHdcStatus(eligibleOffenders.map { it.nomisRecord })
+    val hdcStatuses = hdcService.getHdcStatus(eligibleOffenders.map { it.nomisRecord!!.toPrisonerSearchPrisoner() })
 
-    return eligibleOffenders.filter { hdcStatuses.canUnstartedCaseBeSeenByCa(it.nomisRecord.bookingId?.toLong()!!) }
+    return eligibleOffenders.filter { hdcStatuses.canUnstartedCaseBeSeenByCa(it.nomisRecord!!.bookingId?.toLong()!!) }
   }
 
   private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> = licences.filter { l -> l.nomisLegalStatus != "DEAD" }
 
-  private fun enrichWithNomisData(licences: List<LicenceSummary>, nomisRecords: List<PrisonerSearchPrisoner>): List<CaCase> {
-    return nomisRecords.map { nomisRecord ->
-      val licencesForOffender = licences.filter { l -> l.nomisId == nomisRecord.prisonerNumber }
+  private fun enrichWithNomisData(licences: List<LicenceSummary>, caseloadItems: List<CaseloadItem>): List<CaCase> {
+    return caseloadItems.map { caseloadItem ->
+      val licencesForOffender = licences.filter { l -> l.nomisId == caseloadItem.prisoner.prisonerNumber }
       if (licencesForOffender.isEmpty()) return@map null
       val licence = findLatestLicenceSummary(licencesForOffender)
       val releaseDate = licence?.licenceStartDate
       CaCase(
+        releaseDateKind = determineReleaseDateKind(licence?.postRecallReleaseDate, licence?.conditionalReleaseDate),
         kind = licence?.kind,
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
@@ -353,7 +361,7 @@ class CaCaseloadService(
         releaseDate = releaseDate,
         releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
         licenceStatus = licence.licenceStatus,
-        nomisLegalStatus = nomisRecord.legalStatus,
+        nomisLegalStatus = caseloadItem.prisoner.legalStatus,
         lastWorkedOnBy = licence.updatedByFullName,
         isInHardStopPeriod = licence.isInHardStopPeriod,
         tabType = Tabs.determineCaViewCasesTab(
@@ -387,45 +395,40 @@ class CaCaseloadService(
     }
   }
 
-  private fun pairNomisRecordsWithDelius(nomisRecords: List<PrisonerSearchPrisoner>): List<Pair<PrisonerSearchPrisoner, CommunityManager>> {
-    val caseloadNomisIds = nomisRecords.map { it.prisonerNumber }
-    val coms = deliusApiClient.getOffenderManagers(caseloadNomisIds)
-    return nomisRecords.mapNotNull {
-      val com = coms.find { com -> com.case.nomisId == it.prisonerNumber }
-      if (com != null) {
-        it to com
-      } else {
-        null
-      }
-    }
-  }
+  private fun pairNomisRecordsWithDelius(
+    prisoners: List<PrisonerSearchPrisoner>,
+    licenceStartDates: Map<String, LocalDate?>,
+  ): List<ManagedCaseDto> {
+    val caseloadNomisIds = prisoners
+      .map { it.prisonerNumber }
 
-  private fun buildManagedCaseDto(
-    nomisRecordsToComRecords: List<Pair<PrisonerSearchPrisoner, CommunityManager>>,
-    cvlRecords: List<CvlRecord>,
-  ): List<ManagedCaseDto> = nomisRecordsToComRecords
-    .map { (nomisRecord, com) ->
-      val cvlRecord = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }
-      ManagedCaseDto(
-        nomisRecord = nomisRecord,
-        cvlRecord = ManagedCaseCvlRecord(
-          isEligible = cvlRecord.isEligible,
-          eligibleKind = cvlRecord.eligibleKind,
-          licenceStartDate = cvlRecord.licenceStartDate,
-        ),
-        deliusRecord = DeliusRecord(
-          com.case,
-          ManagedOffenderCrn(
-            staff = StaffDetail(
-              code = com.code,
-              name = com.name,
-              unallocated = com.unallocated,
+    val coms = deliusApiClient.getOffenderManagers(caseloadNomisIds)
+
+    return prisoners
+      .mapNotNull { prisoner ->
+        val licenceStartDate = licenceStartDates[prisoner.prisonerNumber]
+        val com = coms.find { com -> com.case.nomisId == prisoner.prisonerNumber }
+        if (com != null) {
+          ManagedCaseDto(
+            nomisRecord = prisoner.toPrisoner(),
+            licenceStartDate = licenceStartDate,
+            deliusRecord = DeliusRecord(
+              com.case,
+              ManagedOffenderCrn(
+                staff = StaffDetail(
+                  code = com.code,
+                  name = com.name,
+                  unallocated = com.unallocated,
+                ),
+                team = com.team,
+              ),
             ),
-            team = com.team,
-          ),
-        ),
-      )
-    }
+          )
+        } else {
+          null
+        }
+      }
+  }
 
   data class GroupedByCom(
     var withStaffCode: List<CaCase>,

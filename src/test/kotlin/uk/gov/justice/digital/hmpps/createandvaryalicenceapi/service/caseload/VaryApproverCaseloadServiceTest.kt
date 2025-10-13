@@ -7,18 +7,20 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aDeliusUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aProbationCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 
 class VaryApproverCaseloadServiceTest {
   private val caseloadService = mock<CaseloadService>()
@@ -52,7 +54,10 @@ class VaryApproverCaseloadServiceTest {
     ).thenReturn(probationCases)
     whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
-        prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
+        CaseloadItem(
+          prisoner = aPrisoner(),
+          licenceStartDate = LocalDate.now().plusDays(10),
+        ),
       ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(licenceSummaries.map { it.comUsername!! })).thenReturn(
@@ -67,7 +72,7 @@ class VaryApproverCaseloadServiceTest {
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
       assertThat(licenceId).isEqualTo(1)
-      assertThat(name).isEqualTo("A Prisoner")
+      assertThat(name).isEqualTo("First-1 Surname-2")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
@@ -97,7 +102,12 @@ class VaryApproverCaseloadServiceTest {
       ),
     ).thenReturn(probationCases)
     whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
-      listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
+      listOf(
+        CaseloadItem(
+          prisoner = aPrisoner(),
+          licenceStartDate = LocalDate.now().plusDays(10),
+        ),
+      ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(licenceSummaries.map { it.comUsername!! })).thenReturn(
       listOf(aDeliusUser()),
@@ -137,7 +147,10 @@ class VaryApproverCaseloadServiceTest {
     ).thenReturn(probationCases)
     whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
-        prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
+        CaseloadItem(
+          prisoner = aPrisoner(),
+          licenceStartDate = LocalDate.now().plusDays(10),
+        ),
       ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(licenceSummaries.map { it.comUsername!! })).thenReturn(
@@ -152,7 +165,7 @@ class VaryApproverCaseloadServiceTest {
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
       assertThat(licenceId).isEqualTo(1)
-      assertThat(name).isEqualTo("A Prisoner")
+      assertThat(name).isEqualTo("First-1 Surname-2")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
@@ -184,7 +197,10 @@ class VaryApproverCaseloadServiceTest {
     ).thenReturn(probationCases)
     whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
-        prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
+        CaseloadItem(
+          prisoner = aPrisoner(),
+          licenceStartDate = LocalDate.now().plusDays(10),
+        ),
       ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(licenceSummaries.map { it.comUsername!! })).thenReturn(
@@ -193,13 +209,13 @@ class VaryApproverCaseloadServiceTest {
 
     // When
     val searchResults =
-      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationPduCodes = pdus, searchTerm = "A"))
+      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationPduCodes = pdus, searchTerm = "First"))
 
     // Then
     assertThat(searchResults.pduCasesResponse).hasSize(1)
     with(searchResults.pduCasesResponse.first()) {
       assertThat(licenceId).isEqualTo(1)
-      assertThat(name).isEqualTo("A Prisoner")
+      assertThat(name).isEqualTo("First-1 Surname-2")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
@@ -233,7 +249,10 @@ class VaryApproverCaseloadServiceTest {
     ).thenReturn(probationCases)
     whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
-        prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
+        CaseloadItem(
+          prisoner = aPrisoner(),
+          licenceStartDate = LocalDate.now().plusDays(10),
+        ),
       ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(licenceSummaries.map { it.comUsername!! })).thenReturn(
@@ -242,13 +261,13 @@ class VaryApproverCaseloadServiceTest {
 
     // When
     val searchResults =
-      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode, searchTerm = "A"))
+      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode, searchTerm = "First"))
 
     // Then
     assertThat(searchResults.regionCasesResponse).hasSize(1)
     with(searchResults.regionCasesResponse.first()) {
       assertThat(licenceId).isEqualTo(1)
-      assertThat(name).isEqualTo("A Prisoner")
+      assertThat(name).isEqualTo("First-1 Surname-2")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
@@ -285,7 +304,10 @@ class VaryApproverCaseloadServiceTest {
     ).thenReturn(probationCases)
     whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
-        prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
+        CaseloadItem(
+          prisoner = aPrisoner(),
+          licenceStartDate = LocalDate.now().plusDays(10),
+        ),
       ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(licenceSummaries.map { it.comUsername!! })).thenReturn(
@@ -294,13 +316,13 @@ class VaryApproverCaseloadServiceTest {
 
     // When
     val searchResults =
-      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationPduCodes = pdus, probationAreaCode = probationAreaCode, searchTerm = "A"))
+      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationPduCodes = pdus, probationAreaCode = probationAreaCode, searchTerm = "First"))
 
     // Then
     assertThat(searchResults.pduCasesResponse).hasSize(1)
     with(searchResults.pduCasesResponse.first()) {
       assertThat(licenceId).isEqualTo(1)
-      assertThat(name).isEqualTo("A Prisoner")
+      assertThat(name).isEqualTo("First-1 Surname-2")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
@@ -311,7 +333,7 @@ class VaryApproverCaseloadServiceTest {
     assertThat(searchResults.regionCasesResponse).hasSize(1)
     with(searchResults.regionCasesResponse.first()) {
       assertThat(licenceId).isEqualTo(1)
-      assertThat(name).isEqualTo("A Prisoner")
+      assertThat(name).isEqualTo("First-1 Surname-2")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(LicenceType.PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
@@ -347,7 +369,10 @@ class VaryApproverCaseloadServiceTest {
     ).thenReturn(probationCases)
     whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
-        prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
+        CaseloadItem(
+          prisoner = aPrisoner(),
+          licenceStartDate = LocalDate.now().plusDays(10),
+        ),
       ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(licenceSummaries.map { it.comUsername!! })).thenReturn(

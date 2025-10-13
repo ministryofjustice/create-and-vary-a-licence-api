@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
@@ -58,7 +58,7 @@ class VaryApproverCaseloadService(
     val nomisRecords = caseloadService.getPrisonersByNumber(nomisIds)
 
     return licences.mapNotNull { licence ->
-      val nomisRecord = nomisRecords.find { it.prisonerNumber == licence.nomisId }
+      val nomisRecord = nomisRecords.find { it.prisoner.prisonerNumber == licence.nomisId }
       val deliusRecord = deliusRecords.find { it.nomisId == licence.nomisId }
       if (nomisRecord != null && deliusRecord != null) {
         AcoCase(
@@ -82,7 +82,7 @@ class VaryApproverCaseloadService(
       }
 
       if (responsibleCom != null) {
-        case.copy(probationPractitioner = responsibleCom.name.fullName())
+        case.copy(probationPractitioner = responsibleCom.name?.fullName())
       } else {
         val coms = deliusApiClient.getOffenderManagers(caseload.map { it.crn })
         val com = coms.find { it.case.crn == case.crn }
@@ -105,7 +105,7 @@ class VaryApproverCaseloadService(
     val licence = acoCase.licence
     return VaryApproverCase(
       licenceId = licence.licenceId,
-      name = "${acoCase.nomisRecord.firstName} ${acoCase.nomisRecord.lastName}".trim()
+      name = "${acoCase.nomisRecord.prisoner.firstName} ${acoCase.nomisRecord.prisoner.lastName}".trim()
         .convertToTitleCase(),
       crnNumber = acoCase.crn,
       licenceType = licence.licenceType,
@@ -155,7 +155,7 @@ private fun applySort(cases: List<VaryApproverCase>): List<VaryApproverCase> = c
 
 private data class AcoCase(
   val crn: String,
-  val nomisRecord: PrisonerSearchPrisoner,
+  val nomisRecord: CaseloadItem,
   val licence: LicenceSummary,
   val probationPractitioner: String? = null,
 )

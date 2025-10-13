@@ -7,10 +7,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91Determi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
 import java.time.DayOfWeek
@@ -89,26 +89,31 @@ class ReleaseDateService(
   @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
-    licenceKind: LicenceKind?,
-  ): LocalDate? = when (licenceKind) {
-    HDC -> nomisRecord.homeDetentionCurfewActualDate
-    PRRD -> nomisRecord.calculatePrrdLicenceStartDate()
-    CRD -> calculateCrdLicenceStartDate(
-      nomisRecord,
-      iS91DeterminationService.isIS91Case(nomisRecord),
+    licenceKind: LicenceKind? = null,
+  ): LocalDate? {
+    val lsdKind = licenceKind ?: determineReleaseDateKind(
+      nomisRecord.postRecallReleaseDate,
+      nomisRecord.conditionalReleaseDate,
     )
-    else -> null
+
+    return when (lsdKind) {
+      HDC -> nomisRecord.homeDetentionCurfewActualDate
+      PRRD -> nomisRecord.calculatePrrdLicenceStartDate()
+      else -> calculateCrdLicenceStartDate(
+        nomisRecord,
+        iS91DeterminationService.isIS91Case(nomisRecord),
+      )
+    }
   }
 
   @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
-  fun getLicenceStartDates(prisoners: List<PrisonerSearchPrisoner>, nomisIdsToKinds: Map<String, LicenceKind?>): Map<String, LocalDate?> {
+  fun getLicenceStartDates(prisoners: List<PrisonerSearchPrisoner>): Map<String, LocalDate?> {
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
     return prisoners.associate {
-      it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
+      it.prisonerNumber to when (determineReleaseDateKind(it.postRecallReleaseDate, it.conditionalReleaseDate)) {
         HDC -> it.homeDetentionCurfewActualDate
         PRRD -> it.calculatePrrdLicenceStartDate()
-        CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
-        else -> null
+        else -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
       }
     }
   }
