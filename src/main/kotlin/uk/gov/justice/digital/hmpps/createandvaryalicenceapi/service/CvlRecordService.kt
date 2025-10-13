@@ -12,7 +12,7 @@ class CvlRecordService(
 
   fun getCvlRecord(prisoner: PrisonerSearchPrisoner, areaCode: String): CvlRecord {
     val recordList = getCvlRecords(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))
-    return recordList.find { it.nomisId == prisoner.prisonerNumber }!!
+    return recordList.first { it.nomisId == prisoner.prisonerNumber }
   }
 
   fun getCvlRecords(prisoners: List<PrisonerSearchPrisoner>, nomisIdsToAreaCodes: Map<String, String>): List<CvlRecord> {

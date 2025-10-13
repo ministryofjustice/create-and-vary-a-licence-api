@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
-import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
 @Service
@@ -218,20 +217,6 @@ class LicenceCreationService(
     recordLicenceCreation(createdBy, createdLicence)
 
     return LicenceCreationResponse(createdLicence.id)
-  }
-
-  @TimeServedConsiderations("Any special logic for time served cases needed here - seems this is just for hard stop?")
-  fun determineLicenceKind(cvlRecord: CvlRecord): LicenceKind {
-    val today = LocalDate.now()
-
-    var kind = cvlRecord.eligibleKind ?: LicenceKind.CRD
-
-    val hardStopDate = releaseDateService.getHardStopDate(cvlRecord.licenceStartDate)
-    if (hardStopDate != null && hardStopDate <= today) {
-      kind = LicenceKind.HARD_STOP
-    }
-
-    return kind
   }
 
   private fun recordLicenceCreation(

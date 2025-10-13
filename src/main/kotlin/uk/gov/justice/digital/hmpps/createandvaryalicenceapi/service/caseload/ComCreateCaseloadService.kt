@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -36,7 +35,6 @@ class ComCreateCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceService: LicenceService,
   private val hdcService: HdcService,
-  private val licenceCreationService: LicenceCreationService,
   private val releaseDateService: ReleaseDateService,
   private val cvlRecordService: CvlRecordService,
 ) {
@@ -56,10 +54,11 @@ class ComCreateCaseloadService(
     val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
     val nomisIdsToAreaCodes = deliusAndNomisRecords.map { (deliusRecord, nomisRecord) -> nomisRecord.prisonerNumber to (deliusRecord.team?.provider?.code ?: "") }.toMap()
     val cvlRecords = cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord }, nomisIdsToAreaCodes)
-    val crnsToLicenceLists = mapCasesToLicences(deliusAndNomisRecords, cvlRecords)
-    val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, crnsToLicenceLists, cvlRecords)
-    val crnsToDisplayLicences = findRelevantLicencePerCase(eligibleCases, crnsToLicenceLists)
-    val filteredCases = filterHdcAndFutureReleases(eligibleCases, crnsToDisplayLicences)
+    val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
+    val crnsToLicenceLists = mapCasesToLicences(eligibleCases, cvlRecords)
+    val preReleaseCases = removeCasesWithActiveLicences(eligibleCases, crnsToLicenceLists)
+    val crnsToDisplayLicences = findRelevantLicencePerCase(preReleaseCases, crnsToLicenceLists)
+    val filteredCases = filterHdcAndFutureReleases(preReleaseCases, crnsToDisplayLicences)
     val crnsToComs = getResponsibleComs(filteredCases.map { (deliusRecord, _) -> deliusRecord }, crnsToDisplayLicences)
     return transformToCreateCaseload(filteredCases, crnsToDisplayLicences, crnsToComs)
   }
@@ -97,17 +96,15 @@ class ComCreateCaseloadService(
 
   private fun filterCasesEligibleForCvl(
     cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>,
-    crnsToLicences: Map<String, List<CaseLoadLicenceSummary>>,
     cvlRecords: List<CvlRecord>,
-  ): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> = cases.filter { (deliusRecord, nomisRecord) ->
+  ): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> = cases.filter { (_, nomisRecord) ->
     val cvlRecord = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }
-    val licences = crnsToLicences[deliusRecord.crn]!!
+    return@filter cvlRecord.isEligible
+  }
 
-    when {
-      nomisRecord.bookingId == null -> false
-      licences.any { it.licenceStatus == ACTIVE } -> false
-      else -> cvlRecord.isEligible
-    }
+  private fun removeCasesWithActiveLicences(eligibleCases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>, crnsToLicences: Map<String, List<CaseLoadLicenceSummary>>): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> = eligibleCases.filter { (deliusRecord, _) ->
+    val licences = crnsToLicences[deliusRecord.crn]!!
+    licences.none { it.licenceStatus == ACTIVE }
   }
 
   private fun findRelevantLicencePerCase(
@@ -129,7 +126,7 @@ class ComCreateCaseloadService(
     cvlRecord: CvlRecord,
   ): CaseLoadLicenceSummary {
     val licenceType = LicenceType.getLicenceType(nomisRecord)
-    val licenceKind = licenceCreationService.determineLicenceKind(cvlRecord)
+    val licenceKind = cvlRecord.eligibleKind!!
     val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
     val sentenceDateHolder = nomisRecord.toSentenceDateHolder(cvlRecord.licenceStartDate)
 

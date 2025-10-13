@@ -1706,38 +1706,6 @@ class LicenceCreationServiceTest {
     }
   }
 
-  @Test
-  fun `should determine a case eligible for a PRRD licence that is not in the hard stop period as PRRD`() {
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now().plusMonths(1))
-    val cvlRecord = TestData.aCvlRecord(kind = LicenceKind.PRRD)
-
-    assertThat(service.determineLicenceKind(cvlRecord)).isEqualTo(LicenceKind.PRRD)
-  }
-
-  @Test
-  fun `should determine a case eligible for a PRRD licence that is in the hard stop period as HARD_STOP`() {
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now())
-    val cvlRecord = TestData.aCvlRecord(kind = LicenceKind.PRRD)
-
-    assertThat(service.determineLicenceKind(cvlRecord)).isEqualTo(LicenceKind.HARD_STOP)
-  }
-
-  @Test
-  fun `should determine a case eligible for a CRD licence that is not in the hard stop period as CRD`() {
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now().plusMonths(1))
-    val cvlRecord = TestData.aCvlRecord(kind = LicenceKind.CRD)
-
-    assertThat(service.determineLicenceKind(cvlRecord)).isEqualTo(LicenceKind.CRD)
-  }
-
-  @Test
-  fun `should determine a case eligible for a CRD licence that is in the hard stop period as HARD_STOP`() {
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now())
-    val cvlRecord = TestData.aCvlRecord(kind = LicenceKind.CRD)
-
-    assertThat(service.determineLicenceKind(cvlRecord)).isEqualTo(LicenceKind.HARD_STOP)
-  }
-
   private companion object {
     const val PRISON_NUMBER = "NOMSID"
     val aProbationCaseResult = ProbationCase(

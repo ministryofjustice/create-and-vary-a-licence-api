@@ -55,8 +55,6 @@ class PromptComListBuilderTest {
       deliusApiClient,
       licenceCreationService,
     )
-
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
   }
 
   @Nested

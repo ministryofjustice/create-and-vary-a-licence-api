@@ -68,7 +68,6 @@ class ComCreateCaseloadServiceTest {
   @BeforeEach
   fun reset() {
     reset(deliusApiClient, licenceService, hdcService, eligibilityService)
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
   }
 
@@ -729,8 +728,6 @@ class ComCreateCaseloadServiceTest {
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(nomsId = prisonerNumber, kind = LicenceKind.PRRD, licenceStartDate = LocalDate.now())))
 
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
-
     // When
     val caseload = service.getTeamCreateCaseload(listOf(), listOf(selectedTeam))
 
@@ -755,8 +752,6 @@ class ComCreateCaseloadServiceTest {
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(nomsId = prisonerNumber, kind = LicenceKind.PRRD, licenceStartDate = LocalDate.now())))
-
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
 
     // When
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -828,7 +823,6 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow).copy(isEligible = false)))
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -989,7 +983,6 @@ class ComCreateCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
     )
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.HARD_STOP)
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
@@ -1009,6 +1002,8 @@ class ComCreateCaseloadServiceTest {
     )
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow)))
 
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
@@ -1020,7 +1015,7 @@ class ComCreateCaseloadServiceTest {
       LicenceType.AP_PSS,
       LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
       expectedReleaseDate = twoDaysFromNow,
-      expectedLicenceKind = LicenceKind.HARD_STOP,
+      expectedLicenceKind = LicenceKind.CRD,
     )
   }
 
