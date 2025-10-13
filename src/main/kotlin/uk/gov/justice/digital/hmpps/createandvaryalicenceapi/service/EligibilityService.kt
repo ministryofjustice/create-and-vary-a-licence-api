@@ -16,8 +16,8 @@ class EligibilityService(
 ) {
 
   fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner, areaCode: String): EligibilityAssessment {
-    val assessment = getEligibilityAssessments(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))
-    return assessment[prisoner.prisonerNumber] ?: error("Unable to find eligibility assessment for ${prisoner.prisonerNumber}")
+    val assessments = getEligibilityAssessments(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))
+    return assessments.values.first()
   }
 
   fun getEligibilityAssessments(
