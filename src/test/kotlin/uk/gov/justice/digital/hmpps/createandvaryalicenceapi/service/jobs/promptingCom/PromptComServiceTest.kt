@@ -15,14 +15,9 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.promptCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -34,10 +29,9 @@ class PromptComServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val notifyService = mock<NotifyService>()
   private val telemetryClient = mock<TelemetryClient>()
-  private val cvlRecordService = mock<CvlRecordService>()
 
   private val promptComService =
-    PromptComService(promptComListBuilder, prisonerSearchApiClient, notifyService, telemetryClient, cvlRecordService)
+    PromptComService(promptComListBuilder, prisonerSearchApiClient, notifyService, telemetryClient)
 
   @BeforeEach
   fun reset() = reset(promptComListBuilder, prisonerSearchApiClient)
@@ -55,21 +49,17 @@ class PromptComServiceTest {
   fun recordsProcessed() {
     whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(cases)
 
+    whenever(promptComListBuilder.excludeIneligibleCases(any())).thenReturn(cases)
+
     whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
 
     whenever(promptComListBuilder.excludePrisonersWithHdc(any())).thenReturn(cases)
 
     whenever(promptComListBuilder.enrichWithDeliusData(any())).thenReturn(casesWithDeliusData)
 
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(cvlRecords)
-
-    whenever(promptComListBuilder.excludeIneligibleCases(any(), any())).thenReturn(casesWithDeliusData)
-
-    whenever(promptComListBuilder.transformToPromptCases(any())).thenReturn(promptCases)
-
     whenever(promptComListBuilder.enrichWithComEmail(any())).thenReturn(casesWithEmails)
 
-    whenever(promptComListBuilder.enrichWithLicenceStartDates(any(), any())).thenReturn(casesWithEmailsAndLocalDates)
+    whenever(promptComListBuilder.enrichWithLicenceStartDates(any())).thenReturn(casesWithEmailsAndLocalDates)
 
     whenever(promptComListBuilder.excludeOutOfRangeDates(any(), eq(start), eq(end))).thenReturn(
       casesWithEmailsAndLocalDates,
@@ -86,19 +76,17 @@ class PromptComServiceTest {
     inOrder(prisonerSearchApiClient, promptComListBuilder) {
       verify(prisonerSearchApiClient).getAllByReleaseDate(start, end)
 
+      verify(promptComListBuilder).excludeIneligibleCases(cases)
+
       verify(promptComListBuilder).excludeInflightLicences(cases)
 
       verify(promptComListBuilder).excludePrisonersWithHdc(cases)
 
       verify(promptComListBuilder).enrichWithDeliusData(cases)
 
-      verify(promptComListBuilder).excludeIneligibleCases(casesWithDeliusData, cvlRecords)
+      verify(promptComListBuilder).enrichWithComEmail(casesWithDeliusData)
 
-      verify(promptComListBuilder).transformToPromptCases(casesWithDeliusData)
-
-      verify(promptComListBuilder).enrichWithComEmail(promptCases)
-
-      verify(promptComListBuilder).enrichWithLicenceStartDates(casesWithEmails, cvlRecords)
+      verify(promptComListBuilder).enrichWithLicenceStartDates(casesWithEmails)
 
       verify(promptComListBuilder).excludeOutOfRangeDates(casesWithEmailsAndLocalDates, start, end)
 
@@ -111,13 +99,12 @@ class PromptComServiceTest {
   @Test
   fun sendNotifications() {
     whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(cases)
-    whenever(promptComListBuilder.excludeIneligibleCases(any(), any())).thenReturn(casesWithDeliusData)
+    whenever(promptComListBuilder.excludeIneligibleCases(any())).thenReturn(cases)
     whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
     whenever(promptComListBuilder.excludePrisonersWithHdc(any())).thenReturn(cases)
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(cvlRecords)
     whenever(promptComListBuilder.enrichWithDeliusData(any())).thenReturn(casesWithDeliusData)
     whenever(promptComListBuilder.enrichWithComEmail(any())).thenReturn(casesWithEmails)
-    whenever(promptComListBuilder.enrichWithLicenceStartDates(any(), any())).thenReturn(casesWithEmailsAndLocalDates)
+    whenever(promptComListBuilder.enrichWithLicenceStartDates(any())).thenReturn(casesWithEmailsAndLocalDates)
     whenever(promptComListBuilder.excludeOutOfRangeDates(any(), eq(start), eq(end))).thenReturn(
       casesWithEmailsAndLocalDates,
     )
@@ -140,12 +127,10 @@ class PromptComServiceTest {
     val start = LocalDate.parse("2025-01-27")
     val end = LocalDate.parse("2025-02-24")
 
-    val cases = listOf(prisonerSearchResult())
-    val casesWithDeliusData = mapOf(prisonerSearchResult() to offenderManager())
-    val promptCases = listOf(promptCase())
-    val casesWithEmails = promptCases.map { it to "com@test.com" }
+    val cases = listOf(TestData.prisonerSearchResult())
+    val casesWithDeliusData = listOf(TestData.promptCase())
+    val casesWithEmails = casesWithDeliusData.map { it to "com@test.com" }
     val casesWithEmailsAndLocalDates = casesWithEmails.map { it to LocalDate.of(2022, 1, 2) }
-    val cvlRecords = listOf(aCvlRecord(kind = LicenceKind.CRD))
 
     val com = PromptComNotification(
       email = "com@test.com",

@@ -124,7 +124,6 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
   fun stubSearchPrisonersByNomisIds(
     prisonerSearchResponse: String? = null,
     postRecallReleaseDate: LocalDate? = null,
-    prisonId: String = "ABC",
   ) {
     val jsonString: String
     if (prisonerSearchResponse == null) {
@@ -135,7 +134,6 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           status = "ACTIVE",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().plusYears(1),
-          sentenceExpiryDate = LocalDate.now().plusYears(1),
           topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
           releaseDate = LocalDate.now().plusDays(1),
           confirmedReleaseDate = nextWorkingDate(),
@@ -143,7 +141,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           legalStatus = "SENTENCED",
           indeterminateSentence = false,
           recall = false,
-          prisonId = prisonId,
+          prisonId = "ABC",
           bookNumber = "12345A",
           firstName = "Test1",
           lastName = "Person1",
@@ -156,7 +154,6 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           status = "ACTIVE",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().plusYears(1),
-          sentenceExpiryDate = LocalDate.now().plusYears(1),
           topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
           conditionalReleaseDate = LocalDate.now().plusDays(1),
           legalStatus = "SENTENCED",
@@ -190,7 +187,6 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           status = "ACTIVE",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().plusYears(1),
-          sentenceExpiryDate = LocalDate.now().plusYears(1),
           topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
           releaseDate = LocalDate.now().plusDays(1),
           confirmedReleaseDate = LocalDate.now().plusDays(1),
@@ -211,7 +207,6 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           status = "INACTIVE",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().minusYears(1),
-          sentenceExpiryDate = LocalDate.now().plusYears(1),
           topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
           releaseDate = LocalDate.now().minusYears(1),
           confirmedReleaseDate = LocalDate.now().plusDays(1),

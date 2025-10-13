@@ -61,20 +61,20 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = nomisPostRecallReleaseDate)
     deliusMockServer.stubGetProbationCase()
-    deliusMockServer.stubGetOffenderManager(regionCode = "REGION1")
+    deliusMockServer.stubGetOffenderManager()
 
-    assertThat(testRepository.countLicence()).isEqualTo(0)
-    assertThat(standardConditionRepository.count()).isEqualTo(0)
-    assertThat(auditEventRepository.count()).isEqualTo(0)
-
-    val licenceCreationResponse = webTestClient.post()
+    // When
+    val result = webTestClient.post()
       .uri("/licence/create")
       .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+
+    // Then
+    result.expectStatus().isOk
+
+    val licenceCreationResponse = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody(LicenceCreationResponse::class.java)
       .returnResult().responseBody
 

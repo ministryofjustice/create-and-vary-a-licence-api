@@ -169,9 +169,7 @@ class PrisonApiMockServer : WireMockServer(8091) {
                }
             ],
             "legalStatus": "SENTENCED",
-            "sentenceDetail": ${objectMapper.writeValueAsString(sentenceDetail)},
-            "agencyId": "ABC",
-            "status": "ACTIVE IN"
+            "sentenceDetail": ${objectMapper.writeValueAsString(sentenceDetail)}
           }
           """
     stubFor(

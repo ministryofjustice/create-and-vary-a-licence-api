@@ -96,7 +96,7 @@ policyv3:
 
 recall:
   enabled: false
-  prisons: "ABC"
+  prisons: "PRISON1"
   regions: "REGION1"
 
 oauth:

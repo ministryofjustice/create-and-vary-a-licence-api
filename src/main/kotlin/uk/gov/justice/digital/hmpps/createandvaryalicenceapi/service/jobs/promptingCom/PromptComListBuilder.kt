@@ -3,12 +3,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promp
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -17,17 +16,13 @@ import java.time.LocalDate
 @Service
 class PromptComListBuilder(
   private val licenceRepository: LicenceRepository,
+  private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
   private val hdcService: HdcService,
   private val deliusApiClient: DeliusApiClient,
 ) {
 
-  fun excludeIneligibleCases(candidates: Map<PrisonerSearchPrisoner, CommunityManager>, cvlRecords: List<CvlRecord>): Map<PrisonerSearchPrisoner, CommunityManager> {
-    return candidates.filter { (nomisRecord, _) ->
-      val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }
-      return@filter cvlRecord.isEligible
-    }
-  }
+  fun excludeIneligibleCases(candidates: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> = candidates.filter(eligibilityService::isEligibleForCvl)
 
   fun excludePrisonersWithHdc(prisoners: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
     val hdcStatuses = hdcService.getHdcStatus(prisoners)
@@ -44,7 +39,7 @@ class PromptComListBuilder(
     return prisoners.filter { it.bookingId !in inflightLicences }
   }
 
-  fun enrichWithDeliusData(prisoners: List<PrisonerSearchPrisoner>): Map<PrisonerSearchPrisoner, CommunityManager> {
+  fun enrichWithDeliusData(prisoners: List<PrisonerSearchPrisoner>): List<PromptCase> {
     val coms =
       deliusApiClient.getOffenderManagers(prisoners.map { it.prisonerNumber }).filter { it.case.nomisId != null }
         .associateBy { it.case.nomisId!! }
@@ -54,8 +49,14 @@ class PromptComListBuilder(
       if (offenderManager == null) {
         return@mapNotNull null
       }
-      it to offenderManager
-    }.toMap()
+      PromptCase(
+        prisoner = it,
+        crn = offenderManager.case.crn,
+        comStaffCode = offenderManager.code,
+        comName = offenderManager.name.fullName(),
+        comAllocationDate = offenderManager.allocationDate,
+      )
+    }
   }
 
   fun enrichWithComEmail(cases: List<PromptCase>): List<CaseWithEmail> {
@@ -71,10 +72,10 @@ class PromptComListBuilder(
     }
   }
 
-  fun enrichWithLicenceStartDates(cases: List<CaseWithEmail>, cvlRecords: List<CvlRecord>): List<CaseWithEmailAndStartDate> {
+  fun enrichWithLicenceStartDates(cases: List<CaseWithEmail>): List<CaseWithEmailAndStartDate> {
+    val lsd = releaseDateService.getLicenceStartDates(cases.map { it.first.prisoner })
     return cases.mapNotNull { (case, email) ->
-      val cvlRecord = cvlRecords.find { cvlRecord -> cvlRecord.nomisId == case.prisoner.prisonerNumber }
-      val licenceStartDate = cvlRecord?.licenceStartDate
+      val licenceStartDate = lsd[case.prisoner.prisonerNumber]
       if (licenceStartDate == null) {
         return@mapNotNull null
       }
@@ -100,16 +101,6 @@ class PromptComListBuilder(
           releaseDate = startDate,
         )
       },
-    )
-  }
-
-  fun transformToPromptCases(cases: Map<PrisonerSearchPrisoner, CommunityManager>): List<PromptCase> = cases.map { (nomisRecord, offenderManager) ->
-    PromptCase(
-      prisoner = nomisRecord,
-      crn = offenderManager.case.crn,
-      comStaffCode = offenderManager.code,
-      comName = offenderManager.name.fullName(),
-      comAllocationDate = offenderManager.allocationDate,
     )
   }
 
