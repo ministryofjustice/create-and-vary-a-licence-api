@@ -55,7 +55,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -71,7 +70,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -400,31 +398,29 @@ class LicenceService(
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licenceEntity.nomsId!!)).first()
+    val eligibilityAssessment = eligibilityService.getEligibilityAssessment(nomisRecord, licenceEntity.probationAreaCode!!)
+
     when (licenceEntity) {
       is PrrdLicence -> {
+        assertCaseIsEligible(eligibilityAssessment, licenceId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
       is CrdLicence -> {
-        assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
+        assertCaseIsEligible(eligibilityAssessment, licenceId)
         licenceEntity
           .submit(submitter as CommunityOffenderManager)
       }
 
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
-        if (determineReleaseDateKind(
-            licenceEntity.postRecallReleaseDate,
-            licenceEntity.conditionalReleaseDate,
-          ) != PRRD
-        ) {
-          assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
-        }
+        assertCaseIsEligible(eligibilityAssessment, licenceId)
         licenceEntity.submit(submitter as PrisonUser)
       }
 
       is HdcLicence -> {
-        assertCaseIsEligible(licenceEntity, licenceEntity.nomsId)
+        assertCaseIsEligible(eligibilityAssessment, licenceId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
@@ -621,9 +617,10 @@ class LicenceService(
       return inProgressVersions[0].toSummary()
     }
 
-    if (licence.kind != PRRD) {
-      assertCaseIsEligible(licence, licence.nomsId)
-    }
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)).first()
+    val eligibilityAssessment = eligibilityService.getEligibilityAssessment(nomisRecord, licence.probationAreaCode!!)
+
+    assertCaseIsEligible(eligibilityAssessment, licenceId)
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
@@ -1128,18 +1125,13 @@ class LicenceService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 
-  private fun assertCaseIsEligible(licence: EntityLicence, nomisId: String?) {
-    if (nomisId == null) {
-      throw ValidationException("Unable to perform action, licence ${licence.id} is missing NOMS ID")
-    }
-
-    val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).first()
-    if (!eligibilityService.isEligibleForCvl(prisoner, licence.probationAreaCode)) {
-      throw ValidationException("Unable to perform action, licence ${licence.id} is ineligible for CVL")
+  private fun assertCaseIsEligible(eligibilityAssessment: EligibilityAssessment, licenceId: Long) {
+    if (!eligibilityAssessment.isEligible) {
+      throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
     }
   }
 
-  private fun getLicence(licenceId: Long): uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence = licenceRepository
+  private fun getLicence(licenceId: Long): EntityLicence = licenceRepository
     .findById(licenceId)
     .orElseThrow { EntityNotFoundException("$licenceId") }
 

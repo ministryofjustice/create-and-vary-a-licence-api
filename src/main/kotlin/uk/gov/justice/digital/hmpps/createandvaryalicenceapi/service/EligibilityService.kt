@@ -7,13 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import java.time.Clock
 import java.time.LocalDate
 
-data class EligibilityAssessment(
-  val genericIneligibilityReasons: List<String> = emptyList(),
-  val crdIneligibilityReasons: List<String> = emptyList(),
-  val prrdIneligibilityReasons: List<String> = emptyList(),
-  val isEligible: Boolean,
-)
-
 @Service
 class EligibilityService(
   private val clock: Clock,
@@ -22,9 +15,14 @@ class EligibilityService(
   @param:Value("\${recall.regions}") private val recallEnabledRegions: List<String> = emptyList(),
 ) {
 
-  fun getEligibility(
+  fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner, areaCode: String): EligibilityAssessment {
+    val assessments = getEligibilityAssessments(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))
+    return assessments.values.first()
+  }
+
+  fun getEligibilityAssessments(
     prisoners: List<PrisonerSearchPrisoner>,
-    nomisIdsToAreaCodes: Map<String, String?>,
+    nomisIdsToAreaCodes: Map<String, String>,
   ): Map<String, EligibilityAssessment> {
     return prisoners.map { prisoner ->
       val permitRecalls =
@@ -43,16 +41,6 @@ class EligibilityService(
         isEligible,
       )
     }.toMap()
-  }
-
-  fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner, areaCode: String? = null): Boolean {
-    val eligibility = getEligibility(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))[prisoner.prisonerNumber]!!
-    return eligibility.isEligible
-  }
-
-  fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner, areaCode: String? = null): List<String> {
-    val eligibility = getEligibility(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))[prisoner.prisonerNumber]!!
-    return if (eligibility.isEligible) emptyList() else eligibility.genericIneligibilityReasons + eligibility.crdIneligibilityReasons + eligibility.prrdIneligibilityReasons
   }
 
   fun getGenericIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
@@ -141,10 +129,10 @@ class EligibilityService(
   private fun hasPrrdBeforeSled(prisoner: PrisonerSearchPrisoner): Boolean {
     if (prisoner.postRecallReleaseDate == null) return true
 
-    return prisoner.postRecallReleaseDate.isBefore(prisoner.licenceExpiryDate) &&
-      prisoner.postRecallReleaseDate.isBefore(
-        prisoner.sentenceExpiryDate,
-      )
+    val isBeforeLed = prisoner.licenceExpiryDate == null || prisoner.postRecallReleaseDate.isBefore(prisoner.licenceExpiryDate)
+    val isBeforeSed = prisoner.sentenceExpiryDate == null || prisoner.postRecallReleaseDate.isBefore(prisoner.sentenceExpiryDate)
+
+    return isBeforeLed && isBeforeSed
   }
 
   // Shared eligibility rules
