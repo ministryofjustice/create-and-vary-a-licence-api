@@ -29,6 +29,7 @@ generic-service:
     RECALL_ENABLED: false
     RECALL_PRISONS: "MDI"
     RECALL_REGIONS: "N55"
+    FEATURE_TOGGLE_TIMESERVED_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
