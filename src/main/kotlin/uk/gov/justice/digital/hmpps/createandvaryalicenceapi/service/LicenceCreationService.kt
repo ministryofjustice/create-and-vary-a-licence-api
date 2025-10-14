@@ -140,10 +140,10 @@ class LicenceCreationService(
     val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord)
 
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
-      ?: error("No active offender manager found for $prisonNumber")
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
-      ?: createCom(currentResponsibleOfficerDetails.id)
+    val responsibleCom = currentResponsibleOfficerDetails?.let {
+      staffRepository.findByStaffIdentifier(it.id) ?: createCom(it.id)
+    }
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
