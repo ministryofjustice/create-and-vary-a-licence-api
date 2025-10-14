@@ -254,8 +254,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetOffenderManager()
 
     assertThat(testRepository.countLicence()).isEqualTo(0)
-    assertThat(standardConditionRepository.count()).isEqualTo(0)
-    assertThat(auditEventRepository.count()).isEqualTo(0)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(0)
+    assertThat(testRepository.getAuditEventCount()).isEqualTo(0)
 
     val result = webTestClient.post()
       .uri("/licence/create")
@@ -280,8 +280,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(standardConditionRepository.count()).isEqualTo(9)
-    assertThat(auditEventRepository.count()).isEqualTo(1)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(9)
+    assertThat(testRepository.getAuditEventCount()).isEqualTo(1)
   }
 
   @Test
