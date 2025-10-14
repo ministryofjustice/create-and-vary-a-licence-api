@@ -321,7 +321,6 @@ class VariationLicence(
     "responsibleCom=$responsibleCom, " +
     "submittedBy=$submittedBy, " +
     "createdBy=$createdBy, " +
-    "createdBy=$createdBy, " +
     "variationOfId=$variationOfId, " +
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy" +

@@ -124,6 +124,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
   fun stubSearchPrisonersByNomisIds(
     prisonerSearchResponse: String? = null,
     postRecallReleaseDate: LocalDate? = null,
+    conditionalReleaseDateOverrideDate: LocalDate? = null,
   ) {
     val jsonString: String
     if (prisonerSearchResponse == null) {
@@ -137,7 +138,9 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
           releaseDate = LocalDate.now().plusDays(1),
           confirmedReleaseDate = nextWorkingDate(),
+          conditionalReleaseDateOverrideDate = conditionalReleaseDateOverrideDate,
           conditionalReleaseDate = nextWorkingDate(),
+          sentenceStartDate = nextWorkingDate(),
           legalStatus = "SENTENCED",
           indeterminateSentence = false,
           recall = false,

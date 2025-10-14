@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -104,6 +105,7 @@ class LicenceCreationServiceTest {
     deliusApiClient,
     releaseDateService,
     hdcService,
+    isTimeServedLogicEnabled = true,
   )
 
   @Nested
@@ -1536,6 +1538,109 @@ class LicenceCreationServiceTest {
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
       verify(auditEventRepository, times(0)).saveAndFlush(any())
       verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service creates populates timeserved licence with expected fields`() {
+      val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 10, 10))
+      whenever(releaseDateService.isTimeServed(any(), anyOrNull())).thenReturn(true)
+
+      service.createHardStopLicence(PRISON_NUMBER)
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      with(licenceCaptor.value as TimeServedLicence) {
+        assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
+        assertThat(typeCode).isEqualTo(LicenceType.AP)
+        assertThat(version).isEqualTo("2.1")
+        assertThat(statusCode).isEqualTo(IN_PROGRESS)
+        assertThat(licenceVersion).isEqualTo("1.0")
+        assertThat(nomsId).isEqualTo(nomsId)
+        assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
+        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId!!.toLong())
+        assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
+        assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
+        assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
+        assertThat(surname).isEqualTo(aPrisonerSearchResult.lastName.convertToTitleCase())
+        assertThat(dateOfBirth).isEqualTo(aPrisonerSearchResult.dateOfBirth)
+        assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
+        assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
+        assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
+        assertThat(licenceStartDate).isEqualTo(LocalDate.of(2022, 10, 10))
+        assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
+        assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
+        assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
+        assertThat(postRecallReleaseDate).isNull()
+        assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
+        assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
+        assertThat(probationAreaCode).isEqualTo(aCommunityManager.team.provider.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.team.provider.description)
+        assertThat(probationPduCode).isEqualTo(aCommunityManager.team.borough.code)
+        assertThat(probationPduDescription).isEqualTo(aCommunityManager.team.borough.description)
+        assertThat(probationLauCode).isEqualTo(aCommunityManager.team.district.code)
+        assertThat(probationLauDescription).isEqualTo(aCommunityManager.team.district.description)
+        assertThat(probationTeamCode).isEqualTo(aCommunityManager.team.code)
+        assertThat(probationTeamDescription).isEqualTo(aCommunityManager.team.description)
+        assertThat(crn).isEqualTo(aProbationCaseResult.crn)
+        assertThat(pnc).isEqualTo(aProbationCaseResult.pncNumber)
+        assertThat(responsibleCom).isEqualTo(com)
+      }
+    }
+
+    @Test
+    fun `service creates populates timeserved licence with null COM fields`() {
+      val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 10, 10))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
+      whenever(releaseDateService.isTimeServed(any(), anyOrNull())).thenReturn(true)
+
+      service.createHardStopLicence(PRISON_NUMBER)
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      with(licenceCaptor.value as TimeServedLicence) {
+        assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
+        assertThat(typeCode).isEqualTo(LicenceType.AP)
+        assertThat(version).isEqualTo("2.1")
+        assertThat(statusCode).isEqualTo(IN_PROGRESS)
+        assertThat(licenceVersion).isEqualTo("1.0")
+        assertThat(nomsId).isEqualTo(nomsId)
+        assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
+        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId!!.toLong())
+        assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
+        assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
+        assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
+        assertThat(surname).isEqualTo(aPrisonerSearchResult.lastName.convertToTitleCase())
+        assertThat(dateOfBirth).isEqualTo(aPrisonerSearchResult.dateOfBirth)
+        assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
+        assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
+        assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
+        assertThat(licenceStartDate).isEqualTo(LocalDate.of(2022, 10, 10))
+        assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
+        assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
+        assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
+        assertThat(postRecallReleaseDate).isNull()
+        assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
+        assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
+        assertThat(probationAreaCode).isNull()
+        assertThat(probationAreaDescription).isNull()
+        assertThat(probationPduCode).isNull()
+        assertThat(probationPduDescription).isNull()
+        assertThat(probationLauCode).isNull()
+        assertThat(probationLauDescription).isNull()
+        assertThat(probationTeamCode).isNull()
+        assertThat(probationTeamDescription).isNull()
+        assertThat(crn).isEqualTo(aProbationCaseResult.crn)
+        assertThat(pnc).isEqualTo(aProbationCaseResult.pncNumber)
+        assertThat(responsibleCom).isNull()
+      }
     }
   }
 

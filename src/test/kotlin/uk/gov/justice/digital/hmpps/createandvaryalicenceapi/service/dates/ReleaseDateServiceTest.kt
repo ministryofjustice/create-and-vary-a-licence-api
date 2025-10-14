@@ -1022,6 +1022,67 @@ class ReleaseDateServiceTest {
     }
   }
 
+  @Nested
+  inner class `Licence time served today` {
+    val thisClock = createClock("2024-04-22T00:00:00Z")
+    val today = LocalDate.now(thisClock)
+
+    @Test
+    fun `returns true when all dates are today and override date is null`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+        conditionalReleaseDateOverrideDate = null,
+      )
+      assertTrue(service.isTimeServed(nomisRecord, thisClock))
+    }
+
+    @Test
+    fun `returns true when all dates are today and override date is today`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today.minusDays(1),
+        conditionalReleaseDateOverrideDate = today,
+      )
+      assertTrue(service.isTimeServed(nomisRecord, thisClock))
+    }
+
+    @Test
+    fun `returns false when sentenceStartDate is not today`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today.minusDays(1),
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+        conditionalReleaseDateOverrideDate = null,
+      )
+      assertFalse(service.isTimeServed(nomisRecord, thisClock))
+    }
+
+    @Test
+    fun `returns false when confirmedReleaseDate is not today`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today.minusDays(1),
+        conditionalReleaseDate = today,
+        conditionalReleaseDateOverrideDate = null,
+      )
+      assertFalse(service.isTimeServed(nomisRecord, thisClock))
+    }
+
+    @Test
+    fun `returns false when neither conditionalReleaseDateOverrideDate nor conditionalReleaseDate is today`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today.minusDays(1),
+        conditionalReleaseDateOverrideDate = today.minusDays(1),
+      )
+      assertFalse(service.isTimeServed(nomisRecord, thisClock))
+    }
+  }
+
   private companion object {
     val bankHolidays = listOf(
       LocalDate.parse("2018-01-01"),
