@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "electronic_monitoring_provider")
-data class ElectronicMonitoringProvider(
+class ElectronicMonitoringProvider(
   @OneToOne(
     cascade = [CascadeType.DETACH],
     fetch = FetchType.LAZY,
