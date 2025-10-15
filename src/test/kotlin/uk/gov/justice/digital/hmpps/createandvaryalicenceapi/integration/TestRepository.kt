@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import java.util.Optional
 
 @Repository
@@ -59,6 +60,7 @@ class TestRepository(
   private val addressRepository: TestAddressRepository,
   private val bespokeConditionRepository: TestBespokeConditionRepository,
   private val additionalConditionRepository: TestAdditionalConditionRepository,
+  private val standardConditionRepository: StandardConditionRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -88,6 +90,8 @@ class TestRepository(
     return events
   }
 
+  fun getAuditEventCount(): Long = auditEventRepository.count()
+
   fun findFirstAuditEvent(licenceId: Long = 1L): AuditEvent {
     val event = auditEventRepository.findAllByLicenceIdIn(listOf(licenceId)).firstOrNull()
     assertThat(event).isNotNull
@@ -105,6 +109,8 @@ class TestRepository(
     if (assertNotEmpty) assertThat(addresses).isNotEmpty
     return addresses
   }
+
+  fun getStandardConditionCount(): Long = standardConditionRepository.count()
 
   fun getAdditionalConditions(licenceId: Long, assertNotEmpty: Boolean = true): List<AdditionalCondition> {
     val list = additionalConditionRepository.findByLicenceId(licenceId)

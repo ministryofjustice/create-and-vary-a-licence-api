@@ -369,7 +369,6 @@ class HdcLicence(
     "curfewTimes=$curfewTimes, " +
     "submittedBy=$submittedBy, " +
     "createdBy=$createdBy, " +
-    "createdBy=$createdBy, " +
     "versionOfId=$versionOfId, " +
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy, " +

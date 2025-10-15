@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -68,12 +69,13 @@ class TimeServedLicence(
   var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_ca_id", nullable = false)
   var createdBy: PrisonUser? = null,
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_ca_id", nullable = true)
   var submittedBy: PrisonUser? = null,
+
   responsibleCom: CommunityOffenderManager?,
 ) : Licence(
   id = id,
@@ -316,7 +318,6 @@ class TimeServedLicence(
     "bespokeConditions=$bespokeConditions, " +
     "responsibleCom=$responsibleCom, " +
     "submittedBy=$submittedBy, " +
-    "createdBy=$createdBy, " +
     "createdBy=$createdBy, " +
     "substituteOfId=$substituteOfId, " +
     "reviewDate=$reviewDate, " +
