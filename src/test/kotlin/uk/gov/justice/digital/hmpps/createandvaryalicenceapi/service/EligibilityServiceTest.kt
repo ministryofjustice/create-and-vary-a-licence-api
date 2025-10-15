@@ -4,247 +4,358 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
 class EligibilityServiceTest {
-  private val releaseDateService = mock<ReleaseDateService>()
   private var service = EligibilityService(clock, false)
 
   @Nested
   inner class CrdCases {
     @Test
     fun `Person is eligible for CVL`() {
-      val result = service.isEligibleForCvl(aPrisonerSearchResult)
-      assertThat(result).isTrue()
+      val result = service.getEligibilityAssessment(aPrisonerSearchResult, "")
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(CRD)
     }
 
     @Test
     fun `Person is parole eligible but parole eligibility date is in the past - eligible for CVL `() {
-      val reasons = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(paroleEligibilityDate = LocalDate.now(clock).minusDays(1)),
+        "",
       )
-      assertThat(reasons).isEmpty()
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(CRD)
     }
 
     @Test
     fun `Person is parole eligible - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          paroleEligibilityDate = LocalDate.now(clock).plusYears(1),
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(paroleEligibilityDate = LocalDate.now(clock).plusYears(1)),
+        "",
       )
-      assertThat(result).containsExactly("is eligible for parole")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is eligible for parole")
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person has an incorrect legal status - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          legalStatus = "DEAD",
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(legalStatus = "DEAD"),
+        "",
       )
-      assertThat(result).containsExactly("has died")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("has died")
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is on an indeterminate sentence - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          indeterminateSentence = true,
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(indeterminateSentence = true),
+        "",
       )
-      assertThat(result).containsExactly("is on indeterminate sentence")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is on indeterminate sentence")
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `isIndeterminateSentence is null - eligible for CVL`() {
-      val reasons = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          indeterminateSentence = null,
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(indeterminateSentence = null),
+        "",
       )
 
-      assertThat(reasons).isEmpty()
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(CRD)
     }
 
     @Test
     fun `Person does not have a conditional release date - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          conditionalReleaseDate = null,
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(conditionalReleaseDate = null),
+        "",
       )
-      assertThat(result).containsExactly("has no conditional release date")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is on ineligible EDS - ARD is outside threshold in the past - not eligible for CVL `() {
-      whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.now(clock).minusDays(5))
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(
           confirmedReleaseDate = LocalDate.now(clock).minusDays(5),
           paroleEligibilityDate = LocalDate.now(clock).minusDays(10),
         ),
+        "",
       )
-      assertThat(result).containsExactly("is on non-eligible EDS")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is on ineligible EDS - ARD is outside threshold in the future - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(
           paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
           confirmedReleaseDate = LocalDate.now(clock).plusDays(2),
         ),
+        "",
       )
-      assertThat(result).containsExactly("is on non-eligible EDS")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is on ineligible EDS - has a APD and a PED in the past - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(
           paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
           actualParoleDate = LocalDate.now(clock).plusDays(1),
         ),
+        "",
       )
-      assertThat(result).containsExactly("is on non-eligible EDS")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is on ineligible EDS - has a APD with a PED today - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(
           paroleEligibilityDate = LocalDate.now(clock),
           actualParoleDate = LocalDate.now(clock),
         ),
+        "",
       )
-      assertThat(result).containsExactly("is on non-eligible EDS")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is on ineligible EDS - has a APD with a PED in the future - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(
           paroleEligibilityDate = LocalDate.now(clock).plusDays(1),
           actualParoleDate = LocalDate.now(clock).plusDays(1),
         ),
+        "",
       )
-      assertThat(result).containsExactly("is eligible for parole", "is on non-eligible EDS")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is eligible for parole")
+      assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is an inactive transfer - eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          status = "INACTIVE TRN",
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(status = "INACTIVE TRN"),
+        "",
       )
-      assertThat(result).isEmpty()
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(CRD)
     }
 
     @Test
     fun `Person does not have an active prison status - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          status = "INACTIVE OUT",
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(status = "INACTIVE OUT"),
+        "",
       )
-      assertThat(result).containsExactly("is not active in prison")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is not active in prison")
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person has a conditional release date (CRD) in the past - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          conditionalReleaseDate = LocalDate.now(clock).minusDays(1),
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(conditionalReleaseDate = LocalDate.now(clock).minusDays(1)),
+        "",
       )
-      assertThat(result).containsExactly("CRD in the past")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("CRD in the past")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is on recall with a post recall release date (PRRD) before CRD - eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          postRecallReleaseDate = LocalDate.now(clock).minusDays(1),
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(postRecallReleaseDate = LocalDate.now(clock).minusDays(1)),
+        "",
       )
-      assertThat(result).isEmpty()
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(CRD)
     }
 
     @Test
     fun `Person is on recall with a post recall release date (PRRD) after CRD - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          postRecallReleaseDate = LocalDate.now(clock).plusDays(2),
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(postRecallReleaseDate = LocalDate.now(clock).plusDays(2)),
+        "",
       )
-      assertThat(result).containsExactly("is a recall case")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is a recall case")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is on recall with a recall flag - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(
           conditionalReleaseDate = null,
           recall = true,
         ),
+        "",
       )
-      assertThat(result).containsExactly("has no conditional release date", "is a recall case")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date", "is a recall case")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Recall flag is null in NOMIS - not ineligibile due to recall`() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(
           conditionalReleaseDate = null,
           recall = null,
         ),
+        "",
       )
-      assertThat(result).containsExactly("has no conditional release date")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person has no ARD and no CRD - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(
           confirmedReleaseDate = null,
           conditionalReleaseDate = null,
         ),
+        "",
       )
-      assertThat(result).containsExactly("has no conditional release date")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person with imprisonmentStatus ACTIVE IN - eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          imprisonmentStatus = "ACTIVE IN",
-        ),
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(imprisonmentStatus = "ACTIVE IN"),
+        "",
       )
-      assertThat(result).isEmpty()
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(CRD)
     }
 
     @Test
     fun `Person with imprisonmentStatus BOTUS - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
-        aPrisonerSearchResult.copy(
-          imprisonmentStatus = "BOTUS",
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(imprisonmentStatus = "BOTUS"),
+        "",
+      )
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is breach of top up supervision case")
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
+    }
+
+    @Test
+    fun `returns bulk eligibility`() {
+      val result = service.getEligibilityAssessments(
+        listOf(aPrisonerSearchResult, aPrisonerSearchResult.copy(prisonerNumber = "A1234AB")),
+        mapOf(
+          "A1234AA" to "",
+          "A1234AB" to "",
         ),
       )
-      assertThat(result).containsExactly("is breach of top up supervision case")
+      assertThat(result.size).isEqualTo(2)
+      assertThat(result["A1234AA"]!!.isEligible).isTrue()
+      assertThat(result["A1234AB"]!!.isEligible).isTrue()
     }
   }
 
@@ -257,137 +368,258 @@ class EligibilityServiceTest {
 
     @Test
     fun `Person is eligible for CVL`() {
-      val result = service.isEligibleForCvl(aRecallPrisonerSearchResult)
-      assertThat(result).isTrue()
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, "")
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test
     fun `Person is ineligible if PRRD is null`() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           postRecallReleaseDate = null,
         ),
+        "",
       )
-      assertThat(result).containsExactly("has no conditional release date", "has no post recall release date")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is ineligible if PRRD is in the past`() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           postRecallReleaseDate = LocalDate.now(clock).minusDays(1),
         ),
+        "",
       )
-      assertThat(result).containsExactly("has no conditional release date", "post recall release date is in the past")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("post recall release date is in the past")
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is ineligible if PRRD is after LED`() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
           licenceExpiryDate = LocalDate.now(clock),
         ),
+        "",
       )
-      assertThat(result).containsExactly(
-        "has no conditional release date",
-        "post recall release date is not before SLED",
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("post recall release date is not before SLED")
+      assertThat(result.eligibleKind).isEqualTo(null)
+    }
+
+    @Test
+    fun `Person is eligible if LED null`() {
+      val result = service.getEligibilityAssessment(
+        aRecallPrisonerSearchResult.copy(
+          postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
+          licenceExpiryDate = null,
+        ),
+        "",
       )
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test
     fun `Person is ineligible if PRRD is after SED`() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
           sentenceExpiryDate = LocalDate.now(clock),
         ),
+        "",
       )
-      assertThat(result).containsExactly(
-        "has no conditional release date",
-        "post recall release date is not before SLED",
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("post recall release date is not before SLED")
+      assertThat(result.eligibleKind).isEqualTo(null)
+    }
+
+    @Test
+    fun `Person is eligible if SED null`() {
+      val result = service.getEligibilityAssessment(
+        aRecallPrisonerSearchResult.copy(
+          postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
+          sentenceExpiryDate = null,
+        ),
+        "",
       )
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test
     fun `Person is parole eligible but parole eligibility date is in the past - eligible for CVL `() {
-      val reasons = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
         ),
+        "",
       )
-      assertThat(reasons).isEmpty()
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test
     fun `Person is parole eligible - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           paroleEligibilityDate = LocalDate.now(clock).plusYears(1),
         ),
+        "",
       )
-      assertThat(result).containsExactly("is eligible for parole", "has no conditional release date")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is eligible for parole")
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person has an incorrect legal status - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           legalStatus = "DEAD",
         ),
+        "",
       )
-      assertThat(result).containsExactly("has died", "has no conditional release date")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("has died")
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person is on an indeterminate sentence - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           indeterminateSentence = true,
         ),
+        "",
       )
-      assertThat(result).containsExactly("is on indeterminate sentence", "has no conditional release date")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is on indeterminate sentence")
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `isIndeterminateSentence is null - eligible for CVL`() {
-      val reasons = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           indeterminateSentence = null,
         ),
+        "",
       )
 
-      assertThat(reasons).isEmpty()
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test
     fun `Person is an inactive transfer - eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           status = "INACTIVE TRN",
         ),
+        "",
       )
-      assertThat(result).isEmpty()
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test
     fun `Person does not have an active prison status - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           status = "INACTIVE OUT",
         ),
+        "",
       )
-      assertThat(result).containsExactly("is not active in prison", "has no conditional release date")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is not active in prison")
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
     fun `Person with imprisonmentStatus BOTUS - not eligible for CVL `() {
-      val result = service.getIneligibilityReasons(
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           imprisonmentStatus = "BOTUS",
         ),
+        "",
       )
-      assertThat(result).containsExactly("is breach of top up supervision case", "has no conditional release date")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is breach of top up supervision case")
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
+    }
+
+    @Test
+    fun `CRD case is eligible even if PRRD is null`() {
+      val result = service.getEligibilityAssessment(
+        aRecallPrisonerSearchResult.copy(
+          conditionalReleaseDate = LocalDate.now(),
+          postRecallReleaseDate = null,
+        ),
+        "",
+      )
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.eligibleKind).isEqualTo(CRD)
     }
   }
 
@@ -402,33 +634,62 @@ class EligibilityServiceTest {
     }
 
     @Test
-    fun `Eligible case returns true if probation region and prison are permitted`() {
-      val result = service.isEligibleForCvl(aRecallPrisonerSearchResult.copy(prisonId = "PRISON_CODE"), "REGION_CODE_2")
-      assertThat(result).isTrue()
+    fun `Eligible case is eligible if probation region and prison are permitted`() {
+      val result = service.getEligibilityAssessment(
+        aRecallPrisonerSearchResult.copy(prisonId = "PRISON_CODE"),
+        "REGION_CODE_2",
+      )
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test
-    fun `Eligible case returns false if probation region is not permitted`() {
-      val result = service.isEligibleForCvl(aRecallPrisonerSearchResult.copy(prisonId = "PRISON_CODE"), "SOME_OTHER_REGION")
-      assertThat(result).isFalse()
+    fun `Eligible case is ineligible if probation region is not permitted`() {
+      val result = service.getEligibilityAssessment(
+        aRecallPrisonerSearchResult.copy(prisonId = "PRISON_CODE"),
+        "SOME_OTHER_REGION",
+      )
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
-    fun `Eligible case returns false if prison code is not permitted`() {
-      val result = service.isEligibleForCvl(aRecallPrisonerSearchResult.copy(prisonId = "SOME_OTHER_PRISON"), "REGION_CODE_2")
-      assertThat(result).isFalse()
+    fun `Eligible case is ineligible if prison code is not permitted`() {
+      val result = service.getEligibilityAssessment(
+        aRecallPrisonerSearchResult.copy(prisonId = "SOME_OTHER_PRISON"),
+        "REGION_CODE_2",
+      )
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
 
     @Test
-    fun `Ineligible case returns false when probation region and prison are permitted`() {
-      val result = service.isEligibleForCvl(
+    fun `Ineligible case is ineligible when probation region and prison are permitted`() {
+      val result = service.getEligibilityAssessment(
         aRecallPrisonerSearchResult.copy(
           postRecallReleaseDate = null,
           prisonId = "PRISON_CODE",
         ),
         "REGION_CODE_2",
       )
-      assertThat(result).isFalse()
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.eligibleKind).isEqualTo(null)
     }
   }
 
@@ -495,6 +756,11 @@ class EligibilityServiceTest {
       sentenceExpiryDate = LocalDate.now(clock).plusYears(1),
       topupSupervisionStartDate = null,
       croNumber = null,
+    )
+
+    fun nomisIdsToAreaCodes(regionCode: String = ""): Map<String, String> = mapOf(
+      aPrisonerSearchResult.prisonerNumber to regionCode,
+      aRecallPrisonerSearchResult.prisonerNumber to regionCode,
     )
   }
 }

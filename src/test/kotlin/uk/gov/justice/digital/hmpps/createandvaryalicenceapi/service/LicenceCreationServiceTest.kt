@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -89,6 +90,7 @@ class LicenceCreationServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
+  private val cvlRecordService = mock<CvlRecordService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -105,6 +107,7 @@ class LicenceCreationServiceTest {
     deliusApiClient,
     releaseDateService,
     hdcService,
+    cvlRecordService,
     isTimeServedLogicEnabled = true,
   )
 
@@ -120,6 +123,7 @@ class LicenceCreationServiceTest {
         prisonerSearchApiClient,
         prisonApiClient,
         deliusApiClient,
+        cvlRecordService,
       )
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
@@ -137,6 +141,7 @@ class LicenceCreationServiceTest {
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
     }
 
     @Test
@@ -144,7 +149,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 10, 10))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 10, 10)))
 
       service.createLicence(PRISON_NUMBER)
 
@@ -582,6 +587,7 @@ class LicenceCreationServiceTest {
         prisonerSearchApiClient,
         prisonApiClient,
         deliusApiClient,
+        cvlRecordService,
       )
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
@@ -599,6 +605,7 @@ class LicenceCreationServiceTest {
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
     }
 
     @Test
@@ -606,7 +613,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 10, 10))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD, licenceStartDate = LocalDate.of(2022, 10, 10)))
 
       service.createLicence(PRISON_NUMBER)
 
@@ -1062,6 +1069,7 @@ class LicenceCreationServiceTest {
         prisonerSearchApiClient,
         prisonApiClient,
         deliusApiClient,
+        cvlRecordService,
       )
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
@@ -1078,6 +1086,7 @@ class LicenceCreationServiceTest {
 
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
     }
 
     @Test
@@ -1085,7 +1094,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 10, 10))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 10, 10)))
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1545,7 +1554,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 10, 10))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 10, 10)))
       whenever(releaseDateService.isTimeServed(any(), anyOrNull())).thenReturn(true)
 
       service.createHardStopLicence(PRISON_NUMBER)
@@ -1596,7 +1605,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 10, 10))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 10, 10)))
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
       whenever(releaseDateService.isTimeServed(any(), anyOrNull())).thenReturn(true)
 
@@ -1801,71 +1810,6 @@ class LicenceCreationServiceTest {
       verify(licenceEventRepository, times(0)).saveAndFlush(any())
       verify(hdcCurfewAddressRepository, times(0)).saveAndFlush(any())
     }
-  }
-
-  @Test
-  fun `should determine a licence with PRRD in future and after CRD in the past as a recall licence`() {
-    val prisoner =
-      prisonerSearchResult(
-        conditionalReleaseDate = LocalDate.now().minusDays(1),
-        postRecallReleaseDate = LocalDate.now().plusDays(1),
-      )
-    val licenceStartDate = prisoner.postRecallReleaseDate
-
-    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
-
-    assertThat(licenceKind).isEqualTo(LicenceKind.PRRD)
-  }
-
-  @Test
-  fun `should determine a licence with PRRD in future and before CRD as a CRD licence`() {
-    val prisoner =
-      prisonerSearchResult(
-        postRecallReleaseDate = LocalDate.now().plusDays(1),
-        conditionalReleaseDate = LocalDate.now().plusDays(2),
-      )
-    val licenceStartDate = prisoner.postRecallReleaseDate
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
-
-    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
-
-    assertThat(licenceKind).isEqualTo(LicenceKind.CRD)
-  }
-
-  @Test
-  fun `should determine a licence with null PRRD and a hard stop date of today as a hard stop licence`() {
-    val prisoner = prisonerSearchResult(conditionalReleaseDate = LocalDate.now().plusDays(2))
-
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now())
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now())
-    val licenceStartDate = prisoner.conditionalReleaseDate
-
-    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
-
-    assertThat(licenceKind).isEqualTo(LicenceKind.HARD_STOP)
-  }
-
-  @Test
-  fun `should determine a licence with null PRRD and hard stop date in future as a CRD licence`() {
-    val prisoner = prisonerSearchResult(conditionalReleaseDate = LocalDate.now().plusDays(2))
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
-    val licenceStartDate = prisoner.conditionalReleaseDate
-
-    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
-
-    assertThat(licenceKind).isEqualTo(LicenceKind.CRD)
-  }
-
-  @Test
-  fun `should determine a licence with a future PRRD and a null CRD as a PRRD licence`() {
-    val prisoner =
-      prisonerSearchResult(conditionalReleaseDate = null, postRecallReleaseDate = LocalDate.now().plusDays(2))
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
-    val licenceStartDate = prisoner.postRecallReleaseDate
-
-    val licenceKind = service.determineLicenceKind(prisoner, licenceStartDate)
-
-    assertThat(licenceKind).isEqualTo(LicenceKind.PRRD)
   }
 
   private companion object {
