@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
@@ -37,7 +36,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.Ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
@@ -56,49 +54,6 @@ class CaseloadController(
   val comVaryCaseloadService: ComVaryCaseloadService,
   val varyApproverCaseloadService: VaryApproverCaseloadService,
 ) {
-
-  @PostMapping("/prisoner-search/prisoner-numbers")
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Returns enriched prisoners by prison number",
-    description = "Match prisoners by a list of prisoner numbers",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returning A list of prisoners",
-        content = [
-          Content(
-            mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = PrisonerSearchPrisoner::class)),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun findByNumbers(@Parameter(required = true) @Valid @RequestBody criteria: PrisonerNumbers) = caseloadService.getPrisonersByNumber(criteria.prisonerNumbers)
 
   @GetMapping("/prisoner-search/nomisid/{nomsId}")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
