@@ -122,8 +122,15 @@ class ElectronicMonitoringProgrammeService(
     }
   }
 
+  private fun HasElectronicMonitoringResponseProvider.hasProvider(): Boolean = when (this) {
+    is PrrdLicence -> this.electronicMonitoringProvider != null
+    is CrdLicence -> this.electronicMonitoringProvider != null
+    is HdcLicence -> this.electronicMonitoringProvider != null
+    else -> false
+  }
+
   private fun HasElectronicMonitoringResponseProvider.ensureElectronicMonitoringProvider() {
-    if (this.getProvider() == null) {
+    if (!this.hasProvider()) {
       when (this) {
         is PrrdLicence -> this.electronicMonitoringProvider = ElectronicMonitoringProvider(licence = this)
         is CrdLicence -> this.electronicMonitoringProvider = ElectronicMonitoringProvider(licence = this)

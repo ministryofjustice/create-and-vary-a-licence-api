@@ -270,8 +270,6 @@ class CrdLicence(
     updatedBy = submittedBy
   }
 
-  override fun getProvider(): ElectronicMonitoringProvider? = this.electronicMonitoringProvider
-
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
   override fun toString(): String = "CrdLicence(" +

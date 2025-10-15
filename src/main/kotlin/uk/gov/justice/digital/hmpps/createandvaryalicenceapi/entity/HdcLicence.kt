@@ -372,8 +372,6 @@ class HdcLicence(
 
   override fun getCom(): CommunityOffenderManager = this.responsibleCom!!
 
-  override fun getProvider(): ElectronicMonitoringProvider? = this.electronicMonitoringProvider
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is HdcLicence) return false
