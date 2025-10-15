@@ -83,7 +83,7 @@ class PrrdLicence(
     optional = true,
     orphanRemoval = true,
   )
-  override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
   override var versionOfId: Long? = null,
   responsibleCom: CommunityOffenderManager,
 ) : Licence(
@@ -338,11 +338,7 @@ class PrrdLicence(
 
   override fun getCom(): CommunityOffenderManager = this.responsibleCom!!
 
-  override fun createNewElectronicMonitoringProvider(): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
-    licence = this,
-    isToBeTaggedForProgramme = null,
-    programmeName = null,
-  )
+  override fun getProvider(): ElectronicMonitoringProvider? = this.electronicMonitoringProvider
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

@@ -83,7 +83,7 @@ class CrdLicence(
     optional = true,
     orphanRemoval = true,
   )
-  override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
   override var versionOfId: Long? = null,
   responsibleCom: CommunityOffenderManager,
 ) : Licence(
@@ -270,11 +270,7 @@ class CrdLicence(
     updatedBy = submittedBy
   }
 
-  override fun createNewElectronicMonitoringProvider(): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
-    licence = this,
-    isToBeTaggedForProgramme = null,
-    programmeName = null,
-  )
+  override fun getProvider(): ElectronicMonitoringProvider? = this.electronicMonitoringProvider
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 

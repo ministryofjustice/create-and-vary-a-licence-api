@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
@@ -102,7 +103,11 @@ class ElectronicMonitoringProgrammeService(
   fun deleteElectronicMonitoringProvider(licenceEntity: Licence) {
     log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
     if (licenceEntity is HasElectronicMonitoringResponseProvider) {
-      licenceEntity.electronicMonitoringProvider = null
+      when (licenceEntity) {
+        is PrrdLicence -> licenceEntity.electronicMonitoringProvider = null
+        is CrdLicence -> licenceEntity.electronicMonitoringProvider = null
+        is HdcLicence -> licenceEntity.electronicMonitoringProvider = null
+      }
     } else {
       error("ElectronicMonitoringProvider can only be deleted for licences that implement HasElectronicMonitorResponseProvider")
     }
@@ -111,9 +116,19 @@ class ElectronicMonitoringProgrammeService(
   @Transactional
   fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
     if (licenceEntity is HasElectronicMonitoringResponseProvider) {
-      licenceEntity.ensureElectronicMonitoringProviderExists()
+      licenceEntity.ensureElectronicMonitoringProvider()
     } else {
       error("ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitorResponseProvider")
+    }
+  }
+
+  private fun HasElectronicMonitoringResponseProvider.ensureElectronicMonitoringProvider() {
+    if (this.getProvider() == null) {
+      when (this) {
+        is PrrdLicence -> this.electronicMonitoringProvider = ElectronicMonitoringProvider(licence = this)
+        is CrdLicence -> this.electronicMonitoringProvider = ElectronicMonitoringProvider(licence = this)
+        is HdcLicence -> this.electronicMonitoringProvider = ElectronicMonitoringProvider(licence = this)
+      }
     }
   }
 

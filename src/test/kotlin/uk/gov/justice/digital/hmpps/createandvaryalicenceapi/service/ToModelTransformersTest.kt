@@ -65,7 +65,6 @@ class ToModelTransformersTest {
   private companion object {
     val aLicenceEntity = TestData.createCrdLicence()
     val electronicMonitoringProvider = EntityElectronicMonitoringProvider(
-      id = 1,
       licence = aLicenceEntity,
       isToBeTaggedForProgramme = true,
       programmeName = "Test Programme",
