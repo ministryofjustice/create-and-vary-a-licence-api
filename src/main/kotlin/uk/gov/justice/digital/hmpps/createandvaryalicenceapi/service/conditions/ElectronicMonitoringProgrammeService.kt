@@ -116,7 +116,7 @@ class ElectronicMonitoringProgrammeService(
   @Transactional
   fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
     if (licenceEntity is HasElectronicMonitoringResponseProvider) {
-      licenceEntity.ensureElectronicMonitoringProvider()
+      licenceEntity.ensureProviderExists()
     } else {
       error("ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitorResponseProvider")
     }
@@ -129,7 +129,7 @@ class ElectronicMonitoringProgrammeService(
     else -> false
   }
 
-  private fun HasElectronicMonitoringResponseProvider.ensureElectronicMonitoringProvider() {
+  private fun HasElectronicMonitoringResponseProvider.ensureProviderExists() {
     if (!this.hasProvider()) {
       when (this) {
         is PrrdLicence -> this.electronicMonitoringProvider = ElectronicMonitoringProvider(licence = this)
