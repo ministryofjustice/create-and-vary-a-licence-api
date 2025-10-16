@@ -21,13 +21,20 @@ class CvlRecordService(
     val nomisIdsToLicenceStartDates = releaseDateService.getLicenceStartDates(prisoners, nomisIdsToEligibleKinds)
     return prisoners.map { prisoner ->
       val eligibility = nomisIdsToEligibility[prisoner.prisonerNumber]!!
+      val licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber]
+      val hardstopKind = when {
+        licenceStartDate == null || !releaseDateService.isInHardStopPeriod(licenceStartDate) -> null
+        releaseDateService.isTimeServed(prisoner) -> HardstopKind.TIME_SERVED
+        else -> HardstopKind.HARD_STOP
+      }
 
       CvlRecord(
         nomisId = prisoner.prisonerNumber,
-        licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber],
+        licenceStartDate = licenceStartDate,
         isEligible = eligibility.isEligible,
         eligibleKind = eligibility.eligibleKind,
         ineligiblityReasons = eligibility.ineligiblityReasons,
+        hardstopKind = hardstopKind,
       )
     }
   }

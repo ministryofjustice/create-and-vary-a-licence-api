@@ -1550,12 +1550,32 @@ class LicenceCreationServiceTest {
     }
 
     @Test
+    fun `service throws an error if no hardstopKind found`() {
+      val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 10, 10), hardstopKind = null ))
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createHardStopLicence(PRISON_NUMBER)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("No hardstopKind on CVL record for $PRISON_NUMBER - not eligible for hard stop licence")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
     fun `service creates populates timeserved licence with expected fields`() {
       val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 10, 10)))
-      whenever(releaseDateService.isTimeServed(any(), anyOrNull())).thenReturn(true)
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 10, 10), hardstopKind = HardstopKind.TIME_SERVED ))
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1605,9 +1625,8 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 10, 10)))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 10, 10), hardstopKind = HardstopKind.TIME_SERVED))
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
-      whenever(releaseDateService.isTimeServed(any(), anyOrNull())).thenReturn(true)
 
       service.createHardStopLicence(PRISON_NUMBER)
 
