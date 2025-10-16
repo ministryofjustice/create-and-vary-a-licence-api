@@ -103,7 +103,7 @@ class HdcLicence(
     optional = true,
     orphanRemoval = true,
   )
-  override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC,
@@ -299,12 +299,6 @@ class HdcLicence(
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
-
-  override fun createNewElectronicMonitoringProvider(): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
-    licence = this,
-    isToBeTaggedForProgramme = null,
-    programmeName = null,
-  )
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
