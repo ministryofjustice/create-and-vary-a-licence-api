@@ -32,10 +32,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Appr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
 
@@ -203,7 +203,8 @@ class CaseloadControllerTest {
       "ABC",
     )
 
-    val result = VaryApproverCaseloadSearchResponse(listOf(TestData.varyApprovalCase().copy(crnNumber = "ABC")), emptyList())
+    val result =
+      VaryApproverCaseloadSearchResponse(listOf(TestData.varyApprovalCase().copy(crnNumber = "ABC")), emptyList())
 
     whenever(varyApproverCaseloadService.searchForOffenderOnVaryApproverCaseload(request)).thenReturn(result)
 
