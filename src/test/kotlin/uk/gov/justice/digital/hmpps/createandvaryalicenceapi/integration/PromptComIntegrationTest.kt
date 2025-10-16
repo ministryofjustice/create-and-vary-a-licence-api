@@ -62,6 +62,7 @@ class PromptComIntegrationTest : IntegrationTestBase() {
       .expectBodyList(PromptComNotification::class.java)
       .returnResult().responseBody
     assertThat(coms?.size).isEqualTo(1)
+    assertThat(coms?.get(0)?.initialPromptCases?.size).isEqualTo(2)
   }
 
   @Test
@@ -90,9 +91,9 @@ class PromptComIntegrationTest : IntegrationTestBase() {
       govUkApiMockServer.start()
       govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
       prisonSearchServer.start()
-      prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false)
+      prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false, true)
       deliusMockServer.start()
-      deliusMockServer.stubGetManagersForGetApprovalCaseload()
+      deliusMockServer.stubGetManagersForPromptComJob()
       prisonMockServer.start()
       prisonMockServer.stubGetCourtOutcomes()
     }

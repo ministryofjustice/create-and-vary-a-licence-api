@@ -29,7 +29,6 @@ class NotifyServiceTest {
     selfLink = "http://somewhere",
     variationForApprovalTemplateId = TEMPLATE_ID,
     initialLicencePromptTemplateId = TEMPLATE_ID,
-    urgentLicencePromptTemplateId = TEMPLATE_ID,
     datesChangedTemplateId = TEMPLATE_ID,
     variationApprovedTemplateId = TEMPLATE_ID,
     variationReferredTemplateId = TEMPLATE_ID,
@@ -51,29 +50,7 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-20")),
-      ),
-    )
-    val expectedMap = mapOf(
-      "comName" to "Joe Bloggs",
-      "prisonersForRelease" to listOf("John Smith (CRN: X12444), who is due to leave custody on 20 November 2022"),
-      "createLicenceLink" to "http://somewhere/licence/create/caseload",
-      "isEligibleForEarlyRelease" to "yes",
-    )
-
-    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
-    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
-  }
-
-  @Test
-  fun `send licence urgent licence create email`() {
-    whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
-
-    val comToEmail = PromptComNotification(
-      email = EMAIL_ADDRESS,
-      comName = "Joe Bloggs",
-      urgentPromptCases = listOf(
-        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-20")),
+        Case(name = "John Smith", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-20")),
       ),
     )
     val expectedMap = mapOf(
@@ -95,9 +72,9 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        Case(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        Case(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-11")),
+        Case(name = "John Smith", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09")),
+        Case(name = "Test1", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10")),
+        Case(name = "Test2", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-11")),
       ),
     )
     val expectedMap = mapOf(
@@ -121,65 +98,9 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        Case(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        Case(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-24")),
-      ),
-    )
-    val expectedMap = mapOf(
-      "comName" to "Joe Bloggs",
-      "prisonersForRelease" to listOf(
-        "John Smith (CRN: X12444), who is due to leave custody on 09 November 2022",
-        "Test1 (CRN: X12444), who is due to leave custody on 10 November 2022",
-        "Test2 (CRN: X12444), who is due to leave custody on 24 November 2022",
-      ),
-      "createLicenceLink" to "http://somewhere/licence/create/caseload",
-      "isEligibleForEarlyRelease" to "no",
-    )
-
-    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
-    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
-  }
-
-  @Test
-  fun `send licence urgent licence create email with multiple cases among which one prisoner is eligible for early release`() {
-    whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
-
-    val comToEmail = PromptComNotification(
-      email = EMAIL_ADDRESS,
-      comName = "Joe Bloggs",
-      urgentPromptCases = listOf(
-        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        Case(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        Case(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-11")),
-      ),
-    )
-    val expectedMap = mapOf(
-      "comName" to "Joe Bloggs",
-      "prisonersForRelease" to listOf(
-        "John Smith (CRN: X12444), who is due to leave custody on 09 November 2022",
-        "Test1 (CRN: X12444), who is due to leave custody on 10 November 2022",
-        "Test2 (CRN: X12444), who is due to leave custody on 11 November 2022",
-      ),
-      "createLicenceLink" to "http://somewhere/licence/create/caseload",
-      "isEligibleForEarlyRelease" to "yes",
-    )
-
-    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
-    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
-  }
-
-  @Test
-  fun `send licence urgent licence create email with multiple cases among which none are eligible for early release`() {
-    whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(false)
-
-    val comToEmail = PromptComNotification(
-      email = EMAIL_ADDRESS,
-      comName = "Joe Bloggs",
-      urgentPromptCases = listOf(
-        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        Case(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        Case(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-24")),
+        Case(name = "John Smith", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09")),
+        Case(name = "Test1", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10")),
+        Case(name = "Test2", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-24")),
       ),
     )
     val expectedMap = mapOf(
@@ -336,7 +257,6 @@ class NotifyServiceTest {
       selfLink = "http://somewhere",
       variationForApprovalTemplateId = TEMPLATE_ID,
       initialLicencePromptTemplateId = TEMPLATE_ID,
-      urgentLicencePromptTemplateId = TEMPLATE_ID,
       datesChangedTemplateId = TEMPLATE_ID,
       variationApprovedTemplateId = TEMPLATE_ID,
       variationReferredTemplateId = TEMPLATE_ID,

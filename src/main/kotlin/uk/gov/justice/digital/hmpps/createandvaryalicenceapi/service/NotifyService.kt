@@ -21,7 +21,6 @@ class NotifyService(
   @param:Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String,
   @param:Value("\${notify.templates.variationReApproval}") private val variationForReApprovalTemplateId: String,
   @param:Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String,
-  @param:Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
   @param:Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String,
   @param:Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String,
   @param:Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String,
@@ -185,17 +184,13 @@ class NotifyService(
   fun sendInitialLicenceCreateEmails(comsToEmail: List<PromptComNotification>) {
     log.info(
       """
-      sending initial emails to ${comsToEmail.size} COMS. 
+      sending initial emails to ${comsToEmail.size} COMS.
       * initial emails to send: ${comsToEmail.filter { it.initialPromptCases.isNotEmpty() }.size}
-      * urgent emails to send: ${comsToEmail.filter { it.urgentPromptCases.isNotEmpty() }.size}
       """.trimIndent(),
     )
     comsToEmail.forEach {
       if (it.initialPromptCases.isNotEmpty()) {
         sendLicenceCreateEmail(initialLicencePromptTemplateId, it.email, it.comName, it.initialPromptCases)
-      }
-      if (it.urgentPromptCases.isNotEmpty()) {
-        sendLicenceCreateEmail(urgentLicencePromptTemplateId, it.email, it.comName, it.urgentPromptCases)
       }
     }
   }
@@ -287,7 +282,7 @@ class NotifyService(
         "comName" to comName,
         "prisonersForRelease" to cases.map { prisoner ->
           "${prisoner.name} (CRN: ${prisoner.crn}), who is due to leave custody on ${
-            prisoner.releaseDate.format(
+            prisoner.licenceStartDate.format(
               DateTimeFormatter.ofPattern(
                 "dd LLLL yyyy",
               ),
@@ -295,7 +290,7 @@ class NotifyService(
           }"
         },
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
-        "isEligibleForEarlyRelease" to if (cases.any { releaseDateService.isEligibleForEarlyRelease(it.releaseDate) }) "yes" else "no",
+        "isEligibleForEarlyRelease" to if (cases.any { releaseDateService.isEligibleForEarlyRelease(it.licenceStartDate) }) "yes" else "no",
       ),
     )
     cases.map { prisoner ->
@@ -305,7 +300,7 @@ class NotifyService(
       }
       log.info(
         "Notification sent to $emailAddress $promptType for ${prisoner.name} being release on ${
-          prisoner.releaseDate.format(
+          prisoner.licenceStartDate.format(
             dateFormat,
           )
         }",
