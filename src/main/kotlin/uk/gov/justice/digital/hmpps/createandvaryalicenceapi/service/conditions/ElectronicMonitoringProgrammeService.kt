@@ -102,24 +102,25 @@ class ElectronicMonitoringProgrammeService(
   @Transactional
   fun deleteElectronicMonitoringProvider(licenceEntity: Licence) {
     log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
-    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
-      when (licenceEntity) {
-        is PrrdLicence -> licenceEntity.electronicMonitoringProvider = null
-        is CrdLicence -> licenceEntity.electronicMonitoringProvider = null
-        is HdcLicence -> licenceEntity.electronicMonitoringProvider = null
-      }
-    } else {
-      error("ElectronicMonitoringProvider can only be deleted for licences that implement HasElectronicMonitorResponseProvider")
+
+    check(licenceEntity is HasElectronicMonitoringResponseProvider) {
+      "ElectronicMonitoringProvider can only be deleted for licences that implement HasElectronicMonitoringResponseProvider"
+    }
+
+    when (licenceEntity) {
+      is PrrdLicence -> licenceEntity.electronicMonitoringProvider = null
+      is CrdLicence -> licenceEntity.electronicMonitoringProvider = null
+      is HdcLicence -> licenceEntity.electronicMonitoringProvider = null
     }
   }
 
   @Transactional
   fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
-    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
-      licenceEntity.ensureProviderExists()
-    } else {
-      error("ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitorResponseProvider")
+    check(licenceEntity is HasElectronicMonitoringResponseProvider) {
+      "ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitoringResponseProvider"
     }
+
+    licenceEntity.ensureProviderExists()
   }
 
   private fun HasElectronicMonitoringResponseProvider.hasProvider(): Boolean = when (this) {
