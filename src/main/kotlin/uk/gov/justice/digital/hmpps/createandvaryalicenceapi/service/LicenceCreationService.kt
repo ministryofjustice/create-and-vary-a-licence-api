@@ -144,7 +144,7 @@ class LicenceCreationService(
     val hardstopKind = cvlRecord.hardstopKind
       ?: error("No hardstopKind on CVL record for $prisonNumber - not eligible for hard stop licence")
 
-    val licence = if (isTimeServedLogicEnabled && hardstopKind == HardstopKind.TIME_SERVED) {
+    val licence = if (isTimeServedLogicEnabled && hardstopKind == LicenceKind.TIME_SERVED) {
       LicenceFactory.createTimeServe(
         licenceType = licenceType,
         nomsId = nomisRecord.prisonerNumber,
