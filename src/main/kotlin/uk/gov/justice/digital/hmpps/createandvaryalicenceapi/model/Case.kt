@@ -15,7 +15,7 @@ data class Case(
   @field:NotBlank
   val crn: String,
 
-  @field:Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022", nullable = false)
+  @field:Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
   @field:JsonFormat(pattern = "yyyy-MM-dd")
   val licenceStartDate: LocalDate,
 )
