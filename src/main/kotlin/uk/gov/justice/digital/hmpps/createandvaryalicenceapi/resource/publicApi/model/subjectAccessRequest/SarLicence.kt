@@ -127,4 +127,10 @@ data class SarLicence(
 
   @field:Schema(description = "The version number of this licence", example = "1.3")
   val licenceVersion: String?,
+
+  @field:Schema(description = "Is the licence to be tagged for electronic monitoring programme")
+  val isToBeTaggedForProgramme: Boolean? = null,
+
+  @field:Schema(description = "Programme Name of the licence", example = "Off Some Road")
+  val programmeName: String? = null,
 )
