@@ -324,8 +324,9 @@ data class PrrdLicenceResponse(
   override val submittedByFullName: String? = null,
 
   @field:Schema(description = "Describes a electronic monitoring provider on a licence")
-  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  override val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 
   @field:Schema(description = "The status of the electronic monitoring provider", example = "COMPLETE")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
-) : Licence
+) : Licence,
+  SupportsElectronicMonitoring
