@@ -19,7 +19,11 @@ class SubjectAccessRequestService(
   @param:Value("\${self.api.link}") private val baseUrl: String,
 ) : HmppsPrisonSubjectAccessRequestService {
 
-  override fun getPrisonContentFor(prn: String, fromDate: LocalDate?, toDate: LocalDate?): HmppsSubjectAccessRequestContent? {
+  override fun getPrisonContentFor(
+    prn: String,
+    fromDate: LocalDate?,
+    toDate: LocalDate?,
+  ): HmppsSubjectAccessRequestContent? {
     val licenceIds = licenceRepository.findAllByNomsId(prn).map { it.id }
 
     if (licenceIds.isEmpty()) return null
