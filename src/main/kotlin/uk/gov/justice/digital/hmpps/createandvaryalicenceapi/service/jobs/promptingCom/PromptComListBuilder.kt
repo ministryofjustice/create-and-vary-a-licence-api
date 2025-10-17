@@ -22,7 +22,10 @@ class PromptComListBuilder(
   private val deliusApiClient: DeliusApiClient,
 ) {
 
-  fun excludeIneligibleCases(candidates: Map<PrisonerSearchPrisoner, CommunityManager>, cvlRecords: List<CvlRecord>): Map<PrisonerSearchPrisoner, CommunityManager> {
+  fun excludeIneligibleCases(
+    candidates: Map<PrisonerSearchPrisoner, CommunityManager>,
+    cvlRecords: List<CvlRecord>,
+  ): Map<PrisonerSearchPrisoner, CommunityManager> {
     return candidates.filter { (nomisRecord, _) ->
       val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }
       return@filter cvlRecord.isEligible
@@ -71,7 +74,10 @@ class PromptComListBuilder(
     }
   }
 
-  fun enrichWithLicenceStartDates(cases: List<CaseWithEmail>, cvlRecords: List<CvlRecord>): List<CaseWithEmailAndStartDate> {
+  fun enrichWithLicenceStartDates(
+    cases: List<CaseWithEmail>,
+    cvlRecords: List<CvlRecord>,
+  ): List<CaseWithEmailAndStartDate> {
     return cases.mapNotNull { (case, email) ->
       val cvlRecord = cvlRecords.find { cvlRecord -> cvlRecord.nomisId == case.prisoner.prisonerNumber }
       val licenceStartDate = cvlRecord?.licenceStartDate
@@ -97,9 +103,9 @@ class PromptComListBuilder(
         Case(
           crn = case.crn,
           name = case.prisoner.firstName + " " + case.prisoner.lastName,
-          releaseDate = startDate,
+          licenceStartDate = startDate,
         )
-      },
+      }.sortedBy { it.licenceStartDate },
     )
   }
 
