@@ -298,7 +298,6 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should successfully search by prison number`() {
-
         assertThat(service.getPrisonOmuCaseload(setOf("BAI"), "A1234AA")).isEqualTo(
           listOf(
             TestData.caCase().copy(
