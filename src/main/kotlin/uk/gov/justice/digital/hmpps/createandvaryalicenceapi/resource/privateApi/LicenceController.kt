@@ -111,7 +111,6 @@ class LicenceController(
     request: CreateLicenceRequest,
   ): LicenceCreationResponse = when (request.type) {
     HARD_STOP -> licenceCreationService.createHardStopLicence(request.nomsId)
-    TIME_SERVED -> TODO("Implement Time-Served licence creation")
     HDC -> licenceCreationService.createHdcLicence(request.nomsId)
     else -> licenceCreationService.createLicence(request.nomsId)
   }
