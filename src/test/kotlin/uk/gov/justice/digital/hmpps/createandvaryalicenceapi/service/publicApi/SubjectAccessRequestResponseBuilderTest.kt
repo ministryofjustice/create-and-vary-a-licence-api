@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
@@ -21,8 +22,15 @@ class SubjectAccessRequestResponseBuilderTest {
 
   @Test
   fun `should add licence and build hmppsSubjectAccessRequestContent correctly`() {
+    val crdLicenceWithEm = crdLicence.copy(
+      electronicMonitoringProvider = ElectronicMonitoringProvider(
+        isToBeTaggedForProgramme = true,
+        programmeName = "a program",
+      ),
+    )
+
     val result = SubjectAccessRequestResponseBuilder("https://some-host")
-      .addLicence(crdLicence)
+      .addLicence(crdLicenceWithEm)
       .build(emptyList())
 
     val content = result.content as Content
@@ -60,6 +68,8 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(bespokeConditions).isEmpty()
       assertThat(createdByFullName).isEqualTo(crdLicence.createdByFullName)
       assertThat(licenceVersion).isEqualTo(crdLicence.licenceVersion)
+      assertThat(isToBeTaggedForProgramme).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.isToBeTaggedForProgramme)
+      assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider.programmeName)
     }
   }
 
@@ -176,6 +186,11 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(summary.imageType).isEqualTo(contentType)
       assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
+    }
+
+    with(content.licences.first()) {
+      assertThat(isToBeTaggedForProgramme).isNull()
+      assertThat(programmeName).isNull()
     }
   }
 

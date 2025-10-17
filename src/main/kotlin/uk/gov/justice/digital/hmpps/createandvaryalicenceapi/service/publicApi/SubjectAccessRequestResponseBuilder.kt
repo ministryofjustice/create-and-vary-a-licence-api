@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportsElectronicMonitoring
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalConditionUploadSummary
@@ -30,6 +31,11 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
   private val attachmentDetail: MutableList<Attachment> = mutableListOf()
 
   fun addLicence(licence: Licence): SubjectAccessRequestResponseBuilder {
+    val supportsElectronicMonitoring = licence is SupportsElectronicMonitoring
+    val isToBeTaggedForProgramme =
+      if (supportsElectronicMonitoring) licence.electronicMonitoringProvider?.isToBeTaggedForProgramme else null
+    val programmeName = if (supportsElectronicMonitoring) licence.electronicMonitoringProvider?.programmeName else null
+
     sarLicences.add(
       SarLicence(
         id = licence.id,
@@ -71,6 +77,8 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
         bespokeConditions = licence.bespokeConditions.map { it.text.toString() },
         createdByFullName = licence.createdByFullName,
         licenceVersion = licence.licenceVersion,
+        isToBeTaggedForProgramme = isToBeTaggedForProgramme,
+        programmeName = programmeName,
       ),
     )
     return this
