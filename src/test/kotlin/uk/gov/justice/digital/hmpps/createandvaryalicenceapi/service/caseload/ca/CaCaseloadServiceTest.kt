@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCasesRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -1725,48 +1724,6 @@ class CaCaseloadServiceTest {
     val tenDaysFromNow: LocalDate = LocalDate.now(clock).plusDays(10)
     val twoMonthsFromNow: LocalDate = LocalDate.now(clock).plusMonths(2)
     val fiveDaysFromNow: LocalDate = LocalDate.now(clock).plusDays(5)
-
-    fun aLicenceCaseInformation(
-      kind: LicenceKind = LicenceKind.CRD,
-      licenceId: Long = 1L,
-      versionOfId: Long? = null,
-      licenceStatus: LicenceStatus = LicenceStatus.IN_PROGRESS,
-      nomisId: String = "A1234AA",
-      surname: String? = "One",
-      forename: String? = "Person",
-      prisonCode: String? = "BAI",
-      prisonDescription: String? = "Moorland (HMP)",
-      conditionalReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
-      actualReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
-      licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22),
-      postRecallReleaseDate: LocalDate? = null,
-      updatedByFirstName: String? = "X",
-      updatedByLastName: String? = "Y",
-      comUsername: String? = "com-user",
-      comFirstName: String? = "Com",
-      comLastName: String? = "User",
-      homeDetentionCurfewActualDate: LocalDate? = null,
-    ) = LicenceCase(
-      kind = kind,
-      licenceId = licenceId,
-      versionOfId = versionOfId,
-      licenceStatus = licenceStatus,
-      prisonNumber = nomisId,
-      surname = surname,
-      forename = forename,
-      prisonCode = prisonCode,
-      prisonDescription = prisonDescription,
-      conditionalReleaseDate = conditionalReleaseDate,
-      actualReleaseDate = actualReleaseDate,
-      licenceStartDate = licenceStartDate,
-      postRecallReleaseDate = postRecallReleaseDate,
-      updatedByFirstName = updatedByFirstName,
-      updatedByLastName = updatedByLastName,
-      comUsername = comUsername,
-      comFirstName = comFirstName,
-      comLastName = comLastName,
-      homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
-    )
 
     val probationCase = ProbationCase(crn = "X12347", nomisId = "A1234AA")
 

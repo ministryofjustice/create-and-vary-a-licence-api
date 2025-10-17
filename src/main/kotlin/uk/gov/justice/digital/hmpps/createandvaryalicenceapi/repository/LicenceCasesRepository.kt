@@ -28,8 +28,6 @@ data class LicenceCase(
   val updatedByFirstName: String?,
   val updatedByLastName: String?,
   val comUsername: String?,
-  val comFirstName: String?,
-  val comLastName: String?,
 ) {
   val updatedByFullName: String?
     get() = listOfNotNull(updatedByFirstName, updatedByLastName)
@@ -61,7 +59,7 @@ interface LicenceCasesRepository : JpaRepository<Licence, Long> {
             l.postRecallReleaseDate,
             l.homeDetentionCurfewActualDate,
             updatedBy.firstName, updatedBy.lastName,
-            com.username, com.firstName, com.lastName
+            com.username
         )
         FROM Licence l
             LEFT JOIN l.responsibleCom com
