@@ -62,17 +62,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `Successfully retrieve staff create caseload`() {
+    fun `Successfully retrieve staff create caseload with no licences`() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
-        readFile("staff-create-case-load-prisoners").replace(
-          "\$releaseDate",
-          releaseDate,
-        ).replace("\$sled", sled),
-      )
+      stubSearchPrisonersByNomisId(releaseDate, sled)
       prisonApiMockServer.stubGetCourtOutcomes()
 
       val caseload = webTestClient.get()
@@ -95,6 +90,56 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-licences-with-e_m_providers.sql",
+    )
+    fun `Successfully retrieve a caseload with licences`() {
+      // Given
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled)
+      prisonApiMockServer.stubGetCourtOutcomes()
+
+      // When
+      val result = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      val caseload = result.expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCase>>())
+        .returnResult().responseBody!!
+
+      assertThat(caseload).hasSize(4)
+
+      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
+        1,
+        2,
+        null,
+        null,
+      )
+      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
+        "A1234AA",
+        "AB1234H",
+        "AB1234I",
+        "AB1234J",
+      )
+    }
+
+    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String) {
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        readFile("staff-create-case-load-prisoners").replace(
+          "\$releaseDate",
+          releaseDate,
+        ).replace("\$sled", sled),
+      )
     }
   }
 

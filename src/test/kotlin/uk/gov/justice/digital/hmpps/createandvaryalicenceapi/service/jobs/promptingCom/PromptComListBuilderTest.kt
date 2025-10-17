@@ -64,7 +64,10 @@ class PromptComListBuilderTest {
       val prisoner = prisonerSearchResult()
       val com = offenderManager()
 
-      val result = promptComListBuilder.excludeIneligibleCases(mapOf(prisoner to com), listOf(aCvlRecord(kind = null).copy(isEligible = true)))
+      val result = promptComListBuilder.excludeIneligibleCases(
+        mapOf(prisoner to com),
+        listOf(aCvlRecord(kind = null).copy(isEligible = true)),
+      )
 
       assertThat(result).isEqualTo(mapOf(prisoner to com))
     }
@@ -74,7 +77,10 @@ class PromptComListBuilderTest {
       val prisoner = prisonerSearchResult()
       val com = offenderManager()
 
-      val result = promptComListBuilder.excludeIneligibleCases(mapOf(prisoner to com), listOf(aCvlRecord(kind = null).copy(isEligible = false)))
+      val result = promptComListBuilder.excludeIneligibleCases(
+        mapOf(prisoner to com),
+        listOf(aCvlRecord(kind = null).copy(isEligible = false)),
+      )
 
       assertThat(result).isEmpty()
     }
@@ -223,7 +229,8 @@ class PromptComListBuilderTest {
       val promptCase = promptCase()
       val cvlRecord = aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 1, 2))
 
-      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
+      val result =
+        promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
       assertThat(result).containsExactly(
         promptCase to "com@test.com" to LocalDate.of(2022, 1, 2),
       )
@@ -235,7 +242,8 @@ class PromptComListBuilderTest {
 
       val cvlRecord = aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = null)
 
-      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
+      val result =
+        promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
       assertThat(result).isEmpty()
     }
   }
@@ -298,17 +306,17 @@ class PromptComListBuilderTest {
     fun fewCases() {
       val promptCase1 = promptCase().copy(
         crn = "crn-1",
-        prisoner = prisonerSearchResult().copy("A1234AA"),
-        comStaffCode = "AAA",
-      ) to "user1@test.com" to LocalDate.of(2022, 1, 1)
-      val promptCase2 = promptCase().copy(
-        crn = "crn-2",
-        prisoner = prisonerSearchResult().copy("A1234BB"),
+        prisoner = prisonerSearchResult().copy(prisonerNumber = "A1234AA"),
         comStaffCode = "AAA",
       ) to "user1@test.com" to LocalDate.of(2022, 1, 2)
+      val promptCase2 = promptCase().copy(
+        crn = "crn-2",
+        prisoner = prisonerSearchResult().copy(prisonerNumber = "A1234BB"),
+        comStaffCode = "AAA",
+      ) to "user1@test.com" to LocalDate.of(2022, 1, 1)
       val promptCase3 = promptCase().copy(
         crn = "crn-3",
-        prisoner = prisonerSearchResult().copy("A1234CC"),
+        prisoner = prisonerSearchResult().copy(prisonerNumber = "A1234CC"),
         comStaffCode = "BBB",
       ) to "user2@test.com" to LocalDate.of(2022, 1, 3)
 
@@ -321,14 +329,14 @@ class PromptComListBuilderTest {
             comName = "John Doe",
             initialPromptCases = listOf(
               Case(
-                crn = "crn-1",
-                name = "A Prisoner",
-                releaseDate = LocalDate.of(2022, 1, 1),
-              ),
-              Case(
                 crn = "crn-2",
                 name = "A Prisoner",
-                releaseDate = LocalDate.of(2022, 1, 2),
+                licenceStartDate = LocalDate.of(2022, 1, 1),
+              ),
+              Case(
+                crn = "crn-1",
+                name = "A Prisoner",
+                licenceStartDate = LocalDate.of(2022, 1, 2),
               ),
             ),
           ),
@@ -339,7 +347,7 @@ class PromptComListBuilderTest {
               Case(
                 crn = "crn-3",
                 name = "A Prisoner",
-                releaseDate = LocalDate.of(2022, 1, 3),
+                licenceStartDate = LocalDate.of(2022, 1, 3),
               ),
             ),
           ),

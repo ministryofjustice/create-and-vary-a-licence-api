@@ -154,7 +154,7 @@ class PromptComServiceTest {
         Case(
           crn = "crn",
           name = "name",
-          releaseDate = LocalDate.of(2022, 1, 2),
+          licenceStartDate = LocalDate.of(2022, 1, 2),
         ),
       ),
     )
