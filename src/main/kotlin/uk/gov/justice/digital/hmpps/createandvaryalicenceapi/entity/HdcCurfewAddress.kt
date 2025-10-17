@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -17,7 +19,7 @@ data class HdcCurfewAddress(
   @field:Positive
   open val id: Long? = null,
 
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH])
   @JoinColumn(name = "licence_id", nullable = false)
   var licence: Licence,
 
