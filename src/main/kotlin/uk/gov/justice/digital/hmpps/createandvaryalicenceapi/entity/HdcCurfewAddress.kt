@@ -19,7 +19,7 @@ data class HdcCurfewAddress(
   @field:Positive
   open val id: Long? = null,
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH])
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REFRESH])
   @JoinColumn(name = "licence_id", nullable = false)
   var licence: Licence,
 
