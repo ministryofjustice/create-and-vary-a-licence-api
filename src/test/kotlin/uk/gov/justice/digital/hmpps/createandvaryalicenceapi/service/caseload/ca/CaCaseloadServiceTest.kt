@@ -581,12 +581,12 @@ class CaCaseloadServiceTest {
     @Test
     fun `should have correct releaseDateLabel when actualReleaseDate is the same as licenceStartDate`() {
       // Given
-      val licenceSummary = createLicenceCase(
+      val licenceCase = createLicenceCase(
         actualReleaseDate = twoDaysFromNow,
         licenceStartDate = twoDaysFromNow,
       )
 
-      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(listOf(licenceSummary))
+      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(listOf(licenceCase))
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
@@ -600,12 +600,12 @@ class CaCaseloadServiceTest {
     @Test
     fun `should have correct releaseDateLabel when postRecallReleaseDate is the same as licenceStartDate`() {
       // Given
-      val licenceSummary = createLicenceCase(
+      val licenceCase = createLicenceCase(
         licenceStartDate = tenDaysFromNow,
         postRecallReleaseDate = tenDaysFromNow,
       )
-      whenever(workingDaysService.getLastWorkingDay(licenceSummary.postRecallReleaseDate)).thenReturn(licenceSummary.postRecallReleaseDate)
-      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(listOf(licenceSummary))
+      whenever(workingDaysService.getLastWorkingDay(licenceCase.postRecallReleaseDate)).thenReturn(licenceCase.postRecallReleaseDate)
+      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(listOf(licenceCase))
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
@@ -1045,7 +1045,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should successfully search prison should return results in LSD ascending and then secondary id order`() {
-      val licenceSummaryList = listOf(
+      val licenceCases = listOf(
         createLicenceCase(
           licenceId = 1,
           licenceStatus = LicenceStatus.SUBMITTED,
@@ -1088,9 +1088,9 @@ class CaCaseloadServiceTest {
           PrisonQuery.statusCodes,
           PrisonQuery.prisonCodes,
         ),
-      ).thenReturn(licenceSummaryList)
+      ).thenReturn(licenceCases)
 
-      val prisoners = licenceSummaryList.map {
+      val prisoners = licenceCases.map {
         TestData.prisonerSearchResult().copy(
           prisonerNumber = it.prisonNumber,
           firstName = it.forename!!,
@@ -1392,7 +1392,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should successfully search probation should return results in LSD descending and then secondary id order`() {
-      val licenceSummaryList = listOf(
+      val licenceCases = listOf(
         createLicenceCase(licenceId = 1, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234AC", licenceStartDate = LocalDate.now().minusDays(1), forename = "Last"),
         createLicenceCase(licenceId = 2, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234BC", licenceStartDate = LocalDate.now(), forename = "Second"),
         createLicenceCase(licenceId = 5, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234BD", licenceStartDate = LocalDate.now(), forename = "Forth"),
@@ -1405,7 +1405,7 @@ class CaCaseloadServiceTest {
           ProbationQuery.statusCodes,
           ProbationQuery.prisonCodes,
         ),
-      ).thenReturn(licenceSummaryList)
+      ).thenReturn(licenceCases)
 
       val results = service.searchForOffenderOnPrisonCaseAdminCaseload(
         aPrisonUserSearchRequest.copy(query = "com"),
@@ -1590,7 +1590,7 @@ class CaCaseloadServiceTest {
     @Test
     fun `should successfully search prison should return results by id`() {
       // Given
-      val licenceSummaryList = listOf(
+      val licenceCases = listOf(
         createLicenceCase(
           licenceId = 1,
           licenceStatus = LicenceStatus.SUBMITTED,
@@ -1633,9 +1633,9 @@ class CaCaseloadServiceTest {
           PrisonQuery.statusCodes,
           PrisonQuery.prisonCodes,
         ),
-      ).thenReturn(licenceSummaryList)
+      ).thenReturn(licenceCases)
 
-      val prisoners = licenceSummaryList.map {
+      val prisoners = licenceCases.map {
         TestData.prisonerSearchResult().copy(
           prisonerNumber = it.prisonNumber,
           firstName = it.forename!!,
@@ -1655,14 +1655,14 @@ class CaCaseloadServiceTest {
     @Test
     fun `should have correct releaseDateLabel when postRecallReleaseDate is the same as licenceStartDate`() {
       // Given
-      val licenceSummary = createLicenceCase(
+      val licenceCase = createLicenceCase(
         licenceId = 1,
         licenceStartDate = tenDaysFromNow,
         postRecallReleaseDate = tenDaysFromNow,
       )
-      whenever(workingDaysService.getLastWorkingDay(licenceSummary.postRecallReleaseDate))
-        .thenReturn(licenceSummary.postRecallReleaseDate)
-      whenever(licenceCasesRepository.findLicenceCases(any(), any())).thenReturn(listOf(licenceSummary))
+      whenever(workingDaysService.getLastWorkingDay(licenceCase.postRecallReleaseDate))
+        .thenReturn(licenceCase.postRecallReleaseDate)
+      whenever(licenceCasesRepository.findLicenceCases(any(), any())).thenReturn(listOf(licenceCase))
 
       // When
       val prisonOmuCaseload = service.getProbationOmuCaseload(setOf("BAI"), "")

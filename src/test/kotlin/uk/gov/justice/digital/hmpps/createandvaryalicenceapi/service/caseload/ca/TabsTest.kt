@@ -24,13 +24,13 @@ class TabsTest {
   @CsvSource("IN_PROGRESS", "SUBMITTED", "APPROVED", "NOT_STARTED")
   fun `returns ATTENTION_NEEDED when licence is inflight and start date is null`(status: LicenceStatus) {
     // Given
-    val licence = createLicenceCase(licenceStatus = status)
+    val licenceCase = createLicenceCase(licenceStatus = status)
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = null,
-      licenceCase = licence,
+      licenceCase = licenceCase,
       now = clock,
     )
 
@@ -41,13 +41,13 @@ class TabsTest {
   @Test
   fun `returns ATTENTION_NEEDED when licence is approved and start date is in the past`() {
     // Given
-    val licence = createLicenceCase(licenceStatus = APPROVED)
+    val licenceCase = createLicenceCase(licenceStatus = APPROVED)
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = fixedNow.minusDays(1),
-      licenceCase = licence,
+      licenceCase = licenceCase,
       now = clock,
     )
 
@@ -58,13 +58,13 @@ class TabsTest {
   @Test
   fun `does not return ATTENTION_NEEDED when licence is approved and start date is today`() {
     // Given
-    val licence = createLicenceCase(licenceStatus = APPROVED)
+    val licenceCase = createLicenceCase(licenceStatus = APPROVED)
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow,
-      licenceCase = licence,
+      licenceCase = licenceCase,
       now = clock,
     )
 
@@ -75,13 +75,13 @@ class TabsTest {
   @Test
   fun `does not return ATTENTION_NEEDED when licence is approved and start date is tomorrow`() {
     // Given
-    val licence = createLicenceCase(licenceStatus = APPROVED)
+    val licenceCase = createLicenceCase(licenceStatus = APPROVED)
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(1),
-      licenceCase = licence,
+      licenceCase = licenceCase,
       now = clock,
     )
 
@@ -92,13 +92,13 @@ class TabsTest {
   @Test
   fun `returns ATTENTION_NEEDED when no licence and no LSD`() {
     // Given
-    val licence: LicenceCase? = null
+    val licenceCase: LicenceCase? = null
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = null,
-      licenceCase = licence,
+      licenceCase = licenceCase,
       now = clock,
     )
 
@@ -109,7 +109,7 @@ class TabsTest {
   @Test
   fun `returns RELEASES_IN_NEXT_TWO_WORKING_DAYS when licence LSD is not in past and due to be released soon`() {
     // Given
-    val licence = createLicenceCase(
+    val licenceCase = createLicenceCase(
       licenceStatus = APPROVED,
     )
 
@@ -117,7 +117,7 @@ class TabsTest {
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(1),
-      licenceCase = licence,
+      licenceCase = licenceCase,
       now = clock,
     )
 
@@ -128,13 +128,13 @@ class TabsTest {
   @Test
   fun `returns RELEASES_IN_NEXT_TWO_WORKING_DAYS when no licence and falls back to CVL info`() {
     // Given
-    val licence: LicenceCase? = null
+    val licenceCase: LicenceCase? = null
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(2),
-      licenceCase = licence,
+      licenceCase = licenceCase,
       now = clock,
     )
 
@@ -145,7 +145,7 @@ class TabsTest {
   @Test
   fun `returns FUTURE_RELEASES when licence present`() {
     // Given
-    val licence = createLicenceCase(
+    val licenceCase = createLicenceCase(
       licenceStatus = APPROVED,
     )
 
@@ -153,7 +153,7 @@ class TabsTest {
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = fixedNow.plusDays(3),
-      licenceCase = licence,
+      licenceCase = licenceCase,
       now = clock,
     )
 
@@ -164,13 +164,13 @@ class TabsTest {
   @Test
   fun `returns FUTURE_RELEASES when no licence and falls back to CVL info`() {
     // Given
-    val licence: LicenceCase? = null
+    val licenceCase: LicenceCase? = null
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = fixedNow.plusDays(3),
-      licenceCase = licence,
+      licenceCase = licenceCase,
       now = clock,
     )
 
