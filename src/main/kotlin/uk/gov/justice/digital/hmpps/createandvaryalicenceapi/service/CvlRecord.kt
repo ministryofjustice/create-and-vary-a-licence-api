@@ -9,5 +9,5 @@ data class CvlRecord(
   val isEligible: Boolean = false,
   val eligibleKind: LicenceKind? = null,
   val ineligiblityReasons: List<String> = emptyList(),
-  val hardstopKind: LicenceKind? = null,
+  val hardStopKind: LicenceKind? = null,
 )

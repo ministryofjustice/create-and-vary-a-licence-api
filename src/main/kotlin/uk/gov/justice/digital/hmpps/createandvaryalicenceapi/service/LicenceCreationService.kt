@@ -141,10 +141,10 @@ class LicenceCreationService(
     val licenceType = getLicenceType(nomisRecord)
     val version = licencePolicyService.currentPolicy().version
     val licenceStartDate = cvlRecord.licenceStartDate
-    val hardstopKind = cvlRecord.hardstopKind
-      ?: error("No hardstopKind on CVL record for $prisonNumber - not eligible for hard stop licence")
+    val hardStopKind = cvlRecord.hardStopKind
+      ?: error("No hardStopKind on CVL record for $prisonNumber - not eligible for hard stop licence")
 
-    val licence = if (isTimeServedLogicEnabled && hardstopKind == LicenceKind.TIME_SERVED) {
+    val licence = if (isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED) {
       LicenceFactory.createTimeServe(
         licenceType = licenceType,
         nomsId = nomisRecord.prisonerNumber,
