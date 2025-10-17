@@ -188,7 +188,6 @@ object LicenceFactory {
     deliusRecord: ProbationCase,
     responsibleCom: CommunityOffenderManager?,
     creator: PrisonUser,
-    timedOutLicence: CrdLicence?,
     licenceStartDate: LocalDate?,
   ) = TimeServedLicence(
     typeCode = licenceType,
@@ -227,7 +226,6 @@ object LicenceFactory {
     dateCreated = LocalDateTime.now(),
     responsibleCom = responsibleCom,
     createdBy = creator,
-    substituteOfId = timedOutLicence?.id,
   )
 
   fun createCrdCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {

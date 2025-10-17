@@ -98,12 +98,13 @@ object TestData {
     conditionVersion = "1.0",
   )
 
-  fun aCvlRecord(nomsId: String = "A1234AA", licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22), kind: LicenceKind?) = CvlRecord(
+  fun aCvlRecord(nomsId: String = "A1234AA", licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22), kind: LicenceKind?, hardStopKind: LicenceKind? = LicenceKind.HARD_STOP) = CvlRecord(
     nomisId = nomsId,
     licenceStartDate = licenceStartDate,
     isEligible = true,
     eligibleKind = kind,
     ineligiblityReasons = emptyList(),
+    hardStopKind = hardStopKind,
   )
 
   fun anEligibilityAssessment() = EligibilityAssessment(
