@@ -127,36 +127,24 @@ class LicenceCreationService(
     verifyNoInFlightLicence(prisonNumber)
 
     val username = SecurityContextHolder.getContext().authentication.name
-
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
     val areaCode = currentResponsibleOfficerDetails?.team?.provider?.code ?: ""
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord, areaCode)
-
     val responsibleCom = currentResponsibleOfficerDetails?.let {
       staffRepository.findByStaffIdentifier(it.id) ?: createCom(it.id)
     }
-
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
-
-    val timedOutLicence: CrdLicence? = crdLicenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
-      listOf(nomisRecord.bookingId!!.toLong()),
-      TIMED_OUT,
-    ).firstOrNull()
-
-    val isTimeServed = isTimeServedLogicEnabled && releaseDateService.isTimeServed(nomisRecord)
-
-    if (!isTimeServed && responsibleCom == null) {
-      error("No active offender manager found for $prisonNumber")
-    }
-
     val licenceType = getLicenceType(nomisRecord)
     val version = licencePolicyService.currentPolicy().version
+    val licenceStartDate = cvlRecord.licenceStartDate
+    val hardStopKind = cvlRecord.hardStopKind
+      ?: error("No hardStopKind on CVL record for $prisonNumber - not eligible for hard stop licence")
 
-    val licence = if (isTimeServed) {
+    val licence = if (isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED) {
       LicenceFactory.createTimeServe(
         licenceType = licenceType,
         nomsId = nomisRecord.prisonerNumber,
@@ -167,10 +155,16 @@ class LicenceCreationService(
         deliusRecord = deliusRecord,
         responsibleCom = responsibleCom,
         creator = createdBy,
-        timedOutLicence = timedOutLicence,
-        licenceStartDate = cvlRecord.licenceStartDate,
+        licenceStartDate = licenceStartDate,
       )
     } else {
+      requireNotNull(responsibleCom) { error("No active offender manager found for $prisonNumber") }
+
+      val timedOutLicence: CrdLicence? = crdLicenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+        listOf(nomisRecord.bookingId!!.toLong()),
+        TIMED_OUT,
+      ).firstOrNull()
+
       LicenceFactory.createHardStop(
         licenceType = licenceType,
         nomsId = nomisRecord.prisonerNumber,
@@ -182,7 +176,7 @@ class LicenceCreationService(
         responsibleCom = responsibleCom!!,
         creator = createdBy,
         timedOutLicence = timedOutLicence,
-        licenceStartDate = cvlRecord.licenceStartDate,
+        licenceStartDate = licenceStartDate,
       )
     }
 
