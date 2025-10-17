@@ -2,80 +2,95 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.prison.LatestLicenceFinder.findLatestLicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.prison.LatestLicenceFinder.findLatestLicenceCases
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class LatestLicenceFinderTest {
 
   @Test
   fun `should return the first element if the licences length is one`() {
-    val licences = aLicenceSummary.copy(licenceStatus = LicenceStatus.APPROVED)
-    assertThat(findLatestLicenceSummary(listOf(licences))).isEqualTo(licences)
+    // Given
+    val licences = aLicenceCaseInformation(licenceStatus = LicenceStatus.APPROVED)
+
+    // When
+    val result = findLatestLicenceCases(listOf(licences))
+
+    // Then
+    assertThat(result).isEqualTo(licences)
   }
 
   @Test
   fun `should return the IN_PROGRESS licence if there are IN_PROGRESS and TIMED_OUT licences`() {
-    val licences =
-      listOf(
-        aLicenceSummary.copy(licenceStatus = LicenceStatus.IN_PROGRESS),
-        aLicenceSummary.copy(licenceStatus = LicenceStatus.TIMED_OUT),
-      )
-    assertThat(findLatestLicenceSummary(licences)).isEqualTo(licences.first())
+    // Given
+    val licences = listOf(
+      aLicenceCaseInformation(licenceStatus = LicenceStatus.IN_PROGRESS),
+      aLicenceCaseInformation(licenceStatus = LicenceStatus.TIMED_OUT),
+    )
+
+    // When
+    val result = findLatestLicenceCases(licences)
+
+    // Then
+    assertThat(result).isEqualTo(licences.first())
   }
 
   @Test
   fun `should return the SUBMITTED licence if there are IN_PROGRESS and SUBMITTED licences`() {
-    val licences =
-      listOf(
-        aLicenceSummary.copy(licenceStatus = LicenceStatus.SUBMITTED),
-        aLicenceSummary.copy(licenceStatus = LicenceStatus.IN_PROGRESS),
-      )
-    assertThat(findLatestLicenceSummary(licences)).isEqualTo(licences.first())
+    // Given
+    val licences = listOf(
+      aLicenceCaseInformation(licenceStatus = LicenceStatus.SUBMITTED),
+      aLicenceCaseInformation(licenceStatus = LicenceStatus.IN_PROGRESS),
+    )
+
+    // When
+    val result = findLatestLicenceCases(licences)
+
+    // Then
+    assertThat(result).isEqualTo(licences.first())
   }
 
-  val aLicenceSummary = LicenceSummary(
-    kind = LicenceKind.CRD,
-    licenceId = 1,
-    licenceType = LicenceType.AP,
-    licenceStatus = LicenceStatus.IN_PROGRESS,
-    nomisId = "A1234AA",
-    forename = "Person",
-    surname = "One",
-    crn = "X12345",
-    dateOfBirth = LocalDate.of(1985, 12, 28),
-    prisonCode = "BAI",
-    prisonDescription = "Moorland (HMP)",
-    probationAreaCode = "N01",
-    probationAreaDescription = "Wales",
-    probationPduCode = "N01A",
-    probationPduDescription = "Cardiff",
-    probationLauCode = "N01A2",
-    probationLauDescription = "Cardiff South",
-    probationTeamCode = "NA01A2-A",
-    probationTeamDescription = "Cardiff South Team A",
-    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-    actualReleaseDate = LocalDate.of(2021, 10, 22),
-    sentenceStartDate = LocalDate.of(2018, 10, 22),
-    sentenceEndDate = LocalDate.of(2021, 10, 22),
-    licenceStartDate = LocalDate.of(2021, 10, 22),
-    licenceExpiryDate = LocalDate.of(2021, 10, 22),
-    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-    comUsername = "com-user",
-    bookingId = 54321,
-    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-    approvedByName = "Approver Name",
-    approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-    licenceVersion = "1.0",
-    isReviewNeeded = false,
-
-    isInHardStopPeriod = false,
-    isDueToBeReleasedInTheNextTwoWorkingDays = false,
-    updatedByFullName = "X Y",
+  fun aLicenceCaseInformation(
+    kind: LicenceKind = LicenceKind.CRD,
+    licenceId: Long = 1L,
+    versionOfId: Long? = null,
+    licenceStatus: LicenceStatus = LicenceStatus.IN_PROGRESS,
+    nomisId: String = "A1234AA",
+    surname: String? = "One",
+    forename: String? = "Person",
+    prisonCode: String? = "BAI",
+    prisonDescription: String? = "Moorland (HMP)",
+    conditionalReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
+    actualReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
+    licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22),
+    postRecallReleaseDate: LocalDate? = null,
+    updatedByFirstName: String? = "X",
+    updatedByLastName: String? = "Y",
+    comUsername: String? = "com-user",
+    comFirstName: String? = "Com",
+    comLastName: String? = "User",
+    homeDetentionCurfewActualDate: LocalDate? = null,
+  ) = LicenceCase(
+    kind = kind,
+    licenceId = licenceId,
+    versionOfId = versionOfId,
+    licenceStatus = licenceStatus,
+    prisonNumber = nomisId,
+    surname = surname,
+    forename = forename,
+    prisonCode = prisonCode,
+    prisonDescription = prisonDescription,
+    conditionalReleaseDate = conditionalReleaseDate,
+    actualReleaseDate = actualReleaseDate,
+    licenceStartDate = licenceStartDate,
+    postRecallReleaseDate = postRecallReleaseDate,
+    updatedByFirstName = updatedByFirstName,
+    updatedByLastName = updatedByLastName,
+    comUsername = comUsername,
+    comFirstName = comFirstName,
+    comLastName = comLastName,
+    homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
   )
 }
