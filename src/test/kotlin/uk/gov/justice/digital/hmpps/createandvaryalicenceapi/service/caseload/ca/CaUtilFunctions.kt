@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
-fun aLicenceCaseInformation(
+fun createLicenceCase(
   kind: LicenceKind = LicenceKind.CRD,
   licenceId: Long = 1L,
   versionOfId: Long? = null,

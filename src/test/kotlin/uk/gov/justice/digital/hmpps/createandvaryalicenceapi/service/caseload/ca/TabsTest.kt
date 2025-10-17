@@ -24,7 +24,7 @@ class TabsTest {
   @CsvSource("IN_PROGRESS", "SUBMITTED", "APPROVED", "NOT_STARTED")
   fun `returns ATTENTION_NEEDED when licence is inflight and start date is null`(status: LicenceStatus) {
     // Given
-    val licence = aLicenceCaseInformation(licenceStatus = status)
+    val licence = createLicenceCase(licenceStatus = status)
 
     // When
     val result = determineCaViewCasesTab(
@@ -41,7 +41,7 @@ class TabsTest {
   @Test
   fun `returns ATTENTION_NEEDED when licence is approved and start date is in the past`() {
     // Given
-    val licence = aLicenceCaseInformation(licenceStatus = APPROVED)
+    val licence = createLicenceCase(licenceStatus = APPROVED)
 
     // When
     val result = determineCaViewCasesTab(
@@ -58,7 +58,7 @@ class TabsTest {
   @Test
   fun `does not return ATTENTION_NEEDED when licence is approved and start date is today`() {
     // Given
-    val licence = aLicenceCaseInformation(licenceStatus = APPROVED)
+    val licence = createLicenceCase(licenceStatus = APPROVED)
 
     // When
     val result = determineCaViewCasesTab(
@@ -75,7 +75,7 @@ class TabsTest {
   @Test
   fun `does not return ATTENTION_NEEDED when licence is approved and start date is tomorrow`() {
     // Given
-    val licence = aLicenceCaseInformation(licenceStatus = APPROVED)
+    val licence = createLicenceCase(licenceStatus = APPROVED)
 
     // When
     val result = determineCaViewCasesTab(
@@ -109,7 +109,7 @@ class TabsTest {
   @Test
   fun `returns RELEASES_IN_NEXT_TWO_WORKING_DAYS when licence LSD is not in past and due to be released soon`() {
     // Given
-    val licence = aLicenceCaseInformation(
+    val licence = createLicenceCase(
       licenceStatus = APPROVED,
     )
 
@@ -145,7 +145,7 @@ class TabsTest {
   @Test
   fun `returns FUTURE_RELEASES when licence present`() {
     // Given
-    val licence = aLicenceCaseInformation(
+    val licence = createLicenceCase(
       licenceStatus = APPROVED,
     )
 

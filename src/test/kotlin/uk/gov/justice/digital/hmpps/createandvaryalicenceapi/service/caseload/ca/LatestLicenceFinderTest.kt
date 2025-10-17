@@ -10,7 +10,7 @@ class LatestLicenceFinderTest {
   @Test
   fun `should return the first element if the licences length is one`() {
     // Given
-    val licences = aLicenceCaseInformation(licenceStatus = LicenceStatus.APPROVED)
+    val licences = createLicenceCase(licenceStatus = LicenceStatus.APPROVED)
 
     // When
     val result = findLatestLicenceCases(listOf(licences))
@@ -23,8 +23,8 @@ class LatestLicenceFinderTest {
   fun `should return the IN_PROGRESS licence if there are IN_PROGRESS and TIMED_OUT licences`() {
     // Given
     val licences = listOf(
-      aLicenceCaseInformation(licenceStatus = LicenceStatus.IN_PROGRESS),
-      aLicenceCaseInformation(licenceStatus = LicenceStatus.TIMED_OUT),
+      createLicenceCase(licenceStatus = LicenceStatus.IN_PROGRESS),
+      createLicenceCase(licenceStatus = LicenceStatus.TIMED_OUT),
     )
 
     // When
@@ -38,8 +38,8 @@ class LatestLicenceFinderTest {
   fun `should return the SUBMITTED licence if there are IN_PROGRESS and SUBMITTED licences`() {
     // Given
     val licences = listOf(
-      aLicenceCaseInformation(licenceStatus = LicenceStatus.SUBMITTED),
-      aLicenceCaseInformation(licenceStatus = LicenceStatus.IN_PROGRESS),
+      createLicenceCase(licenceStatus = LicenceStatus.SUBMITTED),
+      createLicenceCase(licenceStatus = LicenceStatus.IN_PROGRESS),
     )
 
     // When

@@ -129,8 +129,8 @@ class CaCaseloadServiceTest {
     // Given licences returned by the service
     whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
       listOf(
-        aLicenceCaseInformation(),
-        aLicenceCaseInformation(
+        createLicenceCase(),
+        createLicenceCase(
           licenceId = 2,
           licenceStatus = LicenceStatus.IN_PROGRESS,
           nomisId = "A1234AB",
@@ -138,7 +138,7 @@ class CaCaseloadServiceTest {
           surname = "Two",
           comUsername = "tcom",
         ),
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 3,
           licenceStatus = LicenceStatus.IN_PROGRESS,
           nomisId = "A1234AC",
@@ -216,7 +216,7 @@ class CaCaseloadServiceTest {
         whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
-        val licenceCase = aLicenceCaseInformation(
+        val licenceCase = createLicenceCase(
           licenceId = 1,
           nomisId = "A1234AA",
           forename = "Person",
@@ -272,7 +272,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should successfully search by name`() {
-        val licenceCase = aLicenceCaseInformation(
+        val licenceCase = createLicenceCase(
           licenceId = 2,
           nomisId = "A1234AB",
           forename = "Person",
@@ -315,13 +315,13 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should successfully search by probation practitioner`() {
-        val licenceCase1 = aLicenceCaseInformation(
+        val licenceCase1 = createLicenceCase(
           licenceId = 1,
           nomisId = "A1234AA",
           forename = "Person",
           surname = "One",
         )
-        val licenceCase2 = aLicenceCaseInformation(
+        val licenceCase2 = createLicenceCase(
           licenceId = 2,
           nomisId = "A1234AB",
           forename = "Person",
@@ -366,7 +366,7 @@ class CaCaseloadServiceTest {
     fun `should filter out cases with an existing ACTIVE licence`() {
       whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             forename = "Person",
             surname = "Three",
             nomisId = "AB1234E",
@@ -430,7 +430,7 @@ class CaCaseloadServiceTest {
     fun `should filter out duplicate cases, prioritising existing licences`() {
       whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             forename = "Person",
             surname = "Three",
             nomisId = "AB1234E",
@@ -510,12 +510,12 @@ class CaCaseloadServiceTest {
     fun `should return sorted results in ascending order`() {
       whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             conditionalReleaseDate = tenDaysFromNow,
             actualReleaseDate = twoMonthsFromNow,
             licenceStartDate = tenDaysFromNow,
           ),
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 2,
             licenceStatus = LicenceStatus.IN_PROGRESS,
             nomisId = "A1234AB",
@@ -581,7 +581,7 @@ class CaCaseloadServiceTest {
     @Test
     fun `should have correct releaseDateLabel when actualReleaseDate is the same as licenceStartDate`() {
       // Given
-      val licenceSummary = aLicenceCaseInformation(
+      val licenceSummary = createLicenceCase(
         actualReleaseDate = twoDaysFromNow,
         licenceStartDate = twoDaysFromNow,
       )
@@ -600,7 +600,7 @@ class CaCaseloadServiceTest {
     @Test
     fun `should have correct releaseDateLabel when postRecallReleaseDate is the same as licenceStartDate`() {
       // Given
-      val licenceSummary = aLicenceCaseInformation(
+      val licenceSummary = createLicenceCase(
         licenceStartDate = tenDaysFromNow,
         postRecallReleaseDate = tenDaysFromNow,
       )
@@ -679,7 +679,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        val licenceCase = aLicenceCaseInformation(
+        val licenceCase = createLicenceCase(
           licenceId = 1,
           nomisId = "A1234AA",
           forename = "Person",
@@ -834,7 +834,7 @@ class CaCaseloadServiceTest {
     fun `should return sorted results in descending order`() {
       whenever(licenceCasesRepository.findLicenceCases(any(), any())).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 1,
             nomisId = "A1234AA",
             forename = "Person",
@@ -843,7 +843,7 @@ class CaCaseloadServiceTest {
             licenceStartDate = twoDaysFromNow,
             actualReleaseDate = twoDaysFromNow,
           ),
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 2,
             nomisId = "A1234AB",
             forename = "Person",
@@ -853,7 +853,7 @@ class CaCaseloadServiceTest {
             licenceStartDate = tenDaysFromNow,
             actualReleaseDate = tenDaysFromNow,
           ),
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 3,
             nomisId = "A1234AC",
             forename = "Person",
@@ -863,7 +863,7 @@ class CaCaseloadServiceTest {
             licenceStartDate = twoMonthsFromNow,
             actualReleaseDate = twoMonthsFromNow,
           ),
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 4,
             nomisId = "A1234AD",
             forename = "Person",
@@ -1046,35 +1046,35 @@ class CaCaseloadServiceTest {
     @Test
     fun `should successfully search prison should return results in LSD ascending and then secondary id order`() {
       val licenceSummaryList = listOf(
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 1,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234AC",
           forename = "Last",
           licenceStartDate = LocalDate.now().minusDays(1),
         ),
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 2,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234BC",
           forename = "Second",
           licenceStartDate = LocalDate.now(),
         ),
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 5,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234BD",
           forename = "Forth",
           licenceStartDate = LocalDate.now(),
         ),
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 3,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234CC",
           forename = "First",
           licenceStartDate = LocalDate.now().plusDays(1),
         ),
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 4,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234DC",
@@ -1111,7 +1111,7 @@ class CaCaseloadServiceTest {
     fun `should return all results when query string is empty`() {
       whenever(licenceCasesRepository.findLicenceCases(ProbationQuery.statusCodes, ProbationQuery.prisonCodes)).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 3,
             licenceStatus = LicenceStatus.ACTIVE,
             nomisId = "A1234AC",
@@ -1206,7 +1206,7 @@ class CaCaseloadServiceTest {
         ),
       ).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 4,
             licenceStatus = LicenceStatus.ACTIVE,
             nomisId = "A1234AD",
@@ -1251,7 +1251,7 @@ class CaCaseloadServiceTest {
         ),
       ).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 4,
             licenceStatus = LicenceStatus.ACTIVE,
             nomisId = "A1234AD",
@@ -1298,7 +1298,7 @@ class CaCaseloadServiceTest {
         ),
       ).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 3,
             licenceStatus = LicenceStatus.ACTIVE,
             nomisId = "A1234AC",
@@ -1343,7 +1343,7 @@ class CaCaseloadServiceTest {
         ),
       ).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 3,
             licenceStatus = LicenceStatus.ACTIVE,
             nomisId = "A1234AC",
@@ -1393,11 +1393,11 @@ class CaCaseloadServiceTest {
     @Test
     fun `should successfully search probation should return results in LSD descending and then secondary id order`() {
       val licenceSummaryList = listOf(
-        aLicenceCaseInformation(licenceId = 1, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234AC", licenceStartDate = LocalDate.now().minusDays(1), forename = "Last"),
-        aLicenceCaseInformation(licenceId = 2, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234BC", licenceStartDate = LocalDate.now(), forename = "Second"),
-        aLicenceCaseInformation(licenceId = 5, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234BD", licenceStartDate = LocalDate.now(), forename = "Forth"),
-        aLicenceCaseInformation(licenceId = 3, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234CC", licenceStartDate = LocalDate.now().plusDays(1), forename = "First"),
-        aLicenceCaseInformation(licenceId = 4, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234DC", licenceStartDate = LocalDate.now(), forename = "Third"),
+        createLicenceCase(licenceId = 1, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234AC", licenceStartDate = LocalDate.now().minusDays(1), forename = "Last"),
+        createLicenceCase(licenceId = 2, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234BC", licenceStartDate = LocalDate.now(), forename = "Second"),
+        createLicenceCase(licenceId = 5, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234BD", licenceStartDate = LocalDate.now(), forename = "Forth"),
+        createLicenceCase(licenceId = 3, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234CC", licenceStartDate = LocalDate.now().plusDays(1), forename = "First"),
+        createLicenceCase(licenceId = 4, licenceStatus = LicenceStatus.ACTIVE, nomisId = "A1234DC", licenceStartDate = LocalDate.now(), forename = "Third"),
       )
 
       whenever(
@@ -1423,7 +1423,7 @@ class CaCaseloadServiceTest {
         ),
       ).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 4,
             licenceStatus = LicenceStatus.ACTIVE,
             nomisId = "A1234AD",
@@ -1591,35 +1591,35 @@ class CaCaseloadServiceTest {
     fun `should successfully search prison should return results by id`() {
       // Given
       val licenceSummaryList = listOf(
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 1,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234AC",
           licenceStartDate = null,
           forename = "Last",
         ),
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 2,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234BC",
           licenceStartDate = null,
           forename = "Second",
         ),
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 5,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234BD",
           licenceStartDate = null,
           forename = "Forth",
         ),
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 3,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234CC",
           licenceStartDate = null,
           forename = "First",
         ),
-        aLicenceCaseInformation(
+        createLicenceCase(
           licenceId = 4,
           licenceStatus = LicenceStatus.SUBMITTED,
           nomisId = "A1234DC",
@@ -1655,7 +1655,7 @@ class CaCaseloadServiceTest {
     @Test
     fun `should have correct releaseDateLabel when postRecallReleaseDate is the same as licenceStartDate`() {
       // Given
-      val licenceSummary = aLicenceCaseInformation(
+      val licenceSummary = createLicenceCase(
         licenceId = 1,
         licenceStartDate = tenDaysFromNow,
         postRecallReleaseDate = tenDaysFromNow,
@@ -1676,7 +1676,7 @@ class CaCaseloadServiceTest {
     fun `should use HDCAD as release label where a HDCAD is set`() {
       whenever(licenceCasesRepository.findLicenceCases(any(), any())).thenReturn(
         listOf(
-          aLicenceCaseInformation(
+          createLicenceCase(
             licenceId = 1,
             licenceStartDate = oneDayFromNow,
             homeDetentionCurfewActualDate = oneDayFromNow,
