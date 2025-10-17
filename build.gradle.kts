@@ -118,7 +118,7 @@ tasks {
     shouldRunAfter("test")
     useJUnitPlatform()
     filter {
-      includeTestsMatching("*IntegrationTest")
+      includeTestsMatching("*IntegrationTest*")
     }
   }
   register<Copy>("installLocalGitHook") {
