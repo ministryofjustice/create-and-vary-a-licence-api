@@ -268,8 +268,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     // The condition ids will depend upon the order in which tests run so find these dynamically
-    val conditions =
-      additionalConditionRepository.findAll().toMutableList().filter { condition -> condition.licence.id == 1L }
+    val conditions = testRepository.getAdditionalConditions(1)
     assertThat(conditions).isNotEmpty
     val conditionId = conditions.first().id
 
