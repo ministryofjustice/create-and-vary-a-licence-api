@@ -50,18 +50,6 @@ class ExistingCasesCaseloadService(
         staffUsername = licenceCase?.comUsername,
       )
 
-      val sentenceDateHolder = object : SentenceDateHolder {
-        override val conditionalReleaseDate = licenceCase?.conditionalReleaseDate
-        override val actualReleaseDate = licenceCase?.actualReleaseDate
-        override val licenceStartDate = licenceCase?.licenceStartDate
-        override val homeDetentionCurfewActualDate = licenceCase?.homeDetentionCurfewActualDate
-        override val postRecallReleaseDate = licenceCase?.postRecallReleaseDate
-      }
-
-      val isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-        sentenceDateHolder,
-      )
-
       CaCase(
         kind = licenceCase?.kind,
         licenceId = licenceCase?.licenceId,
@@ -75,7 +63,7 @@ class ExistingCasesCaseloadService(
         lastWorkedOnBy = licenceCase.updatedByFullName,
         isInHardStopPeriod = isInHardStopPeriod,
         tabType = Tabs.determineCaViewCasesTab(
-          isDueToBeReleasedInTheNextTwoWorkingDays,
+          isDueToBeReleased(licenceCase),
           releaseDate,
           licenceCase,
           clock,
@@ -85,5 +73,20 @@ class ExistingCasesCaseloadService(
         prisonDescription = licenceCase.prisonDescription,
       )
     }.filterNotNull()
+  }
+
+  private fun isDueToBeReleased(licenceCase: LicenceCase?): Boolean {
+    val isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+      createSentenceDateHolder(licenceCase),
+    )
+    return isDueToBeReleasedInTheNextTwoWorkingDays
+  }
+
+  private fun createSentenceDateHolder(licenceCase: LicenceCase?): SentenceDateHolder = object : SentenceDateHolder {
+    override val conditionalReleaseDate = licenceCase?.conditionalReleaseDate
+    override val actualReleaseDate = licenceCase?.actualReleaseDate
+    override val licenceStartDate = licenceCase?.licenceStartDate
+    override val homeDetentionCurfewActualDate = licenceCase?.homeDetentionCurfewActualDate
+    override val postRecallReleaseDate = licenceCase?.postRecallReleaseDate
   }
 }
