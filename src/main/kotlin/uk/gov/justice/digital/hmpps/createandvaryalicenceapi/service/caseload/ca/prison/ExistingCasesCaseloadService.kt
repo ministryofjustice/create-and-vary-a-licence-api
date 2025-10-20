@@ -10,8 +10,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.Clock
+import java.time.LocalDate
 
 @Service
 class ExistingCasesCaseloadService(
@@ -62,12 +64,7 @@ class ExistingCasesCaseloadService(
         nomisLegalStatus = nomisRecord.legalStatus,
         lastWorkedOnBy = licenceCase.updatedByFullName,
         isInHardStopPeriod = isInHardStopPeriod,
-        tabType = Tabs.determineCaViewCasesTab(
-          isDueToBeReleased(licenceCase),
-          releaseDate,
-          licenceCase,
-          clock,
-        ),
+        tabType = createTabType(licenceCase, releaseDate),
         probationPractitioner = probationPractitioner,
         prisonCode = licenceCase.prisonCode,
         prisonDescription = licenceCase.prisonDescription,
@@ -75,8 +72,16 @@ class ExistingCasesCaseloadService(
     }.filterNotNull()
   }
 
-  private fun isDueToBeReleased(licenceCase: LicenceCase?) = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-    createSentenceDateHolder(licenceCase),
+  private fun createTabType(
+    licenceCase: LicenceCase?,
+    releaseDate: LocalDate?,
+  ): CaViewCasesTab = Tabs.determineCaViewCasesTab(
+    releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+      createSentenceDateHolder(licenceCase),
+    ),
+    releaseDate,
+    licenceCase,
+    clock,
   )
 
   private fun createSentenceDateHolder(licenceCase: LicenceCase?): SentenceDateHolder = object : SentenceDateHolder {
