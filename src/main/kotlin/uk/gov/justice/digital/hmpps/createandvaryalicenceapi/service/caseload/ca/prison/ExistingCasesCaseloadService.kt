@@ -75,10 +75,9 @@ class ExistingCasesCaseloadService(
     }.filterNotNull()
   }
 
-  private fun isDueToBeReleased(licenceCase: LicenceCase?) =
-    releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-      createSentenceDateHolder(licenceCase),
-    )
+  private fun isDueToBeReleased(licenceCase: LicenceCase?) = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+    createSentenceDateHolder(licenceCase),
+  )
 
   private fun createSentenceDateHolder(licenceCase: LicenceCase?): SentenceDateHolder = object : SentenceDateHolder {
     override val conditionalReleaseDate = licenceCase?.conditionalReleaseDate
