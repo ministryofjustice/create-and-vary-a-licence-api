@@ -39,7 +39,7 @@ private const val LICENCE_CASE = "uk.gov.justice.digital.hmpps.createandvaryalic
 
 @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
 @Repository
-interface LicenceCasesRepository : JpaRepository<Licence, Long> {
+interface LicenceCaseRepository : JpaRepository<Licence, Long> {
 
   @Query(
     """

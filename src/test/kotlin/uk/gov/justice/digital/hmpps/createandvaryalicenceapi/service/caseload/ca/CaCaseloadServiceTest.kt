@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCasesRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
@@ -61,7 +61,7 @@ class CaCaseloadServiceTest {
   private val workingDaysService = mock<WorkingDaysService>()
   private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
   private val cvlRecordService = mock<CvlRecordService>()
-  private val licenceCasesRepository = mock<LicenceCasesRepository>()
+  private val licenceCaseRepository = mock<LicenceCaseRepository>()
 
   private val service = CaCaseloadService(
     prisonCaseloadService = CaPrisonCaseloadService(
@@ -81,10 +81,10 @@ class CaCaseloadServiceTest {
         releaseDateLabelFactory,
         cvlRecordService,
       ),
-      licenceCasesRepository = licenceCasesRepository,
+      licenceCaseRepository = licenceCaseRepository,
     ),
     probationCaseloadService = CaProbationCaseloadService(
-      licenceCasesRepository,
+      licenceCaseRepository,
       releaseDateService,
       deliusApiClient,
       releaseDateLabelFactory,
@@ -127,7 +127,7 @@ class CaCaseloadServiceTest {
     )
 
     // Given licences returned by the service
-    whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
+    whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
       listOf(
         createLicenceCase(),
         createLicenceCase(
@@ -213,7 +213,7 @@ class CaCaseloadServiceTest {
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
         whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
         whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-        whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
         val licenceCase = createLicenceCase(
@@ -261,7 +261,7 @@ class CaCaseloadServiceTest {
           assertThat(isInHardStopPeriod).isTrue()
         }
 
-        verify(licenceCasesRepository, times(1)).findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)
+        verify(licenceCaseRepository, times(1)).findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)
         verify(caseloadService, times(0)).getPrisonersByNumber(listOf(licenceCase.prisonNumber))
         verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
       }
@@ -329,7 +329,7 @@ class CaCaseloadServiceTest {
           licenceStatus = LicenceStatus.IN_PROGRESS,
         )
 
-        whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(listOf(licenceCase1, licenceCase2))
 
         assertThat(service.getPrisonOmuCaseload(setOf("BAI"), "com")).isEqualTo(
@@ -364,7 +364,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should filter out cases with an existing ACTIVE licence`() {
-      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
+      whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
         listOf(
           createLicenceCase(
             forename = "Person",
@@ -428,7 +428,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should filter out duplicate cases, prioritising existing licences`() {
-      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
+      whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
         listOf(
           createLicenceCase(
             forename = "Person",
@@ -508,7 +508,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should return sorted results in ascending order`() {
-      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
+      whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
         listOf(
           createLicenceCase(
             conditionalReleaseDate = tenDaysFromNow,
@@ -586,7 +586,7 @@ class CaCaseloadServiceTest {
         licenceStartDate = twoDaysFromNow,
       )
 
-      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(listOf(licenceCase))
+      whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(listOf(licenceCase))
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
@@ -605,7 +605,7 @@ class CaCaseloadServiceTest {
         postRecallReleaseDate = tenDaysFromNow,
       )
       whenever(workingDaysService.getLastWorkingDay(licenceCase.postRecallReleaseDate)).thenReturn(licenceCase.postRecallReleaseDate)
-      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(listOf(licenceCase))
+      whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(listOf(licenceCase))
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
@@ -624,7 +624,7 @@ class CaCaseloadServiceTest {
         whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false)
         whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
-        whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
         whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
@@ -687,7 +687,7 @@ class CaCaseloadServiceTest {
           licenceStatus = LicenceStatus.IN_PROGRESS,
         )
 
-        whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(listOf(licenceCase))
 
         whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
@@ -703,7 +703,7 @@ class CaCaseloadServiceTest {
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
           .thenReturn(PageImpl(listOf(aPrisonerSearchPrisoner.copy(conditionalReleaseDate = null))))
 
-        whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
         whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
@@ -722,7 +722,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should filter out cases with an approved HDC licence and HDCED`() {
-        whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
         val prisoner = aPrisonerSearchPrisoner.copy(
@@ -748,7 +748,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should not filter out cases with an unapproved HDC licence`() {
-        whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
         whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
@@ -795,7 +795,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should filter out cases with no deliusRecord`() {
-        whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
         whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
@@ -832,7 +832,7 @@ class CaCaseloadServiceTest {
   inner class `Probation tab caseload` {
     @Test
     fun `should return sorted results in descending order`() {
-      whenever(licenceCasesRepository.findLicenceCases(any(), any())).thenReturn(
+      whenever(licenceCaseRepository.findLicenceCases(any(), any())).thenReturn(
         listOf(
           createLicenceCase(
             licenceId = 1,
@@ -1084,7 +1084,7 @@ class CaCaseloadServiceTest {
       )
 
       whenever(
-        licenceCasesRepository.findLicenceCases(
+        licenceCaseRepository.findLicenceCases(
           PrisonQuery.statusCodes,
           PrisonQuery.prisonCodes,
         ),
@@ -1109,7 +1109,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should return all results when query string is empty`() {
-      whenever(licenceCasesRepository.findLicenceCases(ProbationQuery.statusCodes, ProbationQuery.prisonCodes)).thenReturn(
+      whenever(licenceCaseRepository.findLicenceCases(ProbationQuery.statusCodes, ProbationQuery.prisonCodes)).thenReturn(
         listOf(
           createLicenceCase(
             licenceId = 3,
@@ -1200,7 +1200,7 @@ class CaCaseloadServiceTest {
     @Test
     fun `should successfully search by name for offender on probation`() {
       whenever(
-        licenceCasesRepository.findLicenceCases(
+        licenceCaseRepository.findLicenceCases(
           ProbationQuery.statusCodes,
           ProbationQuery.prisonCodes,
         ),
@@ -1245,7 +1245,7 @@ class CaCaseloadServiceTest {
     @Test
     fun `should successfully search by prison number for offender on probation`() {
       whenever(
-        licenceCasesRepository.findLicenceCases(
+        licenceCaseRepository.findLicenceCases(
           ProbationQuery.statusCodes,
           ProbationQuery.prisonCodes,
         ),
@@ -1289,10 +1289,10 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should successfully search by probation practitioner name for offender on probation`() {
-      whenever(licenceCasesRepository.findLicenceCases(PrisonQuery.statusCodes, ProbationQuery.prisonCodes))
+      whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, ProbationQuery.prisonCodes))
         .thenReturn(emptyList())
       whenever(
-        licenceCasesRepository.findLicenceCases(
+        licenceCaseRepository.findLicenceCases(
           ProbationQuery.statusCodes,
           ProbationQuery.prisonCodes,
         ),
@@ -1337,7 +1337,7 @@ class CaCaseloadServiceTest {
     @Test
     fun `should successfully search and return both prison and probation results`() {
       whenever(
-        licenceCasesRepository.findLicenceCases(
+        licenceCaseRepository.findLicenceCases(
           ProbationQuery.statusCodes,
           ProbationQuery.prisonCodes,
         ),
@@ -1401,7 +1401,7 @@ class CaCaseloadServiceTest {
       )
 
       whenever(
-        licenceCasesRepository.findLicenceCases(
+        licenceCaseRepository.findLicenceCases(
           ProbationQuery.statusCodes,
           ProbationQuery.prisonCodes,
         ),
@@ -1417,7 +1417,7 @@ class CaCaseloadServiceTest {
     @Test
     fun `should return all results when query string is empty`() {
       whenever(
-        licenceCasesRepository.findLicenceCases(
+        licenceCaseRepository.findLicenceCases(
           ProbationQuery.statusCodes,
           ProbationQuery.prisonCodes,
         ),
@@ -1629,7 +1629,7 @@ class CaCaseloadServiceTest {
       )
 
       whenever(
-        licenceCasesRepository.findLicenceCases(
+        licenceCaseRepository.findLicenceCases(
           PrisonQuery.statusCodes,
           PrisonQuery.prisonCodes,
         ),
@@ -1662,7 +1662,7 @@ class CaCaseloadServiceTest {
       )
       whenever(workingDaysService.getLastWorkingDay(licenceCase.postRecallReleaseDate))
         .thenReturn(licenceCase.postRecallReleaseDate)
-      whenever(licenceCasesRepository.findLicenceCases(any(), any())).thenReturn(listOf(licenceCase))
+      whenever(licenceCaseRepository.findLicenceCases(any(), any())).thenReturn(listOf(licenceCase))
 
       // When
       val prisonOmuCaseload = service.getProbationOmuCaseload(setOf("BAI"), "")
@@ -1674,7 +1674,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should use HDCAD as release label where a HDCAD is set`() {
-      whenever(licenceCasesRepository.findLicenceCases(any(), any())).thenReturn(
+      whenever(licenceCaseRepository.findLicenceCases(any(), any())).thenReturn(
         listOf(
           createLicenceCase(
             licenceId = 1,

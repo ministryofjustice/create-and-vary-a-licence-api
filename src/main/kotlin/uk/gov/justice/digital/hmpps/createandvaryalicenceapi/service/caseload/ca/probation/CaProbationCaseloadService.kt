@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCasesRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 
 @Service
 class CaProbationCaseloadService(
-  private val licenceCasesRepository: LicenceCasesRepository,
+  private val licenceCaseRepository: LicenceCaseRepository,
   private val releaseDateService: ReleaseDateService,
   private val deliusApiClient: DeliusApiClient,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
@@ -30,7 +30,7 @@ class CaProbationCaseloadService(
   )
 
   fun getProbationOmuCaseload(prisonCaseload: Set<String>, searchString: String?): List<CaCase> {
-    val licenceCases = licenceCasesRepository.findLicenceCases(statuses, prisonCaseload.toList())
+    val licenceCases = licenceCaseRepository.findLicenceCases(statuses, prisonCaseload.toList())
 
     val formattedLicences = formatReleasedLicences(licenceCases)
     val cases = mapCasesToComs(formattedLicences)

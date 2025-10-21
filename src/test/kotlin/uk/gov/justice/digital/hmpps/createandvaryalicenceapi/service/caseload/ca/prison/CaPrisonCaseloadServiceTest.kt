@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCasesRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
@@ -36,7 +36,7 @@ class CaPrisonCaseloadServiceTest {
   private val workingDaysService = mock<WorkingDaysService>()
   private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
   private val cvlRecordService = mock<CvlRecordService>()
-  private val licenceCasesRepository = mock<LicenceCasesRepository>()
+  private val licenceCaseRepository = mock<LicenceCaseRepository>()
 
   private val service = CaPrisonCaseloadService(
     deliusApiClient = deliusApiClient,
@@ -55,7 +55,7 @@ class CaPrisonCaseloadServiceTest {
       releaseDateLabelFactory,
       cvlRecordService,
     ),
-    licenceCasesRepository = licenceCasesRepository,
+    licenceCaseRepository = licenceCaseRepository,
   )
 
   @BeforeEach
