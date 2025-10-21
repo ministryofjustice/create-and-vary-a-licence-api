@@ -23,8 +23,8 @@ data class PrrdLicenceResponse(
   override val kind: String = LicenceKinds.PRRD,
   @field:Schema(
     description = "The type the licence the offender as eligible for based on release dates",
-    example = LicenceKinds.CRD,
-    allowableValues = [LicenceKinds.CRD],
+    example = LicenceKinds.PRRD,
+    allowableValues = [LicenceKinds.PRRD],
   )
   override val eligibleKind: String = LicenceKinds.PRRD,
 

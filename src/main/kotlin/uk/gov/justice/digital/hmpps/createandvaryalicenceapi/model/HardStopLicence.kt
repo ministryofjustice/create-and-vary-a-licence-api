@@ -25,7 +25,7 @@ data class HardStopLicence(
   @field:Schema(
     description = "The type the licence the offender as eligible for based on release dates",
     example = LicenceKinds.CRD,
-    allowableValues = [LicenceKinds.CRD, LicenceKinds.PRRD],
+    allowableValues = [LicenceKinds.CRD, LicenceKinds.PRRD, LicenceKinds.TIME_SERVED],
   )
   override val eligibleKind: String?,
 
