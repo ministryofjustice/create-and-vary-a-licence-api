@@ -48,15 +48,6 @@ class CommunityOffenderManager(
     lastUpdatedTimestamp = lastUpdatedTimestamp,
   )
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is CommunityOffenderManager) return false
-    if (!super.equals(other)) return false
-    return true
-  }
-
-  override fun hashCode(): Int = super.hashCode()
-
   override fun toString(): String = "${javaClass.simpleName}(" +
     "id=$id, " +
     "staffIdentifier=$staffIdentifier, " +

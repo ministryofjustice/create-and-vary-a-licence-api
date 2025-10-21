@@ -86,26 +86,24 @@ class HdcLicence(
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   override val curfewAddress: HdcCurfewAddress? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
   var submittedBy: CommunityOffenderManager? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "responsible_com_id", nullable = false)
-  override var responsibleCom: CommunityOffenderManager,
+  responsibleCom: CommunityOffenderManager,
 
   @OneToOne(
     mappedBy = "licence",
     cascade = [CascadeType.ALL],
-    fetch = FetchType.EAGER,
+    fetch = FetchType.LAZY,
     optional = true,
     orphanRemoval = true,
   )
-  override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC,
@@ -157,16 +155,11 @@ class HdcLicence(
   additionalConditions = additionalConditions.toMutableList(),
   bespokeConditions = bespokeConditions.toMutableList(),
   updatedBy = updatedBy,
+  responsibleCom = responsibleCom,
 ),
   HasElectronicMonitoringResponseProvider,
   HdcCase,
   AlwaysHasCom {
-
-  override fun getCom(): CommunityOffenderManager = responsibleCom
-
-  override fun setCom(com: CommunityOffenderManager) {
-    this.responsibleCom = com
-  }
 
   fun copy(
     id: Long? = this.id,
@@ -218,7 +211,7 @@ class HdcLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.getCom(),
     curfewTimes: List<HdcCurfewTimes> = this.curfewTimes,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
@@ -307,12 +300,6 @@ class HdcLicence(
     this.updatedBy = staffMember ?: this.updatedBy
   }
 
-  override fun createNewElectronicMonitoringProvider(): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
-    licence = this,
-    isToBeTaggedForProgramme = null,
-    programmeName = null,
-  )
-
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
   override fun toString(): String = "HdcLicence(" +
@@ -376,13 +363,14 @@ class HdcLicence(
     "curfewTimes=$curfewTimes, " +
     "submittedBy=$submittedBy, " +
     "createdBy=$createdBy, " +
-    "createdBy=$createdBy, " +
     "versionOfId=$versionOfId, " +
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy, " +
     "curfewAddress=$curfewAddress, " +
     "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
+
+  override fun getCom(): CommunityOffenderManager = this.responsibleCom!!
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

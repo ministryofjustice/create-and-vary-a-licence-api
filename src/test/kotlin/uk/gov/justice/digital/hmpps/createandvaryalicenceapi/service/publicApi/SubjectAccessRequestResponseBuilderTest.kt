@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
@@ -19,16 +21,26 @@ import java.time.LocalDateTime
 class SubjectAccessRequestResponseBuilderTest {
 
   @Test
-  fun `should add licence and build SarContent correctly`() {
+  fun `should add licence and build hmppsSubjectAccessRequestContent correctly`() {
+    val crdLicenceWithEm = crdLicence.copy(
+      electronicMonitoringProvider = ElectronicMonitoringProvider(
+        isToBeTaggedForProgramme = true,
+        programmeName = "a program",
+      ),
+    )
+
     val result = SubjectAccessRequestResponseBuilder("https://some-host")
-      .addLicence(crdLicence)
+      .addLicence(crdLicenceWithEm)
       .build(emptyList())
 
-    assertThat(result.content.licences).hasSize(1)
-    assertThat(result.content.auditEvents).isEmpty()
-    assertThat(result.attachments).isEmpty()
+    val content = result.content as Content
+    val attachments = result.attachments
 
-    with(result.content.licences.first()) {
+    assertThat(content.licences).hasSize(1)
+    assertThat(content.auditEvents).isEmpty()
+    assertThat(attachments).isEmpty()
+
+    with(content.licences.first()) {
       assertThat(id).isEqualTo(crdLicence.id)
       assertThat(kind).isEqualTo(crdLicence.kind)
       assertThat(typeCode).isEqualTo(SarLicenceType.AP)
@@ -56,6 +68,8 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(bespokeConditions).isEmpty()
       assertThat(createdByFullName).isEqualTo(crdLicence.createdByFullName)
       assertThat(licenceVersion).isEqualTo(crdLicence.licenceVersion)
+      assertThat(isToBeTaggedForProgramme).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.isToBeTaggedForProgramme)
+      assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider.programmeName)
     }
   }
 
@@ -128,10 +142,9 @@ class SubjectAccessRequestResponseBuilderTest {
       )
       .build(emptyList())
 
-    assertThat(result.content.licences).hasSize(1)
-    assertThat(result.attachments).hasSize(3)
+    val content = result.content as Content
 
-    with(result.attachments[0]) {
+    with(result.attachments!![0]) {
       assertThat(attachmentNumber).isEqualTo(0)
       assertThat(name).isEqualTo("Document 1")
       assertThat(contentType).isEqualTo("image/png")
@@ -139,14 +152,14 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(filename).isEqualTo("file1.pdf")
       assertThat(filesize).isEqualTo(2134)
 
-      val summary = result.content.licences.findAttachmentSummary(attachmentNumber)
+      val summary = content.licences.findAttachmentSummary(attachmentNumber)
       assertThat(summary.filename).isEqualTo(filename)
       assertThat(summary.imageType).isEqualTo(contentType)
       assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
     }
 
-    with(result.attachments[1]) {
+    with(result.attachments!![1]) {
       assertThat(attachmentNumber).isEqualTo(1)
       assertThat(name).isEqualTo("Document 2")
       assertThat(contentType).isEqualTo("image/jpeg")
@@ -154,13 +167,13 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(filename).isEqualTo("file2.pdf")
       assertThat(filesize).isEqualTo(2135)
 
-      val summary = result.content.licences.findAttachmentSummary(attachmentNumber)
+      val summary = content.licences.findAttachmentSummary(attachmentNumber)
       assertThat(summary.filename).isEqualTo(filename)
       assertThat(summary.imageType).isEqualTo(contentType)
       assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
     }
-    with(result.attachments[2]) {
+    with(result.attachments!![2]) {
       assertThat(attachmentNumber).isEqualTo(2)
       assertThat(name).isEqualTo("Document 3")
       assertThat(contentType).isEqualTo("image/png")
@@ -168,11 +181,16 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(filename).isEqualTo("file3.pdf")
       assertThat(filesize).isEqualTo(2137)
 
-      val summary = result.content.licences.findAttachmentSummary(attachmentNumber)
+      val summary = content.licences.findAttachmentSummary(attachmentNumber)
       assertThat(summary.filename).isEqualTo(filename)
       assertThat(summary.imageType).isEqualTo(contentType)
       assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
+    }
+
+    with(content.licences.first()) {
+      assertThat(isToBeTaggedForProgramme).isNull()
+      assertThat(programmeName).isNull()
     }
   }
 

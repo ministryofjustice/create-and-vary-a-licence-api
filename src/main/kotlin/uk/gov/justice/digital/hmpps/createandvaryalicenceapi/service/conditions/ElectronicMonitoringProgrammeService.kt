@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
@@ -101,19 +102,41 @@ class ElectronicMonitoringProgrammeService(
   @Transactional
   fun deleteElectronicMonitoringProvider(licenceEntity: Licence) {
     log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
-    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
-      licenceEntity.electronicMonitoringProvider = null
-    } else {
-      error("ElectronicMonitoringProvider can only be deleted for licences that implement HasElectronicMonitorResponseProvider")
+
+    check(licenceEntity is HasElectronicMonitoringResponseProvider) {
+      "ElectronicMonitoringProvider can only be deleted for licences that implement HasElectronicMonitoringResponseProvider"
+    }
+
+    when (licenceEntity) {
+      is PrrdLicence -> licenceEntity.electronicMonitoringProvider = null
+      is CrdLicence -> licenceEntity.electronicMonitoringProvider = null
+      is HdcLicence -> licenceEntity.electronicMonitoringProvider = null
     }
   }
 
   @Transactional
   fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
-    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
-      licenceEntity.ensureElectronicMonitoringProviderExists()
-    } else {
-      error("ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitorResponseProvider")
+    check(licenceEntity is HasElectronicMonitoringResponseProvider) {
+      "ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitoringResponseProvider"
+    }
+
+    licenceEntity.ensureProviderExists()
+  }
+
+  private fun HasElectronicMonitoringResponseProvider.hasProvider(): Boolean = when (this) {
+    is PrrdLicence -> this.electronicMonitoringProvider != null
+    is CrdLicence -> this.electronicMonitoringProvider != null
+    is HdcLicence -> this.electronicMonitoringProvider != null
+    else -> false
+  }
+
+  private fun HasElectronicMonitoringResponseProvider.ensureProviderExists() {
+    if (!this.hasProvider()) {
+      when (this) {
+        is PrrdLicence -> this.electronicMonitoringProvider = ElectronicMonitoringProvider(licence = this)
+        is CrdLicence -> this.electronicMonitoringProvider = ElectronicMonitoringProvider(licence = this)
+        is HdcLicence -> this.electronicMonitoringProvider = ElectronicMonitoringProvider(licence = this)
+      }
     }
   }
 

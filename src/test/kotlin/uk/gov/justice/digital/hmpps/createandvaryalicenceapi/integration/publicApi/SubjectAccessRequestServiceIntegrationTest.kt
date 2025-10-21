@@ -6,6 +6,8 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -14,9 +16,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAttachmentDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
+import uk.gov.justice.hmpps.kotlin.sar.Attachment
 
 class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
@@ -28,19 +29,20 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
     govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(strings = ["ROLE_CVL_ADMIN", "ROLE_SAR_DATA_ACCESS"])
   @Sql(
     "classpath:test_data/seed-sar-content-licence-id.sql",
   )
-  fun `Get SAR records by PRN`() {
+  fun `Get HmppsSubjectAccessRequestContent records by PRN`(role: String) {
     val resultList = webTestClient.get()
       .uri("/subject-access-request?prn=A1234AA")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_SAR_DATA_ACCESS")))
+      .headers(setAuthorisation(roles = listOf(role)))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(SarContent::class.java)
+      .expectBodyList(HmppsSubjectAccessRequestContentTestDto::class.java)
       .returnResult().responseBody
 
     assertThat(resultList?.size).isEqualTo(1)
@@ -88,20 +90,21 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
       )
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(strings = ["ROLE_CVL_ADMIN", "ROLE_SAR_DATA_ACCESS"])
   @Sql(
     "classpath:test_data/seed-licence-id-2.sql",
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
-  fun `Get sarContent with exclusion zone`() {
+  fun `Get hmppsSubjectAccessRequestContent with exclusion zone`(role: String) {
     val resultList = webTestClient.get()
       .uri("/subject-access-request?prn=A1234AA")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_SAR_DATA_ACCESS")))
+      .headers(setAuthorisation(roles = listOf(role)))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(SarContent::class.java)
+      .expectBodyList(HmppsSubjectAccessRequestContentTestDto::class.java)
       .returnResult().responseBody
 
     assertThat(resultList?.size).isEqualTo(1)
@@ -117,7 +120,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result.attachments).isEqualTo(
       listOf(
-        SarAttachmentDetail(
+        Attachment(
           attachmentNumber = 0,
           name = "Description",
           contentType = "image/png",
@@ -133,7 +136,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-sar-content-licence-id.sql",
   )
-  fun `Get sarContent by PRN is role protected`() {
+  fun `Get hmppsSubjectAccessRequestContent by PRN is role protected`() {
     val result = webTestClient.get()
       .uri("/subject-access-request?prn=A1234AA")
       .accept(MediaType.APPLICATION_JSON)

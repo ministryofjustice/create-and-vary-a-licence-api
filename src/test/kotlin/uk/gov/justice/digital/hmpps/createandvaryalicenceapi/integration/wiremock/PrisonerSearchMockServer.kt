@@ -124,6 +124,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
   fun stubSearchPrisonersByNomisIds(
     prisonerSearchResponse: String? = null,
     postRecallReleaseDate: LocalDate? = null,
+    prisonId: String = "ABC",
+    conditionalReleaseDateOverrideDate: LocalDate? = null,
   ) {
     val jsonString: String
     if (prisonerSearchResponse == null) {
@@ -134,14 +136,17 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           status = "ACTIVE",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().plusYears(1),
+          sentenceExpiryDate = LocalDate.now().plusYears(1),
           topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
           releaseDate = LocalDate.now().plusDays(1),
           confirmedReleaseDate = nextWorkingDate(),
+          conditionalReleaseDateOverrideDate = conditionalReleaseDateOverrideDate,
           conditionalReleaseDate = nextWorkingDate(),
+          sentenceStartDate = nextWorkingDate(),
           legalStatus = "SENTENCED",
           indeterminateSentence = false,
           recall = false,
-          prisonId = "ABC",
+          prisonId = prisonId,
           bookNumber = "12345A",
           firstName = "Test1",
           lastName = "Person1",
@@ -154,6 +159,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           status = "ACTIVE",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().plusYears(1),
+          sentenceExpiryDate = LocalDate.now().plusYears(1),
           topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
           conditionalReleaseDate = LocalDate.now().plusDays(1),
           legalStatus = "SENTENCED",
@@ -187,6 +193,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           status = "ACTIVE",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().plusYears(1),
+          sentenceExpiryDate = LocalDate.now().plusYears(1),
           topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
           releaseDate = LocalDate.now().plusDays(1),
           confirmedReleaseDate = LocalDate.now().plusDays(1),
@@ -207,6 +214,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           status = "INACTIVE",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().minusYears(1),
+          sentenceExpiryDate = LocalDate.now().plusYears(1),
           topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
           releaseDate = LocalDate.now().minusYears(1),
           confirmedReleaseDate = LocalDate.now().plusDays(1),
@@ -381,9 +389,9 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     )
   }
 
-  fun stubSearchPrisonersByReleaseDate(page: Int, inHardStop: Boolean = true) {
+  fun stubSearchPrisonersByReleaseDate(page: Int, inHardStop: Boolean = true, includeRecall: Boolean = false) {
     val releaseDate = if (inHardStop) LocalDate.now().plusDays(1) else nextWorkingDates().drop(4).first()
-    val jsonBody = """{ "content": [
+    var jsonBody = """{ "content": [
                 {
                   "prisonerNumber": "A1234AA",
                   "bookingId": "123",
@@ -499,6 +507,35 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "lastName": "Person3",
                   "dateOfBirth": "1987-01-01"
                }
+               """
+    if (includeRecall) {
+      jsonBody += """    
+               ,{
+                  "prisonerNumber": "A1234AF",
+                  "bookingId": "124",
+                  "status": "ACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "topUpSupervisionExpiryDate": null,
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": "${LocalDate.now().plusDays(1)}",
+                  "confirmedReleaseDate": null,
+                  "conditionalReleaseDate": "${releaseDate.minusDays(1)}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": "$releaseDate",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "ABC",
+                  "bookNumber": "12345C",
+                  "firstName": "Test4",
+                  "lastName": "Person4",
+                  "dateOfBirth": "1987-01-01"
+               }
+               """
+    }
+    jsonBody += """
               ],
               "pageable": {
                   "pageSize": 100,

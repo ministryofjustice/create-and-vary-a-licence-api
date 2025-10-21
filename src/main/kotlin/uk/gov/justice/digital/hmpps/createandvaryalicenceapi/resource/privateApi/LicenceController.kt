@@ -32,7 +32,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Deact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -111,7 +110,6 @@ class LicenceController(
     request: CreateLicenceRequest,
   ): LicenceCreationResponse = when (request.type) {
     HARD_STOP -> licenceCreationService.createHardStopLicence(request.nomsId)
-    TIME_SERVED -> TODO("Implement Time-Served licence creation")
     HDC -> licenceCreationService.createHdcLicence(request.nomsId)
     else -> licenceCreationService.createLicence(request.nomsId)
   }
@@ -209,7 +207,7 @@ class LicenceController(
       ),
     ],
   )
-  fun submittedVariations(
+  fun findSubmittedVariations(
     @PathVariable("areaCode") probationAreaCode: String,
   ): List<LicenceSummary> = licenceService.findSubmittedVariationsByRegion(probationAreaCode)
 
