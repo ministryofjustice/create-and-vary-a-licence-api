@@ -1119,6 +1119,7 @@ class LicenceService(
 
   private fun EntityLicence.toSummary() = transformToLicenceSummary(
     this,
+    hardStopKind = releaseDateService.getHardStopKind(licenceStartDate, prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(this.nomsId!!)).first()),
     hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),

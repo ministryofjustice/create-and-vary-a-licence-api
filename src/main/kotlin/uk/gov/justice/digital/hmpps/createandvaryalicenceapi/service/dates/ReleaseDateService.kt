@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -113,17 +114,58 @@ class ReleaseDateService(
     }
   }
 
-  fun isTimeServed(nomisRecord: PrisonerSearchPrisoner, overrideClock: Clock? = null): Boolean {
+  private fun isTimeServed(
+    sentenceStartDate: LocalDate?,
+    confirmedReleaseDate: LocalDate?,
+    conditionalReleaseDate: LocalDate?,
+    overrideClock: Clock? = null,
+  ): Boolean {
     val clockToUse = overrideClock ?: clock
     val today = LocalDate.now(clockToUse)
 
+    return sentenceStartDate == today &&
+      confirmedReleaseDate == today &&
+      conditionalReleaseDate == today
+  }
+
+  private fun determineHardStopKind(
+    licenceStartDate: LocalDate?,
+    sentenceStartDate: LocalDate?,
+    confirmedReleaseDate: LocalDate?,
+    conditionalReleaseDate: LocalDate?,
+  ): LicenceKind? {
+    if (licenceStartDate == null || !isInHardStopPeriod(licenceStartDate)) {
+      return null
+    }
+
+    return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate)) {
+      LicenceKind.TIME_SERVED
+    } else {
+      LicenceKind.HARD_STOP
+    }
+  }
+
+  fun getHardStopKind(
+    licenceStartDate: LocalDate?,
+    nomisRecord: PrisonerSearchPrisoner,
+  ): LicenceKind? {
     val conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate
       ?: nomisRecord.conditionalReleaseDate
 
-    return nomisRecord.sentenceStartDate == today &&
-      nomisRecord.confirmedReleaseDate == today &&
-      conditionalReleaseDate == today
+    return determineHardStopKind(
+      licenceStartDate,
+      nomisRecord.sentenceStartDate,
+      nomisRecord.confirmedReleaseDate,
+      conditionalReleaseDate,
+    )
   }
+
+  fun getHardStopKind(licence: LicenceSummary): LicenceKind? = determineHardStopKind(
+    licence.licenceStartDate,
+    licence.sentenceStartDate,
+    licence.actualReleaseDate,
+    licence.conditionalReleaseDate,
+  )
 
   private fun calculateCrdLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,

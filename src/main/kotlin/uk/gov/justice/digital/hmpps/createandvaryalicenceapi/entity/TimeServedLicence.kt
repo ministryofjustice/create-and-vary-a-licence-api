@@ -66,7 +66,7 @@ class TimeServedLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   updatedBy: Staff? = null,
 
-  var reviewDate: LocalDateTime? = null,
+  override var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
 
   @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
@@ -129,7 +129,8 @@ class TimeServedLicence(
   bespokeConditions = bespokeConditions.toMutableList(),
   updatedBy = updatedBy,
   responsibleCom = responsibleCom,
-) {
+),
+  ReviewableLicence {
 
   fun copy(
     id: Long? = this.id,

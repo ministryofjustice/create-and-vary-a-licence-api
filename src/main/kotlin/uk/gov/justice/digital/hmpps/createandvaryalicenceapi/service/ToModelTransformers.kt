@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ReviewableLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
@@ -60,6 +62,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 @TimeServedConsiderations("Without a COM, we would just surface null and handle on the frontend")
 fun transformToLicenceSummary(
   licence: Licence,
+  hardStopKind: LicenceKind?,
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
@@ -101,10 +104,8 @@ fun transformToLicenceSummary(
   submittedDate = licence.submittedDate,
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
-  isReviewNeeded = when (licence) {
-    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-    else -> false
-  },
+  isReviewNeeded = (licence as? ReviewableLicence)?.isReviewNeeded() ?: false,
+  hardStopKind = hardStopKind,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
@@ -877,10 +878,7 @@ fun transformToApprovalLicenceSummary(
   approvedByName = licence.approvedByName,
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
-  isReviewNeeded = when (licence) {
-    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-    else -> false
-  },
+  isReviewNeeded = (licence as? ReviewableLicence)?.isReviewNeeded() ?: false,
   updatedByFullName = licence.getUpdatedByFullName(),
   submittedByFullName = licence.getSubmittedByFullName(),
   hardStopDate = hardStopDate,

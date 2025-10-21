@@ -66,7 +66,7 @@ class HardStopLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   updatedBy: Staff? = null,
 
-  var reviewDate: LocalDateTime? = null,
+  override var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
 
   @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
@@ -130,6 +130,7 @@ class HardStopLicence(
   updatedBy = updatedBy,
   responsibleCom = responsibleCom,
 ),
+  ReviewableLicence,
   AlwaysHasCom {
 
   fun copy(
