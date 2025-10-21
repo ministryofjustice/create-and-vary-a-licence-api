@@ -9,12 +9,11 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.context.jdbc.SqlGroup
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
@@ -24,18 +23,21 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicencePermissionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
@@ -44,21 +46,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import kotlin.jvm.optionals.getOrNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as VariationLicenceDto
 
-@SpringBootTest(
-  webEnvironment = RANDOM_PORT,
-  properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"],
-)
 class LicenceIntegrationTest : IntegrationTestBase() {
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
-
-  @Autowired
-  lateinit var licenceRepository: LicenceRepository
 
   @Autowired
   lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
@@ -210,9 +204,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     // Then
     result.expectStatus().isOk
-    val licence = licenceRepository.findById(1).getOrNull()
-    assertThat(licence).isNotNull
-    assertThat(licence!!).isInstanceOf(PrrdLicence::class.java)
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(PrrdLicence::class.java)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.APPROVED)
   }
 
@@ -261,32 +254,31 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Submit licence`() {
+  fun `Submit Crd licence`() {
+    // Given
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
-    webTestClient.put()
+    // When
+    val result = webTestClient.put()
       .uri("/licence/id/1/submit")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
 
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
-      .returnResult().responseBody
+    // Then
+    result.expectStatus().isOk
 
-    assertThat(result?.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
-    assertThat(result?.comUsername).isEqualTo("test-client")
-    assertThat(result?.comEmail).isEqualTo("testClient@probation.gov.uk")
-    assertThat(result?.comStaffId).isEqualTo(2000)
-    assertThat(result?.updatedByUsername).isEqualTo("test-client")
-    assertThat(result?.submittedByFullName).isEqualTo("Test Client")
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(CrdLicence::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.CRD)
+
+    licence as CrdLicence
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(licence.responsibleCom?.username).isEqualTo("test-client")
+    assertThat(licence.responsibleCom?.email).isEqualTo("testClient@probation.gov.uk")
+    assertThat(licence.responsibleCom?.staffIdentifier).isEqualTo(2000)
+    assertThat(licence.updatedByUsername).isEqualTo("test-client")
+    assertThat(licence.submittedBy?.fullName).isEqualTo("Test Client")
   }
 
   @Test
@@ -298,20 +290,113 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
     // When
-    webTestClient.put()
+    val result = webTestClient.put()
       .uri("/licence/id/1/submit")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
 
     // Then
-    val licence = licenceRepository.findById(1).getOrNull()
-    assertThat(licence).isNotNull
-    assertThat(licence!!).isInstanceOf(PrrdLicence::class.java)
+    result.expectStatus().isOk
+
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(PrrdLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
     assertThat(licence.postRecallReleaseDate).isNotNull()
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+  }
+
+  @Test
+  @SqlGroup(
+    Sql("classpath:test_data/seed-prison-case-administrator.sql"),
+    Sql("classpath:test_data/seed-completed-hard-stop-licence-1.sql"),
+  )
+  fun `Submit Hard Stop licence`() {
+    // Given
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = webTestClient.put()
+      .uri("/licence/id/1/submit")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(HardStopLicence::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.HARD_STOP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+  }
+
+  @Test
+  @SqlGroup(
+    Sql("classpath:test_data/seed-completed-variation-licence-1.sql"),
+  )
+  fun `Submit VARIATION licence`() {
+    // Given
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = webTestClient.put()
+      .uri("/licence/id/1/submit") // use the correct ID for VARIATION
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(Variation::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.VARIATION)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
+  }
+
+  @Test
+  @SqlGroup(
+    Sql("classpath:test_data/seed-completed-hdc-licence-1.sql"),
+  )
+  fun `Submit HDC licence`() {
+    // Given
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = webTestClient.put()
+      .uri("/licence/id/1/submit") // correct ID for HDC
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(HdcLicence::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+  }
+
+  @Test
+  @SqlGroup(
+    Sql("classpath:test_data/seed-completed-hdc-variation-licence-1.sql"),
+  )
+  fun `Submit HDC_VARIATION licence`() {
+    // Given
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = webTestClient.put()
+      .uri("/licence/id/1/submit") // correct ID for HDC_VARIATION
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    val licence = testRepository.findLicence(1)
+    assertThat(licence).isInstanceOf(HdcVariationLicence::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.HDC_VARIATION)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
   }
 
   @Test
@@ -336,14 +421,12 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
     assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
     assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
-    assertThat(licenceRepository.count()).isEqualTo(2)
 
-    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
-    assertThat(newLicence).isNotNull
-    val oldLicence = licenceRepository.findById(licenceSummary.licenceId - 1).getOrNull()
-    assertThat(oldLicence).isNotNull
+    assertThat(testRepository.countLicence()).isEqualTo(2)
+    val oldLicence = testRepository.findLicence(1)
+    val newLicence = testRepository.findLicence(2)
 
-    assertThat(newLicence!!.licenceVersion).isEqualTo("2.0")
+    assertThat(newLicence.licenceVersion).isEqualTo("2.0")
     assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
 
     assertThat(newLicence).isInstanceOf(EntityVariationLicence::class.java)
@@ -352,7 +435,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence.variationOfId).isEqualTo(1)
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
 
-    assertThat(newLicence.standardConditions.size).isEqualTo(oldLicence!!.standardConditions.size)
+    assertThat(newLicence.standardConditions.size).isEqualTo(oldLicence.standardConditions.size)
     assertThat(newLicence.additionalConditions.size).isEqualTo(oldLicence.additionalConditions.size)
     assertThat(newLicence.bespokeConditions.size).isEqualTo(oldLicence.bespokeConditions.size)
 
@@ -373,9 +456,15 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     )
     assertNoOverlaps(doNotContainSameValeCallbacks, newLicence.additionalConditions, oldLicence.additionalConditions)
 
-    val uploadDetailOld = additionalConditionUploadDetailRepository.getReferenceById(oldLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
-    val uploadDetailNew = additionalConditionUploadDetailRepository.getReferenceById(newLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
-    assertListsEqual(listOf(uploadDetailNew), listOf(uploadDetailOld), listOf("id", "licenceId", "additionalConditionId"))
+    val uploadDetailOld =
+      additionalConditionUploadDetailRepository.getReferenceById(oldLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
+    val uploadDetailNew =
+      additionalConditionUploadDetailRepository.getReferenceById(newLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
+    assertListsEqual(
+      listOf(uploadDetailNew),
+      listOf(uploadDetailOld),
+      listOf("id", "licenceId", "additionalConditionId"),
+    )
     assertListsNotEqual(listOf(uploadDetailNew), listOf(uploadDetailOld), listOf("originalData", "fullSizeImage"))
 
     assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
@@ -401,8 +490,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    val newLicence = licenceRepository.findById(licenceSummary!!.licenceId).getOrNull()
-    assertThat(newLicence!!.bespokeConditions.size).isEqualTo(0)
+    val bespokeConditions = testRepository.getBespokeConditions(licenceSummary!!.licenceId, assertNotEmpty = false)
+    assertThat(bespokeConditions.size).isEqualTo(0)
   }
 
   private fun <T> assertNoOverlaps(
@@ -467,11 +556,13 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
     assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
     assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
-    assertThat(licenceRepository.count()).isEqualTo(2)
 
-    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
-    assertThat(newLicence).isNotNull
-    newLicence?.let {
+    val licences = testRepository.findAllLicence()
+
+    assertThat(licences).hasSize(2)
+
+    val newLicence = licences.last()
+    newLicence.let {
       assertThat(it.licenceVersion).isEqualTo("2.0")
       assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
       assertThat(it).isInstanceOf(HdcVariationLicence::class.java)
@@ -502,8 +593,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licence).isNotNull
     assertThat(licence!!.kind).isEqualTo(LicenceKind.VARIATION)
 
-    val persistedLicence = licenceRepository.findById(licence.licenceId).getOrNull()
-    assertThat(persistedLicence).isNotNull
+    val persistedLicence = testRepository.findLicence(licence.licenceId)
     assertThat(persistedLicence).isInstanceOf(EntityVariationLicence::class.java)
     val persistedVariationLicence = persistedLicence as EntityVariationLicence
     assertThat(persistedVariationLicence.id).isEqualTo(2)
@@ -572,7 +662,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(testRepository.countLicence()).isEqualTo(0)
   }
 
   @Test
@@ -812,6 +902,25 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     }
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/seed-a-licence-with-a-variation.sql",
+  )
+  fun `Should check if a COM has permission to view a licence`() {
+    deliusMockServer.stubGetOffenderManager()
+
+    val result = webTestClient.post()
+      .uri("/licence/id/1/permissions")
+      .bodyValue(LicencePermissionsRequest(teamCodes = listOf("team-code-1")))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(LicencePermissionsResponse::class.java)
+      .returnResult().responseBody
+    assertThat(result?.view).isEqualTo(true)
+  }
+
   @Nested
   inner class CheckReviewingLicences {
     @Test
@@ -821,7 +930,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     )
     fun `Review licence successfully`() {
       run {
-        val licence = licenceRepository.findById(1L).get() as HardStopLicence
+        val licence = testRepository.findLicence(1L) as HardStopLicence
         assertThat(licence.reviewDate).isNull()
 
         val result = webTestClient.get()
@@ -845,7 +954,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
 
       run {
-        val licence = licenceRepository.findById(1L).get() as HardStopLicence
+        val licence = testRepository.findLicence(1L) as HardStopLicence
         assertThat(licence.reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
 
         val result = webTestClient.get()
@@ -901,10 +1010,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
           .exchange()
           .expectStatus().isOk
 
-        val variation = licenceRepository.findById(2L).get() as EntityVariationLicence
+        val variation = testRepository.findLicence(2L) as EntityVariationLicence
         assertThat(variation.statusCode).isEqualTo(LicenceStatus.VARIATION_APPROVED)
 
-        val original = licenceRepository.findById(1L).get() as CrdLicence
+        val original = testRepository.findLicence(1L) as CrdLicence
         assertThat(original.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
       }
 
@@ -916,10 +1025,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
 
       run {
-        val variation = licenceRepository.findById(2L).get() as EntityVariationLicence
+        val variation = testRepository.findLicence(2L) as EntityVariationLicence
         assertThat(variation.statusCode).isEqualTo(LicenceStatus.ACTIVE)
 
-        val original = licenceRepository.findById(1L).get() as CrdLicence
+        val original = testRepository.findLicence(1L) as CrdLicence
         assertThat(original.statusCode).isEqualTo(LicenceStatus.INACTIVE)
       }
     }
@@ -994,7 +1103,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().is4xxClientError
 
-      assertThat(licenceRepository.count()).isEqualTo(1)
+      assertThat(testRepository.countLicence()).isEqualTo(1)
 
       val licence = webTestClient.get()
         .uri("/licence/id/1")
@@ -1020,11 +1129,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
     assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
     assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(licenceRepository.count()).isEqualTo(2)
 
-    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
-    assertThat(newLicence).isNotNull
-    assertThat(newLicence!!.kind).isEqualTo(expectedKind)
+    assertThat(testRepository.countLicence()).isEqualTo(2)
+
+    val newLicence = testRepository.findLicence(licenceSummary.licenceId)
+    assertThat(newLicence.kind).isEqualTo(expectedKind)
     assertThat(newLicence.licenceVersion).isEqualTo("1.1")
     if (noAddress) {
       assertLicenceHasExpectedAddress(newLicence, newAddress = true)
@@ -1121,12 +1230,14 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val govUkApiMockServer = GovUkMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+    val deliusMockServer = DeliusMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
       prisonerSearchApiMockServer.start()
+      deliusMockServer.start()
     }
 
     @JvmStatic
@@ -1134,6 +1245,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       govUkApiMockServer.stop()
       prisonerSearchApiMockServer.stop()
+      deliusMockServer.stop()
     }
   }
 }

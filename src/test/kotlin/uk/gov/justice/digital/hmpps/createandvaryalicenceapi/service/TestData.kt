@@ -18,11 +18,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceType
@@ -62,13 +61,24 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 object TestData {
   private val TEN_DAYS_FROM_NOW = LocalDate.now().plusDays(10)
 
-  fun com() = CommunityOffenderManager(
+  fun communityOffenderManager() = CommunityOffenderManager(
     id = 1,
     staffIdentifier = 2000,
-    username = "tcom",
-    email = "testemail@probation.gov.uk",
+    staffCode = "test-code-1",
+    username = "tcom1",
+    email = "testemail1@probation.gov.uk",
     firstName = "X",
     lastName = "Y",
+  )
+
+  fun anotherCommunityOffenderManager() = CommunityOffenderManager(
+    id = 2,
+    staffIdentifier = 3000,
+    staffCode = "test-code-2",
+    username = "tcom2",
+    email = "testemail2@probation.gov.uk",
+    firstName = "A",
+    lastName = "B",
   )
 
   fun ca() = PrisonUser(
@@ -86,6 +96,24 @@ object TestData {
     conditionCategory = "condition category",
     conditionText = "condition text",
     conditionVersion = "1.0",
+  )
+
+  fun aCvlRecord(nomsId: String = "A1234AA", licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22), kind: LicenceKind?, hardStopKind: LicenceKind? = LicenceKind.HARD_STOP) = CvlRecord(
+    nomisId = nomsId,
+    licenceStartDate = licenceStartDate,
+    isEligible = true,
+    eligibleKind = kind,
+    ineligiblityReasons = emptyList(),
+    hardStopKind = hardStopKind,
+  )
+
+  fun anEligibilityAssessment() = EligibilityAssessment(
+    genericIneligibilityReasons = emptyList(),
+    crdIneligibilityReasons = emptyList(),
+    prrdIneligibilityReasons = emptyList(),
+    isEligible = true,
+    eligibleKind = LicenceKind.CRD,
+    ineligiblityReasons = emptyList(),
   )
 
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
@@ -163,20 +191,8 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
     postRecallReleaseDate = LocalDate.now(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
@@ -216,20 +232,8 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }
@@ -268,13 +272,7 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
     createdBy = PrisonUser(
       username = "tca",
       email = "testemail@probation.gov.uk",
@@ -322,13 +320,7 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
     createdBy = PrisonUser(
       username = "tca",
       email = "testemail@probation.gov.uk",
@@ -377,14 +369,8 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = com(),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
     appointment = createAppointment(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
@@ -473,20 +459,8 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
   ).let {
     it.copy(
       standardConditions = someEntityStandardConditions(it),
@@ -574,15 +548,9 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "tcom",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = com(),
     appointment = createAppointment(),
+    responsibleCom = communityOffenderManager(),
+    createdBy = communityOffenderManager(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it), curfewTimes = mutableListOf())
   }
@@ -631,7 +599,11 @@ object TestData {
     sentenceDetail = SentenceDetail(
       confirmedReleaseDate = LocalDate.of(2021, 10, 22),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      sentenceExpiryDate = LocalDate.of(2023, 10, 22),
+      licenceExpiryDate = LocalDate.of(2023, 10, 22),
     ),
+    agencyId = "ABC",
+    status = "ACTIVE IN",
   )
 
   private fun anOffenceHistory() = OffenceHistory(
@@ -683,33 +655,6 @@ object TestData {
     username = "aComUser",
   )
 
-  fun caseLoadItem() = CaseloadItem(
-    licenceStartDate = LocalDate.of(2021, 10, 22),
-    prisoner = Prisoner(
-      prisonerNumber = "A1234AA",
-      bookingId = "123456",
-      bookNumber = "12345A",
-      firstName = "Person",
-      lastName = "Two",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      status = "ACTIVE IN",
-      prisonId = "MDI",
-      locationDescription = "HMP Moorland",
-      legalStatus = "SENTENCED",
-      mostSeriousOffence = "Robbery",
-      recall = false,
-      indeterminateSentence = false,
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      releaseDate = LocalDate.of(2021, 10, 22),
-      confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceExpiryDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      paroleEligibilityDate = LocalDate.of(2021, 10, 22),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-    ),
-  )
-
   fun caseloadResult() = CaseloadResult(
     "A123456",
     "A1234AA",
@@ -731,7 +676,6 @@ object TestData {
   fun caCase() = CaCase(
     licenceId = 1,
     kind = LicenceKind.CRD,
-    releaseDateKind = LicenceKind.CRD,
     name = "A Prisoner",
     prisonerNumber = "A1234AA",
     releaseDate = LocalDate.of(2021, 10, 22),
@@ -739,7 +683,6 @@ object TestData {
     licenceStatus = LicenceStatus.IN_PROGRESS,
     nomisLegalStatus = "SENTENCED",
     lastWorkedOnBy = "John Smith",
-    isDueForEarlyRelease = false,
     isInHardStopPeriod = false,
     tabType = CaViewCasesTab.FUTURE_RELEASES,
     probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
@@ -754,11 +697,20 @@ object TestData {
     urgentApproval = false,
     approvedBy = null,
     approvedOn = null,
-    isDueForEarlyRelease = false,
     probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
     kind = LicenceKind.CRD,
     prisonCode = "MDI",
     prisonDescription = "Moorland (HMP)",
+  )
+
+  fun varyApprovalCase() = VaryApproverCase(
+    licenceId = 1,
+    name = "A Prisoner",
+    crnNumber = "X12348",
+    licenceType = LicenceType.AP,
+    variationRequestDate = LocalDate.of(2023, 11, 24),
+    releaseDate = LocalDate.of(2021, 10, 22),
+    probationPractitioner = "Delius User",
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
@@ -1007,14 +959,6 @@ object TestData {
     croNumber = "AB01/234567C",
   )
 
-  fun aPrisoner() = Prisoner(
-    prisonerNumber = "AB1234E",
-    firstName = "First-1",
-    lastName = "Surname-2",
-    releaseDate = TEN_DAYS_FROM_NOW,
-    status = "INACTIVE OUT",
-  )
-
   fun aDeliusUser() = StaffNameResponse(
     id = 1,
     username = "joebloggs",
@@ -1022,3 +966,12 @@ object TestData {
     name = Name(forename = "Delius", surname = "User"),
   )
 }
+
+private fun communityOffenderManager(): CommunityOffenderManager = CommunityOffenderManager(
+  staffIdentifier = 2000,
+  staffCode = "test-code",
+  username = "tcom",
+  email = "testemail@probation.gov.uk",
+  firstName = "X",
+  lastName = "Y",
+)

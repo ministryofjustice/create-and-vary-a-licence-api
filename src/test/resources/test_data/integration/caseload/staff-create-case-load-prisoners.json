@@ -13,7 +13,6 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -29,7 +28,6 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -45,7 +43,6 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -62,7 +59,6 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -80,7 +76,6 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -95,12 +90,11 @@
     "sentenceExpiryDate": "$sled",
     "topupSupervisionExpiryDate": "2023-06-22",
     "postRecallReleaseDate": "$releaseDate",
-    "prisonId":  "PRISON1",
+    "prisonId":  "ABC",
     "licenceType": "PSS",
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -115,12 +109,11 @@
     "sentenceExpiryDate": "$sled",
     "topupSupervisionExpiryDate": "2023-06-22",
     "postRecallReleaseDate": "$releaseDate",
-    "prisonId":  "PRISON1",
+    "prisonId":  "ABC",
     "licenceType": "PSS",
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   },
   {
@@ -140,7 +133,6 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
   }
 ]

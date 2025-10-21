@@ -326,9 +326,6 @@ data class HdcLicence(
   @field:Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
 
-  @field:Schema(description = "Is the prisoner due for early release")
-  val isDueForEarlyRelease: Boolean = false,
-
   @field:Schema(description = "Is the prisoner due to be released in the next two working days")
   val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
 
@@ -342,8 +339,9 @@ data class HdcLicence(
   val curfewAddress: HdcCurfewAddress? = null,
 
   @field:Schema(description = "Describes a electronic monitoring provider on a licence")
-  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  override val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 
   @field:Schema(description = "The status of the electronic monitoring provider", example = "COMPLETE")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
-) : Licence
+) : Licence,
+  SupportsElectronicMonitoring

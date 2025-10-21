@@ -22,10 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import kotlin.jvm.optionals.getOrNull
 
 private const val CONDITION_CODE = "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02"
 
@@ -39,13 +36,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
   }
 
   @Autowired
-  lateinit var licenceRepository: LicenceRepository
-
-  @Autowired
   lateinit var additionalConditionRepository: AdditionalConditionRepository
-
-  @Autowired
-  lateinit var documentCountsRepository: DocumentCountsRepository
 
   @Test
   @Sql(
@@ -159,7 +150,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val result = licenceRepository.findById(1).get() as CrdLicence
+    val result = testRepository.findLicence() as CrdLicence
     assertThat(result.electronicMonitoringProvider)
       .isNotNull
       .extracting("isToBeTaggedForProgramme", "programmeName")
@@ -179,7 +170,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val result = licenceRepository.findById(1).get() as CrdLicence
+    val result = testRepository.findLicence() as CrdLicence
     assertThat(result.electronicMonitoringProvider)
       .isNotNull
       .extracting("isToBeTaggedForProgramme", "programmeName")
@@ -191,7 +182,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-7.sql",
   )
   fun `clear electronic monitoring provider`() {
-    val result = licenceRepository.findById(1).get() as CrdLicence
+    val result = testRepository.findLicence() as CrdLicence
     assertThat(result.electronicMonitoringProvider)
       .isNotNull
       .extracting("isToBeTaggedForProgramme", "programmeName")
@@ -204,7 +195,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isNoContent()
 
-    val result1 = licenceRepository.findById(1).get() as CrdLicence
+    val result1 = testRepository.findLicence() as CrdLicence
     assertThat(result1.electronicMonitoringProvider).isNull()
   }
 
@@ -213,7 +204,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-6.sql",
   )
   fun `don't clear electronic monitoring provider`() {
-    val result = licenceRepository.findById(1).get() as CrdLicence
+    val result = testRepository.findLicence() as CrdLicence
     assertThat(result.electronicMonitoringProvider)
       .isNotNull
       .extracting("isToBeTaggedForProgramme", "programmeName")
@@ -226,7 +217,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isNoContent()
 
-    val result1 = licenceRepository.findById(1).get() as CrdLicence
+    val result1 = testRepository.findLicence() as CrdLicence
     assertThat(result1.electronicMonitoringProvider)
       .isNotNull
       .extracting("isToBeTaggedForProgramme", "programmeName")
@@ -293,8 +284,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isOk
 
-    val licence = licenceRepository.findById(1).getOrNull()
-    assertThat(licence!!).isNotNull
+    val licence = testRepository.findLicence()
     assertThat(licence.additionalConditions).isNotEmpty
     val firstCondition = licence.additionalConditions.first()
 

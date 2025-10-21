@@ -25,7 +25,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
@@ -51,13 +54,15 @@ class UpdateSentenceDateServiceTest {
   private val staffRepository = mock<StaffRepository>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val licenceService = mock<LicenceService>()
+  private val cvlRecordService = mock<CvlRecordService>()
 
-  val aCrdLicenceEntity = TestData.createCrdLicence()
-  val anInProgressPrrdLicence = TestData.createPrrdLicence()
+  val aCrdLicenceEntity = createCrdLicence()
+  val anInProgressPrrdLicence = createPrrdLicence()
   val aHdcLicenceEntity = createHdcLicence()
-  val aCom = TestData.com()
+  val aCom = communityOffenderManager()
   val aPreviousUser = CommunityOffenderManager(
     staffIdentifier = 4000,
+    staffCode = "test-code",
     username = "test",
     email = "test@test.com",
     firstName = "Test",
@@ -73,6 +78,7 @@ class UpdateSentenceDateServiceTest {
     staffRepository,
     releaseDateService,
     licenceService,
+    cvlRecordService,
   )
 
   @BeforeEach
@@ -80,7 +86,7 @@ class UpdateSentenceDateServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("tcom")
+    whenever(authentication.name).thenReturn(aCom.username)
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -99,7 +105,7 @@ class UpdateSentenceDateServiceTest {
   @BeforeEach
   fun beforeEach() {
     whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 9, 11))
-    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
   }
 
@@ -160,8 +166,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -308,8 +314,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aHdcLicenceEntity.responsibleCom.email,
-      "${aHdcLicenceEntity.responsibleCom.firstName} ${aHdcLicenceEntity.responsibleCom.lastName}",
+      aHdcLicenceEntity.getCom().email,
+      aHdcLicenceEntity.getCom().fullName,
       "${aHdcLicenceEntity.forename} ${aHdcLicenceEntity.surname}",
       aHdcLicenceEntity.crn,
       listOf(
@@ -381,8 +387,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      licence.responsibleCom.email,
-      "${licence.responsibleCom.firstName} ${licence.responsibleCom.lastName}",
+      licence.getCom().email,
+      licence.getCom().fullName,
       "${licence.forename} ${licence.surname}",
       licence.crn,
       listOf(
@@ -423,8 +429,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -465,8 +471,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -507,8 +513,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -549,8 +555,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -591,8 +597,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -614,7 +620,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(null)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -705,8 +711,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom.email,
-      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(

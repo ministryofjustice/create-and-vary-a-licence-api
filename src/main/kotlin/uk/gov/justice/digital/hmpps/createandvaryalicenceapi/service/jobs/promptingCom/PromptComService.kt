@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -18,6 +19,7 @@ class PromptComService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val notifyService: NotifyService,
   private val telemetryClient: TelemetryClient,
+  private val cvlRecordService: CvlRecordService,
 ) {
 
   @TimeServedConsiderations("The com is used to prompt licences to create a licence - if no com exists or is unallocated then what would we do?")
@@ -48,11 +50,8 @@ class PromptComService(
     earliestReleaseDate: LocalDate,
     latestReleaseDate: LocalDate,
   ): List<PromptComNotification> {
-    val eligible = excludeIneligibleCases(candidates)
-    log.info("{}/{} prisoners eligible", eligible.size, candidates.size)
-
-    val withoutLicences = excludeInflightLicences(eligible)
-    log.info("{}/{} + without licences", withoutLicences.size, eligible.size)
+    val withoutLicences = excludeInflightLicences(candidates)
+    log.info("{}/{} + without licences", withoutLicences.size, candidates.size)
 
     val withoutHdc = excludePrisonersWithHdc(withoutLicences)
     log.info("{}/{} + without allowed HDC", withoutHdc.size, withoutLicences.size)
@@ -60,10 +59,24 @@ class PromptComService(
     val withDeliusDetails = enrichWithDeliusData(withoutHdc)
     log.info("{}/{} + with delius information", withDeliusDetails.size, withoutHdc.size)
 
-    val withComEmails = enrichWithComEmail(withDeliusDetails)
+    val nomisIdsToAreaCodes = withDeliusDetails.map { (nomisRecord, deliusRecord) ->
+      nomisRecord.prisonerNumber to deliusRecord.team.provider.code
+    }.toMap()
+
+    val cvlRecords = cvlRecordService.getCvlRecords(
+      withDeliusDetails.map { (nomisRecord, _) -> nomisRecord },
+      nomisIdsToAreaCodes,
+    )
+
+    val eligible = excludeIneligibleCases(withDeliusDetails, cvlRecords)
+    log.info("{}/{} prisoners eligible", eligible.size, candidates.size)
+
+    val promptCases = transformToPromptCases(eligible)
+
+    val withComEmails = enrichWithComEmail(promptCases)
     log.info("{}/{} + with com email", withComEmails.size, withDeliusDetails.size)
 
-    val withStartDates = enrichWithLicenceStartDates(withComEmails)
+    val withStartDates = enrichWithLicenceStartDates(withComEmails, cvlRecords)
     log.info("{}/{} + with start date", withStartDates.size, withComEmails.size)
 
     val withDateInRange = excludeOutOfRangeDates(withStartDates, earliestReleaseDate, latestReleaseDate)

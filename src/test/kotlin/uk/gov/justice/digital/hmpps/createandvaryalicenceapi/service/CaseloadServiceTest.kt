@@ -13,13 +13,16 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -27,9 +30,10 @@ import java.time.LocalDate
 class CaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val licenceCreationService = mock<LicenceCreationService>()
+  private val cvlRecordService = mock<CvlRecordService>()
+  private val deliusApiClient = mock<DeliusApiClient>()
   private val service =
-    CaseloadService(prisonerSearchApiClient, releaseDateService)
+    CaseloadService(prisonerSearchApiClient, releaseDateService, cvlRecordService, deliusApiClient)
 
   @BeforeEach
   fun reset() {
@@ -46,20 +50,18 @@ class CaseloadServiceTest {
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
-    whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
     whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
         "A1234AA" to LocalDate.of(2021, 10, 22),
       ),
     )
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
         "A1234AA" to LocalDate.of(2021, 10, 22),
       ),
     )
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
   }
 
   @Test
@@ -67,44 +69,41 @@ class CaseloadServiceTest {
     val response = service.getPrisonersByNumber(listOf("A1234AA"))
 
     assertThat(response).containsExactly(
-      CaseloadItem(
-        licenceStartDate = LocalDate.of(2021, 10, 22),
-        prisoner = Prisoner(
-          prisonerNumber = "A1234AA",
-          pncNumber = null,
-          croNumber = null,
-          bookingId = "123456",
-          bookNumber = "12345A",
-          firstName = "A",
-          middleNames = null,
-          lastName = "Prisoner",
-          dateOfBirth = LocalDate.of(1985, 12, 28),
-          status = "ACTIVE IN",
-          prisonId = "MDI",
-          prisonName = null,
-          locationDescription = "HMP Moorland",
-          legalStatus = "SENTENCED",
-          imprisonmentStatus = null,
-          imprisonmentStatusDescription = null,
-          mostSeriousOffence = "Robbery",
-          recall = false,
-          indeterminateSentence = false,
-          sentenceStartDate = LocalDate.of(2018, 10, 22),
-          releaseDate = LocalDate.of(2021, 10, 22),
-          confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-          sentenceExpiryDate = LocalDate.of(2021, 10, 22),
-          licenceExpiryDate = LocalDate.of(2021, 10, 22),
-          homeDetentionCurfewEligibilityDate = null,
-          homeDetentionCurfewActualDate = null,
-          homeDetentionCurfewEndDate = null,
-          topupSupervisionStartDate = null,
-          topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-          paroleEligibilityDate = null,
-          postRecallReleaseDate = null,
-          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-          actualParoleDate = null,
-          releaseOnTemporaryLicenceDate = null,
-        ),
+      PrisonerSearchPrisoner(
+        prisonerNumber = "A1234AA",
+        pncNumber = null,
+        croNumber = null,
+        bookingId = "123456",
+        bookNumber = "12345A",
+        firstName = "A",
+        middleNames = null,
+        lastName = "Prisoner",
+        dateOfBirth = LocalDate.of(1985, 12, 28),
+        status = "ACTIVE IN",
+        prisonId = "MDI",
+        prisonName = null,
+        locationDescription = "HMP Moorland",
+        legalStatus = "SENTENCED",
+        imprisonmentStatus = null,
+        imprisonmentStatusDescription = null,
+        mostSeriousOffence = "Robbery",
+        recall = false,
+        indeterminateSentence = false,
+        sentenceStartDate = LocalDate.of(2018, 10, 22),
+        releaseDate = LocalDate.of(2021, 10, 22),
+        confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+        sentenceExpiryDate = LocalDate.of(2021, 10, 22),
+        licenceExpiryDate = LocalDate.of(2021, 10, 22),
+        homeDetentionCurfewEligibilityDate = null,
+        homeDetentionCurfewActualDate = null,
+        homeDetentionCurfewEndDate = null,
+        topupSupervisionStartDate = null,
+        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+        paroleEligibilityDate = null,
+        postRecallReleaseDate = null,
+        conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+        actualParoleDate = null,
+        releaseOnTemporaryLicenceDate = null,
       ),
     )
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(listOf("A1234AA"))
@@ -112,7 +111,8 @@ class CaseloadServiceTest {
 
   @Test
   fun getPrisoner() {
-    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2021, 10, 22))
+    whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager())
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2021, 10, 22)))
 
     val response = service.getPrisoner("A1234AA")
     assertThat(response).isEqualTo(
@@ -122,10 +122,10 @@ class CaseloadServiceTest {
           hardStopDate = LocalDate.of(2023, 10, 12),
           hardStopWarningDate = LocalDate.of(2023, 10, 11),
           isInHardStopPeriod = true,
-          isDueForEarlyRelease = true,
           isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
           licenceStartDate = LocalDate.of(2021, 10, 22),
+          licenceKind = LicenceKind.CRD,
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",

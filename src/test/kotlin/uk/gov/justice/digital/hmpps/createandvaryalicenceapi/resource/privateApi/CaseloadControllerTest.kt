@@ -32,10 +32,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Appr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.CaCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -191,5 +193,32 @@ class CaseloadControllerTest {
 
     assertThat(mapper.readValue(response, ApproverSearchResponse::class.java)).isEqualTo(result)
     verify(approverCaseloadService, times(1)).searchForOffenderOnApproverCaseload(request)
+  }
+
+  @Test
+  fun `Search for offender on vary approver caseload`() {
+    val request = VaryApproverCaseloadSearchRequest(
+      listOf("N55PDV"),
+      null,
+      "ABC",
+    )
+
+    val result =
+      VaryApproverCaseloadSearchResponse(listOf(TestData.varyApprovalCase().copy(crnNumber = "ABC")), emptyList())
+
+    whenever(varyApproverCaseloadService.searchForOffenderOnVaryApproverCaseload(request)).thenReturn(result)
+
+    val response = mvc.perform(
+      post("/caseload/vary-approver/case-search")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(request)),
+    )
+      .andExpect(status().isOk)
+      .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+      .andReturn().response.contentAsString
+
+    assertThat(mapper.readValue(response, VaryApproverCaseloadSearchResponse::class.java)).isEqualTo(result)
+    verify(varyApproverCaseloadService, times(1)).searchForOffenderOnVaryApproverCaseload(request)
   }
 }

@@ -21,10 +21,8 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
@@ -34,12 +32,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Appr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
 
 @Tag(
   name = Tags.CASELOAD,
@@ -55,49 +54,6 @@ class CaseloadController(
   val comVaryCaseloadService: ComVaryCaseloadService,
   val varyApproverCaseloadService: VaryApproverCaseloadService,
 ) {
-
-  @PostMapping("/prisoner-search/prisoner-numbers")
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Returns enriched prisoners by prison number",
-    description = "Match prisoners by a list of prisoner numbers",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returning A list of prisoners",
-        content = [
-          Content(
-            mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = CaseloadItem::class)),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun findByNumbers(@Parameter(required = true) @Valid @RequestBody criteria: PrisonerNumbers) = caseloadService.getPrisonersByNumber(criteria.prisonerNumbers)
 
   @GetMapping("/prisoner-search/nomisid/{nomsId}")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -649,4 +605,55 @@ class CaseloadController(
   fun getVaryApproverCaseload(
     @Parameter(required = true) @Valid @RequestBody varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest,
   ): List<VaryApproverCase> = varyApproverCaseloadService.getVaryApproverCaseload(varyApproverCaseloadSearchRequest)
+
+  @PostMapping("/caseload/vary-approver/case-search")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Search for offenders on a given variation approver's caseload",
+    description = "Search for offenders on a given variation approver's caseload. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The query retrieved a set of enriched results",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = VaryApproverCaseloadSearchResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun searchForOffenderOnVaryApproverCaseload(
+    @Valid @RequestBody
+    varyApproverSearchRequest: VaryApproverCaseloadSearchRequest,
+  ) = varyApproverCaseloadService.searchForOffenderOnVaryApproverCaseload(varyApproverSearchRequest)
 }

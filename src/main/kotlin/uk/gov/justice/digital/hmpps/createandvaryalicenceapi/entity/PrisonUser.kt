@@ -40,15 +40,13 @@ class PrisonUser(
     lastUpdatedTimestamp = lastUpdatedTimestamp,
   )
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is PrisonUser) return false
-    if (!super.equals(other)) return false
-    return true
-  }
-
-  override fun hashCode(): Int = super.hashCode()
-
-  override fun toString(): String = "PrisonUser()" +
-    " ${super.toString()}"
+  override fun toString(): String = "${javaClass.simpleName}(" +
+    "id=$id, " +
+    "kind=$kind, " +
+    "username='$username', " +
+    "email=$email, " +
+    "firstName=$firstName, " +
+    "lastName=$lastName, " +
+    "lastUpdatedTimestamp=$lastUpdatedTimestamp" +
+    ")"
 }

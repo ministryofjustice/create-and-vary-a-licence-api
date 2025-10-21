@@ -14,17 +14,21 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.com
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.LocalDate
+
+const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
 
 class OffenderServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -45,48 +49,43 @@ class OffenderServiceTest {
   )
 
   @BeforeEach
-  fun reset() = reset(licenceRepository, auditEventRepository)
+  fun reset() = reset(licenceRepository, auditEventRepository, auditService, notifyService, releaseDateService, staffRepository)
 
   @Test
   fun `updates all in-flight licences associated with an offender with COM details`() {
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    val user = com()
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(user)
+    val originalCom = communityOffenderManager()
+    val anotherCom = anotherCommunityOffenderManager()
 
-    val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(licenceWithOriginalCom),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(anotherCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", existingComDetails, comDetails)
+    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, anotherCom)
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
-    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
+    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(licenceWithNewCom))
     verify(auditService).recordAuditEventComUpdated(
-      eq(expectedUpdatedLicences[0]),
-      eq(existingComDetails),
-      eq(comDetails),
-      eq(user),
+      eq(licenceWithNewCom),
+      eq(originalCom),
+      eq(anotherCom),
+      eq(anotherCom),
     )
   }
 
   @Test
   fun `send licence create email when isLateAllocationWarningRequired returns true`() {
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licenceWithOriginalCom))
     whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(true)
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(existingComDetails)
-    val user = com()
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(user)
-    val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", existingComDetails, comDetails)
+    whenever(staffRepository.findByUsernameIgnoreCase(originalCom.username)).thenReturn(originalCom)
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
-    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
-
-    verify(auditService).recordAuditEventComUpdated(
-      eq(expectedUpdatedLicences[0]),
-      eq(existingComDetails),
-      eq(comDetails),
-      eq(user),
-    )
+    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(licenceWithNewCom))
+    verify(auditService).recordAuditEventComUpdated(eq(licenceWithNewCom), eq(originalCom), eq(newCom), any())
     verify(notifyService, times(1)).sendLicenceCreateEmail(any(), any(), any(), any())
   }
 
@@ -94,21 +93,20 @@ class OffenderServiceTest {
   fun `don't send licence create email when isLateAllocationWarningRequired returns false`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
-        aLicenceEntity.copy(
+        licenceWithOriginalCom.copy(
           actualReleaseDate = LocalDate.parse("2023-11-20"),
         ),
       ),
     )
     whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(existingComDetails)
-    val expectedUpdatedLicences =
-      listOf(aLicenceEntity.copy(actualReleaseDate = LocalDate.parse("2023-11-20"), responsibleCom = comDetails))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", existingComDetails, comDetails)
+    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
 
+    val newLicence = licenceWithNewCom.copy(actualReleaseDate = LocalDate.parse("2023-11-20"))
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
-    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
-    verify(auditService).recordAuditEventComUpdated(any(), any(), eq(comDetails), any())
+    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(newLicence))
+    verify(auditService).recordAuditEventComUpdated(newLicence, originalCom, newCom, null)
     verify(notifyService, times(0)).sendLicenceCreateEmail(any(), any(), any(), any())
   }
 
@@ -116,61 +114,53 @@ class OffenderServiceTest {
   fun `don't send licence create email when licence status is neither NOT_STARTED or IN_PROGRESS even isLateAllocationWarningRequired returns true`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
-        aLicenceEntity.copy(
-          statusCode = LicenceStatus.SUBMITTED,
+        licenceWithOriginalCom.copy(
+          statusCode = SUBMITTED,
           actualReleaseDate = LocalDate.parse("2023-11-14"),
         ),
       ),
     )
     whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(false)
-    val user = com()
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(user)
-    val expectedUpdatedLicences = listOf(
-      aLicenceEntity.copy(
-        statusCode = LicenceStatus.SUBMITTED,
-        actualReleaseDate = LocalDate.parse("2023-11-14"),
-        responsibleCom = comDetails,
-      ),
-    )
+    whenever(staffRepository.findByUsernameIgnoreCase(originalCom.username)).thenReturn(originalCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", existingComDetails, comDetails)
+    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
-    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
-    verify(auditService).recordAuditEventComUpdated(any(), any(), eq(comDetails), eq(user))
+
+    val updatedLicence =
+      licenceWithNewCom.copy(statusCode = SUBMITTED, actualReleaseDate = LocalDate.parse("2023-11-14"))
+    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(updatedLicence))
+    verify(auditService).recordAuditEventComUpdated(eq(updatedLicence), eq(originalCom), eq(newCom), any())
     verify(notifyService, times(0)).sendLicenceCreateEmail(any(), any(), any(), any())
   }
 
   @Test
   fun `updates all in-flight licences associated with an offender with new probation region`() {
-    val user = com()
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(user)
-    val expectedUpdatedLicences = listOf(
-      aLicenceEntity.copy(
-        probationAreaCode = "N02",
-        probationAreaDescription = "N02 Region",
-        probationPduCode = "PDU2",
-        probationPduDescription = "PDU2 Pdu",
-        probationLauCode = "LAU2",
-        probationLauDescription = "LAU2 Lau",
-        probationTeamCode = "TEAM2",
-        probationTeamDescription = "TEAM2 probation team",
-      ),
-    )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licenceWithOriginalCom))
+    whenever(staffRepository.findByUsernameIgnoreCase(originalCom.username)).thenReturn(originalCom)
 
     service.updateProbationTeam("exampleCrn", newProbationRegionDetails)
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
-    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
-    verify(auditService).recordAuditEventProbationTeamUpdated(eq(aLicenceEntity), any(), eq(user))
+    val updatedLicence = licenceWithOriginalCom.copy(
+      probationAreaCode = "N02",
+      probationAreaDescription = "N02 Region",
+      probationPduCode = "PDU2",
+      probationPduDescription = "PDU2 Pdu",
+      probationLauCode = "LAU2",
+      probationLauDescription = "LAU2 Lau",
+      probationTeamCode = "TEAM2",
+      probationTeamDescription = "TEAM2 probation team",
+    )
+    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(updatedLicence))
+    verify(auditService).recordAuditEventProbationTeamUpdated(eq(updatedLicence), eq(newProbationRegionDetails), any())
   }
 
   @Test
   fun `does not update licences with probation region if it has not changed`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
-        aLicenceEntity.copy(
+        licenceWithOriginalCom.copy(
           probationAreaCode = "N01",
           probationAreaDescription = "N01 Region",
           probationPduCode = "PDU1",
@@ -206,19 +196,19 @@ class OffenderServiceTest {
   fun `updates all non-inactive licences for an offender if the offender's personal details have changed`() {
     whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
-        aLicenceEntity,
-        aLicenceEntity.copy(id = 2, statusCode = LicenceStatus.ACTIVE),
+        licenceWithOriginalCom,
+        licenceWithOriginalCom.copy(id = 2, statusCode = LicenceStatus.ACTIVE),
       ),
     )
 
     val expectedUpdatedLicences = listOf(
-      aLicenceEntity.copy(
+      licenceWithOriginalCom.copy(
         forename = "Peter",
         middleNames = "Robin",
         surname = "Smith",
         dateOfBirth = LocalDate.parse("1970-02-01"),
       ),
-      aLicenceEntity.copy(
+      licenceWithOriginalCom.copy(
         id = 2,
         statusCode = LicenceStatus.ACTIVE,
         forename = "Peter",
@@ -228,9 +218,9 @@ class OffenderServiceTest {
       ),
     )
 
-    service.updateOffenderDetails(aLicenceEntity.nomsId!!, newOffenderDetails)
+    service.updateOffenderDetails(licenceWithOriginalCom.nomsId!!, newOffenderDetails)
 
-    verify(licenceRepository).findAllByNomsIdAndStatusCodeIn(aLicenceEntity.nomsId!!, IN_FLIGHT_LICENCES)
+    verify(licenceRepository).findAllByNomsIdAndStatusCodeIn(licenceWithOriginalCom.nomsId!!, IN_FLIGHT_LICENCES)
     verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
 
     argumentCaptor<List<AuditEvent>>().apply {
@@ -254,43 +244,27 @@ class OffenderServiceTest {
     }
   }
 
-  private companion object {
-    val aLicenceEntity = TestData.createCrdLicence().copy()
+  val originalCom = communityOffenderManager()
+  val newCom = anotherCommunityOffenderManager()
 
-    val existingComDetails = CommunityOffenderManager(
-      staffIdentifier = 1000,
-      username = "username",
-      email = "user@probation.gov.uk",
-      firstName = "A",
-      lastName = "B",
-    )
+  val licenceWithOriginalCom = createCrdLicence().copy(responsibleCom = originalCom)
+  val licenceWithNewCom = createCrdLicence().copy(responsibleCom = newCom)
 
-    val comDetails = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "joebloggs",
-      email = "jbloggs@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    )
+  val newProbationRegionDetails = UpdateProbationTeamRequest(
+    probationAreaCode = "N02",
+    probationAreaDescription = "N02 Region",
+    probationPduCode = "PDU2",
+    probationPduDescription = "PDU2 Pdu",
+    probationLauCode = "LAU2",
+    probationLauDescription = "LAU2 Lau",
+    probationTeamCode = "TEAM2",
+    probationTeamDescription = "TEAM2 probation team",
+  )
 
-    val newProbationRegionDetails = UpdateProbationTeamRequest(
-      probationAreaCode = "N02",
-      probationAreaDescription = "N02 Region",
-      probationPduCode = "PDU2",
-      probationPduDescription = "PDU2 Pdu",
-      probationLauCode = "LAU2",
-      probationLauDescription = "LAU2 Lau",
-      probationTeamCode = "TEAM2",
-      probationTeamDescription = "TEAM2 probation team",
-    )
-
-    val newOffenderDetails = UpdateOffenderDetailsRequest(
-      forename = "Peter",
-      middleNames = "Robin",
-      surname = "Smith",
-      dateOfBirth = LocalDate.parse("1970-02-01"),
-    )
-
-    const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
-  }
+  val newOffenderDetails = UpdateOffenderDetailsRequest(
+    forename = "Peter",
+    middleNames = "Robin",
+    surname = "Smith",
+    dateOfBirth = LocalDate.parse("1970-02-01"),
+  )
 }

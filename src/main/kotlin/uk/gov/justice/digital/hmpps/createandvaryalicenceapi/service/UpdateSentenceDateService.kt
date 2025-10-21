@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Licen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.reifySentenceDates
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -34,7 +33,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 
 @Service
 class UpdateSentenceDateService(
@@ -46,6 +44,7 @@ class UpdateSentenceDateService(
   private val staffRepository: StaffRepository,
   private val releaseDateService: ReleaseDateService,
   private val licenceService: LicenceService,
+  private val cvlRecordService: CvlRecordService,
 ) {
 
   @Transactional
@@ -53,9 +52,9 @@ class UpdateSentenceDateService(
     val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val prisoner = prisonApiClient.getPrisonerDetail(licence.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
+    val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, licence.probationAreaCode!!)
 
-    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(licence, prisonerSearchPrisoner)
-
+    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(licence, cvlRecord)
     val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -122,12 +121,9 @@ class UpdateSentenceDateService(
    */
   private fun selectCorrectKindForHardStopIfNeeded(
     licence: Licence,
-    prisonerSearchPrisoner: PrisonerSearchPrisoner,
-  ): LicenceKind = if (licence.kind == HARD_STOP) {
-    determineReleaseDateKind(
-      prisonerSearchPrisoner.postRecallReleaseDate,
-      prisonerSearchPrisoner.conditionalReleaseDate,
-    )
+    cvlRecord: CvlRecord,
+  ): LicenceKind? = if (licence.kind == HARD_STOP) {
+    cvlRecord.eligibleKind
   } else {
     licence.kind
   }
@@ -144,12 +140,12 @@ class UpdateSentenceDateService(
       log.info("Not notifying COM as now approved for HDC for ${licence.id}")
       return
     }
-    log.info("Notifying COM ${licence.responsibleCom.email} of date change event for ${licence.id}")
+    log.info("Notifying COM ${licence.responsibleCom?.email} of date change event for ${licence.id}")
 
     notifyService.sendDatesChangedEmail(
       licence.id.toString(),
-      licence.responsibleCom.email,
-      "${licence.responsibleCom.firstName} ${licence.responsibleCom.lastName}",
+      licence.getCom().email,
+      licence.getCom().fullName,
       "${licence.forename} ${licence.surname}",
       licence.crn,
       dateChanges.filter { it.notifyOfChange(licence.kind) }.map { it.toDescription() },
@@ -207,8 +203,8 @@ class UpdateSentenceDateService(
   }
 
   private fun getHardstopChangeType(previous: SentenceDateHolder, new: Licence): HardstopChangeType {
-    val previouslyInHardstop = releaseDateService.isInHardStopPeriod(previous)
-    val nowInHardstop = releaseDateService.isInHardStopPeriod(new)
+    val previouslyInHardstop = releaseDateService.isInHardStopPeriod(previous.licenceStartDate)
+    val nowInHardstop = releaseDateService.isInHardStopPeriod(new.licenceStartDate)
     val isPotentialHardStopInProgress = new is SupportsHardStop && new.statusCode == IN_PROGRESS
     return when {
       isPotentialHardStopInProgress && !previouslyInHardstop && nowInHardstop -> NOW_IN_HARDSTOP

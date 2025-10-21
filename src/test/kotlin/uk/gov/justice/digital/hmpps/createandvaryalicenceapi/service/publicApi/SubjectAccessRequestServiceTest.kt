@@ -13,11 +13,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.hmpps.kotlin.sar.HmppsSubjectAccessRequestContent
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -53,9 +53,9 @@ class SubjectAccessRequestServiceTest {
     )
     whenever(licenceService.getLicenceById(1L)).thenReturn(modelLicence)
 
-    val sarContent = service.getSarRecordsById("A12345")
+    val sarContent = service.getPrisonContentFor("A12345", null, null)
 
-    assertThat(sarContent).isExactlyInstanceOf(SarContent::class.java)
+    assertThat(sarContent).isExactlyInstanceOf(HmppsSubjectAccessRequestContent::class.java)
 
     val expectedSarResponse = SubjectAccessRequestResponseBuilder("").addLicence(modelLicence).build(emptyList())
     assertThat(sarContent).isEqualTo(expectedSarResponse)
@@ -179,6 +179,7 @@ class SubjectAccessRequestServiceTest {
 
     val aCom = CommunityOffenderManager(
       staffIdentifier = 2000,
+      staffCode = "test-code",
       username = "testcom",
       email = "testcom@probation.gov.uk",
       firstName = "Test",

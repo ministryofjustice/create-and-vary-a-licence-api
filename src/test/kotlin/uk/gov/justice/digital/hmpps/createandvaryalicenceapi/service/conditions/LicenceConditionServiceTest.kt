@@ -21,7 +21,6 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
@@ -44,6 +43,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import java.util.Optional
@@ -353,7 +354,8 @@ class LicenceConditionServiceTest {
      */
     @Test
     fun `update additional conditions`() {
-      val expectedToBeRemoved = additionalCondition(2).copy(conditionSequence = 6, conditionCode = "code2", conditionType = "AP")
+      val expectedToBeRemoved =
+        additionalCondition(2).copy(conditionSequence = 6, conditionCode = "code2", conditionType = "AP")
 
       whenever(licenceRepository.findById(1L))
         .thenReturn(
@@ -437,7 +439,10 @@ class LicenceConditionServiceTest {
 
       verify(electronicMonitoringProgrammeService, times(1)).handleUpdatedConditionsIfEnabled(crdLicence, setOf("code"))
       verify(electronicMonitoringProgrammeService, times(1)).handleUpdatedConditionsIfEnabled(hdcLicence, setOf("code"))
-      verify(electronicMonitoringProgrammeService, times(0)).handleUpdatedConditionsIfEnabled(variationLicence, setOf("code"))
+      verify(electronicMonitoringProgrammeService, times(0)).handleUpdatedConditionsIfEnabled(
+        variationLicence,
+        setOf("code"),
+      )
     }
   }
 
@@ -806,16 +811,9 @@ class LicenceConditionServiceTest {
       requiresInput = false,
     )
 
-    val aCom = TestData.com()
+    val aCom = communityOffenderManager()
 
-    val aPreviousUser = CommunityOffenderManager(
-      id = 1,
-      staffIdentifier = 4000,
-      username = "test",
-      email = "test@test.com",
-      firstName = "Test",
-      lastName = "Test",
-    )
+    val aPreviousUser = anotherCommunityOffenderManager()
   }
 
   private fun standardCondition(id: Long) = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(

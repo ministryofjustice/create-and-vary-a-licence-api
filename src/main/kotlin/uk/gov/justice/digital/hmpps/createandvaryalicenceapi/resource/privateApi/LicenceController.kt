@@ -29,9 +29,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicencePermissionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
@@ -109,7 +110,6 @@ class LicenceController(
     request: CreateLicenceRequest,
   ): LicenceCreationResponse = when (request.type) {
     HARD_STOP -> licenceCreationService.createHardStopLicence(request.nomsId)
-    TIME_SERVED -> TODO("Implement Time-Served licence creation")
     HDC -> licenceCreationService.createHdcLicence(request.nomsId)
     else -> licenceCreationService.createLicence(request.nomsId)
   }
@@ -207,7 +207,7 @@ class LicenceController(
       ),
     ],
   )
-  fun submittedVariations(
+  fun findSubmittedVariations(
     @PathVariable("areaCode") probationAreaCode: String,
   ): List<LicenceSummary> = licenceService.findSubmittedVariationsByRegion(probationAreaCode)
 
@@ -1192,4 +1192,59 @@ class LicenceController(
     @Valid @RequestBody
     body: DeactivateLicenceAndVariationsRequest,
   ) = licenceService.deactivateLicenceAndVariations(licenceId, body)
+
+  @Tag(name = Tags.LICENCES)
+  @PostMapping(value = ["/id/{licenceId}/permissions"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Check what access a user has to a licence",
+    description = "Check what access a user has to a licence",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The permissions the user has for the licence are returned",
+        content = [
+          Content(mediaType = "application/json", schema = Schema(implementation = LicencePermissionsResponse::class)),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The licence for this ID was not found.",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getLicencePermissions(
+    @PathVariable("licenceId") licenceId: Long,
+    @Valid @RequestBody
+    body: LicencePermissionsRequest,
+  ): LicencePermissionsResponse = licenceService.getLicencePermissions(licenceId, body.teamCodes)
 }

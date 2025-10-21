@@ -6,5 +6,4 @@ data class PromptComNotification(
   val email: String,
   val comName: String,
   val initialPromptCases: List<Case> = emptyList(),
-  val urgentPromptCases: List<Case> = emptyList(),
 )

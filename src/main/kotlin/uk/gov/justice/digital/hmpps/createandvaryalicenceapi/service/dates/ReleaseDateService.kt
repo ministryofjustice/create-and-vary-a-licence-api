@@ -7,10 +7,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91Determi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.determineReleaseDateKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
 import java.time.DayOfWeek
@@ -26,25 +26,15 @@ class ReleaseDateService(
   @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
 ) {
-  fun isInHardStopPeriod(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): Boolean {
+  fun isInHardStopPeriod(licenceStartDate: LocalDate?, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
-    val hardStopDate = getHardStopDate(sentenceDateHolder)
+    val hardStopDate = getHardStopDate(licenceStartDate)
     val today = LocalDate.now(now)
-    if (hardStopDate == null || sentenceDateHolder.licenceStartDate == null) {
+    if (hardStopDate == null || licenceStartDate == null) {
       return false
     }
 
-    return today >= hardStopDate && today <= sentenceDateHolder.licenceStartDate
-  }
-
-  fun isDueForEarlyRelease(sentenceDateHolder: SentenceDateHolder): Boolean {
-    val actualReleaseDate = sentenceDateHolder.actualReleaseDate
-    val latestReleaseDate = sentenceDateHolder.latestReleaseDate
-
-    if (actualReleaseDate == null || latestReleaseDate == null) {
-      return false
-    }
-    return actualReleaseDate < 1.workingDaysBefore(latestReleaseDate)
+    return today >= hardStopDate && today <= licenceStartDate
   }
 
   fun isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder: SentenceDateHolder): Boolean {
@@ -91,47 +81,48 @@ class ReleaseDateService(
     return workingDaysService.isNonWorkingDay(releaseDate)
   }
 
-  fun getHardStopDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
-    val actualReleaseDate = sentenceDateHolder.actualReleaseDate
-    val latestReleaseDate = sentenceDateHolder.latestReleaseDate
-
-    return when {
-      latestReleaseDate == null -> null
-      actualReleaseDate != null && isExcludedFromHardstop(actualReleaseDate, latestReleaseDate) -> null
-      else -> calculateHardStopDate(latestReleaseDate)
-    }
+  fun getHardStopDate(licenceStartDate: LocalDate?): LocalDate? = when {
+    licenceStartDate == null -> null
+    else -> calculateHardStopDate(licenceStartDate)
   }
 
   @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
-    licenceKind: LicenceKind? = null,
-  ): LocalDate? {
-    val lsdKind = licenceKind ?: determineReleaseDateKind(
-      nomisRecord.postRecallReleaseDate,
-      nomisRecord.conditionalReleaseDate,
+    licenceKind: LicenceKind?,
+  ): LocalDate? = when (licenceKind) {
+    HDC -> nomisRecord.homeDetentionCurfewActualDate
+    PRRD -> nomisRecord.calculatePrrdLicenceStartDate()
+    CRD -> calculateCrdLicenceStartDate(
+      nomisRecord,
+      iS91DeterminationService.isIS91Case(nomisRecord),
     )
-
-    return when (lsdKind) {
-      HDC -> nomisRecord.homeDetentionCurfewActualDate
-      PRRD -> nomisRecord.calculatePrrdLicenceStartDate()
-      else -> calculateCrdLicenceStartDate(
-        nomisRecord,
-        iS91DeterminationService.isIS91Case(nomisRecord),
-      )
-    }
+    else -> null
   }
 
   @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
-  fun getLicenceStartDates(prisoners: List<PrisonerSearchPrisoner>): Map<String, LocalDate?> {
+  fun getLicenceStartDates(prisoners: List<PrisonerSearchPrisoner>, nomisIdsToKinds: Map<String, LicenceKind?>): Map<String, LocalDate?> {
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
     return prisoners.associate {
-      it.prisonerNumber to when (determineReleaseDateKind(it.postRecallReleaseDate, it.conditionalReleaseDate)) {
+      it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
         HDC -> it.homeDetentionCurfewActualDate
         PRRD -> it.calculatePrrdLicenceStartDate()
-        else -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
+        CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
+        else -> null
       }
     }
+  }
+
+  fun isTimeServed(nomisRecord: PrisonerSearchPrisoner, overrideClock: Clock? = null): Boolean {
+    val clockToUse = overrideClock ?: clock
+    val today = LocalDate.now(clockToUse)
+
+    val conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate
+      ?: nomisRecord.conditionalReleaseDate
+
+    return nomisRecord.sentenceStartDate == today &&
+      nomisRecord.confirmedReleaseDate == today &&
+      conditionalReleaseDate == today
   }
 
   private fun calculateCrdLicenceStartDate(
@@ -146,21 +137,14 @@ class ReleaseDateService(
     nomisRecord.determineLicenceStartDate()
   }
 
-  private fun calculateHardStopDate(conditionalReleaseDate: LocalDate): LocalDate {
-    val date =
-      if (conditionalReleaseDate.isNonWorkingDay()) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate
-    return 2.workingDaysBefore(date)
+  private fun calculateHardStopDate(licenceStartDate: LocalDate): LocalDate {
+    val adjustedLsd =
+      if (licenceStartDate.isNonWorkingDay()) 1.workingDaysBefore(licenceStartDate) else licenceStartDate
+    return 2.workingDaysBefore(adjustedLsd)
   }
 
-  private fun isExcludedFromHardstop(actualReleaseDate: LocalDate, latestReleaseDate: LocalDate): Boolean {
-    if (latestReleaseDate.isNonWorkingDay()) {
-      return actualReleaseDate != 1.workingDaysBefore(latestReleaseDate)
-    }
-    return actualReleaseDate != latestReleaseDate
-  }
-
-  fun getHardStopWarningDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
-    val hardStopDate = getHardStopDate(sentenceDateHolder) ?: return null
+  fun getHardStopWarningDate(licenceStartDate: LocalDate?): LocalDate? {
+    val hardStopDate = getHardStopDate(licenceStartDate) ?: return null
     return 2.workingDaysBefore(hardStopDate)
   }
 
