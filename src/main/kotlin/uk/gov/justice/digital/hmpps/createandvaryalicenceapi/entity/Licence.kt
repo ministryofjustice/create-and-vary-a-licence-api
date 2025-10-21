@@ -39,6 +39,10 @@ abstract class Licence(
   @Column(name = "kind", insertable = false, updatable = false)
   var kind: LicenceKind,
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "eligible_kind", insertable = false, updatable = false)
+  var eligibleKind: LicenceKind? = null,
+
   @param:NotNull
   @Enumerated(EnumType.STRING)
   var typeCode: LicenceType = LicenceType.AP,
