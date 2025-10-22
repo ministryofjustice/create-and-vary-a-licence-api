@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs.determineCaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab.ATTENTION_NEEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab.FUTURE_RELEASES
@@ -30,7 +30,7 @@ class TabsTest {
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = null,
-      licenceCase = licenceCase,
+      licenceCaCase = licenceCase,
       now = clock,
     )
 
@@ -47,7 +47,7 @@ class TabsTest {
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = fixedNow.minusDays(1),
-      licenceCase = licenceCase,
+      licenceCaCase = licenceCase,
       now = clock,
     )
 
@@ -64,7 +64,7 @@ class TabsTest {
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow,
-      licenceCase = licenceCase,
+      licenceCaCase = licenceCase,
       now = clock,
     )
 
@@ -81,7 +81,7 @@ class TabsTest {
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(1),
-      licenceCase = licenceCase,
+      licenceCaCase = licenceCase,
       now = clock,
     )
 
@@ -92,13 +92,13 @@ class TabsTest {
   @Test
   fun `returns ATTENTION_NEEDED when no licence and no LSD`() {
     // Given
-    val licenceCase: LicenceCase? = null
+    val licenceCaCase: LicenceCaCase? = null
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = null,
-      licenceCase = licenceCase,
+      licenceCaCase = licenceCaCase,
       now = clock,
     )
 
@@ -117,7 +117,7 @@ class TabsTest {
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(1),
-      licenceCase = licenceCase,
+      licenceCaCase = licenceCase,
       now = clock,
     )
 
@@ -128,13 +128,13 @@ class TabsTest {
   @Test
   fun `returns RELEASES_IN_NEXT_TWO_WORKING_DAYS when no licence and falls back to CVL info`() {
     // Given
-    val licenceCase: LicenceCase? = null
+    val licenceCaCase: LicenceCaCase? = null
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(2),
-      licenceCase = licenceCase,
+      licenceCaCase = licenceCaCase,
       now = clock,
     )
 
@@ -153,7 +153,7 @@ class TabsTest {
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = fixedNow.plusDays(3),
-      licenceCase = licenceCase,
+      licenceCaCase = licenceCase,
       now = clock,
     )
 
@@ -164,13 +164,13 @@ class TabsTest {
   @Test
   fun `returns FUTURE_RELEASES when no licence and falls back to CVL info`() {
     // Given
-    val licenceCase: LicenceCase? = null
+    val licenceCaCase: LicenceCaCase? = null
 
     // When
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = fixedNow.plusDays(3),
-      licenceCase = licenceCase,
+      licenceCaCase = licenceCaCase,
       now = clock,
     )
 

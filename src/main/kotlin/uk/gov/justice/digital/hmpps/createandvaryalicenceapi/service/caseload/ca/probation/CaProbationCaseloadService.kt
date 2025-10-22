@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -39,8 +39,8 @@ class CaProbationCaseloadService(
     return searchResults.sortedWith(compareByDescending<CaCase> { it.releaseDate }.thenBy { it.licenceId })
   }
 
-  private fun formatReleasedLicences(licenceCases: List<LicenceCase>): List<CaCase> {
-    val groupedLicences = licenceCases.groupBy { it.prisonNumber }
+  private fun formatReleasedLicences(licenceCaCases: List<LicenceCaCase>): List<CaCase> {
+    val groupedLicences = licenceCaCases.groupBy { it.prisonNumber }
     return groupedLicences.map {
       val licenceCase = if (it.value.size > 1) {
         it.value.find { l -> l.licenceStatus != ACTIVE }
