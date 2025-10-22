@@ -25,7 +25,7 @@ data class VariationLicence(
   @field:Schema(
     description = "The eligible kind of the licence that this variation is created from",
     example = LicenceKinds.CRD,
-    allowableValues = [LicenceKinds.CRD, LicenceKinds.PRRD, LicenceKinds.TIME_SERVED],
+    allowableValues = [LicenceKinds.CRD, LicenceKinds.PRRD],
   )
   override val eligibleKind: String?,
 
