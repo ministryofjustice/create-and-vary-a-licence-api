@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
@@ -23,7 +23,7 @@ fun createLicenceCase(
   updatedByLastName: String? = "Y",
   comUsername: String? = "com-user",
   homeDetentionCurfewActualDate: LocalDate? = null,
-) = LicenceCase(
+) = LicenceCaCase(
   kind = kind,
   licenceId = licenceId,
   versionOfId = versionOfId,
