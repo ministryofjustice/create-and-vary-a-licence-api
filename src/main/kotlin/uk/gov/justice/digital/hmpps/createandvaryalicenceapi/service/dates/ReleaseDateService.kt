@@ -133,12 +133,13 @@ class ReleaseDateService(
     sentenceStartDate: LocalDate?,
     confirmedReleaseDate: LocalDate?,
     conditionalReleaseDate: LocalDate?,
+    overrideClock: Clock? = null,
   ): LicenceKind? {
-    if (licenceStartDate == null || !isInHardStopPeriod(licenceStartDate)) {
+    if (licenceStartDate == null || !isInHardStopPeriod(licenceStartDate, overrideClock)) {
       return null
     }
 
-    return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate)) {
+    return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate, overrideClock)) {
       LicenceKind.TIME_SERVED
     } else {
       LicenceKind.HARD_STOP
@@ -148,6 +149,7 @@ class ReleaseDateService(
   fun getHardStopKind(
     licenceStartDate: LocalDate?,
     nomisRecord: PrisonerSearchPrisoner,
+    overrideClock: Clock? = null,
   ): LicenceKind? {
     val conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate
       ?: nomisRecord.conditionalReleaseDate
@@ -157,14 +159,16 @@ class ReleaseDateService(
       nomisRecord.sentenceStartDate,
       nomisRecord.confirmedReleaseDate,
       conditionalReleaseDate,
+      overrideClock,
     )
   }
 
-  fun getHardStopKind(licence: LicenceSummary): LicenceKind? = determineHardStopKind(
+  fun getHardStopKind(licence: LicenceSummary, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
     licence.licenceStartDate,
     licence.sentenceStartDate,
     licence.actualReleaseDate,
     licence.conditionalReleaseDate,
+    overrideClock,
   )
 
   private fun calculateCrdLicenceStartDate(
