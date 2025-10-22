@@ -107,6 +107,7 @@ class HdcLicence(
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC,
+  eligibleKind = LicenceKind.HDC,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,

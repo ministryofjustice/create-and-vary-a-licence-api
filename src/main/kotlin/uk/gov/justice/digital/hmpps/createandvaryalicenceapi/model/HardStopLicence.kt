@@ -22,6 +22,13 @@ data class HardStopLicence(
   )
   override val kind: String = LicenceKinds.HARD_STOP,
 
+  @field:Schema(
+    description = "The type the licence the offender as eligible for based on release dates",
+    example = LicenceKinds.CRD,
+    allowableValues = [LicenceKinds.CRD, LicenceKinds.PRRD, LicenceKinds.TIME_SERVED],
+  )
+  override val eligibleKind: String?,
+
   override val isVariation: Boolean = false,
 
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")

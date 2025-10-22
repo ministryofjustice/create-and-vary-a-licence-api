@@ -17,6 +17,7 @@ import java.time.LocalDateTime
 @DiscriminatorValue(value = "HARD_STOP")
 class HardStopLicence(
   id: Long? = null,
+  eligibleKind: LicenceKind?,
   typeCode: LicenceType,
   version: String? = null,
   statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
@@ -80,6 +81,7 @@ class HardStopLicence(
 ) : Licence(
   id = id,
   kind = LicenceKind.HARD_STOP,
+  eligibleKind = eligibleKind,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,
@@ -134,6 +136,7 @@ class HardStopLicence(
 
   fun copy(
     id: Long? = this.id,
+    eligibleKind: LicenceKind? = this.eligibleKind,
     typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,
@@ -189,6 +192,7 @@ class HardStopLicence(
     updatedBy: Staff? = this.updatedBy,
   ): HardStopLicence = HardStopLicence(
     id = id,
+    eligibleKind = eligibleKind,
     typeCode = typeCode,
     version = version,
     statusCode = statusCode,

@@ -109,6 +109,7 @@ class LicenceCreationService(
         creator = createdBy,
         licenceStartDate = cvlRecord.licenceStartDate,
       )
+
       else -> throw ValidationException("Generic licence creation route not suitable for $prisonNumber - eligibleKind was ${cvlRecord.eligibleKind}.")
     }
 
@@ -147,6 +148,7 @@ class LicenceCreationService(
     val licence = if (isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED) {
       LicenceFactory.createTimeServe(
         licenceType = licenceType,
+        eligibleKind = cvlRecord.eligibleKind,
         nomsId = nomisRecord.prisonerNumber,
         version = version,
         nomisRecord = nomisRecord,
@@ -171,12 +173,13 @@ class LicenceCreationService(
         version = version,
         nomisRecord = nomisRecord,
         prisonInformation = prisonInformation,
-        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails!!,
+        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
         deliusRecord = deliusRecord,
-        responsibleCom = responsibleCom!!,
+        responsibleCom = responsibleCom,
         creator = createdBy,
         timedOutLicence = timedOutLicence,
         licenceStartDate = licenceStartDate,
+        eligibleKind = cvlRecord.eligibleKind,
       )
     }
 
