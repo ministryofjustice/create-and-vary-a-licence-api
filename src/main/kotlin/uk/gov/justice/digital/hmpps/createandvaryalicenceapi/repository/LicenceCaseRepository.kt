@@ -10,8 +10,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
-private const val LICENCE_CASE = "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaCase"
-private const val LICENCE_COM_CASE = "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceComCase"
+private const val LICENCE_CASE = "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase"
+private const val LICENCE_COM_CASE = "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase"
 
 @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
 @Repository
