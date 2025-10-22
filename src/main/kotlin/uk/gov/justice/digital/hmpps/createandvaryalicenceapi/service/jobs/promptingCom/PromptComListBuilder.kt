@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
+import kotlin.collections.List
 
 @Service
 class PromptComListBuilder(
@@ -94,22 +95,29 @@ class PromptComListBuilder(
 
   fun excludeOutOfRangeDates(cases: List<CaseWithEmailAndStartDate>, startDate: LocalDate, endDate: LocalDate) = cases.filter { (_, _, releaseDate) -> releaseDate in startDate..endDate }
 
-  fun buildEmailsToSend(cases: List<CaseWithEmailAndStartDate>): List<PromptComNotification> = cases.groupBy { (case, _, _) -> case.comStaffCode }.values.map { cases ->
+  fun buildEmailsToSend(
+    cases: List<CaseWithEmailAndStartDate>,
+    cvlRecords: List<CvlRecord>,
+  ): List<PromptComNotification> = cases.groupBy { (case, _, _) -> case.comStaffCode }.values.map { cases ->
     val (com, email, _) = cases.first()
     PromptComNotification(
       comName = com.comName,
       email = email,
       initialPromptCases = cases.map { (case, _, startDate) ->
+        val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == case.prisoner.prisonerNumber }
         Case(
           crn = case.crn,
           name = case.prisoner.firstName + " " + case.prisoner.lastName,
           licenceStartDate = startDate,
+          kind = cvlRecord.eligibleKind,
         )
       }.sortedBy { it.licenceStartDate },
     )
   }
 
-  fun transformToPromptCases(cases: Map<PrisonerSearchPrisoner, CommunityManager>): List<PromptCase> = cases.map { (nomisRecord, offenderManager) ->
+  fun transformToPromptCases(
+    cases: Map<PrisonerSearchPrisoner, CommunityManager>,
+  ): List<PromptCase> = cases.map { (nomisRecord, offenderManager) ->
     PromptCase(
       prisoner = nomisRecord,
       crn = offenderManager.case.crn,

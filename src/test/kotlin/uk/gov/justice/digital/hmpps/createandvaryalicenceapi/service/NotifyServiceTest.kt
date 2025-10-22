@@ -15,6 +15,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Notif
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -50,12 +52,12 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        Case(name = "John Smith", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-20")),
+        Case(name = "John Smith", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-20"), kind = CRD),
       ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
-      "prisonersForRelease" to listOf("John Smith (CRN: X12444), who is due to leave custody on 20 November 2022"),
+      "prisonersForRelease" to listOf("John Smith (CRN: X12444), who is due to leave prison as a standard release on Sunday 20 November 2022"),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "yes",
     )
@@ -72,22 +74,24 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        Case(name = "John Smith", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09")),
-        Case(name = "Test1", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10")),
-        Case(name = "Test2", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-11")),
+        Case(name = "Test one", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09"), CRD),
+        Case(name = "Test two", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10"), PRRD),
+        Case(name = "Test three", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-11"), CRD),
       ),
     )
+    // Test One  (CRN: X12444), who is due to leave to leave prison as a standard release on Wednesday 09 November 2022, Test Two  (CRN: X12444), who is due to leave to leave prison following a fixed-term recall on Thursday 10 November 2022, Test Three  (CRN: X12444), who is due to leave to leave prison as a standard release on Friday 11 November 2022], "createLicenceLink" = "http://somewhere/licence/create/caseload", "isEligibleForEarlyRelease" = "yes"},
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
       "prisonersForRelease" to listOf(
-        "John Smith (CRN: X12444), who is due to leave custody on 09 November 2022",
-        "Test1 (CRN: X12444), who is due to leave custody on 10 November 2022",
-        "Test2 (CRN: X12444), who is due to leave custody on 11 November 2022",
+        "Test One (CRN: X12444), who is due to leave prison as a standard release on Wednesday 09 November 2022",
+        "Test Two (CRN: X12444), who is due to leave prison following a fixed-term recall on Thursday 10 November 2022",
+        "Test Three (CRN: X12444), who is due to leave prison as a standard release on Friday 11 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "yes",
     )
 
+    // , Test Three (CRN: X12444), who is due to leave prison as a standard release on Friday 11 November 2022], "createLicenceLink" = "http://somewhere/licence/create/caseload", "isEligibleForEarlyRelease" = "yes"},
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
   }
@@ -98,17 +102,17 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        Case(name = "John Smith", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09")),
-        Case(name = "Test1", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10")),
-        Case(name = "Test2", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-24")),
+        Case(name = "test one", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09"), kind = PRRD),
+        Case(name = "test two", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10"), kind = CRD),
+        Case(name = "test three", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-24"), kind = CRD),
       ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
       "prisonersForRelease" to listOf(
-        "John Smith (CRN: X12444), who is due to leave custody on 09 November 2022",
-        "Test1 (CRN: X12444), who is due to leave custody on 10 November 2022",
-        "Test2 (CRN: X12444), who is due to leave custody on 24 November 2022",
+        "Test One (CRN: X12444), who is due to leave prison following a fixed-term recall on Wednesday 09 November 2022",
+        "Test Two (CRN: X12444), who is due to leave prison as a standard release on Thursday 10 November 2022",
+        "Test Three (CRN: X12444), who is due to leave prison as a standard release on Thursday 24 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "no",
