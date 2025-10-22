@@ -24,10 +24,10 @@ data class TimeServedLicence(
 
   @field:Schema(
     description = "The type the licence the offender as eligible for based on release dates",
-    example = LicenceKinds.TIME_SERVED,
-    allowableValues = [LicenceKinds.TIME_SERVED],
+    example = LicenceKinds.CRD,
+    allowableValues = [LicenceKinds.CRD, LicenceKinds.PRRD],
   )
-  override val eligibleKind: String = LicenceKinds.TIME_SERVED,
+  override val eligibleKind: String?,
 
   override val isVariation: Boolean = false,
 
