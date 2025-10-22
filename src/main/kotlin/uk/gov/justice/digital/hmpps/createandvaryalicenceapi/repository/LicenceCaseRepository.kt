@@ -6,85 +6,9 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.LocalDate
-import java.time.LocalDateTime
-
-interface LicenceCase : SentenceDateHolder {
-  val kind: LicenceKind
-  val licenceId: Long
-  val versionOfId: Long?
-  val licenceStatus: LicenceStatus
-  val prisonNumber: String
-  val surname: String?
-  val forename: String?
-  val updatedByFirstName: String?
-  val updatedByLastName: String?
-  val comUsername: String?
-
-  val updatedByFullName: String?
-    get() = listOfNotNull(updatedByFirstName, updatedByLastName)
-      .joinToString(" ")
-      .ifBlank { null }
-
-  fun isReviewNeeded(): Boolean = kind == LicenceKind.HARD_STOP &&
-    licenceStatus == LicenceStatus.ACTIVE &&
-    (this as? LicenceComCase)?.reviewDate == null
-
-  val fullName: String
-    get() = listOfNotNull(forename, surname)
-      .joinToString(" ")
-      .convertToTitleCase()
-      .trim()
-}
-
-data class LicenceCaCase(
-  override val kind: LicenceKind,
-  override val licenceId: Long,
-  override val versionOfId: Long?,
-  override val licenceStatus: LicenceStatus,
-  override val prisonNumber: String,
-  override val surname: String?,
-  override val forename: String?,
-  override val conditionalReleaseDate: LocalDate?,
-  override val actualReleaseDate: LocalDate?,
-  override val licenceStartDate: LocalDate?,
-  override val postRecallReleaseDate: LocalDate?,
-  override val homeDetentionCurfewActualDate: LocalDate?,
-  override val updatedByFirstName: String?,
-  override val updatedByLastName: String?,
-  override val comUsername: String?,
-  val prisonCode: String?,
-  val prisonDescription: String?,
-) : LicenceCase
-
-data class LicenceComCase(
-  override val kind: LicenceKind,
-  override val licenceId: Long,
-  override val versionOfId: Long?,
-  override val licenceStatus: LicenceStatus,
-  override val prisonNumber: String,
-  override val surname: String?,
-  override val forename: String?,
-  override val conditionalReleaseDate: LocalDate?,
-  override val actualReleaseDate: LocalDate?,
-  override val licenceStartDate: LocalDate?,
-  override val postRecallReleaseDate: LocalDate?,
-  override val homeDetentionCurfewActualDate: LocalDate?,
-  override val updatedByFirstName: String?,
-  override val updatedByLastName: String?,
-  override val comUsername: String?,
-  val typeCode: LicenceType,
-  val reviewDate: LocalDateTime?,
-  val crn: String?,
-  val dateCreated: LocalDateTime,
-  val approvedByName: String?,
-  val approvedDate: LocalDateTime?,
-) : LicenceCase
 
 private const val LICENCE_CASE = "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaCase"
 private const val LICENCE_COM_CASE = "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceComCase"

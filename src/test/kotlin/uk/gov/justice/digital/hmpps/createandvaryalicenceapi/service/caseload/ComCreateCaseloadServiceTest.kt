@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceComCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
@@ -416,7 +416,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -425,7 +425,7 @@ class ComCreateCaseloadServiceTest {
           comUsername = "johndoe",
           licenceStartDate = LocalDate.now().minusDays(2),
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12349",
           nomisId = "AB1234F",
           kind = LicenceKind.CRD,
@@ -566,7 +566,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12352",
           nomisId = "AB1234I",
           kind = LicenceKind.CRD,
@@ -838,7 +838,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -847,7 +847,7 @@ class ComCreateCaseloadServiceTest {
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -888,7 +888,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -897,7 +897,7 @@ class ComCreateCaseloadServiceTest {
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
@@ -939,7 +939,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -1022,7 +1022,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
@@ -1064,7 +1064,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -1073,7 +1073,7 @@ class ComCreateCaseloadServiceTest {
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -1126,7 +1126,7 @@ class ComCreateCaseloadServiceTest {
     }
   }
 
-  private fun createLicenceSummary(
+  private fun createLicenceComCase(
     crn: String,
     nomisId: String,
     typeCode: LicenceType,
