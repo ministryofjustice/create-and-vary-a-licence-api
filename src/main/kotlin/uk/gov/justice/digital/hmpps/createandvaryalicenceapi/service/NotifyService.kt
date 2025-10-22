@@ -298,15 +298,6 @@ class NotifyService(
       ),
     )
 
-    // "${prisoner.name} (CRN: ${prisoner.crn}), who is due to leave custody on ${
-    //   prisoner.licenceStartDate.format(
-    //     DateTimeFormatter.ofPattern(
-    //       "dd LLLL yyyy",
-    //     ),
-    //   )
-    // }"
-
-    // ${prisoner.name} (CRN: ${crn}), who is due to leave to leave prison ${releaseType} on ${prisoner.licenceStartDate}
     cases.map { prisoner ->
       var promptType = "REMINDER"
       if (templateId == initialLicencePromptTemplateId) {
