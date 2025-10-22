@@ -13,6 +13,7 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
@@ -304,23 +305,32 @@ class PromptComListBuilderTest {
   inner class BuildEmailsToSend {
     @Test
     fun fewCases() {
+      val nomisId1 = "A1234AA"
+      val nomisId2 = "A1234BB"
+      val nomisId3 = "A1234CC"
+
       val promptCase1 = promptCase().copy(
         crn = "crn-1",
-        prisoner = prisonerSearchResult().copy(prisonerNumber = "A1234AA"),
+        prisoner = prisonerSearchResult().copy(prisonerNumber = nomisId1),
         comStaffCode = "AAA",
       ) to "user1@test.com" to LocalDate.of(2022, 1, 2)
       val promptCase2 = promptCase().copy(
         crn = "crn-2",
-        prisoner = prisonerSearchResult().copy(prisonerNumber = "A1234BB"),
+        prisoner = prisonerSearchResult().copy(prisonerNumber = nomisId2),
         comStaffCode = "AAA",
       ) to "user1@test.com" to LocalDate.of(2022, 1, 1)
       val promptCase3 = promptCase().copy(
         crn = "crn-3",
-        prisoner = prisonerSearchResult().copy(prisonerNumber = "A1234CC"),
+        prisoner = prisonerSearchResult().copy(prisonerNumber = nomisId3),
         comStaffCode = "BBB",
       ) to "user2@test.com" to LocalDate.of(2022, 1, 3)
 
-      val result = promptComListBuilder.buildEmailsToSend(listOf(promptCase1, promptCase2, promptCase3))
+      val cvlRecords = listOf(
+        CvlRecord(nomisId = nomisId1, eligibleKind = LicenceKind.PRRD),
+        CvlRecord(nomisId = nomisId2, eligibleKind = LicenceKind.CRD),
+        CvlRecord(nomisId = nomisId3, eligibleKind = LicenceKind.CRD),
+      )
+      val result = promptComListBuilder.buildEmailsToSend(listOf(promptCase1, promptCase2, promptCase3), cvlRecords)
 
       assertThat(result).isEqualTo(
         listOf(
@@ -332,11 +342,13 @@ class PromptComListBuilderTest {
                 crn = "crn-2",
                 name = "A Prisoner",
                 licenceStartDate = LocalDate.of(2022, 1, 1),
+                kind = LicenceKind.CRD,
               ),
               Case(
                 crn = "crn-1",
                 name = "A Prisoner",
                 licenceStartDate = LocalDate.of(2022, 1, 2),
+                kind = LicenceKind.PRRD,
               ),
             ),
           ),
@@ -348,6 +360,7 @@ class PromptComListBuilderTest {
                 crn = "crn-3",
                 name = "A Prisoner",
                 licenceStartDate = LocalDate.of(2022, 1, 3),
+                kind = LicenceKind.CRD,
               ),
             ),
           ),
