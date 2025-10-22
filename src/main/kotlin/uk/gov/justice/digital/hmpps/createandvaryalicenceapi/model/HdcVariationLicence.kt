@@ -22,6 +22,13 @@ data class HdcVariationLicence(
   )
   override val kind: String = LicenceKinds.HDC_VARIATION,
 
+  @field:Schema(
+    description = "The type the licence the offender as eligible for based on release dates",
+    example = LicenceKinds.HDC,
+    allowableValues = [LicenceKinds.HDC],
+  )
+  override val eligibleKind: String = LicenceKinds.HDC,
+
   override val isVariation: Boolean = true,
 
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")

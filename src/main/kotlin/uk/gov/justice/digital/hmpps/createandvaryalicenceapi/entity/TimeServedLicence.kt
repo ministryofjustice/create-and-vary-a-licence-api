@@ -17,6 +17,7 @@ import java.time.LocalDateTime
 @DiscriminatorValue(value = "TIME_SERVED")
 class TimeServedLicence(
   id: Long? = null,
+  eligibleKind: LicenceKind?,
   typeCode: LicenceType,
   version: String? = null,
   statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
@@ -80,6 +81,7 @@ class TimeServedLicence(
 ) : Licence(
   id = id,
   kind = LicenceKind.TIME_SERVED,
+  eligibleKind = eligibleKind,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,
@@ -134,6 +136,7 @@ class TimeServedLicence(
 
   fun copy(
     id: Long? = this.id,
+    eligibleKind: LicenceKind? = this.eligibleKind,
     typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,
@@ -189,6 +192,7 @@ class TimeServedLicence(
     updatedBy: Staff? = this.updatedBy,
   ): TimeServedLicence = TimeServedLicence(
     id = id,
+    eligibleKind = eligibleKind,
     typeCode = typeCode,
     version = version,
     statusCode = statusCode,

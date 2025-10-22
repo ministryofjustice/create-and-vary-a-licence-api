@@ -40,6 +40,8 @@ object LicenceKinds {
 sealed interface Licence {
   val kind: String
 
+  val eligibleKind: String?
+
   @get:Deprecated("Soon to be removed, supports backward compatibility, should use kind to determine")
   val isVariation: Boolean
 
