@@ -18,6 +18,13 @@ data class CrdLicence(
   @field:Schema(description = "Type of this licence", example = LicenceKinds.CRD, allowableValues = [LicenceKinds.CRD])
   override val kind: String = LicenceKinds.CRD,
 
+  @field:Schema(
+    description = "The type the licence the offender as eligible for based on release dates",
+    example = LicenceKinds.CRD,
+    allowableValues = [LicenceKinds.CRD],
+  )
+  override val eligibleKind: String = LicenceKinds.CRD,
+
   override val isVariation: Boolean = false,
 
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")

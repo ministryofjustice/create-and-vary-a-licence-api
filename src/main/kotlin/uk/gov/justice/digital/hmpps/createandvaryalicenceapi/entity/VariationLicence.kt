@@ -17,6 +17,7 @@ import java.time.LocalDateTime
 @DiscriminatorValue(value = "VARIATION")
 class VariationLicence(
   id: Long? = null,
+  eligibleKind: LicenceKind?,
   typeCode: LicenceType,
   version: String? = null,
   statusCode: LicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
@@ -80,6 +81,7 @@ class VariationLicence(
 ) : Licence(
   id = id,
   kind = LicenceKind.VARIATION,
+  eligibleKind = eligibleKind,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,
@@ -135,6 +137,7 @@ class VariationLicence(
 
   fun copy(
     id: Long? = this.id,
+    eligibleKind: LicenceKind? = this.eligibleKind,
     typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,
@@ -192,6 +195,7 @@ class VariationLicence(
   ): VariationLicence {
     val variationLicence = VariationLicence(
       id = id,
+      eligibleKind = eligibleKind,
       typeCode = typeCode,
       version = version,
       statusCode = statusCode,

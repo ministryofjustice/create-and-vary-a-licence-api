@@ -89,6 +89,7 @@ class PrrdLicence(
 ) : Licence(
   id = id,
   kind = LicenceKind.PRRD,
+  eligibleKind = LicenceKind.PRRD,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,
