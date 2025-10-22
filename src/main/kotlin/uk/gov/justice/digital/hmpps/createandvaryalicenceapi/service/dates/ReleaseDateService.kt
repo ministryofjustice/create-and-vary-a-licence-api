@@ -26,6 +26,8 @@ class ReleaseDateService(
   private val iS91DeterminationService: IS91DeterminationService,
   @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
+  @param:Value("\${feature.toggle.timeServed.enabled:false}")
+  private val isTimeServedEnabled: Boolean = false,
 ) {
   fun isInHardStopPeriod(licenceStartDate: LocalDate?, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
@@ -123,7 +125,8 @@ class ReleaseDateService(
     val clockToUse = overrideClock ?: clock
     val today = LocalDate.now(clockToUse)
 
-    return sentenceStartDate == today &&
+    return isTimeServedEnabled &&
+      sentenceStartDate == today &&
       confirmedReleaseDate == today &&
       conditionalReleaseDate == today
   }

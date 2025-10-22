@@ -36,6 +36,7 @@ class ReleaseDateServiceTest {
       clock,
       workingDaysService,
       iS91DeterminationService,
+      isTimeServedEnabled = true,
     )
 
   @BeforeEach
@@ -1096,7 +1097,7 @@ class ReleaseDateServiceTest {
     }
 
     @Test
-    fun `returns TIME_SERVED when all dates are today and override date is today`() {
+    fun `returns TIME_SERVED when all dates are today except conditional release date and override date is today`() {
       val nomisRecord = prisonerSearchResult().copy(
         sentenceStartDate = today,
         confirmedReleaseDate = today,
@@ -1138,6 +1139,19 @@ class ReleaseDateServiceTest {
         confirmedReleaseDate = today,
         conditionalReleaseDate = today.minusDays(1),
         conditionalReleaseDateOverrideDate = today.minusDays(1),
+      )
+      val result = service.getHardStopKind(cutOff, nomisRecord, thisClock)
+      assertEquals(LicenceKind.HARD_STOP, result)
+    }
+
+    @Test
+    fun `returns HARD_STOP when all dates are today and override date is today except conditional release date and isTimeServedEnabled falg is disabled`() {
+      val service = ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, isTimeServedEnabled = false,)
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today.minusDays(1),
+        conditionalReleaseDateOverrideDate = today,
       )
       val result = service.getHardStopKind(cutOff, nomisRecord, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
