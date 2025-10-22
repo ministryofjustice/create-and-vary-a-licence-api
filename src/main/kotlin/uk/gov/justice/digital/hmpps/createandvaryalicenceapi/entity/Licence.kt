@@ -40,8 +40,7 @@ abstract class Licence(
   var kind: LicenceKind,
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "eligible_kind", insertable = false, updatable = false)
-  var eligibleKind: LicenceKind? = null,
+  var eligibleKind: LicenceKind?,
 
   @param:NotNull
   @Enumerated(EnumType.STRING)
