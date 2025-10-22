@@ -1146,7 +1146,7 @@ class ReleaseDateServiceTest {
 
     @Test
     fun `returns HARD_STOP when all dates are today and override date is today except conditional release date and isTimeServedEnabled falg is disabled`() {
-      val service = ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, isTimeServedEnabled = false,)
+      val service = ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, isTimeServedEnabled = false)
       val nomisRecord = prisonerSearchResult().copy(
         sentenceStartDate = today,
         confirmedReleaseDate = today,
