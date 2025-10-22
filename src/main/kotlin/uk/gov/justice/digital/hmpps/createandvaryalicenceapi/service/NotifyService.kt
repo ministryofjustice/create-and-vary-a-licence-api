@@ -35,6 +35,8 @@ class NotifyService(
   private val releaseDateService: ReleaseDateService,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
+  val releaseDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE dd LLLL yyyy")
+
   fun sendVariationForApprovalEmail(
     notifyRequest: NotifyRequest,
     licenceId: String,
@@ -283,15 +285,13 @@ class NotifyService(
       mapOf(
         "comName" to comName,
         "prisonersForRelease" to cases.map { prisoner ->
-          val releaseType =
-            if (prisoner.kind == LicenceKind.PRRD) "following a fixed-term recall" else "as a standard release"
-          "${prisoner.name.convertToTitleCase()} (CRN: ${prisoner.crn}), who is due to leave prison $releaseType on ${
-            prisoner.licenceStartDate.format(
-              DateTimeFormatter.ofPattern(
-                "EEEE dd LLLL yyyy",
-              ),
-            )
-          }"
+          val releaseType = if (prisoner.kind == LicenceKind.PRRD) {
+            "following a fixed-term recall"
+          } else {
+            "as a standard release"
+          }
+          val releaseDate = prisoner.licenceStartDate.format(releaseDateFormat)
+          "${prisoner.name.convertToTitleCase()} (CRN: ${prisoner.crn}), who is due to leave prison $releaseType on $releaseDate"
         },
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
         "isEligibleForEarlyRelease" to if (cases.any { releaseDateService.isEligibleForEarlyRelease(it.licenceStartDate) }) "yes" else "no",
