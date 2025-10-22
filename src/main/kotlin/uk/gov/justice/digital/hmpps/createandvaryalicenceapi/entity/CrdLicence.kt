@@ -89,6 +89,7 @@ class CrdLicence(
 ) : Licence(
   id = id,
   kind = LicenceKind.CRD,
+  eligibleKind = LicenceKind.CRD,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,

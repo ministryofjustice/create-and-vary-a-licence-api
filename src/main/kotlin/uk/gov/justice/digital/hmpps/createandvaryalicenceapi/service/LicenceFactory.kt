@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -138,6 +139,7 @@ object LicenceFactory {
     responsibleCom: CommunityOffenderManager,
     timedOutLicence: CrdLicence?,
     licenceStartDate: LocalDate?,
+    eligibleKind: LicenceKind?,
   ) = HardStopLicence(
     typeCode = licenceType,
     version = version,
@@ -176,10 +178,12 @@ object LicenceFactory {
     responsibleCom = responsibleCom,
     createdBy = creator,
     substituteOfId = timedOutLicence?.id,
+    eligibleKind = eligibleKind,
   )
 
   fun createTimeServe(
     licenceType: LicenceType,
+    eligibleKind: LicenceKind?,
     nomsId: String,
     version: String,
     nomisRecord: PrisonerSearchPrisoner,
@@ -191,6 +195,7 @@ object LicenceFactory {
     licenceStartDate: LocalDate?,
   ) = TimeServedLicence(
     typeCode = licenceType,
+    eligibleKind = eligibleKind,
     version = version,
     statusCode = IN_PROGRESS,
     nomsId = nomsId,
@@ -273,6 +278,7 @@ object LicenceFactory {
     with(licence) {
       return VariationLicence(
         typeCode = this.typeCode,
+        eligibleKind = this.eligibleKind,
         version = this.version,
         statusCode = VARIATION_IN_PROGRESS,
         variationOfId = licence.id,

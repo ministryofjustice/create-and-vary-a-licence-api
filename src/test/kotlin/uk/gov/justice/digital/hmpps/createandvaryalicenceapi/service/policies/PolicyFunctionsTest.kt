@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
@@ -286,7 +287,7 @@ class PolicyFunctionsTest {
     subtext = null,
   )
 
-  fun licence() = VariationLicence(id = 1, typeCode = PSS, version = "2.0", statusCode = ACTIVE)
+  fun licence() = VariationLicence(id = 1, typeCode = PSS, version = "2.0", statusCode = ACTIVE, eligibleKind = LicenceKinds.CRD)
 
   fun additionalCondition() = AdditionalCondition(
     id = 2,
