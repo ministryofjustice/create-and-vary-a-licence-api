@@ -85,7 +85,7 @@ class PromptComService(
     val casesNotInHardStop = excludeInHardStop(withDateInRange)
     log.info("{}/{} + not in hard stop", casesNotInHardStop.size, withDateInRange.size)
 
-    val emails = buildEmailsToSend(casesNotInHardStop)
+    val emails = buildEmailsToSend(casesNotInHardStop, cvlRecords)
     log.info("{}/{} = emails", emails.size, casesNotInHardStop.size)
 
     return emails

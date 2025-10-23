@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab.ATTENTION_NEEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab.FUTURE_RELEASES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS
@@ -24,10 +24,10 @@ object Tabs {
   fun determineCaViewCasesTab(
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
     licenceStartDate: LocalDate?,
-    licenceCase: LicenceCase?,
+    licenceCaCase: LicenceCaCase?,
     now: Clock,
   ) = when {
-    isAttentionNeeded(licenceCase?.licenceStatus ?: NOT_STARTED, licenceStartDate, now) -> ATTENTION_NEEDED
+    isAttentionNeeded(licenceCaCase?.licenceStatus ?: NOT_STARTED, licenceStartDate, now) -> ATTENTION_NEEDED
     isDueToBeReleasedInTheNextTwoWorkingDays -> RELEASES_IN_NEXT_TWO_WORKING_DAYS
     else -> FUTURE_RELEASES
   }
