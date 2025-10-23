@@ -29,7 +29,7 @@ data class LicenceComCase(
   val approvedByName: String?,
   val approvedDate: LocalDateTime?,
 ) : LicenceCase {
-  fun isReviewNeeded(): Boolean = kind == LicenceKind.HARD_STOP &&
+  fun isReviewNeeded(): Boolean =  kind in listOf(LicenceKind.HARD_STOP, LicenceKind.TIME_SERVED) &&
     licenceStatus == LicenceStatus.ACTIVE &&
     reviewDate == null
 }
