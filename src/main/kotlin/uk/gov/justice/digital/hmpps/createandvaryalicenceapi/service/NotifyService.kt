@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
@@ -33,6 +35,8 @@ class NotifyService(
   private val releaseDateService: ReleaseDateService,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
+  val releaseDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE dd LLLL yyyy")
+
   fun sendVariationForApprovalEmail(
     notifyRequest: NotifyRequest,
     licenceId: String,
@@ -281,18 +285,19 @@ class NotifyService(
       mapOf(
         "comName" to comName,
         "prisonersForRelease" to cases.map { prisoner ->
-          "${prisoner.name} (CRN: ${prisoner.crn}), who is due to leave custody on ${
-            prisoner.licenceStartDate.format(
-              DateTimeFormatter.ofPattern(
-                "dd LLLL yyyy",
-              ),
-            )
-          }"
+          val releaseType = if (prisoner.kind == LicenceKind.PRRD) {
+            "following a fixed-term recall"
+          } else {
+            "as a standard release"
+          }
+          val releaseDate = prisoner.licenceStartDate.format(releaseDateFormat)
+          "${prisoner.name.convertToTitleCase()} (CRN: ${prisoner.crn}), who is due to leave prison $releaseType on $releaseDate"
         },
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
         "isEligibleForEarlyRelease" to if (cases.any { releaseDateService.isEligibleForEarlyRelease(it.licenceStartDate) }) "yes" else "no",
       ),
     )
+
     cases.map { prisoner ->
       var promptType = "REMINDER"
       if (templateId == initialLicencePromptTemplateId) {
