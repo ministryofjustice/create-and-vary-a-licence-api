@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ReviewableLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -62,6 +61,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 @TimeServedConsiderations("Without a COM, we would just surface null and handle on the frontend")
 fun transformToLicenceSummary(
   licence: Licence,
+  isReviewNeeded: Boolean,
   hardStopKind: LicenceKind?,
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
@@ -104,7 +104,7 @@ fun transformToLicenceSummary(
   submittedDate = licence.submittedDate,
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
-  isReviewNeeded = (licence as? ReviewableLicence)?.isReviewNeeded() ?: false,
+  isReviewNeeded = isReviewNeeded,
   hardStopKind = hardStopKind,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
@@ -839,6 +839,7 @@ fun Licence.getSubmittedByFullName(): String? {
 
 fun transformToApprovalLicenceSummary(
   licence: EntityLicence,
+  isReviewNeeded: Boolean,
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
@@ -880,7 +881,7 @@ fun transformToApprovalLicenceSummary(
   approvedByName = licence.approvedByName,
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
-  isReviewNeeded = (licence as? ReviewableLicence)?.isReviewNeeded() ?: false,
+  isReviewNeeded = isReviewNeeded,
   updatedByFullName = licence.getUpdatedByFullName(),
   submittedByFullName = licence.getSubmittedByFullName(),
   hardStopDate = hardStopDate,
