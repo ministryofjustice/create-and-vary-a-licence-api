@@ -93,6 +93,7 @@ class HdcVariationLicence(
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC_VARIATION,
+  eligibleKind = LicenceKind.HDC,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,

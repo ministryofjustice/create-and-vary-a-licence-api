@@ -22,6 +22,13 @@ data class VariationLicence(
   )
   override val kind: String = LicenceKinds.VARIATION,
 
+  @field:Schema(
+    description = "The eligible kind of the licence that this variation is created from",
+    example = LicenceKinds.CRD,
+    allowableValues = [LicenceKinds.CRD, LicenceKinds.PRRD],
+  )
+  override val eligibleKind: String?,
+
   override val isVariation: Boolean = true,
 
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")
