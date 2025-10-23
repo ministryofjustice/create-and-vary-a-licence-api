@@ -1,0 +1,188 @@
+{
+  "id": "em-install-at-source",
+  "name": "Electronic Monitoring Install at Source Report" ,
+  "description": "Data products for Create and Vary a licence ",
+  "metadata": {
+    "author": "Caija Addai",
+    "owner": "Derrick Malone",
+    "version": "1.0.5",
+    "interactive": "true"
+  },
+  "datasource": [
+    {
+      "id": "cvl",
+      "name": "cvl"
+    }
+
+  ],
+  "dataset": [
+    {
+      "id": "licence-dataset",
+      "name": "licence-dataset",
+      "datasource": "cvl",
+      "query": "WITH condition_lookup(condition_code, condition_value) AS (VALUES ('fd129172-bdd3-4d97-a4a0-efd7b47a49d4', '14a'), ('524f2fd6-ad53-47dd-8edc-2161d3dd2ed4', '14b'), ('86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f', '14c'), ('d36a3b77-30ba-40ce-8953-83e761d3b487', '14d'),('2F8A5418-C6E4-4F32-9E58-64B23550E504', '14e')) SELECT l.licence_start_date, l.probation_area_description, l.prison_description, l.noms_id AS nomis_number, l.crn, concat(l.forename, ' ', l.surname) AS prisoner_name, concat(s.first_name, ' ', s.last_name) AS pp_name, l.status_code, STRING_AGG(DISTINCT cl.condition_value, ', ') AS em_condition_codes FROM licence l LEFT JOIN additional_condition ac ON l.id = ac.licence_id AND ac.condition_code IN ('fd129172-bdd3-4d97-a4a0-efd7b47a49d4','524f2fd6-ad53-47dd-8edc-2161d3dd2ed4', '86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f','d36a3b77-30ba-40ce-8953-83e761d3b487','2F8A5418-C6E4-4F32-9E58-64B23550E504') LEFT JOIN staff s ON l.responsible_com_id = s.id LEFT JOIN condition_lookup cl ON ac.condition_code = cl.condition_code WHERE l.status_code IN ('SUBMITTED', 'APPROVED') AND l.prison_code IN ('CFI', 'SWI', 'PBI', 'PFI', 'SUI', 'RNI', 'FEI') AND (l.licence_start_date IS NOT NULL AND l.licence_start_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '14 days') GROUP BY l.licence_start_date, l.probation_area_description, l.prison_description, nomis_number, l.crn, prisoner_name, pp_name, l.status_code ORDER BY nomis_number",
+      "schema": {
+        "field": [
+          {
+            "name": "licence_start_date",
+            "type": "date",
+            "display": "Licence start date"
+          },
+          {
+            "name": "probation_area_description",
+            "type": "string",
+            "display": "Probation Region"
+          },
+          {
+            "name": "prison_description",
+            "type": "string",
+            "display": "Prison Name"
+          },
+          {
+            "name": "nomis_number",
+            "type": "string",
+            "display": "NOMIS Number"
+          },
+          {
+            "name": "crn",
+            "type": "string",
+            "display": "CRN"
+          },
+          {
+            "name": "prisoner_name",
+            "type": "string",
+            "display": "Prisoner Name"
+          },
+          {
+            "name": "pp_name",
+            "type": "string",
+            "display": "PP Name"
+          },
+          {
+            "name": "status_code",
+            "type": "string",
+            "display": "Licence Status"
+          },
+          {
+            "name": "em_condition_codes",
+            "type": "string",
+            "display": "Condition Codes"
+          }
+        ]
+      }
+    }
+  ],
+  "policy": [
+  {
+    "id": "access",
+    "type": "access",
+    "rule": [
+      {
+        "effect": "permit",
+        "condition": [
+          {
+            "match": [
+              "${role}",
+              "ROLE_NOMIS_BATCHLOAD"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+],
+  "report": [
+    {
+      "id": "em-install-at-source",
+      "name": "Electronic Monitoring - Install at Source - Pilot Report",
+      "description": "Licences due for release in the next 14 days that have a status Submitted or Approved and have had any of the Electronic Monitoring Additional Conditions selected",
+      "version": "1.0.0",
+      "render": "HTML",
+      "dataset": "$ref:licence-dataset",
+      "feature": [
+        {
+          "type": "print"
+        }
+      ],
+      "specification": {
+        "template": "list",
+        "field": [
+          {
+            "name": "$ref:licence_start_date",
+            "display": "Release date",
+            "formula": "format_date(${licence_start_date}, 'dd/MM/yyyy')",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": true
+          },
+          {
+            "name": "$ref:probation_area_description",
+            "display": "Probation Region",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:prison_description",
+            "display": "Prison Name",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:nomis_number",
+            "display": "NOMIS Number",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:crn",
+            "display": "CRN",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:prisoner_name",
+            "display": "Prisoner Name",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:pp_name",
+            "display": "Probation Practitioner",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:status_code",
+            "display": "Licence Status",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:em_condition_codes",
+            "display": "EM Condition codes",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          }
+        ]
+      },
+      "summary": [
+      ]
+    }
+  ]
+}
+
+
+
+
+
+
+
+
