@@ -1117,14 +1117,24 @@ class LicenceService(
     return LicencePermissionsResponse(viewAccess)
   }
 
-  private fun EntityLicence.toSummary() = transformToLicenceSummary(
-    this,
-    hardStopKind = releaseDateService.getHardStopKind(licenceStartDate, prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(this.nomsId!!)).first()),
-    hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
-    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
-    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
-    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
-  )
+  private fun EntityLicence.toSummary(): LicenceSummary {
+    val hardStopKind = licenceStartDate?.let { startDate ->
+      val nomisRecord = prisonerSearchApiClient
+        .searchPrisonersByNomisIds(listOf(nomsId!!))
+        .firstOrNull()
+
+      nomisRecord?.let { releaseDateService.getHardStopKind(startDate, it) }
+    }
+
+    return transformToLicenceSummary(
+      this,
+      hardStopKind = hardStopKind,
+      hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
+    )
+  }
 
   private fun assertCaseIsEligible(eligibilityAssessment: EligibilityAssessment, licenceId: Long) {
     if (!eligibilityAssessment.isEligible) {
