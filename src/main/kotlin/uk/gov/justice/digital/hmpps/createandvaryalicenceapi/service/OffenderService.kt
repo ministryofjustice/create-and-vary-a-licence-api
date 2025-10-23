@@ -80,6 +80,7 @@ OffenderService(
             "${inProgressLicence.forename} ${inProgressLicence.surname}",
             inProgressLicence.crn!!,
             releaseDate!!,
+            kind = inProgressLicence.kind,
           ),
         )
 

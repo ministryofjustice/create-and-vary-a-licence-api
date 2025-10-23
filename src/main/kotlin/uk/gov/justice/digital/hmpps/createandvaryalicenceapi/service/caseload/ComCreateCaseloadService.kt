@@ -4,13 +4,13 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseLoadLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -33,7 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isTodayOrInThe
 class ComCreateCaseloadService(
   private val caseloadService: CaseloadService,
   private val deliusApiClient: DeliusApiClient,
-  private val licenceService: LicenceService,
+  private val licenceCaseRepository: LicenceCaseRepository,
   private val hdcService: HdcService,
   private val releaseDateService: ReleaseDateService,
   private val cvlRecordService: CvlRecordService,
@@ -297,7 +297,7 @@ class ComCreateCaseloadService(
   private fun findExistingActiveAndPreReleaseLicences(crnList: List<String>): List<CaseLoadLicenceSummary> = if (crnList.isEmpty()) {
     emptyList()
   } else {
-    licenceService.findLicencesForCrnsAndStatuses(
+    licenceCaseRepository.findLicenceCasesForCom(
       crns = crnList,
       statusCodes = listOf(
         ACTIVE,
@@ -306,6 +306,34 @@ class ComCreateCaseloadService(
         APPROVED,
         TIMED_OUT,
       ),
-    ).map { transformLicenceSummaryToCaseLoadSummary(it) }
+    ).map { mapToCaseLoadLicenceSummary(it) }
+  }
+
+  private fun mapToCaseLoadLicenceSummary(licenceCase: LicenceComCase): CaseLoadLicenceSummary {
+    val hardStopDate = releaseDateService.getHardStopDate(licenceCase.licenceStartDate)
+    val hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceCase.licenceStartDate)
+    val isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licenceCase)
+
+    return CaseLoadLicenceSummary(
+      licenceId = licenceCase.licenceId,
+      licenceStatus = licenceCase.licenceStatus,
+      kind = licenceCase.kind,
+      crn = licenceCase.crn,
+      nomisId = licenceCase.prisonNumber,
+      name = licenceCase.fullName,
+      licenceType = licenceCase.typeCode,
+      comUsername = licenceCase.comUsername,
+      dateCreated = licenceCase.dateCreated,
+      approvedBy = licenceCase.approvedByName,
+      approvedDate = licenceCase.approvedDate,
+      versionOf = licenceCase.versionOfId,
+      updatedByFullName = licenceCase.updatedByFullName,
+      hardStopWarningDate = hardStopWarningDate,
+      hardStopDate = hardStopDate,
+      licenceStartDate = licenceCase.licenceStartDate,
+      releaseDate = licenceCase.licenceStartDate,
+      isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+      isReviewNeeded = licenceCase.isReviewNeeded(),
+    )
   }
 }
