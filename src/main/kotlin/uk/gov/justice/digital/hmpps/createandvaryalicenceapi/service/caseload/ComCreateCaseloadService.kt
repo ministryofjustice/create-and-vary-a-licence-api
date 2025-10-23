@@ -313,5 +313,4 @@ class ComCreateCaseloadService(
       isReviewNeeded = licenceCase.isReviewNeeded(),
     )
   }
-
 }
