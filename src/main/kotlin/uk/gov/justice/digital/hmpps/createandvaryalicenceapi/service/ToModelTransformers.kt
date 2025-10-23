@@ -324,7 +324,7 @@ fun toPrrd(
   licenceExpiryDate = licence.licenceExpiryDate,
   topupSupervisionStartDate = licence.topupSupervisionStartDate,
   topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
-  postRecallReleaseDate = licence.postRecallReleaseDate!!,
+  postRecallReleaseDate = licence.postRecallReleaseDate,
   comUsername = licence.getCom().username,
   comStaffId = licence.getCom().staffIdentifier,
   comEmail = licence.getCom().email,
