@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 class ComVaryCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceService: LicenceService,
+  private val releaseDateService: ReleaseDateService,
 ) {
 
   fun getStaffVaryCaseload(deliusStaffIdentifier: Long): List<ComCase> {
@@ -97,6 +99,7 @@ class ComVaryCaseloadService(
         licenceStatus = licence.licenceStatus,
         crnNumber = licence.crn,
         prisonerNumber = licence.nomisId,
+        hardStopKind = releaseDateService.getHardStopKind(licence),
         kind = licence.kind,
         name = "${licence.forename} ${licence.surname}".trim().convertToTitleCase(),
         releaseDate = licence.licenceStartDate,
