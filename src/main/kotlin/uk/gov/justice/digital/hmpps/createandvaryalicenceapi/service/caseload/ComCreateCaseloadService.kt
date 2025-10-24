@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -37,6 +38,7 @@ class ComCreateCaseloadService(
   private val hdcService: HdcService,
   private val releaseDateService: ReleaseDateService,
   private val cvlRecordService: CvlRecordService,
+  private val licenceService: LicenceService,
 ) {
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
@@ -142,6 +144,7 @@ class ComCreateCaseloadService(
       name = name,
       releaseDate = cvlRecord.licenceStartDate,
       kind = licenceKind,
+      hardStopKind = cvlRecord.hardStopKind,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
@@ -262,6 +265,7 @@ class ComCreateCaseloadService(
       releaseDate = licence.releaseDate,
       probationPractitioner = probationPractitioner,
       hardStopDate = licence.hardStopDate,
+      hardStopKind = licence.hardStopKind,
       hardStopWarningDate = licence.hardStopWarningDate,
       kind = licence.kind,
       licenceCreationType = licence.licenceCreationType,
@@ -308,11 +312,7 @@ class ComCreateCaseloadService(
       licenceStartDate = licenceCase.licenceStartDate,
       releaseDate = licenceCase.licenceStartDate,
       isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-      isReviewNeeded = isReviewNeeded(licenceCase),
+      isReviewNeeded = licenceService.isReviewNeeded(licenceCase),
     )
-  }
-
-  fun isReviewNeeded(licenceComCase: LicenceComCase): Boolean = with(licenceComCase) {
-    kind == LicenceKind.HARD_STOP && licenceStatus == ACTIVE && reviewDate == null
   }
 }

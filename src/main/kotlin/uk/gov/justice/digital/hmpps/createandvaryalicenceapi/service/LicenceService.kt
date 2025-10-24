@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -42,6 +43,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
@@ -179,6 +181,27 @@ class LicenceService(
 
     else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
   }
+
+  fun isReviewNeeded(licence: Licence) = when (licence) {
+    is HardStopLicence -> isActiveAndUnreviewed(licence.statusCode, licence.reviewDate)
+    is TimeServedLicence -> isActiveAndUnreviewed(licence.statusCode, licence.reviewDate)
+    else -> false
+  }
+
+  fun isReviewNeeded(licence: EntityLicence) = when (licence) {
+    is HardStopLicence -> isActiveAndUnreviewed(licence.statusCode, licence.reviewDate)
+    is TimeServedLicence -> isActiveAndUnreviewed(licence.statusCode, licence.reviewDate)
+    else -> false
+  }
+
+  fun isReviewNeeded(licenceComCase: LicenceComCase): Boolean = when (licenceComCase.kind) {
+    LicenceKind.HARD_STOP,
+    LicenceKind.TIME_SERVED,
+    -> isActiveAndUnreviewed(licenceComCase.licenceStatus, licenceComCase.reviewDate)
+    else -> false
+  }
+
+  private fun isActiveAndUnreviewed(status: LicenceStatus?, reviewDate: LocalDateTime?) = status == ACTIVE && reviewDate == null
 
   @Transactional
   fun updateLicenceStatus(licenceId: Long, request: StatusUpdateRequest) {
@@ -1124,13 +1147,25 @@ class LicenceService(
     else -> false
   }
 
-  private fun EntityLicence.toSummary() = transformToLicenceSummary(
-    this,
-    hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
-    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
-    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
-    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
-  )
+  private fun EntityLicence.toSummary(): LicenceSummary {
+    val hardStopKind = licenceStartDate?.let { startDate ->
+      val nomisRecord = prisonerSearchApiClient
+        .searchPrisonersByNomisIds(listOf(nomsId!!))
+        .firstOrNull()
+
+      nomisRecord?.let { releaseDateService.getHardStopKind(startDate, it) }
+    }
+
+    return transformToLicenceSummary(
+      this,
+      hardStopKind = hardStopKind,
+      isReviewNeeded = isReviewNeeded(this),
+      hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
+    )
+  }
 
   private fun assertCaseIsEligible(eligibilityAssessment: EligibilityAssessment, licenceId: Long) {
     if (!eligibilityAssessment.isEligible) {

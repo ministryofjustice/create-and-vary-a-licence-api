@@ -62,6 +62,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
@@ -71,8 +72,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
@@ -264,6 +267,8 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -283,6 +288,8 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -298,6 +305,8 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -313,6 +322,8 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -335,6 +346,8 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(LicenceQueryObject())
 
@@ -388,6 +401,8 @@ class LicenceServiceTest {
         ),
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -409,6 +424,8 @@ class LicenceServiceTest {
         createHardStopLicence().copy(statusCode = LicenceStatus.ACTIVE, reviewDate = null),
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -423,6 +440,8 @@ class LicenceServiceTest {
         createHardStopLicence().copy(reviewDate = LocalDateTime.now()),
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -437,6 +456,8 @@ class LicenceServiceTest {
         createHardStopLicence().copy(reviewDate = null),
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -451,6 +472,8 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -1346,7 +1369,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(TestData.anEligibilityAssessment())
+    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(anEligibilityAssessment())
 
     service.submitLicence(1L, emptyList())
 
@@ -1962,6 +1985,8 @@ class LicenceServiceTest {
       Optional.of(aLicenceEntity),
     )
     whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
@@ -1990,6 +2015,8 @@ class LicenceServiceTest {
         changeHints = emptyList(),
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(anHdcLicenceEntity),
     )
@@ -2032,6 +2059,8 @@ class LicenceServiceTest {
         ),
       ),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
     whenever(licenceRepository.save(any())).thenReturn(
       aLicenceEntity.copy(
         additionalConditions = additionalConditions,
@@ -2214,6 +2243,8 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(approvedLicence),
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(approvedLicence.id),
@@ -2249,6 +2280,8 @@ class LicenceServiceTest {
       .thenReturn(
         listOf(inProgressLicenceVersion),
       )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     service.editLicence(1L)
 
@@ -2913,6 +2946,8 @@ class LicenceServiceTest {
       ),
     )
     whenever(deliusApiClient.getOffenderManager(aLicenceEntity.crn!!)).thenReturn(offenderManager())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
     val permissions = service.getLicencePermissions(licenceId = aLicenceEntity.id, teamCodes = listOf("invalid-team"))
     assertThat(permissions.view).isFalse
@@ -3703,12 +3738,202 @@ class LicenceServiceTest {
         .thenReturn(
           listOf(inProgressLicenceVersion),
         )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+      whenever(releaseDateService.getHardStopKind(any(), any(), eq(null))).thenReturn(null)
 
       val newLicenceVersion = service.editLicence(1L)
       assertNotNull(newLicenceVersion)
       assertThat(newLicenceVersion.licenceId).isEqualTo(inProgressLicenceVersion.id)
 
       verify(licenceRepository, never()).save(any())
+    }
+  }
+
+  @Nested
+  inner class isReviewNeeded {
+
+    val hardstopLicence = createHardStopLicence()
+    val timeServedLicence = createTimeServedLicence()
+
+    @Test
+    fun `HardStopLicence with ACTIVE and null reviewDate returns true`() {
+      // Given
+      val licence = hardstopLicence.copy(statusCode = LicenceStatus.ACTIVE)
+
+      // When
+      val result = service.isReviewNeeded(licence)
+
+      // Then
+      assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `TimeServedLicence with ACTIVE and null reviewDate returns true`() {
+      // Given
+      val licence = timeServedLicence
+
+      // When
+      val result = service.isReviewNeeded(licence)
+
+      // Then
+      assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `HardStopLicence with ACTIVE and non-null reviewDate returns false`() {
+      // Given
+      val licence = hardstopLicence.copy(
+        statusCode = LicenceStatus.ACTIVE,
+        reviewDate = LocalDateTime.now(),
+      )
+
+      // When
+      val result = service.isReviewNeeded(licence)
+
+      // Then
+      assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `TimeServedLicence with IN_PROGRESS and null reviewDate returns false`() {
+      // Given
+      val licence = timeServedLicence.copy(
+        statusCode = LicenceStatus.IN_PROGRESS,
+        reviewDate = null,
+      )
+
+      // When
+      val result = service.isReviewNeeded(licence)
+
+      // Then
+      assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `EntityHardStopLicence with ACTIVE and null reviewDate returns true`() {
+      // Given
+      val licence = anHardStopLicenceEntity.copy(
+        statusCode = LicenceStatus.ACTIVE,
+        reviewDate = null,
+      )
+
+      // When
+      val result = service.isReviewNeeded(licence)
+
+      // Then
+      assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `EntityTimeServedLicence with ACTIVE and non-null reviewDate returns false`() {
+      // Given
+      val licence = anHardStopLicenceEntity.copy(
+        statusCode = LicenceStatus.ACTIVE,
+        reviewDate = LocalDateTime.now(),
+      )
+
+      // When
+      val result = service.isReviewNeeded(licence)
+
+      // Then
+      assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `CRD Licence type returns false`() {
+      // Given
+      val licence = createCrdLicence()
+
+      // When
+      val result = service.isReviewNeeded(licence)
+
+      // Then
+      assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `CRD EntityLicence type returns false`() {
+      // Given
+      val licence = aLicenceEntity
+
+      // When
+      val result = service.isReviewNeeded(licence)
+
+      // Then
+      assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `Hard stop LicenceComCase with ACTIVE and null reviewDate returns true`() {
+      // Given
+      val licenceComCase = createMockLicenceComCase() // use defaults
+
+      // When
+      val result = service.isReviewNeeded(licenceComCase)
+
+      // Then
+      assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `Time served LicenceComCase with ACTIVE and null reviewDate returns true`() {
+      // Given
+      val licenceComCase = createMockLicenceComCase(kind = LicenceKind.TIME_SERVED)
+
+      // When
+      val result = service.isReviewNeeded(licenceComCase)
+
+      // Then
+      assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `Hard stop LicenceComCase with ACTIVE and non-null reviewDate returns false`() {
+      // Given
+      val licenceComCase = createMockLicenceComCase(reviewDate = LocalDateTime.now())
+
+      // When
+      val result = service.isReviewNeeded(licenceComCase)
+
+      // Then
+      assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `Time served LicenceComCase with IN_PROGRESS and null reviewDate returns false`() {
+      // Given
+      val licenceComCase = createMockLicenceComCase(
+        kind = LicenceKind.TIME_SERVED,
+        status = LicenceStatus.IN_PROGRESS,
+      )
+
+      // When
+      val result = service.isReviewNeeded(licenceComCase)
+
+      // Then
+      assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `CRD LicenceComCase returns false`() {
+      // Given
+      val licenceComCase = createMockLicenceComCase(kind = LicenceKind.CRD)
+
+      // When
+      val result = service.isReviewNeeded(licenceComCase)
+
+      // Then
+      assertThat(result).isFalse()
+    }
+
+    private fun createMockLicenceComCase(
+      kind: LicenceKind = LicenceKind.HARD_STOP,
+      status: LicenceStatus = LicenceStatus.ACTIVE,
+      reviewDate: LocalDateTime? = null,
+    ): LicenceComCase = mock {
+      whenever(it.kind).thenReturn(kind)
+      whenever(it.licenceStatus).thenReturn(status)
+      whenever(it.reviewDate).thenReturn(reviewDate)
     }
   }
 
@@ -3860,6 +4085,74 @@ class LicenceServiceTest {
     )
   }
 
+  val anHardStopLicenceEntity = createHardStopLicence().copy(
+    id = 1,
+    typeCode = LicenceType.AP,
+    version = "1.1",
+    statusCode = LicenceStatus.IN_PROGRESS,
+    nomsId = "A1234AA",
+    bookingNo = "123456",
+    bookingId = 54321,
+    crn = "X12345",
+    pnc = "2019/123445",
+    cro = "12345",
+    prisonCode = "MDI",
+    prisonDescription = "Moorland (HMP)",
+    forename = "John",
+    surname = "Smith",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    actualReleaseDate = LocalDate.of(2021, 10, 22),
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceEndDate = LocalDate.of(2021, 10, 22),
+    licenceStartDate = LocalDate.of(2021, 10, 22),
+    licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    probationAreaCode = "N01",
+    probationAreaDescription = "Wales",
+    probationPduCode = "N01A",
+    probationPduDescription = "Cardiff",
+    probationLauCode = "N01A2",
+    probationLauDescription = "Cardiff South",
+    probationTeamCode = "NA01A2-A",
+    probationTeamDescription = "Cardiff South Team A",
+    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+    standardConditions = emptyList(),
+    responsibleCom = communityOffenderManager(),
+    approvedByName = "jim smith",
+    approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+  ).let {
+    it.copy(
+      standardConditions = listOf(
+        EntityStandardCondition(
+          id = 1,
+          conditionCode = "goodBehaviour",
+          conditionSequence = 1,
+          conditionText = "Be of good behaviour",
+          conditionType = "AP",
+          licence = it,
+        ),
+        EntityStandardCondition(
+          id = 2,
+          conditionCode = "notBreakLaw",
+          conditionSequence = 2,
+          conditionText = "Do not break any law",
+          conditionType = "AP",
+          licence = it,
+        ),
+        EntityStandardCondition(
+          id = 3,
+          conditionCode = "attendMeetings",
+          conditionSequence = 3,
+          conditionText = "Attend meetings",
+          conditionType = "AP",
+          licence = it,
+        ),
+      ),
+    )
+  }
+
   private val aVariationLicence = createVariationLicence()
 
   val anHdcVariationLicence = createHdcVariationLicence()
@@ -3938,5 +4231,5 @@ class LicenceServiceTest {
     ),
   )
 
-  val aPrisonerSearchPrisoner = TestData.prisonerSearchResult()
+  val aPrisonerSearchPrisoner = prisonerSearchResult()
 }
