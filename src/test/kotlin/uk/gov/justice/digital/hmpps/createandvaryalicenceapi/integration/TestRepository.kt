@@ -79,6 +79,7 @@ class TestRepository(
 
   fun findAllLicence(assertNotEmpty: Boolean = true): List<Licence> {
     val licences = licenceRepository.findAll()
+      .sortedBy { it.id }
     if (assertNotEmpty) assertThat(licences).isNotEmpty
     return licences
   }
