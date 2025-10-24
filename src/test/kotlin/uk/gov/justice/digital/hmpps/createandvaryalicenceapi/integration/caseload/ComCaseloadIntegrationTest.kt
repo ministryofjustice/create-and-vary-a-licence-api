@@ -69,6 +69,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       stubSearchPrisonersByNomisId(releaseDate, sled)
       prisonApiMockServer.stubGetCourtOutcomes()
+      prisonApiMockServer.stubGetSentenceAndRecallTypes(6)
 
       val caseload = webTestClient.get()
         .uri(GET_STAFF_CREATE_CASELOAD)
@@ -104,6 +105,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       stubSearchPrisonersByNomisId(releaseDate, sled)
       prisonApiMockServer.stubGetCourtOutcomes()
+      prisonApiMockServer.stubGetSentenceAndRecallTypes(6)
 
       // When
       val result = webTestClient.get()
@@ -187,6 +189,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         ),
       )
       prisonApiMockServer.stubGetCourtOutcomes()
+      prisonApiMockServer.stubGetSentenceAndRecallTypes(3)
 
       // When
       val result = webTestClient.post()

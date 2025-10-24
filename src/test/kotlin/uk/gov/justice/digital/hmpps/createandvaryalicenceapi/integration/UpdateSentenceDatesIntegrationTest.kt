@@ -425,6 +425,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       prisonApiMockServer.start()
+      prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
       govUkApiMockServer.start()
     }
 

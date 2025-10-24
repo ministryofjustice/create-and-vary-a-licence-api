@@ -182,4 +182,27 @@ class PrisonApiMockServer : WireMockServer(8091) {
       ),
     )
   }
+
+  fun stubGetSentenceAndRecallTypes(bookingId: Long = 123) {
+    stubFor(
+      post(urlEqualTo("/api/offender-sentences/bookings/sentence-and-recall-types")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """[{
+            "bookingId": "$bookingId",
+            "sentenceTypeRecallTypes": [
+              {
+                "sentenceType": "SENTENCE_TYPE",
+                "recallType": {
+                  "recallName": "RECALL_NAME",
+                  "isStandardRecall": false,
+                  "isFixedTermRecall": true
+                }
+              }
+            ]
+          }]
+          """.trimMargin(),
+        ).withStatus(200),
+      ),
+    )
+  }
 }

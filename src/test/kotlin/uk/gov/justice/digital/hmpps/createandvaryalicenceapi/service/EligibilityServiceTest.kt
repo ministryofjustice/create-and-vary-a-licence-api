@@ -4,6 +4,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSentenceAndRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
@@ -13,7 +21,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 class EligibilityServiceTest {
-  private var service = EligibilityService(clock, false)
+  private val prisonApiClient = mock<PrisonApiClient>()
+  private var service = EligibilityService(prisonApiClient, clock, false)
 
   @Nested
   inner class CrdCases {
@@ -363,7 +372,16 @@ class EligibilityServiceTest {
   inner class PrrdCases {
     @BeforeEach
     fun setup() {
-      service = EligibilityService(clock, true)
+      service = EligibilityService(prisonApiClient, clock, true)
+
+      whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
+        listOf(
+          BookingSentenceAndRecallTypes(
+            bookingId = 54321,
+            sentenceTypeRecallTypes = listOf(aSentenceAndRecallType()),
+          ),
+        ),
+      )
     }
 
     @Test
@@ -407,74 +425,6 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).containsExactly("post recall release date is in the past")
       assertThat(result.eligibleKind).isEqualTo(null)
-    }
-
-    @Test
-    fun `Person is ineligible if PRRD is after LED`() {
-      val result = service.getEligibilityAssessment(
-        aRecallPrisonerSearchResult.copy(
-          postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
-          licenceExpiryDate = LocalDate.now(clock),
-        ),
-        "",
-      )
-
-      assertThat(result.isEligible).isFalse()
-      assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("post recall release date is not before SLED")
-      assertThat(result.eligibleKind).isEqualTo(null)
-    }
-
-    @Test
-    fun `Person is eligible if LED null`() {
-      val result = service.getEligibilityAssessment(
-        aRecallPrisonerSearchResult.copy(
-          postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
-          licenceExpiryDate = null,
-        ),
-        "",
-      )
-
-      assertThat(result.isEligible).isTrue()
-      assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
-      assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(PRRD)
-    }
-
-    @Test
-    fun `Person is ineligible if PRRD is after SED`() {
-      val result = service.getEligibilityAssessment(
-        aRecallPrisonerSearchResult.copy(
-          postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
-          sentenceExpiryDate = LocalDate.now(clock),
-        ),
-        "",
-      )
-
-      assertThat(result.isEligible).isFalse()
-      assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("post recall release date is not before SLED")
-      assertThat(result.eligibleKind).isEqualTo(null)
-    }
-
-    @Test
-    fun `Person is eligible if SED null`() {
-      val result = service.getEligibilityAssessment(
-        aRecallPrisonerSearchResult.copy(
-          postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
-          sentenceExpiryDate = null,
-        ),
-        "",
-      )
-
-      assertThat(result.isEligible).isTrue()
-      assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
-      assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test
@@ -621,6 +571,61 @@ class EligibilityServiceTest {
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
       assertThat(result.eligibleKind).isEqualTo(CRD)
     }
+
+    @Test
+    fun `Case with a standard recall is ineligible`() {
+      whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
+        listOf(
+          BookingSentenceAndRecallTypes(
+            bookingId = 54321,
+            sentenceTypeRecallTypes = listOf(
+              aSentenceAndRecallType(),
+              aSentenceAndRecallType(
+                recallType = aRecallType(
+                  isStandardRecall = true,
+                  isFixedTermRecall = false,
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, "")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("is on a standard recall")
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `Case with no recall sentence is ineligible`() {
+      whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
+        listOf(
+          BookingSentenceAndRecallTypes(
+            bookingId = 54321,
+            sentenceTypeRecallTypes = listOf(
+              aSentenceAndRecallType(
+                recallType = aRecallType(
+                  isStandardRecall = false,
+                  isFixedTermRecall = false,
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, "")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("is on an unidentified non-fixed term recall")
+      assertThat(result.eligibleKind).isNull()
+    }
   }
 
   @Nested
@@ -630,7 +635,15 @@ class EligibilityServiceTest {
 
     @BeforeEach
     fun setup() {
-      service = EligibilityService(clock, false, eligiblePrisonCodes, eligibleRegionCodes)
+      service = EligibilityService(prisonApiClient, clock, false, eligiblePrisonCodes, eligibleRegionCodes)
+      whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
+        listOf(
+          BookingSentenceAndRecallTypes(
+            bookingId = 54321,
+            sentenceTypeRecallTypes = listOf(aSentenceAndRecallType()),
+          ),
+        ),
+      )
     }
 
     @Test

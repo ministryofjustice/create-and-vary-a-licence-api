@@ -96,6 +96,7 @@ class PromptComIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetManagersForPromptComJob()
       prisonMockServer.start()
       prisonMockServer.stubGetCourtOutcomes()
+      prisonMockServer.stubGetSentenceAndRecallTypes(124)
     }
 
     @JvmStatic
