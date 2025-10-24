@@ -20,7 +20,7 @@ private const val TWO_WEEKS = 14L
 @Service
 class PrisonApproverService(
   private val licenceService: LicenceService,
-  private val licenceCaseRepository: LicenceCaseRepository
+  private val licenceCaseRepository: LicenceCaseRepository,
 ) {
   @Transactional
   fun getLicenceCasesReadyForApproval(prisons: List<String>?): List<LicenceApproverCase> {

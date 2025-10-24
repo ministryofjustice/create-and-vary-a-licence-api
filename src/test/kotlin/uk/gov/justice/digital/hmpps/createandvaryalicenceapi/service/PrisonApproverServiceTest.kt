@@ -28,7 +28,7 @@ class PrisonApproverServiceTest {
 
   private val service = PrisonApproverService(
     licenceService,
-    licenceCaseRepository
+    licenceCaseRepository,
   )
 
   @BeforeEach
