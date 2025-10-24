@@ -187,11 +187,11 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
         FROM Licence l
           LEFT JOIN l.responsibleCom com
           LEFT JOIN l.updatedBy updatedBy
-        WHERE l.variationOfId = :variationOfId
+        WHERE l.idInternal = :id
         ORDER BY l.idInternal
     """,
   )
-  fun findLicenceApproverCase(variationOfId: Long): LicenceApproverCase
+  fun findLicenceApproverCase(id: Long): LicenceApproverCase
 
   @Query(
     value = """
