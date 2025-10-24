@@ -122,9 +122,5 @@
     <ID>TooManyFunctions:WebClientConfiguration.kt$WebClientConfiguration</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
     <ID>UtilityClassWithPublicConstructor:AppointmentMapper.kt$AppointmentMapper</ID>
-    <ID>WildcardImport:ComCaseloadSearchService.kt$import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.*</ID>
-    <ID>WildcardImport:ComCreateCaseloadService.kt$import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.*</ID>
-    <ID>WildcardImport:LicenceService.kt$import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.*</ID>
-    <ID>WildcardImport:ToModelTransformers.kt$import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.*</ID>
   </CurrentIssues>
 </SmellBaseline>
