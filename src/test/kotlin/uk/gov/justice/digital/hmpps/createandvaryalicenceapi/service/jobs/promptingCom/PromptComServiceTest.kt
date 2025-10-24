@@ -77,7 +77,7 @@ class PromptComServiceTest {
 
     whenever(promptComListBuilder.excludeInHardStop(any())).thenReturn(casesWithEmailsAndLocalDates)
 
-    whenever(promptComListBuilder.buildEmailsToSend(any())).thenReturn(listOf(com))
+    whenever(promptComListBuilder.buildEmailsToSend(any(), any())).thenReturn(listOf(com))
 
     val emails = promptComService.getCases(clock)
 
@@ -104,7 +104,7 @@ class PromptComServiceTest {
 
       verify(promptComListBuilder).excludeInHardStop(casesWithEmailsAndLocalDates)
 
-      verify(promptComListBuilder).buildEmailsToSend(casesWithEmailsAndLocalDates)
+      verify(promptComListBuilder).buildEmailsToSend(casesWithEmailsAndLocalDates, cvlRecords)
     }
   }
 
@@ -123,7 +123,7 @@ class PromptComServiceTest {
     )
 
     whenever(promptComListBuilder.excludeInHardStop(any())).thenReturn(casesWithEmailsAndLocalDates)
-    whenever(promptComListBuilder.buildEmailsToSend(any())).thenReturn(listOf(com))
+    whenever(promptComListBuilder.buildEmailsToSend(any(), any())).thenReturn(listOf(com))
 
     promptComService.runJob(clock)
 
@@ -155,6 +155,7 @@ class PromptComServiceTest {
           crn = "crn",
           name = "name",
           licenceStartDate = LocalDate.of(2022, 1, 2),
+          kind = LicenceKind.CRD,
         ),
       ),
     )
