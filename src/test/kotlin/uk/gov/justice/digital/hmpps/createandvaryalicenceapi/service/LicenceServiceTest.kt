@@ -3750,7 +3750,7 @@ class LicenceServiceTest {
   }
 
   @Nested
-  inner class isReviewNeeded {
+  inner class `Is a review needed` {
 
     val hardstopLicence = createHardStopLicence()
     val timeServedLicence = createTimeServedLicence()
