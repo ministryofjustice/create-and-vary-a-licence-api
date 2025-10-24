@@ -716,7 +716,7 @@ object TestData {
     licenceId = 1,
     name = "A Prisoner",
     crnNumber = "X12348",
-    licenceType = LicenceType.AP,
+    licenceType = AP,
     variationRequestDate = LocalDate.of(2023, 11, 24),
     releaseDate = LocalDate.of(2021, 10, 22),
     probationPractitioner = "Delius User",

@@ -2,12 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
@@ -19,6 +20,7 @@ import java.time.LocalDate
 class ApproverCaseloadService(
   private val prisonApproverService: PrisonApproverService,
   private val deliusApiClient: DeliusApiClient,
+  private val releaseDateService: ReleaseDateService,
 ) {
 
   fun getSortedApprovalNeededCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getApprovalNeeded(prisons))
@@ -43,49 +45,50 @@ class ApproverCaseloadService(
   }
 
   private fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
-    val licences = prisonApproverService.getLicencesForApproval(prisons.filterOutAdminPrisonCode())
-    if (licences.isEmpty()) {
+    val licenceCases = prisonApproverService.getLicenceCasesReadyForApproval(prisons.filterOutAdminPrisonCode())
+    if (licenceCases.isEmpty()) {
       return emptyList()
     }
-    return createApprovalCaseload(licences)
+    return createApprovalCaseload(licenceCases)
   }
 
   private fun getRecentlyApproved(prisons: List<String>): List<ApprovalCase> {
-    val licences = prisonApproverService.findRecentlyApprovedLicences(prisons.filterOutAdminPrisonCode())
-    if (licences.isEmpty()) {
+    val licenceCases = prisonApproverService.findRecentlyApprovedLicenceCases(prisons.filterOutAdminPrisonCode())
+    if (licenceCases.isEmpty()) {
       return emptyList()
     }
-    return createApprovalCaseload(licences)
+    return createApprovalCaseload(licenceCases)
   }
 
   private fun List<String>.filterOutAdminPrisonCode() = filterNot { it == "CADM" }
 
-  private fun createApprovalCaseload(licences: List<LicenceSummaryApproverView>): List<ApprovalCase> {
-    val nomisIds = licences.mapNotNull { it.nomisId }
-    val deliusRecords = deliusApiClient.getOffenderManagers(nomisIds)
+  private fun createApprovalCaseload(licenceApproverCases: List<LicenceApproverCase>): List<ApprovalCase> {
+    val prisonNumbers = licenceApproverCases.mapNotNull { it.prisonNumber }
+    val deliusRecords = deliusApiClient.getOffenderManagers(prisonNumbers)
 
-    val prisonerRecord: List<Pair<CommunityManager, LicenceSummaryApproverView?>> =
-      deliusRecords.map {
-        Pair(it, licences.getLicenceSummary(it.case.nomisId!!))
+    val prisonerRecord: List<Pair<CommunityManager, LicenceApproverCase>> =
+      deliusRecords.mapNotNull { record ->
+        val licence = licenceApproverCases.getLicenceApproverCase(record.case.nomisId!!)
+        if (licence != null) record to licence else null
       }
 
-    val comUsernames = prisonerRecord.mapNotNull { (_, licenceSummary) -> licenceSummary?.comUsername }
+    val comUsernames = prisonerRecord.mapNotNull { (_, licenceApproverCase) -> licenceApproverCase.comUsername }
     val deliusStaff = deliusApiClient.getStaffDetailsByUsername(comUsernames)
 
-    return prisonerRecord.map { (activeCom, licenceSummary) ->
+    return prisonerRecord.map { (activeCom, licenceApproverCase) ->
       ApprovalCase(
-        probationPractitioner = findProbationPractitioner(licenceSummary?.comUsername, deliusStaff, activeCom),
-        licenceId = licenceSummary?.licenceId,
-        name = "${licenceSummary?.forename} ${licenceSummary?.surname}".convertToTitleCase(),
-        prisonerNumber = licenceSummary?.nomisId,
-        submittedByFullName = licenceSummary?.submittedByFullName,
-        releaseDate = licenceSummary?.licenceStartDate,
-        urgentApproval = licenceSummary?.isDueToBeReleasedInTheNextTwoWorkingDays,
-        approvedBy = licenceSummary?.approvedByName,
-        approvedOn = licenceSummary?.approvedDate,
-        kind = licenceSummary?.kind,
-        prisonCode = licenceSummary?.prisonCode,
-        prisonDescription = licenceSummary?.prisonDescription,
+        probationPractitioner = findProbationPractitioner(licenceApproverCase.comUsername, deliusStaff, activeCom),
+        licenceId = licenceApproverCase.licenceId,
+        name = "${licenceApproverCase.forename} ${licenceApproverCase.surname}".convertToTitleCase(),
+        prisonerNumber = licenceApproverCase.prisonNumber,
+        submittedByFullName = licenceApproverCase.submittedByFullName,
+        releaseDate = licenceApproverCase.licenceStartDate,
+        urgentApproval = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licenceApproverCase),
+        approvedBy = licenceApproverCase.approvedByName,
+        approvedOn = licenceApproverCase.approvedDate,
+        kind = licenceApproverCase.kind,
+        prisonCode = licenceApproverCase.prisonCode,
+        prisonDescription = licenceApproverCase.prisonDescription,
       )
     }.sortedWith(compareBy(nullsFirst()) { it.releaseDate })
   }
@@ -102,8 +105,8 @@ class ApproverCaseloadService(
     }
   }
 
-  private fun List<LicenceSummaryApproverView>.getLicenceSummary(nomisId: String): LicenceSummaryApproverView? {
-    val licenceSummaries = this.filter { it.nomisId == nomisId }
+  private fun List<LicenceApproverCase>.getLicenceApproverCase(prisonNumber: String): LicenceApproverCase? {
+    val licenceSummaries = this.filter { it.prisonNumber == prisonNumber }
     return if (licenceSummaries.size == 1) licenceSummaries.first() else licenceSummaries.find { it.licenceStatus != LicenceStatus.ACTIVE }
   }
 

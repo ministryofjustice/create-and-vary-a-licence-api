@@ -11,7 +11,7 @@ data class LicenceComCase(
   override val licenceId: Long,
   override val versionOfId: Long?,
   override val licenceStatus: LicenceStatus,
-  override val prisonNumber: String,
+  override val prisonNumber: String?,
   override val surname: String?,
   override val forename: String?,
   override val conditionalReleaseDate: LocalDate?,
@@ -28,8 +28,4 @@ data class LicenceComCase(
   val dateCreated: LocalDateTime,
   val approvedByName: String?,
   val approvedDate: LocalDateTime?,
-) : LicenceCase {
-  fun isReviewNeeded(): Boolean = kind in listOf(LicenceKind.HARD_STOP, LicenceKind.TIME_SERVED) &&
-    licenceStatus == LicenceStatus.ACTIVE &&
-    reviewDate == null
-}
+) : LicenceCase
