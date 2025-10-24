@@ -204,11 +204,13 @@ class ComCaseloadSearchService(
     isInHardStopPeriod = isInHardStopPeriod,
     isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
     releaseDateLabel = releaseDateLabelFactory.fromLicence(licence),
-    isReviewNeeded = when (licence) {
-      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-      else -> false
-    },
+    isReviewNeeded = isReviewNeeded(licence),
   )
+
+  private fun isReviewNeeded(licence: Licence) = when (licence) {
+    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
+    else -> false
+  }
 
   private val versionComparator = Comparator<Licence> { l1, l2 ->
     val (major1, minor1) = l1.licenceVersion?.split('.')?.mapNotNull { it.toIntOrNull() } ?: listOf(0, 0)

@@ -294,7 +294,7 @@ class ComCreateCaseloadService(
       licenceStatus = licenceCase.licenceStatus,
       kind = licenceCase.kind,
       crn = licenceCase.crn,
-      nomisId = licenceCase.prisonNumber,
+      nomisId = licenceCase.prisonNumber!!,
       name = licenceCase.fullName,
       licenceType = licenceCase.typeCode,
       comUsername = licenceCase.comUsername,
@@ -308,7 +308,11 @@ class ComCreateCaseloadService(
       licenceStartDate = licenceCase.licenceStartDate,
       releaseDate = licenceCase.licenceStartDate,
       isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-      isReviewNeeded = licenceCase.isReviewNeeded(),
+      isReviewNeeded = isReviewNeeded(licenceCase),
     )
+  }
+
+  fun isReviewNeeded(licenceComCase: LicenceComCase): Boolean = with(licenceComCase) {
+    kind == LicenceKind.HARD_STOP && licenceStatus == ACTIVE && reviewDate == null
   }
 }

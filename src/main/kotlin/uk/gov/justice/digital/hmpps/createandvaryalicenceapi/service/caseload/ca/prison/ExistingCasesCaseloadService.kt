@@ -28,7 +28,7 @@ class ExistingCasesCaseloadService(
       return emptyList()
     }
 
-    val licenceNomisIds = preReleaseLicenceCases.map { it.prisonNumber }
+    val licenceNomisIds = preReleaseLicenceCases.map { it.prisonNumber }.filterNotNull()
     val prisonersWithLicences = caseloadService.getPrisonersByNumber(licenceNomisIds)
     val nomisEnrichedLicences = enrichWithNomisData(preReleaseLicenceCases, prisonersWithLicences)
     return filterExistingLicencesForEligibility(nomisEnrichedLicences)

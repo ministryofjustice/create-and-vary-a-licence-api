@@ -1117,6 +1117,13 @@ class LicenceService(
     return LicencePermissionsResponse(viewAccess)
   }
 
+  fun isVariation(kind: LicenceKind): Boolean = when (kind) {
+    VARIATION,
+    HDC_VARIATION,
+    -> true
+    else -> false
+  }
+
   private fun EntityLicence.toSummary() = transformToLicenceSummary(
     this,
     hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),

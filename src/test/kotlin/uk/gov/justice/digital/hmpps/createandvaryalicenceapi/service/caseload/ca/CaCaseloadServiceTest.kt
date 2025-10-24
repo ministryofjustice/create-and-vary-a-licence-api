@@ -227,7 +227,7 @@ class CaCaseloadServiceTest {
         whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
           listOf(
             TestData.aCvlRecord(
-              nomsId = licenceCase.prisonNumber,
+              nomsId = licenceCase.prisonNumber!!,
               kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
             ),
@@ -240,7 +240,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -262,7 +262,7 @@ class CaCaseloadServiceTest {
         }
 
         verify(licenceCaseRepository, times(1)).findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)
-        verify(caseloadService, times(0)).getPrisonersByNumber(listOf(licenceCase.prisonNumber))
+        verify(caseloadService, times(0)).getPrisonersByNumber(listOf(licenceCase.prisonNumber!!))
         verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
       }
     }
@@ -283,7 +283,7 @@ class CaCaseloadServiceTest {
           listOf(
             TestData.caCase().copy(
               licenceId = licenceCase.licenceId,
-              prisonerNumber = licenceCase.prisonNumber,
+              prisonerNumber = licenceCase.prisonNumber!!,
               name = "Person Two",
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
@@ -346,7 +346,7 @@ class CaCaseloadServiceTest {
             ),
             TestData.caCase().copy(
               licenceId = licenceCase2.licenceId,
-              prisonerNumber = licenceCase2.prisonNumber,
+              prisonerNumber = licenceCase2.prisonNumber!!,
               name = "Person Two",
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
@@ -1092,7 +1092,7 @@ class CaCaseloadServiceTest {
 
       val prisoners = licenceCases.map {
         TestData.prisonerSearchResult().copy(
-          prisonerNumber = it.prisonNumber,
+          prisonerNumber = it.prisonNumber!!,
           firstName = it.forename!!,
           dateOfBirth = LocalDate.of(1985, 12, 28),
         )
@@ -1637,7 +1637,7 @@ class CaCaseloadServiceTest {
 
       val prisoners = licenceCases.map {
         TestData.prisonerSearchResult().copy(
-          prisonerNumber = it.prisonNumber,
+          prisonerNumber = it.prisonNumber!!,
           firstName = it.forename!!,
           dateOfBirth = LocalDate.of(1985, 12, 28),
         )
