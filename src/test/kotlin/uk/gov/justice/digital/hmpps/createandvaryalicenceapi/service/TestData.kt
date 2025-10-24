@@ -1,6 +1,18 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
