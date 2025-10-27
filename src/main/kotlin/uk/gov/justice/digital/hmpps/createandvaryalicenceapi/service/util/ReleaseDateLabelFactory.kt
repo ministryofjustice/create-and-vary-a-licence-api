@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import java.time.LocalDate
@@ -35,11 +35,11 @@ class ReleaseDateLabelFactory(
     return label
   }
 
-  fun fromLicenceCase(licenceCase: LicenceCase): String = getLabel(
-    releaseDate = licenceCase.licenceStartDate,
-    confirmedReleaseDate = licenceCase.actualReleaseDate,
-    postRecallDate = licenceCase.postRecallReleaseDate,
-    hdcReleaseDate = licenceCase.homeDetentionCurfewActualDate,
+  fun fromLicenceSummary(licence: LicenceSummary): String = getLabel(
+    releaseDate = licence.licenceStartDate,
+    confirmedReleaseDate = licence.actualReleaseDate,
+    postRecallDate = licence.postRecallReleaseDate,
+    hdcReleaseDate = licence.homeDetentionCurfewActualDate,
   )
 
   fun fromLicence(licence: Licence): String = getLabel(

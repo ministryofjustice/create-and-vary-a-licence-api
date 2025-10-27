@@ -23,7 +23,7 @@ data class AdditionalCondition(
   @field:Positive
   open val id: Long? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REFRESH])
+  @ManyToOne
   @JoinColumn(name = "licence_id", nullable = false)
   var licence: Licence,
 

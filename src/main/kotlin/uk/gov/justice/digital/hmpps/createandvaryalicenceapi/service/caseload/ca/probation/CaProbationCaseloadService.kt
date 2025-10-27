@@ -2,10 +2,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
@@ -17,8 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 
 @Service
 class CaProbationCaseloadService(
-  private val licenceCaseRepository: LicenceCaseRepository,
-  private val releaseDateService: ReleaseDateService,
+  private val licenceService: LicenceService,
   private val deliusApiClient: DeliusApiClient,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
 ) {
@@ -30,41 +29,42 @@ class CaProbationCaseloadService(
   )
 
   fun getProbationOmuCaseload(prisonCaseload: Set<String>, searchString: String?): List<CaCase> {
-    val licenceCases = licenceCaseRepository.findLicenceCases(statuses, prisonCaseload.toList())
+    val licences = licenceService.findLicencesMatchingCriteria(
+      LicenceQueryObject(statusCodes = statuses, prisonCodes = prisonCaseload.toList()),
+    )
 
-    val formattedLicences = formatReleasedLicences(licenceCases)
+    val formattedLicences = formatReleasedLicences(licences)
     val cases = mapCasesToComs(formattedLicences)
 
     val searchResults = applySearch(searchString, cases)
     return searchResults.sortedWith(compareByDescending<CaCase> { it.releaseDate }.thenBy { it.licenceId })
   }
 
-  private fun formatReleasedLicences(licenceCases: List<LicenceCase>): List<CaCase> {
-    val groupedLicences = licenceCases.groupBy { it.prisonNumber }
+  private fun formatReleasedLicences(licences: List<LicenceSummary>): List<CaCase> {
+    val groupedLicences = licences.groupBy { it.nomisId }
     return groupedLicences.map {
-      val licenceCase = if (it.value.size > 1) {
+      val licence = if (it.value.size > 1) {
         it.value.find { l -> l.licenceStatus != ACTIVE }
       } else {
         it.value[0]
       }
 
-      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceCase?.licenceStartDate)
       CaCase(
-        kind = licenceCase?.kind,
-        licenceId = licenceCase?.licenceId,
-        licenceVersionOf = licenceCase?.versionOfId,
-        name = "${licenceCase?.forename} ${licenceCase?.surname}",
-        prisonerNumber = licenceCase?.prisonNumber!!,
-        releaseDate = licenceCase.licenceStartDate,
-        releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(licenceCase),
-        licenceStatus = licenceCase.licenceStatus,
-        lastWorkedOnBy = licenceCase.updatedByFullName,
-        isInHardStopPeriod = isInHardStopPeriod,
+        kind = licence?.kind,
+        licenceId = licence?.licenceId,
+        licenceVersionOf = licence?.versionOf,
+        name = "${licence?.forename} ${licence?.surname}",
+        prisonerNumber = licence?.nomisId!!,
+        releaseDate = licence.licenceStartDate,
+        releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
+        licenceStatus = licence.licenceStatus,
+        lastWorkedOnBy = licence.updatedByFullName,
+        isInHardStopPeriod = licence.isInHardStopPeriod,
         probationPractitioner = ProbationPractitioner(
-          staffUsername = licenceCase.comUsername,
+          staffUsername = licence.comUsername,
         ),
-        prisonCode = licenceCase.prisonCode,
-        prisonDescription = licenceCase.prisonDescription,
+        prisonCode = licence.prisonCode,
+        prisonDescription = licence.prisonDescription,
       )
     }
   }

@@ -3,7 +3,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -14,7 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 
 @Service
 class CaPrisonCaseloadService(
-  private val licenceCaseRepository: LicenceCaseRepository,
+  private val licenceService: LicenceService,
   private val deliusApiClient: DeliusApiClient,
   private val existingCasesCaseloadService: ExistingCasesCaseloadService,
   private val notStartedCaseloadService: NotStartedCaseloadService,
@@ -29,13 +30,14 @@ class CaPrisonCaseloadService(
 
   fun getPrisonOmuCaseload(prisonCaseload: Set<String>, searchString: String?): List<CaCase> {
     val filteredPrisons = prisonCaseload.filterNot { it == "CADM" }
+    val existingLicences = licenceService.findLicencesMatchingCriteria(
+      LicenceQueryObject(statusCodes = statuses, prisonCodes = filteredPrisons, sortBy = "licenceStartDate"),
+    )
 
-    val licenceCases = licenceCaseRepository.findLicenceCases(statuses, filteredPrisons)
-
-    val eligibleExistingCases = existingCasesCaseloadService.filterAndFormatExistingCases(licenceCases)
+    val eligibleExistingCases = existingCasesCaseloadService.filterAndFormatExistingCases(existingLicences)
 
     val eligibleNotStartedCases =
-      notStartedCaseloadService.findAndFormatNotStartedCases(licenceCases, prisonCaseload)
+      notStartedCaseloadService.findAndFormatNotStartedCases(existingLicences, prisonCaseload)
 
     val cases = mapCasesToComs(eligibleExistingCases + eligibleNotStartedCases)
 
