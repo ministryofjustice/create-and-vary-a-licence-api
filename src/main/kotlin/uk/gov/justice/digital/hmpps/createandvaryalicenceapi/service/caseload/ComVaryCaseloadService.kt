@@ -6,6 +6,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
@@ -19,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 class ComVaryCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceService: LicenceService,
+  private val releaseDateService: ReleaseDateService,
 ) {
 
   fun getStaffVaryCaseload(deliusStaffIdentifier: Long): List<ComCase> {
@@ -90,13 +93,17 @@ class ComVaryCaseloadService(
 
   private fun transformToVaryCaseload(casesToLicences: Map<ManagedOffenderCrn, LicenceSummary>): List<ComCase> {
     val comDetails = getComDetails(casesToLicences)
+
     return casesToLicences.map { (case, licence) ->
+      val hardStopKind = releaseDateService.getHardStopKind(licence.toSentenceDateHolder())
+
       ComCase(
         licenceId = licence.licenceId,
         licenceType = licence.licenceType,
         licenceStatus = licence.licenceStatus,
         crnNumber = licence.crn,
         prisonerNumber = licence.nomisId,
+        hardStopKind = hardStopKind,
         kind = licence.kind,
         name = "${licence.forename} ${licence.surname}".trim().convertToTitleCase(),
         releaseDate = licence.licenceStartDate,

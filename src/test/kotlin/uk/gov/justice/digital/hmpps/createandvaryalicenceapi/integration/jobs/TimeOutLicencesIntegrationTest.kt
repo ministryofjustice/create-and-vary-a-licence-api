@@ -12,6 +12,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -82,17 +83,21 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
+    val prisonerSearchMockServer = PrisonerSearchMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
+      prisonerSearchMockServer.start()
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       govUkApiMockServer.stop()
+      prisonerSearchMockServer.stop()
     }
   }
 }

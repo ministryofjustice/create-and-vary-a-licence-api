@@ -71,6 +71,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
@@ -264,6 +265,7 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -283,6 +285,7 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -298,6 +301,7 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -313,6 +317,7 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -335,6 +340,7 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(LicenceQueryObject())
 
@@ -388,6 +394,7 @@ class LicenceServiceTest {
         ),
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -409,6 +416,7 @@ class LicenceServiceTest {
         createHardStopLicence().copy(statusCode = LicenceStatus.ACTIVE, reviewDate = null),
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -423,6 +431,7 @@ class LicenceServiceTest {
         createHardStopLicence().copy(reviewDate = LocalDateTime.now()),
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -437,6 +446,7 @@ class LicenceServiceTest {
         createHardStopLicence().copy(reviewDate = null),
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -451,6 +461,7 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -1962,6 +1973,7 @@ class LicenceServiceTest {
       Optional.of(aLicenceEntity),
     )
     whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
@@ -1990,6 +2002,7 @@ class LicenceServiceTest {
         changeHints = emptyList(),
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(anHdcLicenceEntity),
     )
@@ -2032,6 +2045,7 @@ class LicenceServiceTest {
         ),
       ),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
     whenever(licenceRepository.save(any())).thenReturn(
       aLicenceEntity.copy(
         additionalConditions = additionalConditions,
@@ -2214,6 +2228,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(approvedLicence),
     )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(approvedLicence.id),
@@ -2249,6 +2264,7 @@ class LicenceServiceTest {
       .thenReturn(
         listOf(inProgressLicenceVersion),
       )
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     service.editLicence(1L)
 
@@ -2913,6 +2929,7 @@ class LicenceServiceTest {
       ),
     )
     whenever(deliusApiClient.getOffenderManager(aLicenceEntity.crn!!)).thenReturn(offenderManager())
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val permissions = service.getLicencePermissions(licenceId = aLicenceEntity.id, teamCodes = listOf("invalid-team"))
     assertThat(permissions.view).isFalse
@@ -3703,12 +3720,82 @@ class LicenceServiceTest {
         .thenReturn(
           listOf(inProgressLicenceVersion),
         )
+      whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
       val newLicenceVersion = service.editLicence(1L)
       assertNotNull(newLicenceVersion)
       assertThat(newLicenceVersion.licenceId).isEqualTo(inProgressLicenceVersion.id)
 
       verify(licenceRepository, never()).save(any())
+    }
+  }
+
+  @Nested
+  inner class `isReviewNeeded` {
+
+    val hardstopLicence = createHardStopLicence()
+    val timeServedLicence = createTimeServedLicence()
+
+    @Test
+    fun `HardStopLicence with ACTIVE and null reviewDate returns true`() {
+      val licence = hardstopLicence.copy(
+        statusCode = LicenceStatus.ACTIVE,
+      )
+      assertThat(service.isReviewNeeded(licence)).isTrue()
+    }
+
+    @Test
+    fun `TimeServedLicence with ACTIVE and null reviewDate returns true`() {
+      val licence = timeServedLicence
+      assertThat(service.isReviewNeeded(licence)).isTrue()
+    }
+
+    @Test
+    fun `HardStopLicence with ACTIVE and non-null reviewDate returns false`() {
+      val licence = hardstopLicence.copy(
+        statusCode = LicenceStatus.ACTIVE,
+        reviewDate = LocalDateTime.now(),
+      )
+      assertThat(service.isReviewNeeded(licence)).isFalse()
+    }
+
+    @Test
+    fun `TimeServedLicence with IN_PROGRESS and null reviewDate returns false`() {
+      val licence = timeServedLicence.copy(
+        statusCode = LicenceStatus.IN_PROGRESS,
+        reviewDate = null,
+      )
+      assertThat(service.isReviewNeeded(licence)).isFalse()
+    }
+
+    @Test
+    fun `EntityHardStopLicence with ACTIVE and null reviewDate returns true`() {
+      val licence = anHardStopLicenceEntity.copy(
+        statusCode = LicenceStatus.ACTIVE,
+        reviewDate = null,
+      )
+      assertThat(service.isReviewNeeded(licence)).isTrue()
+    }
+
+    @Test
+    fun `EntityTimeServedLicence with ACTIVE and non-null reviewDate returns false`() {
+      val licence = anHardStopLicenceEntity.copy(
+        statusCode = LicenceStatus.ACTIVE,
+        reviewDate = LocalDateTime.now(),
+      )
+      assertThat(service.isReviewNeeded(licence)).isFalse()
+    }
+
+    @Test
+    fun `CRD Licence type returns false`() {
+      val licence = createCrdLicence()
+      assertThat(service.isReviewNeeded(licence)).isFalse()
+    }
+
+    @Test
+    fun `CRD EntityLicence type returns false`() {
+      val licence = aLicenceEntity
+      assertThat(service.isReviewNeeded(licence)).isFalse()
     }
   }
 
@@ -3827,6 +3914,74 @@ class LicenceServiceTest {
     standardConditions = emptyList(),
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
+    approvedByName = "jim smith",
+    approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+  ).let {
+    it.copy(
+      standardConditions = listOf(
+        EntityStandardCondition(
+          id = 1,
+          conditionCode = "goodBehaviour",
+          conditionSequence = 1,
+          conditionText = "Be of good behaviour",
+          conditionType = "AP",
+          licence = it,
+        ),
+        EntityStandardCondition(
+          id = 2,
+          conditionCode = "notBreakLaw",
+          conditionSequence = 2,
+          conditionText = "Do not break any law",
+          conditionType = "AP",
+          licence = it,
+        ),
+        EntityStandardCondition(
+          id = 3,
+          conditionCode = "attendMeetings",
+          conditionSequence = 3,
+          conditionText = "Attend meetings",
+          conditionType = "AP",
+          licence = it,
+        ),
+      ),
+    )
+  }
+
+  val anHardStopLicenceEntity = createHardStopLicence().copy(
+    id = 1,
+    typeCode = LicenceType.AP,
+    version = "1.1",
+    statusCode = LicenceStatus.IN_PROGRESS,
+    nomsId = "A1234AA",
+    bookingNo = "123456",
+    bookingId = 54321,
+    crn = "X12345",
+    pnc = "2019/123445",
+    cro = "12345",
+    prisonCode = "MDI",
+    prisonDescription = "Moorland (HMP)",
+    forename = "John",
+    surname = "Smith",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    actualReleaseDate = LocalDate.of(2021, 10, 22),
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceEndDate = LocalDate.of(2021, 10, 22),
+    licenceStartDate = LocalDate.of(2021, 10, 22),
+    licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    probationAreaCode = "N01",
+    probationAreaDescription = "Wales",
+    probationPduCode = "N01A",
+    probationPduDescription = "Cardiff",
+    probationLauCode = "N01A2",
+    probationLauDescription = "Cardiff South",
+    probationTeamCode = "NA01A2-A",
+    probationTeamDescription = "Cardiff South Team A",
+    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+    standardConditions = emptyList(),
+    responsibleCom = communityOffenderManager(),
     approvedByName = "jim smith",
     approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
   ).let {

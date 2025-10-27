@@ -7,6 +7,7 @@ import java.time.LocalDate
 object SentenceDateHolderAdapter {
   fun PrisonerSearchPrisoner.toSentenceDateHolder(licenceStartDate: LocalDate?) = object : SentenceDateHolder {
     override val conditionalReleaseDate = this@toSentenceDateHolder.conditionalReleaseDate
+    override val sentenceStartDate = this@toSentenceDateHolder.sentenceStartDate
     override val actualReleaseDate = confirmedReleaseDate
     override val licenceStartDate = licenceStartDate
     override val homeDetentionCurfewActualDate = this@toSentenceDateHolder.homeDetentionCurfewActualDate
@@ -15,6 +16,7 @@ object SentenceDateHolderAdapter {
 
   fun LicenceSummary.toSentenceDateHolder() = object : SentenceDateHolder {
     override val conditionalReleaseDate = this@toSentenceDateHolder.conditionalReleaseDate
+    override val sentenceStartDate = this@toSentenceDateHolder.sentenceStartDate
     override val actualReleaseDate = this@toSentenceDateHolder.actualReleaseDate
     override val licenceStartDate = this@toSentenceDateHolder.licenceStartDate
     override val homeDetentionCurfewActualDate = this@toSentenceDateHolder.homeDetentionCurfewActualDate
@@ -23,6 +25,7 @@ object SentenceDateHolderAdapter {
 
   fun SentenceDateHolder.reifySentenceDates() = SentenceDateHolderImpl(
     conditionalReleaseDate = this.conditionalReleaseDate,
+    sentenceStartDate = this.sentenceStartDate,
     actualReleaseDate = this.actualReleaseDate,
     licenceStartDate = licenceStartDate,
     homeDetentionCurfewActualDate = this.homeDetentionCurfewActualDate,
@@ -31,6 +34,7 @@ object SentenceDateHolderAdapter {
 
   data class SentenceDateHolderImpl(
     override val licenceStartDate: LocalDate?,
+    override val sentenceStartDate: LocalDate?,
     override val conditionalReleaseDate: LocalDate?,
     override val actualReleaseDate: LocalDate?,
     override val homeDetentionCurfewActualDate: LocalDate?,

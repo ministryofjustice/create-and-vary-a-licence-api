@@ -117,6 +117,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.start()
       prisonerSearchMockServer.start()
       govUkMockServer.start()
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
       prisonApiMockServer.stubGetCourtOutcomes()
       prisonApiMockServer.getHdcStatuses()

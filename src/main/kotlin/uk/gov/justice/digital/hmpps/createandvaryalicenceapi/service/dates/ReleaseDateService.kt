@@ -25,6 +25,8 @@ class ReleaseDateService(
   private val iS91DeterminationService: IS91DeterminationService,
   @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
+  @param:Value("\${feature.toggle.timeServed.enabled:false}")
+  private val isTimeServedEnabled: Boolean = false,
 ) {
   fun isInHardStopPeriod(licenceStartDate: LocalDate?, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
@@ -113,17 +115,46 @@ class ReleaseDateService(
     }
   }
 
-  fun isTimeServed(nomisRecord: PrisonerSearchPrisoner, overrideClock: Clock? = null): Boolean {
+  private fun isTimeServed(
+    sentenceStartDate: LocalDate?,
+    confirmedReleaseDate: LocalDate?,
+    conditionalReleaseDate: LocalDate?,
+    overrideClock: Clock? = null,
+  ): Boolean {
     val clockToUse = overrideClock ?: clock
     val today = LocalDate.now(clockToUse)
 
-    val conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate
-      ?: nomisRecord.conditionalReleaseDate
-
-    return nomisRecord.sentenceStartDate == today &&
-      nomisRecord.confirmedReleaseDate == today &&
+    return isTimeServedEnabled &&
+      sentenceStartDate == today &&
+      confirmedReleaseDate == today &&
       conditionalReleaseDate == today
   }
+
+  private fun determineHardStopKind(
+    licenceStartDate: LocalDate?,
+    sentenceStartDate: LocalDate?,
+    confirmedReleaseDate: LocalDate?,
+    conditionalReleaseDate: LocalDate?,
+    overrideClock: Clock? = null,
+  ): LicenceKind? {
+    if (licenceStartDate == null || !isInHardStopPeriod(licenceStartDate, overrideClock)) {
+      return null
+    }
+
+    return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate, overrideClock)) {
+      LicenceKind.TIME_SERVED
+    } else {
+      LicenceKind.HARD_STOP
+    }
+  }
+
+  fun getHardStopKind(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
+    sentenceDateHolder.licenceStartDate,
+    sentenceDateHolder.sentenceStartDate,
+    sentenceDateHolder.actualReleaseDate,
+    sentenceDateHolder.conditionalReleaseDate,
+    overrideClock,
+  )
 
   private fun calculateCrdLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,

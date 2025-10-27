@@ -67,7 +67,7 @@ abstract class Licence(
   var dateOfBirth: LocalDate? = null,
   override var conditionalReleaseDate: LocalDate? = null,
   override var actualReleaseDate: LocalDate? = null,
-  var sentenceStartDate: LocalDate? = null,
+  override var sentenceStartDate: LocalDate? = null,
   var sentenceEndDate: LocalDate? = null,
   override var licenceStartDate: LocalDate? = null,
   var licenceExpiryDate: LocalDate? = null,
