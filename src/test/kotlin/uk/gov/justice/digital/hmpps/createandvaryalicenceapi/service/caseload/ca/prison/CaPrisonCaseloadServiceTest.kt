@@ -50,7 +50,6 @@ class CaPrisonCaseloadServiceTest {
       clock,
       deliusApiClient,
       prisonerSearchApiClient,
-      releaseDateService,
       releaseDateLabelFactory,
       cvlRecordService,
     ),

@@ -127,7 +127,7 @@ class LicenceService(
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
     )
 
@@ -138,7 +138,7 @@ class LicenceService(
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
     )
 
@@ -156,7 +156,7 @@ class LicenceService(
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
     )
 
@@ -167,7 +167,7 @@ class LicenceService(
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
     )
 
@@ -412,7 +412,8 @@ class LicenceService(
       ?: throw ValidationException("Staff with username $username not found")
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licenceEntity.nomsId!!)).first()
-    val eligibilityAssessment = eligibilityService.getEligibilityAssessment(nomisRecord, licenceEntity.probationAreaCode!!)
+    val eligibilityAssessment =
+      eligibilityService.getEligibilityAssessment(nomisRecord, licenceEntity.probationAreaCode!!)
 
     when (licenceEntity) {
       is PrrdLicence -> {
@@ -1140,7 +1141,9 @@ class LicenceService(
       hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+        licenceStartDate,
+      ),
     )
   }
 

@@ -26,7 +26,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffEmail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
@@ -228,7 +229,7 @@ class PromptComListBuilderTest {
     @Test
     fun present() {
       val promptCase = promptCase()
-      val cvlRecord = aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2022, 1, 2))
+      val cvlRecord = aCvlRecord(kind = CRD, licenceStartDate = LocalDate.of(2022, 1, 2))
 
       val result =
         promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
@@ -241,7 +242,7 @@ class PromptComListBuilderTest {
     fun missingStartDate() {
       val promptCase = promptCase()
 
-      val cvlRecord = aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = null)
+      val cvlRecord = aCvlRecord(kind = CRD, licenceStartDate = null)
 
       val result =
         promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
@@ -326,9 +327,27 @@ class PromptComListBuilderTest {
       ) to "user2@test.com" to LocalDate.of(2022, 1, 3)
 
       val cvlRecords = listOf(
-        CvlRecord(nomisId = nomisId1, eligibleKind = LicenceKind.PRRD),
-        CvlRecord(nomisId = nomisId2, eligibleKind = LicenceKind.CRD),
-        CvlRecord(nomisId = nomisId3, eligibleKind = LicenceKind.CRD),
+        CvlRecord(
+          nomisId = nomisId1,
+          eligibleKind = PRRD,
+          isDueToBeReleasedInTheNextTwoWorkingDays = false,
+          isInHardStopPeriod = false,
+          isEligibleForEarlyRelease = false,
+        ),
+        CvlRecord(
+          nomisId = nomisId2,
+          eligibleKind = CRD,
+          isDueToBeReleasedInTheNextTwoWorkingDays = false,
+          isInHardStopPeriod = false,
+          isEligibleForEarlyRelease = false,
+        ),
+        CvlRecord(
+          nomisId = nomisId3,
+          eligibleKind = CRD,
+          isDueToBeReleasedInTheNextTwoWorkingDays = false,
+          isInHardStopPeriod = false,
+          isEligibleForEarlyRelease = false,
+        ),
       )
       val result = promptComListBuilder.buildEmailsToSend(listOf(promptCase1, promptCase2, promptCase3), cvlRecords)
 
@@ -342,13 +361,13 @@ class PromptComListBuilderTest {
                 crn = "crn-2",
                 name = "A Prisoner",
                 licenceStartDate = LocalDate.of(2022, 1, 1),
-                kind = LicenceKind.CRD,
+                kind = CRD,
               ),
               Case(
                 crn = "crn-1",
                 name = "A Prisoner",
                 licenceStartDate = LocalDate.of(2022, 1, 2),
-                kind = LicenceKind.PRRD,
+                kind = PRRD,
               ),
             ),
           ),
@@ -360,7 +379,7 @@ class PromptComListBuilderTest {
                 crn = "crn-3",
                 name = "A Prisoner",
                 licenceStartDate = LocalDate.of(2022, 1, 3),
-                kind = LicenceKind.CRD,
+                kind = CRD,
               ),
             ),
           ),

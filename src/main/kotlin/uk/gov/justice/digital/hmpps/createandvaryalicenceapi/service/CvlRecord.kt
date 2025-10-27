@@ -9,5 +9,11 @@ data class CvlRecord(
   val isEligible: Boolean = false,
   val eligibleKind: LicenceKind? = null,
   val ineligiblityReasons: List<String> = emptyList(),
+  val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
+  val isEligibleForEarlyRelease: Boolean,
+
+  val hardStopWarningDate: LocalDate? = null,
+  val hardStopDate: LocalDate? = null,
+  val isInHardStopPeriod: Boolean,
   val hardStopKind: LicenceKind? = null,
 )

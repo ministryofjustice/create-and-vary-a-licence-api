@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
 import java.time.DayOfWeek
@@ -39,8 +38,8 @@ class ReleaseDateService(
     return today >= hardStopDate && today <= licenceStartDate
   }
 
-  fun isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder: SentenceDateHolder): Boolean {
-    val licenceStartDate = sentenceDateHolder.licenceStartDate ?: return false
+  fun isDueToBeReleasedInTheNextTwoWorkingDays(licenceStartDate: LocalDate?): Boolean {
+    if (licenceStartDate == null) return false
     return LocalDate.now(clock) >= 2.workingDaysBefore(licenceStartDate) && LocalDate.now(clock) <= licenceStartDate
   }
 
@@ -88,7 +87,6 @@ class ReleaseDateService(
     else -> calculateHardStopDate(licenceStartDate)
   }
 
-  @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
     licenceKind: LicenceKind?,
@@ -99,11 +97,14 @@ class ReleaseDateService(
       nomisRecord,
       iS91DeterminationService.isIS91Case(nomisRecord),
     )
+
     else -> null
   }
 
-  @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
-  fun getLicenceStartDates(prisoners: List<PrisonerSearchPrisoner>, nomisIdsToKinds: Map<String, LicenceKind?>): Map<String, LocalDate?> {
+  fun getLicenceStartDates(
+    prisoners: List<PrisonerSearchPrisoner>,
+    nomisIdsToKinds: Map<String, LicenceKind?>,
+  ): Map<String, LocalDate?> {
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
     return prisoners.associate {
       it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {

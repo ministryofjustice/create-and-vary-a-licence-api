@@ -79,7 +79,6 @@ class CaCaseloadServiceTest {
         clock,
         deliusApiClient,
         prisonerSearchApiClient,
-        releaseDateService,
         releaseDateLabelFactory,
         cvlRecordService,
       ),
@@ -212,7 +211,6 @@ class CaCaseloadServiceTest {
     inner class `in the hard stop period` {
       @Test
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
-        whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
         whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
           listOf(
             aPrisonerSearchPrisoner,
@@ -232,10 +230,18 @@ class CaCaseloadServiceTest {
               nomsId = aLicenceSummary.nomisId,
               kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
+              isInHardStopPeriod = true,
             ),
           ),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -576,7 +582,11 @@ class CaCaseloadServiceTest {
         licenceStartDate = twoDaysFromNow,
       )
 
-      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(listOf(licenceSummary))
+      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
+        listOf(
+          licenceSummary,
+        ),
+      )
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
@@ -594,8 +604,14 @@ class CaCaseloadServiceTest {
         licenceStartDate = tenDaysFromNow,
         postRecallReleaseDate = tenDaysFromNow,
       )
-      whenever(workingDaysService.getLastWorkingDay(licenceSummary.postRecallReleaseDate)).thenReturn(licenceSummary.postRecallReleaseDate)
-      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(listOf(licenceSummary))
+      whenever(workingDaysService.getLastWorkingDay(licenceSummary.postRecallReleaseDate)).thenReturn(
+        licenceSummary.postRecallReleaseDate,
+      )
+      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
+        listOf(
+          licenceSummary,
+        ),
+      )
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
@@ -621,11 +637,23 @@ class CaCaseloadServiceTest {
         )
         whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
           listOf(
-            TestData.aCvlRecord(nomsId = "A1234AA", kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow),
-            TestData.aCvlRecord(nomsId = "A1234AB", kind = null, licenceStartDate = null).copy(isEligible = false),
+            TestData.aCvlRecord(
+              nomsId = "A1234AA",
+              kind = LicenceKind.CRD,
+              licenceStartDate = twoDaysFromNow,
+            ),
+            TestData.aCvlRecord(nomsId = "A1234AB", kind = null, licenceStartDate = null)
+              .copy(isEligible = false),
           ),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -662,7 +690,11 @@ class CaCaseloadServiceTest {
 
         whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
           listOf(
-            TestData.aCvlRecord(nomsId = "A1234AA", kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow),
+            TestData.aCvlRecord(
+              nomsId = "A1234AA",
+              kind = LicenceKind.CRD,
+              licenceStartDate = twoDaysFromNow,
+            ),
           ),
         )
 
@@ -678,7 +710,14 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should filter out cases with no CRD`() {
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -719,7 +758,14 @@ class CaCaseloadServiceTest {
           homeDetentionCurfewEligibilityDate = twoDaysFromNow,
           bookingId = "1234",
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               prisoner,
@@ -755,7 +801,14 @@ class CaCaseloadServiceTest {
           homeDetentionCurfewEligibilityDate = twoDaysFromNow,
           bookingId = "1234",
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(listOf(prisoner)),
         )
 
@@ -795,7 +848,14 @@ class CaCaseloadServiceTest {
             any(),
           ),
         ).thenReturn(listOf(TestData.aCvlRecord(kind = LicenceKind.CRD)))
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -1068,7 +1128,8 @@ class CaCaseloadServiceTest {
       )
 
       // When
-      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
+      val results =
+        service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
 
       // Then
       assertThat(results.inPrisonResults.map { it.licenceId }).isEqualTo(listOf(1L, 2L, 4L, 5L, 3L))
@@ -1277,7 +1338,8 @@ class CaCaseloadServiceTest {
       )
 
       // When
-      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
+      val results =
+        service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
 
       // Then
       assertThat(results).isEqualTo(
@@ -1355,10 +1417,13 @@ class CaCaseloadServiceTest {
         ),
       )
 
-      whenever(licenceService.findLicencesMatchingCriteria(probationLicenceQueryObject)).thenReturn(licenceSummaryList)
+      whenever(licenceService.findLicencesMatchingCriteria(probationLicenceQueryObject)).thenReturn(
+        licenceSummaryList,
+      )
 
       // When
-      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
+      val results =
+        service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
 
       // Then
       assertThat(results.onProbationResults.map { it.licenceId }).isEqualTo(listOf(3L, 2L, 4L, 5L, 1L))
@@ -1586,7 +1651,8 @@ class CaCaseloadServiceTest {
       )
 
       // When
-      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
+      val results =
+        service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
 
       // Then
       assertThat(results.attentionNeededResults.map { it.licenceId }).isEqualTo(listOf(1L, 2L, 3L, 4L, 5L))
