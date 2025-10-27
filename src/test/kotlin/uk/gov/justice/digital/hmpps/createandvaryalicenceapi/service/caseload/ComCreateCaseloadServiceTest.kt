@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordSe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -46,7 +45,6 @@ class ComCreateCaseloadServiceTest {
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val cvlRecordService = mock<CvlRecordService>()
-  private val licenceService = mock<LicenceService>()
 
   private val service = ComCreateCaseloadService(
     caseloadService,
@@ -55,7 +53,6 @@ class ComCreateCaseloadServiceTest {
     hdcService,
     releaseDateService,
     cvlRecordService,
-    licenceService,
   )
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
@@ -1054,42 +1051,6 @@ class ComCreateCaseloadServiceTest {
   }
 
   @Test
-  fun `com cases which are need to be review not returned`() {
-    // Given
-    val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
-    )
-    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-      listOf(
-        prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = twoDaysFromNow, bookingId = "1"),
-      ),
-    )
-
-    val comCase = createLicenceComCase(
-      crn = "X12348",
-      nomisId = "AB1234E",
-      kind = LicenceKind.HARD_STOP,
-      typeCode = LicenceType.AP_PSS,
-      licenceStatus = LicenceStatus.ACTIVE,
-      comUsername = "johndoe",
-      licenceStartDate = twoDaysFromNow,
-      reviewDate = null,
-    )
-
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(listOf(comCase))
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow)))
-    whenever(licenceService.isReviewNeeded(comCase)).thenReturn(true)
-
-    // When
-    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
-
-    // Then
-    assertThat(caseload).isEmpty()
-    verify(licenceService, times(1)).isReviewNeeded(comCase)
-  }
-
-  @Test
   fun `it sets LicenceCreationType to LICENCE_CHANGES_NOT_APPROVED_IN_TIME if an edit times out`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
@@ -1176,7 +1137,6 @@ class ComCreateCaseloadServiceTest {
     confirmedReleaseDate: LocalDate? = null,
     licenceStartDate: LocalDate? = null,
     versionOfId: Long? = null,
-    reviewDate: LocalDateTime? = LocalDateTime.now(),
   ): LicenceComCase = LicenceComCase(
     crn = crn,
     prisonNumber = nomisId,
@@ -1196,7 +1156,7 @@ class ComCreateCaseloadServiceTest {
     homeDetentionCurfewActualDate = LocalDate.now(),
     updatedByFirstName = "firstName",
     updatedByLastName = "lastName",
-    reviewDate = reviewDate,
+    reviewDate = LocalDateTime.now(),
     approvedByName = "approver name",
     approvedDate = LocalDateTime.now(),
   )

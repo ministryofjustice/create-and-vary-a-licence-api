@@ -43,7 +43,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
@@ -183,25 +182,16 @@ class LicenceService(
   }
 
   fun isReviewNeeded(licence: Licence) = when (licence) {
-    is HardStopLicence -> isActiveAndUnreviewed(licence.statusCode, licence.reviewDate)
-    is TimeServedLicence -> isActiveAndUnreviewed(licence.statusCode, licence.reviewDate)
+    is HardStopLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
+    is TimeServedLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
     else -> false
   }
 
   fun isReviewNeeded(licence: EntityLicence) = when (licence) {
-    is HardStopLicence -> isActiveAndUnreviewed(licence.statusCode, licence.reviewDate)
-    is TimeServedLicence -> isActiveAndUnreviewed(licence.statusCode, licence.reviewDate)
+    is HardStopLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
+    is TimeServedLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
     else -> false
   }
-
-  fun isReviewNeeded(licenceComCase: LicenceComCase): Boolean = when (licenceComCase.kind) {
-    LicenceKind.HARD_STOP,
-    LicenceKind.TIME_SERVED,
-    -> isActiveAndUnreviewed(licenceComCase.licenceStatus, licenceComCase.reviewDate)
-    else -> false
-  }
-
-  private fun isActiveAndUnreviewed(status: LicenceStatus?, reviewDate: LocalDateTime?) = status == ACTIVE && reviewDate == null
 
   @Transactional
   fun updateLicenceStatus(licenceId: Long, request: StatusUpdateRequest) {
@@ -1138,13 +1128,6 @@ class LicenceService(
       teamCodes.contains(offenderManager.team.code)
     }
     return LicencePermissionsResponse(viewAccess)
-  }
-
-  fun isVariation(kind: LicenceKind): Boolean = when (kind) {
-    VARIATION,
-    HDC_VARIATION,
-    -> true
-    else -> false
   }
 
   private fun EntityLicence.toSummary(): LicenceSummary {
