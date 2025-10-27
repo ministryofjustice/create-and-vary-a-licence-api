@@ -250,6 +250,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
   fun `Successfully retrieve staff vary caseload`() {
     deliusMockServer.stubGetStaffDetailsByUsername()
     deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
     val caseload = webTestClient.get()
       .uri(GET_STAFF_VARY_CASELOAD)

@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
@@ -26,8 +27,9 @@ import java.time.LocalDateTime
 class ComVaryCaseloadServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceService = mock<LicenceService>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
-  private val service = ComVaryCaseloadService(deliusApiClient, licenceService)
+  private val service = ComVaryCaseloadService(deliusApiClient, licenceService, releaseDateService)
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
   private val tenDaysFromNow = LocalDate.now().plusDays(10)

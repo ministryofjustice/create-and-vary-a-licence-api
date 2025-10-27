@@ -579,6 +579,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     // Given
     val uri = "/licence/id/1/create-variation"
     val roles = listOf("ROLE_CVL_ADMIN")
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
     // When
     val result = postRequest(uri, roles)
