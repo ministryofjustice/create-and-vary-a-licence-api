@@ -2,17 +2,16 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.Clock
-import java.time.LocalDate
 
 @Service
 class ExistingCasesCaseloadService(
@@ -22,62 +21,51 @@ class ExistingCasesCaseloadService(
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
 ) {
 
-  fun filterAndFormatExistingCases(licenceCaCases: List<LicenceCaCase>): List<CaCase> {
-    val preReleaseLicenceCases = licenceCaCases.filter { it.licenceStatus != ACTIVE }
-    if (preReleaseLicenceCases.isEmpty()) {
+  fun filterAndFormatExistingCases(licences: List<LicenceSummary>): List<CaCase> {
+    val preReleaseLicences = licences.filter { it.licenceStatus != ACTIVE }
+    if (preReleaseLicences.isEmpty()) {
       return emptyList()
     }
 
-    val licenceNomisIds = preReleaseLicenceCases.map { it.prisonNumber }
+    val licenceNomisIds = preReleaseLicences.map { it.nomisId }
     val prisonersWithLicences = caseloadService.getPrisonersByNumber(licenceNomisIds)
-    val nomisEnrichedLicences = enrichWithNomisData(preReleaseLicenceCases, prisonersWithLicences)
+    val nomisEnrichedLicences = enrichWithNomisData(preReleaseLicences, prisonersWithLicences)
     return filterExistingLicencesForEligibility(nomisEnrichedLicences)
   }
 
   private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> = licences.filter { l -> l.nomisLegalStatus != "DEAD" }
 
   private fun enrichWithNomisData(
-    licenceCaCases: List<LicenceCaCase>,
+    licences: List<LicenceSummary>,
     nomisRecords: List<PrisonerSearchPrisoner>,
   ): List<CaCase> {
     return nomisRecords.map { nomisRecord ->
-      val licencesForOffender = licenceCaCases.filter { l -> l.prisonNumber == nomisRecord.prisonerNumber }
+      val licencesForOffender = licences.filter { l -> l.nomisId == nomisRecord.prisonerNumber }
       if (licencesForOffender.isEmpty()) return@map null
-      val licenceCase = LatestLicenceFinder.findLatestLicenceCases(licencesForOffender)
-      val releaseDate = licenceCase?.licenceStartDate
-      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceCase?.licenceStartDate)
-
-      val probationPractitioner = ProbationPractitioner(
-        staffUsername = licenceCase?.comUsername,
-      )
-
+      val licence = LatestLicenceFinder.findLatestLicenceSummary(licencesForOffender)
+      val releaseDate = licence?.licenceStartDate
       CaCase(
-        kind = licenceCase?.kind,
-        licenceId = licenceCase?.licenceId,
-        licenceVersionOf = licenceCase?.versionOfId,
-        name = licenceCase?.fullName ?: "",
-        prisonerNumber = licenceCase?.prisonNumber!!,
+        kind = licence?.kind,
+        licenceId = licence?.licenceId,
+        licenceVersionOf = licence?.versionOf,
+        name = licence.let { "${it?.forename} ${it?.surname}" },
+        prisonerNumber = licence?.nomisId!!,
         releaseDate = releaseDate,
-        releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(licenceCase),
-        licenceStatus = licenceCase.licenceStatus,
+        releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
+        licenceStatus = licence.licenceStatus,
         nomisLegalStatus = nomisRecord.legalStatus,
-        lastWorkedOnBy = licenceCase.updatedByFullName,
-        isInHardStopPeriod = isInHardStopPeriod,
-        tabType = createTabType(licenceCase, releaseDate),
-        probationPractitioner = probationPractitioner,
-        prisonCode = licenceCase.prisonCode,
-        prisonDescription = licenceCase.prisonDescription,
+        lastWorkedOnBy = licence.updatedByFullName,
+        isInHardStopPeriod = licence.isInHardStopPeriod,
+        tabType = Tabs.determineCaViewCasesTab(
+          releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.toSentenceDateHolder()),
+          releaseDate,
+          licence,
+          clock,
+        ),
+        probationPractitioner = ProbationPractitioner(staffUsername = licence.comUsername),
+        prisonCode = licence.prisonCode,
+        prisonDescription = licence.prisonDescription,
       )
     }.filterNotNull()
   }
-
-  private fun createTabType(
-    licenceCaCase: LicenceCaCase,
-    releaseDate: LocalDate?,
-  ): CaViewCasesTab = Tabs.determineCaViewCasesTab(
-    releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licenceCaCase),
-    releaseDate,
-    licenceCaCase,
-    clock,
-  )
 }

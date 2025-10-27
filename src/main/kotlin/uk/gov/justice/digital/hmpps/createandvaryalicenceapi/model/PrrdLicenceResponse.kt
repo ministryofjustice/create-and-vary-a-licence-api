@@ -135,7 +135,7 @@ data class PrrdLicenceResponse(
     requiredMode = Schema.RequiredMode.AUTO,
   )
   @field:JsonFormat(pattern = "dd/MM/yyyy")
-  override val postRecallReleaseDate: LocalDate,
+  override val postRecallReleaseDate: LocalDate?,
 
   @field:Schema(description = "The nDELIUS user name for the supervising probation officer", example = "X32122")
   override val comUsername: String? = null,

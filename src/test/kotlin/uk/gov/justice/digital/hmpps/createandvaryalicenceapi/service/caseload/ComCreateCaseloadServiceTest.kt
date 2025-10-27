@@ -13,14 +13,14 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -40,7 +40,7 @@ import java.time.Month
 class ComCreateCaseloadServiceTest {
   private val caseloadService = mock<CaseloadService>()
   private val deliusApiClient = mock<DeliusApiClient>()
-  private val licenceCaseRepository = mock<LicenceCaseRepository>()
+  private val licenceService = mock<LicenceService>()
   private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
@@ -49,7 +49,7 @@ class ComCreateCaseloadServiceTest {
   private val service = ComCreateCaseloadService(
     caseloadService,
     deliusApiClient,
-    licenceCaseRepository,
+    licenceService,
     hdcService,
     releaseDateService,
     cvlRecordService,
@@ -64,7 +64,7 @@ class ComCreateCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(deliusApiClient, licenceCaseRepository, hdcService, eligibilityService)
+    reset(deliusApiClient, licenceService, hdcService, eligibilityService)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
   }
 
@@ -127,7 +127,7 @@ class ComCreateCaseloadServiceTest {
     assertThat(casesAndLicences).hasSize(1)
     assertThat(casesAndLicences["X12348"]).hasSize(1)
     assertThat(casesAndLicences["X12348"]!!.first().licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
-    verify(licenceCaseRepository).findLicenceCasesForCom(any(), any())
+    verify(licenceService).findLicencesForCrnsAndStatuses(any(), any())
   }
 
   @Test
@@ -414,23 +414,25 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.SUBMITTED,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = LocalDate.now().minusDays(2),
         ),
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12349",
           nomisId = "AB1234F",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.SUBMITTED,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
         ),
@@ -564,14 +566,15 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12352",
           nomisId = "AB1234I",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.SUBMITTED,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = elevenDaysFromNow,
         ),
@@ -836,23 +839,25 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.APPROVED,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
         ),
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.IN_PROGRESS,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
         ),
@@ -886,23 +891,25 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.TIMED_OUT,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
         ),
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.IN_PROGRESS,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
         ),
@@ -937,14 +944,15 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.TIMED_OUT,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
         ),
@@ -986,7 +994,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       emptyList(),
     )
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow)))
@@ -1020,14 +1028,15 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.SUBMITTED,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
         ),
@@ -1062,23 +1071,25 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.APPROVED,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
         ),
-        createLicenceComCase(
+        createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.TIMED_OUT,
+          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
           versionOfId = 1,
@@ -1126,39 +1137,48 @@ class ComCreateCaseloadServiceTest {
     }
   }
 
-  private fun createLicenceComCase(
+  private fun createLicenceSummary(
     crn: String,
     nomisId: String,
-    typeCode: LicenceType,
+    licenceType: LicenceType,
     licenceStatus: LicenceStatus,
     kind: LicenceKind = LicenceKind.CRD,
+    licenceExpiryDate: LocalDate? = null,
     comUsername: String? = null,
     conditionalReleaseDate: LocalDate? = null,
     confirmedReleaseDate: LocalDate? = null,
     licenceStartDate: LocalDate? = null,
+    isReviewNeeded: Boolean = false,
     versionOfId: Long? = null,
-  ): LicenceComCase = LicenceComCase(
+  ): LicenceSummary = LicenceSummary(
     crn = crn,
-    prisonNumber = nomisId,
+    nomisId = nomisId,
     kind = kind,
     licenceId = 1,
-    typeCode = typeCode,
+    licenceType = licenceType,
     licenceStatus = licenceStatus,
+    licenceExpiryDate = licenceExpiryDate,
     comUsername = comUsername,
+    isReviewNeeded = isReviewNeeded,
+
+    isInHardStopPeriod = false,
+    isDueToBeReleasedInTheNextTwoWorkingDays = false,
     conditionalReleaseDate = conditionalReleaseDate,
     actualReleaseDate = confirmedReleaseDate,
     licenceStartDate = licenceStartDate,
     dateCreated = LocalDateTime.now(),
+    updatedByFullName = "X Y",
+    bookingId = null,
+    dateOfBirth = null,
     forename = null,
     surname = null,
-    versionOfId = versionOfId,
-    postRecallReleaseDate = LocalDate.now(),
-    homeDetentionCurfewActualDate = LocalDate.now(),
-    updatedByFirstName = "firstName",
-    updatedByLastName = "lastName",
-    reviewDate = LocalDateTime.now(),
-    approvedByName = "approver name",
-    approvedDate = LocalDateTime.now(),
+    prisonCode = null,
+    prisonDescription = null,
+    probationLauCode = null,
+    probationPduCode = null,
+    probationAreaCode = null,
+    probationTeamCode = null,
+    versionOf = versionOfId,
   )
 
   private fun aManagedOffenderCrn(nomisId: String? = "ABC123"): ManagedOffenderCrn = ManagedOffenderCrn(
