@@ -62,7 +62,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
@@ -1369,7 +1368,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(anEligibilityAssessment())
+    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(TestData.anEligibilityAssessment())
 
     service.submitLicence(1L, emptyList())
 
@@ -3750,190 +3749,71 @@ class LicenceServiceTest {
   }
 
   @Nested
-  inner class `Is a review needed` {
+  inner class `isReviewNeeded` {
 
     val hardstopLicence = createHardStopLicence()
     val timeServedLicence = createTimeServedLicence()
 
     @Test
     fun `HardStopLicence with ACTIVE and null reviewDate returns true`() {
-      // Given
-      val licence = hardstopLicence.copy(statusCode = LicenceStatus.ACTIVE)
-
-      // When
-      val result = service.isReviewNeeded(licence)
-
-      // Then
-      assertThat(result).isTrue()
+      val licence = hardstopLicence.copy(
+        statusCode = LicenceStatus.ACTIVE,
+      )
+      assertThat(service.isReviewNeeded(licence)).isTrue()
     }
 
     @Test
     fun `TimeServedLicence with ACTIVE and null reviewDate returns true`() {
-      // Given
       val licence = timeServedLicence
-
-      // When
-      val result = service.isReviewNeeded(licence)
-
-      // Then
-      assertThat(result).isTrue()
+      assertThat(service.isReviewNeeded(licence)).isTrue()
     }
 
     @Test
     fun `HardStopLicence with ACTIVE and non-null reviewDate returns false`() {
-      // Given
       val licence = hardstopLicence.copy(
         statusCode = LicenceStatus.ACTIVE,
         reviewDate = LocalDateTime.now(),
       )
-
-      // When
-      val result = service.isReviewNeeded(licence)
-
-      // Then
-      assertThat(result).isFalse()
+      assertThat(service.isReviewNeeded(licence)).isFalse()
     }
 
     @Test
     fun `TimeServedLicence with IN_PROGRESS and null reviewDate returns false`() {
-      // Given
       val licence = timeServedLicence.copy(
         statusCode = LicenceStatus.IN_PROGRESS,
         reviewDate = null,
       )
-
-      // When
-      val result = service.isReviewNeeded(licence)
-
-      // Then
-      assertThat(result).isFalse()
+      assertThat(service.isReviewNeeded(licence)).isFalse()
     }
 
     @Test
     fun `EntityHardStopLicence with ACTIVE and null reviewDate returns true`() {
-      // Given
       val licence = anHardStopLicenceEntity.copy(
         statusCode = LicenceStatus.ACTIVE,
         reviewDate = null,
       )
-
-      // When
-      val result = service.isReviewNeeded(licence)
-
-      // Then
-      assertThat(result).isTrue()
+      assertThat(service.isReviewNeeded(licence)).isTrue()
     }
 
     @Test
     fun `EntityTimeServedLicence with ACTIVE and non-null reviewDate returns false`() {
-      // Given
       val licence = anHardStopLicenceEntity.copy(
         statusCode = LicenceStatus.ACTIVE,
         reviewDate = LocalDateTime.now(),
       )
-
-      // When
-      val result = service.isReviewNeeded(licence)
-
-      // Then
-      assertThat(result).isFalse()
+      assertThat(service.isReviewNeeded(licence)).isFalse()
     }
 
     @Test
     fun `CRD Licence type returns false`() {
-      // Given
       val licence = createCrdLicence()
-
-      // When
-      val result = service.isReviewNeeded(licence)
-
-      // Then
-      assertThat(result).isFalse()
+      assertThat(service.isReviewNeeded(licence)).isFalse()
     }
 
     @Test
     fun `CRD EntityLicence type returns false`() {
-      // Given
       val licence = aLicenceEntity
-
-      // When
-      val result = service.isReviewNeeded(licence)
-
-      // Then
-      assertThat(result).isFalse()
-    }
-
-    @Test
-    fun `Hard stop LicenceComCase with ACTIVE and null reviewDate returns true`() {
-      // Given
-      val licenceComCase = createMockLicenceComCase() // use defaults
-
-      // When
-      val result = service.isReviewNeeded(licenceComCase)
-
-      // Then
-      assertThat(result).isTrue()
-    }
-
-    @Test
-    fun `Time served LicenceComCase with ACTIVE and null reviewDate returns true`() {
-      // Given
-      val licenceComCase = createMockLicenceComCase(kind = LicenceKind.TIME_SERVED)
-
-      // When
-      val result = service.isReviewNeeded(licenceComCase)
-
-      // Then
-      assertThat(result).isTrue()
-    }
-
-    @Test
-    fun `Hard stop LicenceComCase with ACTIVE and non-null reviewDate returns false`() {
-      // Given
-      val licenceComCase = createMockLicenceComCase(reviewDate = LocalDateTime.now())
-
-      // When
-      val result = service.isReviewNeeded(licenceComCase)
-
-      // Then
-      assertThat(result).isFalse()
-    }
-
-    @Test
-    fun `Time served LicenceComCase with IN_PROGRESS and null reviewDate returns false`() {
-      // Given
-      val licenceComCase = createMockLicenceComCase(
-        kind = LicenceKind.TIME_SERVED,
-        status = LicenceStatus.IN_PROGRESS,
-      )
-
-      // When
-      val result = service.isReviewNeeded(licenceComCase)
-
-      // Then
-      assertThat(result).isFalse()
-    }
-
-    @Test
-    fun `CRD LicenceComCase returns false`() {
-      // Given
-      val licenceComCase = createMockLicenceComCase(kind = LicenceKind.CRD)
-
-      // When
-      val result = service.isReviewNeeded(licenceComCase)
-
-      // Then
-      assertThat(result).isFalse()
-    }
-
-    private fun createMockLicenceComCase(
-      kind: LicenceKind = LicenceKind.HARD_STOP,
-      status: LicenceStatus = LicenceStatus.ACTIVE,
-      reviewDate: LocalDateTime? = null,
-    ): LicenceComCase = mock {
-      whenever(it.kind).thenReturn(kind)
-      whenever(it.licenceStatus).thenReturn(status)
-      whenever(it.reviewDate).thenReturn(reviewDate)
+      assertThat(service.isReviewNeeded(licence)).isFalse()
     }
   }
 
@@ -4231,5 +4111,5 @@ class LicenceServiceTest {
     ),
   )
 
-  val aPrisonerSearchPrisoner = prisonerSearchResult()
+  val aPrisonerSearchPrisoner = TestData.prisonerSearchResult()
 }

@@ -10,7 +10,7 @@ interface LicenceCase : SentenceDateHolder {
   val licenceId: Long
   val versionOfId: Long?
   val licenceStatus: LicenceStatus
-  val prisonNumber: String?
+  val prisonNumber: String
   val surname: String?
   val forename: String?
   val updatedByFirstName: String?

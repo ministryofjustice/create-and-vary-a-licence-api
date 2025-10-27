@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -38,7 +37,6 @@ class ComCreateCaseloadService(
   private val hdcService: HdcService,
   private val releaseDateService: ReleaseDateService,
   private val cvlRecordService: CvlRecordService,
-  private val licenceService: LicenceService,
 ) {
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
@@ -298,7 +296,7 @@ class ComCreateCaseloadService(
       licenceStatus = licenceCase.licenceStatus,
       kind = licenceCase.kind,
       crn = licenceCase.crn,
-      nomisId = licenceCase.prisonNumber!!,
+      nomisId = licenceCase.prisonNumber,
       name = licenceCase.fullName,
       licenceType = licenceCase.typeCode,
       comUsername = licenceCase.comUsername,
@@ -312,7 +310,7 @@ class ComCreateCaseloadService(
       licenceStartDate = licenceCase.licenceStartDate,
       releaseDate = licenceCase.licenceStartDate,
       isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-      isReviewNeeded = licenceService.isReviewNeeded(licenceCase),
+      isReviewNeeded = licenceCase.isReviewNeeded(),
     )
   }
 }
