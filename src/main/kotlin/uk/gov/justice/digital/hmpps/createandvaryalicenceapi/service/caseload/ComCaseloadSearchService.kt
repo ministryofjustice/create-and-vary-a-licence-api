@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.getVersionOf
@@ -23,7 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient.Companion.CASELOAD_PAGE_SIZE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
@@ -42,7 +40,6 @@ class ComCaseloadSearchService(
   private val clock: Clock,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
-  private val licenceService: LicenceService,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = deliusApiClient.getTeamManagedOffenders(
@@ -205,7 +202,7 @@ class ComCaseloadSearchService(
     isInHardStopPeriod = isInHardStopPeriod,
     isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
     releaseDateLabel = releaseDateLabelFactory.fromLicence(licence),
-    isReviewNeeded = licenceService.isReviewNeeded(licence),
+    isReviewNeeded = licence.isReviewNeeded(),
   )
 
   private val versionComparator = Comparator<Licence> { l1, l2 ->

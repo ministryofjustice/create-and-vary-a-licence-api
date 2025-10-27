@@ -71,7 +71,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
@@ -3727,75 +3726,6 @@ class LicenceServiceTest {
       assertThat(newLicenceVersion.licenceId).isEqualTo(inProgressLicenceVersion.id)
 
       verify(licenceRepository, never()).save(any())
-    }
-  }
-
-  @Nested
-  inner class `isReviewNeeded` {
-
-    val hardstopLicence = createHardStopLicence()
-    val timeServedLicence = createTimeServedLicence()
-
-    @Test
-    fun `HardStopLicence with ACTIVE and null reviewDate returns true`() {
-      val licence = hardstopLicence.copy(
-        statusCode = LicenceStatus.ACTIVE,
-      )
-      assertThat(service.isReviewNeeded(licence)).isTrue()
-    }
-
-    @Test
-    fun `TimeServedLicence with ACTIVE and null reviewDate returns true`() {
-      val licence = timeServedLicence
-      assertThat(service.isReviewNeeded(licence)).isTrue()
-    }
-
-    @Test
-    fun `HardStopLicence with ACTIVE and non-null reviewDate returns false`() {
-      val licence = hardstopLicence.copy(
-        statusCode = LicenceStatus.ACTIVE,
-        reviewDate = LocalDateTime.now(),
-      )
-      assertThat(service.isReviewNeeded(licence)).isFalse()
-    }
-
-    @Test
-    fun `TimeServedLicence with IN_PROGRESS and null reviewDate returns false`() {
-      val licence = timeServedLicence.copy(
-        statusCode = LicenceStatus.IN_PROGRESS,
-        reviewDate = null,
-      )
-      assertThat(service.isReviewNeeded(licence)).isFalse()
-    }
-
-    @Test
-    fun `EntityHardStopLicence with ACTIVE and null reviewDate returns true`() {
-      val licence = anHardStopLicenceEntity.copy(
-        statusCode = LicenceStatus.ACTIVE,
-        reviewDate = null,
-      )
-      assertThat(service.isReviewNeeded(licence)).isTrue()
-    }
-
-    @Test
-    fun `EntityTimeServedLicence with ACTIVE and non-null reviewDate returns false`() {
-      val licence = anHardStopLicenceEntity.copy(
-        statusCode = LicenceStatus.ACTIVE,
-        reviewDate = LocalDateTime.now(),
-      )
-      assertThat(service.isReviewNeeded(licence)).isFalse()
-    }
-
-    @Test
-    fun `CRD Licence type returns false`() {
-      val licence = createCrdLicence()
-      assertThat(service.isReviewNeeded(licence)).isFalse()
-    }
-
-    @Test
-    fun `CRD EntityLicence type returns false`() {
-      val licence = aLicenceEntity
-      assertThat(service.isReviewNeeded(licence)).isFalse()
     }
   }
 

@@ -34,13 +34,11 @@ import java.util.Optional
 class PrisonApproverServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val licenceService = mock<LicenceService>()
 
   private val service =
     PrisonApproverService(
       licenceRepository,
       releaseDateService,
-      licenceService,
     )
 
   @BeforeEach

@@ -839,7 +839,6 @@ fun Licence.getSubmittedByFullName(): String? {
 
 fun transformToApprovalLicenceSummary(
   licence: EntityLicence,
-  isReviewNeeded: Boolean,
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
@@ -881,7 +880,7 @@ fun transformToApprovalLicenceSummary(
   approvedByName = licence.approvedByName,
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
-  isReviewNeeded = isReviewNeeded,
+  isReviewNeeded = licence.isReviewNeeded(),
   updatedByFullName = licence.getUpdatedByFullName(),
   submittedByFullName = licence.getSubmittedByFullName(),
   hardStopDate = hardStopDate,

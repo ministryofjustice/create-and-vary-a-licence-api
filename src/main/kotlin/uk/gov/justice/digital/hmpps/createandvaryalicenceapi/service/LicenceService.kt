@@ -181,12 +181,6 @@ class LicenceService(
     else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
   }
 
-  fun isReviewNeeded(licence: Licence) = when (licence) {
-    is HardStopLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
-    is TimeServedLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
-    else -> false
-  }
-
   fun isReviewNeeded(licence: EntityLicence) = when (licence) {
     is HardStopLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
     is TimeServedLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
@@ -1137,7 +1131,7 @@ class LicenceService(
     return transformToLicenceSummary(
       this,
       hardStopKind = hardStopKind,
-      isReviewNeeded = isReviewNeeded(this),
+      isReviewNeeded = this.isReviewNeeded(),
       hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),

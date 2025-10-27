@@ -4,6 +4,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_CONFIRMED_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_CRD_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_HDC_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_PRRD_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import java.time.LocalDate
 

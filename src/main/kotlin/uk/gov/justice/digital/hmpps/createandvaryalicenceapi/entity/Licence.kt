@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -373,6 +374,12 @@ abstract class Licence(
   }
 
   fun isHdcLicence(): Boolean = kind == LicenceKind.HDC || kind == LicenceKind.HDC_VARIATION
+
+  fun isReviewNeeded() = when (this) {
+    is HardStopLicence -> (statusCode == ACTIVE && reviewDate == null)
+    is TimeServedLicence -> (statusCode == ACTIVE && reviewDate == null)
+    else -> false
+  }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
