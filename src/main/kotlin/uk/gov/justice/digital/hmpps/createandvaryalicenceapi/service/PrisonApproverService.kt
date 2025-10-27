@@ -25,7 +25,6 @@ private const val TWO_WEEKS = 14L
 class PrisonApproverService(
   private val licenceRepository: LicenceRepository,
   private val releaseDateService: ReleaseDateService,
-  private val licenceService: LicenceService,
 ) {
   @Transactional
   fun getLicencesForApproval(prisons: List<String>?): List<LicenceSummaryApproverView> {
@@ -79,7 +78,6 @@ class PrisonApproverService(
 
   private fun Licence.toApprovalSummaryView(): LicenceSummaryApproverView = transformToApprovalLicenceSummary(
     licence = this,
-    isReviewNeeded = licenceService.isReviewNeeded(this),
     hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),

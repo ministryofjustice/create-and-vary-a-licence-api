@@ -142,7 +142,6 @@ class ComCreateCaseloadService(
       name = name,
       releaseDate = cvlRecord.licenceStartDate,
       kind = licenceKind,
-      hardStopKind = cvlRecord.hardStopKind,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
@@ -263,7 +262,6 @@ class ComCreateCaseloadService(
       releaseDate = licence.releaseDate,
       probationPractitioner = probationPractitioner,
       hardStopDate = licence.hardStopDate,
-      hardStopKind = licence.hardStopKind,
       hardStopWarningDate = licence.hardStopWarningDate,
       kind = licence.kind,
       licenceCreationType = licence.licenceCreationType,

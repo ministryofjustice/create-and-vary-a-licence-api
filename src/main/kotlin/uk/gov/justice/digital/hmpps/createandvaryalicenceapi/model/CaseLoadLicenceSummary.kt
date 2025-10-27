@@ -54,9 +54,6 @@ data class CaseLoadLicenceSummary(
   @field:Schema(description = "The username of the person who last updated this licence", example = "John Doe")
   val updatedByFullName: String? = null,
 
-  @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.HARD_STOP)
-  val hardStopKind: LicenceKind? = null,
-
   @field:Schema(description = "Date which to show the hard stop warning", example = "01/05/2023")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val hardStopWarningDate: LocalDate? = null,
