@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -21,7 +19,7 @@ data class AdditionalConditionUploadSummary(
   @field:Positive
   open val id: Long? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REFRESH])
+  @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)
   var additionalCondition: AdditionalCondition,
 
