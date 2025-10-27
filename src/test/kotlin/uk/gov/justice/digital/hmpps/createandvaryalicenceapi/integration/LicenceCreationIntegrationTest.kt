@@ -60,6 +60,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     val nomisPostRecallReleaseDate = LocalDate.now().plusDays(1)
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = nomisPostRecallReleaseDate)
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager(regionCode = "REGION1")

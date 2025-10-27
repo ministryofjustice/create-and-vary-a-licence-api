@@ -3,12 +3,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.LocalDate
 
 @Service
 class EligibilityService(
+  private val prisonApiClient: PrisonApiClient,
   private val clock: Clock,
   @param:Value("\${recall.enabled}") private val recallEnabled: Boolean = false,
   @param:Value("\${recall.prisons}") private val recallEnabledPrisons: List<String> = emptyList(),
@@ -24,13 +27,13 @@ class EligibilityService(
     prisoners: List<PrisonerSearchPrisoner>,
     nomisIdsToAreaCodes: Map<String, String>,
   ): Map<String, EligibilityAssessment> {
-    return prisoners.map { prisoner ->
+    val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
       val permitRecalls =
         (recallEnabled || (recallEnabledPrisons.contains(prisoner.prisonId) && recallEnabledRegions.contains(nomisIdsToAreaCodes[prisoner.prisonerNumber])))
 
       val genericIneligibilityReasons = getGenericIneligibilityReasons(prisoner)
       val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner)
-      val prrdIneligibilityReasons = if (permitRecalls) getPrrdIneligibilityReasons(prisoner) else emptyList()
+      val prrdIneligibilityReasons = if (permitRecalls) getPrrdIneligibilityReasons(prisoner) else mutableListOf()
 
       val isEligible = genericIneligibilityReasons.isEmpty() && (crdIneligibilityReasons.isEmpty() || (permitRecalls && prrdIneligibilityReasons.isEmpty()))
 
@@ -41,6 +44,10 @@ class EligibilityService(
         isEligible,
       )
     }.toMap()
+
+    val eligibleCases = overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
+
+    return eligibleCases
   }
 
   fun getGenericIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
@@ -70,7 +77,6 @@ class EligibilityService(
     val eligibilityCriteria = listOf(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
-      hasPrrdBeforeSled(prisoner) to "post recall release date is not before SLED",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
@@ -126,15 +132,6 @@ class EligibilityService(
 
   private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
 
-  private fun hasPrrdBeforeSled(prisoner: PrisonerSearchPrisoner): Boolean {
-    if (prisoner.postRecallReleaseDate == null) return true
-
-    val isBeforeLed = prisoner.licenceExpiryDate == null || prisoner.postRecallReleaseDate.isBefore(prisoner.licenceExpiryDate)
-    val isBeforeSed = prisoner.sentenceExpiryDate == null || prisoner.postRecallReleaseDate.isBefore(prisoner.sentenceExpiryDate)
-
-    return isBeforeLed && isBeforeSed
-  }
-
   // Shared eligibility rules
   private fun isPersonParoleEligible(prisoner: PrisonerSearchPrisoner): Boolean {
     if (prisoner.paroleEligibilityDate != null) {
@@ -163,6 +160,59 @@ class EligibilityService(
   private fun dateIsTodayOrFuture(date: LocalDate?): Boolean {
     if (date == null) return false
     return date.isEqual(LocalDate.now(clock)) || date.isAfter(LocalDate.now(clock))
+  }
+
+  // Miscellaneous functions
+  private fun overrideNonFixedTermRecalls(prisoners: List<PrisonerSearchPrisoner>, nomisIdsToEligibilityAssessments: Map<String, EligibilityAssessment>): Map<String, EligibilityAssessment> {
+    val nonRecallCases = mutableMapOf<String, EligibilityAssessment>()
+    val recallCases = mutableMapOf<String, EligibilityAssessment>()
+
+    nomisIdsToEligibilityAssessments.forEach { (nomisId, eligibilityAssessment) ->
+      if (eligibilityAssessment.eligibleKind == LicenceKind.PRRD) {
+        recallCases[nomisId] = eligibilityAssessment
+      } else {
+        nonRecallCases[nomisId] = eligibilityAssessment
+      }
+    }
+
+    val overriddenRecallCases = overrideEligiblityForRecalls(prisoners, recallCases)
+
+    return nonRecallCases + overriddenRecallCases
+  }
+
+  private fun overrideEligiblityForRecalls(
+    prisoners: List<PrisonerSearchPrisoner>,
+    recallCases: Map<String, EligibilityAssessment>,
+  ): Map<String, EligibilityAssessment> {
+    val nomisIdsToBookingIds = recallCases.keys.associate { nomisId ->
+      val prisoner = prisoners.first { it.prisonerNumber == nomisId }
+      return@associate nomisId to prisoner.bookingId!!.toLong()
+    }
+
+    val bookingsSentenceAndRecallTypes = prisonApiClient.getSentenceAndRecallTypes(nomisIdsToBookingIds.values.toList())
+    return recallCases.map { (nomisId, eligibilityAssessment) ->
+      val bookingId = nomisIdsToBookingIds[nomisId]!!
+      val case = bookingsSentenceAndRecallTypes.first { it.bookingId == bookingId }
+      when {
+        case.sentenceTypeRecallTypes.any { it.recallType.isStandardRecall } -> {
+          nomisId to EligibilityAssessment(
+            genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
+            crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
+            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on a standard recall",
+            isEligible = false,
+          )
+        }
+        case.sentenceTypeRecallTypes.any { it.recallType.isFixedTermRecall } -> nomisId to eligibilityAssessment
+        else -> {
+          nomisId to EligibilityAssessment(
+            genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
+            crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
+            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on an unidentified non-fixed term recall",
+            isEligible = false,
+          )
+        }
+      }
+    }.toMap()
   }
 
   companion object {
