@@ -4,6 +4,7 @@ import java.time.LocalDate
 
 interface SentenceDateHolder {
   val licenceStartDate: LocalDate?
+  val sentenceStartDate: LocalDate?
   val conditionalReleaseDate: LocalDate?
   val actualReleaseDate: LocalDate?
   val homeDetentionCurfewActualDate: LocalDate?

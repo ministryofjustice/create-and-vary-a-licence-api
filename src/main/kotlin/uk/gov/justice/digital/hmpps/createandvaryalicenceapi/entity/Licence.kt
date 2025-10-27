@@ -67,7 +67,7 @@ abstract class Licence(
   var dateOfBirth: LocalDate? = null,
   override var conditionalReleaseDate: LocalDate? = null,
   override var actualReleaseDate: LocalDate? = null,
-  var sentenceStartDate: LocalDate? = null,
+  override var sentenceStartDate: LocalDate? = null,
   var sentenceEndDate: LocalDate? = null,
   override var licenceStartDate: LocalDate? = null,
   var licenceExpiryDate: LocalDate? = null,
@@ -373,13 +373,6 @@ abstract class Licence(
   }
 
   fun isHdcLicence(): Boolean = kind == LicenceKind.HDC || kind == LicenceKind.HDC_VARIATION
-
-  fun toHardStopData(): HardStopData = DefaultHardStopData(
-    licenceStartDate = this.licenceStartDate,
-    sentenceStartDate = this.sentenceStartDate,
-    actualReleaseDate = this.actualReleaseDate,
-    conditionalReleaseDate = this.conditionalReleaseDate,
-  )
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

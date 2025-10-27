@@ -2,8 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.DefaultHardStopData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -195,12 +193,4 @@ data class LicenceSummary(
   )
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val homeDetentionCurfewActualDate: LocalDate? = null,
-) {
-
-  fun toHardStopData(): HardStopData = DefaultHardStopData(
-    licenceStartDate = this.licenceStartDate,
-    sentenceStartDate = this.sentenceStartDate,
-    actualReleaseDate = this.actualReleaseDate,
-    conditionalReleaseDate = this.conditionalReleaseDate,
-  )
-}
+)

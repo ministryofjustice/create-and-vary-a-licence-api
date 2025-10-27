@@ -1131,7 +1131,7 @@ class LicenceService(
   }
 
   private fun EntityLicence.toSummary(): LicenceSummary {
-    val hardStopKind = releaseDateService.getHardStopKind(toHardStopData())
+    val hardStopKind = releaseDateService.getHardStopKind(this)
 
     return transformToLicenceSummary(
       this,

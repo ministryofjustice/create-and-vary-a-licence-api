@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -149,11 +148,11 @@ class ReleaseDateService(
     }
   }
 
-  fun getHardStopKind(data: HardStopData, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
-    data.licenceStartDate,
-    data.sentenceStartDate,
-    data.actualReleaseDate,
-    data.conditionalReleaseDate,
+  fun getHardStopKind(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
+    sentenceDateHolder.licenceStartDate,
+    sentenceDateHolder.sentenceStartDate,
+    sentenceDateHolder.actualReleaseDate,
+    sentenceDateHolder.conditionalReleaseDate,
     overrideClock,
   )
 
