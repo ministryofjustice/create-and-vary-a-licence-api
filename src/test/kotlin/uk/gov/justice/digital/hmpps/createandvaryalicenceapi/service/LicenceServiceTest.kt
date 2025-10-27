@@ -266,7 +266,6 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -287,7 +286,6 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -304,7 +302,6 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -321,7 +318,6 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -345,7 +341,6 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(LicenceQueryObject())
@@ -400,7 +395,6 @@ class LicenceServiceTest {
         ),
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -423,7 +417,6 @@ class LicenceServiceTest {
         createHardStopLicence().copy(statusCode = LicenceStatus.ACTIVE, reviewDate = null),
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -439,7 +432,6 @@ class LicenceServiceTest {
         createHardStopLicence().copy(reviewDate = LocalDateTime.now()),
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -455,7 +447,6 @@ class LicenceServiceTest {
         createHardStopLicence().copy(reviewDate = null),
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -471,7 +462,6 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -1984,7 +1974,6 @@ class LicenceServiceTest {
       Optional.of(aLicenceEntity),
     )
     whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
@@ -2014,7 +2003,6 @@ class LicenceServiceTest {
         changeHints = emptyList(),
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(anHdcLicenceEntity),
@@ -2058,7 +2046,6 @@ class LicenceServiceTest {
         ),
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
     whenever(licenceRepository.save(any())).thenReturn(
       aLicenceEntity.copy(
@@ -2242,7 +2229,6 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(approvedLicence),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
@@ -2279,7 +2265,6 @@ class LicenceServiceTest {
       .thenReturn(
         listOf(inProgressLicenceVersion),
       )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     service.editLicence(1L)
@@ -2945,7 +2930,6 @@ class LicenceServiceTest {
       ),
     )
     whenever(deliusApiClient.getOffenderManager(aLicenceEntity.crn!!)).thenReturn(offenderManager())
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
     val permissions = service.getLicencePermissions(licenceId = aLicenceEntity.id, teamCodes = listOf("invalid-team"))
@@ -3737,7 +3721,6 @@ class LicenceServiceTest {
         .thenReturn(
           listOf(inProgressLicenceVersion),
         )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
       whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(null)
 
       val newLicenceVersion = service.editLicence(1L)
