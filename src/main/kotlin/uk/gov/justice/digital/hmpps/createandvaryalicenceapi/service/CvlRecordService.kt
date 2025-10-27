@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 
 @Service
 class CvlRecordService(
@@ -22,8 +23,10 @@ class CvlRecordService(
     return prisoners.map { prisoner ->
       val eligibility = nomisIdsToEligibility[prisoner.prisonerNumber]!!
       val licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber]
-      val hardStopKind = licenceStartDate?.let {
-        releaseDateService.getHardStopKind(it, prisoner)
+      val hardStopKind = when {
+        licenceStartDate == null || !releaseDateService.isInHardStopPeriod(licenceStartDate) -> null
+        releaseDateService.isTimeServed(prisoner) -> LicenceKind.TIME_SERVED
+        else -> LicenceKind.HARD_STOP
       }
 
       CvlRecord(
