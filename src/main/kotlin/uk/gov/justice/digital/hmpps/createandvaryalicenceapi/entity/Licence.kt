@@ -374,6 +374,13 @@ abstract class Licence(
 
   fun isHdcLicence(): Boolean = kind == LicenceKind.HDC || kind == LicenceKind.HDC_VARIATION
 
+  fun toHardStopData(): HardStopData = DefaultHardStopData(
+    licenceStartDate = this.licenceStartDate,
+    sentenceStartDate = this.sentenceStartDate,
+    actualReleaseDate = this.actualReleaseDate,
+    conditionalReleaseDate = this.conditionalReleaseDate
+  )
+
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is Licence) return false

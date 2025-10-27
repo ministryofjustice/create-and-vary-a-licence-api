@@ -2,8 +2,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -149,30 +149,16 @@ class ReleaseDateService(
     }
   }
 
-  fun getHardStopKind(
-    licenceStartDate: LocalDate?,
-    nomisRecord: PrisonerSearchPrisoner,
-    overrideClock: Clock? = null,
-  ): LicenceKind? {
-    val conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate
-      ?: nomisRecord.conditionalReleaseDate
-
+  fun getHardStopKind(data: HardStopData, overrideClock: Clock? = null): LicenceKind? {
     return determineHardStopKind(
-      licenceStartDate,
-      nomisRecord.sentenceStartDate,
-      nomisRecord.confirmedReleaseDate,
-      conditionalReleaseDate,
+      data.licenceStartDate,
+      data.sentenceStartDate,
+      data.actualReleaseDate,
+      data.conditionalReleaseDate,
       overrideClock,
     )
   }
 
-  fun getHardStopKind(licence: LicenceSummary, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
-    licence.licenceStartDate,
-    licence.sentenceStartDate,
-    licence.actualReleaseDate,
-    licence.conditionalReleaseDate,
-    overrideClock,
-  )
 
   private fun calculateCrdLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,

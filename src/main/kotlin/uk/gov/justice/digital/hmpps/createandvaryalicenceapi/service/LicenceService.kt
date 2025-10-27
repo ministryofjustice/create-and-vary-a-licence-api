@@ -1131,13 +1131,7 @@ class LicenceService(
   }
 
   private fun EntityLicence.toSummary(): LicenceSummary {
-    val hardStopKind = licenceStartDate?.let { startDate ->
-      val nomisRecord = prisonerSearchApiClient
-        .searchPrisonersByNomisIds(listOf(nomsId!!))
-        .firstOrNull()
-
-      nomisRecord?.let { releaseDateService.getHardStopKind(startDate, it) }
-    }
+    val hardStopKind = releaseDateService.getHardStopKind(toHardStopData())
 
     return transformToLicenceSummary(
       this,

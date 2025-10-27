@@ -14,6 +14,7 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.DefaultHardStopData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -1068,7 +1069,15 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today.minusDays(1),
         conditionalReleaseDateOverrideDate = today.minusDays(1),
       )
-      val result = service.getHardStopKind(today, nomisRecord, thisClock)
+
+      val hardStopData = DefaultHardStopData(
+        licenceStartDate = cutOff,
+        sentenceStartDate = nomisRecord.sentenceStartDate,
+        actualReleaseDate = nomisRecord.confirmedReleaseDate,
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+      )
+
+      val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
 
@@ -1080,7 +1089,13 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = null,
         conditionalReleaseDateOverrideDate = null,
       )
-      val result = service.getHardStopKind(null, nomisRecord)
+      val hardStopData = DefaultHardStopData(
+        licenceStartDate = null,
+        sentenceStartDate = nomisRecord.sentenceStartDate,
+        actualReleaseDate = nomisRecord.confirmedReleaseDate,
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+      )
+      val result = service.getHardStopKind(hardStopData, thisClock)
       assertNull(result)
     }
 
@@ -1092,7 +1107,13 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today,
         conditionalReleaseDateOverrideDate = null,
       )
-      val result = service.getHardStopKind(cutOff, nomisRecord, thisClock)
+      val hardStopData = DefaultHardStopData(
+        licenceStartDate = cutOff,
+        sentenceStartDate = nomisRecord.sentenceStartDate,
+        actualReleaseDate = nomisRecord.confirmedReleaseDate,
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+      )
+      val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.TIME_SERVED, result)
     }
 
@@ -1104,7 +1125,13 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today.minusDays(1),
         conditionalReleaseDateOverrideDate = today,
       )
-      val result = service.getHardStopKind(cutOff, nomisRecord, thisClock)
+      val hardStopData = DefaultHardStopData(
+        licenceStartDate = cutOff,
+        sentenceStartDate = nomisRecord.sentenceStartDate,
+        actualReleaseDate = nomisRecord.confirmedReleaseDate,
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+      )
+      val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.TIME_SERVED, result)
     }
 
@@ -1116,7 +1143,13 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today,
         conditionalReleaseDateOverrideDate = null,
       )
-      val result = service.getHardStopKind(cutOff, nomisRecord, thisClock)
+      val hardStopData = DefaultHardStopData(
+        licenceStartDate = cutOff,
+        sentenceStartDate = nomisRecord.sentenceStartDate,
+        actualReleaseDate = nomisRecord.confirmedReleaseDate,
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+      )
+      val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
 
@@ -1128,7 +1161,13 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today,
         conditionalReleaseDateOverrideDate = null,
       )
-      val result = service.getHardStopKind(cutOff, nomisRecord, thisClock)
+      val hardStopData = DefaultHardStopData(
+        licenceStartDate = cutOff,
+        sentenceStartDate = nomisRecord.sentenceStartDate,
+        actualReleaseDate = nomisRecord.confirmedReleaseDate,
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+      )
+      val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
 
@@ -1140,7 +1179,13 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today.minusDays(1),
         conditionalReleaseDateOverrideDate = today.minusDays(1),
       )
-      val result = service.getHardStopKind(cutOff, nomisRecord, thisClock)
+      val hardStopData = DefaultHardStopData(
+        licenceStartDate = cutOff,
+        sentenceStartDate = nomisRecord.sentenceStartDate,
+        actualReleaseDate = nomisRecord.confirmedReleaseDate,
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+      )
+      val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
 
@@ -1153,7 +1198,13 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today.minusDays(1),
         conditionalReleaseDateOverrideDate = today,
       )
-      val result = service.getHardStopKind(cutOff, nomisRecord, thisClock)
+      val hardStopData = DefaultHardStopData(
+        licenceStartDate = cutOff,
+        sentenceStartDate = nomisRecord.sentenceStartDate,
+        actualReleaseDate = nomisRecord.confirmedReleaseDate,
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+      )
+      val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
   }

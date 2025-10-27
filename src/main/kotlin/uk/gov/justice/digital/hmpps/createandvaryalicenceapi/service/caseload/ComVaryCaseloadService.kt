@@ -92,14 +92,17 @@ class ComVaryCaseloadService(
 
   private fun transformToVaryCaseload(casesToLicences: Map<ManagedOffenderCrn, LicenceSummary>): List<ComCase> {
     val comDetails = getComDetails(casesToLicences)
+
     return casesToLicences.map { (case, licence) ->
+      val hardStopKind = releaseDateService.getHardStopKind(licence.toHardStopData())
+
       ComCase(
         licenceId = licence.licenceId,
         licenceType = licence.licenceType,
         licenceStatus = licence.licenceStatus,
         crnNumber = licence.crn,
         prisonerNumber = licence.nomisId,
-        hardStopKind = releaseDateService.getHardStopKind(licence),
+        hardStopKind = hardStopKind,
         kind = licence.kind,
         name = "${licence.forename} ${licence.surname}".trim().convertToTitleCase(),
         releaseDate = licence.licenceStartDate,

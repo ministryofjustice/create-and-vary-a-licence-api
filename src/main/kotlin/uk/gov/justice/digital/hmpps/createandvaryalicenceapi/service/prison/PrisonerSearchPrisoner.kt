@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.DefaultHardStopData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopData
 import java.time.LocalDate
 
 data class PrisonerSearchPrisoner(
@@ -90,4 +92,11 @@ data class PrisonerSearchPrisoner(
 ) {
 
   fun fullName() = listOfNotNull(firstName, middleNames, lastName).filter { it.isNotBlank() }.joinToString(" ")
+
+  fun toHardStopData(licenceStartDate: LocalDate?): HardStopData = DefaultHardStopData(
+    licenceStartDate = licenceStartDate,
+    sentenceStartDate = this.sentenceStartDate,
+    actualReleaseDate = this.confirmedReleaseDate,
+    conditionalReleaseDate = this.conditionalReleaseDateOverrideDate ?: this.conditionalReleaseDate
+  )
 }
