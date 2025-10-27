@@ -14,6 +14,7 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
   companion object {
     private const val HDC_BATCH_SIZE = 500
     private const val COURT_OUTCOME_BATCH_SIZE = 500
+    private const val SENTENCE_AND_RECALL_BATCH_SIZE = 500
   }
 
   fun getHdcStatus(bookingId: Long): PrisonerHdcStatus = prisonerApiWebClient
@@ -71,5 +72,16 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
       .block()
 
     return prisonApiResponse ?: error("Unexpected null response from Prison API for nomsId $nomsId")
+  }
+
+  fun getSentenceAndRecallTypes(bookingIds: List<Long>, batchSize: Int = SENTENCE_AND_RECALL_BATCH_SIZE) = batchRequests(batchSize, bookingIds) { batch ->
+    prisonerApiWebClient
+      .post()
+      .uri("/offender-sentences/bookings/sentence-and-recall-types")
+      .bodyValue(batch)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<BookingSentenceAndRecallTypes>>())
+      .block()
   }
 }
