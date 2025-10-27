@@ -208,7 +208,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   fun `Create a Hard Stop licence`() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(10))
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDate = LocalDate.now().plusDays(10))
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
 
@@ -292,7 +292,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   )
   fun `Create a Hard Stop licence which is replacing timed out licence`() {
     prisonApiMockServer.stubGetPrison()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(1))
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDate = LocalDate.now().plusDays(1))
     prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
