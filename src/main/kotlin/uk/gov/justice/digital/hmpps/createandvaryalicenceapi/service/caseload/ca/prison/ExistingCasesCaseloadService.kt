@@ -1,9 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.prison
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -22,8 +23,8 @@ class ExistingCasesCaseloadService(
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
 ) {
 
-  fun filterAndFormatExistingCases(licenceCaCases: List<LicenceCaCase>): List<CaCase> {
-    val preReleaseLicenceCases = licenceCaCases.filter { it.licenceStatus != ACTIVE }
+  fun filterAndFormatExistingCases(licenceCases: List<LicenceCase>): List<CaCase> {
+    val preReleaseLicenceCases = licenceCases.filter { it.licenceStatus != ACTIVE }
     if (preReleaseLicenceCases.isEmpty()) {
       return emptyList()
     }
@@ -37,11 +38,11 @@ class ExistingCasesCaseloadService(
   private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> = licences.filter { l -> l.nomisLegalStatus != "DEAD" }
 
   private fun enrichWithNomisData(
-    licenceCaCases: List<LicenceCaCase>,
+    licenceCases: List<LicenceCase>,
     nomisRecords: List<PrisonerSearchPrisoner>,
   ): List<CaCase> {
     return nomisRecords.map { nomisRecord ->
-      val licencesForOffender = licenceCaCases.filter { l -> l.prisonNumber == nomisRecord.prisonerNumber }
+      val licencesForOffender = licenceCases.filter { l -> l.prisonNumber == nomisRecord.prisonerNumber }
       if (licencesForOffender.isEmpty()) return@map null
       val licenceCase = LatestLicenceFinder.findLatestLicenceCases(licencesForOffender)
       val releaseDate = licenceCase?.licenceStartDate
@@ -55,7 +56,7 @@ class ExistingCasesCaseloadService(
         kind = licenceCase?.kind,
         licenceId = licenceCase?.licenceId,
         licenceVersionOf = licenceCase?.versionOfId,
-        name = licenceCase?.fullName ?: "",
+        name = licenceCase.let { "${it?.forename} ${it?.surname}" },
         prisonerNumber = licenceCase?.prisonNumber!!,
         releaseDate = releaseDate,
         releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(licenceCase),
@@ -72,12 +73,22 @@ class ExistingCasesCaseloadService(
   }
 
   private fun createTabType(
-    licenceCaCase: LicenceCaCase,
+    licenceCase: LicenceCase?,
     releaseDate: LocalDate?,
   ): CaViewCasesTab = Tabs.determineCaViewCasesTab(
-    releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licenceCaCase),
+    releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+      createSentenceDateHolder(licenceCase),
+    ),
     releaseDate,
-    licenceCaCase,
+    licenceCase,
     clock,
   )
+
+  private fun createSentenceDateHolder(licenceCase: LicenceCase?): SentenceDateHolder = object : SentenceDateHolder {
+    override val conditionalReleaseDate = licenceCase?.conditionalReleaseDate
+    override val actualReleaseDate = licenceCase?.actualReleaseDate
+    override val licenceStartDate = licenceCase?.licenceStartDate
+    override val homeDetentionCurfewActualDate = licenceCase?.homeDetentionCurfewActualDate
+    override val postRecallReleaseDate = licenceCase?.postRecallReleaseDate
+  }
 }

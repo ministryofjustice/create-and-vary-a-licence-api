@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
@@ -39,10 +39,10 @@ class NotStartedCaseloadService(
   private val cvlRecordService: CvlRecordService,
 ) {
   fun findAndFormatNotStartedCases(
-    licenceCaCases: List<LicenceCaCase>,
+    licenceCases: List<LicenceCase>,
     prisonCaseload: Set<String>,
   ): List<CaCase> {
-    val licenceNomisIds = licenceCaCases.map { it.prisonNumber }
+    val licenceNomisIds = licenceCases.map { it.prisonNumber }
     val prisonersApproachingRelease = getPrisonersApproachingRelease(prisonCaseload)
 
     val prisonersWithoutLicences = prisonersApproachingRelease.filter { p ->
@@ -90,7 +90,7 @@ class NotStartedCaseloadService(
           sentenceDateHolder,
         ),
         case.cvlRecord.licenceStartDate,
-        licenceCaCase = null,
+        licenceCase = null,
         clock,
       ),
       probationPractitioner = ProbationPractitioner(
