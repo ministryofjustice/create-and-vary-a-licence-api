@@ -1100,18 +1100,6 @@ class ReleaseDateServiceTest {
     }
 
     @Test
-    fun `returns TIME_SERVED when all dates are today except conditional release date and override date is today`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today,
-        confirmedReleaseDate = today,
-        conditionalReleaseDateOverrideDate = today,
-        conditionalReleaseDate = today.minusDays(1),
-      )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), thisClock)
-      assertEquals(LicenceKind.TIME_SERVED, result)
-    }
-
-    @Test
     fun `returns HARD_STOP when sentenceStartDate is not today`() {
       val nomisRecord = prisonerSearchResult().copy(
         sentenceStartDate = today.minusDays(1),

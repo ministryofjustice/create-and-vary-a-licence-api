@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 object SentenceDateHolderAdapter {
   fun PrisonerSearchPrisoner.toSentenceDateHolder(licenceStartDate: LocalDate?) = object : SentenceDateHolder {
-    override val conditionalReleaseDate = this@toSentenceDateHolder.conditionalReleaseDateOverrideDate ?: this@toSentenceDateHolder.conditionalReleaseDate
+    override val conditionalReleaseDate = this@toSentenceDateHolder.conditionalReleaseDate
     override val sentenceStartDate = this@toSentenceDateHolder.sentenceStartDate
     override val actualReleaseDate = confirmedReleaseDate
     override val licenceStartDate = licenceStartDate
