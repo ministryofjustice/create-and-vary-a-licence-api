@@ -1074,7 +1074,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = cutOff,
         sentenceStartDate = nomisRecord.sentenceStartDate,
         actualReleaseDate = nomisRecord.confirmedReleaseDate,
-        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
       )
 
       val result = service.getHardStopKind(hardStopData, thisClock)
@@ -1093,7 +1093,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = null,
         sentenceStartDate = nomisRecord.sentenceStartDate,
         actualReleaseDate = nomisRecord.confirmedReleaseDate,
-        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
       )
       val result = service.getHardStopKind(hardStopData, thisClock)
       assertNull(result)
@@ -1111,7 +1111,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = cutOff,
         sentenceStartDate = nomisRecord.sentenceStartDate,
         actualReleaseDate = nomisRecord.confirmedReleaseDate,
-        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
       )
       val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.TIME_SERVED, result)
@@ -1129,7 +1129,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = cutOff,
         sentenceStartDate = nomisRecord.sentenceStartDate,
         actualReleaseDate = nomisRecord.confirmedReleaseDate,
-        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
       )
       val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.TIME_SERVED, result)
@@ -1147,7 +1147,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = cutOff,
         sentenceStartDate = nomisRecord.sentenceStartDate,
         actualReleaseDate = nomisRecord.confirmedReleaseDate,
-        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
       )
       val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
@@ -1165,7 +1165,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = cutOff,
         sentenceStartDate = nomisRecord.sentenceStartDate,
         actualReleaseDate = nomisRecord.confirmedReleaseDate,
-        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
       )
       val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
@@ -1183,7 +1183,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = cutOff,
         sentenceStartDate = nomisRecord.sentenceStartDate,
         actualReleaseDate = nomisRecord.confirmedReleaseDate,
-        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
       )
       val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
@@ -1202,7 +1202,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = cutOff,
         sentenceStartDate = nomisRecord.sentenceStartDate,
         actualReleaseDate = nomisRecord.confirmedReleaseDate,
-        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate
+        conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
       )
       val result = service.getHardStopKind(hardStopData, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)

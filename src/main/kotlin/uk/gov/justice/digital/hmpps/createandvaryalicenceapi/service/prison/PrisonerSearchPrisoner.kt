@@ -97,6 +97,6 @@ data class PrisonerSearchPrisoner(
     licenceStartDate = licenceStartDate,
     sentenceStartDate = this.sentenceStartDate,
     actualReleaseDate = this.confirmedReleaseDate,
-    conditionalReleaseDate = this.conditionalReleaseDateOverrideDate ?: this.conditionalReleaseDate
+    conditionalReleaseDate = this.conditionalReleaseDateOverrideDate ?: this.conditionalReleaseDate,
   )
 }

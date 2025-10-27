@@ -201,7 +201,6 @@ data class LicenceSummary(
     licenceStartDate = this.licenceStartDate,
     sentenceStartDate = this.sentenceStartDate,
     actualReleaseDate = this.actualReleaseDate,
-    conditionalReleaseDate = this.conditionalReleaseDate
+    conditionalReleaseDate = this.conditionalReleaseDate,
   )
-
 }

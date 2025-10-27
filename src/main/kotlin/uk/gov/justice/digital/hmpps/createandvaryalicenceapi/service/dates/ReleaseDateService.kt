@@ -149,16 +149,13 @@ class ReleaseDateService(
     }
   }
 
-  fun getHardStopKind(data: HardStopData, overrideClock: Clock? = null): LicenceKind? {
-    return determineHardStopKind(
-      data.licenceStartDate,
-      data.sentenceStartDate,
-      data.actualReleaseDate,
-      data.conditionalReleaseDate,
-      overrideClock,
-    )
-  }
-
+  fun getHardStopKind(data: HardStopData, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
+    data.licenceStartDate,
+    data.sentenceStartDate,
+    data.actualReleaseDate,
+    data.conditionalReleaseDate,
+    overrideClock,
+  )
 
   private fun calculateCrdLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
