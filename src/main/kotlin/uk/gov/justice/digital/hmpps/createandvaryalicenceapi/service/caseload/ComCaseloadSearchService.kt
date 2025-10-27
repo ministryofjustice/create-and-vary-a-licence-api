@@ -73,7 +73,8 @@ class ComCaseloadSearchService(
     }
 
     val searchResults = cvlSearchRecords.mapNotNull {
-      val cvlRecord: CvlRecord? = cvlRecords.find { cvlRecord -> it.prisonerSearchPrisoner?.prisonerNumber == cvlRecord.nomisId }
+      val cvlRecord: CvlRecord? =
+        cvlRecords.find { cvlRecord -> it.prisonerSearchPrisoner?.prisonerNumber == cvlRecord.nomisId }
       when (it.licence) {
         null -> createNotStartedRecord(it.caseloadResult, it.prisonerSearchPrisoner, cvlRecord)
         else -> createRecord(it.caseloadResult, it.licence, it.prisonerSearchPrisoner, cvlRecord)
@@ -156,7 +157,7 @@ class ComCaseloadSearchService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder.licenceStartDate),
       isInHardStopPeriod = inHardStopPeriod,
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-        sentenceDateHolder,
+        sentenceDateHolder.licenceStartDate,
       ),
       releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(licenceStartDate, prisonOffender),
     )
@@ -167,7 +168,7 @@ class ComCaseloadSearchService(
     hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
-    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
   )
 
   private fun List<FoundProbationRecord>.filterOutPastReleaseDate(): List<FoundProbationRecord> = this.filter {

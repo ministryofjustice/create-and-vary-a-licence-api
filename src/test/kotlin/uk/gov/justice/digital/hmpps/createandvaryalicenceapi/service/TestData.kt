@@ -102,6 +102,11 @@ object TestData {
     licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22),
     kind: LicenceKind?,
     hardStopKind: LicenceKind? = LicenceKind.HARD_STOP,
+    hardStopDate: LocalDate? = null,
+    hardStopWarningDate: LocalDate? = null,
+    isEligibleForEarlyRelease: Boolean = false,
+    isInHardStopPeriod: Boolean = false,
+    isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
   ) = CvlRecord(
     nomisId = nomsId,
     licenceStartDate = licenceStartDate,
@@ -109,6 +114,11 @@ object TestData {
     eligibleKind = kind,
     ineligiblityReasons = emptyList(),
     hardStopKind = hardStopKind,
+    isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+    isInHardStopPeriod = isInHardStopPeriod,
+    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+    hardStopDate = hardStopDate,
+    hardStopWarningDate = hardStopWarningDate,
   )
 
   fun anEligibilityAssessment() = EligibilityAssessment(

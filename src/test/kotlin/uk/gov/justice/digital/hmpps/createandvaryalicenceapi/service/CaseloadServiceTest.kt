@@ -12,14 +12,12 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -29,15 +27,14 @@ import java.time.LocalDate
 
 class CaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
-  private val releaseDateService = mock<ReleaseDateService>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val service =
-    CaseloadService(prisonerSearchApiClient, releaseDateService, cvlRecordService, deliusApiClient)
+    CaseloadService(prisonerSearchApiClient, cvlRecordService, deliusApiClient)
 
   @BeforeEach
   fun reset() {
-    reset(prisonerSearchApiClient, releaseDateService)
+    reset(prisonerSearchApiClient, cvlRecordService, deliusApiClient)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(
       prisonerSearchApiClient.searchPrisonersByReleaseDate(
@@ -47,21 +44,6 @@ class CaseloadServiceTest {
         anyOrNull(),
       ),
     ).thenReturn(PageImpl(listOf(prisonerSearchResult())))
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
-    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
-    whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
-    whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
-    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
-      mapOf(
-        "A1234AA" to LocalDate.of(2021, 10, 22),
-      ),
-    )
-    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
-      mapOf(
-        "A1234AA" to LocalDate.of(2021, 10, 22),
-      ),
-    )
   }
 
   @Test
@@ -112,7 +94,17 @@ class CaseloadServiceTest {
   @Test
   fun getPrisoner() {
     whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager())
-    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2021, 10, 22)))
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      aCvlRecord(
+        kind = LicenceKind.CRD,
+        licenceStartDate = LocalDate.of(2021, 10, 22),
+        hardStopDate = LocalDate.of(2023, 10, 12),
+        hardStopWarningDate = LocalDate.of(2023, 10, 11),
+        isInHardStopPeriod = true,
+        isEligibleForEarlyRelease = true,
+        isDueToBeReleasedInTheNextTwoWorkingDays = true,
+      ),
+    )
 
     val response = service.getPrisoner("A1234AA")
     assertThat(response).isEqualTo(

@@ -3,9 +3,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -61,6 +63,12 @@ class CvlRecordServiceTest {
         "A1234AC" to null,
       ),
     )
+    whenever(releaseDateService.getHardStopKind(anyOrNull(), anyOrNull())).thenReturn(LicenceKind.HARD_STOP)
+    whenever(releaseDateService.getHardStopDate(anyOrNull())).thenReturn(LocalDate.of(2023, 10, 12))
+    whenever(releaseDateService.getHardStopWarningDate(anyOrNull())).thenReturn(LocalDate.of(2023, 10, 11))
+    whenever(releaseDateService.isInHardStopPeriod(anyOrNull(), anyOrNull())).thenReturn(true)
+    whenever(releaseDateService.isEligibleForEarlyRelease(anyOrNull<SentenceDateHolder>())).thenReturn(true)
+    whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(anyOrNull())).thenReturn(true)
 
     val results = service.getCvlRecords(
       listOf(
@@ -77,6 +85,12 @@ class CvlRecordServiceTest {
         isEligible = true,
         eligibleKind = LicenceKind.CRD,
         ineligiblityReasons = anEligibilityAssessment().ineligiblityReasons,
+        hardStopKind = LicenceKind.HARD_STOP,
+        hardStopDate = LocalDate.of(2023, 10, 12),
+        hardStopWarningDate = LocalDate.of(2023, 10, 11),
+        isEligibleForEarlyRelease = true,
+        isInHardStopPeriod = true,
+        isDueToBeReleasedInTheNextTwoWorkingDays = true,
       ),
       CvlRecord(
         nomisId = "A1234AB",
@@ -84,6 +98,12 @@ class CvlRecordServiceTest {
         isEligible = true,
         eligibleKind = LicenceKind.PRRD,
         ineligiblityReasons = prrdEligibilityAssessment.ineligiblityReasons,
+        hardStopKind = LicenceKind.HARD_STOP,
+        hardStopDate = LocalDate.of(2023, 10, 12),
+        hardStopWarningDate = LocalDate.of(2023, 10, 11),
+        isEligibleForEarlyRelease = true,
+        isInHardStopPeriod = true,
+        isDueToBeReleasedInTheNextTwoWorkingDays = true,
       ),
       CvlRecord(
         nomisId = "A1234AC",
@@ -91,6 +111,12 @@ class CvlRecordServiceTest {
         isEligible = false,
         eligibleKind = null,
         ineligiblityReasons = ineligibleEligibilityAssessment.ineligiblityReasons,
+        hardStopKind = LicenceKind.HARD_STOP,
+        hardStopDate = LocalDate.of(2023, 10, 12),
+        hardStopWarningDate = LocalDate.of(2023, 10, 11),
+        isEligibleForEarlyRelease = true,
+        isInHardStopPeriod = true,
+        isDueToBeReleasedInTheNextTwoWorkingDays = true,
       ),
     )
   }
@@ -122,6 +148,9 @@ class CvlRecordServiceTest {
         isEligible = true,
         eligibleKind = LicenceKind.CRD,
         ineligiblityReasons = anEligibilityAssessment().ineligiblityReasons,
+        isEligibleForEarlyRelease = false,
+        isInHardStopPeriod = false,
+        isDueToBeReleasedInTheNextTwoWorkingDays = false,
       ),
     )
   }

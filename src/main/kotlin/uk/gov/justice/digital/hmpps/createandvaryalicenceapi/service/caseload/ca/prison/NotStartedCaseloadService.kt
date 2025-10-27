@@ -9,14 +9,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCaseCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCaseDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
@@ -34,7 +31,6 @@ class NotStartedCaseloadService(
   private val clock: Clock,
   private val deliusApiClient: DeliusApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val releaseDateService: ReleaseDateService,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
 ) {
@@ -65,12 +61,10 @@ class NotStartedCaseloadService(
   private fun createNotStartedLicenceForCase(
     cases: List<ManagedCaseDto>,
   ): List<CaCase> = cases.map { case ->
-    val sentenceDateHolder = case.nomisRecord.toSentenceDateHolder(case.cvlRecord.licenceStartDate)
-
     // Default status (if not overridden below) will show the case as clickable on case lists
     var licenceStatus = NOT_STARTED
 
-    if (releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate)) {
+    if (case.cvlRecord.isInHardStopPeriod) {
       licenceStatus = TIMED_OUT
     }
 
@@ -84,11 +78,9 @@ class NotStartedCaseloadService(
       releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(case.cvlRecord.licenceStartDate, case.nomisRecord),
       licenceStatus = licenceStatus,
       nomisLegalStatus = case.nomisRecord.legalStatus,
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate),
+      isInHardStopPeriod = case.cvlRecord.isInHardStopPeriod,
       tabType = Tabs.determineCaViewCasesTab(
-        releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-          sentenceDateHolder,
-        ),
+        case.cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
         case.cvlRecord.licenceStartDate,
         licence = null,
         clock,
@@ -151,11 +143,7 @@ class NotStartedCaseloadService(
       val cvlRecord = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }
       ManagedCaseDto(
         nomisRecord = nomisRecord,
-        cvlRecord = ManagedCaseCvlRecord(
-          isEligible = cvlRecord.isEligible,
-          eligibleKind = cvlRecord.eligibleKind,
-          licenceStartDate = cvlRecord.licenceStartDate,
-        ),
+        cvlRecord = cvlRecord,
         deliusRecord = DeliusRecord(
           com.case,
           ManagedOffenderCrn(

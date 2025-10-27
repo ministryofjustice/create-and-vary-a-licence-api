@@ -16,9 +16,13 @@ class CvlRecordService(
     return recordList.first { it.nomisId == prisoner.prisonerNumber }
   }
 
-  fun getCvlRecords(prisoners: List<PrisonerSearchPrisoner>, nomisIdsToAreaCodes: Map<String, String>): List<CvlRecord> {
+  fun getCvlRecords(
+    prisoners: List<PrisonerSearchPrisoner>,
+    nomisIdsToAreaCodes: Map<String, String>,
+  ): List<CvlRecord> {
     val nomisIdsToEligibility = eligibilityService.getEligibilityAssessments(prisoners, nomisIdsToAreaCodes)
-    val nomisIdsToEligibleKinds = nomisIdsToEligibility.map { (nomisId, eligibility) -> nomisId to eligibility.eligibleKind }.toMap()
+    val nomisIdsToEligibleKinds =
+      nomisIdsToEligibility.map { (nomisId, eligibility) -> nomisId to eligibility.eligibleKind }.toMap()
     val nomisIdsToLicenceStartDates = releaseDateService.getLicenceStartDates(prisoners, nomisIdsToEligibleKinds)
     return prisoners.map { prisoner ->
       val eligibility = nomisIdsToEligibility[prisoner.prisonerNumber]!!
@@ -32,6 +36,17 @@ class CvlRecordService(
         eligibleKind = eligibility.eligibleKind,
         ineligiblityReasons = eligibility.ineligiblityReasons,
         hardStopKind = hardStopKind,
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
+        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
+        hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
+        isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(
+          prisoner.toSentenceDateHolder(
+            licenceStartDate,
+          ),
+        ),
+        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+          licenceStartDate,
+        ),
       )
     }
   }
