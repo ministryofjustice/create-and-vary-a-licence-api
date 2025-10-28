@@ -1,9 +1,15 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -180,5 +186,68 @@ class LicenceTest {
 
     val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
     assertTrue(isActivatedInPssPeriod)
+  }
+
+  @Nested
+  inner class `isReviewNeeded` {
+
+    val hardstopLicence = createHardStopLicence()
+    val timeServedLicence = createTimeServedLicence()
+
+    @Test
+    fun `HardStopLicence with ACTIVE and null reviewDate returns true`() {
+      val licence = hardstopLicence.copy(
+        statusCode = ACTIVE,
+      )
+      assertThat(licence.isReviewNeeded()).isTrue()
+    }
+
+    @Test
+    fun `TimeServedLicence with ACTIVE and null reviewDate returns true`() {
+      val licence = timeServedLicence
+      assertThat(licence.isReviewNeeded()).isTrue()
+    }
+
+    @Test
+    fun `HardStopLicence with ACTIVE and non-null reviewDate returns false`() {
+      val licence = hardstopLicence.copy(
+        statusCode = ACTIVE,
+        reviewDate = LocalDateTime.now(),
+      )
+      assertThat(licence.isReviewNeeded()).isFalse()
+    }
+
+    @Test
+    fun `TimeServedLicence with IN_PROGRESS and null reviewDate returns false`() {
+      val licence = timeServedLicence.copy(
+        statusCode = IN_PROGRESS,
+        reviewDate = null,
+      )
+      assertThat(licence.isReviewNeeded()).isFalse()
+    }
+
+    @Test
+    fun `EntityHardStopLicence with ACTIVE and null reviewDate returns true`() {
+      val licence = createHardStopLicence().copy(
+        statusCode = ACTIVE,
+        reviewDate = null,
+      )
+      assertThat(licence.isReviewNeeded()).isTrue()
+    }
+
+    @Test
+    fun `Active TimeServedLicence and non-null reviewDate returns false`() {
+      val licence = createHardStopLicence().copy(
+        statusCode = ACTIVE,
+        reviewDate = LocalDateTime.now(),
+      )
+      assertThat(licence.isReviewNeeded()).isFalse()
+    }
+
+    @Test
+    fun `CRD Licence type returns false`() {
+      val licence = createCrdLicence()
+      assertThat(licence.isReviewNeeded()).isFalse()
+    }
   }
 }
