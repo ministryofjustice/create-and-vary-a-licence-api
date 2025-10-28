@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Appro
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComVaryCaseloadService
@@ -47,7 +47,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 @RestController
 @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
 class CaseloadController(
-  val caseloadService: CaseloadService,
+  val caseService: CaseService,
   val approverCaseloadService: ApproverCaseloadService,
   val caCaseloadService: CaCaseloadService,
   val comCreateCaseloadService: ComCreateCaseloadService,
@@ -106,7 +106,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun findByNumber(@Parameter(required = true) @PathVariable nomsId: String) = caseloadService.getPrisoner(nomsId)
+  fun findByNumber(@Parameter(required = true) @PathVariable nomsId: String) = caseService.getPrisoner(nomsId)
 
   @PostMapping("/caseload/prison-approver/approval-needed")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

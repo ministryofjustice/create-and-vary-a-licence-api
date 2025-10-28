@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
@@ -53,7 +52,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 class CaCaseloadServiceTest {
-  private val caseloadService = mock<CaseloadService>()
   private val licenceService = mock<LicenceService>()
   private val hdcService = mock<HdcService>()
   private val deliusApiClient = mock<DeliusApiClient>()
@@ -69,7 +67,7 @@ class CaCaseloadServiceTest {
       licenceService = licenceService,
       deliusApiClient = deliusApiClient,
       existingCasesCaseloadService = ExistingCasesCaseloadService(
-        caseloadService,
+        prisonerSearchApiClient,
         clock,
         releaseDateService,
         releaseDateLabelFactory,
@@ -120,7 +118,6 @@ class CaCaseloadServiceTest {
   @BeforeEach
   fun reset() {
     reset(
-      caseloadService,
       licenceService,
       hdcService,
       eligibilityService,
@@ -152,7 +149,7 @@ class CaCaseloadServiceTest {
         ),
       ),
     )
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         TestData.prisonerSearchResult(),
         TestData.prisonerSearchResult().copy(
@@ -211,7 +208,7 @@ class CaCaseloadServiceTest {
     inner class `in the hard stop period` {
       @Test
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
-        whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
           listOf(
             aPrisonerSearchPrisoner,
           ),
@@ -267,7 +264,7 @@ class CaCaseloadServiceTest {
         }
 
         verify(licenceService, times(1)).findLicencesMatchingCriteria(prisonLicenceQueryObject)
-        verify(caseloadService, times(0)).getPrisonersByNumber(listOf(aLicenceSummary.nomisId))
+        verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(aLicenceSummary.nomisId))
         verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
       }
     }
@@ -374,7 +371,7 @@ class CaCaseloadServiceTest {
         ),
       )
 
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
         listOf(
           TestData.prisonerSearchResult().copy(
             firstName = "Person",
@@ -442,7 +439,7 @@ class CaCaseloadServiceTest {
         ),
       )
 
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
         listOf(
           TestData.prisonerSearchResult().copy(
             firstName = "Person",
@@ -524,7 +521,7 @@ class CaCaseloadServiceTest {
           ),
         ),
       )
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
         listOf(
           TestData.prisonerSearchResult(),
           TestData.prisonerSearchResult().copy(
@@ -587,7 +584,7 @@ class CaCaseloadServiceTest {
           licenceSummary,
         ),
       )
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
       val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
@@ -612,7 +609,7 @@ class CaCaseloadServiceTest {
           licenceSummary,
         ),
       )
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(TestData.prisonerSearchResult()))
 
       // When
       val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
@@ -627,7 +624,7 @@ class CaCaseloadServiceTest {
       @Test
       fun `should filter ineligible cases`() {
         whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false)
-        whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
           listOf(
             aPrisonerSearchPrisoner,
           ),
@@ -679,7 +676,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `Should filter out cases with a legal status of DEAD`() {
-        whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
           listOf(
             aPrisonerSearchPrisoner.copy(
               prisonerNumber = "A1234AA",
@@ -1123,7 +1120,7 @@ class CaCaseloadServiceTest {
         )
       }
 
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
         prisoners,
       )
 
@@ -1646,7 +1643,7 @@ class CaCaseloadServiceTest {
         )
       }
 
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
         prisoners,
       )
 
@@ -1770,7 +1767,6 @@ class CaCaseloadServiceTest {
 
     val probationCase = ProbationCase(crn = "X12347", nomisId = "A1234AA")
 
-    val aProbationPractitioner = ProbationPractitioner(staffCode = "DEF456")
     val comUser = StaffNameResponse(
       id = 2000L,
       username = "com-user",

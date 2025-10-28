@@ -8,12 +8,12 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aDeliusUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -21,12 +21,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 class VaryApproverCaseloadServiceTest {
-  private val caseloadService = mock<CaseloadService>()
+  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceService = mock<LicenceService>()
 
   private val service = VaryApproverCaseloadService(
-    caseloadService,
+    prisonerSearchApiClient,
     deliusApiClient,
     licenceService,
   )
@@ -50,7 +50,7 @@ class VaryApproverCaseloadServiceTest {
         licenceSummaries.map { it.nomisId },
       ),
     ).thenReturn(probationCases)
-    whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
@@ -96,7 +96,7 @@ class VaryApproverCaseloadServiceTest {
         licenceSummaries.map { it.nomisId },
       ),
     ).thenReturn(probationCases)
-    whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(licenceSummaries.map { it.comUsername!! })).thenReturn(
@@ -135,7 +135,7 @@ class VaryApproverCaseloadServiceTest {
         licenceSummaries.map { it.nomisId },
       ),
     ).thenReturn(probationCases)
-    whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
@@ -182,7 +182,7 @@ class VaryApproverCaseloadServiceTest {
         licenceSummaries.map { it.nomisId },
       ),
     ).thenReturn(probationCases)
-    whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
@@ -193,7 +193,12 @@ class VaryApproverCaseloadServiceTest {
 
     // When
     val searchResults =
-      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationPduCodes = pdus, searchTerm = "A"))
+      service.searchForOffenderOnVaryApproverCaseload(
+        VaryApproverCaseloadSearchRequest(
+          probationPduCodes = pdus,
+          searchTerm = "A",
+        ),
+      )
 
     // Then
     assertThat(searchResults.pduCasesResponse).hasSize(1)
@@ -231,7 +236,7 @@ class VaryApproverCaseloadServiceTest {
         licenceSummaries.map { it.nomisId },
       ),
     ).thenReturn(probationCases)
-    whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
@@ -242,7 +247,12 @@ class VaryApproverCaseloadServiceTest {
 
     // When
     val searchResults =
-      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode, searchTerm = "A"))
+      service.searchForOffenderOnVaryApproverCaseload(
+        VaryApproverCaseloadSearchRequest(
+          probationAreaCode = probationAreaCode,
+          searchTerm = "A",
+        ),
+      )
 
     // Then
     assertThat(searchResults.regionCasesResponse).hasSize(1)
@@ -283,7 +293,7 @@ class VaryApproverCaseloadServiceTest {
         licenceSummaries.map { it.nomisId },
       ),
     ).thenReturn(probationCases)
-    whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
@@ -294,7 +304,13 @@ class VaryApproverCaseloadServiceTest {
 
     // When
     val searchResults =
-      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationPduCodes = pdus, probationAreaCode = probationAreaCode, searchTerm = "A"))
+      service.searchForOffenderOnVaryApproverCaseload(
+        VaryApproverCaseloadSearchRequest(
+          probationPduCodes = pdus,
+          probationAreaCode = probationAreaCode,
+          searchTerm = "A",
+        ),
+      )
 
     // Then
     assertThat(searchResults.pduCasesResponse).hasSize(1)
@@ -345,7 +361,7 @@ class VaryApproverCaseloadServiceTest {
         licenceSummaries.map { it.nomisId },
       ),
     ).thenReturn(probationCases)
-    whenever(caseloadService.getPrisonersByNumber(probationCases.map { it.nomisId!! })).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
@@ -356,7 +372,13 @@ class VaryApproverCaseloadServiceTest {
 
     // When
     val searchResults =
-      service.searchForOffenderOnVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationPduCodes = pdus, probationAreaCode = probationAreaCode, searchTerm = "XXXX"))
+      service.searchForOffenderOnVaryApproverCaseload(
+        VaryApproverCaseloadSearchRequest(
+          probationPduCodes = pdus,
+          probationAreaCode = probationAreaCode,
+          searchTerm = "XXXX",
+        ),
+      )
 
     // Then
     assertThat(searchResults.pduCasesResponse).isEmpty()

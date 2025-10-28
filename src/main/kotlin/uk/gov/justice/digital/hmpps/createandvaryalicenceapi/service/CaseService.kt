@@ -5,18 +5,15 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 @Service
-class CaseloadService(
+class CaseService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val cvlRecordService: CvlRecordService,
   private val deliusApiClient: DeliusApiClient,
 ) {
-
-  fun getPrisonersByNumber(nomisIds: List<String>): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)
 
   fun getPrisoner(nomisId: String): PrisonerWithCvlFields {
     val prisoner =

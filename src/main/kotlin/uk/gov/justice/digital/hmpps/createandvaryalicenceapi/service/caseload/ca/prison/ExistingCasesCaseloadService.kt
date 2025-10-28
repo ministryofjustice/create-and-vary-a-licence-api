@@ -4,30 +4,30 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.Clock
 
 @Service
 class ExistingCasesCaseloadService(
-  private val caseloadService: CaseloadService,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val clock: Clock,
   private val releaseDateService: ReleaseDateService,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
 ) {
 
-  fun filterAndFormatExistingCases(licences: List<LicenceSummary>): List<CaCase> {
+  fun findExistingCases(licences: List<LicenceSummary>): List<CaCase> {
     val preReleaseLicences = licences.filter { it.licenceStatus != ACTIVE }
     if (preReleaseLicences.isEmpty()) {
       return emptyList()
     }
 
     val licenceNomisIds = preReleaseLicences.map { it.nomisId }
-    val prisonersWithLicences = caseloadService.getPrisonersByNumber(licenceNomisIds)
+    val prisonersWithLicences = prisonerSearchApiClient.searchPrisonersByNomisIds(licenceNomisIds)
     val nomisEnrichedLicences = enrichWithNomisData(preReleaseLicences, prisonersWithLicences)
     return filterExistingLicencesForEligibility(nomisEnrichedLicences)
   }

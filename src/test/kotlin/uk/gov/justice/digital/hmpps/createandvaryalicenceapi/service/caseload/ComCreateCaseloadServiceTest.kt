@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
@@ -23,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
@@ -36,7 +36,7 @@ import java.time.LocalDateTime
 import java.time.Month
 
 class ComCreateCaseloadServiceTest {
-  private val caseloadService = mock<CaseloadService>()
+  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceService = mock<LicenceService>()
   private val hdcService = mock<HdcService>()
@@ -44,7 +44,7 @@ class ComCreateCaseloadServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
 
   private val service = ComCreateCaseloadService(
-    caseloadService,
+    prisonerSearchApiClient,
     deliusApiClient,
     licenceService,
     hdcService,
@@ -73,7 +73,7 @@ class ComCreateCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(emptyList())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(emptyList())
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -90,12 +90,12 @@ class ComCreateCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(emptyList())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(emptyList())
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(0)
-    verify(caseloadService, never()).getPrisonersByNumber(any())
+    verify(prisonerSearchApiClient, never()).searchPrisonersByNomisIds(any())
   }
 
   @Test
@@ -167,7 +167,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           prisonerNumber = "AB1234E",
@@ -299,7 +299,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(caseloadItems)
 
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
       listOf(
@@ -410,7 +410,7 @@ class ComCreateCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           bookingId = "1",
@@ -577,7 +577,7 @@ class ComCreateCaseloadServiceTest {
       case4,
       case5,
     )
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(caseloadItems)
 
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
       listOf(
@@ -680,7 +680,7 @@ class ComCreateCaseloadServiceTest {
       deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           bookingId = "1",
@@ -753,7 +753,7 @@ class ComCreateCaseloadServiceTest {
     )
 
     whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(caseLoadItem))
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
       listOf(
         aCvlRecord(
@@ -786,7 +786,7 @@ class ComCreateCaseloadServiceTest {
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(caseLoadItem))
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
       listOf(
         aCvlRecord(
@@ -841,7 +841,7 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
       ),
     )
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(caseloadItems)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(caseloadItems[0].bookingId?.toLong()!!)))
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
@@ -856,7 +856,7 @@ class ComCreateCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(listOf(ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E")))
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           prisonerNumber = "AB1234E",
@@ -888,7 +888,7 @@ class ComCreateCaseloadServiceTest {
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           prisonerNumber = "AB1234E",
@@ -952,7 +952,7 @@ class ComCreateCaseloadServiceTest {
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           prisonerNumber = "AB1234E",
@@ -1017,7 +1017,7 @@ class ComCreateCaseloadServiceTest {
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           prisonerNumber = "AB1234E",
@@ -1073,7 +1073,7 @@ class ComCreateCaseloadServiceTest {
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           prisonerNumber = "AB1234E",
@@ -1120,7 +1120,7 @@ class ComCreateCaseloadServiceTest {
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           prisonerNumber = "AB1234E",
@@ -1175,7 +1175,7 @@ class ComCreateCaseloadServiceTest {
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         prisonerSearchResult().copy(
           prisonerNumber = "AB1234E",

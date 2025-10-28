@@ -29,7 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCreateCaseloadService
@@ -48,7 +48,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 class CaseloadControllerTest {
 
   @MockitoBean
-  private lateinit var caseloadService: CaseloadService
+  private lateinit var caseService: CaseService
 
   @MockitoBean
   private lateinit var approverCaseloadService: ApproverCaseloadService
@@ -73,12 +73,12 @@ class CaseloadControllerTest {
 
   @BeforeEach
   fun reset() {
-    reset(caseloadService, approverCaseloadService)
+    reset(caseService, approverCaseloadService)
 
     mvc = MockMvcBuilders
       .standaloneSetup(
         CaseloadController(
-          caseloadService,
+          caseService,
           approverCaseloadService,
           caCaseloadService,
           comCreateCaseloadService,
