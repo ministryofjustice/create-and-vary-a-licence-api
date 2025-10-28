@@ -592,7 +592,12 @@ class ComCreateCaseloadServiceTest {
           kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
-        aCvlRecord(nomsId = "AB1234H", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(
+          nomsId = "AB1234H",
+          kind = LicenceKind.CRD,
+          licenceStartDate = tenDaysFromNow,
+          hardStopWarningDate = tenDaysFromNow,
+        ),
         aCvlRecord(nomsId = "AB1234I", kind = LicenceKind.CRD, licenceStartDate = elevenDaysFromNow),
       ),
     )
@@ -643,6 +648,7 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceType = LicenceType.PSS,
       expectedReleaseDate = tenDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
+      expectedHardstopWarningDate = tenDaysFromNow,
     )
     verifyCase(
       case = caseload[2],
@@ -1245,6 +1251,7 @@ class ComCreateCaseloadServiceTest {
     expectedProbationPractitioner: ProbationPractitioner? = null,
     expectedReviewNeeded: Boolean = false,
     expectedLicenceKind: LicenceKind = LicenceKind.CRD,
+    expectedHardstopWarningDate: LocalDate? = null,
   ) {
     with(case) {
       assertThat(crnNumber).isEqualTo(expectedCrn)
@@ -1256,6 +1263,7 @@ class ComCreateCaseloadServiceTest {
       assertThat(isReviewNeeded).isEqualTo(expectedReviewNeeded)
       assertThat(kind).isEqualTo(expectedLicenceKind)
       assertThat(licenceCreationType).isEqualTo(expectedLicenceCreationType)
+      assertThat(hardStopWarningDate).isEqualTo(expectedHardstopWarningDate)
     }
   }
 

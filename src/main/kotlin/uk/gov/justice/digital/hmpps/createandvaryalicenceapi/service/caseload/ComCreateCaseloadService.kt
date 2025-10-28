@@ -149,6 +149,7 @@ class ComCreateCaseloadService(
       kind = licenceKind,
       hardStopKind = cvlRecord.hardStopKind,
       hardStopDate = cvlRecord.hardStopDate,
+      hardStopWarningDate = cvlRecord.hardStopWarningDate,
       isDueToBeReleasedInTheNextTwoWorkingDays = cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
     )
   }
