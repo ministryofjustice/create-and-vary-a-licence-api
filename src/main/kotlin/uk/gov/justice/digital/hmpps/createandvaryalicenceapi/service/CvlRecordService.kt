@@ -34,7 +34,7 @@ class CvlRecordService(
         licenceStartDate = licenceStartDate,
         isEligible = eligibility.isEligible,
         eligibleKind = eligibility.eligibleKind,
-        ineligiblityReasons = eligibility.ineligiblityReasons,
+        ineligibilityReasons = eligibility.ineligibilityReasons,
         hardStopKind = hardStopKind,
         isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
         hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),

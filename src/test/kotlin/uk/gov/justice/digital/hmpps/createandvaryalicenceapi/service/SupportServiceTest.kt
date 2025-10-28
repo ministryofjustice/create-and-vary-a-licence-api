@@ -9,6 +9,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -74,8 +75,13 @@ class SupportServiceTest {
       ),
     ).thenReturn(true)
 
-    val reasons = service.getIneligibilityReasons("A1234AA")
-    assertThat(reasons).containsExactly("A reason", "Approved for HDC")
+    val eligibilityAssessment = service.getIneligibilityReasons("A1234AA")
+    assertThat(eligibilityAssessment.isEligible).isEqualTo(false)
+    assertThat(eligibilityAssessment.genericIneligibilityReasons).containsExactly("A reason", "Approved for HDC")
+    assertThat(eligibilityAssessment.crdIneligibilityReasons).isEmpty()
+    assertThat(eligibilityAssessment.prrdIneligibilityReasons).isEmpty()
+    assertThat(eligibilityAssessment.eligibleKind).isNull()
+    assertThat(eligibilityAssessment.ineligibilityReasons).containsExactly("A reason", "Approved for HDC")
   }
 
   @Test
