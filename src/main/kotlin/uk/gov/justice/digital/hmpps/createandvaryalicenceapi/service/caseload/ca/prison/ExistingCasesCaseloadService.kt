@@ -9,12 +9,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.Clock
 
 @Service
 class ExistingCasesCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
+  private val deliusApiClient: DeliusApiClient,
   private val clock: Clock,
   private val releaseDateService: ReleaseDateService,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
@@ -34,10 +37,24 @@ class ExistingCasesCaseloadService(
 
   private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> = licences.filter { l -> l.nomisLegalStatus != "DEAD" }
 
+  private fun mapCasesToProbationPractitioner(licences: List<LicenceSummary>): Map<String, ProbationPractitioner> {
+    val comUsernames = licences.mapNotNull { it.comUsername }.distinct()
+    return deliusApiClient.getStaffDetailsByUsername(comUsernames)
+      .filter { it.username != null }
+      .associateBy { it.username!!.lowercase() }
+      .mapValues { entry ->
+        ProbationPractitioner(
+          staffCode = entry.value.code,
+          name = entry.value.name.fullName(),
+        )
+      }
+  }
+
   private fun enrichWithNomisData(
     licences: List<LicenceSummary>,
     nomisRecords: List<PrisonerSearchPrisoner>,
   ): List<CaCase> {
+    val usernameToProbationPractitioner = mapCasesToProbationPractitioner(licences)
     return nomisRecords.map { nomisRecord ->
       val licencesForOffender = licences.filter { l -> l.nomisId == nomisRecord.prisonerNumber }
       if (licencesForOffender.isEmpty()) return@map null
@@ -61,7 +78,7 @@ class ExistingCasesCaseloadService(
           licence,
           clock,
         ),
-        probationPractitioner = ProbationPractitioner(staffUsername = licence.comUsername),
+        probationPractitioner = usernameToProbationPractitioner[licence.comUsername],
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
       )
