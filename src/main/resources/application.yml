@@ -148,7 +148,7 @@ cache:
 dpr:
   lib:
     definition:
-      locations: dpr_reports/CVL_Test_dpd.json, dpr_reports/Install_At_Source.json
+      locations: dpr_reports/Active_Licences.json, dpr_reports/Install_At_Source.json
     caseloads:
       host: ${hmpps.manageusers.api.url}
       path: /users/me/caseloads
