@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -30,7 +29,7 @@ class CaseloadServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val service =
-    CaseloadService(prisonerSearchApiClient, cvlRecordService, deliusApiClient)
+    CaseService(prisonerSearchApiClient, cvlRecordService, deliusApiClient)
 
   @BeforeEach
   fun reset() {
@@ -44,51 +43,6 @@ class CaseloadServiceTest {
         anyOrNull(),
       ),
     ).thenReturn(PageImpl(listOf(prisonerSearchResult())))
-  }
-
-  @Test
-  fun searchPrisonersByNomisIds() {
-    val response = service.getPrisonersByNumber(listOf("A1234AA"))
-
-    assertThat(response).containsExactly(
-      PrisonerSearchPrisoner(
-        prisonerNumber = "A1234AA",
-        pncNumber = null,
-        croNumber = null,
-        bookingId = "123456",
-        bookNumber = "12345A",
-        firstName = "A",
-        middleNames = null,
-        lastName = "Prisoner",
-        dateOfBirth = LocalDate.of(1985, 12, 28),
-        status = "ACTIVE IN",
-        prisonId = "MDI",
-        prisonName = null,
-        locationDescription = "HMP Moorland",
-        legalStatus = "SENTENCED",
-        imprisonmentStatus = null,
-        imprisonmentStatusDescription = null,
-        mostSeriousOffence = "Robbery",
-        recall = false,
-        indeterminateSentence = false,
-        sentenceStartDate = LocalDate.of(2018, 10, 22),
-        releaseDate = LocalDate.of(2021, 10, 22),
-        confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-        sentenceExpiryDate = LocalDate.of(2021, 10, 22),
-        licenceExpiryDate = LocalDate.of(2021, 10, 22),
-        homeDetentionCurfewEligibilityDate = null,
-        homeDetentionCurfewActualDate = null,
-        homeDetentionCurfewEndDate = null,
-        topupSupervisionStartDate = null,
-        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-        paroleEligibilityDate = null,
-        postRecallReleaseDate = null,
-        conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-        actualParoleDate = null,
-        releaseOnTemporaryLicenceDate = null,
-      ),
-    )
-    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(listOf("A1234AA"))
   }
 
   @Test

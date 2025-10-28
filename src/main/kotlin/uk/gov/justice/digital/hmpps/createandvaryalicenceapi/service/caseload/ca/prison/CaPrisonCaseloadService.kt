@@ -34,12 +34,10 @@ class CaPrisonCaseloadService(
       LicenceQueryObject(statusCodes = statuses, prisonCodes = filteredPrisons, sortBy = "licenceStartDate"),
     )
 
-    val eligibleExistingCases = existingCasesCaseloadService.filterAndFormatExistingCases(existingLicences)
+    val existingCases = existingCasesCaseloadService.findExistingCases(existingLicences)
+    val notStartedCases = notStartedCaseloadService.findNotStartedCases(existingLicences, prisonCaseload)
 
-    val eligibleNotStartedCases =
-      notStartedCaseloadService.findAndFormatNotStartedCases(existingLicences, prisonCaseload)
-
-    val cases = mapCasesToComs(eligibleExistingCases + eligibleNotStartedCases)
+    val cases = mapCasesToComs(existingCases + notStartedCases)
 
     val results = applySearch(searchString, cases)
     return results.sortedWith(compareBy<CaCase> { it.releaseDate }.thenBy { it.licenceId })

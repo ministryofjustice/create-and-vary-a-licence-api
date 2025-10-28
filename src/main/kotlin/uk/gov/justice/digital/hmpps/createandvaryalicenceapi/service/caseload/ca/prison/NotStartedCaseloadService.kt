@@ -7,9 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCaseDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
@@ -17,13 +15,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import java.time.Clock
 import java.time.LocalDate
+
+private const val FOUR_WEEKS = 4L
 
 @Service
 class NotStartedCaseloadService(
@@ -34,7 +32,7 @@ class NotStartedCaseloadService(
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
 ) {
-  fun findAndFormatNotStartedCases(
+  fun findNotStartedCases(
     licences: List<LicenceSummary>,
     prisonCaseload: Set<String>,
   ): List<CaCase> {
@@ -68,8 +66,6 @@ class NotStartedCaseloadService(
       licenceStatus = TIMED_OUT
     }
 
-    val com = case.deliusRecord.managedOffenderCrn.staff
-
     CaCase(
       kind = case.cvlRecord.eligibleKind,
       name = case.nomisRecord.let { "${it.firstName} ${it.lastName}".convertToTitleCase() },
@@ -85,10 +81,7 @@ class NotStartedCaseloadService(
         licence = null,
         clock,
       ),
-      probationPractitioner = ProbationPractitioner(
-        staffCode = com?.code,
-        name = com?.name?.fullName(),
-      ),
+      probationPractitioner = case.probationPractitioner,
       prisonCode = case.nomisRecord.prisonId,
       prisonDescription = case.nomisRecord.prisonName,
     )
@@ -109,17 +102,14 @@ class NotStartedCaseloadService(
     overrideClock: Clock? = null,
   ): Page<PrisonerSearchPrisoner> {
     val now = overrideClock ?: clock
-    val weeksToAdd: Long = 4
     val today = LocalDate.now(now)
-    val todayPlusFourWeeks = LocalDate.now(now).plusWeeks(weeksToAdd)
-    return prisonCaseload.let {
-      prisonerSearchApiClient.searchPrisonersByReleaseDate(
-        today,
-        todayPlusFourWeeks,
-        it,
-        page = 0,
-      )
-    }
+    val todayPlusFourWeeks = LocalDate.now(now).plusWeeks(FOUR_WEEKS)
+    return prisonerSearchApiClient.searchPrisonersByReleaseDate(
+      today,
+      todayPlusFourWeeks,
+      prisonCaseload,
+      page = 0,
+    )
   }
 
   private fun pairNomisRecordsWithDelius(nomisRecords: List<PrisonerSearchPrisoner>): List<Pair<PrisonerSearchPrisoner, CommunityManager>> {
@@ -144,17 +134,16 @@ class NotStartedCaseloadService(
       ManagedCaseDto(
         nomisRecord = nomisRecord,
         cvlRecord = cvlRecord,
-        deliusRecord = DeliusRecord(
-          com.case,
-          ManagedOffenderCrn(
-            staff = StaffDetail(
-              code = com.code,
-              name = com.name,
-              unallocated = com.unallocated,
-            ),
-            team = com.team,
-          ),
+        probationPractitioner = ProbationPractitioner(
+          staffCode = com.code,
+          name = com.name.fullName(),
         ),
       )
     }
+
+  private data class ManagedCaseDto(
+    val nomisRecord: PrisonerSearchPrisoner,
+    val cvlRecord: CvlRecord,
+    val probationPractitioner: ProbationPractitioner,
+  )
 }

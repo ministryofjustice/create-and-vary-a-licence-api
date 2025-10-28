@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -26,7 +25,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 class CaPrisonCaseloadServiceTest {
-  private val caseloadService = mock<CaseloadService>()
   private val licenceService = mock<LicenceService>()
   private val hdcService = mock<HdcService>()
   private val deliusApiClient = mock<DeliusApiClient>()
@@ -40,7 +38,7 @@ class CaPrisonCaseloadServiceTest {
     licenceService = licenceService,
     deliusApiClient = deliusApiClient,
     existingCasesCaseloadService = ExistingCasesCaseloadService(
-      caseloadService,
+      prisonerSearchApiClient,
       clock,
       releaseDateService,
       releaseDateLabelFactory,
@@ -58,7 +56,6 @@ class CaPrisonCaseloadServiceTest {
   @BeforeEach
   fun reset() {
     reset(
-      caseloadService,
       licenceService,
       hdcService,
       deliusApiClient,

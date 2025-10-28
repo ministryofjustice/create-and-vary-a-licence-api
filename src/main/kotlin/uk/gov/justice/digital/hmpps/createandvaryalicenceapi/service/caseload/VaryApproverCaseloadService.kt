@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
 class VaryApproverCaseloadService(
-  private val caseloadService: CaseloadService,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val deliusApiClient: DeliusApiClient,
   private val licenceService: LicenceService,
 ) {
@@ -55,7 +55,7 @@ class VaryApproverCaseloadService(
   private fun mapLicencesToOffenders(licences: List<LicenceSummary>): List<AcoCase> {
     val nomisIds = licences.map { it.nomisId }
     val deliusRecords = deliusApiClient.getProbationCases(nomisIds)
-    val nomisRecords = caseloadService.getPrisonersByNumber(nomisIds)
+    val nomisRecords = prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)
 
     return licences.mapNotNull { licence ->
       val nomisRecord = nomisRecords.find { it.prisonerNumber == licence.nomisId }
