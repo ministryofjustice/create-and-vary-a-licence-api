@@ -7,6 +7,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.HasReviewDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -67,7 +68,7 @@ class HardStopLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   updatedBy: Staff? = null,
 
-  var reviewDate: LocalDateTime? = null,
+  override var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
 
   @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
@@ -132,7 +133,8 @@ class HardStopLicence(
   updatedBy = updatedBy,
   responsibleCom = responsibleCom,
 ),
-  AlwaysHasCom {
+  AlwaysHasCom,
+  HasReviewDate {
 
   fun copy(
     id: Long? = this.id,
