@@ -18,7 +18,6 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.LicenceLike
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -40,7 +39,7 @@ abstract class Licence(
   @param:NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "kind", insertable = false, updatable = false)
-  override var kind: LicenceKind,
+  var kind: LicenceKind,
 
   @Enumerated(EnumType.STRING)
   var eligibleKind: LicenceKind?,
@@ -53,7 +52,7 @@ abstract class Licence(
 
   @param:NotNull
   @Enumerated(EnumType.STRING)
-  override var statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
+  var statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
 
   val nomsId: String? = null,
   val bookingNo: String? = null,
@@ -130,8 +129,7 @@ abstract class Licence(
   @JoinColumn(name = "responsible_com_id", nullable = true)
   var responsibleCom: CommunityOffenderManager?,
 ) : AbstractIdEntity(idInternal = id),
-  SentenceDateHolder,
-  LicenceLike {
+  SentenceDateHolder {
 
   fun isInPssPeriod(): Boolean {
     val led = licenceExpiryDate

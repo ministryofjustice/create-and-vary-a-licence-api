@@ -901,7 +901,7 @@ class LicenceService(
     )
 
     val isNowInPssPeriod =
-      licence.isVariation() && licence.typeCode == AP_PSS && licence.isInPssPeriod()
+      licence.kind.isVariation() && licence.typeCode == AP_PSS && licence.isInPssPeriod()
 
     if (!isNowInPssPeriod) {
       licenceCopy.bespokeConditions.addAll(

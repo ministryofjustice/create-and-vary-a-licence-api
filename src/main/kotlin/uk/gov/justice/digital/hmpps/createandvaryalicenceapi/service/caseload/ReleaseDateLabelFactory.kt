@@ -54,7 +54,7 @@ class ReleaseDateLabelFactory(
     releaseDate = licence.licenceStartDate,
     confirmedReleaseDate = licence.actualReleaseDate,
     postRecallDate = licence.postRecallReleaseDate,
-    hdcReleaseDate = if (licence.isHdcLicence()) licence.homeDetentionCurfewActualDate else null,
+    hdcReleaseDate = if (licence.kind.isHdc()) licence.homeDetentionCurfewActualDate else null,
   )
 
   fun fromPrisonerSearch(licenceStartDate: LocalDate?, offender: PrisonerSearchPrisoner): String = getLabel(
