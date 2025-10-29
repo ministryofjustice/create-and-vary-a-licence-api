@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
@@ -71,6 +70,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -180,12 +181,6 @@ class LicenceService(
     )
 
     else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
-  }
-
-  fun isReviewNeeded(licence: EntityLicence) = when (licence) {
-    is HardStopLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
-    is TimeServedLicence -> (licence.statusCode == ACTIVE && licence.reviewDate == null)
-    else -> false
   }
 
   @Transactional
@@ -907,7 +902,7 @@ class LicenceService(
     )
 
     val isNowInPssPeriod =
-      licence is Variation && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()
+      licence.isVariation() && licence.typeCode == AP_PSS && licence.isInPssPeriod()
 
     if (!isNowInPssPeriod) {
       licenceCopy.bespokeConditions.addAll(
@@ -992,7 +987,7 @@ class LicenceService(
     return staff as? CommunityOffenderManager ?: error("Cannot find staff with username: $username")
   }
 
-  private fun AdditionalCondition.isNotAp() = LicenceType.valueOf(this.conditionType) != LicenceType.AP
+  private fun AdditionalCondition.isNotAp() = LicenceType.valueOf(this.conditionType) != AP
 
   private fun splitName(fullName: String?): Pair<String?, String?> {
     val names = fullName?.split(" ")?.toMutableList()
@@ -1132,7 +1127,6 @@ class LicenceService(
     return transformToLicenceSummary(
       this,
       hardStopKind = hardStopKind,
-      isReviewNeeded = this.isReviewNeeded(),
       hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),

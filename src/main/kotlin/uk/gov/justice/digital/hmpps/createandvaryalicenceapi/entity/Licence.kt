@@ -18,12 +18,14 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.LicenceLike
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -38,7 +40,7 @@ abstract class Licence(
   @param:NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "kind", insertable = false, updatable = false)
-  var kind: LicenceKind,
+  override var kind: LicenceKind,
 
   @Enumerated(EnumType.STRING)
   var eligibleKind: LicenceKind?,
@@ -51,7 +53,7 @@ abstract class Licence(
 
   @param:NotNull
   @Enumerated(EnumType.STRING)
-  var statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
+  override var statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
 
   val nomsId: String? = null,
   val bookingNo: String? = null,
@@ -128,7 +130,8 @@ abstract class Licence(
   @JoinColumn(name = "responsible_com_id", nullable = true)
   var responsibleCom: CommunityOffenderManager?,
 ) : AbstractIdEntity(idInternal = id),
-  SentenceDateHolder {
+  SentenceDateHolder,
+  LicenceLike {
 
   fun isInPssPeriod(): Boolean {
     val led = licenceExpiryDate
@@ -141,12 +144,12 @@ abstract class Licence(
   }
 
   fun activate() {
-    statusCode = LicenceStatus.ACTIVE
+    statusCode = ACTIVE
     licenceActivatedDate = LocalDateTime.now()
   }
 
   fun deactivate(staffMember: Staff? = null) {
-    statusCode = LicenceStatus.INACTIVE
+    statusCode = INACTIVE
     updatedByUsername = staffMember?.username ?: SYSTEM_USER
     updatedBy = staffMember ?: this.updatedBy
   }
@@ -371,14 +374,6 @@ abstract class Licence(
       return led.isBefore(lad.toLocalDate()) && !(tused.isBefore(lad.toLocalDate()))
     }
     return false
-  }
-
-  fun isHdcLicence(): Boolean = kind == LicenceKind.HDC || kind == LicenceKind.HDC_VARIATION
-
-  fun isReviewNeeded() = when (this) {
-    is HardStopLicence -> (statusCode == ACTIVE && reviewDate == null)
-    is TimeServedLicence -> (statusCode == ACTIVE && reviewDate == null)
-    else -> false
   }
 
   override fun equals(other: Any?): Boolean {

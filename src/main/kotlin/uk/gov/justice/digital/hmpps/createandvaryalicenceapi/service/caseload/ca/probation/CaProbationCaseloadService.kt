@@ -2,11 +2,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
@@ -17,7 +17,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 
 @Service
 class CaProbationCaseloadService(
-  private val licenceService: LicenceService,
+  private val licenceCaseRepository: LicenceCaseRepository,
+  private val releaseDateService: ReleaseDateService,
   private val deliusApiClient: DeliusApiClient,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
 ) {
@@ -29,9 +30,7 @@ class CaProbationCaseloadService(
   )
 
   fun getProbationOmuCaseload(prisonCaseload: Set<String>, searchString: String?): List<CaCase> {
-    val licences = licenceService.findLicencesMatchingCriteria(
-      LicenceQueryObject(statusCodes = statuses, prisonCodes = prisonCaseload.toList()),
-    )
+    val licences = licenceCaseRepository.findLicenceCases(statuses, prisonCaseload.toList())
 
     val formattedLicences = formatReleasedLicences(licences)
     val cases = mapCasesToComs(formattedLicences)
@@ -40,26 +39,27 @@ class CaProbationCaseloadService(
     return searchResults.sortedWith(compareByDescending<CaCase> { it.releaseDate }.thenBy { it.licenceId })
   }
 
-  private fun formatReleasedLicences(licences: List<LicenceSummary>): List<CaCase> {
-    val groupedLicences = licences.groupBy { it.nomisId }
+  private fun formatReleasedLicences(licences: List<LicenceCaCase>): List<CaCase> {
+    val groupedLicences = licences.groupBy { it.prisonNumber }
     return groupedLicences.map {
       val licence = if (it.value.size > 1) {
-        it.value.find { l -> l.licenceStatus != ACTIVE }
+        it.value.find { l -> l.statusCode != ACTIVE }
       } else {
         it.value[0]
       }
 
+      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence?.licenceStartDate)
       CaCase(
         kind = licence?.kind,
         licenceId = licence?.licenceId,
-        licenceVersionOf = licence?.versionOf,
+        licenceVersionOf = licence?.versionOfId,
         name = "${licence?.forename} ${licence?.surname}",
-        prisonerNumber = licence?.nomisId!!,
+        prisonerNumber = licence?.prisonNumber!!,
         releaseDate = licence.licenceStartDate,
-        releaseDateLabel = releaseDateLabelFactory.fromLicenceSummary(licence),
-        licenceStatus = licence.licenceStatus,
+        releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(licence),
+        licenceStatus = licence.statusCode,
         lastWorkedOnBy = licence.updatedByFullName,
-        isInHardStopPeriod = licence.isInHardStopPeriod,
+        isInHardStopPeriod = isInHardStopPeriod,
         probationPractitioner = ProbationPractitioner(
           staffUsername = licence.comUsername,
         ),
