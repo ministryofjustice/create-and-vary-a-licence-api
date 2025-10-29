@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.HasReviewDate
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -104,14 +104,14 @@ fun transformToLicenceSummary(
   submittedDate = licence.submittedDate,
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
-  isReviewNeeded = licence is HasReviewDate && licence.isReviewNeeded(),
+  isReviewNeeded = licence is ReviewablePostRelease && licence.isReviewNeeded(),
   hardStopKind = hardStopKind,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   updatedByFullName = licence.getUpdatedByFullName(),
-  homeDetentionCurfewActualDate = if (licence.isHdcLicence()) licence.homeDetentionCurfewActualDate else null,
+  homeDetentionCurfewActualDate = if (licence.kind.isHdc()) licence.homeDetentionCurfewActualDate else null,
 )
 
 fun toHardstop(
@@ -880,7 +880,7 @@ fun transformToApprovalLicenceSummary(
   approvedByName = licence.approvedByName,
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
-  isReviewNeeded = licence is HasReviewDate && licence.isReviewNeeded(),
+  isReviewNeeded = licence is ReviewablePostRelease && licence.isReviewNeeded(),
   updatedByFullName = licence.getUpdatedByFullName(),
   submittedByFullName = licence.getSubmittedByFullName(),
   hardStopDate = hardStopDate,
