@@ -51,7 +51,9 @@ enum class LicenceKind(
     { LicenceEventType.VARIATION_SUBMITTED },
     { LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED },
     { LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED },
-  ),
+  ) {
+    override fun isVariation() = true
+  },
 
   HARD_STOP(
     HardStopLicence::class.java,
@@ -61,7 +63,9 @@ enum class LicenceKind(
     { LicenceEventType.HARD_STOP_SUBMITTED },
     { LicenceDomainEventType.LICENCE_ACTIVATED },
     { LicenceDomainEventType.LICENCE_INACTIVATED },
-  ),
+  ) {
+    override fun isCreatedByPrison() = true
+  },
 
   HDC(
     HdcLicence::class.java,
@@ -86,6 +90,7 @@ enum class LicenceKind(
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_INACTIVATED },
   ) {
     override fun isHdc() = true
+    override fun isVariation() = true
   },
 
   TIME_SERVED(
@@ -96,8 +101,12 @@ enum class LicenceKind(
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.TIME_SERVED_LICENCE_ACTIVATED },
     { LicenceDomainEventType.TIME_SERVED_LICENCE_INACTIVATED },
-  ),
+  ) {
+    override fun isCreatedByPrison() = true
+  },
   ;
 
+  open fun isCreatedByPrison(): Boolean = false
+  open fun isVariation(): Boolean = false
   open fun isHdc(): Boolean = false
 }

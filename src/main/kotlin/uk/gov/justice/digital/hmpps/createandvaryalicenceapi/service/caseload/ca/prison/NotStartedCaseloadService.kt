@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
@@ -33,10 +33,10 @@ class NotStartedCaseloadService(
   private val cvlRecordService: CvlRecordService,
 ) {
   fun findNotStartedCases(
-    licences: List<LicenceSummary>,
+    licences: List<LicenceCaCase>,
     prisonCaseload: Set<String>,
   ): List<CaCase> {
-    val licenceNomisIds = licences.map { it.nomisId }
+    val licenceNomisIds = licences.map { it.prisonNumber }
     val prisonersApproachingRelease = getPrisonersApproachingRelease(prisonCaseload)
 
     val prisonersWithoutLicences = prisonersApproachingRelease.filter { p ->
@@ -78,7 +78,7 @@ class NotStartedCaseloadService(
       tabType = Tabs.determineCaViewCasesTab(
         case.cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
         case.cvlRecord.licenceStartDate,
-        licence = null,
+        licenceCaCase = null,
         clock,
       ),
       probationPractitioner = case.probationPractitioner,

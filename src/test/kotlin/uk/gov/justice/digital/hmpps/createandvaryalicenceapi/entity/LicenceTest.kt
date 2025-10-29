@@ -243,11 +243,5 @@ class LicenceTest {
       )
       assertThat(licence.isReviewNeeded()).isFalse()
     }
-
-    @Test
-    fun `CRD Licence type returns false`() {
-      val licence = createCrdLicence()
-      assertThat(licence.isReviewNeeded()).isFalse()
-    }
   }
 }

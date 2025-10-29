@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.HasReviewDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -61,7 +62,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 @TimeServedConsiderations("Without a COM, we would just surface null and handle on the frontend")
 fun transformToLicenceSummary(
   licence: Licence,
-  isReviewNeeded: Boolean,
   hardStopKind: LicenceKind?,
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
@@ -104,7 +104,7 @@ fun transformToLicenceSummary(
   submittedDate = licence.submittedDate,
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
-  isReviewNeeded = isReviewNeeded,
+  isReviewNeeded = licence is HasReviewDate && licence.isReviewNeeded(),
   hardStopKind = hardStopKind,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
@@ -880,7 +880,7 @@ fun transformToApprovalLicenceSummary(
   approvedByName = licence.approvedByName,
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
-  isReviewNeeded = licence.isReviewNeeded(),
+  isReviewNeeded = licence is HasReviewDate && licence.isReviewNeeded(),
   updatedByFullName = licence.getUpdatedByFullName(),
   submittedByFullName = licence.getSubmittedByFullName(),
   hardStopDate = hardStopDate,
