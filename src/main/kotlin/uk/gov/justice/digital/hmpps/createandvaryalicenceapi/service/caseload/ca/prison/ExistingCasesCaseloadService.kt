@@ -79,7 +79,7 @@ class ExistingCasesCaseloadService(
           licence,
           clock,
         ),
-        probationPractitioner = usernameToProbationPractitioner[licence.comUsername],
+        probationPractitioner = usernameToProbationPractitioner[licence.comUsername?.lowercase()],
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
       )

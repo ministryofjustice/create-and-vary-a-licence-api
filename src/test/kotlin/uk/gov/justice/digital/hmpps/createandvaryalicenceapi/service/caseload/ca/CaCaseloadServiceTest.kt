@@ -1622,6 +1622,7 @@ class CaCaseloadServiceTest {
           nomisId = "A1234AC",
           licenceStartDate = null,
           forename = "Last",
+          comUsername = comUser01.username?.uppercase(),
         ),
         createLicenceCase(
           licenceId = 2,
