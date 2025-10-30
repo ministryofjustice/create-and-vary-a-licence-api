@@ -8,10 +8,13 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.NomisTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.NomisLicenceReasonResponse
+import java.util.Optional
 
 @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
 @Repository
 interface NomisTimeServedLicenceRepository : JpaRepository<NomisTimeServedLicence, Long> {
+
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Int): Optional<NomisTimeServedLicence>
 
   @Query(
     """
@@ -25,7 +28,7 @@ interface NomisTimeServedLicenceRepository : JpaRepository<NomisTimeServedLicenc
     WHERE l.nomsId = :nomsId AND l.bookingId = :bookingId
 """,
   )
-  fun findByNomsIdAndBookingId(
+  fun findLicenceReasonByNomsIdAndBookingId(
     @Param("nomsId") nomsId: String,
     @Param("bookingId") bookingId: Int,
   ): NomisLicenceReasonResponse?

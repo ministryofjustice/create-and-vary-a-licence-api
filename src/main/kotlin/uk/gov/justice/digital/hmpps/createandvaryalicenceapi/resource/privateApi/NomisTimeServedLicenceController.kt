@@ -69,9 +69,10 @@ class NomisTimeServedLicenceController(
     ],
   )
   fun updateNomisLicenceReason(
-    @PathVariable("reasonRecordId") reasonRecordId: Long,
+    @RequestParam("nomsId") nomsId: String,
+    @RequestParam("bookingId") bookingId: Int,
     @Valid @RequestBody body: UpdateNomisLicenceReasonRequest,
-  ) = nomisTimeServedLicenceService.updateNomisLicenceReason(reasonRecordId, body)
+  ) = nomisTimeServedLicenceService.updateNomisLicenceReason(nomsId, bookingId, body)
 
   @Tag(name = "Nomis Time Served Licence")
   @GetMapping(

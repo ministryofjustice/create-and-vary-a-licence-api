@@ -35,6 +35,7 @@ class NomisTimeServedLicenceService(
       updatedByCa = staff,
     )
 
+    // Save
     licenceRepository.saveAndFlush(licenceRecord)
 
     val summary = "Recorded NOMIS licence reason"
@@ -65,10 +66,10 @@ class NomisTimeServedLicenceService(
   }
 
   @Transactional
-  fun updateNomisLicenceReason(reasonRecordId: Long, request: UpdateNomisLicenceReasonRequest) {
+  fun updateNomisLicenceReason(nomsId: String, bookingId: Int, request: UpdateNomisLicenceReasonRequest) {
     // Fetch existing licence record
-    val licence = licenceRepository.findById(reasonRecordId)
-      .orElseThrow { IllegalArgumentException("Reason record with ID $reasonRecordId not found") }
+    val licence = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
+      .orElseThrow { IllegalArgumentException("Reason record with nomsId $nomsId and bookingId $bookingId not found") }
 
     // Fetch Staff entity for updatedByCaId
     val staff = staffRepository.findById(request.updatedByCaId)
@@ -111,5 +112,5 @@ class NomisTimeServedLicenceService(
     )
   }
 
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Int): NomisLicenceReasonResponse? = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Int): NomisLicenceReasonResponse? = licenceRepository.findLicenceReasonByNomsIdAndBookingId(nomsId, bookingId)
 }
