@@ -84,6 +84,7 @@ class NotStartedCaseloadService(
       probationPractitioner = case.probationPractitioner,
       prisonCode = case.nomisRecord.prisonId,
       prisonDescription = case.nomisRecord.prisonName,
+      hardStopKind = case.cvlRecord.hardStopKind,
     )
   }
 

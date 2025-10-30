@@ -271,6 +271,7 @@ class CaCaseloadServiceTest {
           assertThat(name).isEqualTo("Person Four")
           assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
+          assertThat(hardStopKind).isEqualTo(LicenceKind.HARD_STOP)
         }
 
         verify(licenceCaseRepository, times(1)).findLicenceCases(
@@ -814,6 +815,7 @@ class CaCaseloadServiceTest {
                 staffUsername = null,
               ),
               lastWorkedOnBy = null,
+              hardStopKind = LicenceKind.HARD_STOP,
             ),
           ),
         )
@@ -1620,6 +1622,7 @@ class CaCaseloadServiceTest {
           nomisId = "A1234AC",
           licenceStartDate = null,
           forename = "Last",
+          comUsername = comUser01.username?.uppercase(),
         ),
         createLicenceCase(
           licenceId = 2,
