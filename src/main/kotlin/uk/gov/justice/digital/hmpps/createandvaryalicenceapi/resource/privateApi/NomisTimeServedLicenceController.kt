@@ -51,7 +51,7 @@ class NomisTimeServedLicenceController(
     @Valid @RequestBody body: RecordNomisLicenceReasonRequest,
   ) = nomisTimeServedLicenceService.recordNomisLicenceReason(body)
 
-  @PutMapping("/id/{reasonRecordId}/update-reason")
+  @PutMapping("/update-reason")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Updates an existing NOMIS Time Served Licence record.",

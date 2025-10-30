@@ -1,7 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import jakarta.transaction.Transactional
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.NomisTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
@@ -22,9 +25,9 @@ class NomisTimeServedLicenceService(
 
   @Transactional
   fun recordNomisLicenceReason(request: RecordNomisLicenceReasonRequest) {
-    // Fetch Staff entity for updatedByCaId
-    val staff = staffRepository.findById(request.updatedByCaId)
-      .orElseThrow { IllegalArgumentException("Staff with ID ${request.updatedByCaId} not found") }
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staff = staffRepository.findByUsernameIgnoreCase(username)
+      ?: throw ValidationException("Staff with username $username not found")
 
     // Create entity
     val licenceRecord = NomisTimeServedLicence(
@@ -69,11 +72,11 @@ class NomisTimeServedLicenceService(
   fun updateNomisLicenceReason(nomsId: String, bookingId: Int, request: UpdateNomisLicenceReasonRequest) {
     // Fetch existing licence record
     val licence = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
-      .orElseThrow { IllegalArgumentException("Reason record with nomsId $nomsId and bookingId $bookingId not found") }
+      .orElseThrow { EntityNotFoundException("Reason record with nomsId $nomsId and bookingId $bookingId not found") }
 
-    // Fetch Staff entity for updatedByCaId
-    val staff = staffRepository.findById(request.updatedByCaId)
-      .orElseThrow { IllegalArgumentException("Staff with ID ${request.updatedByCaId} not found") }
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staff = staffRepository.findByUsernameIgnoreCase(username)
+      ?: throw ValidationException("Staff with username $username not found")
 
     val oldReason = licence.reason
 
@@ -112,5 +115,6 @@ class NomisTimeServedLicenceService(
     )
   }
 
+  @Transactional(readOnly = true)
   fun findByNomsIdAndBookingId(nomsId: String, bookingId: Int): NomisLicenceReasonResponse? = licenceRepository.findLicenceReasonByNomsIdAndBookingId(nomsId, bookingId)
 }
