@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
@@ -112,7 +113,7 @@ object TestData {
     licenceStartDate = licenceStartDate,
     isEligible = true,
     eligibleKind = kind,
-    ineligiblityReasons = emptyList(),
+    ineligibilityReasons = emptyList(),
     hardStopKind = hardStopKind,
     isEligibleForEarlyRelease = isEligibleForEarlyRelease,
     isInHardStopPeriod = isInHardStopPeriod,
@@ -127,7 +128,7 @@ object TestData {
     prrdIneligibilityReasons = emptyList(),
     isEligible = true,
     eligibleKind = LicenceKind.CRD,
-    ineligiblityReasons = emptyList(),
+    ineligibilityReasons = emptyList(),
   )
 
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(

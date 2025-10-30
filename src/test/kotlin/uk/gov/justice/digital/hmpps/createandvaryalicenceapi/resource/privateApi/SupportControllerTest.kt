@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LastMinuteHandoverCaseService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
 
@@ -56,7 +57,14 @@ class SupportControllerTest {
 
   @Test
   fun `get ineligibility reasons`() {
-    whenever(supportService.getIneligibilityReasons("A1234AA")).thenReturn(listOf("A Reason"))
+    whenever(supportService.getIneligibilityReasons("A1234AA")).thenReturn(
+      EligibilityAssessment(
+        genericIneligibilityReasons = listOf("A Reason"),
+        crdIneligibilityReasons = emptyList(),
+        prrdIneligibilityReasons = emptyList(),
+        isEligible = false,
+      ),
+    )
 
     val request = get("/offender/nomisid/A1234AA/ineligibility-reasons")
       .accept(MediaType.APPLICATION_JSON)
@@ -64,7 +72,7 @@ class SupportControllerTest {
 
     val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
 
-    assertThat(mapper.readValue(response, Array<String>::class.java)).isEqualTo(arrayOf("A Reason"))
+    assertThat(mapper.readValue(response, EligibilityAssessment::class.java).ineligibilityReasons).isEqualTo(listOf("A Reason"))
   }
 
   @Test
