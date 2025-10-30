@@ -67,9 +67,13 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
 # Add policy v3 enabled flag
 export POLICYV3_ENABLED=true
-export RECALL_ENABLED=false
+
+#Recalls
 export RECALL_PRISONS="MDI"
 export RECALL_REGIONS="N03,N55"
+
+# Feature toggles
+export RECALL_ENABLED=false
 export FEATURE_TOGGLE_TIMESERVED_ENABLED=false
 
 SKIP_DOCKER=false
