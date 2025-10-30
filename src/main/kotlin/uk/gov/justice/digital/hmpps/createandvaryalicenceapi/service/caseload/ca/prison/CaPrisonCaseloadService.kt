@@ -28,10 +28,10 @@ class CaPrisonCaseloadService(
 
   fun getPrisonOmuCaseload(prisonCaseload: Set<String>, searchString: String?): List<CaCase> {
     val filteredPrisons = prisonCaseload.filterNot { it == CENTRAL_ADMIN_CASELOAD }
-    val existingLicences = licenceCaseRepository.findLicenceCases(statuses, filteredPrisons)
+    val licenceCases = licenceCaseRepository.findLicenceCases(statuses, filteredPrisons)
 
-    val existingCases = existingCasesCaseloadService.findExistingCases(existingLicences)
-    val notStartedCases = notStartedCaseloadService.findNotStartedCases(existingLicences, prisonCaseload)
+    val existingCases = existingCasesCaseloadService.findExistingCases(licenceCases)
+    val notStartedCases = notStartedCaseloadService.findNotStartedCases(licenceCases, prisonCaseload)
 
     val cases = existingCases + notStartedCases
     val results = SearchFilter.apply(searchString, cases)
