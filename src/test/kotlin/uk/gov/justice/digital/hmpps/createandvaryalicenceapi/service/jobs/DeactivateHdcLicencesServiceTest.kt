@@ -1,13 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
-import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -20,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
@@ -33,7 +32,7 @@ class DeactivateHdcLicencesServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val domainEventsService = mock<DomainEventsService>()
-  private val telemetryClient = mock<TelemetryClient>()
+  private val telemetryService = mock<TelemetryService>()
 
   private val service = DeactivateHdcLicencesService(
     licenceRepository,
@@ -41,7 +40,7 @@ class DeactivateHdcLicencesServiceTest {
     auditEventRepository,
     licenceEventRepository,
     domainEventsService,
-    telemetryClient,
+    telemetryService,
   )
 
   @BeforeEach
@@ -62,7 +61,7 @@ class DeactivateHdcLicencesServiceTest {
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(telemetryClient, times(0)).trackEvent(any(), any(), isNull())
+    verify(telemetryService, times(0)).recordDeactivateHdcLicencesJobEvent(any())
   }
 
   @Test
@@ -83,7 +82,7 @@ class DeactivateHdcLicencesServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(aHdcLicence, LicenceStatusInactive)
-    verify(telemetryClient).trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to "1"), null)
+    verify(telemetryService).recordDeactivateHdcLicencesJobEvent(1)
 
     assertThat(licenceCaptor.firstValue[0])
       .extracting("statusCode")

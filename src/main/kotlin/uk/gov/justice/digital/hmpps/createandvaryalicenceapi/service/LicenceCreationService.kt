@@ -58,6 +58,7 @@ class LicenceCreationService(
   private val cvlRecordService: CvlRecordService,
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
   private val isTimeServedLogicEnabled: Boolean = false,
+  private val telemetryService: TelemetryService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -272,6 +273,7 @@ class LicenceCreationService(
         eventDescription = "Licence created for ${licence.forename} ${licence.surname}",
       ),
     )
+    telemetryService.recordLicenceCreatedEvent(licence)
   }
 
   private fun verifyNoInFlightLicence(nomsId: String) {

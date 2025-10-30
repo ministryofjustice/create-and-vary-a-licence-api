@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
-import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -11,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -23,7 +23,7 @@ class DeactivateHdcLicencesService(
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val domainEventsService: DomainEventsService,
-  private val telemetryClient: TelemetryClient,
+  private val telemetryService: TelemetryService,
 ) {
 
   companion object {
@@ -74,6 +74,6 @@ class DeactivateHdcLicencesService(
       )
       domainEventsService.recordDomainEvent(licence, LicenceStatus.INACTIVE)
     }
-    telemetryClient.trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to licences.size.toString()), null)
+    telemetryService.recordDeactivateHdcLicencesJobEvent(licences.size)
   }
 }
