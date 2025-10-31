@@ -57,7 +57,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
     )
 
     webTestClient.put()
-      .uri("/nomis-time-served-licence/update-reason?nomsId=A1234AA&bookingId=123456")
+      .uri("/nomis-time-served-licence/update-reason/A1234AA/123456")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updateRequest)
@@ -85,7 +85,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
   @Sql("classpath:test_data/seed-nomis-licence-id-1.sql")
   fun `should retrieve NOMIS licence reason successfully`() {
     webTestClient.get()
-      .uri("/nomis-time-served-licence/reason?nomsId=A1234AA&bookingId=123456")
+      .uri("/nomis-time-served-licence/reason/A1234AA/123456")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -102,7 +102,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
 
     // Perform DELETE request
     webTestClient.delete()
-      .uri("/nomis-time-served-licence/reason?nomsId=A1234AA&bookingId=123456")
+      .uri("/nomis-time-served-licence/reason/A1234AA/123456")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk

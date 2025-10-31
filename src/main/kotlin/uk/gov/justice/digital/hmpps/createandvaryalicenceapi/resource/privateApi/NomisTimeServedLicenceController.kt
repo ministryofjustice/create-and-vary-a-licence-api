@@ -12,11 +12,11 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
@@ -51,7 +51,7 @@ class NomisTimeServedLicenceController(
     @Valid @RequestBody body: RecordNomisLicenceReasonRequest,
   ) = nomisTimeServedLicenceService.recordNomisLicenceReason(body)
 
-  @PutMapping("/update-reason")
+  @PutMapping("/update-reason/{nomsId}/{bookingId}")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Updates an existing NOMIS Time Served Licence record.",
@@ -68,13 +68,13 @@ class NomisTimeServedLicenceController(
     ],
   )
   fun updateNomisLicenceReason(
-    @RequestParam("nomsId") nomsId: String,
-    @RequestParam("bookingId") bookingId: Long,
+    @PathVariable("nomsId") nomsId: String,
+    @PathVariable("bookingId") bookingId: Long,
     @Valid @RequestBody body: UpdateNomisLicenceReasonRequest,
   ) = nomisTimeServedLicenceService.updateNomisLicenceReason(nomsId, bookingId, body)
 
   @GetMapping(
-    value = ["/reason"],
+    value = ["/reason/{nomsId}/{bookingId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -100,11 +100,11 @@ class NomisTimeServedLicenceController(
     ],
   )
   fun getNomisLicenceReason(
-    @RequestParam("nomsId") nomsId: String,
-    @RequestParam("bookingId") bookingId: Long,
+    @PathVariable nomsId: String,
+    @PathVariable bookingId: Long,
   ): NomisLicenceReasonResponse? = nomisTimeServedLicenceService.findByNomsIdAndBookingId(nomsId, bookingId)
 
-  @DeleteMapping(value = ["/reason"])
+  @DeleteMapping(value = ["/reason/{nomsId}/{bookingId}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Deletes a NOMIS Time Served Licence reason record.",
@@ -121,8 +121,8 @@ class NomisTimeServedLicenceController(
     ],
   )
   fun deleteNomisLicenceReason(
-    @RequestParam("nomsId") nomsId: String,
-    @RequestParam("bookingId") bookingId: Long,
+    @PathVariable("nomsId") nomsId: String,
+    @PathVariable("bookingId") bookingId: Long,
   ) {
     nomisTimeServedLicenceService.deleteNomisLicenceReason(nomsId, bookingId)
   }
