@@ -148,7 +148,6 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
     assertThat(auditEvent.username).isEqualTo("test-client")
   }
 
-
   @Test
   fun `should return 400 for invalid request body`() {
     val invalidRequest = RecordNomisLicenceReasonRequest(

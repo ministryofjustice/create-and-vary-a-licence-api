@@ -91,7 +91,6 @@ class NomisTimeServedLicenceService(
 
   @Transactional
   fun deleteNomisLicenceReason(nomsId: String, bookingId: Long) {
-
     val reasonEntity = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId).orElse(null)
     val staff = getCurrentStaff()
 
@@ -102,12 +101,12 @@ class NomisTimeServedLicenceService(
         detail = """
                 No NOMIS licence record found for:
                 nomsId=$nomsId, bookingId=$bookingId
-            """.trimIndent(),
+        """.trimIndent(),
         staff = staff,
         changes = mapOf(
           "nomsId" to nomsId,
           "bookingId" to bookingId,
-          "status" to "No record found"
+          "status" to "No record found",
         ),
       )
       return
@@ -120,7 +119,7 @@ class NomisTimeServedLicenceService(
             Deleted NOMIS licence record:
             ID=${reasonEntity.id}, nomsId=${reasonEntity.nomsId}, bookingId=${reasonEntity.bookingId},
             reason=${reasonEntity.reason}, prisonCode=${reasonEntity.prisonCode}
-        """.trimIndent(),
+      """.trimIndent(),
       staff = staff,
       changes = mapOf(
         "reason (deleted)" to reasonEntity.reason,
@@ -131,7 +130,6 @@ class NomisTimeServedLicenceService(
     )
 
     licenceRepository.delete(reasonEntity)
-
   }
 
   // ✅ Common helper methods
