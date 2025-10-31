@@ -136,7 +136,7 @@ class NomisTimeServedLicenceService(
   private fun getCurrentStaff(): Staff {
     val username = SecurityContextHolder.getContext().authentication.name
     return staffRepository.findByUsernameIgnoreCase(username)
-      ?: throw IllegalStateException("Staff with username $username not found")
+      ?: error("Staff with username $username not found")
   }
 
   private fun saveAuditEvent(summary: String, detail: String, staff: Staff, changes: Map<String, Any>) {

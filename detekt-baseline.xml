@@ -119,7 +119,6 @@
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:WebClientConfiguration.kt$WebClientConfiguration</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
-    <ID>UseCheckOrError:NomisTimeServedLicenceService.kt$NomisTimeServedLicenceService$throw IllegalStateException("Staff with username $username not found")</ID>
     <ID>UtilityClassWithPublicConstructor:AppointmentMapper.kt$AppointmentMapper</ID>
   </CurrentIssues>
 </SmellBaseline>
