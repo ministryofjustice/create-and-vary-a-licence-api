@@ -90,6 +90,7 @@ class LicenceCreationServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
   private val cvlRecordService = mock<CvlRecordService>()
+  private val telemetryService = mock<TelemetryService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -108,6 +109,7 @@ class LicenceCreationServiceTest {
     hdcService,
     cvlRecordService,
     isTimeServedLogicEnabled = true,
+    telemetryService,
   )
 
   @Nested
@@ -159,6 +161,7 @@ class LicenceCreationServiceTest {
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(telemetryService).recordLicenceCreatedEvent(licenceCaptor.value)
 
       with(licenceCaptor.value as CrdLicence) {
         assertThat(kind).isEqualTo(LicenceKind.CRD)
@@ -1116,6 +1119,7 @@ class LicenceCreationServiceTest {
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(telemetryService).recordLicenceCreatedEvent(licenceCaptor.value)
 
       with(licenceCaptor.value as HardStopLicence) {
         assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
@@ -1765,6 +1769,7 @@ class LicenceCreationServiceTest {
       verify(auditEventRepository, times(1)).saveAndFlush(any())
       verify(licenceEventRepository, times(1)).saveAndFlush(any())
       verify(hdcCurfewAddressRepository, times(1)).saveAndFlush(hdcCurfewAddressCaptor.capture())
+      verify(telemetryService).recordLicenceCreatedEvent(licenceCaptor.value)
 
       with(licenceCaptor.value as HdcLicence) {
         assertThat(kind).isEqualTo(LicenceKind.HDC)
