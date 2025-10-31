@@ -29,6 +29,30 @@ class TelemetryService(
   }
 
   fun recordDeactivateHdcLicencesJobEvent(licencesDeactivated: Int = 0) {
-    telemetryClient.trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to licencesDeactivated.toString()), null)
+    telemetryClient.trackEvent(
+      "DeactivateHdcLicencesJob",
+      mapOf("licences" to licencesDeactivated.toString()),
+      null,
+    )
+  }
+
+  fun <T> recordCaseloadLoad(
+    caseLoadType: CaseloadType<T>,
+    context: Collection<String>,
+    items: List<T>,
+  ) {
+    val itemCounts =
+      items.map {
+        val kind = caseLoadType.kindExtractor(it)
+        val type = if (caseLoadType.isUnstarted(it)) "UNSTARTED" else "STARTED"
+        "CASES_${kind}_$type"
+      }
+        .groupingBy { it }
+        .eachCount()
+        .mapValues { it.value.toString() }
+
+    val properties =
+      mapOf("caseloadType" to caseLoadType.name, "context" to context.joinToString(", ")) + itemCounts
+    telemetryClient.trackEvent("CaseLoadRequest", properties, null)
   }
 }
