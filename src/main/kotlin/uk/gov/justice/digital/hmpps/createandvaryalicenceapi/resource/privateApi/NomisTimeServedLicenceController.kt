@@ -51,6 +51,7 @@ class NomisTimeServedLicenceController(
     @Valid @RequestBody body: RecordNomisLicenceReasonRequest,
   ) = nomisTimeServedLicenceService.recordNomisLicenceReason(body)
 
+  @Tag(name = "Nomis Time Served Licence")
   @PutMapping("/update-reason")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
