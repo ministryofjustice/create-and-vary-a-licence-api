@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 
 class TelemetryServiceTest {
 
@@ -87,6 +88,8 @@ class TelemetryServiceTest {
       caCase()
         .copy(licenceStatus = NOT_STARTED, kind = CRD),
       caCase()
+        .copy(licenceStatus = TIMED_OUT, kind = HARD_STOP),
+      caCase()
         .copy(licenceStatus = NOT_STARTED, kind = CRD),
     )
 
@@ -106,6 +109,6 @@ class TelemetryServiceTest {
     assertThat(props).containsEntry("CASES_CRD_STARTED", "1")
     assertThat(props).containsEntry("CASES_CRD_UNSTARTED", "2")
     assertThat(props).containsEntry("CASES_HARD_STOP_STARTED", "2")
-    assertThat(props).containsEntry("CASES_HARD_STOP_UNSTARTED", "1")
+    assertThat(props).containsEntry("CASES_HARD_STOP_UNSTARTED", "2")
   }
 }

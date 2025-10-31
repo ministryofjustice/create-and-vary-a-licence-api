@@ -3,7 +3,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 
 sealed interface CaseloadType<T> {
   val name: String
@@ -12,7 +13,7 @@ sealed interface CaseloadType<T> {
 
   abstract class CaCaseload : CaseloadType<CaCase> {
     override fun kindExtractor(item: CaCase) = item.kind
-    override fun isUnstarted(item: CaCase) = item.licenceStatus == LicenceStatus.NOT_STARTED
+    override fun isUnstarted(item: CaCase) = item.licenceStatus == NOT_STARTED || item.licenceStatus == TIMED_OUT
   }
 
   object CaPrisonCaseload : CaCaseload() {
@@ -25,7 +26,7 @@ sealed interface CaseloadType<T> {
 
   abstract class ComCaseload : CaseloadType<ComCase> {
     override fun kindExtractor(item: ComCase) = item.kind
-    override fun isUnstarted(item: ComCase) = item.licenceStatus == LicenceStatus.NOT_STARTED
+    override fun isUnstarted(item: ComCase) = item.licenceStatus == NOT_STARTED
   }
 
   object ComCreateStaffCaseload : ComCaseload() {
