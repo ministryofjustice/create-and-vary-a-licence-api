@@ -1,7 +1,3 @@
--- INSERT INTO staff(id, kind, staff_identifier, username, email, first_name, last_name)
--- VALUES
---     (1, 'PRISON_USER', 9000, 'Staff1', 'prisonClient@prison.gov.uk', 'Prison', 'User');
-
 INSERT INTO nomis_time_served_licences (
     noms_id,
     booking_id,
