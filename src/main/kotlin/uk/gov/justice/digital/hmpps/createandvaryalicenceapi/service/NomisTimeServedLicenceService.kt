@@ -91,18 +91,36 @@ class NomisTimeServedLicenceService(
 
   @Transactional
   fun deleteNomisLicenceReason(nomsId: String, bookingId: Long) {
-    val reasonEntity = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
-      .orElseThrow { EntityNotFoundException("No reason found for nomsId=$nomsId and bookingId=$bookingId") }
 
+    val reasonEntity = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId).orElse(null)
     val staff = getCurrentStaff()
 
+    if (reasonEntity == null) {
+      // Log audit for attempted deletion with no record found
+      saveAuditEvent(
+        summary = "Attempted to delete NOMIS licence reason - No record found",
+        detail = """
+                No NOMIS licence record found for:
+                nomsId=$nomsId, bookingId=$bookingId
+            """.trimIndent(),
+        staff = staff,
+        changes = mapOf(
+          "nomsId" to nomsId,
+          "bookingId" to bookingId,
+          "status" to "No record found"
+        ),
+      )
+      return
+    }
+
+    // Normal deletion flow
     saveAuditEvent(
       summary = "Deleted NOMIS licence reason",
       detail = """
-                Deleted NOMIS licence record:
-                ID=${reasonEntity.id}, nomsId=${reasonEntity.nomsId}, bookingId=${reasonEntity.bookingId},
-                reason=${reasonEntity.reason}, prisonCode=${reasonEntity.prisonCode}
-      """.trimIndent(),
+            Deleted NOMIS licence record:
+            ID=${reasonEntity.id}, nomsId=${reasonEntity.nomsId}, bookingId=${reasonEntity.bookingId},
+            reason=${reasonEntity.reason}, prisonCode=${reasonEntity.prisonCode}
+        """.trimIndent(),
       staff = staff,
       changes = mapOf(
         "reason (deleted)" to reasonEntity.reason,
@@ -113,6 +131,7 @@ class NomisTimeServedLicenceService(
     )
 
     licenceRepository.delete(reasonEntity)
+
   }
 
   // ✅ Common helper methods

@@ -121,6 +121,35 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `should return OK and create audit when no NOMIS licence reason exists`() {
+    // Ensure no record exists
+    val missing = licenceRepository.findByNomsIdAndBookingId("NON_EXISTENT", 999999)
+    assertThat(missing).isEmpty
+
+    // Perform DELETE request
+    webTestClient.delete()
+      .uri("/nomis-time-served-licence/reason/NON_EXISTENT/999999")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    // Verify still no record
+    val stillMissing = licenceRepository.findByNomsIdAndBookingId("NON_EXISTENT", 999999)
+    assertThat(stillMissing).isEmpty
+
+    // Verify audit event exists for attempted deletion
+    val auditEvents = auditEventRepository.findAll()
+    assertThat(auditEvents).isNotEmpty
+    val auditEvent = auditEvents.last()
+    assertThat(auditEvent.summary).isEqualTo("Attempted to delete NOMIS licence reason - No record found")
+    assertThat(auditEvent.changes).containsEntry("status", "No record found")
+    assertThat(auditEvent.changes).containsEntry("nomsId", "NON_EXISTENT")
+    assertThat(auditEvent.changes).containsEntry("bookingId", 999999)
+    assertThat(auditEvent.username).isEqualTo("test-client")
+  }
+
+
+  @Test
   fun `should return 400 for invalid request body`() {
     val invalidRequest = RecordNomisLicenceReasonRequest(
       nomsId = "",
