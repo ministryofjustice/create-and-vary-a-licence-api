@@ -39,11 +39,7 @@ class NomisTimeServedLicenceService(
 
     saveAuditEvent(
       summary = "Recorded NOMIS licence reason",
-      detail = """
-                Created NOMIS licence record:
-                ID=${licenceRecord.id}, nomsId=${licenceRecord.nomsId}, bookingId=${licenceRecord.bookingId},
-                reason=${licenceRecord.reason}, prisonCode=${licenceRecord.prisonCode}
-      """.trimIndent(),
+      detail = "Created NOMIS licence record: ID=${licenceRecord.id}",
       staff = staff,
       changes = mapOf(
         "nomsId" to licenceRecord.nomsId,
@@ -70,11 +66,7 @@ class NomisTimeServedLicenceService(
 
     saveAuditEvent(
       summary = "Updated NOMIS licence reason",
-      detail = """
-                Updated NOMIS licence record:
-                ID=${updatedLicence.id}, nomsId=${updatedLicence.nomsId}, bookingId=${updatedLicence.bookingId},
-                oldReason=$oldReason, newReason=${updatedLicence.reason}, prisonCode=${updatedLicence.prisonCode}
-      """.trimIndent(),
+      detail = "Updated NOMIS licence record: ID=${updatedLicence.id}",
       staff = staff,
       changes = mapOf(
         "reason (old)" to oldReason,
@@ -99,11 +91,7 @@ class NomisTimeServedLicenceService(
 
     saveAuditEvent(
       summary = "Deleted NOMIS licence reason",
-      detail = """
-                Deleted NOMIS licence record:
-                ID=${reasonEntity.id}, nomsId=${reasonEntity.nomsId}, bookingId=${reasonEntity.bookingId},
-                reason=${reasonEntity.reason}, prisonCode=${reasonEntity.prisonCode}
-      """.trimIndent(),
+      detail = "Deleted NOMIS licence record: ID=${reasonEntity.id}",
       staff = staff,
       changes = mapOf(
         "reason (deleted)" to reasonEntity.reason,
