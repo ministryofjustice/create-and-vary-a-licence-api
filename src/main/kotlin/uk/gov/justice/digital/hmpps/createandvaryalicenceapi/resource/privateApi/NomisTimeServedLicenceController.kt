@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -31,7 +32,6 @@ class NomisTimeServedLicenceController(
   private val nomisTimeServedLicenceService: NomisTimeServedLicenceService,
 ) {
 
-  @Tag(name = "Nomis Time Served Licence")
   @PostMapping("/record-reason")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
@@ -51,7 +51,6 @@ class NomisTimeServedLicenceController(
     @Valid @RequestBody body: RecordNomisLicenceReasonRequest,
   ) = nomisTimeServedLicenceService.recordNomisLicenceReason(body)
 
-  @Tag(name = "Nomis Time Served Licence")
   @PutMapping("/update-reason")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
@@ -74,7 +73,6 @@ class NomisTimeServedLicenceController(
     @Valid @RequestBody body: UpdateNomisLicenceReasonRequest,
   ) = nomisTimeServedLicenceService.updateNomisLicenceReason(nomsId, bookingId, body)
 
-  @Tag(name = "Nomis Time Served Licence")
   @GetMapping(
     value = ["/reason"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -105,4 +103,27 @@ class NomisTimeServedLicenceController(
     @RequestParam("nomsId") nomsId: String,
     @RequestParam("bookingId") bookingId: Long,
   ): NomisLicenceReasonResponse? = nomisTimeServedLicenceService.findByNomsIdAndBookingId(nomsId, bookingId)
+
+  @DeleteMapping(value = ["/reason"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Deletes a NOMIS Time Served Licence reason record.",
+    description = "Deletes the reason record for a given NOMIS ID and booking ID. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(responseCode = "200", description = "Reason deleted successfully"),
+      ApiResponse(responseCode = "400", description = "Bad request, invalid parameters", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+      ApiResponse(responseCode = "401", description = "Unauthorised, requires a valid Oauth2 token", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+      ApiResponse(responseCode = "403", description = "Forbidden, requires an appropriate role", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+      ApiResponse(responseCode = "404", description = "Record not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+    ],
+  )
+  fun deleteNomisLicenceReason(
+    @RequestParam("nomsId") nomsId: String,
+    @RequestParam("bookingId") bookingId: Long,
+  ) {
+    nomisTimeServedLicenceService.deleteNomisLicenceReason(nomsId, bookingId)
+  }
 }

@@ -46,7 +46,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
     val auditEvent = auditEvents.last()
     assertThat(auditEvent.summary).isEqualTo("Recorded NOMIS licence reason")
     assertThat(auditEvent.changes).containsEntry("reason", "Initial reason")
-    assertThat(auditEvent.username).isEqualTo("test-client") // from seeded staff
+    assertThat(auditEvent.username).isEqualTo("test-client")
   }
 
   @Test
@@ -91,6 +91,33 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reason").isEqualTo("Time served licence created for conditional release")
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-nomis-licence-id-1.sql")
+  fun `should delete NOMIS licence reason successfully`() {
+    // Verify the record exists before deletion
+    val existing = licenceRepository.findByNomsIdAndBookingId("A1234AA", 123456).get()
+    assertThat(existing.reason).isEqualTo("Time served licence created for conditional release")
+
+    // Perform DELETE request
+    webTestClient.delete()
+      .uri("/nomis-time-served-licence/reason?nomsId=A1234AA&bookingId=123456")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    // Verify the record is deleted
+    val deleted = licenceRepository.findByNomsIdAndBookingId("A1234AA", 123456)
+    assertThat(deleted).isEmpty
+
+    // Verify audit event exists
+    val auditEvents = auditEventRepository.findAll()
+    assertThat(auditEvents).isNotEmpty
+    val auditEvent = auditEvents.last()
+    assertThat(auditEvent.summary).isEqualTo("Deleted NOMIS licence reason")
+    assertThat(auditEvent.changes).containsEntry("reason (deleted)", "Time served licence created for conditional release")
+    assertThat(auditEvent.username).isEqualTo("test-client")
   }
 
   @Test
