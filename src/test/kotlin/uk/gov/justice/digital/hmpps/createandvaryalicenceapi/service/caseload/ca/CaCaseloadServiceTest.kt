@@ -4,8 +4,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -17,11 +19,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaPrisonCaseload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.caCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -64,6 +69,7 @@ class CaCaseloadServiceTest {
   private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
   private val cvlRecordService = mock<CvlRecordService>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
+  private val telemetryService = Mockito.mock<TelemetryService>()
 
   private val service = CaCaseloadService(
     prisonCaseloadService = CaPrisonCaseloadService(
@@ -83,12 +89,14 @@ class CaCaseloadServiceTest {
         releaseDateLabelFactory,
         cvlRecordService,
       ),
+      telemetryService,
     ),
     probationCaseloadService = CaProbationCaseloadService(
       licenceCaseRepository,
       releaseDateService,
       deliusApiClient,
       releaseDateLabelFactory,
+      telemetryService,
     ),
 
   )
@@ -125,6 +133,7 @@ class CaCaseloadServiceTest {
       prisonerSearchApiClient,
       releaseDateService,
       cvlRecordService,
+      telemetryService,
     )
 
     // Given licences returned by the service
@@ -1017,6 +1026,19 @@ class CaCaseloadServiceTest {
     }
 
     @Test
+    fun `telemetry is captured`() {
+      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(
+        aPrisonUserSearchRequest.copy(query = "A1234AA"),
+      )
+
+      verify(telemetryService).recordCaseloadLoad(
+        eq(CaPrisonCaseload),
+        eq(aPrisonUserSearchRequest.prisonCaseloads),
+        eq(results.inPrisonResults),
+      )
+    }
+
+    @Test
     fun `should successfully search by probation practitioner name for offender in prison`() {
       assertThat(
         service.searchForOffenderOnPrisonCaseAdminCaseload(
@@ -1277,6 +1299,36 @@ class CaCaseloadServiceTest {
           ),
           attentionNeededResults = emptyList(),
         ),
+      )
+    }
+
+    @Test
+    fun `telemetry is captured`() {
+      whenever(
+        licenceCaseRepository.findLicenceCases(
+          ProbationQuery.statusCodes,
+          ProbationQuery.prisonCodes,
+        ),
+      ).thenReturn(
+        listOf(
+          createLicenceCase(
+            licenceId = 4,
+            licenceStatus = LicenceStatus.ACTIVE,
+            nomisId = "A1234AD",
+            forename = "Person",
+            surname = "Four",
+          ),
+        ),
+      )
+
+      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(
+        aPrisonUserSearchRequest.copy(query = "A1234AD"),
+      )
+
+      verify(telemetryService).recordCaseloadLoad(
+        eq(CaProbationCaseload),
+        eq(aPrisonUserSearchRequest.prisonCaseloads),
+        eq(results.onProbationResults),
       )
     }
 

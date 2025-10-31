@@ -5,13 +5,17 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryStaffCaseload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
@@ -28,8 +32,9 @@ class ComVaryCaseloadServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceService = mock<LicenceService>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val telemetryService = mock<TelemetryService>()
 
-  private val service = ComVaryCaseloadService(deliusApiClient, licenceService, releaseDateService)
+  private val service = ComVaryCaseloadService(deliusApiClient, licenceService, releaseDateService, telemetryService)
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
   private val tenDaysFromNow = LocalDate.now().plusDays(10)
@@ -144,6 +149,140 @@ class ComVaryCaseloadServiceTest {
         name = "John Doe",
         staffUsername = "johndoe",
       ),
+    )
+  }
+
+  @Test
+  fun `telemetry is captured for staff`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+      listOf(
+        createLicenceSummary(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = LicenceKind.CRD,
+          licenceStatus = LicenceStatus.ACTIVE,
+          comUsername = "johndoe",
+        ),
+        createLicenceSummary(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = LicenceKind.CRD,
+          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+          comUsername = "johndoe",
+        ),
+      ),
+    )
+
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
+      listOf(
+        StaffNameResponse(
+          username = "johndoe",
+          code = "X54321",
+          name = Name(forename = "John", surname = "Doe"),
+          id = Long.MIN_VALUE,
+        ),
+      ),
+    )
+
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
+
+    verify(telemetryService).recordCaseloadLoad(
+      eq(ComVaryStaffCaseload),
+      eq(setOf(deliusStaffIdentifier.toString())),
+      eq(caseload),
+    )
+  }
+
+  @Test
+  fun `telemetry is captured for teams`() {
+    val selectedTeam = "team C"
+
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
+      ),
+      ManagedOffenderCrn(
+        crn = "X12349",
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
+      ),
+      ManagedOffenderCrn(
+        crn = "X12350",
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
+      ),
+    )
+
+    whenever(
+      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
+    ).thenReturn(managedOffenders)
+
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+      listOf(
+        createLicenceSummary(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = LicenceKind.VARIATION,
+          licenceType = LicenceType.PSS,
+          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+          licenceExpiryDate = elevenDaysFromNow,
+          comUsername = "joebloggs",
+          licenceStartDate = tenDaysFromNow,
+          forename = "ABCX XYZ",
+        ),
+        createLicenceSummary(
+          crn = "X12349",
+          nomisId = "AB1234F",
+          kind = LicenceKind.VARIATION,
+          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+          licenceExpiryDate = elevenDaysFromNow,
+          comUsername = "johndoe",
+          licenceStartDate = tenDaysFromNow,
+          forename = "ABC XYZ",
+        ),
+        createLicenceSummary(
+          crn = "X12350",
+          nomisId = "AB1234G",
+          kind = LicenceKind.VARIATION,
+          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+          licenceExpiryDate = elevenDaysFromNow,
+          comUsername = "johndoe",
+          licenceStartDate = elevenDaysFromNow,
+        ),
+      ),
+    )
+
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
+      listOf(
+        StaffNameResponse(
+          username = "johndoe",
+          code = "X54321",
+          name = Name(forename = "John", surname = "Doe"),
+          id = Long.MIN_VALUE,
+        ),
+        StaffNameResponse(
+          username = "joebloggs",
+          code = "X1234",
+          name = Name(forename = "Joe", surname = "Bloggs"),
+          id = Long.MIN_VALUE,
+        ),
+      ),
+    )
+
+    val caseload = service.getTeamVaryCaseload(listOf("team A", "team B"), listOf(selectedTeam))
+
+    verify(telemetryService).recordCaseloadLoad(
+      eq(ComVaryTeamCaseload),
+      eq(setOf(selectedTeam)),
+      eq(caseload),
     )
   }
 
