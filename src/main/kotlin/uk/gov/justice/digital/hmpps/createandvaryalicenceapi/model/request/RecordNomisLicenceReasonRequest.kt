@@ -12,7 +12,7 @@ data class RecordNomisLicenceReasonRequest(
 
   @field:Schema(description = "The booking ID associated with this offender", example = "123456")
   @field:NotNull(message = "bookingId must not be blank")
-  val bookingId: Int,
+  val bookingId: Long,
 
   @field:Schema(description = "The reason for creating this licence", example = "Time served release")
   @field:NotBlank(message = "reason must not be blank")

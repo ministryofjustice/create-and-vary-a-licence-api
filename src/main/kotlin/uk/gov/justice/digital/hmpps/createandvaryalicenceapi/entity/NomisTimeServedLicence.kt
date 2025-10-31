@@ -15,7 +15,7 @@ class NomisTimeServedLicence(
   val nomsId: String,
 
   @Column(name = "booking_id", nullable = false)
-  val bookingId: Int,
+  val bookingId: Long,
 
   @Column(name = "reason", columnDefinition = "TEXT", nullable = false)
   var reason: String,

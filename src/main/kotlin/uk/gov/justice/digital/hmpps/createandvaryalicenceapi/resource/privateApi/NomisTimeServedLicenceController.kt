@@ -69,7 +69,7 @@ class NomisTimeServedLicenceController(
   )
   fun updateNomisLicenceReason(
     @RequestParam("nomsId") nomsId: String,
-    @RequestParam("bookingId") bookingId: Int,
+    @RequestParam("bookingId") bookingId: Long,
     @Valid @RequestBody body: UpdateNomisLicenceReasonRequest,
   ) = nomisTimeServedLicenceService.updateNomisLicenceReason(nomsId, bookingId, body)
 
@@ -102,6 +102,6 @@ class NomisTimeServedLicenceController(
   )
   fun getNomisLicenceReason(
     @RequestParam("nomsId") nomsId: String,
-    @RequestParam("bookingId") bookingId: Int,
+    @RequestParam("bookingId") bookingId: Long,
   ): NomisLicenceReasonResponse? = nomisTimeServedLicenceService.findByNomsIdAndBookingId(nomsId, bookingId)
 }

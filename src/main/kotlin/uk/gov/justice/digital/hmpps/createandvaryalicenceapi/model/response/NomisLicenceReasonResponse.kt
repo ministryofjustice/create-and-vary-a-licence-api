@@ -8,7 +8,7 @@ data class NomisLicenceReasonResponse(
   val nomsId: String,
 
   @field:Schema(description = "The booking ID associated with the offender", example = "123456")
-  val bookingId: Int,
+  val bookingId: Long,
 
   @field:Schema(description = "The reason why the licence was created in NOMIS", example = "Time served release")
   val reason: String,

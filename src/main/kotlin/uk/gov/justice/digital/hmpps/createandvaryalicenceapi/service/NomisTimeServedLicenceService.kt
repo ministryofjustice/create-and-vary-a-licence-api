@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import jakarta.validation.ValidationException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -27,7 +26,7 @@ class NomisTimeServedLicenceService(
   fun recordNomisLicenceReason(request: RecordNomisLicenceReasonRequest) {
     val username = SecurityContextHolder.getContext().authentication.name
     val staff = staffRepository.findByUsernameIgnoreCase(username)
-      ?: throw ValidationException("Staff with username $username not found")
+      ?: error("Staff with username $username not found")
 
     // Create entity
     val licenceRecord = NomisTimeServedLicence(
@@ -69,14 +68,14 @@ class NomisTimeServedLicenceService(
   }
 
   @Transactional
-  fun updateNomisLicenceReason(nomsId: String, bookingId: Int, request: UpdateNomisLicenceReasonRequest) {
+  fun updateNomisLicenceReason(nomsId: String, bookingId: Long, request: UpdateNomisLicenceReasonRequest) {
     // Fetch existing licence record
     val licence = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
       .orElseThrow { EntityNotFoundException("Reason record with nomsId $nomsId and bookingId $bookingId not found") }
 
     val username = SecurityContextHolder.getContext().authentication.name
     val staff = staffRepository.findByUsernameIgnoreCase(username)
-      ?: throw ValidationException("Staff with username $username not found")
+      ?: error("Staff with username $username not found")
 
     val oldReason = licence.reason
 
@@ -116,5 +115,5 @@ class NomisTimeServedLicenceService(
   }
 
   @Transactional(readOnly = true)
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Int): NomisLicenceReasonResponse? = licenceRepository.findLicenceReasonByNomsIdAndBookingId(nomsId, bookingId)
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): NomisLicenceReasonResponse? = licenceRepository.findLicenceReasonByNomsIdAndBookingId(nomsId, bookingId)
 }

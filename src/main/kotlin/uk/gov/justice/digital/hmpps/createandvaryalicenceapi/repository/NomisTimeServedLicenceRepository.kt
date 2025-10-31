@@ -14,7 +14,7 @@ import java.util.Optional
 @Repository
 interface NomisTimeServedLicenceRepository : JpaRepository<NomisTimeServedLicence, Long> {
 
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Int): Optional<NomisTimeServedLicence>
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): Optional<NomisTimeServedLicence>
 
   @Query(
     """
@@ -30,6 +30,6 @@ interface NomisTimeServedLicenceRepository : JpaRepository<NomisTimeServedLicenc
   )
   fun findLicenceReasonByNomsIdAndBookingId(
     @Param("nomsId") nomsId: String,
-    @Param("bookingId") bookingId: Int,
+    @Param("bookingId") bookingId: Long,
   ): NomisLicenceReasonResponse?
 }
