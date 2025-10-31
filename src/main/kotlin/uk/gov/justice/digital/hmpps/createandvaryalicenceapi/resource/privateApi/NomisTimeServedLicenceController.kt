@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Nomi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NomisTimeServedLicenceService
 
-@Tag(name = Tags.NOMIS_LICENCE_REASON)
+@Tag(name = Tags.NON_CVL_LICENCE_REASON)
 @RestController
 @RequestMapping("/nomis-time-served-licence", produces = [MediaType.APPLICATION_JSON_VALUE])
 class NomisTimeServedLicenceController(
