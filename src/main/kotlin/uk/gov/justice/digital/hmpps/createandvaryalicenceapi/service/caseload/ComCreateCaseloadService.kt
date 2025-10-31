@@ -7,9 +7,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateStaffCaseload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -36,17 +39,24 @@ class ComCreateCaseloadService(
   private val hdcService: HdcService,
   private val releaseDateService: ReleaseDateService,
   private val cvlRecordService: CvlRecordService,
+  private val telemetryService: TelemetryService,
 ) {
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
     val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
-    return buildCreateCaseload(managedOffenders)
+    val cases = buildCreateCaseload(managedOffenders)
+
+    telemetryService.recordCaseloadLoad(ComCreateStaffCaseload, setOf(deliusStaffIdentifier.toString()), cases)
+    return cases
   }
 
   fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = deliusApiClient.getManagedOffendersByTeam(teamCode)
-    return buildCreateCaseload(managedOffenders)
+    val cases = buildCreateCaseload(managedOffenders)
+
+    telemetryService.recordCaseloadLoad(ComCreateTeamCaseload, setOf(teamCode), cases)
+    return cases
   }
 
   private fun buildCreateCaseload(managedOffenders: List<ManagedOffenderCrn>): List<ComCase> {

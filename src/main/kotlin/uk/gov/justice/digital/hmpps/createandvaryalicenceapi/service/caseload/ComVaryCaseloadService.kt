@@ -4,7 +4,10 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryStaffCaseload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
@@ -22,19 +25,26 @@ class ComVaryCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceService: LicenceService,
   private val releaseDateService: ReleaseDateService,
+  private val telemetryService: TelemetryService,
 ) {
 
   fun getStaffVaryCaseload(deliusStaffIdentifier: Long): List<ComCase> {
     val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
     val casesToLicences = mapCaseToVaryLicence(managedOffenders)
-    return transformToVaryCaseload(casesToLicences)
+    val cases = transformToVaryCaseload(casesToLicences)
+
+    telemetryService.recordCaseloadLoad(ComVaryStaffCaseload, setOf(deliusStaffIdentifier.toString()), cases)
+    return cases
   }
 
   fun getTeamVaryCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = deliusApiClient.getManagedOffendersByTeam(teamCode)
     val casesToLicences = mapCaseToVaryLicence(managedOffenders)
-    return transformToVaryCaseload(casesToLicences)
+    val cases = transformToVaryCaseload(casesToLicences)
+
+    telemetryService.recordCaseloadLoad(ComVaryTeamCaseload, setOf(teamCode), cases)
+    return cases
   }
 
   fun mapCaseToVaryLicence(cases: List<ManagedOffenderCrn>): Map<ManagedOffenderCrn, LicenceSummary> {
