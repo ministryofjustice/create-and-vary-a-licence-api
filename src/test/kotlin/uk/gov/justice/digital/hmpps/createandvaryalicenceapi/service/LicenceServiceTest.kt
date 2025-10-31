@@ -115,6 +115,7 @@ class LicenceServiceTest {
   private val eligibilityService = mock<EligibilityService>()
   private val exclusionZoneService = mock<ExclusionZoneService>()
   private val deliusApiClient = mock<DeliusApiClient>()
+  private val telemetryService = mock<TelemetryService>()
 
   private val service =
     LicenceService(
@@ -133,6 +134,7 @@ class LicenceServiceTest {
       eligibilityService,
       exclusionZoneService,
       deliusApiClient,
+      telemetryService,
     )
 
   @BeforeEach
@@ -1362,7 +1364,7 @@ class LicenceServiceTest {
         eq(aPrisonerSearchPrisoner),
         any(),
       ),
-    ).thenReturn(TestData.anEligibilityAssessment())
+    ).thenReturn(anEligibilityAssessment())
 
     service.submitLicence(1L, emptyList())
 
