@@ -53,7 +53,7 @@ class NomisTimeServedLicenceService(
   @Transactional
   fun updateNomisLicenceReason(nomsId: String, bookingId: Long, request: UpdateNomisLicenceReasonRequest) {
     val licence = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
-      .orElseThrow { EntityNotFoundException("Reason record with nomsId $nomsId and bookingId $bookingId not found") }
+      ?: throw EntityNotFoundException("Reason record with nomsId $nomsId and bookingId $bookingId not found")
 
     val staff = getCurrentStaff()
     val oldReason = licence.reason
@@ -79,13 +79,22 @@ class NomisTimeServedLicenceService(
   }
 
   @Transactional(readOnly = true)
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): NomisLicenceReasonResponse? = licenceRepository.findLicenceReasonByNomsIdAndBookingId(nomsId, bookingId)
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): NomisLicenceReasonResponse? = licenceRepository
+    .findByNomsIdAndBookingId(nomsId, bookingId)?.let {
+      NomisLicenceReasonResponse(
+        nomsId = it.nomsId,
+        bookingId = it.bookingId,
+        reason = it.reason,
+        prisonCode = it.prisonCode,
+        dateCreated = it.dateCreated,
+        dateLastUpdated = it.dateLastUpdated,
+      )
+    }
 
   @Transactional
   fun deleteNomisLicenceReason(nomsId: String, bookingId: Long) {
-    val reasonEntity = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId).orElse(null)
-      ?: // No record found, just return without error
-      return
+    val reasonEntity = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
+      ?: return
 
     val staff = getCurrentStaff()
 

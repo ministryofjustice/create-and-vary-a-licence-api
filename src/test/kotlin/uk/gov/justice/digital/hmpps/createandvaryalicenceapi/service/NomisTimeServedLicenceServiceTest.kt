@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.NomisTimeServedLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
-import java.util.Optional
 
 class NomisTimeServedLicenceServiceTest {
 
@@ -95,7 +94,7 @@ class NomisTimeServedLicenceServiceTest {
     )
 
     whenever(licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId))
-      .thenReturn(Optional.of(existingLicence))
+      .thenReturn(existingLicence)
 
     // Simulate missing staff
     whenever(staffRepository.findByUsernameIgnoreCase(username)).thenReturn(null)

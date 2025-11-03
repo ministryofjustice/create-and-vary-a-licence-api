@@ -37,8 +37,8 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val saved = licenceRepository.findByNomsIdAndBookingId("A1234BC", 12345).get()
-    assertThat(saved.reason).isEqualTo("Initial reason")
+    val saved = licenceRepository.findByNomsIdAndBookingId("A1234BC", 12345)
+    assertThat(saved?.reason).isEqualTo("Initial reason")
 
     // Audit event exists
     val auditEvents = auditEventRepository.findAll()
@@ -64,8 +64,8 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val updated = licenceRepository.findByNomsIdAndBookingId("A1234AA", 123456).get()
-    assertThat(updated.reason).isEqualTo("Updated reason")
+    val updated = licenceRepository.findByNomsIdAndBookingId("A1234AA", 123456)
+    assertThat(updated?.reason).isEqualTo("Updated reason")
 
     // Audit event created
     val auditEvents = auditEventRepository.findAll()
@@ -97,8 +97,8 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
   @Sql("classpath:test_data/seed-nomis-licence-id-1.sql")
   fun `should delete NOMIS licence reason successfully`() {
     // Verify the record exists before deletion
-    val existing = licenceRepository.findByNomsIdAndBookingId("A1234AA", 123456).get()
-    assertThat(existing.reason).isEqualTo("Time served licence created for conditional release")
+    val existing = licenceRepository.findByNomsIdAndBookingId("A1234AA", 123456)
+    assertThat(existing?.reason).isEqualTo("Time served licence created for conditional release")
 
     // Perform DELETE request
     webTestClient.delete()
@@ -109,7 +109,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
 
     // Verify the record is deleted
     val deleted = licenceRepository.findByNomsIdAndBookingId("A1234AA", 123456)
-    assertThat(deleted).isEmpty
+    assertThat(deleted).isNull()
 
     // Verify audit event exists
     val auditEvents = auditEventRepository.findAll()
@@ -124,7 +124,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
   fun `should return OK and create audit when no NOMIS licence reason exists`() {
     // Ensure no record exists
     val missing = licenceRepository.findByNomsIdAndBookingId("NON_EXISTENT", 999999)
-    assertThat(missing).isEmpty
+    assertThat(missing).isNull()
 
     // Perform DELETE request
     webTestClient.delete()
@@ -135,7 +135,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
 
     // Verify still no record
     val stillMissing = licenceRepository.findByNomsIdAndBookingId("NON_EXISTENT", 999999)
-    assertThat(stillMissing).isEmpty
+    assertThat(stillMissing).isNull()
   }
 
   @Test
