@@ -1,4 +1,4 @@
-INSERT INTO nomis_time_served_licence (
+INSERT INTO record_nomis_time_served_licence_reason (
     noms_id,
     booking_id,
     reason,

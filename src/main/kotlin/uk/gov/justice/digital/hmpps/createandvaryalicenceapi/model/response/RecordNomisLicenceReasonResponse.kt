@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
-data class NomisLicenceReasonResponse(
+data class RecordNomisLicenceReasonResponse(
   @field:Schema(description = "The NOMIS identifier for the offender", example = "A1234AA")
   val nomsId: String,
 

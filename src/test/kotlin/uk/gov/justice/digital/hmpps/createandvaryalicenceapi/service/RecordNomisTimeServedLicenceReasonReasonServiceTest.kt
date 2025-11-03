@@ -12,21 +12,21 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicenceReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.NomisTimeServedLicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 
-class RecordNomisTimeServedLicenceServiceTest {
+class RecordNomisTimeServedLicenceReasonReasonServiceTest {
 
-  private val licenceRepository = mock<NomisTimeServedLicenceRepository>()
+  private val licenceRepository = mock<RecordNomisTimeServedLicenceReasonRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
 
-  private val service = RecordNomisTimeServedLicenceService(
+  private val service = RecordNomisTimeServedLicenceReasonService(
     licenceRepository,
     staffRepository,
     auditEventRepository,
@@ -85,7 +85,7 @@ class RecordNomisTimeServedLicenceServiceTest {
     val username = "tcom1"
 
     // Mock existing licence record
-    val existingLicence = RecordNomisTimeServedLicence(
+    val existingLicence = RecordNomisTimeServedLicenceReason(
       nomsId = nomsId,
       bookingId = bookingId,
       reason = "Old reason",

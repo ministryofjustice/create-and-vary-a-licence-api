@@ -21,15 +21,15 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.NomisLicenceReasonResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.RecordNomisLicenceReasonResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RecordNomisTimeServedLicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RecordNomisTimeServedLicenceReasonService
 
 @Tag(name = Tags.NON_CVL_LICENCE_REASON)
 @RestController
-@RequestMapping("/nomis-time-served-licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class RecordNomisTimeServedLicenceController(
-  private val recordNomisTimeServedLicenceService: RecordNomisTimeServedLicenceService,
+@RequestMapping("/time-served/nomis/licence/reason", produces = [MediaType.APPLICATION_JSON_VALUE])
+class RecordNomisTimeServedLicenceReasonController(
+  private val recordNomisTimeServedLicenceReasonService: RecordNomisTimeServedLicenceReasonService,
 ) {
 
   @PostMapping("/record-reason")
@@ -49,7 +49,7 @@ class RecordNomisTimeServedLicenceController(
   )
   fun recordNomisLicenceReason(
     @Valid @RequestBody body: RecordNomisLicenceReasonRequest,
-  ) = recordNomisTimeServedLicenceService.recordNomisLicenceReason(body)
+  ) = recordNomisTimeServedLicenceReasonService.recordNomisLicenceReason(body)
 
   @PutMapping("/update-reason/{nomsId}/{bookingId}")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -71,7 +71,7 @@ class RecordNomisTimeServedLicenceController(
     @PathVariable("nomsId") nomsId: String,
     @PathVariable("bookingId") bookingId: Long,
     @Valid @RequestBody body: UpdateNomisLicenceReasonRequest,
-  ) = recordNomisTimeServedLicenceService.updateNomisLicenceReason(nomsId, bookingId, body)
+  ) = recordNomisTimeServedLicenceReasonService.updateNomisLicenceReason(nomsId, bookingId, body)
 
   @GetMapping(
     value = ["/reason/{nomsId}/{bookingId}"],
@@ -85,7 +85,7 @@ class RecordNomisTimeServedLicenceController(
   )
   @ApiResponses(
     value = [
-      ApiResponse(responseCode = "200", description = "The reason record was retrieved successfully (or null if not found)", content = [Content(mediaType = "application/json", schema = Schema(implementation = NomisLicenceReasonResponse::class))]),
+      ApiResponse(responseCode = "200", description = "The reason record was retrieved successfully (or null if not found)", content = [Content(mediaType = "application/json", schema = Schema(implementation = RecordNomisLicenceReasonResponse::class))]),
       ApiResponse(responseCode = "400", description = "Bad request, invalid parameters", content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]),
       ApiResponse(
         responseCode = "401",
@@ -102,7 +102,7 @@ class RecordNomisTimeServedLicenceController(
   fun getNomisLicenceReason(
     @PathVariable nomsId: String,
     @PathVariable bookingId: Long,
-  ): NomisLicenceReasonResponse? = recordNomisTimeServedLicenceService.findByNomsIdAndBookingId(nomsId, bookingId)
+  ): RecordNomisLicenceReasonResponse? = recordNomisTimeServedLicenceReasonService.findByNomsIdAndBookingId(nomsId, bookingId)
 
   @DeleteMapping(value = ["/reason/{nomsId}/{bookingId}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -124,6 +124,6 @@ class RecordNomisTimeServedLicenceController(
     @PathVariable("nomsId") nomsId: String,
     @PathVariable("bookingId") bookingId: Long,
   ) {
-    recordNomisTimeServedLicenceService.deleteNomisLicenceReason(nomsId, bookingId)
+    recordNomisTimeServedLicenceReasonService.deleteNomisLicenceReason(nomsId, bookingId)
   }
 }

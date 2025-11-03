@@ -8,19 +8,19 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.NomisTimeServedLicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 
-class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
+class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() {
 
   @Autowired
-  lateinit var licenceRepository: NomisTimeServedLicenceRepository
+  lateinit var licenceRepository: RecordNomisTimeServedLicenceReasonRepository
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
 
   @Test
-  @Sql("classpath:test_data/seed-nomis-licence-id-1.sql")
+  @Sql("classpath:test_data/seed--record-nomis-licence-reason-id-1.sql")
   fun `should record NOMIS licence reason successfully`() {
     val request = RecordNomisLicenceReasonRequest(
       nomsId = "A1234BC",
@@ -30,7 +30,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
     )
 
     webTestClient.post()
-      .uri("/nomis-time-served-licence/record-reason")
+      .uri("/time-served/nomis/licence/reason/record-reason")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(request)
@@ -50,14 +50,14 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql("classpath:test_data/seed-nomis-licence-id-1.sql")
+  @Sql("classpath:test_data/seed--record-nomis-licence-reason-id-1.sql")
   fun `should update NOMIS licence reason successfully`() {
     val updateRequest = UpdateNomisLicenceReasonRequest(
       reason = "Updated reason",
     )
 
     webTestClient.put()
-      .uri("/nomis-time-served-licence/update-reason/A1234AA/123456")
+      .uri("/time-served/nomis/licence/reason/update-reason/A1234AA/123456")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updateRequest)
@@ -82,10 +82,10 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql("classpath:test_data/seed-nomis-licence-id-1.sql")
+  @Sql("classpath:test_data/seed--record-nomis-licence-reason-id-1.sql")
   fun `should retrieve NOMIS licence reason successfully`() {
     webTestClient.get()
-      .uri("/nomis-time-served-licence/reason/A1234AA/123456")
+      .uri("/time-served/nomis/licence/reason/reason/A1234AA/123456")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -94,7 +94,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql("classpath:test_data/seed-nomis-licence-id-1.sql")
+  @Sql("classpath:test_data/seed--record-nomis-licence-reason-id-1.sql")
   fun `should delete NOMIS licence reason successfully`() {
     // Verify the record exists before deletion
     val existing = licenceRepository.findByNomsIdAndBookingId("A1234AA", 123456)
@@ -102,7 +102,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
 
     // Perform DELETE request
     webTestClient.delete()
-      .uri("/nomis-time-served-licence/reason/A1234AA/123456")
+      .uri("/time-served/nomis/licence/reason/reason/A1234AA/123456")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -128,7 +128,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
 
     // Perform DELETE request
     webTestClient.delete()
-      .uri("/nomis-time-served-licence/reason/NON_EXISTENT/999999")
+      .uri("/time-served/nomis/licence/reason/reason/NON_EXISTENT/999999")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -148,7 +148,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
     )
 
     webTestClient.post()
-      .uri("/nomis-time-served-licence/record-reason")
+      .uri("/time-served/nomis/licence/reason/record-reason")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(invalidRequest)
@@ -166,7 +166,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
     )
 
     webTestClient.post()
-      .uri("/nomis-time-served-licence/record-reason")
+      .uri("/time-served/nomis/licence/reason/record-reason")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(request)
@@ -181,7 +181,7 @@ class NomisTimeServedLicenceIntegrationTest : IntegrationTestBase() {
     )
 
     webTestClient.put()
-      .uri("/nomis-time-served-licence/update-reason/A9999ZZ/99999")
+      .uri("/time-served/nomis/licence/reason/update-reason/A9999ZZ/99999")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updateRequest)

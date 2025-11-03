@@ -5,20 +5,20 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicenceReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.NomisLicenceReasonResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.RecordNomisLicenceReasonResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.NomisTimeServedLicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
 
 @Service
-class RecordNomisTimeServedLicenceService(
-  private val licenceRepository: NomisTimeServedLicenceRepository,
+class RecordNomisTimeServedLicenceReasonService(
+  private val licenceRepository: RecordNomisTimeServedLicenceReasonRepository,
   private val staffRepository: StaffRepository,
   private val auditEventRepository: AuditEventRepository,
 ) {
@@ -28,7 +28,7 @@ class RecordNomisTimeServedLicenceService(
     val staff = getCurrentStaff()
 
     val licenceRecord = licenceRepository.saveAndFlush(
-      RecordNomisTimeServedLicence(
+      RecordNomisTimeServedLicenceReason(
         nomsId = request.nomsId,
         bookingId = request.bookingId,
         reason = request.reason,
@@ -79,9 +79,9 @@ class RecordNomisTimeServedLicenceService(
   }
 
   @Transactional(readOnly = true)
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): NomisLicenceReasonResponse? = licenceRepository
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): RecordNomisLicenceReasonResponse? = licenceRepository
     .findByNomsIdAndBookingId(nomsId, bookingId)?.let {
-      NomisLicenceReasonResponse(
+      RecordNomisLicenceReasonResponse(
         nomsId = it.nomsId,
         bookingId = it.bookingId,
         reason = it.reason,
