@@ -36,9 +36,9 @@ class CaProbationCaseloadService(
     val licences = licenceCaseRepository.findLicenceCases(statuses, prisonCaseload.toList())
 
     val cases = formatReleasedLicences(licences)
-    val searchResults = SearchFilter.apply(searchString, cases)
-
     telemetryService.recordCaseloadLoad(CaProbationCaseload, prisonCaseload, cases)
+
+    val searchResults = SearchFilter.apply(searchString, cases)
     return searchResults.sortedWith(compareByDescending<CaCase> { it.releaseDate }.thenBy { it.licenceId })
   }
 

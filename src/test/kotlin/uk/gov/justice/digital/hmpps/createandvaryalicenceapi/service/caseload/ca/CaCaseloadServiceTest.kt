@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -1027,15 +1028,32 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `telemetry is captured`() {
-      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(
+      val result = service.searchForOffenderOnPrisonCaseAdminCaseload(
         aPrisonUserSearchRequest.copy(query = "A1234AA"),
       )
 
-      verify(telemetryService).recordCaseloadLoad(
-        eq(CaPrisonCaseload),
-        eq(aPrisonUserSearchRequest.prisonCaseloads),
-        eq(results.inPrisonResults),
-      )
+      assertThat(result.inPrisonResults).hasSize(1)
+      assertThat(result.onProbationResults).hasSize(0)
+
+      // We record the number of results pulled back before filtering as we want to measure how many cases are being loaded in total
+      argumentCaptor<List<CaCase>> {
+        verify(telemetryService).recordCaseloadLoad(
+          eq(CaPrisonCaseload),
+          eq(aPrisonUserSearchRequest.prisonCaseloads),
+          capture(),
+        )
+
+        assertThat(firstValue).hasSize(3)
+      }
+      argumentCaptor<List<CaCase>> {
+        verify(telemetryService).recordCaseloadLoad(
+          eq(CaProbationCaseload),
+          eq(aPrisonUserSearchRequest.prisonCaseloads),
+          capture(),
+        )
+
+        assertThat(firstValue).hasSize(0)
+      }
     }
 
     @Test

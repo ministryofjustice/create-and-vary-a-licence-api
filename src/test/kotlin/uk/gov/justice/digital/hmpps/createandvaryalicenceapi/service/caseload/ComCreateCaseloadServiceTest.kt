@@ -320,6 +320,8 @@ class ComCreateCaseloadServiceTest {
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf(selectedTeam))
 
+    assertThat(caseload).hasSize(2)
+
     verify(telemetryService).recordCaseloadLoad(
       eq(ComCreateTeamCaseload),
       eq(setOf(selectedTeam)),
