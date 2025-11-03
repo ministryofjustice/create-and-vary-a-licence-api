@@ -90,6 +90,20 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
       .block()
   }
 
+  fun getOffenderManagersWithoutUser(
+    crnsOrNomisIds: List<String>,
+    batchSize: Int = PROBATION_CASE_BATCH_SIZE,
+  ): List<CommunityManagerWithoutUser> = batchRequests(batchSize, crnsOrNomisIds) { batch ->
+    deliusApiWebClient
+      .post()
+      .uri("/probation-case/responsible-community-manager?includeEmail=false")
+      .bodyValue(batch)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<CommunityManagerWithoutUser>>())
+      .block()
+  }
+
   fun getStaffEmails(crns: List<String>) = batchRequests(STAFF_EMAIL_BATCH, crns) { batch ->
     deliusApiWebClient
       .post()
