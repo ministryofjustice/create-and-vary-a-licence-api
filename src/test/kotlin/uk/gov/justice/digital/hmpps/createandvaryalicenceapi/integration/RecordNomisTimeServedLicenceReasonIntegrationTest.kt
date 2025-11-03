@@ -181,7 +181,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
     )
 
     webTestClient.put()
-      .uri("/time-served/nomis/licence/reason/update-reason/A9999ZZ/99999")
+      .uri("/time-served/nomis/licence/reason/A9999ZZ/99999")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updateRequest)
