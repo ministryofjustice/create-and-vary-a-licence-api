@@ -10,7 +10,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 
 class DeliusMockServer : WireMockServer(8093) {
 
@@ -330,11 +329,123 @@ class DeliusMockServer : WireMockServer(8093) {
     )
   }
 
-  fun stubGetManagersForGetApprovalCaseload(managers: List<CommunityManager>) {
+  fun stubGetManagersWithoutUserDetails() {
+    stubFor(
+      post(urlEqualTo("/probation-case/responsible-community-manager?includeEmail=false"))
+        .willReturn(
+          aResponse().withHeader("Content-Type", "application/json")
+            .withBody(
+              // language=json
+              """[
+                {
+                  "code": "staff-code-1",
+                  "case": {
+                    "crn": "A12345",
+                    "nomisId": "A1234AB"
+                  },
+                  "name": {
+                    "forename": "Test1",
+                    "surname": "Test1"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-1",
+                    "description": "staff-description-1",
+                    "borough": { "code": "borough-code-1", "description": "borough-description-1" },
+                    "district": { "code": "district-code-1", "description": "district-description-1" },
+                    "provider": { "code": "probationArea-code-1", "description": "probationArea-description-1" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-1", 
+                    "description": "probationArea-description-1"
+                  },
+                  "unallocated": false
+                },
+                {
+                  "code": "staff-code-1",
+                  "case": {
+                    "crn": "D12345",
+                    "nomisId": "C1234BC"
+                  },
+                  "name": {
+                    "forename": "Test1",
+                    "surname": "Test1"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-1",
+                    "description": "staff-description-1",
+                    "borough": { "code": "borough-code-1", "description": "borough-description-1" },
+                    "district": { "code": "district-code-1", "description": "district-description-1" },
+                    "provider": { "code": "probationArea-code-1", "description": "probationArea-description-1" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-1", 
+                    "description": "probationArea-description-1"
+                  },
+                  "unallocated": false
+                },
+                {
+                  "code": "staff-code-2",
+                  "case": {
+                    "crn": "B12345",
+                    "nomisId": "A1234BC"
+                  },
+                  "name": {
+                    "forename": "Test2",
+                    "surname": "Test2"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-2",
+                    "description": "staff-description-2",
+                    "borough": { "code": "borough-code-2", "description": "borough-description-2" },
+                    "district": { "code": "district-code-2", "description": "district-description-2" },
+                    "provider": { "code": "probationArea-code-2", "description": "probationArea-description-2" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-2", 
+                    "description": "probationArea-description-2"
+                  },
+                  "unallocated": false
+                },
+                {
+                  "code": "staff-code-3",
+                  "case": {
+                    "crn": "C12345",
+                    "nomisId": "B1234BC"
+                  },
+                  "name": {
+                    "forename": "Test3",
+                    "surname": "Test3"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-3",
+                    "description": "staff-description-3",
+                    "borough": { "code": "borough-code-3", "description": "borough-description-3" },
+                    "district": { "code": "district-code-3", "description": "district-description-3" },
+                    "provider": { "code": "probationArea-code-3", "description": "probationArea-description-3" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-3", 
+                    "description": "probationArea-description-3"
+                  }
+                }]
+              """.trimMargin(),
+            ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetManagers(
+    managers: List<Any>,
+    includeUserInfo: Boolean = false,
+  ) {
     val jsonBody = objectMapper.writeValueAsString(managers)
 
     stubFor(
-      post(urlEqualTo("/probation-case/responsible-community-manager"))
+      post(urlEqualTo("/probation-case/responsible-community-manager${if (includeUserInfo) "?includeEmail=false" else ""}"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
