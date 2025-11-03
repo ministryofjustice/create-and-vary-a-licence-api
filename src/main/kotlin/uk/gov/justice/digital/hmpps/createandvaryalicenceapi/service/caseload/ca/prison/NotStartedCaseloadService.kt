@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
@@ -113,9 +113,9 @@ class NotStartedCaseloadService(
     )
   }
 
-  private fun pairNomisRecordsWithDelius(nomisRecords: List<PrisonerSearchPrisoner>): List<Pair<PrisonerSearchPrisoner, CommunityManager>> {
+  private fun pairNomisRecordsWithDelius(nomisRecords: List<PrisonerSearchPrisoner>): List<Pair<PrisonerSearchPrisoner, CommunityManagerWithoutUser>> {
     val caseloadNomisIds = nomisRecords.map { it.prisonerNumber }
-    val coms = deliusApiClient.getOffenderManagers(caseloadNomisIds)
+    val coms = deliusApiClient.getOffenderManagersWithoutUser(caseloadNomisIds)
     return nomisRecords.mapNotNull {
       val com = coms.find { com -> com.case.nomisId == it.prisonerNumber }
       if (com != null) {
@@ -127,7 +127,7 @@ class NotStartedCaseloadService(
   }
 
   private fun buildManagedCaseDto(
-    nomisRecordsToComRecords: List<Pair<PrisonerSearchPrisoner, CommunityManager>>,
+    nomisRecordsToComRecords: List<Pair<PrisonerSearchPrisoner, CommunityManagerWithoutUser>>,
     cvlRecords: List<CvlRecord>,
   ): List<ManagedCaseDto> = nomisRecordsToComRecords
     .map { (nomisRecord, com) ->
