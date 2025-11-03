@@ -4,11 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.NomisTimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicence
 
 @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
 @Repository
-interface NomisTimeServedLicenceRepository : JpaRepository<NomisTimeServedLicence, Long> {
+interface NomisTimeServedLicenceRepository : JpaRepository<RecordNomisTimeServedLicence, Long> {
 
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): NomisTimeServedLicence?
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): RecordNomisTimeServedLicence?
 }

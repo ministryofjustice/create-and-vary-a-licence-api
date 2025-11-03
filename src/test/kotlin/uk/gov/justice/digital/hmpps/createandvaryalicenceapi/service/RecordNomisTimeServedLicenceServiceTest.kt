@@ -12,7 +12,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.NomisTimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -85,7 +85,7 @@ class RecordNomisTimeServedLicenceServiceTest {
     val username = "tcom1"
 
     // Mock existing licence record
-    val existingLicence = NomisTimeServedLicence(
+    val existingLicence = RecordNomisTimeServedLicence(
       nomsId = nomsId,
       bookingId = bookingId,
       reason = "Old reason",
