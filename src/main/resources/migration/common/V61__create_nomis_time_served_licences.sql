@@ -1,6 +1,5 @@
-
-CREATE TABLE nomis_time_served_licence (
-                                            id SERIAL NOT NULL CONSTRAINT nomis_time_served_licence_pk PRIMARY KEY,
+CREATE TABLE record_nomis_time_served_licence (
+                                            id SERIAL NOT NULL CONSTRAINT record_nomis_time_served_licence PRIMARY KEY,
                                             noms_id VARCHAR(7) NOT NULL,
                                             booking_id INTEGER NOT NULL,
                                             reason TEXT NOT NULL,
@@ -10,4 +9,4 @@ CREATE TABLE nomis_time_served_licence (
                                             date_last_updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_nomis_time_served_licence ON nomis_time_served_licence(noms_id);
+CREATE INDEX idx_record_nomis_time_served_licence ON record_nomis_time_served_licence(noms_id);
