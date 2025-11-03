@@ -37,9 +37,10 @@ class CaPrisonCaseloadService(
     val notStartedCases = notStartedCaseloadService.findNotStartedCases(existingLicences, prisonCaseload)
 
     val cases = existingCases + notStartedCases
-    val results = SearchFilter.apply(searchString, cases)
 
-    telemetryService.recordCaseloadLoad(CaPrisonCaseload, prisonCaseload, results)
+    telemetryService.recordCaseloadLoad(CaPrisonCaseload, prisonCaseload, cases)
+
+    val results = SearchFilter.apply(searchString, cases)
     return results.sortedWith(compareBy<CaCase> { it.releaseDate }.thenBy { it.licenceId })
   }
 }
