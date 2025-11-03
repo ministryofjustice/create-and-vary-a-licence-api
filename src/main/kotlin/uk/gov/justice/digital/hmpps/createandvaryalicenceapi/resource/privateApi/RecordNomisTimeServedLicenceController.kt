@@ -23,13 +23,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Recor
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.NomisLicenceReasonResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NomisTimeServedLicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RecordNomisTimeServedLicenceService
 
 @Tag(name = Tags.NON_CVL_LICENCE_REASON)
 @RestController
 @RequestMapping("/nomis-time-served-licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class NomisTimeServedLicenceController(
-  private val nomisTimeServedLicenceService: NomisTimeServedLicenceService,
+class RecordNomisTimeServedLicenceController(
+  private val recordNomisTimeServedLicenceService: RecordNomisTimeServedLicenceService,
 ) {
 
   @PostMapping("/record-reason")
@@ -49,7 +49,7 @@ class NomisTimeServedLicenceController(
   )
   fun recordNomisLicenceReason(
     @Valid @RequestBody body: RecordNomisLicenceReasonRequest,
-  ) = nomisTimeServedLicenceService.recordNomisLicenceReason(body)
+  ) = recordNomisTimeServedLicenceService.recordNomisLicenceReason(body)
 
   @PutMapping("/update-reason/{nomsId}/{bookingId}")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -71,7 +71,7 @@ class NomisTimeServedLicenceController(
     @PathVariable("nomsId") nomsId: String,
     @PathVariable("bookingId") bookingId: Long,
     @Valid @RequestBody body: UpdateNomisLicenceReasonRequest,
-  ) = nomisTimeServedLicenceService.updateNomisLicenceReason(nomsId, bookingId, body)
+  ) = recordNomisTimeServedLicenceService.updateNomisLicenceReason(nomsId, bookingId, body)
 
   @GetMapping(
     value = ["/reason/{nomsId}/{bookingId}"],
@@ -102,7 +102,7 @@ class NomisTimeServedLicenceController(
   fun getNomisLicenceReason(
     @PathVariable nomsId: String,
     @PathVariable bookingId: Long,
-  ): NomisLicenceReasonResponse? = nomisTimeServedLicenceService.findByNomsIdAndBookingId(nomsId, bookingId)
+  ): NomisLicenceReasonResponse? = recordNomisTimeServedLicenceService.findByNomsIdAndBookingId(nomsId, bookingId)
 
   @DeleteMapping(value = ["/reason/{nomsId}/{bookingId}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -124,6 +124,6 @@ class NomisTimeServedLicenceController(
     @PathVariable("nomsId") nomsId: String,
     @PathVariable("bookingId") bookingId: Long,
   ) {
-    nomisTimeServedLicenceService.deleteNomisLicenceReason(nomsId, bookingId)
+    recordNomisTimeServedLicenceService.deleteNomisLicenceReason(nomsId, bookingId)
   }
 }

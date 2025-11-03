@@ -9,7 +9,7 @@ import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "nomis_time_served_licences")
+@Table(name = "nomis_time_served_licence")
 class NomisTimeServedLicence(
   @Column(name = "noms_id", length = 7, nullable = false)
   val nomsId: String,

@@ -20,13 +20,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.NomisTim
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 
-class NomisTimeServedLicenceServiceTest {
+class RecordNomisTimeServedLicenceServiceTest {
 
   private val licenceRepository = mock<NomisTimeServedLicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
 
-  private val service = NomisTimeServedLicenceService(
+  private val service = RecordNomisTimeServedLicenceService(
     licenceRepository,
     staffRepository,
     auditEventRepository,

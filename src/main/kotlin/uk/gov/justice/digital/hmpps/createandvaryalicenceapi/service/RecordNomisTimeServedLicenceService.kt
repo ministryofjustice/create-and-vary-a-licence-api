@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
 
 @Service
-class NomisTimeServedLicenceService(
+class RecordNomisTimeServedLicenceService(
   private val licenceRepository: NomisTimeServedLicenceRepository,
   private val staffRepository: StaffRepository,
   private val auditEventRepository: AuditEventRepository,
