@@ -30,7 +30,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
     )
 
     webTestClient.post()
-      .uri("/time-served/nomis/licence/reason/record-reason")
+      .uri("/time-served/nomis/licence/reason")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(request)
@@ -57,7 +57,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
     )
 
     webTestClient.put()
-      .uri("/time-served/nomis/licence/reason/update-reason/A1234AA/123456")
+      .uri("/time-served/nomis/licence/reason/A1234AA/123456")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updateRequest)
@@ -85,7 +85,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
   @Sql("classpath:test_data/seed--record-nomis-licence-reason-id-1.sql")
   fun `should retrieve NOMIS licence reason successfully`() {
     webTestClient.get()
-      .uri("/time-served/nomis/licence/reason/reason/A1234AA/123456")
+      .uri("/time-served/nomis/licence/reason/A1234AA/123456")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -102,7 +102,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
 
     // Perform DELETE request
     webTestClient.delete()
-      .uri("/time-served/nomis/licence/reason/reason/A1234AA/123456")
+      .uri("/time-served/nomis/licence/reason/A1234AA/123456")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -128,7 +128,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
 
     // Perform DELETE request
     webTestClient.delete()
-      .uri("/time-served/nomis/licence/reason/reason/NON_EXISTENT/999999")
+      .uri("/time-served/nomis/licence/reason/NON_EXISTENT/999999")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk

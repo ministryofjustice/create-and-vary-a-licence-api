@@ -32,7 +32,7 @@ class RecordNomisTimeServedLicenceReasonController(
   private val recordNomisTimeServedLicenceReasonService: RecordNomisTimeServedLicenceReasonService,
 ) {
 
-  @PostMapping("/record-reason")
+  @PostMapping
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Records the reason for creating a licence in NOMIS.",
@@ -51,7 +51,7 @@ class RecordNomisTimeServedLicenceReasonController(
     @Valid @RequestBody body: RecordNomisLicenceReasonRequest,
   ) = recordNomisTimeServedLicenceReasonService.recordNomisLicenceReason(body)
 
-  @PutMapping("/update-reason/{nomsId}/{bookingId}")
+  @PutMapping("/{nomsId}/{bookingId}")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Updates an existing NOMIS Time Served Licence record.",
@@ -74,7 +74,7 @@ class RecordNomisTimeServedLicenceReasonController(
   ) = recordNomisTimeServedLicenceReasonService.updateNomisLicenceReason(nomsId, bookingId, body)
 
   @GetMapping(
-    value = ["/reason/{nomsId}/{bookingId}"],
+    value = ["/{nomsId}/{bookingId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -104,7 +104,7 @@ class RecordNomisTimeServedLicenceReasonController(
     @PathVariable bookingId: Long,
   ): RecordNomisLicenceReasonResponse? = recordNomisTimeServedLicenceReasonService.findByNomsIdAndBookingId(nomsId, bookingId)
 
-  @DeleteMapping(value = ["/reason/{nomsId}/{bookingId}"])
+  @DeleteMapping(value = ["/{nomsId}/{bookingId}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Deletes a NOMIS Time Served Licence reason record.",
