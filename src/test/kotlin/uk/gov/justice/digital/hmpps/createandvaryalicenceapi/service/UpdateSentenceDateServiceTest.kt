@@ -401,7 +401,7 @@ class UpdateSentenceDateServiceTest {
         "Licence end date has changed to 11 September 2024",
         "Sentence end date has changed to 11 September 2024",
         "Top up supervision start date has changed to 11 September 2024",
-        "Top up supervision end date has changed to null",
+        "Top up supervision end date has been removed",
       ),
     )
   }
@@ -444,7 +444,7 @@ class UpdateSentenceDateServiceTest {
         "Licence end date has changed to 11 September 2024",
         "Sentence end date has changed to 11 September 2024",
         "Top up supervision start date has changed to 11 September 2024",
-        "Top up supervision end date has changed to null",
+        "Top up supervision end date has been removed",
       ),
     )
   }
@@ -487,7 +487,7 @@ class UpdateSentenceDateServiceTest {
         "Licence end date has changed to 11 September 2024",
         "Sentence end date has changed to 11 September 2024",
         "Top up supervision start date has changed to 11 September 2024",
-        "Top up supervision end date has changed to null",
+        "Top up supervision end date has been removed",
       ),
     )
   }
@@ -530,7 +530,7 @@ class UpdateSentenceDateServiceTest {
         "Licence end date has changed to 11 September 2024",
         "Sentence end date has changed to 11 September 2024",
         "Top up supervision start date has changed to 11 September 2024",
-        "Top up supervision end date has changed to null",
+        "Top up supervision end date has been removed",
       ),
     )
   }
@@ -573,7 +573,7 @@ class UpdateSentenceDateServiceTest {
         "Licence end date has changed to 11 September 2024",
         "Sentence end date has changed to 11 September 2024",
         "Top up supervision start date has changed to 11 September 2024",
-        "Top up supervision end date has changed to null",
+        "Top up supervision end date has been removed",
       ),
     )
   }
@@ -616,7 +616,7 @@ class UpdateSentenceDateServiceTest {
         "Licence end date has changed to 11 September 2024",
         "Sentence end date has changed to 11 September 2024",
         "Top up supervision start date has changed to 11 September 2024",
-        "Top up supervision end date has changed to null",
+        "Top up supervision end date has been removed",
       ),
     )
   }
@@ -1083,6 +1083,102 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision start date has changed to 11 September 2024",
         "Top up supervision end date has changed to 11 September 2025",
         "Post recall release date has changed to 11 September 2025",
+      ),
+    )
+
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+  }
+
+  @Test
+  fun `should update the kind of a PRRD licence to CRD when the PRRD is removed and a CRD is added`() {
+    val licence = anInProgressPrrdLicence
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+    val prisoner = aPrisonApiPrisoner().copy(
+      sentenceDetail = SentenceDetail(
+        conditionalReleaseDate = LocalDate.parse("2025-09-11"),
+        confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = null,
+      ),
+    )
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(prisoner)
+    whenever(
+      cvlRecordService.getCvlRecord(
+        prisoner.toPrisonerSearchPrisoner(),
+        licence.probationAreaCode!!,
+      ),
+    ).thenReturn(
+      CvlRecord(
+        nomisId = licence.nomsId!!,
+        licenceStartDate = null,
+        isEligible = true,
+        eligibleKind = LicenceKind.CRD,
+        isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        isEligibleForEarlyRelease = false,
+        isInHardStopPeriod = false,
+      ),
+    )
+
+    service.updateSentenceDates(1L)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    verify(auditService, times(1)).recordAuditEvent(any())
+    verify(auditService).recordAuditEventLicenceKindUpdated(
+      any(),
+      eq(LicenceKind.PRRD),
+      eq(LicenceKind.CRD),
+      any(),
+    )
+
+    assertThat(licenceCaptor.value)
+      .extracting(
+        "conditionalReleaseDate",
+        "actualReleaseDate",
+        "sentenceStartDate",
+        "sentenceEndDate",
+        "licenceStartDate",
+        "licenceExpiryDate",
+        "topupSupervisionStartDate",
+        "topupSupervisionExpiryDate",
+        "postRecallReleaseDate",
+        "updatedByUsername",
+        "updatedBy",
+      )
+      .isEqualTo(
+        listOf(
+          LocalDate.parse("2025-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2021-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2025-09-11"),
+          null,
+          aCom.username,
+          aCom,
+        ),
+      )
+
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
+      "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+      aCrdLicenceEntity.crn,
+      listOf(
+        "Release date has changed to 11 September 2023",
+        "Licence end date has changed to 11 September 2024",
+        "Sentence end date has changed to 11 September 2024",
+        "Top up supervision start date has changed to 11 September 2024",
+        "Top up supervision end date has changed to 11 September 2025",
+        "Post recall release date has been removed",
       ),
     )
 

@@ -26,7 +26,11 @@ data class DateChange(
   val oldDate: LocalDate?,
   val changed: Boolean = oldDate.hasChanged(newDate),
 ) {
-  fun toDescription() = "${type.description} has changed to ${newDate?.format(dateFormat)}"
+  fun toDescription() = if (newDate == null) {
+    "${type.description} has been removed"
+  } else {
+    "${type.description} has changed to ${newDate.format(dateFormat)}"
+  }
 
   fun denotesMaterialChange(kind: LicenceKind) = changed && type.denotesMaterialChange && (kind.isHdc() || !type.hdcOnly)
 

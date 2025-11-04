@@ -238,7 +238,6 @@ interface LicenceRepository :
   @Modifying
   @Query(
     """
-      
     UPDATE Licence l
       SET l.kind= :newKind
       WHERE l.id= :id
