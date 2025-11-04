@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase

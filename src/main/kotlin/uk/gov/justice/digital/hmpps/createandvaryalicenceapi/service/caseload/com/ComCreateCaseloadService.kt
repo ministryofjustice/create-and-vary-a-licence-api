@@ -1,9 +1,8 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseLoadLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
@@ -20,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -80,7 +78,7 @@ class ComCreateCaseloadService(
     cvlRecords: List<CvlRecord>,
   ): Map<String, List<CaseLoadLicenceSummary>> {
     val crns = cases.map { (deliusRecord, _) -> deliusRecord.crn!! }
-    val licences = findExistingActiveAndPreReleaseLicences(crns)
+    val licences = getExistingActiveAndPreReleaseLicences(crns)
     return cases.map { (deliusRecord, nomisRecord) ->
       val crn = deliusRecord.crn!!
       val offenderLicences = licences.filter { licence -> crn == licence.crn }
@@ -130,12 +128,7 @@ class ComCreateCaseloadService(
     crnsToLicences: Map<String, List<CaseLoadLicenceSummary>>,
   ): Map<String, CaseLoadLicenceSummary> = eligibleCases.map { (deliusRecord, _) ->
     val licences = crnsToLicences[deliusRecord.crn]!!
-    val licenceToDisplay = when {
-      licences.any { it.kind == LicenceKind.HARD_STOP } -> findHardStopLicenceToDisplay(licences)
-      licences.any { it.licenceStatus == TIMED_OUT } -> findTimedOutLicenceToDisplay(licences)
-      else -> findLicenceToDisplay(licences)
-    }
-    deliusRecord.crn!! to licenceToDisplay
+    deliusRecord.crn!! to RelevantLicenceFinder.findRelevantLicencePerCase(licences)
   }.toMap()
 
   private fun createNotStartedLicence(
@@ -164,52 +157,6 @@ class ComCreateCaseloadService(
       hardStopWarningDate = cvlRecord.hardStopWarningDate,
       isDueToBeReleasedInTheNextTwoWorkingDays = cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
     )
-  }
-
-  private fun findTimedOutLicenceToDisplay(licences: List<CaseLoadLicenceSummary>): CaseLoadLicenceSummary {
-    val timedOutLicence = licences.find { it.licenceStatus == TIMED_OUT }!!
-
-    if (timedOutLicence.versionOf != null) {
-      val previouslyApproved = licences.find { licence -> licence.licenceId == timedOutLicence.versionOf }
-      if (previouslyApproved != null) {
-        return previouslyApproved.copy(
-          licenceStatus = TIMED_OUT,
-          licenceCreationType = LicenceCreationType.LICENCE_CHANGES_NOT_APPROVED_IN_TIME,
-        )
-      }
-    }
-
-    return timedOutLicence.copy(licenceCreationType = LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE)
-  }
-
-  private fun findHardStopLicenceToDisplay(licences: List<CaseLoadLicenceSummary>): CaseLoadLicenceSummary {
-    val hardStopLicence = licences.find { it.kind == LicenceKind.HARD_STOP }!!
-
-    if (hardStopLicence.licenceId == null || hardStopLicence.licenceStatus == IN_PROGRESS) {
-      return hardStopLicence.copy(
-        licenceStatus = TIMED_OUT,
-        licenceCreationType = LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
-      )
-    }
-
-    return hardStopLicence.copy(
-      licenceStatus = TIMED_OUT,
-      licenceCreationType = LicenceCreationType.LICENCE_CREATED_BY_PRISON,
-    )
-  }
-
-  private fun findLicenceToDisplay(licences: List<CaseLoadLicenceSummary>): CaseLoadLicenceSummary {
-    val licence: CaseLoadLicenceSummary = if (licences.size > 1) {
-      licences.find { licence -> licence.licenceStatus !== APPROVED }!!
-    } else {
-      licences.first()
-    }
-
-    return if (licence.licenceId == null) {
-      licence.copy(licenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED)
-    } else {
-      licence.copy(licenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS)
-    }
   }
 
   @TimeServedConsiderations("If the COM is an unallocated member of the team, do we need to handle anything differently here?")
@@ -316,7 +263,7 @@ class ComCreateCaseloadService(
     )
   }.sortedWith(compareBy<ComCase> { it.releaseDate }.thenBy { it.name })
 
-  private fun findExistingActiveAndPreReleaseLicences(crnList: List<String>): List<CaseLoadLicenceSummary> = if (crnList.isEmpty()) {
+  private fun getExistingActiveAndPreReleaseLicences(crnList: List<String>): List<CaseLoadLicenceSummary> = if (crnList.isEmpty()) {
     emptyList()
   } else {
     licenceCaseRepository.findLicenceCasesForCom(
