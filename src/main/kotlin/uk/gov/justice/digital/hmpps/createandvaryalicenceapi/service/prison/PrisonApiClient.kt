@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -8,13 +9,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.coerce404ToEmptyOrThrow
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
+private const val HDC_BATCH_SIZE = 500
+private const val COURT_OUTCOME_BATCH_SIZE = 500
+private const val SENTENCE_AND_RECALL_BATCH_SIZE = 500
+
 @Service
 class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebClient: WebClient) {
 
   companion object {
-    private const val HDC_BATCH_SIZE = 500
-    private const val COURT_OUTCOME_BATCH_SIZE = 500
-    private const val SENTENCE_AND_RECALL_BATCH_SIZE = 500
+    private val log = LoggerFactory.getLogger(PrisonApiClient::class.java)
   }
 
   fun getHdcStatus(bookingId: Long): PrisonerHdcStatus = prisonerApiWebClient
@@ -38,10 +41,15 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
       .block()
   }
 
-  fun getCourtEventOutcomes(bookingIds: List<Long>, batchSize: Int = COURT_OUTCOME_BATCH_SIZE) = batchRequests(batchSize, bookingIds) { batch ->
+  fun getCourtEventOutcomes(
+    bookingIds: List<Long>,
+    outcomeReasonCodes: List<String>,
+    batchSize: Int = COURT_OUTCOME_BATCH_SIZE,
+  ): List<CourtEventOutcome> = batchRequests(batchSize, bookingIds) { batch ->
+    log.info("Fetching court event outcomes for ${batch.size} bookings with outcome codes $outcomeReasonCodes via Prison API")
     prisonerApiWebClient
       .post()
-      .uri("/bookings/court-event-outcomes")
+      .uri("/bookings/court-event-outcomes?outcomeReasonCodes=${outcomeReasonCodes.joinToString(",")}")
       .bodyValue(batch)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()

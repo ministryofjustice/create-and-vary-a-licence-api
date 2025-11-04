@@ -38,7 +38,7 @@ class PrisonApiMockServer : WireMockServer(8091) {
 
   fun stubGetCourtOutcomes() {
     stubFor(
-      post(urlEqualTo("/api/bookings/court-event-outcomes")).willReturn(
+      post(urlEqualTo("/api/bookings/court-event-outcomes?outcomeReasonCodes=3006,4022,5500,5502")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """[]""",
         ).withStatus(200),
