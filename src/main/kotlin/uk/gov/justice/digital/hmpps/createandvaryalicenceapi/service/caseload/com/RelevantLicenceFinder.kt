@@ -2,6 +2,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseLoadLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.LICENCE_CREATED_BY_PRISON
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.LICENCE_IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.LICENCE_NOT_STARTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -27,7 +31,7 @@ object RelevantLicenceFinder {
       }
     }
 
-    return timedOutLicence.copy(licenceCreationType = LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE)
+    return timedOutLicence.copy(licenceCreationType = PRISON_WILL_CREATE_THIS_LICENCE)
   }
 
   private fun findHardStopLicenceToDisplay(licences: List<CaseLoadLicenceSummary>): CaseLoadLicenceSummary {
@@ -36,13 +40,13 @@ object RelevantLicenceFinder {
     if (hardStopLicence.licenceId == null || hardStopLicence.licenceStatus == IN_PROGRESS) {
       return hardStopLicence.copy(
         licenceStatus = TIMED_OUT,
-        licenceCreationType = LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
+        licenceCreationType = PRISON_WILL_CREATE_THIS_LICENCE,
       )
     }
 
     return hardStopLicence.copy(
       licenceStatus = TIMED_OUT,
-      licenceCreationType = LicenceCreationType.LICENCE_CREATED_BY_PRISON,
+      licenceCreationType = LICENCE_CREATED_BY_PRISON,
     )
   }
 
@@ -54,9 +58,9 @@ object RelevantLicenceFinder {
     }
 
     return if (licence.licenceId == null) {
-      licence.copy(licenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED)
+      licence.copy(licenceCreationType = LICENCE_NOT_STARTED)
     } else {
-      licence.copy(licenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS)
+      licence.copy(licenceCreationType = LICENCE_IN_PROGRESS)
     }
   }
 }
