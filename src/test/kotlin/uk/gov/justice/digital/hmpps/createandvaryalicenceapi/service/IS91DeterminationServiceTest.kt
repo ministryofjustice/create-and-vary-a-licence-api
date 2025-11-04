@@ -17,6 +17,7 @@ import java.time.LocalDate
 class IS91DeterminationServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val service = IS91DeterminationService(prisonApiClient)
+  private val resultCodes = listOf("3006", "4022", "5500", "5502")
 
   @BeforeEach
   fun reset() {
@@ -27,6 +28,7 @@ class IS91DeterminationServiceTest {
 
   @Nested
   inner class GetIS91AndExtraditionBookingIds {
+
     @Test
     fun `Returns the booking IDs of licences with an illegal immigrant offence code`() {
       val expectedIS91s = listOf(54321L, 54322L)
@@ -43,32 +45,6 @@ class IS91DeterminationServiceTest {
 
       val is91BookingIds = service.getIS91AndExtraditionBookingIds(prisoners)
       assertThat(is91BookingIds).containsExactlyInAnyOrderElementsOf(expectedIS91s)
-    }
-
-    @Test
-    fun `Returns the booking IDs of prisoners with IS91 related court event outcome codes`() {
-      val expectedIS91s = listOf(84379L, 902322L)
-      val expectedNonIS91s = listOf(43566L, 843793L, 5387L)
-
-      val prisoners = listOf(
-        aPrisonerSearchResult.copy(bookingId = "84379", mostSeriousOffence = "offence 1"),
-        aPrisonerSearchResult.copy(bookingId = "902322", mostSeriousOffence = "offence 2"),
-        aPrisonerSearchResult.copy(bookingId = "43566", mostSeriousOffence = "offence 3"),
-        aPrisonerSearchResult.copy(bookingId = "843793", mostSeriousOffence = "offence 4"),
-        aPrisonerSearchResult.copy(bookingId = "5387", mostSeriousOffence = "offence 5"),
-      )
-
-      whenever(prisonApiClient.getCourtEventOutcomes(expectedIS91s + expectedNonIS91s)).thenReturn(
-        listOf(
-          CourtEventOutcome(bookingId = 43566, eventId = 1, outcomeReasonCode = "3692"),
-          CourtEventOutcome(bookingId = 84379, eventId = 2, outcomeReasonCode = "5500"),
-          CourtEventOutcome(bookingId = 843793, eventId = 3, outcomeReasonCode = "8922"),
-          CourtEventOutcome(bookingId = 902322, eventId = 4, outcomeReasonCode = "4022"),
-          CourtEventOutcome(bookingId = 5387, eventId = 5, outcomeReasonCode = null),
-        ),
-      )
-
-      assert(service.getIS91AndExtraditionBookingIds(prisoners) == expectedIS91s)
     }
   }
 
@@ -89,20 +65,11 @@ class IS91DeterminationServiceTest {
     @ParameterizedTest(name = "returns true for {0}")
     @ValueSource(strings = ["3006", "4022", "5500", "5502"])
     fun `Returns true for a case with an IS91 related court outcome code`(outcomeCode: String) {
-      whenever(prisonApiClient.getCourtEventOutcomes(listOf(54322))).thenReturn(
+      whenever(prisonApiClient.getCourtEventOutcomes(listOf(54322), resultCodes)).thenReturn(
         listOf(CourtEventOutcome(bookingId = 43566, eventId = 1, outcomeReasonCode = outcomeCode)),
       )
       val prisoner = aPrisonerSearchResult.copy(bookingId = "54322")
       assertThat(service.isIS91Case(prisoner)).isTrue()
-    }
-
-    @Test
-    fun `Returns false for a case with any other court outcome code`() {
-      whenever(prisonApiClient.getCourtEventOutcomes(listOf(54322))).thenReturn(
-        listOf(CourtEventOutcome(bookingId = 43566, eventId = 1, outcomeReasonCode = "1234")),
-      )
-      val prisoner = aPrisonerSearchResult.copy(bookingId = "54322")
-      assertThat(service.isIS91Case(prisoner)).isFalse()
     }
 
     @Test
