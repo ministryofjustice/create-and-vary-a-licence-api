@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
@@ -233,6 +234,17 @@ interface LicenceRepository :
     """,
   )
   fun findLicencesToBatchUpdateLsd(numberOfLicences: Long, lastUpdatedLicenceId: Long?): List<Licence>
+
+  @Modifying
+  @Query(
+    """
+      
+    UPDATE Licence l
+      SET l.kind= :newKind
+      WHERE l.id= :id
+    """,
+  )
+  fun updateLicenceKind(id: Long, newKind: LicenceKind)
 }
 
 interface EditedLicenceNotReApproved {

@@ -6,12 +6,12 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.HardstopChangeType.NOW_IN_HARDSTOP
@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -37,7 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedCons
 @Service
 class UpdateSentenceDateService(
   private val licenceRepository: LicenceRepository,
-  private val auditEventRepository: AuditEventRepository,
+  private val auditService: AuditService,
   private val notifyService: NotifyService,
   private val prisonApiClient: PrisonApiClient,
   private val hdcService: HdcService,
@@ -54,12 +55,12 @@ class UpdateSentenceDateService(
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
     val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, licence.probationAreaCode!!)
 
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    updateLicenceKind(licence, cvlRecord.eligibleKind, staffMember)
     val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(licence, cvlRecord)
     val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
-
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     val sentenceDates = prisoner.sentenceDetail.toSentenceDates()
 
@@ -173,7 +174,7 @@ class UpdateSentenceDateService(
       },
     )
 
-    if (licence.kind == LicenceKind.PRRD) {
+    if (licence.kind == PRRD) {
       val prrdChange = dateChanges.firstOrNull { it.type == LicenceDateType.PRRD }
       if (prrdChange != null) {
         if (prrdChange.oldDate != null && prrdChange.newDate == null) {
@@ -188,7 +189,7 @@ class UpdateSentenceDateService(
 
   private fun recordAuditEvent(licenceEntity: Licence, dateChanges: DateChanges) {
     with(licenceEntity) {
-      auditEventRepository.saveAndFlush(
+      auditService.recordAuditEvent(
         AuditEvent(
           licenceId = this.id,
           username = "SYSTEM",
@@ -199,6 +200,14 @@ class UpdateSentenceDateService(
           changes = dateChanges.toChanges(licenceEntity.kind),
         ),
       )
+    }
+  }
+
+  private fun updateLicenceKind(licence: Licence, eligibleKind: LicenceKind?, staff: Staff?) {
+    if ((eligibleKind == CRD || eligibleKind == PRRD) && eligibleKind != licence.kind) {
+      auditService.recordAuditEventLicenceKindUpdated(licence, licence.kind, eligibleKind, staff)
+      licenceRepository.updateLicenceKind(licence.id, eligibleKind)
+      licence.kind = eligibleKind
     }
   }
 

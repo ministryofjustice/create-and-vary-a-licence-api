@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 
 @Service
@@ -330,6 +331,24 @@ class AuditService(
         "newTeamCode" to request.probationTeamCode,
         "oldTeamDescription" to licence.probationTeamDescription,
         "newTeamDescription" to request.probationTeamDescription,
+      ),
+    )
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
+  }
+
+  fun recordAuditEventLicenceKindUpdated(
+    licence: Licence,
+    oldKind: LicenceKind,
+    newKind: LicenceKind,
+    staffMember: Staff?,
+  ) {
+    val summary = "Licence kind updated to $newKind from $oldKind on licence"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to mapOf(
+        "oldKind" to oldKind,
+        "newKind" to newKind,
       ),
     )
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))

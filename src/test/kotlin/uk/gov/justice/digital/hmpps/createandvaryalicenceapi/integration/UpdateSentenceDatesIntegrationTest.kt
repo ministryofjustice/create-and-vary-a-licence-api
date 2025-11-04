@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import kotlin.jvm.optionals.getOrNull
@@ -411,6 +412,57 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(3)
     assertThat(licenceEventRepository.count()).isEqualTo(2)
     assertThat(currentLicence?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-prrd-licence-id-1.sql",
+  )
+  fun `Should update licence kind when PRRD is removed and CRD is added`() {
+    val crd = workingDaysService.workingDaysAfter(LocalDate.now()).take(1).first()
+
+    prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    mockPrisonerSearchResponse(
+      SentenceDetail(
+        conditionalReleaseDate = crd,
+        confirmedReleaseDate = crd,
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        postRecallReleaseDate = null,
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      ),
+    )
+
+    webTestClient.put()
+      .uri("/licence/id/1/sentence-dates")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.kind).isEqualTo(LicenceKind.CRD.name)
+    assertThat(result?.conditionalReleaseDate).isEqualTo(crd)
+    assertThat(result?.actualReleaseDate).isEqualTo(crd)
+    assertThat(result?.sentenceStartDate).isEqualTo(LocalDate.parse("2021-09-11"))
+    assertThat(result?.sentenceEndDate).isEqualTo(LocalDate.parse("2024-09-11"))
+    assertThat(result?.licenceStartDate).isEqualTo(crd)
+    assertThat(result?.licenceExpiryDate).isEqualTo(LocalDate.parse("2024-09-11"))
+    assertThat(result?.postRecallReleaseDate).isNull()
+    assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
+    assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
   }
 
   private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {

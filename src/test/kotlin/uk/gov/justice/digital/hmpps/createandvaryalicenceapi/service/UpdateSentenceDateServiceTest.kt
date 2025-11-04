@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -21,9 +22,10 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -42,12 +44,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import java.time.LocalDate
 import java.util.Optional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 
 class UpdateSentenceDateServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
-  private val auditEventRepository = mock<AuditEventRepository>()
+  private val auditService = mock<AuditService>()
   private val notifyService = mock<NotifyService>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val hdcService = mock<HdcService>()
@@ -71,7 +72,7 @@ class UpdateSentenceDateServiceTest {
 
   private val service = UpdateSentenceDateService(
     licenceRepository,
-    auditEventRepository,
+    auditService,
     notifyService,
     prisonApiClient,
     hdcService,
@@ -92,7 +93,7 @@ class UpdateSentenceDateServiceTest {
 
     reset(
       licenceRepository,
-      auditEventRepository,
+      auditService,
       notifyService,
       prisonApiClient,
       hdcService,
@@ -126,13 +127,14 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(any())
+    verify(auditService, times(1)).recordAuditEvent(any())
 
     assertThat(licenceCaptor.value)
       .extracting(
@@ -201,11 +203,12 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
-    argumentCaptor<EntityAuditEvent>().apply {
-      verify(auditEventRepository, times(1)).saveAndFlush(capture())
+    argumentCaptor<AuditEvent>().apply {
+      verify(auditService, times(1)).recordAuditEvent(capture())
       assertThat(firstValue)
         .extracting("licenceId", "username", "fullName", "summary", "changes")
         .isEqualTo(
@@ -249,8 +252,8 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
-    // val logCaptor = LogCaptor.forClass(ClassToLog::class.java)
     service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -309,6 +312,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
 
     service.updateSentenceDates(1L)
 
@@ -348,6 +352,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
@@ -417,6 +422,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
@@ -459,6 +465,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
@@ -501,6 +508,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
@@ -543,6 +551,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
@@ -585,6 +594,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
@@ -634,6 +644,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
@@ -672,6 +683,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
     service.updateSentenceDates(1L)
 
@@ -744,6 +756,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
 
     val logAppender = TestLogAppender()
     logAppender.start()
@@ -777,6 +790,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
 
     val logAppender = TestLogAppender()
     logAppender.start()
@@ -810,6 +824,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
       service.updateSentenceDates(1L)
 
@@ -833,6 +848,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
 
       service.updateSentenceDates(1L)
 
@@ -862,6 +878,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
       service.updateSentenceDates(1L)
       verify(licenceService, times(0)).timeout(any(), any())
@@ -884,6 +901,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
       service.updateSentenceDates(1L)
 
@@ -937,6 +955,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
 
       service.updateSentenceDates(1L)
 
@@ -967,10 +986,107 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
 
     service.updateSentenceDates(1L)
 
     verify(licenceService, times(0)).timeout(any(), any())
+  }
+
+  @Test
+  fun `should update the kind of a CRD licence to PRRD when the CRD is removed and a PRRD is added`() {
+    val licence = aCrdLicenceEntity
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+    val prisoner = aPrisonApiPrisoner().copy(
+      sentenceDetail = SentenceDetail(
+        conditionalReleaseDate = null,
+        confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+      ),
+    )
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(prisoner)
+    whenever(
+      cvlRecordService.getCvlRecord(
+        prisoner.toPrisonerSearchPrisoner(),
+        licence.probationAreaCode!!,
+      ),
+    ).thenReturn(
+      CvlRecord(
+        nomisId = licence.nomsId!!,
+        licenceStartDate = null,
+        isEligible = true,
+        eligibleKind = LicenceKind.PRRD,
+        isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        isEligibleForEarlyRelease = false,
+        isInHardStopPeriod = false,
+      ),
+    )
+
+    service.updateSentenceDates(1L)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    verify(auditService, times(1)).recordAuditEvent(any())
+    verify(auditService).recordAuditEventLicenceKindUpdated(
+      any(),
+      eq(LicenceKind.CRD),
+      eq(LicenceKind.PRRD),
+      any(),
+    )
+
+    assertThat(licenceCaptor.value)
+      .extracting(
+        "conditionalReleaseDate",
+        "actualReleaseDate",
+        "sentenceStartDate",
+        "sentenceEndDate",
+        "licenceStartDate",
+        "licenceExpiryDate",
+        "topupSupervisionStartDate",
+        "topupSupervisionExpiryDate",
+        "postRecallReleaseDate",
+        "updatedByUsername",
+        "updatedBy",
+      )
+      .isEqualTo(
+        listOf(
+          null,
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2021-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2025-09-11"),
+          LocalDate.parse("2025-09-11"),
+          aCom.username,
+          aCom,
+        ),
+      )
+
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aCrdLicenceEntity.getCom().email,
+      aCrdLicenceEntity.getCom().fullName,
+      "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+      aCrdLicenceEntity.crn,
+      listOf(
+        "Release date has changed to 11 September 2023",
+        "Licence end date has changed to 11 September 2024",
+        "Sentence end date has changed to 11 September 2024",
+        "Top up supervision start date has changed to 11 September 2024",
+        "Top up supervision end date has changed to 11 September 2025",
+        "Post recall release date has changed to 11 September 2025",
+      ),
+    )
+
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 }
 
