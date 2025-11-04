@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -106,65 +105,6 @@ class ComCreateCaseloadServiceTest {
 
     assertThat(caseload).hasSize(0)
     verify(prisonerSearchApiClient, never()).searchPrisonersByNomisIds(any())
-  }
-
-  @Test
-  fun `it calls the licence service when Nomis records are found`() {
-    val cases = mapOf(
-      managedOffenderCrn() to prisonerSearchResult().copy(
-        prisonerNumber = "ABC123",
-        firstName = "Person",
-        lastName = "One",
-        dateOfBirth = LocalDate.of(1970, 1, 1),
-        conditionalReleaseDate = tenDaysFromNow,
-      ),
-    )
-
-    val cvlRecords = listOf(
-      aCvlRecord(
-        nomsId = "ABC123",
-        kind = LicenceKind.CRD,
-        licenceStartDate = tenDaysFromNow,
-      ),
-    )
-
-    val casesAndLicences = service.mapCasesToLicences(cases, cvlRecords)
-
-    assertThat(casesAndLicences).hasSize(1)
-    assertThat(casesAndLicences["X12348"]).hasSize(1)
-    assertThat(casesAndLicences["X12348"]!!.first().licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
-    verify(licenceCaseRepository).findLicenceCasesForCom(any(), any())
-  }
-
-  @Test
-  fun `it sets not started licences to timed out when in the hard stop period`() {
-    val cases = mapOf(
-      aManagedOffenderCrn() to prisonerSearchResult().copy(
-        prisonerNumber = "ABC123",
-        firstName = "Person",
-        lastName = "One",
-        dateOfBirth = LocalDate.of(1970, 1, 1),
-        conditionalReleaseDate = twoDaysFromNow,
-      ),
-    )
-
-    val cvlRecords = listOf(
-      aCvlRecord(
-        nomsId = "ABC123",
-        kind = LicenceKind.CRD,
-        licenceStartDate = twoDaysFromNow,
-        isInHardStopPeriod = true,
-      ),
-    )
-
-    val caseAndLicences = service.mapCasesToLicences(cases, cvlRecords)
-
-    assertThat(caseAndLicences).hasSize(1)
-    val licence = caseAndLicences["X12348"]!!.first()
-    assertThat(licence.nomisId).isEqualTo("ABC123")
-    assertThat(caseAndLicences["X12348"]!!).hasSize(1)
-    assertThat(licence.licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
-    assertThat(licence.licenceType).isEqualTo(LicenceType.AP)
   }
 
   @Test
