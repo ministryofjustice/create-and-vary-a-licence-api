@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
@@ -57,7 +57,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
-    deliusMockServer.stubGetManagersForGetApprovalCaseload()
+    deliusMockServer.stubGetManagersWithoutUserDetails()
 
     // When
     val result = webTestClient.post()
@@ -257,17 +257,17 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
 
   private fun stubClients(
     prisoners: List<PrisonerSearchPrisoner>,
-    managers: List<CommunityManager>,
+    managers: List<CommunityManagerWithoutUser>,
   ) {
     prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(prisoners)
     prisonApiMockServer.getHdcStatuses()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
-    deliusMockServer.stubGetManagersForGetApprovalCaseload(managers)
+    deliusMockServer.stubGetManagers(managers, includeUserInfo = true)
   }
 
-  fun createCommunityManager(id: Long, nomisId: String): CommunityManager = CommunityManager(
+  fun createCommunityManager(id: Long, nomisId: String): CommunityManagerWithoutUser = CommunityManagerWithoutUser(
     id = id,
     code = "staff-code-$id",
     case = ProbationCase(
@@ -289,7 +289,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     ),
     provider = Detail("probationArea-code-$id", "probationArea-description-$id"),
     unallocated = false,
-    email = "user$id@test.com",
   )
 
   fun createPrisonerSearchResult(

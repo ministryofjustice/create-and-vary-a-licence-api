@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -38,7 +39,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
@@ -217,7 +218,11 @@ class CaCaseloadServiceTest {
       ),
     )
     whenever(deliusApiClient.getProbationCases(any(), anyOrNull())).thenReturn(listOf(probationCase))
-    whenever(deliusApiClient.getOffenderManagers(any(), anyOrNull())).thenReturn(listOf(aCommunityManager))
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(any(), anyOrNull())).thenReturn(
+      listOf(
+        aCommunityManagerWithoutUser,
+      ),
+    )
   }
 
   @Nested
@@ -857,7 +862,7 @@ class CaCaseloadServiceTest {
           )
 
         whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-        whenever(deliusApiClient.getOffenderManagers(any(), anyOrNull())).thenReturn(emptyList())
+        whenever(deliusApiClient.getOffenderManagersWithoutUser(any(), anyOrNull())).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEmpty()
@@ -1027,15 +1032,32 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `telemetry is captured`() {
-      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(
+      val result = service.searchForOffenderOnPrisonCaseAdminCaseload(
         aPrisonUserSearchRequest.copy(query = "A1234AA"),
       )
 
-      verify(telemetryService).recordCaseloadLoad(
-        eq(CaPrisonCaseload),
-        eq(aPrisonUserSearchRequest.prisonCaseloads),
-        eq(results.inPrisonResults),
-      )
+      assertThat(result.inPrisonResults).hasSize(1)
+      assertThat(result.onProbationResults).hasSize(0)
+
+      // We record the number of results pulled back before filtering as we want to measure how many cases are being loaded in total
+      argumentCaptor<List<CaCase>> {
+        verify(telemetryService).recordCaseloadLoad(
+          eq(CaPrisonCaseload),
+          eq(aPrisonUserSearchRequest.prisonCaseloads),
+          capture(),
+        )
+
+        assertThat(firstValue).hasSize(3)
+      }
+      argumentCaptor<List<CaCase>> {
+        verify(telemetryService).recordCaseloadLoad(
+          eq(CaProbationCaseload),
+          eq(aPrisonUserSearchRequest.prisonCaseloads),
+          capture(),
+        )
+
+        assertThat(firstValue).hasSize(0)
+      }
     }
 
     @Test
@@ -1869,8 +1891,8 @@ class CaCaseloadServiceTest {
       croNumber = null,
     )
 
-    val aCommunityManager =
-      CommunityManager(
+    val aCommunityManagerWithoutUser =
+      CommunityManagerWithoutUser(
         code = "X1234",
         id = 2000L,
         team = TeamDetail(

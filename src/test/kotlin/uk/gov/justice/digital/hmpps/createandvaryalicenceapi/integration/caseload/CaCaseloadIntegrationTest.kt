@@ -148,7 +148,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stubGetCourtOutcomes()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       deliusMockServer.stubGetStaffDetailsByUsername()
-      deliusMockServer.stubGetManagersForGetApprovalCaseload()
+      deliusMockServer.stubGetManagersWithoutUserDetails()
 
       val caseload = webTestClient.post()
         .uri(SEARCH_PRISONERS_CA_CASELOAD)
