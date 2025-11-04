@@ -4,8 +4,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -17,11 +20,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaPrisonCaseload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.caCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -33,7 +39,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
@@ -64,6 +70,7 @@ class CaCaseloadServiceTest {
   private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
   private val cvlRecordService = mock<CvlRecordService>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
+  private val telemetryService = Mockito.mock<TelemetryService>()
 
   private val service = CaCaseloadService(
     prisonCaseloadService = CaPrisonCaseloadService(
@@ -83,12 +90,14 @@ class CaCaseloadServiceTest {
         releaseDateLabelFactory,
         cvlRecordService,
       ),
+      telemetryService,
     ),
     probationCaseloadService = CaProbationCaseloadService(
       licenceCaseRepository,
       releaseDateService,
       deliusApiClient,
       releaseDateLabelFactory,
+      telemetryService,
     ),
 
   )
@@ -125,6 +134,7 @@ class CaCaseloadServiceTest {
       prisonerSearchApiClient,
       releaseDateService,
       cvlRecordService,
+      telemetryService,
     )
 
     // Given licences returned by the service
@@ -208,7 +218,11 @@ class CaCaseloadServiceTest {
       ),
     )
     whenever(deliusApiClient.getProbationCases(any(), anyOrNull())).thenReturn(listOf(probationCase))
-    whenever(deliusApiClient.getOffenderManagers(any(), anyOrNull())).thenReturn(listOf(aCommunityManager))
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(any(), anyOrNull())).thenReturn(
+      listOf(
+        aCommunityManagerWithoutUser,
+      ),
+    )
   }
 
   @Nested
@@ -848,7 +862,7 @@ class CaCaseloadServiceTest {
           )
 
         whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-        whenever(deliusApiClient.getOffenderManagers(any(), anyOrNull())).thenReturn(emptyList())
+        whenever(deliusApiClient.getOffenderManagersWithoutUser(any(), anyOrNull())).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEmpty()
@@ -1014,6 +1028,36 @@ class CaCaseloadServiceTest {
           attentionNeededResults = emptyList(),
         ),
       )
+    }
+
+    @Test
+    fun `telemetry is captured`() {
+      val result = service.searchForOffenderOnPrisonCaseAdminCaseload(
+        aPrisonUserSearchRequest.copy(query = "A1234AA"),
+      )
+
+      assertThat(result.inPrisonResults).hasSize(1)
+      assertThat(result.onProbationResults).hasSize(0)
+
+      // We record the number of results pulled back before filtering as we want to measure how many cases are being loaded in total
+      argumentCaptor<List<CaCase>> {
+        verify(telemetryService).recordCaseloadLoad(
+          eq(CaPrisonCaseload),
+          eq(aPrisonUserSearchRequest.prisonCaseloads),
+          capture(),
+        )
+
+        assertThat(firstValue).hasSize(3)
+      }
+      argumentCaptor<List<CaCase>> {
+        verify(telemetryService).recordCaseloadLoad(
+          eq(CaProbationCaseload),
+          eq(aPrisonUserSearchRequest.prisonCaseloads),
+          capture(),
+        )
+
+        assertThat(firstValue).hasSize(0)
+      }
     }
 
     @Test
@@ -1277,6 +1321,36 @@ class CaCaseloadServiceTest {
           ),
           attentionNeededResults = emptyList(),
         ),
+      )
+    }
+
+    @Test
+    fun `telemetry is captured`() {
+      whenever(
+        licenceCaseRepository.findLicenceCases(
+          ProbationQuery.statusCodes,
+          ProbationQuery.prisonCodes,
+        ),
+      ).thenReturn(
+        listOf(
+          createLicenceCase(
+            licenceId = 4,
+            licenceStatus = LicenceStatus.ACTIVE,
+            nomisId = "A1234AD",
+            forename = "Person",
+            surname = "Four",
+          ),
+        ),
+      )
+
+      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(
+        aPrisonUserSearchRequest.copy(query = "A1234AD"),
+      )
+
+      verify(telemetryService).recordCaseloadLoad(
+        eq(CaProbationCaseload),
+        eq(aPrisonUserSearchRequest.prisonCaseloads),
+        eq(results.onProbationResults),
       )
     }
 
@@ -1817,8 +1891,8 @@ class CaCaseloadServiceTest {
       croNumber = null,
     )
 
-    val aCommunityManager =
-      CommunityManager(
+    val aCommunityManagerWithoutUser =
+      CommunityManagerWithoutUser(
         code = "X1234",
         id = 2000L,
         team = TeamDetail(

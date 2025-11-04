@@ -262,7 +262,7 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
-    deliusMockServer.stubGetManagersForGetApprovalCaseload(managers)
+    deliusMockServer.stubGetManagers(managers)
   }
 
   fun createCommunityManager(id: Long, nomisId: String): CommunityManager = CommunityManager(

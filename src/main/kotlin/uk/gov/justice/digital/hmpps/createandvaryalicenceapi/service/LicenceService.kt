@@ -95,6 +95,7 @@ class LicenceService(
   private val eligibilityService: EligibilityService,
   private val exclusionZoneService: ExclusionZoneService,
   private val deliusApiClient: DeliusApiClient,
+  private val telemetryService: TelemetryService,
 ) {
 
   @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
@@ -603,6 +604,8 @@ class LicenceService(
         populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
       }
     }
+
+    telemetryService.recordLicenceCreatedEvent(licenceVariation)
     return licenceVariation.toSummary()
   }
 

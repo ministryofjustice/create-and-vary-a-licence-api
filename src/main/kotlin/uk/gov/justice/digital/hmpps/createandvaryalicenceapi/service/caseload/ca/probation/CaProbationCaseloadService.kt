@@ -5,6 +5,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.SearchFilter
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -21,6 +23,7 @@ class CaProbationCaseloadService(
   private val releaseDateService: ReleaseDateService,
   private val deliusApiClient: DeliusApiClient,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
+  private val telemetryService: TelemetryService,
 ) {
   val statuses = listOf(
     ACTIVE,
@@ -33,6 +36,8 @@ class CaProbationCaseloadService(
     val licences = licenceCaseRepository.findLicenceCases(statuses, prisonCaseload.toList())
 
     val cases = formatReleasedLicences(licences)
+    telemetryService.recordCaseloadLoad(CaProbationCaseload, prisonCaseload, cases)
+
     val searchResults = SearchFilter.apply(searchString, cases)
     return searchResults.sortedWith(compareByDescending<CaCase> { it.releaseDate }.thenBy { it.licenceId })
   }

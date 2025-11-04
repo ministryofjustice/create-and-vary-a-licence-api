@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom
 
-import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
@@ -18,8 +18,8 @@ class PromptComService(
   private val promptComListBuilder: PromptComListBuilder,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val notifyService: NotifyService,
-  private val telemetryClient: TelemetryClient,
   private val cvlRecordService: CvlRecordService,
+  private val telemetryService: TelemetryService,
 ) {
 
   @TimeServedConsiderations("The com is used to prompt licences to create a licence - if no com exists or is unallocated then what would we do?")
@@ -30,7 +30,7 @@ class PromptComService(
     val cases = getCases(clock)
 
     notifyService.sendInitialLicenceCreateEmails(cases)
-    telemetryClient.trackEvent("PromptComJob", mapOf("cases" to cases.size.toString()), null)
+    telemetryService.recordPromptComJobEvent(cases.size)
   }
 
   fun getCases(clock: Clock = Clock.systemDefaultZone()): List<PromptComNotification> {

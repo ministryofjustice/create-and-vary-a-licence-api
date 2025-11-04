@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom
 
-import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -17,6 +16,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -33,11 +33,11 @@ class PromptComServiceTest {
   private val promptComListBuilder = mock<PromptComListBuilder>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val notifyService = mock<NotifyService>()
-  private val telemetryClient = mock<TelemetryClient>()
+  private val telemetryService = mock<TelemetryService>()
   private val cvlRecordService = mock<CvlRecordService>()
 
   private val promptComService =
-    PromptComService(promptComListBuilder, prisonerSearchApiClient, notifyService, telemetryClient, cvlRecordService)
+    PromptComService(promptComListBuilder, prisonerSearchApiClient, notifyService, cvlRecordService, telemetryService)
 
   @BeforeEach
   fun reset() = reset(promptComListBuilder, prisonerSearchApiClient)
@@ -127,7 +127,7 @@ class PromptComServiceTest {
 
     promptComService.runJob(clock)
 
-    verify(telemetryClient).trackEvent("PromptComJob", mapOf("cases" to "1"), null)
+    verify(telemetryService).recordPromptComJobEvent(1)
     verify(notifyService).sendInitialLicenceCreateEmails(listOf(com))
   }
 

@@ -7,6 +7,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -15,10 +16,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateStaffCaseload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -44,6 +48,7 @@ class ComCreateCaseloadServiceTest {
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val cvlRecordService = mock<CvlRecordService>()
+  private val telemetryService = mock<TelemetryService>()
 
   private val service = ComCreateCaseloadService(
     prisonerSearchApiClient,
@@ -52,6 +57,7 @@ class ComCreateCaseloadServiceTest {
     hdcService,
     releaseDateService,
     cvlRecordService,
+    telemetryService,
   )
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
@@ -209,6 +215,117 @@ class ComCreateCaseloadServiceTest {
       LicenceType.AP,
       LicenceCreationType.LICENCE_NOT_STARTED,
       expectedReleaseDate = tenDaysFromNow,
+    )
+  }
+
+  @Test
+  fun `telemetry is captured for staff`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12346", nomisId = "AB1234D"),
+      ManagedOffenderCrn(crn = "X12347"),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        prisonerSearchResult().copy(
+          prisonerNumber = "AB1234E",
+          conditionalReleaseDate = tenDaysFromNow,
+          bookingId = "1",
+        ),
+      ),
+    )
+    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+      listOf(
+        aCvlRecord(
+          nomsId = "AB1234E",
+          kind = LicenceKind.CRD,
+          licenceStartDate = tenDaysFromNow,
+        ),
+      ),
+    )
+    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+      listOf(
+        aCvlRecord(
+          nomsId = "AB1234E",
+          kind = LicenceKind.CRD,
+          licenceStartDate = tenDaysFromNow,
+        ),
+      ),
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    verifyCase(
+      caseload.first(),
+      "X12348",
+      "AB1234E",
+      LicenceStatus.NOT_STARTED,
+      LicenceType.AP,
+      LicenceCreationType.LICENCE_NOT_STARTED,
+      expectedReleaseDate = tenDaysFromNow,
+    )
+
+    verify(telemetryService).recordCaseloadLoad(eq(ComCreateStaffCaseload), eq(setOf("213")), eq(caseload))
+  }
+
+  @Test
+  fun `telemetry is captured for teams`() {
+    val selectedTeam = "team c"
+
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        nomisId = "AB1234E",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
+      ),
+      ManagedOffenderCrn(
+        crn = "X12349",
+        nomisId = "AB1234F",
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
+      ),
+    )
+
+    whenever(
+      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
+    ).thenReturn(managedOffenders)
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        prisonerSearchResult().copy(
+          bookingId = "1",
+          prisonerNumber = "AB1234E",
+          conditionalReleaseDate = tenDaysFromNow,
+          status = "ACTIVE IN",
+        ),
+        prisonerSearchResult().copy(
+          bookingId = "2",
+          prisonerNumber = "AB1234F",
+          conditionalReleaseDate = tenDaysFromNow,
+          licenceExpiryDate = null,
+          topupSupervisionExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
+        ),
+      ),
+    )
+
+    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+      listOf(
+        aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234F", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+      ),
+    )
+
+    val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf(selectedTeam))
+
+    assertThat(caseload).hasSize(2)
+
+    verify(telemetryService).recordCaseloadLoad(
+      eq(ComCreateTeamCaseload),
+      eq(setOf(selectedTeam)),
+      eq(caseload),
     )
   }
 
