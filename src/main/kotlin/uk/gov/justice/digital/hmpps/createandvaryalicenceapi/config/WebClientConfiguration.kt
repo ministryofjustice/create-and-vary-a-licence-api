@@ -26,7 +26,7 @@ class WebClientConfiguration(
   @param:Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String,
   @param:Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
   @param:Value("\${os.places.api.url}") private val osPlacesApiUrl: String,
-  @param:Value("\${retry.timeout:60s}") val timeoutSeconds: Duration,
+  @param:Value("\${retry.timeout:10s}") val timeoutSeconds: Duration,
 ) {
   @Bean
   fun oauthApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(oauthApiUrl).build()
