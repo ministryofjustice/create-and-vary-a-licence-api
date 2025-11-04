@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
 import java.time.DayOfWeek
@@ -87,6 +88,7 @@ class ReleaseDateService(
     else -> calculateHardStopDate(licenceStartDate)
   }
 
+  @TimeServedConsiderations("For time served licences, take it there will be special logic to use as licence start date in the future?")
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
     licenceKind: LicenceKind?,
@@ -97,7 +99,6 @@ class ReleaseDateService(
       nomisRecord,
       iS91DeterminationService.isIS91Case(nomisRecord),
     )
-
     else -> null
   }
 
