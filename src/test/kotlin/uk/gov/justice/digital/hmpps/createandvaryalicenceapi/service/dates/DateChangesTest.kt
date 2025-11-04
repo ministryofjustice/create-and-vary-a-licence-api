@@ -18,8 +18,7 @@ class DateChangesTest {
   @Test
   fun `date change description should explain that a date has been removed`() {
     val dateType = LicenceDateType.PRRD
-    val newDate = null
-    val dateChange = DateChange(LicenceDateType.PRRD, newDate, LocalDate.of(2025, 6, 15))
+    val dateChange = DateChange(LicenceDateType.PRRD, null, LocalDate.of(2025, 6, 15))
 
     assertThat(dateChange.toDescription()).isEqualTo("${dateType.description} has been removed")
   }
