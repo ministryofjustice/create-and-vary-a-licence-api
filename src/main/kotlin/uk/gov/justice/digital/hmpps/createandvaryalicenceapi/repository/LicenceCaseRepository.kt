@@ -13,19 +13,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
-private const val LICENCE_CASE = "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase"
-private const val LICENCE_COM_CASE =
-  "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase"
-private const val LICENCE_APPROVER_CASE =
-  "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceApproverCase"
-
 @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
 @Repository
 interface LicenceCaseRepository : JpaRepository<Licence, Long> {
 
   @Query(
     """
-        SELECT new $LICENCE_CASE(
+        SELECT 
             l.kind,
             l.idInternal,
             l.versionOfId,
@@ -44,7 +38,6 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
             com.username,
             l.prisonCode,
             l.prisonDescription
-        )
         FROM Licence l
             LEFT JOIN l.responsibleCom com
             LEFT JOIN l.updatedBy updatedBy
@@ -59,7 +52,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
 
   @Query(
     """
-        SELECT new $LICENCE_COM_CASE(
+        SELECT 
           l.kind,
           l.idInternal,
           l.versionOfId,
@@ -82,7 +75,6 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.dateCreated,
           l.approvedByName,
           l.approvedDate
-        )
         FROM Licence l
             LEFT JOIN l.responsibleCom com
             LEFT JOIN l.updatedBy updatedBy
@@ -97,7 +89,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
 
   @Query(
     """
-        SELECT new $LICENCE_APPROVER_CASE(
+        SELECT 
           l.licenceStartDate,
           l.kind,
           l.idInternal,
@@ -118,7 +110,6 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.prisonCode,
           l.prisonDescription,
           l.variationOfId
-        )
         FROM Licence l
           LEFT JOIN l.responsibleCom com
           LEFT JOIN l.updatedBy updatedBy
@@ -131,7 +122,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
 
   @Query(
     """
-    SELECT new $LICENCE_APPROVER_CASE(
+    SELECT
       l.licenceStartDate,
       l.kind,
       l.idInternal,
@@ -152,7 +143,6 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
       l.prisonCode,
       l.prisonDescription,
       l.variationOfId
-    )
     FROM Licence l
         LEFT JOIN l.responsibleCom com
         LEFT JOIN l.updatedBy updatedBy
@@ -169,7 +159,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
 
   @Query(
     """
-        SELECT new $LICENCE_APPROVER_CASE(
+        SELECT 
           l.licenceStartDate,
           l.kind,
           l.idInternal,
@@ -190,7 +180,6 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.prisonCode,
           l.prisonDescription,
           l.variationOfId
-        )
         FROM Licence l
           LEFT JOIN l.responsibleCom com
           LEFT JOIN l.updatedBy updatedBy
