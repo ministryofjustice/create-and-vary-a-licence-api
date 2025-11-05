@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
 import java.time.DayOfWeek
