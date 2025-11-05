@@ -660,13 +660,8 @@ class ComCreateCaseloadServiceTest {
           kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
-        aCvlRecord(
-          nomsId = "AB1234H",
-          kind = LicenceKind.CRD,
-          licenceStartDate = tenDaysFromNow,
-          hardStopWarningDate = tenDaysFromNow,
-        ),
-        aCvlRecord(nomsId = "AB1234I", kind = LicenceKind.CRD, licenceStartDate = elevenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234H", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow, hardStopWarningDate = tenDaysFromNow, licenceType = LicenceType.PSS),
+        aCvlRecord(nomsId = "AB1234I", kind = LicenceKind.CRD, licenceStartDate = elevenDaysFromNow, licenceType = LicenceType.AP_PSS),
       ),
     )
 
@@ -774,7 +769,7 @@ class ComCreateCaseloadServiceTest {
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
       listOf(
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
-        aCvlRecord(nomsId = "AB1234F", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234F", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow, licenceType = LicenceType.PSS),
       ),
     )
 
@@ -1163,6 +1158,7 @@ class ComCreateCaseloadServiceTest {
           kind = LicenceKind.CRD,
           licenceStartDate = twoDaysFromNow,
           isInHardStopPeriod = true,
+          licenceType = LicenceType.AP_PSS,
         ),
       ),
     )
