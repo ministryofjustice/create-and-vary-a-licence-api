@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isTodayOrInTheFuture
 
@@ -138,7 +137,6 @@ class ComCreateCaseloadService(
     nomisRecord: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
   ): CaseLoadLicenceSummary {
-    val licenceType = LicenceType.getLicenceType(nomisRecord)
     val licenceKind = cvlRecord.eligibleKind!!
     val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
 
@@ -150,7 +148,7 @@ class ComCreateCaseloadService(
 
     val caseLoadSummary = CaseLoadLicenceSummary(
       licenceStatus = licenceStatus,
-      licenceType = licenceType,
+      licenceType = cvlRecord.licenceType,
       crn = deliusRecord.crn,
       nomisId = nomisRecord.prisonerNumber,
       name = name,

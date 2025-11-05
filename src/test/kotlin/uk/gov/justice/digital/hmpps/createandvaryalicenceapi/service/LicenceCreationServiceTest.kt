@@ -105,7 +105,6 @@ class LicenceCreationServiceTest {
     prisonerSearchApiClient,
     prisonApiClient,
     deliusApiClient,
-    releaseDateService,
     hdcService,
     cvlRecordService,
     isTimeServedLogicEnabled = true,
@@ -324,6 +323,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.PSS))
 
       service.createLicence(PRISON_NUMBER)
 
@@ -354,6 +354,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.AP_PSS))
 
       service.createLicence(PRISON_NUMBER)
 
@@ -806,6 +807,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD, licenceType = LicenceType.PSS))
 
       service.createLicence(PRISON_NUMBER)
 
@@ -836,6 +838,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD, licenceType = LicenceType.AP_PSS))
 
       service.createLicence(PRISON_NUMBER)
 
@@ -1332,6 +1335,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.PSS))
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1363,6 +1367,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.AP_PSS))
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1759,6 +1764,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(hdcService.getHdcLicenceDataByBookingId(any())).thenReturn(someHdcLicenceData)
       whenever(hdcService.getHdcLicenceData(any())).thenReturn(someHdcLicenceData)
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
 
       service.createHdcLicence(PRISON_NUMBER)
 
@@ -1822,6 +1828,7 @@ class LicenceCreationServiceTest {
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC, licenceType = LicenceType.PSS))
 
       val exception = assertThrows<IllegalStateException> {
         service.createHdcLicence(PRISON_NUMBER)
