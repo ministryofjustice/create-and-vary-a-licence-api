@@ -10,7 +10,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.service.GlobalPrincipalOAuth2AuthorizedClientService
-import java.time.Duration
 
 private const val HMPPS_AUTH = "hmpps-auth"
 
@@ -26,7 +25,6 @@ class WebClientConfiguration(
   @param:Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String,
   @param:Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
   @param:Value("\${os.places.api.url}") private val osPlacesApiUrl: String,
-  @param:Value("\${retry.timeout:10s}") val timeoutSeconds: Duration,
 ) {
   @Bean
   fun oauthApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(oauthApiUrl).build()
@@ -78,7 +76,6 @@ class WebClientConfiguration(
   ): WebClient = builder.authorisedWebClient(
     authorizedClientManager = authorizedClientManager,
     url = url,
-    timeout = timeoutSeconds,
     registrationId = HMPPS_AUTH,
   )
 }
