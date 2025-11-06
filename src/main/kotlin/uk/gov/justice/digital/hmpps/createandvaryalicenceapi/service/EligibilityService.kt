@@ -4,8 +4,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.LocalDate
@@ -13,6 +15,8 @@ import java.time.LocalDate
 @Service
 class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
+  private val releaseDateService: ReleaseDateService,
+  private val workingDaysService: WorkingDaysService,
   private val clock: Clock,
   @param:Value("\${recall.enabled}") private val recallEnabled: Boolean = false,
   @param:Value("\${recall.prisons}") private val recallEnabledPrisons: List<String> = emptyList(),
@@ -78,6 +82,7 @@ class EligibilityService(
     val eligibilityCriteria = listOf(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
+      !isApSledRelease(prisoner) to "is AP-only being released at SLED",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
@@ -132,6 +137,16 @@ class EligibilityService(
   private fun hasPostRecallReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate != null
 
   private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
+
+  private fun isApSledRelease(prisoner: PrisonerSearchPrisoner): Boolean = when {
+    prisoner.postRecallReleaseDate == null -> false
+    prisoner.licenceExpiryDate == null -> false
+    prisoner.topupSupervisionExpiryDate != null && prisoner.topupSupervisionExpiryDate.isAfter(prisoner.licenceExpiryDate) -> false
+    else -> {
+      val releaseDate = releaseDateService.calculatePrrdLicenceStartDate(prisoner)
+      releaseDate == workingDaysService.getLastWorkingDay(prisoner.licenceExpiryDate)
+    }
+  }
 
   // Shared eligibility rules
   private fun isPersonParoleEligible(prisoner: PrisonerSearchPrisoner): Boolean {

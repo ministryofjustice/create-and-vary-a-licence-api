@@ -92,7 +92,7 @@ class ReleaseDateService(
     licenceKind: LicenceKind?,
   ): LocalDate? = when (licenceKind) {
     HDC -> nomisRecord.homeDetentionCurfewActualDate
-    PRRD -> nomisRecord.calculatePrrdLicenceStartDate()
+    PRRD -> calculatePrrdLicenceStartDate(nomisRecord)
     CRD -> calculateCrdLicenceStartDate(
       nomisRecord,
       iS91DeterminationService.isIS91Case(nomisRecord),
@@ -108,7 +108,7 @@ class ReleaseDateService(
     return prisoners.associate {
       it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
         HDC -> it.homeDetentionCurfewActualDate
-        PRRD -> it.calculatePrrdLicenceStartDate()
+        PRRD -> calculatePrrdLicenceStartDate(it)
         CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
         else -> null
       }
@@ -217,12 +217,12 @@ class ReleaseDateService(
     }
   }
 
-  private fun PrisonerSearchPrisoner.calculatePrrdLicenceStartDate(): LocalDate? = when {
-    postRecallReleaseDate == null -> null
-    confirmedReleaseDate == null -> getLastWorkingDay(postRecallReleaseDate)
-    confirmedReleaseDate.isAfter(postRecallReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
-    confirmedReleaseDate.isOnOrBefore(conditionalReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
-    else -> confirmedReleaseDate
+  fun calculatePrrdLicenceStartDate(prisoner: PrisonerSearchPrisoner): LocalDate? = when {
+    prisoner.postRecallReleaseDate == null -> null
+    prisoner.confirmedReleaseDate == null -> getLastWorkingDay(prisoner.postRecallReleaseDate)
+    prisoner.confirmedReleaseDate.isAfter(prisoner.postRecallReleaseDate) -> getLastWorkingDay(prisoner.postRecallReleaseDate)
+    prisoner.confirmedReleaseDate.isOnOrBefore(prisoner.conditionalReleaseDate) -> getLastWorkingDay(prisoner.postRecallReleaseDate)
+    else -> prisoner.confirmedReleaseDate
   }
 
   private fun getLastWorkingDay(date: LocalDate?): LocalDate? = when {
