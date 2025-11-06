@@ -20,6 +20,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceFlagProjection
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.hasNomsIdIn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaPrisonCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -70,6 +73,7 @@ class CaCaseloadServiceTest {
   private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
   private val cvlRecordService = mock<CvlRecordService>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
+  private val licenceRepository = mock<RecordNomisTimeServedLicenceReasonRepository>()
   private val telemetryService = Mockito.mock<TelemetryService>()
 
   private val service = CaCaseloadService(
@@ -89,6 +93,7 @@ class CaCaseloadServiceTest {
         prisonerSearchApiClient,
         releaseDateLabelFactory,
         cvlRecordService,
+        licenceRepository
       ),
       telemetryService,
     ),
@@ -266,7 +271,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -292,7 +297,7 @@ class CaCaseloadServiceTest {
           PrisonQuery.statusCodes,
           PrisonQuery.prisonCodes,
         )
-        verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber))
+        verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber!!))
         verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
       }
     }
@@ -833,6 +838,216 @@ class CaCaseloadServiceTest {
             ),
           ),
         )
+      }
+
+      @Test
+      fun `should return hasNomisLicence true when a nomis time-served licence record exists`() {
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+          listOf(
+            aPrisonerSearchPrisoner,
+          ),
+        )
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+          .thenReturn(emptyList())
+
+        val licenceCase = createLicenceCase(
+          licenceId = 1,
+          nomisId = "A1234AA",
+          forename = "Person",
+          surname = "Four",
+          licenceStatus = LicenceStatus.NOT_STARTED,
+        )
+
+        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+          listOf(
+            aCvlRecord(
+              nomsId = licenceCase.prisonNumber!!,
+              kind = LicenceKind.CRD,
+              licenceStartDate = twoDaysFromNow,
+              isInHardStopPeriod = true,
+              hardStopKind = LicenceKind.TIME_SERVED
+            ),
+          ),
+        )
+
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+          .thenReturn(
+            PageImpl(
+              listOf(
+                aPrisonerSearchPrisoner.copy(
+                  bookingId = "1234",
+                  prisonerNumber = licenceCase.prisonNumber!!,
+                  confirmedReleaseDate = twoMonthsFromNow,
+                  conditionalReleaseDate = twoDaysFromNow,
+                ),
+              ),
+            ),
+          )
+
+        whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
+          .thenReturn(
+            listOf(
+              object : LicenceFlagProjection {
+                override val bookingId: String = "1234"
+                override val hasNomisLicence: Boolean = true
+              },
+            ),
+          )
+
+        whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+        // WHEN
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
+
+        // THEN
+        assertThat(prisonOmuCaseload).hasSize(1)
+        with(prisonOmuCaseload.first()) {
+          assertThat(name).isEqualTo("Person Four")
+          assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+          assertThat(isInHardStopPeriod).isTrue()
+          assertThat(hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
+          assertThat(hasNomisLicence).isTrue()
+        }
+      }
+
+      @Test
+      fun `should return hasNomisLicence when a hardStopKind is not TIME_SERVED`() {
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+          listOf(
+            aPrisonerSearchPrisoner,
+          ),
+        )
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+          .thenReturn(emptyList())
+
+        val licenceCase = createLicenceCase(
+          licenceId = 1,
+          nomisId = "A1234AA",
+          forename = "Person",
+          surname = "Four",
+          licenceStatus = LicenceStatus.NOT_STARTED,
+        )
+
+        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+          listOf(
+            aCvlRecord(
+              nomsId = licenceCase.prisonNumber!!,
+              kind = LicenceKind.CRD,
+              licenceStartDate = twoDaysFromNow,
+              isInHardStopPeriod = true,
+              hardStopKind = LicenceKind.HARD_STOP
+            ),
+          ),
+        )
+
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+          .thenReturn(
+            PageImpl(
+              listOf(
+                aPrisonerSearchPrisoner.copy(
+                  bookingId = "1234",
+                  prisonerNumber = licenceCase.prisonNumber!!,
+                  confirmedReleaseDate = twoMonthsFromNow,
+                  conditionalReleaseDate = twoDaysFromNow,
+                ),
+              ),
+            ),
+          )
+
+        whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
+          .thenReturn(
+            listOf(
+              object : LicenceFlagProjection {
+                override val bookingId: String = "1234"
+                override val hasNomisLicence: Boolean = true
+              },
+            ),
+          )
+
+        whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+        // WHEN
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
+
+        // THEN
+        assertThat(prisonOmuCaseload).hasSize(1)
+        with(prisonOmuCaseload.first()) {
+          assertThat(name).isEqualTo("Person Four")
+          assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+          assertThat(isInHardStopPeriod).isTrue()
+          assertThat(hardStopKind).isEqualTo(LicenceKind.HARD_STOP)
+          assertThat(hasNomisLicence).isFalse()
+        }
+      }
+
+      @Test
+      fun `should return hasNomisLicence false when a nomis time-served licence record dosen't exists`() {
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+          listOf(
+            aPrisonerSearchPrisoner,
+          ),
+        )
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+          .thenReturn(emptyList())
+
+        val licenceCase = createLicenceCase(
+          licenceId = 1,
+          nomisId = "A1234AA",
+          forename = "Person",
+          surname = "Four",
+          licenceStatus = LicenceStatus.NOT_STARTED,
+        )
+
+        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+          listOf(
+            aCvlRecord(
+              nomsId = licenceCase.prisonNumber!!,
+              kind = LicenceKind.CRD,
+              licenceStartDate = twoDaysFromNow,
+              isInHardStopPeriod = true,
+              hardStopKind = LicenceKind.TIME_SERVED
+            ),
+          ),
+        )
+
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+          .thenReturn(
+            PageImpl(
+              listOf(
+                aPrisonerSearchPrisoner.copy(
+                  bookingId = "1234",
+                  prisonerNumber = licenceCase.prisonNumber!!,
+                  confirmedReleaseDate = twoMonthsFromNow,
+                  conditionalReleaseDate = twoDaysFromNow,
+                ),
+              ),
+            ),
+          )
+
+        whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
+          .thenReturn(
+            listOf(
+              object : LicenceFlagProjection {
+                override val bookingId: String = "1234"
+                override val hasNomisLicence: Boolean = false
+              },
+            ),
+          )
+
+        whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+        // WHEN
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
+
+        // THEN
+        assertThat(prisonOmuCaseload).hasSize(1)
+        with(prisonOmuCaseload.first()) {
+          assertThat(name).isEqualTo("Person Four")
+          assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+          assertThat(isInHardStopPeriod).isTrue()
+          assertThat(hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
+          assertThat(hasNomisLicence).isFalse()
+        }
       }
 
       @Test
