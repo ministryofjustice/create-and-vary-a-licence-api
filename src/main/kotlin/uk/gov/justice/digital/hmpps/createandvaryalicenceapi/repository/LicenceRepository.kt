@@ -110,21 +110,6 @@ interface LicenceRepository :
 
   @Query(
     """
-    SELECT l
-        FROM Licence l
-        WHERE l.prisonCode IN :prisonCodes 
-        AND l.statusCode IN (
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE,
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
-        )
-        AND l.licenceStartDate > :releasedAfterDate
-        ORDER BY l.licenceStartDate ASC
-    """,
-  )
-  fun getRecentlyApprovedLicences(prisonCodes: List<String>, releasedAfterDate: LocalDate): List<Licence>
-
-  @Query(
-    """
       SELECT l
       FROM Licence l
       WHERE l.kind IN (
@@ -201,16 +186,6 @@ interface LicenceRepository :
     """,
   )
   fun getLicenceReviewCountForTeams(teamCodes: List<String>): List<TeamCountsDto>
-
-  @Query(
-    """
-      SELECT l
-      FROM Licence l
-      WHERE l.statusCode = 'SUBMITTED'
-      AND l.prisonCode IN ( :prisonCodes )
-  """,
-  )
-  fun getLicencesReadyForApproval(prisonCodes: List<String>): List<Licence>
 
   @Query(
     """

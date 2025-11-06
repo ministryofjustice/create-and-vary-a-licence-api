@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.getVersionOf
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient.Companion.CASELOAD_PAGE_SIZE
@@ -28,7 +27,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
 import java.time.Clock
 import java.time.LocalDate
 
@@ -113,7 +111,7 @@ class ComCaseloadSearchService(
     prisonOffender == null || cvlRecord == null -> null
 
     !cvlRecord.isEligible -> null
-    else -> deliusOffender.toUnstartedRecord(prisonOffender, cvlRecord.licenceStartDate)
+    else -> deliusOffender.toUnstartedRecord(prisonOffender, cvlRecord)
   }
 
   private fun createRecord(
@@ -142,25 +140,18 @@ class ComCaseloadSearchService(
 
   private fun CaseloadResult.toUnstartedRecord(
     prisonOffender: PrisonerSearchPrisoner,
-    licenceStartDate: LocalDate?,
-  ): FoundProbationRecord {
-    val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate)
-    val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder.licenceStartDate)
-
-    return this.transformToUnstartedRecord(
-      releaseDate = licenceStartDate,
-      bookingId = prisonOffender.bookingId?.toLong(),
-      licenceType = getLicenceType(prisonOffender),
-      licenceStatus = if (inHardStopPeriod) TIMED_OUT else NOT_STARTED,
-      hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder.licenceStartDate),
-      isInHardStopPeriod = inHardStopPeriod,
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-        sentenceDateHolder.licenceStartDate,
-      ),
-      releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(licenceStartDate, prisonOffender),
-    )
-  }
+    cvlRecord: CvlRecord,
+  ): FoundProbationRecord = this.transformToUnstartedRecord(
+    releaseDate = cvlRecord.licenceStartDate,
+    bookingId = prisonOffender.bookingId?.toLong(),
+    licenceType = cvlRecord.licenceType,
+    licenceStatus = if (cvlRecord.isInHardStopPeriod) TIMED_OUT else NOT_STARTED,
+    hardStopDate = cvlRecord.hardStopDate,
+    hardStopWarningDate = cvlRecord.hardStopWarningDate,
+    isInHardStopPeriod = cvlRecord.isInHardStopPeriod,
+    isDueToBeReleasedInTheNextTwoWorkingDays = cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
+    releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(cvlRecord.licenceStartDate, prisonOffender),
+  )
 
   private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(
     licence = licence,

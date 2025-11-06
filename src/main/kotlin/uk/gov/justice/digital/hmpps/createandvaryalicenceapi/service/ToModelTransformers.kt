@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
@@ -35,7 +34,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider as EntityElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
@@ -836,58 +834,6 @@ fun Licence.getSubmittedByFullName(): String? {
     null
   }
 }
-
-fun transformToApprovalLicenceSummary(
-  licence: EntityLicence,
-  hardStopDate: LocalDate?,
-  hardStopWarningDate: LocalDate?,
-  isInHardStopPeriod: Boolean,
-  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-): LicenceSummaryApproverView = LicenceSummaryApproverView(
-  licenceId = licence.id,
-  forename = licence.forename,
-  surname = licence.surname,
-  dateOfBirth = licence.dateOfBirth,
-  licenceStatus = licence.statusCode,
-  kind = licence.kind,
-  licenceType = licence.typeCode,
-  nomisId = licence.nomsId,
-  crn = licence.crn,
-  bookingId = licence.bookingId,
-  prisonCode = licence.prisonCode,
-  prisonDescription = licence.prisonDescription,
-  probationAreaCode = licence.probationAreaCode,
-  probationAreaDescription = licence.probationAreaDescription,
-  probationPduCode = licence.probationPduCode,
-  probationPduDescription = licence.probationPduDescription,
-  probationLauCode = licence.probationLauCode,
-  probationLauDescription = licence.probationLauDescription,
-  probationTeamCode = licence.probationTeamCode,
-  probationTeamDescription = licence.probationTeamDescription,
-  comUsername = licence.responsibleCom?.username,
-  conditionalReleaseDate = licence.conditionalReleaseDate,
-  actualReleaseDate = licence.actualReleaseDate,
-  sentenceStartDate = licence.sentenceStartDate,
-  sentenceEndDate = licence.sentenceEndDate,
-  licenceStartDate = licence.licenceStartDate,
-  licenceExpiryDate = licence.licenceExpiryDate,
-  topupSupervisionStartDate = licence.topupSupervisionStartDate,
-  topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
-  postRecallReleaseDate = licence.postRecallReleaseDate,
-  dateCreated = licence.dateCreated,
-  submittedDate = licence.submittedDate,
-  approvedDate = licence.approvedDate,
-  approvedByName = licence.approvedByName,
-  licenceVersion = licence.licenceVersion,
-  versionOf = getVersionOf(licence),
-  isReviewNeeded = licence is ReviewablePostRelease && licence.isReviewNeeded(),
-  updatedByFullName = licence.getUpdatedByFullName(),
-  submittedByFullName = licence.getSubmittedByFullName(),
-  hardStopDate = hardStopDate,
-  hardStopWarningDate = hardStopWarningDate,
-  isInHardStopPeriod = isInHardStopPeriod,
-  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-)
 
 fun getVersionOf(licence: Licence): Long? = when (licence) {
   is CrdLicence -> licence.versionOfId

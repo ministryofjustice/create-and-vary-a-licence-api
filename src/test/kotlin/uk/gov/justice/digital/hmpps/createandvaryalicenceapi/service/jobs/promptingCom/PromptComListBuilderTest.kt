@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.S
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
 class PromptComListBuilderTest {
@@ -333,6 +334,7 @@ class PromptComListBuilderTest {
           isDueToBeReleasedInTheNextTwoWorkingDays = false,
           isInHardStopPeriod = false,
           isEligibleForEarlyRelease = false,
+          licenceType = LicenceType.AP,
         ),
         CvlRecord(
           nomisId = nomisId2,
@@ -340,6 +342,7 @@ class PromptComListBuilderTest {
           isDueToBeReleasedInTheNextTwoWorkingDays = false,
           isInHardStopPeriod = false,
           isEligibleForEarlyRelease = false,
+          licenceType = LicenceType.AP,
         ),
         CvlRecord(
           nomisId = nomisId3,
@@ -347,6 +350,7 @@ class PromptComListBuilderTest {
           isDueToBeReleasedInTheNextTwoWorkingDays = false,
           isInHardStopPeriod = false,
           isEligibleForEarlyRelease = false,
+          licenceType = LicenceType.AP,
         ),
       )
       val result = promptComListBuilder.buildEmailsToSend(listOf(promptCase1, promptCase2, promptCase3), cvlRecords)

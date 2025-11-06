@@ -353,7 +353,7 @@ class ComCaseloadSearchServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.PSS)))
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -442,7 +442,7 @@ class ComCaseloadSearchServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD, licenceType = AP_PSS)))
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
@@ -727,7 +727,17 @@ class ComCaseloadSearchServiceTest {
   fun `hard stop dates are populated for non-started licences`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+      listOf(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          isInHardStopPeriod = true,
+          hardStopDate = LocalDate.of(2023, 2, 12),
+          hardStopWarningDate = LocalDate.of(2023, 3, 10),
+          isDueToBeReleasedInTheNextTwoWorkingDays = true,
+        ),
+      ),
+    )
 
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
@@ -740,18 +750,13 @@ class ComCaseloadSearchServiceTest {
       ),
     )
 
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
-    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
-    whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
-
     val result = service.searchForOffenderOnStaffCaseload(request)
 
     with(result.results.first()) {
       assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
       assertThat(isInHardStopPeriod).isEqualTo(true)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
-      assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
+      assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 10))
       assertThat(isDueToBeReleasedInTheNextTwoWorkingDays).isEqualTo(true)
     }
   }

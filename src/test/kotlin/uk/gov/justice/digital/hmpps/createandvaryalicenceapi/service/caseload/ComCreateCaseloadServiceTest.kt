@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -24,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -33,7 +31,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -105,66 +102,6 @@ class ComCreateCaseloadServiceTest {
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(0)
-    verify(prisonerSearchApiClient, never()).searchPrisonersByNomisIds(any())
-  }
-
-  @Test
-  fun `it calls the licence service when Nomis records are found`() {
-    val cases = mapOf(
-      managedOffenderCrn() to prisonerSearchResult().copy(
-        prisonerNumber = "ABC123",
-        firstName = "Person",
-        lastName = "One",
-        dateOfBirth = LocalDate.of(1970, 1, 1),
-        conditionalReleaseDate = tenDaysFromNow,
-      ),
-    )
-
-    val cvlRecords = listOf(
-      aCvlRecord(
-        nomsId = "ABC123",
-        kind = LicenceKind.CRD,
-        licenceStartDate = tenDaysFromNow,
-      ),
-    )
-
-    val casesAndLicences = service.mapCasesToLicences(cases, cvlRecords)
-
-    assertThat(casesAndLicences).hasSize(1)
-    assertThat(casesAndLicences["X12348"]).hasSize(1)
-    assertThat(casesAndLicences["X12348"]!!.first().licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
-    verify(licenceCaseRepository).findLicenceCasesForCom(any(), any())
-  }
-
-  @Test
-  fun `it sets not started licences to timed out when in the hard stop period`() {
-    val cases = mapOf(
-      aManagedOffenderCrn() to prisonerSearchResult().copy(
-        prisonerNumber = "ABC123",
-        firstName = "Person",
-        lastName = "One",
-        dateOfBirth = LocalDate.of(1970, 1, 1),
-        conditionalReleaseDate = twoDaysFromNow,
-      ),
-    )
-
-    val cvlRecords = listOf(
-      aCvlRecord(
-        nomsId = "ABC123",
-        kind = LicenceKind.CRD,
-        licenceStartDate = twoDaysFromNow,
-        isInHardStopPeriod = true,
-      ),
-    )
-
-    val caseAndLicences = service.mapCasesToLicences(cases, cvlRecords)
-
-    assertThat(caseAndLicences).hasSize(1)
-    val licence = caseAndLicences["X12348"]!!.first()
-    assertThat(licence.nomisId).isEqualTo("ABC123")
-    assertThat(caseAndLicences["X12348"]!!).hasSize(1)
-    assertThat(licence.licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
-    assertThat(licence.licenceType).isEqualTo(LicenceType.AP)
   }
 
   @Test
@@ -596,17 +533,6 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
-      listOf(
-        StaffNameResponse(
-          username = "johndoe",
-          code = "X54321",
-          name = Name(forename = "John", surname = "Doe"),
-          id = Long.MIN_VALUE,
-        ),
-      ),
-    )
-
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
     assertThat(caseload).hasSize(1)
     verifyCase(
@@ -643,7 +569,7 @@ class ComCreateCaseloadServiceTest {
       ManagedOffenderCrn(
         crn = "X12351",
         nomisId = "AB1234H",
-        staff = StaffDetail(name = Name(forename = null, surname = null), code = "X1234", unallocated = true),
+        staff = StaffDetail(name = Name(forename = "Ann", surname = "Officer"), code = "X1235", unallocated = true),
       ),
       ManagedOffenderCrn(
         crn = "X12352",
@@ -725,8 +651,14 @@ class ComCreateCaseloadServiceTest {
           kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
           hardStopWarningDate = tenDaysFromNow,
+          licenceType = LicenceType.PSS,
         ),
-        aCvlRecord(nomsId = "AB1234I", kind = LicenceKind.CRD, licenceStartDate = elevenDaysFromNow),
+        aCvlRecord(
+          nomsId = "AB1234I",
+          kind = LicenceKind.CRD,
+          licenceStartDate = elevenDaysFromNow,
+          licenceType = LicenceType.AP_PSS,
+        ),
       ),
     )
 
@@ -740,17 +672,6 @@ class ComCreateCaseloadServiceTest {
           licenceStatus = LicenceStatus.SUBMITTED,
           comUsername = "johndoe",
           licenceStartDate = elevenDaysFromNow,
-        ),
-      ),
-    )
-
-    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
-      listOf(
-        StaffNameResponse(
-          username = "johndoe",
-          code = "X54321",
-          name = Name(forename = "John", surname = "Doe"),
-          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -775,6 +696,7 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceType = LicenceType.PSS,
       expectedReleaseDate = tenDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
+      expectedProbationPractitioner = null,
       expectedHardstopWarningDate = tenDaysFromNow,
     )
     verifyCase(
@@ -785,8 +707,8 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP_PSS,
       expectedReleaseDate = elevenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
-        staffCode = "X54321",
-        name = "John Doe",
+        staffCode = "X1234",
+        name = "Joe Bloggs",
       ),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS,
     )
@@ -800,7 +722,7 @@ class ComCreateCaseloadServiceTest {
       ManagedOffenderCrn(
         crn = "X12348",
         nomisId = "AB1234E",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X12352"),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
@@ -834,7 +756,12 @@ class ComCreateCaseloadServiceTest {
     whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
       listOf(
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
-        aCvlRecord(nomsId = "AB1234F", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(
+          nomsId = "AB1234F",
+          kind = LicenceKind.CRD,
+          licenceStartDate = tenDaysFromNow,
+          licenceType = LicenceType.PSS,
+        ),
       ),
     )
 
@@ -850,7 +777,7 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
-        staffCode = "X1234",
+        staffCode = "X12352",
         name = "Joe Bloggs",
       ),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
@@ -1223,6 +1150,7 @@ class ComCreateCaseloadServiceTest {
           kind = LicenceKind.CRD,
           licenceStartDate = twoDaysFromNow,
           isInHardStopPeriod = true,
+          licenceType = LicenceType.AP_PSS,
         ),
       ),
     )

@@ -1,21 +1,17 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceApproverCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.LocalDate
 
@@ -23,66 +19,67 @@ private const val TWO_WEEKS = 14L
 
 @Service
 class PrisonApproverService(
-  private val licenceRepository: LicenceRepository,
-  private val releaseDateService: ReleaseDateService,
+  private val licenceCaseRepository: LicenceCaseRepository,
 ) {
   @Transactional
-  fun getLicencesForApproval(prisons: List<String>?): List<LicenceSummaryApproverView> {
+  fun getLicenceCasesReadyForApproval(prisons: List<String>?): List<LicenceApproverCase> {
     if (prisons.isNullOrEmpty()) {
       return emptyList()
     }
-    val licences = licenceRepository.getLicencesReadyForApproval(prisons)
-      .sortedWith(compareBy(nullsLast()) { it.licenceStartDate })
-    return licences.map { it.toApprovalSummaryView() }
+
+    val cases = licenceCaseRepository.findLicenceCasesReadyForApproval(prisons)
+    return enrichWithSubmitterNames(cases.sortedWith(compareBy(nullsLast()) { it.licenceStartDate }))
   }
 
   @Transactional
-  fun findRecentlyApprovedLicences(
+  fun findRecentlyApprovedLicenceCases(
     prisonCodes: List<String>,
-  ): List<LicenceSummaryApproverView> {
+  ): List<LicenceApproverCase> {
     try {
       val releasedAfterDate = LocalDate.now().minusDays(TWO_WEEKS)
-      val recentActiveAndApprovedLicences =
-        licenceRepository.getRecentlyApprovedLicences(prisonCodes, releasedAfterDate)
+      val recentlyApprovedCases = getRecentlyApprovedLicenceCases(prisonCodes, releasedAfterDate)
 
       // if a licence is an active variation then we want to return the original
       // licence that the variation was created from and not the variation itself
-      val recentlyApprovedLicences = recentActiveAndApprovedLicences.map {
-        if (it.statusCode == ACTIVE && it is Variation) {
+      val originalRecentlyApprovedCases = recentlyApprovedCases.map {
+        if (it.statusCode == ACTIVE && it.kind.isVariation()) {
           findOriginalLicenceForVariation(it)
         } else {
           it
         }
       }
-      return recentlyApprovedLicences.map { it.toApprovalSummaryView() }
+      return enrichWithSubmitterNames(originalRecentlyApprovedCases)
     } catch (e: PropertyReferenceException) {
       throw ValidationException(e.message, e)
     }
   }
 
-  private fun findOriginalLicenceForVariation(variationLicence: Variation): Licence {
-    var originalLicence = variationLicence
-    while (originalLicence.variationOfId != null) {
-      val licence = licenceRepository
-        .findById(originalLicence.variationOfId!!)
-        .orElseThrow { EntityNotFoundException("${originalLicence.variationOfId}") }
-      when (licence) {
-        is CrdLicence, is PrrdLicence, is HardStopLicence, is HdcLicence -> return licence
-        is VariationLicence -> originalLicence = licence
-        is HdcVariationLicence -> originalLicence = licence
-        else -> error("Unknown licence type in hierarchy: ${licence.javaClass}")
-      }
+  private fun getRecentlyApprovedLicenceCases(
+    prisonCodes: List<String>,
+    releasedAfterDate: LocalDate,
+  ): List<LicenceApproverCase> = licenceCaseRepository.findRecentlyApprovedLicenceCasesAfter(prisonCodes, releasedAfterDate)
+
+  private fun enrichWithSubmitterNames(cases: List<LicenceApproverCase>): List<LicenceApproverCase> {
+    if (cases.isNotEmpty()) {
+      val submittedByNames = licenceCaseRepository.findSubmittedByNames(cases.map { it.licenceId })
+        .associate { row -> row.licenceId to row.fullName }
+      cases.forEach { it.submittedByFullName = submittedByNames[it.licenceId] }
     }
-    error("original licence not found for licence: ${variationLicence.id}")
+    return cases
   }
 
-  private fun Licence.toApprovalSummaryView(): LicenceSummaryApproverView = transformToApprovalLicenceSummary(
-    licence = this,
-    hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
-    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
-    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
-    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-      licenceStartDate,
-    ),
-  )
+  private fun findOriginalLicenceForVariation(variationLicenceCase: LicenceApproverCase): LicenceApproverCase {
+    var currentLicence = variationLicenceCase
+
+    while (currentLicence.variationOfId != null) {
+      val parentLicence = licenceCaseRepository.findLicenceApproverCase(currentLicence.variationOfId!!)
+
+      when (parentLicence.kind) {
+        CRD, PRRD, HARD_STOP, HDC -> return parentLicence
+        VARIATION, HDC_VARIATION -> currentLicence = parentLicence
+        else -> error("Unknown licence type in hierarchy: ${parentLicence.kind}")
+      }
+    }
+    error("Original licence not found for licenceId=${variationLicenceCase.licenceId}")
+  }
 }
