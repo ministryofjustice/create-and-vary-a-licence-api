@@ -21,7 +21,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordSe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
@@ -38,6 +39,7 @@ class LicenceOverrideService(
   private val licenceService: LicenceService,
   private val cvlRecordService: CvlRecordService,
   private val releaseDateService: ReleaseDateService,
+  private val prisonApiClient: PrisonApiClient,
 ) {
 
   companion object {
@@ -131,11 +133,9 @@ class LicenceOverrideService(
       },
     )
 
-    val prisonerSearchPrisoner = PrisonerSearchPrisoner(
-      prisonerNumber = licence.nomsId!!,
-      firstName = licence.forename!!,
-      lastName = licence.surname!!,
-      dateOfBirth = licence.dateOfBirth!!,
+    val prisoner = prisonApiClient.getPrisonerDetail(licence.nomsId!!)
+    val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
+    val prisonerSearchPrisonerOverriddenDates = prisonerSearchPrisoner.copy(
       conditionalReleaseDate = request.conditionalReleaseDate,
       confirmedReleaseDate = request.actualReleaseDate,
       sentenceStartDate = request.sentenceStartDate,
@@ -149,10 +149,11 @@ class LicenceOverrideService(
       mostSeriousOffence = null,
     )
 
-    val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, licence.probationAreaCode!!)
+    val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisonerOverriddenDates, licence.probationAreaCode!!)
     val updatedLicence = licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)
     val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(updatedLicence, cvlRecord)
-    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
+    val licenceStartDate =
+      releaseDateService.getLicenceStartDate(prisonerSearchPrisonerOverriddenDates, kindForLsdCalculations)
 
     log.info(
       buildString {
@@ -173,7 +174,7 @@ class LicenceOverrideService(
       },
     )
 
-    licence.updateLicenceDates(
+    updatedLicence.updateLicenceDates(
       conditionalReleaseDate = request.conditionalReleaseDate,
       actualReleaseDate = request.actualReleaseDate,
       sentenceStartDate = request.sentenceStartDate,
@@ -188,17 +189,17 @@ class LicenceOverrideService(
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(licence)
+    licenceRepository.saveAndFlush(updatedLicence)
 
     auditEventRepository.saveAndFlush(
       AuditEvent(
-        licenceId = licence.id,
-        detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
+        licenceId = updatedLicence.id,
+        detail = "ID ${updatedLicence.id} type ${updatedLicence.typeCode} status ${updatedLicence.statusCode} version ${updatedLicence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
         username = staffMember?.username ?: Licence.SYSTEM_USER,
         fullName = staffMember?.fullName ?: Licence.SYSTEM_USER,
-        summary = "Sentence dates overridden for ${licence.forename} ${licence.surname}: ${request.reason}",
+        summary = "Sentence dates overridden for ${updatedLicence.forename} ${updatedLicence.surname}: ${request.reason}",
       ),
     )
   }

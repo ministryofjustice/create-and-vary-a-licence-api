@@ -30,12 +30,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -56,6 +58,7 @@ class LicenceOverrideServiceTest {
   private val licenceService = mock<LicenceService>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val prisonApiClient = mock<PrisonApiClient>()
   private val licenceOverrideService =
     LicenceOverrideService(
       licenceRepository,
@@ -66,6 +69,7 @@ class LicenceOverrideServiceTest {
       licenceService,
       cvlRecordService,
       releaseDateService,
+      prisonApiClient,
     )
 
   val inactiveLicenceA = createCrdLicence().copy(
@@ -424,6 +428,7 @@ class LicenceOverrideServiceTest {
     whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(cvlRecord)
     whenever(licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)).thenReturn(licence)
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(newLicenceStartDate)
+    whenever(prisonApiClient.getPrisonerDetail(licence.nomsId!!)).thenReturn(aPrisonApiPrisoner())
 
     licenceOverrideService.changeDates(
       approvedLicenceA.id,
@@ -492,6 +497,7 @@ class LicenceOverrideServiceTest {
     whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(cvlRecord)
     whenever(licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)).thenReturn(licence)
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(newLicenceStartDate)
+    whenever(prisonApiClient.getPrisonerDetail(licence.nomsId!!)).thenReturn(aPrisonApiPrisoner())
 
     licenceOverrideService.changeDates(
       approvedHdcLicenceA.id,
@@ -559,6 +565,7 @@ class LicenceOverrideServiceTest {
     whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(cvlRecord)
     whenever(licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)).thenReturn(licence)
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.now())
+    whenever(prisonApiClient.getPrisonerDetail(licence.nomsId!!)).thenReturn(aPrisonApiPrisoner())
 
     licenceOverrideService.changeDates(
       approvedLicenceA.id,
