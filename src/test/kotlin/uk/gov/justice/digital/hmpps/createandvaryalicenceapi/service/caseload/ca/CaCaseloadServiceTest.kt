@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceFlagProjection
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.NomisLicenceReasonFlag
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaPrisonCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
@@ -886,7 +886,7 @@ class CaCaseloadServiceTest {
         whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
           .thenReturn(
             listOf(
-              object : LicenceFlagProjection {
+              object : NomisLicenceReasonFlag {
                 override val bookingId: String = "1234"
                 override val hasNomisLicence: Boolean = true
               },
@@ -956,7 +956,7 @@ class CaCaseloadServiceTest {
         whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
           .thenReturn(
             listOf(
-              object : LicenceFlagProjection {
+              object : NomisLicenceReasonFlag {
                 override val bookingId: String = "1234"
                 override val hasNomisLicence: Boolean = true
               },
@@ -1026,7 +1026,7 @@ class CaCaseloadServiceTest {
         whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
           .thenReturn(
             listOf(
-              object : LicenceFlagProjection {
+              object : NomisLicenceReasonFlag {
                 override val bookingId: String = "1234"
                 override val hasNomisLicence: Boolean = false
               },

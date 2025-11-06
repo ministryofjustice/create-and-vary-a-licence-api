@@ -16,17 +16,17 @@ interface RecordNomisTimeServedLicenceReasonRepository : JpaRepository<RecordNom
 
   @Query(
     """
-        SELECT r.bookingId AS bookingId, 
-               CASE WHEN COUNT(r) > 0 THEN true ELSE false END AS hasLicence
+        SELECT r.bookingId,
+        true AS hasLicence
         FROM RecordNomisTimeServedLicenceReason r
         WHERE r.bookingId IN :bookingIds
         GROUP BY r.bookingId
         """,
   )
-  fun getNomisLicenceFlagsByBookingIds(@Param("bookingIds") bookingIds: List<String>): List<LicenceFlagProjection>
+  fun getNomisLicenceFlagsByBookingIds(@Param("bookingIds") bookingIds: List<String>): List<NomisLicenceReasonFlag>
 }
 
-interface LicenceFlagProjection {
+interface NomisLicenceReasonFlag {
   val bookingId: String
   val hasNomisLicence: Boolean
 }
