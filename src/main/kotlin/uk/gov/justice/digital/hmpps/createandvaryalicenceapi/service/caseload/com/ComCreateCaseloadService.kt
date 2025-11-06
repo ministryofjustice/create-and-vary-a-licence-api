@@ -135,16 +135,17 @@ class ComCreateCaseloadService(
 
   private fun mapToLicenceDto(case: LicenceComCase) = ComCreateCaseloadLicenceDto(
     licenceId = case.licenceId,
+    versionOf = case.versionOfId,
     licenceStatus = case.statusCode,
     kind = case.kind,
     crn = case.crn,
     nomisId = case.prisonNumber!!,
     name = case.fullName,
     licenceType = case.typeCode,
-    versionOf = case.versionOfId,
-    licenceStartDate = case.licenceStartDate,
     releaseDate = case.licenceStartDate,
     isReviewNeeded = case.isReviewNeeded(),
+    // populated by findRelevantLicencePerCase
+    licenceCreationType = null,
   )
 
   private fun ManagedOffenderCrn?.getProbationPractitioner() = this?.staff
@@ -171,6 +172,8 @@ class ComCreateCaseloadService(
     }
 
     val caseLoadSummary = ComCreateCaseloadLicenceDto(
+      licenceId = null,
+      versionOf = null,
       licenceStatus = licenceStatus,
       licenceType = cvlRecord.licenceType,
       crn = deliusRecord.crn,
@@ -178,6 +181,9 @@ class ComCreateCaseloadService(
       name = name,
       releaseDate = cvlRecord.licenceStartDate,
       kind = licenceKind,
+      isReviewNeeded = false,
+      // populated by findRelevantLicencePerCase
+      licenceCreationType = null,
     )
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
   }

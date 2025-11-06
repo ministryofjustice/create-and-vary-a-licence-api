@@ -111,5 +111,7 @@ class RelevantLicenceFinderTest {
     name = name,
     versionOf = versionOf,
     licenceCreationType = licenceCreationType,
+    isReviewNeeded = false,
+    releaseDate = null,
   )
 }

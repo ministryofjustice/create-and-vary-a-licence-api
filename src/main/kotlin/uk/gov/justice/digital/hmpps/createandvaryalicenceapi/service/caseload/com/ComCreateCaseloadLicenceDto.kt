@@ -8,16 +8,15 @@ import java.time.LocalDate
 
 // internal representation of a licence summary for COM create caseload
 data class ComCreateCaseloadLicenceDto(
-  val licenceId: Long? = null,
+  val licenceId: Long?,
   val licenceStatus: LicenceStatus,
   val kind: LicenceKind,
   val licenceType: LicenceType,
   val crn: String?,
   val nomisId: String,
   val name: String,
-  val versionOf: Long? = null,
-  val licenceStartDate: LocalDate? = null,
-  val releaseDate: LocalDate? = null,
-  val isReviewNeeded: Boolean = false,
-  val licenceCreationType: LicenceCreationType? = null,
+  val versionOf: Long?,
+  val releaseDate: LocalDate?,
+  val isReviewNeeded: Boolean,
+  val licenceCreationType: LicenceCreationType?,
 )
