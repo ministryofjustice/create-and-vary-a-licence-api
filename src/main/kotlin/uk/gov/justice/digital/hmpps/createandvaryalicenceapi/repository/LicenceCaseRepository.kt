@@ -189,15 +189,12 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
   @Query(
     value = """
     SELECT l.id AS licence_id,
-           COALESCE(
-             CONCAT(com.first_name, ' ', com.last_name),
-             CONCAT(ca.first_name, ' ', ca.last_name)
-           ) AS full_name
+           s.first_name,
+           s.last_name
     FROM licence l
-    LEFT JOIN staff com ON com.id = l.submitted_by_com_id
-    LEFT JOIN staff ca ON ca.id = l.submitted_by_ca_id
+    LEFT JOIN staff s ON s.id = l.submitted_by_com_id OR s.id = l.submitted_by_ca_id
     WHERE l.id IN :licenceIds
-  """,
+    """,
     nativeQuery = true,
   )
   fun findSubmittedByNames(licenceIds: List<Long>): List<LicenceSubmitName>
