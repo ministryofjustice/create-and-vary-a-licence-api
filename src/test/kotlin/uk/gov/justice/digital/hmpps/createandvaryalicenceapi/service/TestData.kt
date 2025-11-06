@@ -336,7 +336,6 @@ object TestData {
     probationLauCode = "N01A2",
     probationLauDescription = "Cardiff South",
     probationTeamCode = "NA01A2-A",
-
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
