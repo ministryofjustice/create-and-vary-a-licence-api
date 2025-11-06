@@ -146,6 +146,7 @@ class LicenceOverrideService(
       postRecallReleaseDate = request.postRecallReleaseDate,
       homeDetentionCurfewActualDate = request.homeDetentionCurfewActualDate,
       homeDetentionCurfewEndDate = request.homeDetentionCurfewEndDate,
+      mostSeriousOffence = null,
     )
 
     val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, licence.probationAreaCode!!)

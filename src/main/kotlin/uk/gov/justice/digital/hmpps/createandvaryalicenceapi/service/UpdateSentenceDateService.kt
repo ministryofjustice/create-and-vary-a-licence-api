@@ -52,9 +52,6 @@ class UpdateSentenceDateService(
     val currentLicence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val prisoner = prisonApiClient.getPrisonerDetail(currentLicence.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
-    // val prisonerSearchPrisoner1 = prisoner.toPrisonerSearchPrisoner()
-    // val prisonerSearchPrisoner =
-    //   prisonerSearchPrisoner1.copy(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.parse("2026-12-20"))
     val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, currentLicence.probationAreaCode!!)
 
     val updatedLicence = licenceService.updateLicenceKind(currentLicence, cvlRecord.eligibleKind)

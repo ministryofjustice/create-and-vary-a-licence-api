@@ -465,6 +465,57 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/seed-crd-licence-at-recalls-enabled-prison.sql",
+  )
+  fun `Should update licence kind when CRD is removed and PRRD is added`() {
+    val prrd = workingDaysService.workingDaysAfter(LocalDate.now()).take(1).first()
+
+    prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    mockPrisonerSearchResponse(
+      SentenceDetail(
+        conditionalReleaseDate = null,
+        confirmedReleaseDate = prrd,
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        postRecallReleaseDate = prrd,
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      ),
+    )
+
+    webTestClient.put()
+      .uri("/licence/id/1/sentence-dates")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.kind).isEqualTo(LicenceKind.PRRD.name)
+    assertThat(result?.conditionalReleaseDate).isNull()
+    assertThat(result?.actualReleaseDate).isEqualTo(prrd)
+    assertThat(result?.sentenceStartDate).isEqualTo(LocalDate.parse("2021-09-11"))
+    assertThat(result?.sentenceEndDate).isEqualTo(LocalDate.parse("2024-09-11"))
+    assertThat(result?.licenceStartDate).isEqualTo(prrd)
+    assertThat(result?.licenceExpiryDate).isEqualTo(LocalDate.parse("2024-09-11"))
+    assertThat(result?.postRecallReleaseDate).isEqualTo(prrd)
+    assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
+    assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
+  }
+
   private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {
     prisonApiMockServer.stubGetPrisonerDetail("A1234AA", sentenceDetail)
   }

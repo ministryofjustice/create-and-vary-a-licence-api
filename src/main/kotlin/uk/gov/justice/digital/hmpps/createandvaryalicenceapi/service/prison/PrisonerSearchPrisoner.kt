@@ -8,7 +8,7 @@ data class PrisonerSearchPrisoner(
   val pncNumber: String? = null,
   val bookingId: String? = null,
   val status: String? = null,
-  val mostSeriousOffence: String? = null,
+  val mostSeriousOffence: String?,
 
   @field:JsonFormat(pattern = "yyyy-MM-dd")
   val licenceExpiryDate: LocalDate? = null,
