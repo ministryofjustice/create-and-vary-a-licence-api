@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.an
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.LocalDate
 
 class CvlRecordServiceTest {
@@ -91,6 +92,7 @@ class CvlRecordServiceTest {
         isEligibleForEarlyRelease = true,
         isInHardStopPeriod = true,
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
+        licenceType = AP,
       ),
       CvlRecord(
         nomisId = "A1234AB",
@@ -104,6 +106,7 @@ class CvlRecordServiceTest {
         isEligibleForEarlyRelease = true,
         isInHardStopPeriod = true,
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
+        licenceType = AP,
       ),
       CvlRecord(
         nomisId = "A1234AC",
@@ -117,6 +120,7 @@ class CvlRecordServiceTest {
         isEligibleForEarlyRelease = true,
         isInHardStopPeriod = true,
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
+        licenceType = AP,
       ),
     )
   }
@@ -151,6 +155,7 @@ class CvlRecordServiceTest {
         isEligibleForEarlyRelease = false,
         isInHardStopPeriod = false,
         isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        licenceType = AP,
       ),
     )
   }

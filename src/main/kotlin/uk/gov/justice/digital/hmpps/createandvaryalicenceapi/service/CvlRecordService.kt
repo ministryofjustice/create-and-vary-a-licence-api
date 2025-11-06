@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 
 @Service
 class CvlRecordService(
@@ -47,7 +50,15 @@ class CvlRecordService(
         isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           licenceStartDate,
         ),
+        licenceType = getLicenceType(prisoner),
       )
     }
+  }
+
+  private fun getLicenceType(nomisRecord: PrisonerSearchPrisoner) = when {
+    nomisRecord.licenceExpiryDate == null && nomisRecord.topupSupervisionExpiryDate == null -> AP
+    nomisRecord.licenceExpiryDate == null -> PSS
+    nomisRecord.topupSupervisionExpiryDate == null || nomisRecord.topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
+    else -> AP_PSS
   }
 }

@@ -97,7 +97,6 @@ class ReleaseDateService(
       nomisRecord,
       iS91DeterminationService.isIS91Case(nomisRecord),
     )
-
     else -> null
   }
 
