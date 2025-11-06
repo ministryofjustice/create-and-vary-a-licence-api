@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -1047,6 +1048,7 @@ class UpdateSentenceDateServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = false,
         isEligibleForEarlyRelease = false,
         isInHardStopPeriod = false,
+        licenceType = LicenceType.PSS,
       ),
     )
 
@@ -1137,6 +1139,7 @@ class UpdateSentenceDateServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = false,
         isEligibleForEarlyRelease = false,
         isInHardStopPeriod = false,
+        licenceType = LicenceType.AP_PSS,
       ),
     )
 

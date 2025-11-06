@@ -45,6 +45,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.util.Optional
 
@@ -409,6 +410,7 @@ class LicenceOverrideServiceTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       isEligibleForEarlyRelease = false,
       isInHardStopPeriod = false,
+      licenceType = LicenceType.AP_PSS,
     )
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
@@ -477,6 +479,7 @@ class LicenceOverrideServiceTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       isEligibleForEarlyRelease = false,
       isInHardStopPeriod = false,
+      licenceType = LicenceType.AP,
     )
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
@@ -547,6 +550,7 @@ class LicenceOverrideServiceTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       isEligibleForEarlyRelease = false,
       isInHardStopPeriod = false,
+      licenceType = LicenceType.PSS,
     )
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
