@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -52,6 +53,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as ModelHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TimeServedLicence as ModelTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
 
 /*
@@ -121,6 +123,7 @@ fun toHardstop(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
+  hardStopKind: LicenceKind?,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHardstopLicence(
@@ -198,6 +201,99 @@ fun toHardstop(
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isInHardStopPeriod = isInHardStopPeriod,
+  hardStopKind = hardStopKind,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
+  submittedByFullName = licence.getSubmittedByFullName(),
+)
+
+fun toTimeServed(
+  licence: TimeServedLicence,
+  earliestReleaseDate: LocalDate?,
+  isEligibleForEarlyRelease: Boolean,
+  hardStopDate: LocalDate?,
+  hardStopWarningDate: LocalDate?,
+  isInHardStopPeriod: Boolean,
+  hardStopKind: LicenceKind?,
+  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
+  conditionPolicyData: Map<String, ConditionPolicyData>,
+) = ModelTimeServedLicence(
+  id = licence.id,
+  typeCode = licence.typeCode,
+  eligibleKind = licence.eligibleKind?.name,
+  version = licence.version,
+  statusCode = licence.statusCode,
+  nomsId = licence.nomsId,
+  bookingNo = licence.bookingNo,
+  bookingId = licence.bookingId,
+  crn = licence.crn,
+  pnc = licence.pnc,
+  cro = licence.cro,
+  prisonCode = licence.prisonCode,
+  prisonDescription = licence.prisonDescription,
+  prisonTelephone = licence.prisonTelephone,
+  forename = licence.forename,
+  middleNames = licence.middleNames,
+  surname = licence.surname,
+  dateOfBirth = licence.dateOfBirth,
+  conditionalReleaseDate = licence.conditionalReleaseDate,
+  actualReleaseDate = licence.actualReleaseDate,
+  sentenceStartDate = licence.sentenceStartDate,
+  sentenceEndDate = licence.sentenceEndDate,
+  licenceStartDate = licence.licenceStartDate,
+  licenceExpiryDate = licence.licenceExpiryDate,
+  topupSupervisionStartDate = licence.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
+  postRecallReleaseDate = licence.postRecallReleaseDate,
+  comUsername = licence.responsibleCom?.username,
+  comStaffId = licence.responsibleCom?.staffIdentifier,
+  comEmail = licence.responsibleCom?.email,
+  responsibleComFullName = licence.responsibleCom?.fullName,
+  updatedByFullName = licence.getUpdatedByFullName(),
+  probationAreaCode = licence.probationAreaCode,
+  probationAreaDescription = licence.probationAreaDescription,
+  probationPduCode = licence.probationPduCode,
+  probationPduDescription = licence.probationPduDescription,
+  probationLauCode = licence.probationLauCode,
+  probationLauDescription = licence.probationLauDescription,
+  probationTeamCode = licence.probationTeamCode,
+  probationTeamDescription = licence.probationTeamDescription,
+  appointmentPersonType = licence.appointment?.personType,
+  appointmentPerson = licence.appointment?.person,
+  appointmentTime = licence.appointment?.time,
+  appointmentTimeType = licence.appointment?.timeType,
+  appointmentAddress = licence.appointment?.addressText,
+  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
+  appointmentContact = licence.appointment?.telephoneContactNumber,
+  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
+  reviewDate = licence.reviewDate,
+  approvedDate = licence.approvedDate,
+  approvedByUsername = licence.approvedByUsername,
+  approvedByName = licence.approvedByName,
+  submittedDate = licence.submittedDate,
+  supersededDate = licence.supersededDate,
+  dateCreated = licence.dateCreated,
+  createdByUsername = licence.getCreator().username,
+  dateLastUpdated = licence.dateLastUpdated,
+  updatedByUsername = licence.updatedByUsername,
+  standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
+  standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
+  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
+    "AP",
+    conditionPolicyData,
+  ),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionPolicyData),
+  bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
+  createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
+  isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
+  isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),
+  licenceVersion = licence.licenceVersion,
+  earliestReleaseDate = earliestReleaseDate,
+  isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+  isInHardStopPeriod = isInHardStopPeriod,
+  hardStopKind = hardStopKind,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
