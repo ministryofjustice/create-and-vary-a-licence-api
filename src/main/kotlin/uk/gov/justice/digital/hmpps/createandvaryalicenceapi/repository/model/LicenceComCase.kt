@@ -27,8 +27,5 @@ data class LicenceComCase(
   val typeCode: LicenceType,
   override val reviewDate: LocalDateTime?,
   val crn: String?,
-  val dateCreated: LocalDateTime,
-  val approvedByName: String?,
-  val approvedDate: LocalDateTime?,
 ) : LicenceCase,
   ReviewablePostRelease

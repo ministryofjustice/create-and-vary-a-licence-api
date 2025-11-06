@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseLoadLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.LICENCE_CREATED_BY_PRISON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.LICENCE_IN_PROGRESS
@@ -12,13 +11,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 
 object RelevantLicenceFinder {
-  fun findRelevantLicencePerCase(licences: List<CaseLoadLicenceSummary>) = when {
+  fun findRelevantLicencePerCase(licences: List<ComCreateCaseloadLicenceDto>) = when {
     licences.any { it.kind == HARD_STOP } -> findHardStopLicenceToDisplay(licences)
     licences.any { it.licenceStatus == TIMED_OUT } -> findTimedOutLicenceToDisplay(licences)
     else -> findLicenceToDisplay(licences)
   }
 
-  private fun findTimedOutLicenceToDisplay(licences: List<CaseLoadLicenceSummary>): CaseLoadLicenceSummary {
+  private fun findTimedOutLicenceToDisplay(licences: List<ComCreateCaseloadLicenceDto>): ComCreateCaseloadLicenceDto {
     val timedOutLicence = licences.find { it.licenceStatus == TIMED_OUT }!!
 
     if (timedOutLicence.versionOf != null) {
@@ -34,7 +33,7 @@ object RelevantLicenceFinder {
     return timedOutLicence.copy(licenceCreationType = PRISON_WILL_CREATE_THIS_LICENCE)
   }
 
-  private fun findHardStopLicenceToDisplay(licences: List<CaseLoadLicenceSummary>): CaseLoadLicenceSummary {
+  private fun findHardStopLicenceToDisplay(licences: List<ComCreateCaseloadLicenceDto>): ComCreateCaseloadLicenceDto {
     val hardStopLicence = licences.find { it.kind == HARD_STOP }!!
 
     if (hardStopLicence.licenceId == null || hardStopLicence.licenceStatus == IN_PROGRESS) {
@@ -50,8 +49,8 @@ object RelevantLicenceFinder {
     )
   }
 
-  private fun findLicenceToDisplay(licences: List<CaseLoadLicenceSummary>): CaseLoadLicenceSummary {
-    val licence: CaseLoadLicenceSummary = if (licences.size > 1) {
+  private fun findLicenceToDisplay(licences: List<ComCreateCaseloadLicenceDto>): ComCreateCaseloadLicenceDto {
+    val licence: ComCreateCaseloadLicenceDto = if (licences.size > 1) {
       licences.find { licence -> licence.licenceStatus !== APPROVED }!!
     } else {
       licences.first()
