@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseLoadLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.LICENCE_CHANGES_NOT_APPROVED_IN_TIME
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.LICENCE_CREATED_BY_PRISON
@@ -18,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.LocalDateTime
 
 class RelevantLicenceFinderTest {
   @Test
@@ -101,11 +99,9 @@ class RelevantLicenceFinderTest {
     crn: String? = "CRN1",
     nomisId: String = "NOMIS1",
     name: String = "John Doe",
-    comUsername: String? = "jsmith",
-    dateCreated: LocalDateTime? = LocalDateTime.now(),
     versionOf: Long? = null,
     licenceCreationType: LicenceCreationType? = null,
-  ) = CaseLoadLicenceSummary(
+  ) = ComCreateCaseloadLicenceDto(
     licenceId = licenceId,
     licenceStatus = licenceStatus,
     kind = kind,
@@ -113,9 +109,9 @@ class RelevantLicenceFinderTest {
     crn = crn,
     nomisId = nomisId,
     name = name,
-    comUsername = comUsername,
-    dateCreated = dateCreated,
     versionOf = versionOf,
     licenceCreationType = licenceCreationType,
+    isReviewNeeded = false,
+    releaseDate = null,
   )
 }
