@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Priso
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceFlagProjection
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.hasNomsIdIn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaPrisonCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -93,7 +92,7 @@ class CaCaseloadServiceTest {
         prisonerSearchApiClient,
         releaseDateLabelFactory,
         cvlRecordService,
-        licenceRepository
+        licenceRepository,
       ),
       telemetryService,
     ),
@@ -865,7 +864,7 @@ class CaCaseloadServiceTest {
               kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.TIME_SERVED
+              hardStopKind = LicenceKind.TIME_SERVED,
             ),
           ),
         )
@@ -935,7 +934,7 @@ class CaCaseloadServiceTest {
               kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.HARD_STOP
+              hardStopKind = LicenceKind.HARD_STOP,
             ),
           ),
         )
@@ -1005,7 +1004,7 @@ class CaCaseloadServiceTest {
               kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.TIME_SERVED
+              hardStopKind = LicenceKind.TIME_SERVED,
             ),
           ),
         )
