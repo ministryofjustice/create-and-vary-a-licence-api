@@ -3762,7 +3762,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `should update the licence kind`() {
+  fun `should update the licence kind if eligible kind if different to current licence kind`() {
     val licence = aLicenceEntity
     val eligibleKind = LicenceKind.PRRD
     val updatedLicence = createPrrdLicence()
@@ -3776,6 +3776,22 @@ class LicenceServiceTest {
     assertThat(result).isEqualTo(updatedLicence)
     verify(licenceRepository).updateLicenceKind(licence.id, eligibleKind)
     verify(auditService).recordAuditEventLicenceKindUpdated(licence, licence.kind, eligibleKind, staff)
+  }
+
+  @Test
+  fun `should not update the licence kind if eligible kind is the same as the current licence kind`() {
+    val licence = aLicenceEntity
+    val eligibleKind = licence.kind
+    val staff = communityOffenderManager()
+
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+
+    val result = service.updateLicenceKind(licence, eligibleKind)
+
+    assertThat(result).isEqualTo(licence)
+    verify(licenceRepository, never()).updateLicenceKind(any(), any())
+    verify(auditService, never()).recordAuditEventLicenceKindUpdated(any(), any(), any(), any())
   }
 
   val aCom = communityOffenderManager()
