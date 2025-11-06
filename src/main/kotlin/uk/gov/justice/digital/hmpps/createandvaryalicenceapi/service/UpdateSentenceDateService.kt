@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -50,32 +49,33 @@ class UpdateSentenceDateService(
 
   @Transactional
   fun updateSentenceDates(licenceId: Long) {
-    val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
-    val prisoner = prisonApiClient.getPrisonerDetail(licence.nomsId!!)
+    val currentLicence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
+    val prisoner = prisonApiClient.getPrisonerDetail(currentLicence.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
-    val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, licence.probationAreaCode!!)
+    // val prisonerSearchPrisoner1 = prisoner.toPrisonerSearchPrisoner()
+    // val prisonerSearchPrisoner =
+    //   prisonerSearchPrisoner1.copy(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.parse("2026-12-20"))
+    val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, currentLicence.probationAreaCode!!)
 
-    val username = SecurityContextHolder.getContext().authentication.name
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
-
-    updateLicenceKind(licence, cvlRecord.eligibleKind, staffMember)
-    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(licence, cvlRecord)
+    val updatedLicence = licenceService.updateLicenceKind(currentLicence, cvlRecord.eligibleKind)
+    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(updatedLicence, cvlRecord)
     val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
 
     val sentenceDates = prisoner.sentenceDetail.toSentenceDates()
 
-    val dateChanges = licence.getDateChanges(sentenceDates, licenceStartDate)
+    val dateChanges = currentLicence.getDateChanges(sentenceDates, licenceStartDate)
 
     logUpdate(
-      licence,
+      currentLicence,
       dateChanges.isMaterial,
-      dateChanges.filter { !it.type.hdcOnly || licence is HdcLicence },
+      dateChanges.filter { !it.type.hdcOnly || updatedLicence is HdcLicence },
     )
 
-    val previousSentenceDates = licence.reifySentenceDates()
-    licence.updateLicenceDates(
-      status = licence.calculateStatusCode(sentenceDates),
-      staffMember = staffMember,
+    val previousSentenceDates = currentLicence.reifySentenceDates()
+    val user = staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication.name)
+    updatedLicence.updateLicenceDates(
+      status = updatedLicence.calculateStatusCode(sentenceDates),
+      staffMember = user,
       licenceStartDate = licenceStartDate,
       conditionalReleaseDate = sentenceDates.conditionalReleaseDate,
       actualReleaseDate = sentenceDates.actualReleaseDate,
@@ -89,18 +89,18 @@ class UpdateSentenceDateService(
       homeDetentionCurfewEndDate = sentenceDates.homeDetentionCurfewEndDate,
     )
 
-    val hardstopChangeType = getHardstopChangeType(previousSentenceDates, licence)
+    val hardstopChangeType = getHardstopChangeType(previousSentenceDates, updatedLicence)
 
     if (hardstopChangeType == NOW_IN_HARDSTOP) {
-      licenceService.timeout(licence, reason = "due to sentence dates update")
+      licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
     } else {
-      licenceRepository.saveAndFlush(licence)
-      recordAuditEvent(licence, dateChanges)
+      licenceRepository.saveAndFlush(updatedLicence)
+      recordAuditEvent(updatedLicence, dateChanges)
     }
 
     if (hardstopChangeType == NO_LONGER_IN_HARDSTOP) {
       val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
-        licence?.bookingId!!,
+        updatedLicence.bookingId!!,
         listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
         listOf(CRD, HARD_STOP),
       )
@@ -109,15 +109,15 @@ class UpdateSentenceDateService(
 
     if (dateChanges.isMaterial) {
       val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
-        licence.bookingId!!,
+        updatedLicence.bookingId!!,
         sentenceDates.homeDetentionCurfewEligibilityDate,
       )
-      notifyComOfUpdate(licence, dateChanges, isNotApprovedForHdc)
+      notifyComOfUpdate(updatedLicence, dateChanges, isNotApprovedForHdc)
     }
   }
 
   /*
-   * This code is to make sure that hard stop licence do not default to CRD LSD Calculations in getLicenceStartDate
+   * This code is to make sure that hard stop licences do not default to CRD LSD Calculations in getLicenceStartDate
    * and if they are PRRD the LSD is calculated appropriately
    */
   private fun selectCorrectKindForHardStopIfNeeded(
@@ -200,14 +200,6 @@ class UpdateSentenceDateService(
           changes = dateChanges.toChanges(licenceEntity.kind),
         ),
       )
-    }
-  }
-
-  private fun updateLicenceKind(licence: Licence, eligibleKind: LicenceKind?, staff: Staff?) {
-    if ((eligibleKind == CRD || eligibleKind == PRRD) && eligibleKind != licence.kind) {
-      auditService.recordAuditEventLicenceKindUpdated(licence, licence.kind, eligibleKind, staff)
-      licenceRepository.updateLicenceKind(licence.id, eligibleKind)
-      licence.kind = eligibleKind
     }
   }
 

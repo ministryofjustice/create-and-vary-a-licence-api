@@ -235,7 +235,7 @@ interface LicenceRepository :
   )
   fun findLicencesToBatchUpdateLsd(numberOfLicences: Long, lastUpdatedLicenceId: Long?): List<Licence>
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query(
     """
     UPDATE Licence l

@@ -27,11 +27,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -51,6 +54,8 @@ class LicenceOverrideServiceTest {
   private val domainEventsService = mock<DomainEventsService>()
   private val staffRepository = mock<StaffRepository>()
   private val licenceService = mock<LicenceService>()
+  private val cvlRecordService = mock<CvlRecordService>()
+  private val releaseDateService = mock<ReleaseDateService>()
   private val licenceOverrideService =
     LicenceOverrideService(
       licenceRepository,
@@ -59,6 +64,8 @@ class LicenceOverrideServiceTest {
       domainEventsService,
       staffRepository,
       licenceService,
+      cvlRecordService,
+      releaseDateService,
     )
 
   val inactiveLicenceA = createCrdLicence().copy(
@@ -392,21 +399,31 @@ class LicenceOverrideServiceTest {
 
   @Test
   fun `Override dates updates licence dates`() {
-    whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
-    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-
+    val licence = approvedLicenceA
+    val cvlRecord = CvlRecord(
+      nomisId = approvedLicenceA.nomsId!!,
+      isDueToBeReleasedInTheNextTwoWorkingDays = false,
+      isEligibleForEarlyRelease = false,
+      isInHardStopPeriod = false,
+    )
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
       actualReleaseDate = LocalDate.now(),
       sentenceStartDate = LocalDate.now(),
       sentenceEndDate = LocalDate.now(),
-      licenceStartDate = LocalDate.now(),
       licenceExpiryDate = LocalDate.now(),
       topupSupervisionStartDate = LocalDate.now(),
       topupSupervisionExpiryDate = LocalDate.now(),
       postRecallReleaseDate = LocalDate.now(),
       reason = "Test override dates",
     )
+    val newLicenceStartDate = request.conditionalReleaseDate
+
+    whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(licence))
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(cvlRecord)
+    whenever(licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)).thenReturn(licence)
+    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(newLicenceStartDate)
 
     licenceOverrideService.changeDates(
       approvedLicenceA.id,
@@ -430,7 +447,7 @@ class LicenceOverrideServiceTest {
       .isEqualTo(
         listOf(
           request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
-          request.sentenceEndDate, request.licenceStartDate, request.licenceExpiryDate,
+          request.sentenceEndDate, newLicenceStartDate, request.licenceExpiryDate,
           request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, request.postRecallReleaseDate,
           aCom.username, aCom,
         ),
@@ -449,15 +466,18 @@ class LicenceOverrideServiceTest {
 
   @Test
   fun `Override dates updates HDC licence dates`() {
-    whenever(licenceRepository.findById(approvedHdcLicenceA.id)).thenReturn(Optional.of(approvedHdcLicenceA))
-    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-
+    val licence = approvedHdcLicenceA
+    val cvlRecord = CvlRecord(
+      nomisId = licence.nomsId!!,
+      isDueToBeReleasedInTheNextTwoWorkingDays = false,
+      isEligibleForEarlyRelease = false,
+      isInHardStopPeriod = false,
+    )
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
       actualReleaseDate = LocalDate.now(),
       sentenceStartDate = LocalDate.now(),
       sentenceEndDate = LocalDate.now(),
-      licenceStartDate = LocalDate.now(),
       licenceExpiryDate = LocalDate.now(),
       topupSupervisionStartDate = LocalDate.now(),
       topupSupervisionExpiryDate = LocalDate.now(),
@@ -465,6 +485,13 @@ class LicenceOverrideServiceTest {
       homeDetentionCurfewActualDate = LocalDate.now(),
       reason = "Test override dates",
     )
+    val newLicenceStartDate = request.conditionalReleaseDate
+
+    whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(licence))
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(cvlRecord)
+    whenever(licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)).thenReturn(licence)
+    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(newLicenceStartDate)
 
     licenceOverrideService.changeDates(
       approvedHdcLicenceA.id,
@@ -488,7 +515,7 @@ class LicenceOverrideServiceTest {
       .isEqualTo(
         listOf(
           request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
-          request.sentenceEndDate, request.licenceStartDate, request.licenceExpiryDate,
+          request.sentenceEndDate, newLicenceStartDate, request.licenceExpiryDate,
           request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, request.postRecallReleaseDate,
           request.homeDetentionCurfewActualDate, aCom.username, aCom,
         ),
@@ -507,26 +534,31 @@ class LicenceOverrideServiceTest {
 
   @Test
   fun `updating user is retained and username is set to SYSTEM_USER when a staff member cannot be found`() {
-    whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(
-      Optional.of(
-        approvedLicenceA.copy(
-          updatedBy = aPreviousUser,
-        ),
-      ),
-    )
-    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(null)
+    val licence = approvedLicenceA.copy(updatedBy = aPreviousUser)
 
+    val cvlRecord = CvlRecord(
+      nomisId = licence.nomsId!!,
+      isDueToBeReleasedInTheNextTwoWorkingDays = false,
+      isEligibleForEarlyRelease = false,
+      isInHardStopPeriod = false,
+    )
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
       actualReleaseDate = LocalDate.now(),
       sentenceStartDate = LocalDate.now(),
       sentenceEndDate = LocalDate.now(),
-      licenceStartDate = LocalDate.now(),
       licenceExpiryDate = LocalDate.now(),
       topupSupervisionStartDate = LocalDate.now(),
       topupSupervisionExpiryDate = LocalDate.now(),
       reason = "Test override dates",
     )
+    val newLicenceStartDate = request.conditionalReleaseDate
+
+    whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(null)
+    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(cvlRecord)
+    whenever(licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)).thenReturn(licence)
+    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.now())
 
     licenceOverrideService.changeDates(
       approvedLicenceA.id,
@@ -550,7 +582,7 @@ class LicenceOverrideServiceTest {
       .isEqualTo(
         listOf(
           request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
-          request.sentenceEndDate, request.licenceStartDate, request.licenceExpiryDate,
+          request.sentenceEndDate, newLicenceStartDate, request.licenceExpiryDate,
           request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, SYSTEM_USER,
           aPreviousUser,
         ),

@@ -24,10 +24,6 @@ data class OverrideLicenceDatesRequest(
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val sentenceEndDate: LocalDate? = null,
 
-  @field:Schema(description = "The licence start date", example = "06/05/2021")
-  @field:JsonFormat(pattern = "dd/MM/yyyy")
-  val licenceStartDate: LocalDate? = null,
-
   @field:Schema(description = "The licence expiry date", example = "06/05/2023")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val licenceExpiryDate: LocalDate? = null,

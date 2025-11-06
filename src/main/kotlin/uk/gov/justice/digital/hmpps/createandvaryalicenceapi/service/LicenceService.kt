@@ -55,7 +55,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -96,6 +98,7 @@ class LicenceService(
   private val exclusionZoneService: ExclusionZoneService,
   private val deliusApiClient: DeliusApiClient,
   private val telemetryService: TelemetryService,
+  private val auditService: AuditService,
 ) {
 
   @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
@@ -1122,6 +1125,18 @@ class LicenceService(
       teamCodes.contains(offenderManager.team.code)
     }
     return LicencePermissionsResponse(viewAccess)
+  }
+
+  @Transactional
+  fun updateLicenceKind(licence: EntityLicence, eligibleKind: LicenceKind?): EntityLicence {
+    if ((eligibleKind == CRD || eligibleKind == PRRD) && eligibleKind != licence.kind) {
+      val userUpdating =
+        staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication.name)
+      auditService.recordAuditEventLicenceKindUpdated(licence, licence.kind, eligibleKind, userUpdating)
+      licenceRepository.updateLicenceKind(licence.id, eligibleKind)
+      return licenceRepository.findById(licence.id).orElseThrow { EntityNotFoundException("$licence.id") }
+    }
+    return licence
   }
 
   private fun EntityLicence.toSummary(): LicenceSummary {

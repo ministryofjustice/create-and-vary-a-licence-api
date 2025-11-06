@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
@@ -11,6 +14,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceStatusRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -33,6 +37,11 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceEventRepository: LicenceEventRepository
+
+  @BeforeEach
+  fun reset() {
+    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
+  }
 
   @Test
   fun `Get forbidden (403) when incorrect roles are supplied`() {
@@ -206,7 +215,6 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
           actualReleaseDate = initialLicence.actualReleaseDate,
           sentenceStartDate = newSsd,
           sentenceEndDate = initialLicence.sentenceEndDate,
-          licenceStartDate = initialLicence.licenceStartDate,
           licenceExpiryDate = initialLicence.licenceExpiryDate,
           topupSupervisionExpiryDate = initialLicence.topupSupervisionExpiryDate,
           topupSupervisionStartDate = newTussd,
@@ -225,10 +233,27 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
     assertThat(updatedLicence.actualReleaseDate).isEqualTo(initialLicence.actualReleaseDate)
     assertThat(updatedLicence.sentenceStartDate).isEqualTo(newSsd)
     assertThat(updatedLicence.sentenceEndDate).isEqualTo(initialLicence.sentenceEndDate)
-    assertThat(updatedLicence.licenceStartDate).isEqualTo(initialLicence.licenceStartDate)
+    // LSD should be recalculated as last working day before CRD.
+    assertThat(updatedLicence.licenceStartDate).isEqualTo("2022-02-11")
     assertThat(updatedLicence.licenceExpiryDate).isEqualTo(initialLicence.licenceExpiryDate)
     assertThat(updatedLicence.topupSupervisionExpiryDate).isEqualTo(initialLicence.topupSupervisionExpiryDate)
     assertThat(updatedLicence.topupSupervisionStartDate).isEqualTo(newTussd)
     assertThat(auditEventRepository.count()).isEqualTo(1)
+  }
+
+  private companion object {
+    val govUkApiMockServer = GovUkMockServer()
+
+    @JvmStatic
+    @BeforeAll
+    fun startMocks() {
+      govUkApiMockServer.start()
+    }
+
+    @JvmStatic
+    @AfterAll
+    fun stopMocks() {
+      govUkApiMockServer.stop()
+    }
   }
 }

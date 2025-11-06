@@ -16,9 +16,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 
@@ -30,6 +36,8 @@ class LicenceOverrideService(
   private val domainEventsService: DomainEventsService,
   private val staffRepository: StaffRepository,
   private val licenceService: LicenceService,
+  private val cvlRecordService: CvlRecordService,
+  private val releaseDateService: ReleaseDateService,
 ) {
 
   companion object {
@@ -105,14 +113,14 @@ class LicenceOverrideService(
 
     log.info(
       buildString {
-        append("Current licence dates - ID $licenceId ")
-        append("CRD ${licence.conditionalReleaseDate} ")
-        append("ARD ${licence.actualReleaseDate} ")
-        append("SSD ${licence.sentenceStartDate} ")
-        append("SED ${licence.sentenceEndDate} ")
-        append("LSD ${licence.licenceStartDate} ")
-        append("LED ${licence.licenceExpiryDate} ")
-        append("TUSSD ${licence.topupSupervisionStartDate} ")
+        append("Current licence dates - ID $licenceId")
+        append("CRD ${licence.conditionalReleaseDate}")
+        append("ARD ${licence.actualReleaseDate}")
+        append("SSD ${licence.sentenceStartDate}")
+        append("SED ${licence.sentenceEndDate}")
+        append("LSD ${licence.licenceStartDate}")
+        append("LED ${licence.licenceExpiryDate}")
+        append("TUSSD ${licence.topupSupervisionStartDate}")
         append("TUSED ${licence.topupSupervisionExpiryDate}")
         append("PRRD ${licence.postRecallReleaseDate}")
         append("PRRD ${licence.postRecallReleaseDate}")
@@ -123,16 +131,38 @@ class LicenceOverrideService(
       },
     )
 
+    val prisonerSearchPrisoner = PrisonerSearchPrisoner(
+      prisonerNumber = licence.nomsId!!,
+      firstName = licence.forename!!,
+      lastName = licence.surname!!,
+      dateOfBirth = licence.dateOfBirth!!,
+      conditionalReleaseDate = request.conditionalReleaseDate,
+      confirmedReleaseDate = request.actualReleaseDate,
+      sentenceStartDate = request.sentenceStartDate,
+      sentenceExpiryDate = request.sentenceEndDate,
+      licenceExpiryDate = request.licenceExpiryDate,
+      topupSupervisionStartDate = request.topupSupervisionStartDate,
+      topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
+      postRecallReleaseDate = request.postRecallReleaseDate,
+      homeDetentionCurfewActualDate = request.homeDetentionCurfewActualDate,
+      homeDetentionCurfewEndDate = request.homeDetentionCurfewEndDate,
+    )
+
+    val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, licence.probationAreaCode!!)
+    val updatedLicence = licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)
+    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(updatedLicence, cvlRecord)
+    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
+
     log.info(
       buildString {
-        append("Updated dates - ID $licenceId ")
-        append("CRD ${request.conditionalReleaseDate} ")
-        append("ARD ${request.actualReleaseDate} ")
-        append("SSD ${request.sentenceStartDate} ")
-        append("SED ${request.sentenceEndDate} ")
-        append("LSD ${request.licenceStartDate} ")
-        append("LED ${request.licenceExpiryDate} ")
-        append("TUSSD ${request.topupSupervisionStartDate} ")
+        append("Updated dates - ID $licenceId")
+        append("CRD ${request.conditionalReleaseDate}")
+        append("ARD ${request.actualReleaseDate}")
+        append("SSD ${request.sentenceStartDate}")
+        append("SED ${request.sentenceEndDate}")
+        append("LSD $licenceStartDate")
+        append("LED ${request.licenceExpiryDate}")
+        append("TUSSD ${request.topupSupervisionStartDate}")
         append("TUSED ${request.topupSupervisionExpiryDate}")
         append("PRRD ${request.postRecallReleaseDate}")
         if (licence is HdcLicence) {
@@ -147,14 +177,13 @@ class LicenceOverrideService(
       actualReleaseDate = request.actualReleaseDate,
       sentenceStartDate = request.sentenceStartDate,
       sentenceEndDate = request.sentenceEndDate,
-      licenceStartDate = request.licenceStartDate,
+      licenceStartDate = licenceStartDate,
       licenceExpiryDate = request.licenceExpiryDate,
       topupSupervisionStartDate = request.topupSupervisionStartDate,
       topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
       postRecallReleaseDate = request.postRecallReleaseDate,
       homeDetentionCurfewActualDate = request.homeDetentionCurfewActualDate,
       homeDetentionCurfewEndDate = request.homeDetentionCurfewEndDate,
-
       staffMember = staffMember,
     )
 
@@ -209,5 +238,14 @@ class LicenceOverrideService(
         changes = changes,
       ),
     )
+  }
+
+  private fun selectCorrectKindForHardStopIfNeeded(
+    licence: Licence,
+    cvlRecord: CvlRecord,
+  ): LicenceKind? = if (licence.kind == HARD_STOP) {
+    cvlRecord.eligibleKind
+  } else {
+    licence.kind
   }
 }
