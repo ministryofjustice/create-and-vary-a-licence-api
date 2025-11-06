@@ -4,13 +4,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
@@ -20,15 +22,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.T
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class ApproverCaseloadServiceTest {
   private val prisonApproverService = mock<PrisonApproverService>()
   private val deliusApiClient = mock<DeliusApiClient>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
-  private val service = ApproverCaseloadService(prisonApproverService, deliusApiClient)
+  private val service = ApproverCaseloadService(prisonApproverService, deliusApiClient, releaseDateService)
 
   @BeforeEach
   fun reset() {
@@ -44,13 +46,13 @@ class ApproverCaseloadServiceTest {
         val nomisId = "A1234AA"
         val comUsernames = listOf("tcom")
 
-        whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+        whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
-            aLicenceSummaryApproverView,
+            aLicenceApproverCase(),
           ),
         )
-        whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
+        whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
 
         val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
@@ -74,7 +76,7 @@ class ApproverCaseloadServiceTest {
           assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
         }
 
-        verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+        verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
         verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
@@ -84,25 +86,21 @@ class ApproverCaseloadServiceTest {
         val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
         val comUsernames = listOf("tcom", "jdoe")
 
-        whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+        whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
-            aLicenceSummaryApproverView,
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(),
+            aLicenceApproverCase(
               licenceId = 2L,
-              bookingId = 12345,
-              nomisId = "B1234BB",
-              crn = "Y12345",
+              prisonNumber = "B1234BB",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
               prisonDescription = "ABC (HMP)",
               comUsername = "jdoe",
             ),
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceId = 3L,
-              bookingId = 67890,
-              nomisId = "C1234CC",
-              crn = "Z12345",
+              prisonNumber = "C1234CC",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -112,9 +110,9 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
           listOf(
-            aCommunityManager,
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
+            aCommunityManager(),
+            aCommunityManager(
+              case = aProbationCaseResult(
                 crn = "Y12345",
                 croNumber = "DE01/234567F",
                 pncNumber = null,
@@ -125,14 +123,12 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aStaffNameResponse,
-            aStaffNameResponse.copy(
+            aStaffNameResponse(),
+            aStaffNameResponse(
               id = 3000,
               username = "jdoe",
-              name = Name(
-                forename = "Test2",
-                surname = "Test2",
-              ),
+              forename = "Test2",
+              surname = "Test2",
               code = "DE012F",
             ),
           ),
@@ -178,7 +174,7 @@ class ApproverCaseloadServiceTest {
           assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
         }
 
-        verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+        verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
         verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
@@ -188,16 +184,14 @@ class ApproverCaseloadServiceTest {
         val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
         val comUsernames = listOf("tcom", "jdoe")
 
-        whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+        whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceStartDate = LocalDate.of(2024, 6, 21),
             ),
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceId = 2L,
-              bookingId = 12345,
-              nomisId = "B1234BB",
-              crn = "Y12345",
+              prisonNumber = "B1234BB",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -205,11 +199,9 @@ class ApproverCaseloadServiceTest {
               comUsername = "jdoe",
               licenceStartDate = LocalDate.of(2024, 6, 20),
             ),
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceId = 3L,
-              bookingId = 67890,
-              nomisId = "C1234CC",
-              crn = "Z12345",
+              prisonNumber = "C1234CC",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -219,9 +211,9 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
           listOf(
-            aCommunityManager,
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
+            aCommunityManager(),
+            aCommunityManager(
+              case = aProbationCaseResult(
                 crn = "Y12345",
                 croNumber = "DE01/234567F",
                 pncNumber = null,
@@ -232,14 +224,12 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aStaffNameResponse,
-            aStaffNameResponse.copy(
+            aStaffNameResponse(),
+            aStaffNameResponse(
               id = 3000,
               username = "jdoe",
-              name = Name(
-                forename = "Test2",
-                surname = "Test2",
-              ),
+              forename = "Test2",
+              surname = "Test2",
               code = "DE012F",
             ),
           ),
@@ -247,7 +237,7 @@ class ApproverCaseloadServiceTest {
 
         val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
-        verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+        verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
         verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
@@ -260,16 +250,14 @@ class ApproverCaseloadServiceTest {
         val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
         val comUsernames = listOf("tcom", "jdoe", "tcom")
 
-        whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+        whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceStartDate = LocalDate.of(2024, 6, 21),
             ),
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceId = 2L,
-              bookingId = 12345,
-              nomisId = "B1234BB",
-              crn = "Y12345",
+              prisonNumber = "B1234BB",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -278,11 +266,9 @@ class ApproverCaseloadServiceTest {
               licenceStatus = LicenceStatus.APPROVED,
               licenceStartDate = LocalDate.of(2024, 6, 20),
             ),
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceId = 3L,
-              bookingId = 67890,
-              nomisId = "C1234CC",
-              crn = "Z12345",
+              prisonNumber = "C1234CC",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -294,17 +280,17 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
           listOf(
-            aCommunityManager,
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
+            aCommunityManager(),
+            aCommunityManager(
+              case = aProbationCaseResult(
                 crn = "Y12345",
                 croNumber = "DE01/234567F",
                 pncNumber = null,
                 nomisId = "B1234BB",
               ),
             ),
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
+            aCommunityManager(
+              case = aProbationCaseResult(
                 crn = "Z12345",
                 croNumber = "GH01/234567I",
                 pncNumber = null,
@@ -315,23 +301,21 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aStaffNameResponse,
-            aStaffNameResponse.copy(
+            aStaffNameResponse(),
+            aStaffNameResponse(
               id = 3000,
               username = "jdoe",
-              name = Name(
-                forename = "Test2",
-                surname = "Test2",
-              ),
+              forename = "Test2",
+              surname = "Test2",
               code = "DE012F",
             ),
-            aStaffNameResponse,
+            aStaffNameResponse(),
           ),
         )
 
         val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
-        verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+        verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
         verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
@@ -344,22 +328,22 @@ class ApproverCaseloadServiceTest {
     fun `CADM prison caseload is filtered out`() {
       val aListOfPrisonCodes = listOf("ABC", "DEF", "CADM")
       service.getSortedApprovalNeededCases(aListOfPrisonCodes)
-      verify(prisonApproverService, times(1)).getLicencesForApproval(listOf("ABC", "DEF"))
+      verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(listOf("ABC", "DEF"))
     }
 
     @Test
     fun `Missing NOMIS ID on licence returns an empty caseload`() {
-      whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+      whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
         listOf(
-          aLicenceSummaryApproverView.copy(
-            nomisId = null,
+          aLicenceApproverCase(
+            prisonNumber = null,
           ),
         ),
       )
 
       val caseload = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
-      verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+      verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
       verify(deliusApiClient, times(1)).getOffenderManagers(emptyList())
       verify(deliusApiClient, times(1)).getStaffDetailsByUsername(emptyList())
       assertThat(caseload).isEmpty()
@@ -370,17 +354,17 @@ class ApproverCaseloadServiceTest {
       val nomisId = "A1234AA"
       val comUsernames = listOf("tcom")
 
-      whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+      whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
         listOf(
-          aLicenceSummaryApproverView.copy(
+          aLicenceApproverCase(
             actualReleaseDate = LocalDate.of(2024, 6, 20),
             conditionalReleaseDate = LocalDate.of(2024, 6, 19),
             licenceStartDate = LocalDate.of(2024, 6, 18),
           ),
         ),
       )
-      whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
+      whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
+      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
 
       val approvalCases = service.getSortedApprovalNeededCases(aListOfPrisonCodes)
 
@@ -390,7 +374,7 @@ class ApproverCaseloadServiceTest {
         assertThat(releaseDate).isEqualTo((LocalDate.of(2024, 6, 18)))
       }
 
-      verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+      verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
       verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
       verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
@@ -406,18 +390,18 @@ class ApproverCaseloadServiceTest {
         val nomisId = "A1234AA"
         val comUsernames = listOf("tcom")
 
-        val aLicenceSummaryApproverView = aLicenceSummaryApproverView.copy(
+        val aLicenceSummaryApproverView = aLicenceApproverCase(
           licenceStatus = LicenceStatus.APPROVED,
           licenceStartDate = LocalDate.now().minusDays(14),
         )
 
-        whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
+        whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
           listOf(
             aLicenceSummaryApproverView,
           ),
         )
-        whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
+        whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
 
         val approvalCases = service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
 
@@ -441,7 +425,7 @@ class ApproverCaseloadServiceTest {
           assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
         }
 
-        verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
+        verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
         verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
@@ -451,13 +435,11 @@ class ApproverCaseloadServiceTest {
         val nomisIds = listOf("B1234BB", "C1234CC")
         val comUsernames = listOf("jdoe", "tcom")
 
-        whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
+        whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
           listOf(
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceId = 2L,
-              bookingId = 12345,
-              nomisId = "B1234BB",
-              crn = "Y12345",
+              prisonNumber = "B1234BB",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -467,11 +449,9 @@ class ApproverCaseloadServiceTest {
               licenceStartDate = LocalDate.now().minusDays(14),
               approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
             ),
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceId = 3L,
-              bookingId = 67890,
-              nomisId = "C1234CC",
-              crn = "Z12345",
+              prisonNumber = "C1234CC",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -484,16 +464,16 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
           listOf(
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
+            aCommunityManager(
+              case = aProbationCaseResult(
                 crn = "Y12345",
                 croNumber = "DE01/234567F",
                 pncNumber = null,
                 nomisId = "B1234BB",
               ),
             ),
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
+            aCommunityManager(
+              case = aProbationCaseResult(
                 crn = "Z12345",
                 croNumber = "GH01/234567I",
                 pncNumber = null,
@@ -505,16 +485,14 @@ class ApproverCaseloadServiceTest {
 
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aStaffNameResponse.copy(
+            aStaffNameResponse(
               id = 3000,
               username = "jdoe",
-              name = Name(
-                forename = "Test2",
-                surname = "Test2",
-              ),
+              forename = "Test2",
+              surname = "Test2",
               code = "DE012F",
             ),
-            aStaffNameResponse,
+            aStaffNameResponse(),
           ),
         )
 
@@ -558,7 +536,7 @@ class ApproverCaseloadServiceTest {
           assertThat(prisonDescription).isEqualTo("ABC (HMP)")
         }
 
-        verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
+        verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
         verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
@@ -568,13 +546,11 @@ class ApproverCaseloadServiceTest {
         val nomisIds = listOf("B1234BB", "C1234CC")
         val comUsernames = listOf("jdoe", "tcom")
 
-        whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
+        whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
           listOf(
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceId = 2L,
-              bookingId = 12345,
-              nomisId = "B1234BB",
-              crn = "Y12345",
+              prisonNumber = "B1234BB",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -584,11 +560,9 @@ class ApproverCaseloadServiceTest {
               licenceStartDate = LocalDate.now().minusDays(13),
               approvedDate = LocalDateTime.of(2023, 9, 29, 16, 38, 42),
             ),
-            aLicenceSummaryApproverView.copy(
+            aLicenceApproverCase(
               licenceId = 3L,
-              bookingId = 67890,
-              nomisId = "C1234CC",
-              crn = "Z12345",
+              prisonNumber = "C1234CC",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -601,16 +575,16 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
           listOf(
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
+            aCommunityManager(
+              case = aProbationCaseResult(
                 crn = "Y12345",
                 croNumber = "DE01/234567F",
                 pncNumber = null,
                 nomisId = "B1234BB",
               ),
             ),
-            aCommunityManager.copy(
-              case = aCommunityManager.case.copy(
+            aCommunityManager(
+              case = aProbationCaseResult(
                 crn = "Z12345",
                 croNumber = "GH01/234567I",
                 pncNumber = null,
@@ -621,22 +595,20 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aStaffNameResponse.copy(
+            aStaffNameResponse(
               id = 3000,
               username = "jdoe",
-              name = Name(
-                forename = "Test2",
-                surname = "Test2",
-              ),
+              forename = "Test2",
+              surname = "Test2",
               code = "DE012F",
             ),
-            aStaffNameResponse,
+            aStaffNameResponse(),
           ),
         )
 
         val caseload = service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
 
-        verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
+        verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
         verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
         verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
@@ -649,7 +621,7 @@ class ApproverCaseloadServiceTest {
     fun `CADM prison code is filtered out`() {
       val aListOfPrisonCodes = listOf("ABC", "DEF", "CADM")
       service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
-      verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(listOf("ABC", "DEF"))
+      verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(listOf("ABC", "DEF"))
     }
 
     @Test
@@ -657,15 +629,15 @@ class ApproverCaseloadServiceTest {
       val nomisId = "A1234AA"
       val comUsernames = listOf("tcom")
 
-      whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
+      whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
         listOf(
-          aLicenceSummaryApproverView.copy(
+          aLicenceApproverCase(
             licenceStartDate = null,
           ),
         ),
       )
-      whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
+      whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
+      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
 
       val approvalCases = service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
 
@@ -675,7 +647,7 @@ class ApproverCaseloadServiceTest {
         assertThat(releaseDate).isNull()
       }
 
-      verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
+      verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
       verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
       verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
@@ -685,15 +657,17 @@ class ApproverCaseloadServiceTest {
       val nomisId = "A1234AA"
       val comUsernames = listOf("tcom")
 
-      whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
+      whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(
+        true,
+      )
+
+      whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
         listOf(
-          aLicenceSummaryApproverView.copy(
-            isDueToBeReleasedInTheNextTwoWorkingDays = true,
-          ),
+          aLicenceApproverCase(),
         ),
       )
-      whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
+      whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
+      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
 
       val approvalCases = service.getSortedRecentlyApprovedCases(aListOfPrisonCodes)
 
@@ -703,7 +677,7 @@ class ApproverCaseloadServiceTest {
         assertThat(urgentApproval).isTrue()
       }
 
-      verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
+      verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
       verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
       verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
@@ -714,19 +688,17 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `The correct com is retrieved`() {
       val users = listOf(
-        aStaffNameResponse,
-        aStaffNameResponse.copy(
+        aStaffNameResponse(),
+        aStaffNameResponse(
           id = 1000,
           username = "jdoe",
-          name = Name(
-            forename = "Test2",
-            surname = "Test2",
-          ),
+          forename = "Test2",
+          surname = "Test2",
           code = "CD012E",
         ),
       )
 
-      val com = service.findProbationPractitioner(aLicenceSummaryApproverView.comUsername, users, aCommunityManager)
+      val com = service.findProbationPractitioner(aLicenceApproverCase().comUsername, users, aCommunityManager())
 
       assertThat(com?.staffCode).isEqualTo("AB012C")
       assertThat(com?.name).isEqualTo("Test Test")
@@ -735,25 +707,21 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `If the com is not found in the list of coms, the delius record details are used instead`() {
       val users = listOf(
-        aStaffNameResponse.copy(
+        aStaffNameResponse(
           username = "test1",
           code = "test1",
-          name = Name(
-            forename = "Test1",
-            surname = "Test1",
-          ),
+          forename = "Test1",
+          surname = "Test1",
         ),
-        aStaffNameResponse.copy(
+        aStaffNameResponse(
           username = "test2",
           code = "test2",
-          name = Name(
-            forename = "Test2",
-            surname = "Test2",
-          ),
+          forename = "Test2",
+          surname = "Test2",
         ),
       )
 
-      val com = service.findProbationPractitioner(aLicenceSummaryApproverView.comUsername, users, aCommunityManager)
+      val com = service.findProbationPractitioner(aLicenceApproverCase().comUsername, users, aCommunityManager())
 
       assertThat(com?.staffCode).isEqualTo("AB012C")
       assertThat(com?.name).isEqualTo("Test Test")
@@ -762,120 +730,128 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `return null if com is unallocated`() {
       val users = listOf(
-        aStaffNameResponse.copy(
+        aStaffNameResponse(
           username = "test1",
           code = "test1",
-          name = Name(
-            forename = "Test1",
-            surname = "Test1",
-          ),
+          forename = "Test1",
+          surname = "Test1",
         ),
-        aStaffNameResponse.copy(
+        aStaffNameResponse(
           username = "test2",
           code = "test2",
-          name = Name(
-            forename = "Test2",
-            surname = "Test2",
-          ),
+          forename = "Test2",
+          surname = "Test2",
         ),
       )
-      val unallocatedCom = aCommunityManager.copy(unallocated = true)
+      val unallocatedCom = aCommunityManager(unallocated = true)
 
-      val com = service.findProbationPractitioner(aLicenceSummaryApproverView.comUsername, users, unallocatedCom)
+      val com = service.findProbationPractitioner(aLicenceApproverCase().comUsername, users, unallocatedCom)
 
       assertThat(com).isNull()
     }
   }
 
-  private companion object {
-    val aListOfPrisonCodes = listOf("MDI", "ABC")
-
-    val aLicenceSummaryApproverView = LicenceSummaryApproverView(
-      licenceId = 1,
-      forename = "Person",
-      surname = "One",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      licenceStatus = LicenceStatus.SUBMITTED,
-      kind = LicenceKind.CRD,
-      licenceType = LicenceType.AP,
-      nomisId = "A1234AA",
-      crn = "X12345",
-      bookingId = 54321,
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      comUsername = "tcom",
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      submittedDate = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-      approvedByName = "jim smith",
-      licenceVersion = "1.0",
-      versionOf = null,
-      isReviewNeeded = false,
-      updatedByFullName = "X Y",
-      submittedByFullName = "X Y",
+  private fun aLicenceApproverCase(
+    licenceId: Long = 1L,
+    licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22),
+    kind: LicenceKind = LicenceKind.CRD,
+    versionOfId: Long? = null,
+    licenceStatus: LicenceStatus = LicenceStatus.SUBMITTED,
+    prisonNumber: String? = "A1234AA",
+    surname: String? = "One",
+    forename: String? = "Person",
+    updatedByFirstName: String? = "X",
+    updatedByLastName: String? = "Y",
+    comUsername: String? = "tcom",
+    sentenceStartDate: LocalDate? = LocalDate.of(2021, 10, 19),
+    conditionalReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
+    actualReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
+    postRecallReleaseDate: LocalDate? = null,
+    approvedByName: String? = "jim smith",
+    approvedDate: LocalDateTime? = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+    submittedByFullName: String? = "X Y",
+    prisonCode: String? = "MDI",
+    prisonDescription: String? = "Moorland (HMP)",
+    variationOfId: Long? = null,
+  ): LicenceApproverCase {
+    val licenceApproverCase = LicenceApproverCase(
+      licenceStartDate = licenceStartDate,
+      kind = kind,
+      licenceId = licenceId,
+      versionOfId = versionOfId,
+      statusCode = licenceStatus,
+      prisonNumber = prisonNumber,
+      surname = surname,
+      forename = forename,
+      updatedByFirstName = updatedByFirstName,
+      updatedByLastName = updatedByLastName,
+      comUsername = comUsername,
+      sentenceStartDate = sentenceStartDate,
+      conditionalReleaseDate = conditionalReleaseDate,
+      actualReleaseDate = actualReleaseDate,
+      postRecallReleaseDate = postRecallReleaseDate,
+      approvedByName = approvedByName,
+      approvedDate = approvedDate,
+      prisonCode = prisonCode,
+      prisonDescription = prisonDescription,
+      variationOfId = variationOfId,
     )
-
-    val aProbationCaseResult = ProbationCase(
-      crn = "X12345",
-      croNumber = "AB01/234567C",
-      pncNumber = null,
-      nomisId = "A1234AA",
-    )
-
-    val aStaffNameResponse = StaffNameResponse(
-      id = 2000,
-      username = "tcom",
-      name = Name(
-        forename = "Test",
-        surname = "Test",
-      ),
-      code = "AB012C",
-    )
+    licenceApproverCase.submittedByFullName = submittedByFullName
+    return licenceApproverCase
   }
 
-  val aCommunityManager =
-    CommunityManager(
-      code = "AB012C",
-      id = 2000L,
-      team = TeamDetail(
-        code = "NA01A2-A",
-        description = "Cardiff South Team A",
-        borough = Detail(
-          code = "N01A",
-          description = "Cardiff",
-        ),
-        district = Detail(
-          code = "N01A2",
-          description = "Cardiff South",
-        ),
-        provider = Detail(
-          code = "N01",
-          description = "Wales",
-        ),
-      ),
-      provider = Detail(
-        code = "N01",
-        description = "Wales",
-      ),
-      case = aProbationCaseResult,
-      name = Name("Test", null, "Test"),
-      allocationDate = LocalDate.of(2000, 1, 1),
-      unallocated = false,
-    )
+  private fun aStaffNameResponse(
+    id: Long = 2000,
+    username: String = "tcom",
+    forename: String = "Test",
+    surname: String = "Test",
+    code: String = "AB012C",
+  ) = StaffNameResponse(
+    id = id,
+    username = username,
+    name = Name(forename, surname = surname),
+    code = code,
+  )
+
+  private fun aProbationCaseResult(
+    crn: String = "X12345",
+    croNumber: String = "AB01/234567C",
+    pncNumber: String? = null,
+    nomisId: String = "A1234AA",
+  ) = ProbationCase(
+    crn = crn,
+    croNumber = croNumber,
+    pncNumber = pncNumber,
+    nomisId = nomisId,
+  )
+
+  private fun aCommunityManager(
+    code: String = "AB012C",
+    id: Long = 2000L,
+    team: TeamDetail = TeamDetail(
+      code = "NA01A2-A",
+      description = "Cardiff South Team A",
+      borough = Detail("N01A", "Cardiff"),
+      district = Detail("N01A2", "Cardiff South"),
+      provider = Detail("N01", "Wales"),
+    ),
+    provider: Detail = Detail("N01", "Wales"),
+    case: ProbationCase = aProbationCaseResult(),
+    name: Name = Name("Test", null, "Test"),
+    allocationDate: LocalDate = LocalDate.of(2000, 1, 1),
+    unallocated: Boolean = false,
+  ) = CommunityManager(
+    code = code,
+    id = id,
+    team = team,
+    provider = provider,
+    case = case,
+    name = name,
+    allocationDate = allocationDate,
+    unallocated = unallocated,
+  )
+
+  private companion object {
+    val aListOfPrisonCodes = listOf("MDI", "ABC")
+  }
 }

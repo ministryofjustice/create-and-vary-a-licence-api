@@ -26,8 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isTodayOrInTheFuture
 
 @Service
@@ -61,6 +59,12 @@ class ComCreateCaseloadService(
     return cases
   }
 
+  private fun getTeamCode(probationTeamCodes: List<String>, teamSelected: List<String>): String = if (teamSelected.isNotEmpty()) {
+    teamSelected.first()
+  } else {
+    probationTeamCodes.first()
+  }
+
   private fun buildCreateCaseload(managedOffenders: List<ManagedOffenderCrn>): List<ComCase> {
     val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
     val nomisIdsToAreaCodes = deliusAndNomisRecords.map { (deliusRecord, nomisRecord) ->
@@ -71,9 +75,26 @@ class ComCreateCaseloadService(
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
     val cases = getCasesWithLicences(eligibleCases, cvlRecords)
     val filteredCases = filterHdcAndFutureReleases(cases)
-    val crnsToComs = getResponsibleComs(filteredCases)
 
-    return transformToCreateCaseload(filteredCases, crnsToComs)
+    return transformToCreateCaseload(filteredCases)
+  }
+
+  private fun pairDeliusRecordsWithNomis(managedOffenders: List<ManagedOffenderCrn>): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> {
+    val caseloadNomisIds = managedOffenders.mapNotNull { offender -> offender.nomisId }
+
+    val nomisRecords =
+      prisonerSearchApiClient.searchPrisonersByNomisIds(caseloadNomisIds).associateBy { it.prisonerNumber }
+
+    return managedOffenders.mapNotNull { deliusRecord -> nomisRecords[deliusRecord.nomisId]?.let { deliusRecord to it } }
+      .toMap()
+  }
+
+  private fun filterCasesEligibleForCvl(
+    cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>,
+    cvlRecords: List<CvlRecord>,
+  ): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> = cases.filter { (_, nomisRecord) ->
+    val cvlRecord = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }
+    return@filter cvlRecord.isEligible
   }
 
   private fun getCasesWithLicences(
@@ -87,11 +108,12 @@ class ComCreateCaseloadService(
     return cases.mapNotNull { (deliusRecord, nomisRecord) ->
       val licences = licencesByCrn[deliusRecord.crn!!] ?: emptyList()
       val cvlRecord = cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!
+      val probationPractitioner = deliusRecord.getProbationPractitioner()
 
       when {
         // No licences found for this offender so treat as a not started case
         licences.isEmpty() -> Case(
-          deliusRecord,
+          probationPractitioner,
           nomisRecord,
           cvlRecord,
           createNotStartedLicence(deliusRecord, nomisRecord, cvlRecord),
@@ -103,94 +125,16 @@ class ComCreateCaseloadService(
 
         // Should appear in create caseload with relevant licence
         else ->
-          Case(deliusRecord, nomisRecord, cvlRecord, findRelevantLicencePerCase(licences))
+          Case(probationPractitioner, nomisRecord, cvlRecord, findRelevantLicencePerCase(licences))
       }
     }
   }
 
-  private fun pairDeliusRecordsWithNomis(managedOffenders: List<ManagedOffenderCrn>): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> {
-    val caseloadNomisIds = managedOffenders.mapNotNull { offender -> offender.nomisId }
-    if (caseloadNomisIds.isEmpty()) {
-      return emptyMap()
-    }
-    val nomisRecords = prisonerSearchApiClient.searchPrisonersByNomisIds(caseloadNomisIds)
-
-    return managedOffenders.mapNotNull { deliusRecord ->
-      val nomisRecord = nomisRecords.find { prisoner -> prisoner.prisonerNumber == deliusRecord.nomisId }
-      if (nomisRecord != null) {
-        deliusRecord to nomisRecord
-      } else {
-        null
-      }
-    }.toMap()
-  }
-
-  private fun filterCasesEligibleForCvl(
-    cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>,
-    cvlRecords: List<CvlRecord>,
-  ): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> = cases.filter { (_, nomisRecord) ->
-    val cvlRecord = cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }
-    return@filter cvlRecord.isEligible
-  }
-
-  private fun createNotStartedLicence(
-    deliusRecord: ManagedOffenderCrn,
-    nomisRecord: PrisonerSearchPrisoner,
-    cvlRecord: CvlRecord,
-  ): CaseLoadLicenceSummary {
-    val licenceType = LicenceType.getLicenceType(nomisRecord)
-    val licenceKind = cvlRecord.eligibleKind!!
-    val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
-
-    val licenceStatus = if (cvlRecord.isInHardStopPeriod) {
-      TIMED_OUT
-    } else {
-      NOT_STARTED
-    }
-
-    val caseLoadSummary = CaseLoadLicenceSummary(
-      licenceStatus = licenceStatus,
-      licenceType = licenceType,
-      crn = deliusRecord.crn,
-      nomisId = nomisRecord.prisonerNumber,
-      name = name,
-      releaseDate = cvlRecord.licenceStartDate,
-      kind = licenceKind,
-      hardStopKind = cvlRecord.hardStopKind,
-      hardStopDate = cvlRecord.hardStopDate,
-      hardStopWarningDate = cvlRecord.hardStopWarningDate,
-      isDueToBeReleasedInTheNextTwoWorkingDays = cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
-    )
-    return findRelevantLicencePerCase(listOf(caseLoadSummary))
-  }
-
-  @TimeServedConsiderations("If the COM is an unallocated member of the team, do we need to handle anything differently here?")
-  private fun getResponsibleComs(cases: List<Case>): Map<String, ProbationPractitioner?> {
-    val comUsernames = cases.mapNotNull { it.licenceSummary.comUsername }.distinct()
-    val coms = deliusApiClient.getStaffDetailsByUsername(comUsernames).associateBy { it.username?.lowercase() }
-    return cases.associate {
-      val licence = it.licenceSummary
-      val crn = it.deliusRecord.crn!!
-
-      val responsibleCom = coms[licence.comUsername?.lowercase()]
-
-      if (responsibleCom != null) {
-        crn to ProbationPractitioner(
-          responsibleCom.code,
-          name = responsibleCom.name.fullName(),
-        )
-      } else {
-        val staff = it.deliusRecord.staff
-        if (staff == null || staff.unallocated == true) {
-          crn to null
-        } else {
-          crn to ProbationPractitioner(
-            staffCode = staff.code,
-            name = staff.name?.fullName(),
-          )
-        }
-      }
-    }
+  private fun getExistingActiveAndPreReleaseLicences(crnList: List<String>): List<CaseLoadLicenceSummary> = if (crnList.isEmpty()) {
+    emptyList()
+  } else {
+    licenceCaseRepository.findLicenceCasesForCom(crns = crnList, statusCodes = COM_CREATE_LICENCE_STATUSES)
+      .map { mapToCaseLoadLicenceSummary(it) }
   }
 
   private fun mapToCaseLoadLicenceSummary(licenceSummary: LicenceComCase): CaseLoadLicenceSummary {
@@ -222,6 +166,45 @@ class ComCreateCaseloadService(
     )
   }
 
+  private fun ManagedOffenderCrn?.getProbationPractitioner() = this?.staff
+    ?.takeUnless { it.unallocated == true }
+    ?.let {
+      ProbationPractitioner(
+        staffCode = it.code,
+        name = it.name?.fullName(),
+      )
+    }
+
+  private fun createNotStartedLicence(
+    deliusRecord: ManagedOffenderCrn,
+    nomisRecord: PrisonerSearchPrisoner,
+    cvlRecord: CvlRecord,
+  ): CaseLoadLicenceSummary {
+    val licenceKind = cvlRecord.eligibleKind!!
+    val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
+
+    val licenceStatus = if (cvlRecord.isInHardStopPeriod) {
+      TIMED_OUT
+    } else {
+      NOT_STARTED
+    }
+
+    val caseLoadSummary = CaseLoadLicenceSummary(
+      licenceStatus = licenceStatus,
+      licenceType = cvlRecord.licenceType,
+      crn = deliusRecord.crn,
+      nomisId = nomisRecord.prisonerNumber,
+      name = name,
+      releaseDate = cvlRecord.licenceStartDate,
+      kind = licenceKind,
+      hardStopKind = cvlRecord.hardStopKind,
+      hardStopDate = cvlRecord.hardStopDate,
+      hardStopWarningDate = cvlRecord.hardStopWarningDate,
+      isDueToBeReleasedInTheNextTwoWorkingDays = cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
+    )
+    return findRelevantLicencePerCase(listOf(caseLoadSummary))
+  }
+
   private fun filterHdcAndFutureReleases(
     cases: List<Case>,
   ): List<Case> {
@@ -233,46 +216,29 @@ class ComCreateCaseloadService(
     }
   }
 
-  private fun getTeamCode(probationTeamCodes: List<String>, teamSelected: List<String>): String = if (teamSelected.isNotEmpty()) {
-    teamSelected.first()
-  } else {
-    probationTeamCodes.first()
-  }
-
-  private fun transformToCreateCaseload(
-    cases: List<Case>,
-    crnsToComs: Map<String, ProbationPractitioner?>,
-  ): List<ComCase> = cases.map {
-    val licence = it.licenceSummary
-    val probationPractitioner = crnsToComs[it.deliusRecord.crn]
-
-    ComCase(
-      licenceId = licence.licenceId,
-      licenceStatus = licence.licenceStatus,
-      licenceType = licence.licenceType,
-      name = licence.name,
-      crnNumber = licence.crn,
-      prisonerNumber = licence.nomisId,
-      releaseDate = licence.releaseDate,
-      probationPractitioner = probationPractitioner,
-      hardStopDate = licence.hardStopDate,
-      hardStopKind = licence.hardStopKind,
-      hardStopWarningDate = licence.hardStopWarningDate,
-      kind = licence.kind,
-      licenceCreationType = licence.licenceCreationType,
-      isReviewNeeded = licence.isReviewNeeded,
-    )
+  private fun transformToCreateCaseload(cases: List<Case>): List<ComCase> = cases.map {
+    with(it.licenceSummary) {
+      ComCase(
+        licenceId = licenceId,
+        licenceStatus = licenceStatus,
+        licenceType = licenceType,
+        name = name,
+        crnNumber = crn,
+        prisonerNumber = nomisId,
+        releaseDate = releaseDate,
+        probationPractitioner = it.probationPractitioner,
+        hardStopDate = hardStopDate,
+        hardStopKind = hardStopKind,
+        hardStopWarningDate = hardStopWarningDate,
+        kind = kind,
+        licenceCreationType = licenceCreationType,
+        isReviewNeeded = isReviewNeeded,
+      )
+    }
   }.sortedWith(compareBy<ComCase> { it.releaseDate }.thenBy { it.name })
 
-  private fun getExistingActiveAndPreReleaseLicences(crnList: List<String>): List<CaseLoadLicenceSummary> = if (crnList.isEmpty()) {
-    emptyList()
-  } else {
-    licenceCaseRepository.findLicenceCasesForCom(crns = crnList, statusCodes = COM_CREATE_LICENCE_STATUSES)
-      .map { mapToCaseLoadLicenceSummary(it) }
-  }
-
   private data class Case(
-    val deliusRecord: ManagedOffenderCrn,
+    val probationPractitioner: ProbationPractitioner?,
     val nomisRecord: PrisonerSearchPrisoner,
     val cvlRecord: CvlRecord,
     val licenceSummary: CaseLoadLicenceSummary,

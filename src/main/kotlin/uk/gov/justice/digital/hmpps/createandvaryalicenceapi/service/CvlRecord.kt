@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
 data class CvlRecord(
@@ -16,4 +17,5 @@ data class CvlRecord(
   val hardStopDate: LocalDate? = null,
   val isInHardStopPeriod: Boolean,
   val hardStopKind: LicenceKind? = null,
+  val licenceType: LicenceType,
 )

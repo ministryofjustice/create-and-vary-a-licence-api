@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -36,7 +35,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
 @Service
@@ -53,7 +51,6 @@ class LicenceCreationService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val deliusApiClient: DeliusApiClient,
-  private val releaseDateService: ReleaseDateService,
   private val hdcService: HdcService,
   private val cvlRecordService: CvlRecordService,
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
@@ -86,7 +83,7 @@ class LicenceCreationService(
 
     val licence = when (cvlRecord.eligibleKind) {
       LicenceKind.PRRD -> LicenceFactory.createPrrd(
-        licenceType = getLicenceType(nomisRecord),
+        licenceType = cvlRecord.licenceType,
         nomsId = nomisRecord.prisonerNumber,
         version = licencePolicyService.currentPolicy().version,
         nomisRecord = nomisRecord,
@@ -99,7 +96,7 @@ class LicenceCreationService(
       )
 
       LicenceKind.CRD -> LicenceFactory.createCrd(
-        licenceType = getLicenceType(nomisRecord),
+        licenceType = cvlRecord.licenceType,
         nomsId = nomisRecord.prisonerNumber,
         version = licencePolicyService.currentPolicy().version,
         nomisRecord = nomisRecord,
@@ -140,7 +137,7 @@ class LicenceCreationService(
     }
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
-    val licenceType = getLicenceType(nomisRecord)
+    val licenceType = cvlRecord.licenceType
     val version = licencePolicyService.currentPolicy().version
     val licenceStartDate = cvlRecord.licenceStartDate
     val hardStopKind = cvlRecord.hardStopKind
@@ -209,14 +206,16 @@ class LicenceCreationService(
 
     hdcService.checkEligibleForHdcLicence(nomisRecord, hdcLicenceData)
 
-    if (getLicenceType(nomisRecord) == LicenceType.PSS) error("HDC Licence for ${nomisRecord.prisonerNumber} can not be of type PSS")
-
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
-    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.HDC)
 
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
       ?: error("No active offender manager found for $prisonNumber")
+
+    val areaCode = currentResponsibleOfficerDetails.team.provider.code
+    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord, areaCode)
+
+    if (cvlRecord.licenceType == LicenceType.PSS) error("HDC Licence for ${nomisRecord.prisonerNumber} can not be of type PSS")
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
       ?: createCom(currentResponsibleOfficerDetails.id)
@@ -225,7 +224,7 @@ class LicenceCreationService(
       ?: error("Staff with username $username not found")
 
     val licence = LicenceFactory.createHdc(
-      licenceType = getLicenceType(nomisRecord),
+      licenceType = cvlRecord.licenceType,
       nomsId = nomisRecord.prisonerNumber,
       version = licencePolicyService.currentPolicy().version,
       nomisRecord = nomisRecord,
@@ -234,7 +233,7 @@ class LicenceCreationService(
       deliusRecord = deliusRecord,
       responsibleCom = responsibleCom,
       creator = createdBy,
-      licenceStartDate = licenceStartDate,
+      licenceStartDate = cvlRecord.licenceStartDate,
     )
 
     val createdLicence = licenceRepository.saveAndFlush(licence)

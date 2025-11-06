@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 @Service
 class CaseService(
@@ -26,7 +25,7 @@ class CaseService(
     return PrisonerWithCvlFields(
       prisoner = prisoner.toPrisoner(),
       cvl = CvlFields(
-        licenceType = LicenceType.getLicenceType(prisoner),
+        licenceType = cvlRecord.licenceType,
         hardStopDate = cvlRecord.hardStopDate,
         hardStopWarningDate = cvlRecord.hardStopWarningDate,
         isInHardStopPeriod = cvlRecord.isInHardStopPeriod,
