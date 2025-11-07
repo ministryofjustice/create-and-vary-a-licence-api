@@ -65,4 +65,6 @@ data class CaCase(
 
   @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.TIME_SERVED)
   val hardStopKind: LicenceKind? = null,
+
+  val hasNomisLicence: Boolean = false,
 )
