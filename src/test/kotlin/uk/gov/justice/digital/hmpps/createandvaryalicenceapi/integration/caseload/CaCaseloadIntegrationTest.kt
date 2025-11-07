@@ -161,7 +161,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<PrisonCaseAdminSearchResult>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.inPrisonResults).hasSize(2)
+      assertThat(caseload.inPrisonResults).hasSize(3)
       assertThat(caseload.onProbationResults).hasSize(2)
       assertThat(caseload.attentionNeededResults).hasSize(1)
 
