@@ -563,7 +563,6 @@ class ComVaryCaseloadServiceTest {
     conditionalReleaseDate = conditionalReleaseDate,
     actualReleaseDate = confirmedReleaseDate,
     licenceStartDate = licenceStartDate,
-    dateCreated = LocalDateTime.now(),
     forename = forename,
     surname = surname,
     versionOfId = versionOfId,
@@ -572,7 +571,5 @@ class ComVaryCaseloadServiceTest {
     updatedByFirstName = "firstName",
     updatedByLastName = "lastName",
     reviewDate = reviewDate,
-    approvedByName = "approver name",
-    approvedDate = LocalDateTime.now(),
   )
 }
