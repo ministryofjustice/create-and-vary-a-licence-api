@@ -3762,25 +3762,25 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `should update the licence kind if eligible kind if different to current licence kind`() {
+  fun `should update the licence kind and eligible kind if different to the current licence values`() {
     val licence = aLicenceEntity
-    val eligibleKind = LicenceKind.PRRD
+    val updatedKind = LicenceKind.PRRD
     val updatedLicence = createPrrdLicence()
     val staff = communityOffenderManager()
 
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(updatedLicence))
 
-    val result = service.updateLicenceKind(licence, eligibleKind)
+    val result = service.updateLicenceKind(licence, updatedKind)
 
     assertThat(result).isEqualTo(updatedLicence)
-    verify(licenceRepository).updateLicenceKinds(licence.id, eligibleKind, eligibleKind)
+    verify(licenceRepository).updateLicenceKinds(licence.id, updatedKind, updatedKind)
     verify(auditService).recordAuditEventLicenceKindUpdated(
       licence,
       licence.kind,
-      eligibleKind,
+      updatedKind,
       licence.eligibleKind,
-      eligibleKind,
+      updatedKind,
       staff,
     )
   }
@@ -3799,6 +3799,30 @@ class LicenceServiceTest {
     assertThat(result).isEqualTo(licence)
     verify(licenceRepository, never()).updateLicenceKinds(any(), any(), any())
     verify(auditService, never()).recordAuditEventLicenceKindUpdated(any(), any(), any(), any(), any(), any())
+  }
+
+  @Test
+  fun `should not update the licence kind for a hard stop licence`() {
+    val licence = createHardStopLicence().copy(eligibleKind = LicenceKind.CRD)
+    val newEligibleKind = LicenceKind.PRRD
+    val updatedLicence = licence.copy(eligibleKind = newEligibleKind)
+    val staff = communityOffenderManager()
+
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(updatedLicence))
+
+    val result = service.updateLicenceKind(licence, newEligibleKind)
+
+    assertThat(result).isEqualTo(updatedLicence)
+    verify(licenceRepository).updateLicenceKinds(licence.id, licence.kind, newEligibleKind)
+    verify(auditService).recordAuditEventLicenceKindUpdated(
+      licence,
+      licence.kind,
+      licence.kind,
+      licence.eligibleKind,
+      newEligibleKind,
+      staff,
+    )
   }
 
   val aCom = communityOffenderManager()
