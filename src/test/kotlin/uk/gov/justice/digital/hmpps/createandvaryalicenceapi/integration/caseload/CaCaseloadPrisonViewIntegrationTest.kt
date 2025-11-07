@@ -72,7 +72,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
       .expectBody(typeReference<List<CaCase>>())
       .returnResult().responseBody!!
 
-    assertThat(caseload).hasSize(4)
+    assertThat(caseload).hasSize(3)
     with(caseload[0]) {
       assertThat(name).isEqualTo("Person Two")
       assertThat(prisonerNumber).isEqualTo("A1234AB")
@@ -93,7 +93,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
       assertThat(releaseDate).isEqualTo("2022-09-29")
       assertThat(releaseDateLabel).isEqualTo("CRD")
     }
-    with(caseload[3]) {
+    with(caseload[2]) {
       assertThat(name).isEqualTo("Person Three")
       assertThat(prisonerNumber).isEqualTo("A1234AC")
       assertThat(licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)

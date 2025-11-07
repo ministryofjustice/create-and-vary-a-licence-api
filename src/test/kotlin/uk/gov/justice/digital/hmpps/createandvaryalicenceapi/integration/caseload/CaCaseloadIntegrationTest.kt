@@ -161,7 +161,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<PrisonCaseAdminSearchResult>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.inPrisonResults).hasSize(3)
+      assertThat(caseload.inPrisonResults).hasSize(2)
       assertThat(caseload.onProbationResults).hasSize(2)
       assertThat(caseload.attentionNeededResults).hasSize(1)
 
@@ -190,6 +190,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
       prisonApiMockServer.getHdcStatuses()
       prisonApiMockServer.stubGetCourtOutcomes()
+      prisonApiMockServer.stubGetSentenceAndRecallTypes()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagersWithoutUserDetails()
@@ -208,8 +209,8 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       assertThat(caseload.inPrisonResults).hasSize(3)
 
       with(caseload.inPrisonResults[1]) {
-        assertThat(name).isEqualTo("Test3 Person3")
-        assertThat(prisonerNumber).isEqualTo("A1234AF")
+        assertThat(name).isEqualTo("Test5 Person5")
+        assertThat(prisonerNumber).isEqualTo("A1234AG")
         assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
         assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
         assertThat(isInHardStopPeriod).isTrue()

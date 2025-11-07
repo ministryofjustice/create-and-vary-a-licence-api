@@ -509,7 +509,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "dateOfBirth": "1987-01-01"
                },
                {
-                  "prisonerNumber": "A1234AF",
+                  "prisonerNumber": "A1234AG",
                   "bookingId": "123",
                   "status": "ACTIVE",
                   "mostSeriousOffence": "Robbery",
@@ -528,8 +528,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "recall": false,
                   "prisonId": "GHI",
                   "bookNumber": "12345C",
-                  "firstName": "Test3",
-                  "lastName": "Person3",
+                  "firstName": "Test5",
+                  "lastName": "Person5",
                   "dateOfBirth": "1987-01-01"
                }
                """
