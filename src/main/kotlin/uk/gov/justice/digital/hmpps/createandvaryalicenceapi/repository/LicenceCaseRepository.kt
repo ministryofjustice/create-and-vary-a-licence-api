@@ -71,10 +71,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           com.username,
           l.typeCode,
           l.reviewDate,
-          l.crn,
-          l.dateCreated,
-          l.approvedByName,
-          l.approvedDate
+          l.crn
         FROM Licence l
             LEFT JOIN l.responsibleCom com
             LEFT JOIN l.updatedBy updatedBy
