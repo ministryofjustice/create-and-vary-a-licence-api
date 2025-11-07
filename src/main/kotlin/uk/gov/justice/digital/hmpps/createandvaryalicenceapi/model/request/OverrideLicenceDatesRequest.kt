@@ -3,10 +3,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotEmpty
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.LocalDate
 
 @Schema(description = "Request object for overriding licence dates")
 data class OverrideLicenceDatesRequest(
+  @field:Schema(description = "The updated licence kind based on the current dates", example = "CRD")
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
+  val updatedKind: LicenceKind,
 
   @field:Schema(description = "The conditional release date", example = "18/06/2022")
   @field:JsonFormat(pattern = "dd/MM/yyyy")

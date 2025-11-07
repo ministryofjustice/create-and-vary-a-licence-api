@@ -16,6 +16,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceStatusRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -24,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 class LicenceOverrideIntegrationTest : IntegrationTestBase() {
@@ -208,13 +210,14 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
     val newSsd = initialLicence.sentenceStartDate?.minusMonths(1)
     val newTussd = initialLicence.topupSupervisionStartDate?.minusDays(5)
 
-    prisonApiClient.stubGetPrisonerDetail(nomsId = initialLicence.nomsId!!)
+    prisonerSearchApiClient.stubSearchPrisonersByNomisIds()
     prisonApiClient.stubGetCourtOutcomes()
 
     webTestClient.put()
       .uri("/licence/id/1/override/dates")
       .bodyValue(
         OverrideLicenceDatesRequest(
+          updatedKind = LicenceKind.CRD,
           conditionalReleaseDate = newCrd,
           actualReleaseDate = initialLicence.actualReleaseDate,
           sentenceStartDate = newSsd,
@@ -248,12 +251,14 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
     val prisonApiClient = PrisonApiMockServer()
+    val prisonerSearchApiClient = PrisonerSearchMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
       prisonApiClient.start()
+      prisonerSearchApiClient.start()
     }
 
     @JvmStatic
@@ -261,6 +266,7 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       govUkApiMockServer.stop()
       prisonApiClient.stop()
+      prisonerSearchApiClient.stop()
     }
   }
 }

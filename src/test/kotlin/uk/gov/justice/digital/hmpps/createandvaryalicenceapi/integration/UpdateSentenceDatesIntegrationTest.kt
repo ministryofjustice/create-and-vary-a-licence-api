@@ -66,7 +66,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
     mockPrisonerSearchResponse(
       SentenceDetail(
-        conditionalReleaseDate = LocalDate.parse("2024-09-08"),
+        conditionalReleaseDate = LocalDate.now().plusDays(8),
         confirmedReleaseDate = LocalDate.parse("2024-09-08"),
         sentenceStartDate = LocalDate.parse("2021-09-11"),
         sentenceExpiryDate = LocalDate.parse("2024-09-11"),
@@ -93,7 +93,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.conditionalReleaseDate).isEqualTo(LocalDate.parse("2024-09-08"))
+    assertThat(result?.conditionalReleaseDate).isEqualTo(LocalDate.now().plusDays(8))
     assertThat(result?.actualReleaseDate).isEqualTo(LocalDate.parse("2024-09-08"))
     assertThat(result?.sentenceStartDate).isEqualTo(LocalDate.parse("2021-09-11"))
     assertThat(result?.sentenceEndDate).isEqualTo(LocalDate.parse("2024-09-11"))
@@ -145,7 +145,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(result?.actualReleaseDate).isEqualTo(LocalDate.parse("2023-09-11"))
     assertThat(result?.sentenceStartDate).isEqualTo(LocalDate.parse("2021-09-11"))
     assertThat(result?.sentenceEndDate).isEqualTo(LocalDate.parse("2024-09-11"))
-    assertThat(result?.licenceStartDate).isEqualTo(LocalDate.parse("2024-08-01"))
+    assertThat(result?.licenceStartDate).isNull()
     assertThat(result?.licenceExpiryDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
@@ -161,7 +161,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetHdcLatest()
     prisonApiMockServer.stubGetCourtOutcomes()
 
-    val postRecallReleaseDate = LocalDate.parse("2025-02-24")
+    val postRecallReleaseDate = LocalDate.now().plusDays(5)
 
     mockPrisonerSearchResponse(
       SentenceDetail(
@@ -207,6 +207,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   }
 
   fun updateHardStopDateScenarios(): List<Arguments> {
+    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     val workingDays = workingDaysService.workingDaysAfter(LocalDate.now())
 
     val tests = mutableListOf<Arguments>()

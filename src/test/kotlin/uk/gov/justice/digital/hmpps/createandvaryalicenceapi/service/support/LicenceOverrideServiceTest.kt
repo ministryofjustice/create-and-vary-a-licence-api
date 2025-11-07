@@ -27,25 +27,23 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.util.Optional
 
@@ -57,9 +55,8 @@ class LicenceOverrideServiceTest {
   private val domainEventsService = mock<DomainEventsService>()
   private val staffRepository = mock<StaffRepository>()
   private val licenceService = mock<LicenceService>()
-  private val cvlRecordService = mock<CvlRecordService>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val prisonApiClient = mock<PrisonApiClient>()
+  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val licenceOverrideService =
     LicenceOverrideService(
       licenceRepository,
@@ -68,9 +65,8 @@ class LicenceOverrideServiceTest {
       domainEventsService,
       staffRepository,
       licenceService,
-      cvlRecordService,
       releaseDateService,
-      prisonApiClient,
+      prisonerSearchApiClient,
     )
 
   val inactiveLicenceA = createCrdLicence().copy(
@@ -405,14 +401,8 @@ class LicenceOverrideServiceTest {
   @Test
   fun `Override dates updates licence dates`() {
     val licence = approvedLicenceA
-    val cvlRecord = CvlRecord(
-      nomisId = approvedLicenceA.nomsId!!,
-      isDueToBeReleasedInTheNextTwoWorkingDays = false,
-      isEligibleForEarlyRelease = false,
-      isInHardStopPeriod = false,
-      licenceType = LicenceType.AP_PSS,
-    )
     val request = OverrideLicenceDatesRequest(
+      updatedKind = LicenceKind.CRD,
       conditionalReleaseDate = LocalDate.now(),
       actualReleaseDate = LocalDate.now(),
       sentenceStartDate = LocalDate.now(),
@@ -427,10 +417,13 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(licence))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(cvlRecord)
-    whenever(licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(licence, request.updatedKind)).thenReturn(licence)
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(newLicenceStartDate)
-    whenever(prisonApiClient.getPrisonerDetail(licence.nomsId!!)).thenReturn(aPrisonApiPrisoner())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!))).thenReturn(
+      listOf(
+        prisonerSearchResult(),
+      ),
+    )
 
     licenceOverrideService.changeDates(
       approvedLicenceA.id,
@@ -474,14 +467,8 @@ class LicenceOverrideServiceTest {
   @Test
   fun `Override dates updates HDC licence dates`() {
     val licence = approvedHdcLicenceA
-    val cvlRecord = CvlRecord(
-      nomisId = licence.nomsId!!,
-      isDueToBeReleasedInTheNextTwoWorkingDays = false,
-      isEligibleForEarlyRelease = false,
-      isInHardStopPeriod = false,
-      licenceType = LicenceType.AP,
-    )
     val request = OverrideLicenceDatesRequest(
+      updatedKind = LicenceKind.HDC,
       conditionalReleaseDate = LocalDate.now(),
       actualReleaseDate = LocalDate.now(),
       sentenceStartDate = LocalDate.now(),
@@ -497,10 +484,13 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(licence))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(cvlRecord)
-    whenever(licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(licence, request.updatedKind)).thenReturn(licence)
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(newLicenceStartDate)
-    whenever(prisonApiClient.getPrisonerDetail(licence.nomsId!!)).thenReturn(aPrisonApiPrisoner())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!))).thenReturn(
+      listOf(
+        prisonerSearchResult(),
+      ),
+    )
 
     licenceOverrideService.changeDates(
       approvedHdcLicenceA.id,
@@ -545,14 +535,8 @@ class LicenceOverrideServiceTest {
   fun `updating user is retained and username is set to SYSTEM_USER when a staff member cannot be found`() {
     val licence = approvedLicenceA.copy(updatedBy = aPreviousUser)
 
-    val cvlRecord = CvlRecord(
-      nomisId = licence.nomsId!!,
-      isDueToBeReleasedInTheNextTwoWorkingDays = false,
-      isEligibleForEarlyRelease = false,
-      isInHardStopPeriod = false,
-      licenceType = LicenceType.PSS,
-    )
     val request = OverrideLicenceDatesRequest(
+      updatedKind = LicenceKind.CRD,
       conditionalReleaseDate = LocalDate.now(),
       actualReleaseDate = LocalDate.now(),
       sentenceStartDate = LocalDate.now(),
@@ -566,10 +550,13 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(null)
-    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(cvlRecord)
-    whenever(licenceService.updateLicenceKind(licence, cvlRecord.eligibleKind)).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(licence, request.updatedKind)).thenReturn(licence)
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.now())
-    whenever(prisonApiClient.getPrisonerDetail(licence.nomsId!!)).thenReturn(aPrisonApiPrisoner())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!))).thenReturn(
+      listOf(
+        prisonerSearchResult(),
+      ),
+    )
 
     licenceOverrideService.changeDates(
       approvedLicenceA.id,

@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.reifySentenceDates
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
@@ -54,12 +53,19 @@ class UpdateSentenceDateService(
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
     val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, currentLicence.probationAreaCode!!)
 
-    val updatedLicence = licenceService.updateLicenceKind(currentLicence, cvlRecord.eligibleKind)
-    val kindForLsdCalculations = selectCorrectKindForHardStopIfNeeded(updatedLicence, cvlRecord)
-    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, kindForLsdCalculations)
+    // If the licence is now ineligible then the LSD will be calculated to be null. This will cause the case to move to the
+    // attention needed tab in the prison caseload and so the prison will correct the dates to make the case eligible again
+    val updatedLicence = if (cvlRecord.isEligible && cvlRecord.eligibleKind != null) {
+      licenceService.updateLicenceKind(
+        currentLicence,
+        cvlRecord.eligibleKind,
+      )
+    } else {
+      currentLicence
+    }
 
+    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, cvlRecord.eligibleKind)
     val sentenceDates = prisoner.sentenceDetail.toSentenceDates()
-
     val dateChanges = currentLicence.getDateChanges(sentenceDates, licenceStartDate)
 
     logUpdate(
@@ -111,19 +117,6 @@ class UpdateSentenceDateService(
       )
       notifyComOfUpdate(updatedLicence, dateChanges, isNotApprovedForHdc)
     }
-  }
-
-  /*
-   * This code is to make sure that hard stop licences do not default to CRD LSD Calculations in getLicenceStartDate
-   * and if they are PRRD the LSD is calculated appropriately
-   */
-  private fun selectCorrectKindForHardStopIfNeeded(
-    licence: Licence,
-    cvlRecord: CvlRecord,
-  ): LicenceKind? = if (licence.kind == HARD_STOP) {
-    cvlRecord.eligibleKind
-  } else {
-    licence.kind
   }
 
   @TimeServedConsiderations("Notify COM of date change event for a licence, if a COM is not set, should this be a team email?")

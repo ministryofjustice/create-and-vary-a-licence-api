@@ -1,4 +1,5 @@
 insert into licence (kind,
+                     eligible_kind,
                      type_code,
                      version,
                      status_code,
@@ -28,7 +29,7 @@ insert into licence (kind,
                      responsible_com_id,
                      created_by_com_id,
                      licence_version)
-values (
+values ('CRD',
         'CRD',
         'AP',
         '1.0',

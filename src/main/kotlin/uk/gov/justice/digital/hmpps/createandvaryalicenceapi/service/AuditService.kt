@@ -340,15 +340,19 @@ class AuditService(
     licence: Licence,
     oldKind: LicenceKind,
     newKind: LicenceKind,
+    oldEligibleKind: LicenceKind?,
+    newEligibleKind: LicenceKind?,
     staffMember: Staff?,
   ) {
-    val summary = "Licence kind updated to $newKind from $oldKind on licence"
+    val summary = "Licence kind updated on licence"
 
     val changes = mapOf(
       "type" to summary,
       "changes" to mapOf(
         "oldKind" to oldKind,
         "newKind" to newKind,
+        "oldEligibleKind" to oldEligibleKind,
+        "newEligibleKind" to newEligibleKind,
       ),
     )
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))

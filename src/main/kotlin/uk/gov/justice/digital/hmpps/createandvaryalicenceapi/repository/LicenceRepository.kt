@@ -214,11 +214,12 @@ interface LicenceRepository :
   @Query(
     """
     UPDATE Licence l
-      SET l.kind= :newKind
-      WHERE l.id= :id
+      SET l.kind = :newKind, 
+          l.eligibleKind = :newEligibleKind
+      WHERE l.id = :id
     """,
   )
-  fun updateLicenceKind(id: Long, newKind: LicenceKind)
+  fun updateLicenceKinds(id: Long, newKind: LicenceKind, newEligibleKind: LicenceKind?)
 }
 
 interface EditedLicenceNotReApproved {

@@ -3774,8 +3774,15 @@ class LicenceServiceTest {
     val result = service.updateLicenceKind(licence, eligibleKind)
 
     assertThat(result).isEqualTo(updatedLicence)
-    verify(licenceRepository).updateLicenceKind(licence.id, eligibleKind)
-    verify(auditService).recordAuditEventLicenceKindUpdated(licence, licence.kind, eligibleKind, staff)
+    verify(licenceRepository).updateLicenceKinds(licence.id, eligibleKind, eligibleKind)
+    verify(auditService).recordAuditEventLicenceKindUpdated(
+      licence,
+      licence.kind,
+      eligibleKind,
+      licence.eligibleKind,
+      eligibleKind,
+      staff,
+    )
   }
 
   @Test
@@ -3790,8 +3797,8 @@ class LicenceServiceTest {
     val result = service.updateLicenceKind(licence, eligibleKind)
 
     assertThat(result).isEqualTo(licence)
-    verify(licenceRepository, never()).updateLicenceKind(any(), any())
-    verify(auditService, never()).recordAuditEventLicenceKindUpdated(any(), any(), any(), any())
+    verify(licenceRepository, never()).updateLicenceKinds(any(), any(), any())
+    verify(auditService, never()).recordAuditEventLicenceKindUpdated(any(), any(), any(), any(), any(), any())
   }
 
   val aCom = communityOffenderManager()
