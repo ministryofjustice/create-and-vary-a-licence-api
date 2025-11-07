@@ -16,11 +16,11 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.NomisLicenceReasonFlag
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.NomisLicenceReasonFlag
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaPrisonCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
@@ -886,10 +886,10 @@ class CaCaseloadServiceTest {
         whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
           .thenReturn(
             listOf(
-              object : NomisLicenceReasonFlag {
-                override val bookingId: String = "1234"
-                override val hasNomisLicence: Boolean = true
-              },
+              NomisLicenceReasonFlag(
+                bookingId = 1234L,
+                hasNomisLicence = true,
+              ),
             ),
           )
 
@@ -956,10 +956,10 @@ class CaCaseloadServiceTest {
         whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
           .thenReturn(
             listOf(
-              object : NomisLicenceReasonFlag {
-                override val bookingId: String = "1234"
-                override val hasNomisLicence: Boolean = true
-              },
+              NomisLicenceReasonFlag(
+                bookingId = 1234L,
+                hasNomisLicence = true,
+              ),
             ),
           )
 
@@ -1026,10 +1026,10 @@ class CaCaseloadServiceTest {
         whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
           .thenReturn(
             listOf(
-              object : NomisLicenceReasonFlag {
-                override val bookingId: String = "1234"
-                override val hasNomisLicence: Boolean = false
-              },
+              NomisLicenceReasonFlag(
+                bookingId = 1234L,
+                hasNomisLicence = false,
+              ),
             ),
           )
 

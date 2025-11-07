@@ -89,12 +89,12 @@ class NotStartedCaseloadService(
         prisonCode = case.nomisRecord.prisonId,
         prisonDescription = case.nomisRecord.prisonName,
         hardStopKind = case.cvlRecord.hardStopKind,
-        hasNomisLicence = nomisLicenceFlags[case.nomisRecord.bookingId] ?: false,
+        hasNomisLicence = nomisLicenceFlags[case.nomisRecord.bookingId?.toLong()] ?: false,
       )
     }
   }
 
-  private fun fetchNomisLicenceFlagsByBookingIds(cases: List<ManagedCaseDto>): Map<String, Boolean> {
+  private fun fetchNomisLicenceFlagsByBookingIds(cases: List<ManagedCaseDto>): Map<Long, Boolean> {
     val bookingIds = cases
       .filter { it.cvlRecord.hardStopKind == TIME_SERVED }
       .mapNotNull { it.nomisRecord.bookingId }

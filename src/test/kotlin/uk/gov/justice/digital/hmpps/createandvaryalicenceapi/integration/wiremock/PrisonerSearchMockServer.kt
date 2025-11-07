@@ -507,6 +507,30 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "firstName": "Test3",
                   "lastName": "Person3",
                   "dateOfBirth": "1987-01-01"
+               },
+               {
+                  "prisonerNumber": "A1234AF",
+                  "bookingId": "123",
+                  "status": "ACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "topUpSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": "${LocalDate.now()}",
+                  "sentenceStartDate": "${LocalDate.now()}",
+                  "confirmedReleaseDate": "${LocalDate.now()}",
+                  "conditionalReleaseDate": "${LocalDate.now()}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "GHI",
+                  "bookNumber": "12345C",
+                  "firstName": "Test3",
+                  "lastName": "Person3",
+                  "dateOfBirth": "1987-01-01"
                }
                """
     if (includeRecall) {

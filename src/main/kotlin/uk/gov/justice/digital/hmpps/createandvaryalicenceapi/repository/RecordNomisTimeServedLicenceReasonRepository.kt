@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicenceReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.NomisLicenceReasonFlag
 
 @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
 @Repository
@@ -16,17 +17,11 @@ interface RecordNomisTimeServedLicenceReasonRepository : JpaRepository<RecordNom
 
   @Query(
     """
-        SELECT r.bookingId,
-        true AS hasLicence
-        FROM RecordNomisTimeServedLicenceReason r
-        WHERE r.bookingId IN :bookingIds
-        GROUP BY r.bookingId
-        """,
+    SELECT new uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.NomisLicenceReasonFlag(r.bookingId, true)
+    FROM RecordNomisTimeServedLicenceReason r
+    WHERE r.bookingId IN :bookingIds
+    GROUP BY r.bookingId
+    """,
   )
   fun getNomisLicenceFlagsByBookingIds(@Param("bookingIds") bookingIds: List<String>): List<NomisLicenceReasonFlag>
-}
-
-interface NomisLicenceReasonFlag {
-  val bookingId: String
-  val hasNomisLicence: Boolean
 }
