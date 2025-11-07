@@ -161,7 +161,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<PrisonCaseAdminSearchResult>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.inPrisonResults).hasSize(2)
+      assertThat(caseload.inPrisonResults).hasSize(3)
       assertThat(caseload.onProbationResults).hasSize(2)
       assertThat(caseload.attentionNeededResults).hasSize(1)
 
@@ -179,6 +179,42 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(licenceStatus).isEqualTo(LicenceStatus.ACTIVE)
         assertThat(tabType).isNull()
         assertThat(isInHardStopPeriod).isFalse()
+      }
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-ca-caseload-licences.sql",
+    )
+    fun successfullyRetrieveTimeServedCaseWithNomisLicence() {
+      prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
+      prisonApiMockServer.getHdcStatuses()
+      prisonApiMockServer.stubGetCourtOutcomes()
+      prisonApiMockServer.stubGetSentenceAndRecallTypes()
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagersWithoutUserDetails()
+
+      val caseload = webTestClient.post()
+        .uri(SEARCH_PRISONERS_CA_CASELOAD)
+        .bodyValue(request)
+        .accept(APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<PrisonCaseAdminSearchResult>())
+        .returnResult().responseBody!!
+
+      assertThat(caseload.inPrisonResults).hasSize(3)
+
+      with(caseload.inPrisonResults[1]) {
+        assertThat(name).isEqualTo("Test5 Person5")
+        assertThat(prisonerNumber).isEqualTo("A1234AG")
+        assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+        assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
+        assertThat(isInHardStopPeriod).isTrue()
+        assertThat(hasNomisLicence).isTrue()
       }
     }
   }
