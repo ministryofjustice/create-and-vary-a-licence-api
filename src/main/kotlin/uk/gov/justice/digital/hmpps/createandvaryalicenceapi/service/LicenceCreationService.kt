@@ -56,6 +56,7 @@ class LicenceCreationService(
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
   private val isTimeServedLogicEnabled: Boolean = false,
   private val telemetryService: TelemetryService,
+  private val recordNomisTimeServedLicenceReasonService: RecordNomisTimeServedLicenceReasonService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -143,7 +144,9 @@ class LicenceCreationService(
     val hardStopKind = cvlRecord.hardStopKind
       ?: error("No hardStopKind on CVL record for $prisonNumber - not eligible for hard stop licence")
 
-    val licence = if (isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED) {
+    val isTimeServedLicenceCreation = isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED
+
+    val licence = if (isTimeServedLicenceCreation) {
       LicenceFactory.createTimeServe(
         licenceType = licenceType,
         eligibleKind = cvlRecord.eligibleKind,
@@ -190,6 +193,15 @@ class LicenceCreationService(
     additionalConditionRepository.saveAllAndFlush(additionalConditions)
 
     recordLicenceCreation(createdBy, createdLicence)
+
+    if (isTimeServedLicenceCreation) {
+      val nomisId = nomisRecord.prisonerNumber
+      val bookingId = nomisRecord.bookingId!!.toLong()
+      val existingReasonForCreatingLicenceInNomis = recordNomisTimeServedLicenceReasonService.findByNomsIdAndBookingId(nomisId, bookingId)
+      if (existingReasonForCreatingLicenceInNomis != null) {
+        recordNomisTimeServedLicenceReasonService.deleteNomisLicenceReason(nomisId, bookingId)
+      }
+    }
 
     return LicenceCreationResponse(createdLicence.id)
   }
