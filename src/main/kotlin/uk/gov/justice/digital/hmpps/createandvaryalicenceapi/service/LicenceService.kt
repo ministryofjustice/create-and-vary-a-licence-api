@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
@@ -51,6 +52,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -161,6 +163,19 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
+      hardStopKind = releaseDateService.getHardStopKind(licence.toSentenceDateHolder()),
+    )
+
+    is TimeServedLicence -> toTimeServed(
+      licence = licence,
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
+      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
+      conditionPolicyData = conditionPolicyData,
+      hardStopKind = releaseDateService.getHardStopKind(licence.toSentenceDateHolder()),
     )
 
     is HdcLicence -> toHdc(
