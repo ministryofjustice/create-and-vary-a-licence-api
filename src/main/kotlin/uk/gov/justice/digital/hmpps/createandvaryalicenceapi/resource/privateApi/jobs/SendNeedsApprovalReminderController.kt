@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateAp
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ProtectedByIngress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.SendNeedsApprovalReminderService
@@ -31,9 +29,8 @@ class SendNeedsApprovalReminderController(private val sendNeedsApprovalReminderS
   @ApiResponses(
     value = [
       ApiResponse(
-        responseCode = "200",
-        description = "Emails sent",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = UnapprovedLicence::class))],
+        responseCode = "204",
+        description = "Emails sent"
       ),
       ApiResponse(
         responseCode = "401",
@@ -42,5 +39,7 @@ class SendNeedsApprovalReminderController(private val sendNeedsApprovalReminderS
       ),
     ],
   )
-  fun notifyProbationOfUnapprovedLicences() = sendNeedsApprovalReminderService.sendEmailsToProbationPractitioner()
+  fun notifyProbationOfUnapprovedLicences() {
+    sendNeedsApprovalReminderService.sendEmailsToProbationPractitioner()
+  }
 }
