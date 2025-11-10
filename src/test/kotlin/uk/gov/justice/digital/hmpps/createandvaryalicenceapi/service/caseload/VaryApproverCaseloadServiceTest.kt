@@ -7,28 +7,27 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceVaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aDeliusUser
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 class VaryApproverCaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
-  private val licenceService = mock<LicenceService>()
+  private val licenceCaseRepository = mock<LicenceCaseRepository>()
 
   private val service = VaryApproverCaseloadService(
     prisonerSearchApiClient,
     deliusApiClient,
-    licenceService,
+    licenceCaseRepository,
   )
 
   @Test
@@ -36,18 +35,16 @@ class VaryApproverCaseloadServiceTest {
     // Given
     val probationAreaCode = "N01"
     val licenceSummaries = listOf(
-      aLicenceSummary(
-        kind = LicenceKind.VARIATION,
+      aLicenceVarayApproverCase(
         type = LicenceType.PSS,
-        status = LicenceStatus.VARIATION_SUBMITTED,
       ),
     )
     val probationCases = listOf(aProbationCase())
 
-    whenever(licenceService.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
     whenever(
       deliusApiClient.getProbationCases(
-        licenceSummaries.map { it.nomisId },
+        licenceSummaries.map { it.prisonNumber!! },
       ),
     ).thenReturn(probationCases)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
@@ -74,7 +71,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       assertThat(probationPractitioner).isEqualTo("Delius User")
     }
-    verify(licenceService).findSubmittedVariationsByRegion(probationAreaCode)
+    verify(licenceCaseRepository).findSubmittedVariationsByRegion(probationAreaCode)
   }
 
   @Test
@@ -82,18 +79,16 @@ class VaryApproverCaseloadServiceTest {
     // Given
     val probationAreaCode = "N01"
     val licenceSummaries = listOf(
-      aLicenceSummary(
-        kind = LicenceKind.VARIATION,
+      aLicenceVarayApproverCase(
         type = LicenceType.PSS,
-        status = LicenceStatus.VARIATION_SUBMITTED,
       ),
     )
     val probationCases = listOf(aProbationCase())
 
-    whenever(licenceService.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
     whenever(
       deliusApiClient.getProbationCases(
-        licenceSummaries.map { it.nomisId },
+        licenceSummaries.map { it.prisonNumber!! },
       ),
     ).thenReturn(probationCases)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
@@ -120,19 +115,16 @@ class VaryApproverCaseloadServiceTest {
     // Given
     val pdus = listOf("N55PDV")
     val licenceSummaries = listOf(
-      aLicenceSummary(
-        kind = LicenceKind.VARIATION,
+      aLicenceVarayApproverCase(
         type = LicenceType.PSS,
-        status = LicenceStatus.VARIATION_SUBMITTED,
       ),
     )
     val probationCases = listOf(aProbationCase())
-    val pduQuery = LicenceQueryObject(statusCodes = listOf(LicenceStatus.VARIATION_SUBMITTED), pdus = pdus)
 
-    whenever(licenceService.findLicencesMatchingCriteria(pduQuery)).thenReturn(licenceSummaries)
+    whenever(licenceCaseRepository.findSubmittedVariationsByPduCodes(pdus)).thenReturn(licenceSummaries)
     whenever(
       deliusApiClient.getProbationCases(
-        licenceSummaries.map { it.nomisId },
+        licenceSummaries.map { it.prisonNumber!! },
       ),
     ).thenReturn(probationCases)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
@@ -159,7 +151,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       assertThat(probationPractitioner).isEqualTo("Delius User")
     }
-    verify(licenceService).findLicencesMatchingCriteria(pduQuery)
+    verify(licenceCaseRepository).findSubmittedVariationsByPduCodes(pdus)
   }
 
   @Test
@@ -167,19 +159,16 @@ class VaryApproverCaseloadServiceTest {
     // Given
     val pdus = listOf("N55PDV")
     val licenceSummaries = listOf(
-      aLicenceSummary(
-        kind = LicenceKind.VARIATION,
+      aLicenceVarayApproverCase(
         type = LicenceType.PSS,
-        status = LicenceStatus.VARIATION_SUBMITTED,
       ),
     )
     val probationCases = listOf(aProbationCase())
-    val pduQuery = LicenceQueryObject(statusCodes = listOf(LicenceStatus.VARIATION_SUBMITTED), pdus = pdus)
 
-    whenever(licenceService.findLicencesMatchingCriteria(pduQuery)).thenReturn(licenceSummaries)
+    whenever(licenceCaseRepository.findSubmittedVariationsByPduCodes(pdus)).thenReturn(licenceSummaries)
     whenever(
       deliusApiClient.getProbationCases(
-        licenceSummaries.map { it.nomisId },
+        licenceSummaries.map { it.prisonNumber!! },
       ),
     ).thenReturn(probationCases)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
@@ -213,8 +202,8 @@ class VaryApproverCaseloadServiceTest {
     }
     assertThat(searchResults.regionCasesResponse).hasSize(0)
 
-    verify(licenceService).findLicencesMatchingCriteria(pduQuery)
-    verify(licenceService, times(0)).findSubmittedVariationsByRegion(any())
+    verify(licenceCaseRepository).findSubmittedVariationsByPduCodes(pdus)
+    verify(licenceCaseRepository, times(0)).findSubmittedVariationsByRegion(any())
   }
 
   @Test
@@ -222,18 +211,16 @@ class VaryApproverCaseloadServiceTest {
     // Given
     val probationAreaCode = "N01"
     val licenceSummaries = listOf(
-      aLicenceSummary(
-        kind = LicenceKind.VARIATION,
+      aLicenceVarayApproverCase(
         type = LicenceType.PSS,
-        status = LicenceStatus.VARIATION_SUBMITTED,
       ),
     )
     val probationCases = listOf(aProbationCase())
 
-    whenever(licenceService.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
     whenever(
       deliusApiClient.getProbationCases(
-        licenceSummaries.map { it.nomisId },
+        licenceSummaries.map { it.prisonNumber!! },
       ),
     ).thenReturn(probationCases)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
@@ -267,8 +254,8 @@ class VaryApproverCaseloadServiceTest {
     }
     assertThat(searchResults.pduCasesResponse).hasSize(0)
 
-    verify(licenceService, times(0)).findLicencesMatchingCriteria(any())
-    verify(licenceService).findSubmittedVariationsByRegion(probationAreaCode)
+    verify(licenceCaseRepository, times(0)).findSubmittedVariationsByPduCodes(any())
+    verify(licenceCaseRepository).findSubmittedVariationsByRegion(probationAreaCode)
   }
 
   @Test
@@ -277,20 +264,17 @@ class VaryApproverCaseloadServiceTest {
     val pdus = listOf("N55PDV")
     val probationAreaCode = "N01"
     val licenceSummaries = listOf(
-      aLicenceSummary(
-        kind = LicenceKind.VARIATION,
+      aLicenceVarayApproverCase(
         type = LicenceType.PSS,
-        status = LicenceStatus.VARIATION_SUBMITTED,
       ),
     )
     val probationCases = listOf(aProbationCase())
-    val pduQuery = LicenceQueryObject(statusCodes = listOf(LicenceStatus.VARIATION_SUBMITTED), pdus = pdus)
 
-    whenever(licenceService.findLicencesMatchingCriteria(pduQuery)).thenReturn(licenceSummaries)
-    whenever(licenceService.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(licenceCaseRepository.findSubmittedVariationsByPduCodes(pdus)).thenReturn(licenceSummaries)
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
     whenever(
       deliusApiClient.getProbationCases(
-        licenceSummaries.map { it.nomisId },
+        licenceSummaries.map { it.prisonNumber!! },
       ),
     ).thenReturn(probationCases)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
@@ -335,8 +319,8 @@ class VaryApproverCaseloadServiceTest {
       assertThat(probationPractitioner).isEqualTo("Delius User")
     }
 
-    verify(licenceService).findLicencesMatchingCriteria(pduQuery)
-    verify(licenceService).findSubmittedVariationsByRegion(probationAreaCode)
+    verify(licenceCaseRepository).findSubmittedVariationsByPduCodes(pdus)
+    verify(licenceCaseRepository).findSubmittedVariationsByRegion(probationAreaCode)
   }
 
   @Test
@@ -345,20 +329,17 @@ class VaryApproverCaseloadServiceTest {
     val pdus = listOf("N55PDV")
     val probationAreaCode = "N01"
     val licenceSummaries = listOf(
-      aLicenceSummary(
-        kind = LicenceKind.VARIATION,
+      aLicenceVarayApproverCase(
         type = LicenceType.PSS,
-        status = LicenceStatus.VARIATION_SUBMITTED,
       ),
     )
     val probationCases = listOf(aProbationCase())
-    val pduQuery = LicenceQueryObject(statusCodes = listOf(LicenceStatus.VARIATION_SUBMITTED), pdus = pdus)
 
-    whenever(licenceService.findLicencesMatchingCriteria(pduQuery)).thenReturn(licenceSummaries)
-    whenever(licenceService.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(licenceCaseRepository.findSubmittedVariationsByPduCodes(pdus)).thenReturn(licenceSummaries)
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
     whenever(
       deliusApiClient.getProbationCases(
-        licenceSummaries.map { it.nomisId },
+        licenceSummaries.map { it.prisonNumber!! },
       ),
     ).thenReturn(probationCases)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
@@ -384,4 +365,18 @@ class VaryApproverCaseloadServiceTest {
     assertThat(searchResults.pduCasesResponse).isEmpty()
     assertThat(searchResults.regionCasesResponse).isEmpty()
   }
+
+  fun aLicenceVarayApproverCase(
+    id: Long = 1,
+    type: LicenceType = LicenceType.AP_PSS,
+    prisonNumber: String = "AB1234E",
+    licenceStartDate: LocalDate = LocalDate.now().plusDays(10),
+  ) = LicenceVaryApproverCase(
+    licenceId = id,
+    comUsername = "joebloggs",
+    licenceStartDate = licenceStartDate,
+    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+    prisonNumber = prisonNumber,
+    typeCode = type,
+  )
 }

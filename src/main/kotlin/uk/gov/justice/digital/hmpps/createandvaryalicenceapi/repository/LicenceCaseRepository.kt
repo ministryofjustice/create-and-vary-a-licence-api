@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceSubmitName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceVaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
@@ -198,4 +199,38 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
     nativeQuery = true,
   )
   fun findSubmittedByNames(licenceIds: List<Long>): List<LicenceSubmitName>
+
+  @Query(
+    """
+        SELECT 
+          l.licenceStartDate,
+          l.idInternal,
+          l.nomsId as prisonNumber,
+          com.username,
+          l.typeCode,
+          l.dateCreated
+        FROM Licence l
+          LEFT JOIN l.responsibleCom com
+        WHERE l.probationPduCode in :probationPduCodes and l.statusCode = 'VARIATION_SUBMITTED'
+        ORDER BY l.idInternal
+    """,
+  )
+  fun findSubmittedVariationsByPduCodes(probationPduCodes: List<String>?): List<LicenceVaryApproverCase>
+
+  @Query(
+    """
+        SELECT 
+          l.licenceStartDate,
+          l.idInternal,
+          l.nomsId as prisonNumber,
+          com.username,
+          l.typeCode,
+          l.dateCreated
+        FROM Licence l
+          LEFT JOIN l.responsibleCom com
+        WHERE l.probationAreaCode = :probationAreaCode and l.statusCode = 'VARIATION_SUBMITTED' 
+           ORDER BY l.idInternal
+    """,
+  )
+  fun findSubmittedVariationsByRegion(probationAreaCode: String): List<LicenceVaryApproverCase>
 }
