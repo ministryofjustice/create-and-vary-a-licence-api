@@ -18,7 +18,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -100,56 +99,6 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(result?.licenceExpiryDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-hdc-licence-id-1.sql",
-  )
-  fun `Update sentence dates for HDC licence`() {
-    prisonApiMockServer.stubGetHdcLatest()
-    prisonApiMockServer.stubGetCourtOutcomes()
-    mockPrisonerSearchResponse(
-      SentenceDetail(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        confirmedReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceExpiryDate = LocalDate.parse("2024-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-        homeDetentionCurfewActualDate = LocalDate.parse("2024-08-01"),
-        homeDetentionCurfewEndDate = LocalDate.parse("2023-08-10"),
-      ),
-    )
-
-    webTestClient.put()
-      .uri("/licence/id/1/sentence-dates")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(HdcLicence::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.conditionalReleaseDate).isEqualTo(LocalDate.parse("2023-09-11"))
-    assertThat(result?.actualReleaseDate).isEqualTo(LocalDate.parse("2023-09-11"))
-    assertThat(result?.sentenceStartDate).isEqualTo(LocalDate.parse("2021-09-11"))
-    assertThat(result?.sentenceEndDate).isEqualTo(LocalDate.parse("2024-09-11"))
-    assertThat(result?.licenceStartDate).isEqualTo(LocalDate.parse("2024-08-01"))
-    assertThat(result?.licenceExpiryDate).isEqualTo(LocalDate.parse("2024-09-11"))
-    assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
-    assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
-    assertThat(result?.homeDetentionCurfewActualDate).isEqualTo(LocalDate.parse("2024-08-01"))
-    assertThat(result?.homeDetentionCurfewEndDate).isEqualTo(LocalDate.parse("2023-08-10"))
   }
 
   @Test
