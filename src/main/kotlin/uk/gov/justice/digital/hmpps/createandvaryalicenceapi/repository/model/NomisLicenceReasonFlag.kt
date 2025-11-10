@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model
 
 data class NomisLicenceReasonFlag(
   val bookingId: Long,

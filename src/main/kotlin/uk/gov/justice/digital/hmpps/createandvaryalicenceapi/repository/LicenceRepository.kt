@@ -1,20 +1,17 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
-import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCountsDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.EditedLicenceNotReApproved
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.PrisonNumberAndStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
-
-interface PrisonNumberAndStatus {
-  val prisonNumber: String
-  val statusCode: LicenceStatus
-}
 
 @Repository
 interface LicenceRepository :
@@ -171,7 +168,7 @@ interface LicenceRepository :
 
   @Query(
     """
-    SELECT new uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TeamCountsDto(l.probationTeamCode, COUNT(*))
+    SELECT l.probationTeamCode, COUNT(*) as count
         FROM Licence l
         LEFT JOIN Licence l2 ON l.id = l2.variationOfId
         WHERE l.kind IN (
@@ -209,42 +206,3 @@ interface LicenceRepository :
   )
   fun findLicencesToBatchUpdateLsd(numberOfLicences: Long, lastUpdatedLicenceId: Long?): List<Licence>
 }
-
-interface EditedLicenceNotReApproved {
-  fun getCrn(): String?
-  fun getForename(): String?
-  fun getSurname(): String?
-  fun getComFirstName(): String?
-  fun getComLastName(): String?
-  fun getComEmail(): String?
-}
-
-@Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
-data class UnapprovedLicence(
-  @field:Schema(description = "The Crime Reference Number", example = "Z882661")
-  val crn: String? = null,
-
-  @field:Schema(description = "The prisoner's first name", example = "Jim")
-  val forename: String? = null,
-
-  @field:Schema(description = "The prisoner's last name", example = "Smith")
-  val surname: String? = null,
-
-  @field:Schema(description = "The COM's first name", example = "Joseph")
-  val comFirstName: String? = null,
-
-  @field:Schema(description = "The COM's last name", example = "Bloggs")
-  val comLastName: String? = null,
-
-  @field:Schema(description = "The COM's email address", example = "jbloggs@probation.gov.uk")
-  val comEmail: String? = null,
-)
-
-@Schema(description = "Describes a team and the respective count of their cases that need review")
-data class TeamCountsDto(
-  @field:Schema(description = "The team code", example = "ABC123")
-  val teamCode: String,
-
-  @field:Schema(description = "A count of cases that need to be reviewed", example = "42")
-  val count: Long,
-)
