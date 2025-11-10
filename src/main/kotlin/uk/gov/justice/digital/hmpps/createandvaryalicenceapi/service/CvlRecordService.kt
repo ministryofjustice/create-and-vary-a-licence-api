@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
@@ -15,7 +14,6 @@ import java.time.LocalDate
 class CvlRecordService(
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
-  private val workingDaysService: WorkingDaysService,
 ) {
 
   fun getCvlRecord(prisoner: PrisonerSearchPrisoner, areaCode: String): CvlRecord {
@@ -69,7 +67,7 @@ class CvlRecordService(
 
   private fun getRecallLicenceType(nomisRecord: PrisonerSearchPrisoner, licenceStartDate: LocalDate?) = when {
     // If release at SLED, go directly into PSS period
-    licenceStartDate == workingDaysService.getLastWorkingDay(nomisRecord.licenceExpiryDate) -> PSS
+    releaseDateService.isReleaseAtLed(licenceStartDate, nomisRecord.licenceExpiryDate) -> PSS
 
     // If early release, the period spent on early release is AP
     else -> AP_PSS

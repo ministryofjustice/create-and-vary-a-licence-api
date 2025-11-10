@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Eligibility
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -17,15 +16,15 @@ import java.time.LocalDate
 class LicenceTypeTest {
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val workingDaysService = mock<WorkingDaysService>()
 
-  private val service = CvlRecordService(eligibilityService, releaseDateService, workingDaysService)
+  private val service = CvlRecordService(eligibilityService, releaseDateService)
 
   @BeforeEach
   fun reset() {
     whenever(eligibilityService.getEligibilityAssessments(any(), any())).thenReturn(
       mapOf(prisonerSearchResult().prisonerNumber to anEligibilityAssessment()),
     )
+    whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
   }
 
   @Test
@@ -90,7 +89,7 @@ class LicenceTypeTest {
     whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(prisonerSearchResult().prisonerNumber to LocalDate.of(2021, 10, 22)),
     )
-    whenever(workingDaysService.getLastWorkingDay(any())).thenReturn(LocalDate.of(2021, 10, 22))
+    whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(true)
 
     val nomisRecord = prisonerSearchResult().copy(
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
@@ -108,7 +107,7 @@ class LicenceTypeTest {
     whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(prisonerSearchResult().prisonerNumber to LocalDate.of(2021, 10, 21)),
     )
-    whenever(workingDaysService.getLastWorkingDay(any())).thenReturn(LocalDate.of(2021, 10, 21))
+    whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(true)
 
     val nomisRecord = prisonerSearchResult().copy(
       licenceExpiryDate = LocalDate.of(2021, 10, 22),

@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.LocalDate
@@ -16,7 +15,6 @@ import java.time.LocalDate
 class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
   private val releaseDateService: ReleaseDateService,
-  private val workingDaysService: WorkingDaysService,
   private val clock: Clock,
   @param:Value("\${recall.enabled}") private val recallEnabled: Boolean = false,
   @param:Value("\${recall.prisons}") private val recallEnabledPrisons: List<String> = emptyList(),
@@ -144,7 +142,7 @@ class EligibilityService(
     prisoner.topupSupervisionExpiryDate != null && prisoner.topupSupervisionExpiryDate.isAfter(prisoner.licenceExpiryDate) -> false
     else -> {
       val releaseDate = releaseDateService.calculatePrrdLicenceStartDate(prisoner)
-      releaseDate == workingDaysService.getLastWorkingDay(prisoner.licenceExpiryDate)
+      releaseDateService.isReleaseAtLed(releaseDate, prisoner.licenceExpiryDate)
     }
   }
 

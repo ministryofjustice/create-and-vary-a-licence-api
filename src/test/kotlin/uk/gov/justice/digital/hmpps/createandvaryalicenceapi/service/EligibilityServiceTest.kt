@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import java.time.Clock
@@ -25,8 +24,7 @@ import java.time.ZoneId
 class EligibilityServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val workingDaysService = mock<WorkingDaysService>()
-  private var service = EligibilityService(prisonApiClient, releaseDateService, workingDaysService, clock, false)
+  private var service = EligibilityService(prisonApiClient, releaseDateService, clock, false)
 
   @Nested
   inner class CrdCases {
@@ -376,7 +374,7 @@ class EligibilityServiceTest {
   inner class PrrdCases {
     @BeforeEach
     fun setup() {
-      service = EligibilityService(prisonApiClient, releaseDateService, workingDaysService, clock, true)
+      service = EligibilityService(prisonApiClient, releaseDateService, clock, true)
 
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
@@ -386,8 +384,8 @@ class EligibilityServiceTest {
           ),
         ),
       )
-      whenever(releaseDateService.calculatePrrdLicenceStartDate(any())).thenReturn(aRecallPrisonerSearchResult.postRecallReleaseDate)
-      whenever(workingDaysService.getLastWorkingDay(aRecallPrisonerSearchResult.licenceExpiryDate)).thenReturn(aRecallPrisonerSearchResult.licenceExpiryDate)
+      whenever(releaseDateService.calculatePrrdLicenceStartDate(any())).thenReturn(aRecallPrisonerSearchResult.licenceExpiryDate)
+      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
     }
 
     @Test
@@ -635,7 +633,7 @@ class EligibilityServiceTest {
 
     @Test
     fun `Person who would be on an AP licence being released at SLED - not eligible for CVL`() {
-      whenever(releaseDateService.calculatePrrdLicenceStartDate(any())).thenReturn(aRecallPrisonerSearchResult.licenceExpiryDate)
+      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(true)
       val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, "")
 
       assertThat(result.isEligible).isFalse()
@@ -656,7 +654,6 @@ class EligibilityServiceTest {
       service = EligibilityService(
         prisonApiClient,
         releaseDateService,
-        workingDaysService,
         clock,
         false,
         eligiblePrisonCodes,
@@ -671,7 +668,7 @@ class EligibilityServiceTest {
         ),
       )
       whenever(releaseDateService.calculatePrrdLicenceStartDate(any())).thenReturn(aRecallPrisonerSearchResult.postRecallReleaseDate)
-      whenever(workingDaysService.getLastWorkingDay(aRecallPrisonerSearchResult.licenceExpiryDate)).thenReturn(aRecallPrisonerSearchResult.licenceExpiryDate)
+      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
     }
 
     @Test

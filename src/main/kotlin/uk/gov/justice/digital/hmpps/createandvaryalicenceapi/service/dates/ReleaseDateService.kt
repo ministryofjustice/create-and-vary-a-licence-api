@@ -115,6 +115,12 @@ class ReleaseDateService(
     }
   }
 
+  fun isReleaseAtLed(releaseDate: LocalDate?, licenceExpiryDate: LocalDate?): Boolean {
+    if (releaseDate == null) return false
+
+    return releaseDate == workingDaysService.getLastWorkingDay(licenceExpiryDate)
+  }
+
   private fun isTimeServed(
     sentenceStartDate: LocalDate?,
     confirmedReleaseDate: LocalDate?,
