@@ -287,6 +287,64 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
+    "classpath:test_data/seed-record-nomis-licence-reason-id-1.sql",
+    "classpath:test_data/seed-prison-case-administrator.sql",
+  )
+  fun `Create a time served licence after the user initially selects they wish to create the licence in NOMISs`() {
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(0)
+    assertThat(testRepository.getAuditEventCount()).isEqualTo(0)
+
+    // Verify the record exists before deletion
+    val currentReason = testRepository.findRecordNomisTimeServedLicenceReasonByNomsIdAndBookingId("A1234AA", 123)
+    assertThat(currentReason?.reason).isEqualTo("Time served licence created for conditional release")
+
+    val result = webTestClient.post()
+      .uri("/licence/create")
+      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = HARD_STOP))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceCreationResponse::class.java)
+      .returnResult().responseBody!!
+
+    log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
+
+    assertThat(result.licenceId).isGreaterThan(0L)
+
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(1)
+    val licence = licences.first() as TimeServedLicence
+    assertThat(licence.kind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
+    assertThat(licence.createdBy!!.id).isEqualTo(9L)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(9)
+    assertThat(testRepository.getAuditEventCount()).isEqualTo(2)
+
+    // Verify the record is deleted
+    val deleted = testRepository.findRecordNomisTimeServedLicenceReasonByNomsIdAndBookingId("A1234AA", 123, false)
+    assertThat(deleted).isNull()
+
+    // Verify audit event exists
+    val auditEvent = testRepository.findAllAuditEventsByLicenceIdNull().first()
+    assertThat(auditEvent).isNotNull
+    assertThat(auditEvent.summary).isEqualTo("Deleted NOMIS licence reason")
+    assertThat(auditEvent.changes).containsEntry("reason (deleted)", "Time served licence created for conditional release")
+    assertThat(auditEvent.username).isEqualTo("pca")
+  }
+
+  @Test
+  @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
     "classpath:test_data/seed-timed-out-licence.sql",
   )

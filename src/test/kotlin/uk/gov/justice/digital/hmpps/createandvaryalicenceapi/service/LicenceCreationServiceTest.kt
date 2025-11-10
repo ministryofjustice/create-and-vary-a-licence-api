@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.RecordNomisLicenceReasonResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
@@ -44,7 +45,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -68,6 +68,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
+import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -87,10 +88,10 @@ class LicenceCreationServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
-  private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
+  private val recordNomisTimeServedLicenceReasonService = mock<RecordNomisTimeServedLicenceReasonService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -109,6 +110,7 @@ class LicenceCreationServiceTest {
     cvlRecordService,
     isTimeServedLogicEnabled = true,
     telemetryService,
+    recordNomisTimeServedLicenceReasonService,
   )
 
   @Nested
@@ -1335,7 +1337,12 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.PSS))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.PSS,
+        ),
+      )
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1367,7 +1374,12 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.AP_PSS))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.AP_PSS,
+        ),
+      )
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1717,6 +1729,42 @@ class LicenceCreationServiceTest {
         assertThat(pnc).isEqualTo(aProbationCaseResult.pncNumber)
         assertThat(responsibleCom).isNull()
       }
+    }
+
+    @Test
+    fun `service deletes licence created in NOMIS reason if it exists upon time served licence creation`() {
+      val aPrisonerSearchResult =
+        prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
+
+      val existingLicence = RecordNomisLicenceReasonResponse(
+        nomsId = aPrisonerSearchResult.prisonerNumber,
+        bookingId = aPrisonerSearchResult.bookingId!!.toLong(),
+        reason = "Reason",
+        prisonCode = "PRISON1",
+        dateCreated = LocalDateTime.now(),
+        dateLastUpdated = LocalDateTime.now(),
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+          hardStopKind = LicenceKind.TIME_SERVED,
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
+      whenever(recordNomisTimeServedLicenceReasonService.findByNomsIdAndBookingId(any(), any())).thenReturn(
+        existingLicence,
+      )
+
+      service.createHardStopLicence(PRISON_NUMBER)
+
+      verify(recordNomisTimeServedLicenceReasonService, times(1)).deleteNomisLicenceReason(
+        existingLicence.nomsId,
+        existingLicence.bookingId,
+      )
     }
   }
 
