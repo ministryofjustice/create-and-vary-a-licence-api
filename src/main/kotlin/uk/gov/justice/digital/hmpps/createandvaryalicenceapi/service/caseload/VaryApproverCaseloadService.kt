@@ -1,10 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceVaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -12,54 +11,44 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
 class VaryApproverCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val deliusApiClient: DeliusApiClient,
-  private val licenceService: LicenceService,
+  private val licenceCaseRepository: LicenceCaseRepository,
 ) {
-  fun findLicences(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest) = if (varyApproverCaseloadSearchRequest.probationPduCodes != null) {
-    licenceService.findLicencesMatchingCriteria(
-      LicenceQueryObject(
-        statusCodes = listOf(LicenceStatus.VARIATION_SUBMITTED),
-        pdus = varyApproverCaseloadSearchRequest.probationPduCodes,
-      ),
-    )
-  } else if (varyApproverCaseloadSearchRequest.probationAreaCode != null) {
-    licenceService.findSubmittedVariationsByRegion(varyApproverCaseloadSearchRequest.probationAreaCode)
-  } else {
-    emptyList()
+  fun findLicencesCasesForProbation(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<LicenceVaryApproverCase> {
+    if (varyApproverCaseloadSearchRequest.probationPduCodes != null) {
+      return licenceCaseRepository.findSubmittedVariationsByPduCodes(probationPduCodes = varyApproverCaseloadSearchRequest.probationPduCodes)
+    } else if (varyApproverCaseloadSearchRequest.probationAreaCode != null) {
+      return licenceCaseRepository.findSubmittedVariationsByRegion(varyApproverCaseloadSearchRequest.probationAreaCode)
+    }
+    return emptyList()
   }
 
-  fun searchLicences(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): Pair<List<LicenceSummary>, List<LicenceSummary>> {
+  fun searchLicences(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): Pair<List<LicenceVaryApproverCase>, List<LicenceVaryApproverCase>> {
     val pduLicences = if (varyApproverCaseloadSearchRequest.probationPduCodes != null) {
-      licenceService.findLicencesMatchingCriteria(
-        LicenceQueryObject(
-          statusCodes = listOf(LicenceStatus.VARIATION_SUBMITTED),
-          pdus = varyApproverCaseloadSearchRequest.probationPduCodes,
-        ),
-      )
+      licenceCaseRepository.findSubmittedVariationsByPduCodes(probationPduCodes = varyApproverCaseloadSearchRequest.probationPduCodes)
     } else {
       emptyList()
     }
     val regionLicences = if (varyApproverCaseloadSearchRequest.probationAreaCode != null) {
-      licenceService.findSubmittedVariationsByRegion(varyApproverCaseloadSearchRequest.probationAreaCode)
+      licenceCaseRepository.findSubmittedVariationsByRegion(varyApproverCaseloadSearchRequest.probationAreaCode)
     } else {
       emptyList()
     }
     return Pair(pduLicences, regionLicences)
   }
 
-  private fun mapLicencesToOffenders(licences: List<LicenceSummary>): List<AcoCase> {
-    val nomisIds = licences.map { it.nomisId }
-    val deliusRecords = deliusApiClient.getProbationCases(nomisIds)
-    val nomisRecords = prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)
+  private fun mapLicencesToOffenders(licences: List<LicenceVaryApproverCase>): List<AcoCase> {
+    val prisonNumbers = licences.map { it.prisonNumber!! }
+    val deliusRecords = deliusApiClient.getProbationCases(prisonNumbers)
+    val nomisRecords = prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
 
     return licences.mapNotNull { licence ->
-      val nomisRecord = nomisRecords.find { it.prisonerNumber == licence.nomisId }
-      val deliusRecord = deliusRecords.find { it.nomisId == licence.nomisId }
+      val nomisRecord = nomisRecords.find { it.prisonerNumber == licence.prisonNumber }
+      val deliusRecord = deliusRecords.find { it.nomisId == licence.prisonNumber }
       if (nomisRecord != null && deliusRecord != null) {
         AcoCase(
           crn = deliusRecord.crn,
@@ -108,7 +97,7 @@ class VaryApproverCaseloadService(
       name = "${acoCase.nomisRecord.firstName} ${acoCase.nomisRecord.lastName}".trim()
         .convertToTitleCase(),
       crnNumber = acoCase.crn,
-      licenceType = licence.licenceType,
+      licenceType = licence.typeCode,
       variationRequestDate = licence.dateCreated?.toLocalDate(),
       releaseDate = licence.licenceStartDate,
       probationPractitioner = acoCase.probationPractitioner,
@@ -130,17 +119,17 @@ class VaryApproverCaseloadService(
   }
 
   private fun processLicences(
-    licences: List<LicenceSummary>,
+    licenceCases: List<LicenceVaryApproverCase>,
     searchTerm: String?,
   ): List<VaryApproverCase> {
-    val cases = mapLicencesToOffenders(licences)
+    val cases = mapLicencesToOffenders(licenceCases)
     val enrichedCases = addProbationPractitionerCases(cases)
     return buildCaseload(enrichedCases, searchTerm)
   }
 
   fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
-    val licences: List<LicenceSummary> = findLicences(varyApproverCaseloadSearchRequest)
-    return processLicences(licences, varyApproverCaseloadSearchRequest.searchTerm)
+    val licenceCases = findLicencesCasesForProbation(varyApproverCaseloadSearchRequest)
+    return processLicences(licenceCases, varyApproverCaseloadSearchRequest.searchTerm)
   }
 
   fun searchForOffenderOnVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): VaryApproverCaseloadSearchResponse {
@@ -156,6 +145,6 @@ private fun applySort(cases: List<VaryApproverCase>): List<VaryApproverCase> = c
 private data class AcoCase(
   val crn: String,
   val nomisRecord: PrisonerSearchPrisoner,
-  val licence: LicenceSummary,
+  val licence: LicenceVaryApproverCase,
   val probationPractitioner: String? = null,
 )
