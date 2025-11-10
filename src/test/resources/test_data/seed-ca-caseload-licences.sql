@@ -30,3 +30,22 @@ values (1, 'CRD', '1.0', '100', 'A1234AA', 'BAI', 1, 1, 1, 'APPROVED', 'Person',
        (8, 'CRD', '1.0', '800', 'B1234BC', 'ABC', 1, 1, 1, 'VARIATION_SUBMITTED', 'Person', 'Eight', '2024-03-14',
         'AP','2022-08-25');
 
+
+INSERT INTO record_nomis_time_served_licence_reason (
+    noms_id,
+    booking_id,
+    reason,
+    prison_code,
+    updated_by_ca_id,
+    date_created,
+    date_last_updated
+)
+VALUES (
+           'A1234AF',
+           '123',
+           'Time served licence created for conditional release',
+           'MDI',
+           1,
+           CURRENT_TIMESTAMP,
+           CURRENT_TIMESTAMP
+       );

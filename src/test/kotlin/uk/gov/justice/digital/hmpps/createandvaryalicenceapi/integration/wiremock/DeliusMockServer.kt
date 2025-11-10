@@ -431,6 +431,30 @@ class DeliusMockServer : WireMockServer(8093) {
                     "code": "probationArea-code-3", 
                     "description": "probationArea-description-3"
                   }
+                },
+                {
+                  "code": "staff-code-4",
+                  "case": {
+                    "crn": "B12345",
+                    "nomisId": "A1234AG"
+                  },
+                  "name": {
+                    "forename": "Test4",
+                    "surname": "Test4"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-4",
+                    "description": "staff-description-4",
+                    "borough": { "code": "borough-code-4", "description": "borough-description-4" },
+                    "district": { "code": "district-code-4", "description": "district-description-4" },
+                    "provider": { "code": "probationArea-code-4", "description": "probationArea-description-4" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-4", 
+                    "description": "probationArea-description-4"
+                  },
+                  "unallocated": false
                 }]
               """.trimMargin(),
             ).withStatus(200),
