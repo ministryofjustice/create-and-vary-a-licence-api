@@ -3,15 +3,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.stubbing.OngoingStubbing
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
@@ -37,14 +36,6 @@ class ElectronicMonitoringProgrammeServiceTest {
   private val staffRepository = mock<StaffRepository>()
   private val aLicenceEntity = TestData.createCrdLicence()
   private val aCom = communityOffenderManager()
-  private val serviceWithFeatureEnabled = ElectronicMonitoringProgrammeService(
-    licenceRepository,
-    policyService,
-    auditService,
-    staffRepository,
-    electronicMonitoringResponseHandlingEnabled = true,
-  )
-
   private val service = ElectronicMonitoringProgrammeService(
     licenceRepository,
     policyService,
@@ -60,6 +51,15 @@ class ElectronicMonitoringProgrammeServiceTest {
     whenever(securityContext.authentication).thenReturn(authentication)
     whenever(policyService.getConfigForCondition(any(), any())).thenReturn(CONDITION_CONFIG)
 
+    whenever(
+      policyService.getConditionsRequiringElectronicMonitoringResponse(
+        aLicenceEntity.version!!,
+        conditionCodes,
+      ),
+    ).thenReturn(
+      listOf(policyApCondition),
+    )
+
     SecurityContextHolder.setContext(securityContext)
   }
 
@@ -68,125 +68,94 @@ class ElectronicMonitoringProgrammeServiceTest {
     reset(licenceRepository, policyService, auditService, staffRepository)
   }
 
-  @Nested
-  inner class `electronic monitoring programme` {
-    @Test
-    fun `update electronic monitoring programme details`() {
-      val electronicMonitoringProvider = ElectronicMonitoringProvider(
+  @Test
+  fun `update electronic monitoring programme details`() {
+    val crdLicence = aLicenceEntity.copy(
+      electronicMonitoringProvider = ElectronicMonitoringProvider(
         isToBeTaggedForProgramme = false,
         programmeName = "Old Programme",
         licence = aLicenceEntity,
-      )
+      ),
+    )
 
-      val crdLicence = aLicenceEntity.copy(electronicMonitoringProvider = electronicMonitoringProvider)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(crdLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(crdLicence))
-      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+    val request = UpdateElectronicMonitoringProgrammeRequest(
+      isToBeTaggedForProgramme = true,
+      programmeName = "Programme Name",
+    )
 
-      val request = UpdateElectronicMonitoringProgrammeRequest(
+    service.updateElectronicMonitoringProgramme(1L, request)
+
+    verify(licenceRepository, times(1)).saveAndFlush(crdLicence)
+
+    assertThat(crdLicence.electronicMonitoringProvider!!.isToBeTaggedForProgramme).isTrue()
+    assertThat(crdLicence.electronicMonitoringProvider!!.programmeName).isEqualTo("Programme Name")
+  }
+
+  @Test
+  fun `Adds EM provider when required`() {
+    assertThat(aLicenceEntity.electronicMonitoringProvider).isNull()
+
+    whenCheckingIfElectronicMonitoringProviderIsRequired(aLicenceEntity).thenReturn(true)
+
+    service.createMonitoringProviderIfRequired(aLicenceEntity, conditionCodes)
+
+    assertThat(aLicenceEntity.electronicMonitoringProvider).isNotNull()
+  }
+
+  @Test
+  fun `Adds EM provider when not required`() {
+    assertThat(aLicenceEntity.electronicMonitoringProvider).isNull()
+
+    whenCheckingIfElectronicMonitoringProviderIsRequired(aLicenceEntity).thenReturn(false)
+
+    service.createMonitoringProviderIfRequired(aLicenceEntity, conditionCodes)
+
+    assertThat(aLicenceEntity.electronicMonitoringProvider).isNull()
+  }
+
+  @Test
+  fun `Removes EM provider when no longer required`() {
+    val licence = aLicenceEntity.copy(
+      electronicMonitoringProvider = ElectronicMonitoringProvider(
         isToBeTaggedForProgramme = true,
         programmeName = "Programme Name",
-      )
+        licence = aLicenceEntity,
+      ),
+    )
 
-      service.updateElectronicMonitoringProgramme(1L, request)
+    whenCheckingIfElectronicMonitoringProviderIsRequired(licence).thenReturn(false)
 
-      val licenceCaptor = ArgumentCaptor.forClass(CrdLicence::class.java)
+    service.removeMonitoringProviderIfNoLongerRequired(licence, conditionCodes)
 
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
-      assertThat(licenceCaptor.value.electronicMonitoringProvider)
-        .extracting("isToBeTaggedForProgramme", "programmeName")
-        .containsExactly(
-          true,
-          "Programme Name",
-        )
-    }
+    assertThat(licence.electronicMonitoringProvider).isNull()
   }
 
-  @Nested
-  inner class `feature toggle electronicMonitoringResponseHandlingEnabled` {
+  @Test
+  fun `Does not remove EM provider when still required`() {
+    val licence = aLicenceEntity.copy(
+      electronicMonitoringProvider = ElectronicMonitoringProvider(
+        isToBeTaggedForProgramme = true,
+        programmeName = "Programme Name",
+        licence = aLicenceEntity,
+      ),
+    )
 
-    @Test
-    fun `should handle updated conditions when feature toggle is enabled`() {
-      val licenceEntity = aLicenceEntity
+    whenCheckingIfElectronicMonitoringProviderIsRequired(licence).thenReturn(true)
 
-      whenever(
-        policyService.isElectronicMonitoringResponseRequired(
-          conditionCodes,
-          licenceEntity.version!!,
-        ),
-      ).thenReturn(true)
+    service.removeMonitoringProviderIfNoLongerRequired(licence, conditionCodes)
 
-      serviceWithFeatureEnabled.handleUpdatedConditionsIfEnabled(licenceEntity, conditionCodes)
-
-      verify(policyService, times(1)).isElectronicMonitoringResponseRequired(conditionCodes, licenceEntity.version!!)
-    }
-
-    @Test
-    fun `should not handle updated conditions when feature toggle is disabled`() {
-      val licenceEntity = aLicenceEntity
-
-      service.handleUpdatedConditionsIfEnabled(licenceEntity, conditionCodes)
-
-      verify(policyService, times(0)).isElectronicMonitoringResponseRequired(any(), any())
-    }
-
-    @Test
-    fun `should handle removed conditions when feature toggle is enabled`() {
-      val licenceEntity = aLicenceEntity
-
-      whenever(
-        policyService.getConditionsRequiringElectronicMonitoringResponse(
-          licenceEntity.version!!,
-          conditionCodes,
-        ),
-      ).thenReturn(
-        listOf(policyApCondition),
-      )
-      whenever(
-        policyService.isElectronicMonitoringResponseRequired(
-          licenceEntity.additionalConditions.map { it.conditionCode }
-            .toSet(),
-          licenceEntity.version!!,
-        ),
-      ).thenReturn(true)
-
-      serviceWithFeatureEnabled.handleRemovedConditionsIfEnabled(licenceEntity, conditionCodes)
-
-      verify(
-        policyService,
-        times(1),
-      ).isElectronicMonitoringResponseRequired(
-        licenceEntity.additionalConditions.map { it.conditionCode }.toSet(),
-        licenceEntity.version!!,
-      )
-    }
-
-    @Test
-    fun `should not handle removed conditions when feature toggle is disabled`() {
-      val licenceEntity = aLicenceEntity
-
-      whenever(
-        policyService.getConditionsRequiringElectronicMonitoringResponse(
-          licenceEntity.version!!,
-          conditionCodes,
-        ),
-      ).thenReturn(
-        listOf(policyApCondition),
-      )
-      whenever(
-        policyService.isElectronicMonitoringResponseRequired(
-          licenceEntity.additionalConditions.map { it.conditionCode }
-            .toSet(),
-          licenceEntity.version!!,
-        ),
-      ).thenReturn(true)
-
-      service.handleRemovedConditionsIfEnabled(licenceEntity, conditionCodes)
-
-      verify(policyService, times(0)).isElectronicMonitoringResponseRequired(any(), any())
-    }
+    assertThat(licence.electronicMonitoringProvider).isNull()
   }
+
+  private fun whenCheckingIfElectronicMonitoringProviderIsRequired(licenceEntity: CrdLicence): OngoingStubbing<Boolean> = whenever(
+    policyService.isElectronicMonitoringResponseRequired(
+      conditionCodes,
+      licenceEntity.version!!,
+    ),
+  )
 
   private companion object {
     val CONDITION_CONFIG = POLICY_V2_1.allAdditionalConditions().first()
