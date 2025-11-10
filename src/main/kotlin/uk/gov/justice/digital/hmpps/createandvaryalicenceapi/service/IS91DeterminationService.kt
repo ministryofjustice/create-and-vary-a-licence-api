@@ -10,16 +10,11 @@ class IS91DeterminationService(
 ) {
 
   private companion object IS91Constants {
-    val OFFENCE_DESCRIPTION = "ILLEGAL IMMIGRANT/DETAINEE"
+    const val OFFENCE_DESCRIPTION = "ILLEGAL IMMIGRANT/DETAINEE"
     val RESULT_CODES = listOf("3006", "4022", "5500", "5502")
   }
 
-  fun isIS91Case(prisoner: PrisonerSearchPrisoner): Boolean {
-    if (prisoner.mostSeriousOffence == OFFENCE_DESCRIPTION) {
-      return true
-    }
-    return isBookingWithIS91Outcome(prisoner.bookingId?.toLong())
-  }
+  fun isIS91Case(prisoner: PrisonerSearchPrisoner) = getIS91AndExtraditionBookingIds(listOf(prisoner)).isNotEmpty()
 
   fun getIS91AndExtraditionBookingIds(prisoners: List<PrisonerSearchPrisoner>): List<Long> {
     val (immigrationDetainees, nonImmigrationDetainees) = prisoners.partition { it.mostSeriousOffence == OFFENCE_DESCRIPTION }
@@ -31,13 +26,5 @@ class IS91DeterminationService(
   private fun bookingsWithIS91Outcomes(bookingIds: List<Long>): List<Long> {
     val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(bookingIds, RESULT_CODES)
     return courtEventOutcomes.map { it.bookingId }
-  }
-
-  private fun isBookingWithIS91Outcome(bookingId: Long?): Boolean {
-    if (bookingId == null) {
-      return false
-    }
-    val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(listOf(bookingId), RESULT_CODES)
-    return courtEventOutcomes.isNotEmpty()
   }
 }

@@ -31,7 +31,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Creat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -110,7 +109,6 @@ class LicenceController(
     request: CreateLicenceRequest,
   ): LicenceCreationResponse = when (request.type) {
     HARD_STOP -> licenceCreationService.createHardStopLicence(request.nomsId)
-    HDC -> licenceCreationService.createHdcLicence(request.nomsId)
     else -> licenceCreationService.createLicence(request.nomsId)
   }
 
