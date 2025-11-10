@@ -25,7 +25,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetrySe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCreateCaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
@@ -44,7 +43,6 @@ class ComCreateCaseloadServiceTest {
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
   private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
-  private val releaseDateService = mock<ReleaseDateService>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
 
@@ -53,7 +51,6 @@ class ComCreateCaseloadServiceTest {
     deliusApiClient,
     licenceCaseRepository,
     hdcService,
-    releaseDateService,
     cvlRecordService,
     telemetryService,
   )
@@ -1385,7 +1382,6 @@ class ComCreateCaseloadServiceTest {
     conditionalReleaseDate = conditionalReleaseDate,
     actualReleaseDate = confirmedReleaseDate,
     licenceStartDate = licenceStartDate,
-    dateCreated = LocalDateTime.now(),
     forename = null,
     surname = null,
     versionOfId = versionOfId,
@@ -1394,8 +1390,6 @@ class ComCreateCaseloadServiceTest {
     updatedByFirstName = "firstName",
     updatedByLastName = "lastName",
     reviewDate = reviewDate,
-    approvedByName = "approver name",
-    approvedDate = LocalDateTime.now(),
   )
 
   private fun aManagedOffenderCrn(nomisId: String? = "ABC123"): ManagedOffenderCrn = ManagedOffenderCrn(

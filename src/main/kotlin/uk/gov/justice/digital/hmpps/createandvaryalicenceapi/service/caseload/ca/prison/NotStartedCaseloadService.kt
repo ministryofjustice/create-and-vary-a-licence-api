@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import java.time.Clock
@@ -31,6 +33,7 @@ class NotStartedCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
+  private val licenceRepository: RecordNomisTimeServedLicenceReasonRepository,
 ) {
   fun findNotStartedCases(
     licences: List<LicenceCaCase>,
@@ -58,34 +61,48 @@ class NotStartedCaseloadService(
 
   private fun createNotStartedLicenceForCase(
     cases: List<ManagedCaseDto>,
-  ): List<CaCase> = cases.map { case ->
-    // Default status (if not overridden below) will show the case as clickable on case lists
-    var licenceStatus = NOT_STARTED
+  ): List<CaCase> {
+    val nomisLicenceFlags = fetchNomisLicenceFlagsByBookingIds(cases)
 
-    if (case.cvlRecord.isInHardStopPeriod) {
-      licenceStatus = TIMED_OUT
+    return cases.map { case ->
+      var licenceStatus = NOT_STARTED
+      if (case.cvlRecord.isInHardStopPeriod) {
+        licenceStatus = TIMED_OUT
+      }
+
+      CaCase(
+        kind = case.cvlRecord.eligibleKind,
+        name = "${case.nomisRecord.firstName} ${case.nomisRecord.lastName}".convertToTitleCase(),
+        prisonerNumber = case.nomisRecord.prisonerNumber,
+        releaseDate = case.cvlRecord.licenceStartDate,
+        releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(case.cvlRecord.licenceStartDate, case.nomisRecord),
+        licenceStatus = licenceStatus,
+        nomisLegalStatus = case.nomisRecord.legalStatus,
+        isInHardStopPeriod = case.cvlRecord.isInHardStopPeriod,
+        tabType = Tabs.determineCaViewCasesTab(
+          case.cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
+          case.cvlRecord.licenceStartDate,
+          licenceCaCase = null,
+          clock,
+        ),
+        probationPractitioner = case.probationPractitioner,
+        prisonCode = case.nomisRecord.prisonId,
+        prisonDescription = case.nomisRecord.prisonName,
+        hardStopKind = case.cvlRecord.hardStopKind,
+        hasNomisLicence = nomisLicenceFlags[case.nomisRecord.bookingId?.toLong()] ?: false,
+      )
     }
+  }
 
-    CaCase(
-      kind = case.cvlRecord.eligibleKind,
-      name = case.nomisRecord.let { "${it.firstName} ${it.lastName}".convertToTitleCase() },
-      prisonerNumber = case.nomisRecord.prisonerNumber,
-      releaseDate = case.cvlRecord.licenceStartDate,
-      releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(case.cvlRecord.licenceStartDate, case.nomisRecord),
-      licenceStatus = licenceStatus,
-      nomisLegalStatus = case.nomisRecord.legalStatus,
-      isInHardStopPeriod = case.cvlRecord.isInHardStopPeriod,
-      tabType = Tabs.determineCaViewCasesTab(
-        case.cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
-        case.cvlRecord.licenceStartDate,
-        licenceCaCase = null,
-        clock,
-      ),
-      probationPractitioner = case.probationPractitioner,
-      prisonCode = case.nomisRecord.prisonId,
-      prisonDescription = case.nomisRecord.prisonName,
-      hardStopKind = case.cvlRecord.hardStopKind,
-    )
+  private fun fetchNomisLicenceFlagsByBookingIds(cases: List<ManagedCaseDto>): Map<Long, Boolean> {
+    val bookingIds = cases
+      .filter { it.cvlRecord.hardStopKind == TIME_SERVED }
+      .mapNotNull { it.nomisRecord.bookingId }
+
+    if (bookingIds.isEmpty()) return emptyMap()
+
+    return licenceRepository.getNomisLicenceFlagsByBookingIds(bookingIds)
+      .associate { it.bookingId to it.hasNomisLicence }
   }
 
   private fun filterOffendersEligibleForLicence(offenders: List<ManagedCaseDto>): List<ManagedCaseDto> {

@@ -10,11 +10,11 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryStaffCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryTeamCaseload
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -31,11 +31,11 @@ import java.time.LocalDateTime
 
 class ComVaryCaseloadServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
-  private val licenceService = mock<LicenceService>()
+  private val licenceCaseRepository = mock<LicenceCaseRepository>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val telemetryService = mock<TelemetryService>()
 
-  private val service = ComVaryCaseloadService(deliusApiClient, licenceService, releaseDateService, telemetryService)
+  private val service = ComVaryCaseloadService(deliusApiClient, licenceCaseRepository, releaseDateService, telemetryService)
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
   private val tenDaysFromNow = LocalDate.now().plusDays(10)
@@ -43,7 +43,7 @@ class ComVaryCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(deliusApiClient, licenceService)
+    reset(deliusApiClient, licenceCaseRepository)
   }
 
   @Test
@@ -57,9 +57,9 @@ class ComVaryCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -107,16 +107,16 @@ class ComVaryCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
           licenceStatus = LicenceStatus.ACTIVE,
           comUsername = "johndoe",
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -164,16 +164,16 @@ class ComVaryCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
           licenceStatus = LicenceStatus.ACTIVE,
           comUsername = "johndoe",
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
@@ -226,35 +226,31 @@ class ComVaryCaseloadServiceTest {
       deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.VARIATION,
-          licenceType = LicenceType.PSS,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "joebloggs",
           licenceStartDate = tenDaysFromNow,
           forename = "ABCX XYZ",
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12349",
           nomisId = "AB1234F",
           kind = LicenceKind.VARIATION,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
           forename = "ABC XYZ",
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12350",
           nomisId = "AB1234G",
           kind = LicenceKind.VARIATION,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = elevenDaysFromNow,
         ),
@@ -300,16 +296,16 @@ class ComVaryCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
           licenceStatus = LicenceStatus.ACTIVE,
           licenceStartDate = tenDaysFromNow,
           comUsername = "johndoe",
-          isReviewNeeded = true,
+          reviewDate = null,
         ),
       ),
     )
@@ -367,35 +363,33 @@ class ComVaryCaseloadServiceTest {
       deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.VARIATION,
-          licenceType = LicenceType.PSS,
+          typeCode = LicenceType.PSS,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "joebloggs",
           licenceStartDate = tenDaysFromNow,
           forename = "ABCX XYZ",
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12349",
           nomisId = "AB1234F",
           kind = LicenceKind.VARIATION,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
           forename = "ABC XYZ",
         ),
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12350",
           nomisId = "AB1234G",
           kind = LicenceKind.VARIATION,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = elevenDaysFromNow,
         ),
@@ -477,17 +471,16 @@ class ComVaryCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceSummary(
+        createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
           licenceStatus = LicenceStatus.ACTIVE,
-          licenceExpiryDate = elevenDaysFromNow,
           comUsername = "johndoe",
           licenceStartDate = LocalDate.now(),
-          isReviewNeeded = true,
+          reviewDate = null,
         ),
       ),
     )
@@ -543,42 +536,40 @@ class ComVaryCaseloadServiceTest {
     }
   }
 
-  private fun createLicenceSummary(
+  private fun createLicenceComCase(
     crn: String,
     nomisId: String,
-    licenceType: LicenceType = LicenceType.AP,
+    typeCode: LicenceType = LicenceType.AP,
     licenceStatus: LicenceStatus,
     kind: LicenceKind = LicenceKind.CRD,
-    licenceExpiryDate: LocalDate? = null,
     comUsername: String? = null,
+    sentenceStartDate: LocalDate? = null,
     conditionalReleaseDate: LocalDate? = null,
+    confirmedReleaseDate: LocalDate? = null,
     licenceStartDate: LocalDate? = null,
-    isReviewNeeded: Boolean = false,
-    forename: String? = null,
-  ): LicenceSummary = LicenceSummary(
+    versionOfId: Long? = null,
+    reviewDate: LocalDateTime? = LocalDateTime.now(),
+    forename: String = "forename",
+    surname: String = "surname",
+  ) = LicenceComCase(
     crn = crn,
-    nomisId = nomisId,
+    prisonNumber = nomisId,
     kind = kind,
     licenceId = 1,
-    licenceType = licenceType,
-    licenceStatus = licenceStatus,
-    licenceExpiryDate = licenceExpiryDate,
+    typeCode = typeCode,
+    statusCode = licenceStatus,
     comUsername = comUsername,
-    isReviewNeeded = isReviewNeeded,
+    sentenceStartDate = sentenceStartDate,
     conditionalReleaseDate = conditionalReleaseDate,
-    actualReleaseDate = null,
+    actualReleaseDate = confirmedReleaseDate,
     licenceStartDate = licenceStartDate,
-    dateCreated = LocalDateTime.now(),
-    updatedByFullName = "X Y",
-    bookingId = null,
-    dateOfBirth = null,
     forename = forename,
-    surname = null,
-    prisonCode = null,
-    prisonDescription = null,
-    probationLauCode = null,
-    probationPduCode = null,
-    probationAreaCode = null,
-    probationTeamCode = null,
+    surname = surname,
+    versionOfId = versionOfId,
+    postRecallReleaseDate = LocalDate.now(),
+    homeDetentionCurfewActualDate = LocalDate.now(),
+    updatedByFirstName = "firstName",
+    updatedByLastName = "lastName",
+    reviewDate = reviewDate,
   )
 }
