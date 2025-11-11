@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model
 
-
 data class UnapprovedLicence(
   val crn: String? = null,
   val forename: String? = null,

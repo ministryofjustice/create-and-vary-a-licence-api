@@ -30,7 +30,7 @@ class SendNeedsApprovalReminderController(private val sendNeedsApprovalReminderS
     value = [
       ApiResponse(
         responseCode = "204",
-        description = "Emails sent"
+        description = "Emails sent",
       ),
       ApiResponse(
         responseCode = "401",

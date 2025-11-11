@@ -10,9 +10,9 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.EditedLicenceNotReApproved
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
 class SendNeedsApprovalReminderServiceTest {
