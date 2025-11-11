@@ -141,7 +141,7 @@ class LicenceOverrideService(
 
     val updatedLicence = licenceService.updateLicenceKind(licence, request.updatedKind)
     val licenceStartDate =
-      releaseDateService.getLicenceStartDate(prisonerSearchPrisonerOverriddenDates, request.updatedKind)
+      releaseDateService.getLicenceStartDate(prisonerSearchPrisonerOverriddenDates, updatedLicence.eligibleKind)
 
     log.info(
       buildString {
