@@ -31,7 +31,7 @@ values (1, 'CRD', '1.0', '100', 'A1234AA', 'BAI', 1, 1, 1, 'APPROVED', 'Person',
         'AP','2022-08-25');
 
 
-INSERT INTO record_nomis_time_served_licence_reason (
+INSERT INTO time_served_external_records (
     noms_id,
     booking_id,
     reason,

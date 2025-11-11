@@ -5,30 +5,30 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicenceReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecords
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.TimeServedExternalRecordsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.RecordNomisLicenceReasonResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.TimeServedExternalRecordsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
 
 @Service
-class RecordNomisTimeServedLicenceReasonService(
-  private val licenceRepository: RecordNomisTimeServedLicenceReasonRepository,
+class TimeServedExternalRecordsService(
+  private val licenceRepository: TimeServedExternalRecordsRepository,
   private val staffRepository: StaffRepository,
   private val auditEventRepository: AuditEventRepository,
 ) {
 
   @Transactional
-  fun recordNomisLicenceReason(request: RecordNomisLicenceReasonRequest) {
+  fun createTimeServedExternalRecord(request: TimeServedExternalRecordsRequest) {
     val staff = getCurrentStaff()
 
     val licenceRecord = licenceRepository.saveAndFlush(
-      RecordNomisTimeServedLicenceReason(
+      TimeServedExternalRecords(
         nomsId = request.nomsId,
         bookingId = request.bookingId,
         reason = request.reason,
@@ -38,8 +38,8 @@ class RecordNomisTimeServedLicenceReasonService(
     )
 
     saveAuditEvent(
-      summary = "Recorded NOMIS licence reason",
-      detail = "Created NOMIS licence record: ID=${licenceRecord.id}",
+      summary = "Recorded TimeServed External Record Reason",
+      detail = "Created TimeServed External Record: ID=${licenceRecord.id}",
       staff = staff,
       changes = mapOf(
         "nomsId" to licenceRecord.nomsId,
@@ -51,9 +51,9 @@ class RecordNomisTimeServedLicenceReasonService(
   }
 
   @Transactional
-  fun updateNomisLicenceReason(nomsId: String, bookingId: Long, request: UpdateNomisLicenceReasonRequest) {
+  fun updateTimeServedExternalRecord(nomsId: String, bookingId: Long, request: UpdateNomisLicenceReasonRequest) {
     val licence = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
-      ?: throw EntityNotFoundException("Reason record with nomsId $nomsId and bookingId $bookingId not found")
+      ?: throw EntityNotFoundException("TimeServed External Record with nomsId $nomsId and bookingId $bookingId not found")
 
     val staff = getCurrentStaff()
     val oldReason = licence.reason
@@ -65,8 +65,8 @@ class RecordNomisTimeServedLicenceReasonService(
     val updatedLicence = licenceRepository.saveAndFlush(licence)
 
     saveAuditEvent(
-      summary = "Updated NOMIS licence reason",
-      detail = "Updated NOMIS licence record: ID=${updatedLicence.id}",
+      summary = "Updated TimeServed External Record reason",
+      detail = "Updated TimeServed External Record: ID=${updatedLicence.id}",
       staff = staff,
       changes = mapOf(
         "reason (old)" to oldReason,
@@ -79,9 +79,9 @@ class RecordNomisTimeServedLicenceReasonService(
   }
 
   @Transactional(readOnly = true)
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): RecordNomisLicenceReasonResponse? = licenceRepository
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecordsResponse? = licenceRepository
     .findByNomsIdAndBookingId(nomsId, bookingId)?.let {
-      RecordNomisLicenceReasonResponse(
+      TimeServedExternalRecordsResponse(
         nomsId = it.nomsId,
         bookingId = it.bookingId,
         reason = it.reason,
@@ -92,7 +92,7 @@ class RecordNomisTimeServedLicenceReasonService(
     }
 
   @Transactional
-  fun deleteNomisLicenceReason(nomsId: String, bookingId: Long) {
+  fun deleteTimeServedExternalRecord(nomsId: String, bookingId: Long) {
     val reasonEntity = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
       ?: return
 

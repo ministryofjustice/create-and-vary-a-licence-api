@@ -18,17 +18,17 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.TimeServedExternalRecordsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.RecordNomisLicenceReasonResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.TimeServedExternalRecordsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RecordNomisTimeServedLicenceReasonService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TimeServedExternalRecordsService
 
-@Tag(name = Tags.NON_CVL_LICENCE_REASON)
+@Tag(name = Tags.TIME_SERVED_EXTERNAL_RECORDS)
 @RestController
-@RequestMapping("/time-served/nomis/licence/reason", produces = [MediaType.APPLICATION_JSON_VALUE])
-class RecordNomisTimeServedLicenceReasonController(
-  private val recordNomisTimeServedLicenceReasonService: RecordNomisTimeServedLicenceReasonService,
+@RequestMapping("/time-served/external-records", produces = [MediaType.APPLICATION_JSON_VALUE])
+class TimeServedExternalRecordsController(
+  private val timeServedExternalRecordsService: TimeServedExternalRecordsService,
 ) {
 
   @PostMapping
@@ -46,15 +46,15 @@ class RecordNomisTimeServedLicenceReasonController(
       ApiResponse(responseCode = "403", description = "Forbidden", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
     ],
   )
-  fun recordNomisLicenceReason(
-    @Valid @RequestBody body: RecordNomisLicenceReasonRequest,
-  ) = recordNomisTimeServedLicenceReasonService.recordNomisLicenceReason(body)
+  fun createTimeServedExternalRecord(
+    @Valid @RequestBody body: TimeServedExternalRecordsRequest,
+  ) = timeServedExternalRecordsService.createTimeServedExternalRecord(body)
 
   @PutMapping("/{nomsId}/{bookingId}")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Updates an existing NOMIS Time Served Licence record.",
-    description = "Updates the NOMIS Time Served Licence details. Requires ROLE_CVL_ADMIN.",
+    summary = "Updates an existing Time Served External Record.",
+    description = "Updates the Time Served External Record Reason. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
@@ -66,11 +66,11 @@ class RecordNomisTimeServedLicenceReasonController(
       ApiResponse(responseCode = "404", description = "Record not found", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
     ],
   )
-  fun updateNomisLicenceReason(
+  fun updateTimeServedExternalRecord(
     @PathVariable("nomsId") nomsId: String,
     @PathVariable("bookingId") bookingId: Long,
     @Valid @RequestBody body: UpdateNomisLicenceReasonRequest,
-  ) = recordNomisTimeServedLicenceReasonService.updateNomisLicenceReason(nomsId, bookingId, body)
+  ) = timeServedExternalRecordsService.updateTimeServedExternalRecord(nomsId, bookingId, body)
 
   @GetMapping(
     value = ["/{nomsId}/{bookingId}"],
@@ -78,13 +78,13 @@ class RecordNomisTimeServedLicenceReasonController(
   )
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Retrieve the recorded reason for creating a licence in NOMIS",
-    description = "Fetches the reason record for a given NOMIS ID and booking ID. Returns null if no record exists. Requires ROLE_CVL_ADMIN.",
+    summary = "Retrieve the timeserved external record for creating a licence in NOMIS",
+    description = "Fetches the timeserved external record for a given NOMIS ID and booking ID. Returns null if no record exists. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
-      ApiResponse(responseCode = "200", description = "The reason record was retrieved successfully (or null if not found)", content = [Content(mediaType = "application/json", schema = Schema(implementation = RecordNomisLicenceReasonResponse::class))]),
+      ApiResponse(responseCode = "200", description = "The timeserved external record was retrieved successfully (or null if not found)", content = [Content(mediaType = "application/json", schema = Schema(implementation = TimeServedExternalRecordsResponse::class))]),
       ApiResponse(responseCode = "400", description = "Bad request, invalid parameters", content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]),
       ApiResponse(
         responseCode = "401",
@@ -98,8 +98,8 @@ class RecordNomisTimeServedLicenceReasonController(
       ),
     ],
   )
-  fun getNomisLicenceReason(
+  fun getTimeServedExternalRecord(
     @PathVariable nomsId: String,
     @PathVariable bookingId: Long,
-  ): RecordNomisLicenceReasonResponse? = recordNomisTimeServedLicenceReasonService.findByNomsIdAndBookingId(nomsId, bookingId)
+  ): TimeServedExternalRecordsResponse? = timeServedExternalRecordsService.findByNomsIdAndBookingId(nomsId, bookingId)
 }

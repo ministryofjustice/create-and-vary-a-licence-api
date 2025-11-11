@@ -16,12 +16,12 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.NomisLicenceReasonFlag
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.TimeServedExternalRecordsFlag
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaPrisonCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -72,7 +72,7 @@ class CaCaseloadServiceTest {
   private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
   private val cvlRecordService = mock<CvlRecordService>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
-  private val licenceRepository = mock<RecordNomisTimeServedLicenceReasonRepository>()
+  private val licenceRepository = mock<TimeServedExternalRecordsRepository>()
   private val telemetryService = Mockito.mock<TelemetryService>()
 
   private val service = CaCaseloadService(
@@ -886,7 +886,7 @@ class CaCaseloadServiceTest {
         whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
           .thenReturn(
             listOf(
-              NomisLicenceReasonFlag(
+              TimeServedExternalRecordsFlag(
                 bookingId = 1234L,
                 hasNomisLicence = true,
               ),
@@ -956,7 +956,7 @@ class CaCaseloadServiceTest {
         whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
           .thenReturn(
             listOf(
-              NomisLicenceReasonFlag(
+              TimeServedExternalRecordsFlag(
                 bookingId = 1234L,
                 hasNomisLicence = true,
               ),
@@ -1026,7 +1026,7 @@ class CaCaseloadServiceTest {
         whenever(licenceRepository.getNomisLicenceFlagsByBookingIds(any<List<String>>()))
           .thenReturn(
             listOf(
-              NomisLicenceReasonFlag(
+              TimeServedExternalRecordsFlag(
                 bookingId = 1234L,
                 hasNomisLicence = false,
               ),

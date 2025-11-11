@@ -284,7 +284,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-record-nomis-licence-reason-id-1.sql",
+    "classpath:test_data/seed-time-served-external-records-id-1.sql",
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
   fun `Create a time served licence after the user initially selects they wish to create the licence in NOMISs`() {
@@ -299,7 +299,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(testRepository.getAuditEventCount()).isEqualTo(0)
 
     // Verify the record exists before deletion
-    val currentReason = testRepository.findRecordNomisTimeServedLicenceReasonByNomsIdAndBookingId("A1234AA", 123)
+    val currentReason = testRepository.findTimeServedExternalRecordByNomsIdAndBookingId("A1234AA", 123)
     assertThat(currentReason?.reason).isEqualTo("Time served licence created for conditional release")
 
     val result = webTestClient.post()
@@ -329,7 +329,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(testRepository.getAuditEventCount()).isEqualTo(2)
 
     // Verify the record is deleted
-    val deleted = testRepository.findRecordNomisTimeServedLicenceReasonByNomsIdAndBookingId("A1234AA", 123, false)
+    val deleted = testRepository.findTimeServedExternalRecordByNomsIdAndBookingId("A1234AA", 123, false)
     assertThat(deleted).isNull()
 
     // Verify audit event exists
