@@ -169,7 +169,7 @@ class LicenceTypeOverrideServiceTest {
         assertThat(firstValue.typeCode).isEqualTo(AP)
         assertThat(firstValue.standardConditions.filter { it.conditionType == "AP" }).hasSize(9)
         assertThat(firstValue.standardConditions.filter { it.conditionType == "PSS" }).isEmpty()
-        assertThat(firstValue.additionalConditions.filter { it.conditionType == "AP" }).hasSize(51)
+        assertThat(firstValue.additionalConditions.filter { it.conditionType == "AP" }).hasSize(63)
         assertThat(firstValue.additionalConditions.filter { it.conditionType == "PSS" }).isEmpty()
       }
       argumentCaptor<AuditEvent>().apply {
@@ -290,7 +290,7 @@ class LicenceTypeOverrideServiceTest {
         assertThat(firstValue.summary).isEqualTo("Licence type overridden for John Smith: from AP to PSS: Test change to PSS")
         assertThat(firstValue.changes).containsEntry("oldType", "AP")
         assertThat(firstValue.changes).containsEntry("newType", "PSS")
-        assertThat((firstValue.changes as Map<String, List<Any>>)["deletedAdditionalConditions"]).hasSize(51)
+        assertThat((firstValue.changes as Map<String, List<Any>>)["deletedAdditionalConditions"]).hasSize(63)
       }
     }
 
@@ -319,7 +319,7 @@ class LicenceTypeOverrideServiceTest {
         assertThat(firstValue.summary).isEqualTo("Licence type overridden for John Smith: from AP_PSS to PSS: Test change to PSS")
         assertThat(firstValue.changes).containsEntry("oldType", "AP_PSS")
         assertThat(firstValue.changes).containsEntry("newType", "PSS")
-        assertThat((firstValue.changes as Map<String, List<Any>>)["deletedAdditionalConditions"]).hasSize(51)
+        assertThat((firstValue.changes as Map<String, List<Any>>)["deletedAdditionalConditions"]).hasSize(63)
       }
     }
 
@@ -414,7 +414,7 @@ class LicenceTypeOverrideServiceTest {
         assertThat(firstValue.standardConditions).hasSize(17)
         assertThat(firstValue.standardConditions.filter { it.conditionType == "AP" }).hasSize(9)
         assertThat(firstValue.standardConditions.filter { it.conditionType == "PSS" }).hasSize(8)
-        assertThat(firstValue.additionalConditions.filter { it.conditionType == "AP" }).hasSize(51)
+        assertThat(firstValue.additionalConditions.filter { it.conditionType == "AP" }).hasSize(63)
         assertThat(firstValue.additionalConditions.filter { it.conditionType == "PSS" }).isEmpty()
       }
       argumentCaptor<AuditEvent>().apply {
