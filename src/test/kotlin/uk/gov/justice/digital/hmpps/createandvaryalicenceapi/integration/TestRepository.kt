@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.assertNotNull
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.jdbc.core.JdbcTemplate
@@ -13,10 +12,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicenceReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecords
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
 import java.util.Optional
 
 @Repository
@@ -54,8 +54,8 @@ interface TestAdditionalConditionRepository : JpaRepository<AdditionalCondition,
 interface TestAddressRepository : JpaRepository<Address, Long>
 
 @Repository
-interface TestRecordNomisTimeServedLicenceReasonRepository : JpaRepository<RecordNomisTimeServedLicenceReason, Long> {
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): RecordNomisTimeServedLicenceReason?
+interface TestTimeServedExternalRecordsRepository : JpaRepository<TimeServedExternalRecords, Long> {
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecords?
 }
 
 @Component
@@ -69,7 +69,7 @@ class TestRepository(
   private val bespokeConditionRepository: TestBespokeConditionRepository,
   private val additionalConditionRepository: TestAdditionalConditionRepository,
   private val standardConditionRepository: StandardConditionRepository,
-  private val recordNomisTimeServedLicenceReasonRepository: TestRecordNomisTimeServedLicenceReasonRepository,
+  private val timeServedExternalRecordsRepository: TimeServedExternalRecordsRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -140,8 +140,8 @@ class TestRepository(
     return list
   }
 
-  fun findRecordNomisTimeServedLicenceReasonByNomsIdAndBookingId(nomsId: String, bookingId: Long, assertNotNull: Boolean = true): RecordNomisTimeServedLicenceReason? {
-    val reason = recordNomisTimeServedLicenceReasonRepository.findByNomsIdAndBookingId(nomsId, bookingId)
+  fun findTimeServedExternalRecordByNomsIdAndBookingId(nomsId: String, bookingId: Long, assertNotNull: Boolean = true): TimeServedExternalRecords? {
+    val reason = timeServedExternalRecordsRepository.findByNomsIdAndBookingId(nomsId, bookingId)
     if (assertNotNull) assertThat(reason).isNotNull
     return reason
   }
