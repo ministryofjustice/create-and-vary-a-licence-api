@@ -9,11 +9,10 @@ INSERT INTO record_nomis_time_served_licence_reason (
 )
 VALUES (
            'A1234AA',
-           123456,
+           123,
            'Time served licence created for conditional release',
            'MDI',
            1,
            CURRENT_TIMESTAMP,
            CURRENT_TIMESTAMP
        );
-

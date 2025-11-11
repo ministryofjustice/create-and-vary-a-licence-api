@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import java.time.LocalDate
 
 object SentenceDateHolderAdapter {
@@ -16,15 +15,6 @@ object SentenceDateHolderAdapter {
   }
 
   fun Licence.toSentenceDateHolder() = object : SentenceDateHolder {
-    override val conditionalReleaseDate = this@toSentenceDateHolder.conditionalReleaseDate
-    override val sentenceStartDate = this@toSentenceDateHolder.sentenceStartDate
-    override val actualReleaseDate = this@toSentenceDateHolder.actualReleaseDate
-    override val licenceStartDate = this@toSentenceDateHolder.licenceStartDate
-    override val homeDetentionCurfewActualDate = this@toSentenceDateHolder.homeDetentionCurfewActualDate
-    override val postRecallReleaseDate = this@toSentenceDateHolder.postRecallReleaseDate
-  }
-
-  fun LicenceSummary.toSentenceDateHolder() = object : SentenceDateHolder {
     override val conditionalReleaseDate = this@toSentenceDateHolder.conditionalReleaseDate
     override val sentenceStartDate = this@toSentenceDateHolder.sentenceStartDate
     override val actualReleaseDate = this@toSentenceDateHolder.actualReleaseDate

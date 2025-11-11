@@ -22,16 +22,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.RecordNomisLicenceReasonResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -44,8 +42,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
@@ -68,8 +64,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
+import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
@@ -77,7 +73,6 @@ class LicenceCreationServiceTest {
   private val licencePolicyService = LicencePolicyService()
 
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
-  private val hdcCurfewAddressRepository = mock<HdcCurfewAddressRepository>()
   private val standardConditionRepository = mock<StandardConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
   private val crdLicenceRepository = mock<CrdLicenceRepository>()
@@ -87,10 +82,9 @@ class LicenceCreationServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
-  private val releaseDateService = mock<ReleaseDateService>()
-  private val hdcService = mock<HdcService>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
+  private val recordNomisTimeServedLicenceReasonService = mock<RecordNomisTimeServedLicenceReasonService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -101,14 +95,13 @@ class LicenceCreationServiceTest {
     licenceEventRepository,
     licencePolicyService,
     auditEventRepository,
-    hdcCurfewAddressRepository,
     prisonerSearchApiClient,
     prisonApiClient,
     deliusApiClient,
-    hdcService,
     cvlRecordService,
     isTimeServedLogicEnabled = true,
     telemetryService,
+    recordNomisTimeServedLicenceReasonService,
   )
 
   @Nested
@@ -323,7 +316,12 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.PSS))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.PSS,
+        ),
+      )
 
       service.createLicence(PRISON_NUMBER)
 
@@ -354,7 +352,12 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.AP_PSS))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.AP_PSS,
+        ),
+      )
 
       service.createLicence(PRISON_NUMBER)
 
@@ -807,7 +810,12 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD, licenceType = LicenceType.PSS))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.PRRD,
+          licenceType = LicenceType.PSS,
+        ),
+      )
 
       service.createLicence(PRISON_NUMBER)
 
@@ -838,7 +846,12 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD, licenceType = LicenceType.AP_PSS))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.PRRD,
+          licenceType = LicenceType.AP_PSS,
+        ),
+      )
 
       service.createLicence(PRISON_NUMBER)
 
@@ -1335,7 +1348,12 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.PSS))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.PSS,
+        ),
+      )
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1367,7 +1385,12 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, licenceType = LicenceType.AP_PSS))
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.AP_PSS,
+        ),
+      )
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1718,168 +1741,41 @@ class LicenceCreationServiceTest {
         assertThat(responsibleCom).isNull()
       }
     }
-  }
-
-  @Nested
-  inner class CreatingHdcLicences {
-    @BeforeEach
-    fun reset() {
-      reset(
-        licenceRepository,
-        licenceEventRepository,
-        auditEventRepository,
-        hdcCurfewAddressRepository,
-        prisonerSearchApiClient,
-        prisonApiClient,
-        deliusApiClient,
-      )
-      val authentication = mock<Authentication>()
-      val securityContext = mock<SecurityContext>()
-
-      whenever(authentication.name).thenReturn(com.username)
-      whenever(securityContext.authentication).thenReturn(authentication)
-      SecurityContextHolder.setContext(securityContext)
-
-      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-
-      whenever(staffRepository.findByStaffIdentifier(com.staffIdentifier)).thenReturn(com)
-      whenever(staffRepository.findByUsernameIgnoreCase(com.username)).thenReturn(com)
-      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
-
-      whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
-      whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
-      whenever(hdcCurfewAddressRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
-      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
-    }
 
     @Test
-    fun `service populates licence with expected fields`() {
-      val aPrisonerSearchResult = prisonerSearchResult().copy(
-        homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
-        homeDetentionCurfewEndDate = LocalDate.of(2020, 10, 23),
-        homeDetentionCurfewEligibilityDate = LocalDate.of(2020, 10, 22),
+    fun `service deletes licence created in NOMIS reason if it exists upon time served licence creation`() {
+      val aPrisonerSearchResult =
+        prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
+
+      val existingLicence = RecordNomisLicenceReasonResponse(
+        nomsId = aPrisonerSearchResult.prisonerNumber,
+        bookingId = aPrisonerSearchResult.bookingId!!.toLong(),
+        reason = "Reason",
+        prisonCode = "PRISON1",
+        dateCreated = LocalDateTime.now(),
+        dateLastUpdated = LocalDateTime.now(),
       )
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(hdcService.getHdcLicenceDataByBookingId(any())).thenReturn(someHdcLicenceData)
-      whenever(hdcService.getHdcLicenceData(any())).thenReturn(someHdcLicenceData)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
-
-      service.createHdcLicence(PRISON_NUMBER)
-
-      val hdcCurfewAddressCaptor = ArgumentCaptor.forClass(EntityHdcCurfewAddress::class.java)
-      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(standardConditionRepository, times(1)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(1)).saveAndFlush(any())
-      verify(licenceEventRepository, times(1)).saveAndFlush(any())
-      verify(hdcCurfewAddressRepository, times(1)).saveAndFlush(hdcCurfewAddressCaptor.capture())
-      verify(telemetryService).recordLicenceCreatedEvent(licenceCaptor.value)
-
-      with(licenceCaptor.value as HdcLicence) {
-        assertThat(kind).isEqualTo(LicenceKind.HDC)
-        assertThat(eligibleKind).isEqualTo(LicenceKind.HDC)
-        assertThat(typeCode).isEqualTo(LicenceType.AP)
-        assertThat(version).isEqualTo("2.1")
-        assertThat(statusCode).isEqualTo(IN_PROGRESS)
-        assertThat(versionOfId).isNull()
-        assertThat(licenceVersion).isEqualTo("1.0")
-        assertThat(nomsId).isEqualTo(nomsId)
-        assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
-        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId!!.toLong())
-        assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
-        assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
-        assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
-        assertThat(surname).isEqualTo(aPrisonerSearchResult.lastName.convertToTitleCase())
-        assertThat(dateOfBirth).isEqualTo(aPrisonerSearchResult.dateOfBirth)
-        assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
-        assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
-        assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
-        assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
-        assertThat(homeDetentionCurfewActualDate).isEqualTo(aPrisonerSearchResult.homeDetentionCurfewActualDate)
-        assertThat(homeDetentionCurfewEndDate).isEqualTo(aPrisonerSearchResult.homeDetentionCurfewEndDate)
-        assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
-        assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
-        assertThat(postRecallReleaseDate).isNull()
-        assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
-        assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
-        assertThat(probationAreaCode).isEqualTo(aCommunityManager.team.provider.code)
-        assertThat(probationAreaDescription).isEqualTo(aCommunityManager.team.provider.description)
-        assertThat(probationPduCode).isEqualTo(aCommunityManager.team.borough.code)
-        assertThat(probationPduDescription).isEqualTo(aCommunityManager.team.borough.description)
-        assertThat(probationLauCode).isEqualTo(aCommunityManager.team.district.code)
-        assertThat(probationLauDescription).isEqualTo(aCommunityManager.team.district.description)
-        assertThat(probationTeamCode).isEqualTo(aCommunityManager.team.code)
-        assertThat(probationTeamDescription).isEqualTo(aCommunityManager.team.description)
-        assertThat(crn).isEqualTo(aProbationCaseResult.crn)
-        assertThat(pnc).isEqualTo(aProbationCaseResult.pncNumber)
-        assertThat(responsibleCom).isEqualTo(com)
-      }
-    }
-
-    @Test
-    fun `service throws an error if HDC licence type is PSS`() {
-      val aPrisonerSearchResult = prisonerSearchResult().copy(
-        homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
-        licenceExpiryDate = null,
-        homeDetentionCurfewEligibilityDate = LocalDate.of(2020, 10, 22),
-      )
-
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
-      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC, licenceType = LicenceType.PSS))
-
-      val exception = assertThrows<IllegalStateException> {
-        service.createHdcLicence(PRISON_NUMBER)
-      }
-
-      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("HDC Licence for A1234AA can not be of type PSS")
-
-      verify(licenceRepository, times(0)).saveAndFlush(any())
-      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
-      verify(hdcCurfewAddressRepository, times(0)).saveAndFlush(any())
-    }
-
-    @Test
-    fun `service throws an error if person is not eligible for a HDC licence`() {
-      val aPrisonerSearchResult = prisonerSearchResult().copy(
-        homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
-        homeDetentionCurfewEndDate = LocalDate.of(2020, 10, 23),
-        homeDetentionCurfewEligibilityDate = LocalDate.of(2020, 10, 22),
-      )
-
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
-      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(hdcService.getHdcLicenceDataByBookingId(any())).thenReturn(
-        someHdcLicenceData.copy(
-          curfewAddress = null,
+      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+          hardStopKind = LicenceKind.TIME_SERVED,
         ),
       )
-      whenever(
-        hdcService.checkEligibleForHdcLicence(
-          aPrisonerSearchResult,
-          someHdcLicenceData.copy(
-            curfewAddress = null,
-          ),
-        ),
-      ).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
+      whenever(recordNomisTimeServedLicenceReasonService.findByNomsIdAndBookingId(any(), any())).thenReturn(
+        existingLicence,
+      )
 
-      val exception = assertThrows<IllegalStateException> {
-        service.createHdcLicence(PRISON_NUMBER)
-      }
+      service.createHardStopLicence(PRISON_NUMBER)
 
-      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("HDC licence for A1234AA could not be created as there is no curfew address")
-
-      verify(licenceRepository, times(0)).saveAndFlush(any())
-      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
-      verify(hdcCurfewAddressRepository, times(0)).saveAndFlush(any())
+      verify(recordNomisTimeServedLicenceReasonService, times(1)).deleteNomisLicenceReason(
+        existingLicence.nomsId,
+        existingLicence.bookingId,
+      )
     }
   }
 
@@ -1965,21 +1861,5 @@ class LicenceCreationServiceTest {
     )
 
     val newCom = anotherCommunityOffenderManager()
-
-    val aModelCurfewAddress = HdcCurfewAddress(
-      1L,
-      "1 Test Street",
-      "Test Area",
-      "Test Town",
-      null,
-      "AB1 2CD",
-    )
-
-    val someHdcLicenceData = HdcLicenceData(
-      licenceId = 1L,
-      aModelCurfewAddress,
-      null,
-      null,
-    )
   }
 }

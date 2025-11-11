@@ -18,7 +18,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository

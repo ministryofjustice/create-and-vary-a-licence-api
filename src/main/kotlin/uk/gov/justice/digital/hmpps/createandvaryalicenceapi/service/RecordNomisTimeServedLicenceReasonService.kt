@@ -98,6 +98,8 @@ class RecordNomisTimeServedLicenceReasonService(
 
     val staff = getCurrentStaff()
 
+    licenceRepository.delete(reasonEntity)
+
     saveAuditEvent(
       summary = "Deleted NOMIS licence reason",
       detail = "Deleted NOMIS licence record: ID=${reasonEntity.id}",
@@ -109,8 +111,6 @@ class RecordNomisTimeServedLicenceReasonService(
         "prisonCode" to reasonEntity.prisonCode,
       ),
     )
-
-    licenceRepository.delete(reasonEntity)
   }
 
   private fun getCurrentStaff(): Staff {
