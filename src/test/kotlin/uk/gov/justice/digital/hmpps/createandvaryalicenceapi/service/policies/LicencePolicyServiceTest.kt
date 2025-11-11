@@ -19,12 +19,12 @@ class LicencePolicyServiceTest {
   @Test
   fun `Current policy version is returned`() {
     val policy = licencePolicyService.currentPolicy()
-    assertThat(policy.version).isEqualTo("2.1")
+    assertThat(policy.version).isEqualTo("3.0")
   }
 
   @Test
   fun `All versions are accessible`() {
-    assertThat(licencePolicyService.allPolicies()).hasSize(3)
+    assertThat(licencePolicyService.allPolicies()).hasSize(4)
   }
 
   @Test
