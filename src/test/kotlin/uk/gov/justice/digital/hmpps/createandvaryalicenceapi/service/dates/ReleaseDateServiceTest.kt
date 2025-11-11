@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.BankHolidayService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -531,17 +532,6 @@ class ReleaseDateServiceTest {
 
   @Nested
   inner class `Licence start date` {
-    @Test
-    fun `returns HDCAD for HDC licences`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        conditionalReleaseDate = LocalDate.of(2021, 10, 21),
-        confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-        homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 10),
-      )
-
-      assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.HDC)).isEqualTo(LocalDate.of(2021, 10, 10))
-    }
-
     @Nested
     inner class `Determine licence start date` {
       @Test
@@ -637,7 +627,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 21),
         )
 
-        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+        whenItsAnIS91Case(nomisRecord)
 
         assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isNull()
       }
@@ -661,7 +651,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = null,
         )
 
-        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+        whenItsAnIS91Case(nomisRecord)
 
         assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
@@ -685,7 +675,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 21),
         )
 
-        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+        whenItsAnIS91Case(nomisRecord)
 
         assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
@@ -709,7 +699,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 23),
         )
 
-        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+        whenItsAnIS91Case(nomisRecord)
 
         assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
@@ -735,7 +725,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = null,
         )
 
-        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+        whenItsAnIS91Case(nomisRecord)
 
         assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2018, 11, 30))
       }
@@ -761,7 +751,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2018, 11, 29),
         )
 
-        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+        whenItsAnIS91Case(nomisRecord)
 
         assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2018, 11, 30))
       }
@@ -787,7 +777,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 12, 4),
         )
 
-        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+        whenItsAnIS91Case(nomisRecord)
 
         assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 12, 4))
       }
@@ -813,7 +803,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 12, 3),
         )
 
-        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+        whenItsAnIS91Case(nomisRecord)
 
         assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.CRD)).isEqualTo(LocalDate.of(2021, 12, 3))
       }
@@ -1033,10 +1023,24 @@ class ReleaseDateServiceTest {
         confirmedReleaseDate = LocalDate.of(2021, 12, 3),
       )
 
-      whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(false)
+      whenItsAnIS91Case(nomisRecord)
 
       assertThat(service.getLicenceStartDate(nomisRecord, null)).isNull()
     }
+  }
+
+  private fun whenItsAnIS91Case(nomisRecord: PrisonerSearchPrisoner) {
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(
+      listOf(
+        nomisRecord.bookingId!!.toLong(),
+      ),
+    )
+  }
+
+  private fun whenItsNotAnIS91Case(nomisRecord: PrisonerSearchPrisoner) {
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(
+      emptyList(),
+    )
   }
 
   @Nested
@@ -1120,7 +1124,8 @@ class ReleaseDateServiceTest {
 
     @Test
     fun `returns HARD_STOP when all dates are today and override date is today except conditional release date and isTimeServedEnabled falg is disabled`() {
-      val service = ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, isTimeServedEnabled = false)
+      val service =
+        ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, isTimeServedEnabled = false)
       val nomisRecord = prisonerSearchResult().copy(
         sentenceStartDate = today,
         confirmedReleaseDate = today,

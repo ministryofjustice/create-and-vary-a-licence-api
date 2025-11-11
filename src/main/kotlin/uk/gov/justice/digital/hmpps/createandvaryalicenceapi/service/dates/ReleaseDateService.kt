@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
@@ -90,15 +89,10 @@ class ReleaseDateService(
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
     licenceKind: LicenceKind?,
-  ): LocalDate? = when (licenceKind) {
-    HDC -> nomisRecord.homeDetentionCurfewActualDate
-    PRRD -> calculatePrrdLicenceStartDate(nomisRecord)
-    CRD -> calculateCrdLicenceStartDate(
-      nomisRecord,
-      iS91DeterminationService.isIS91Case(nomisRecord),
-    )
-    else -> null
-  }
+  ): LocalDate? = getLicenceStartDates(
+    listOf(nomisRecord),
+    mapOf(nomisRecord.prisonerNumber to licenceKind),
+  )[nomisRecord.prisonerNumber]
 
   fun getLicenceStartDates(
     prisoners: List<PrisonerSearchPrisoner>,
@@ -107,8 +101,7 @@ class ReleaseDateService(
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
     return prisoners.associate {
       it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
-        HDC -> it.homeDetentionCurfewActualDate
-        PRRD -> calculatePrrdLicenceStartDate(it)
+        PRRD -> it.calculatePrrdLicenceStartDate()
         CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
         else -> null
       }

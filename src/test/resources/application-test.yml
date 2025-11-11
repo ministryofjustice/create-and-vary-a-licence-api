@@ -80,7 +80,6 @@ hmpps:
 
 feature:
   toggle:
-    electronicMonitoringResponseHandling: true
     timeServed:
       enabled: true
 

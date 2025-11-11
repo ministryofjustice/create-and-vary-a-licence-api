@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -34,7 +33,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
 @Service
@@ -47,15 +45,14 @@ class LicenceCreationService(
   private val licenceEventRepository: LicenceEventRepository,
   private val licencePolicyService: LicencePolicyService,
   private val auditEventRepository: AuditEventRepository,
-  private val hdcCurfewAddressRepository: HdcCurfewAddressRepository,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val deliusApiClient: DeliusApiClient,
-  private val hdcService: HdcService,
   private val cvlRecordService: CvlRecordService,
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
   private val isTimeServedLogicEnabled: Boolean = false,
   private val telemetryService: TelemetryService,
+  private val recordNomisTimeServedLicenceReasonService: RecordNomisTimeServedLicenceReasonService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -143,7 +140,9 @@ class LicenceCreationService(
     val hardStopKind = cvlRecord.hardStopKind
       ?: error("No hardStopKind on CVL record for $prisonNumber - not eligible for hard stop licence")
 
-    val licence = if (isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED) {
+    val isTimeServedLicenceCreation = isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED
+
+    val licence = if (isTimeServedLicenceCreation) {
       LicenceFactory.createTimeServe(
         licenceType = licenceType,
         eligibleKind = cvlRecord.eligibleKind,
@@ -191,59 +190,14 @@ class LicenceCreationService(
 
     recordLicenceCreation(createdBy, createdLicence)
 
-    return LicenceCreationResponse(createdLicence.id)
-  }
-
-  @Transactional
-  fun createHdcLicence(prisonNumber: String): LicenceCreationResponse {
-    verifyNoInFlightLicence(prisonNumber)
-
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
-
-    val hdcLicenceData = hdcService.getHdcLicenceDataByBookingId(nomisRecord.bookingId!!.toLong())
-
-    hdcService.checkEligibleForHdcLicence(nomisRecord, hdcLicenceData)
-
-    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
-    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
-
-    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
-      ?: error("No active offender manager found for $prisonNumber")
-
-    val areaCode = currentResponsibleOfficerDetails.team.provider.code
-    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord, areaCode)
-
-    if (cvlRecord.licenceType == LicenceType.PSS) error("HDC Licence for ${nomisRecord.prisonerNumber} can not be of type PSS")
-
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
-      ?: createCom(currentResponsibleOfficerDetails.id)
-
-    val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
-      ?: error("Staff with username $username not found")
-
-    val licence = LicenceFactory.createHdc(
-      licenceType = cvlRecord.licenceType,
-      nomsId = nomisRecord.prisonerNumber,
-      version = licencePolicyService.currentPolicy().version,
-      nomisRecord = nomisRecord,
-      prisonInformation = prisonInformation,
-      currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
-      deliusRecord = deliusRecord,
-      responsibleCom = responsibleCom,
-      creator = createdBy,
-      licenceStartDate = cvlRecord.licenceStartDate,
-    )
-
-    val createdLicence = licenceRepository.saveAndFlush(licence)
-
-    val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
-    standardConditionRepository.saveAllAndFlush(standardConditions)
-
-    hdcCurfewAddressRepository.saveAndFlush(transform(hdcLicenceData!!.curfewAddress!!, createdLicence))
-
-    recordLicenceCreation(createdBy, createdLicence)
+    if (isTimeServedLicenceCreation) {
+      val nomisId = nomisRecord.prisonerNumber
+      val bookingId = nomisRecord.bookingId!!.toLong()
+      val existingReasonForCreatingLicenceInNomis = recordNomisTimeServedLicenceReasonService.findByNomsIdAndBookingId(nomisId, bookingId)
+      if (existingReasonForCreatingLicenceInNomis != null) {
+        recordNomisTimeServedLicenceReasonService.deleteNomisLicenceReason(nomisId, bookingId)
+      }
+    }
 
     return LicenceCreationResponse(createdLicence.id)
   }
