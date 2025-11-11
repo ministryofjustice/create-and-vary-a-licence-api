@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.RecordNomisLicenceReasonResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.TimeServedExternalRecordsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
@@ -84,7 +84,7 @@ class LicenceCreationServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
-  private val recordNomisTimeServedLicenceReasonService = mock<RecordNomisTimeServedLicenceReasonService>()
+  private val timeServedExternalRecordsService = mock<TimeServedExternalRecordsService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -101,7 +101,7 @@ class LicenceCreationServiceTest {
     cvlRecordService,
     isTimeServedLogicEnabled = true,
     telemetryService,
-    recordNomisTimeServedLicenceReasonService,
+    timeServedExternalRecordsService,
   )
 
   @Nested
@@ -1747,7 +1747,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult =
         prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
 
-      val existingLicence = RecordNomisLicenceReasonResponse(
+      val existingLicence = TimeServedExternalRecordsResponse(
         nomsId = aPrisonerSearchResult.prisonerNumber,
         bookingId = aPrisonerSearchResult.bookingId!!.toLong(),
         reason = "Reason",
@@ -1766,13 +1766,13 @@ class LicenceCreationServiceTest {
         ),
       )
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
-      whenever(recordNomisTimeServedLicenceReasonService.findByNomsIdAndBookingId(any(), any())).thenReturn(
+      whenever(timeServedExternalRecordsService.findByNomsIdAndBookingId(any(), any())).thenReturn(
         existingLicence,
       )
 
       service.createHardStopLicence(PRISON_NUMBER)
 
-      verify(recordNomisTimeServedLicenceReasonService, times(1)).deleteNomisLicenceReason(
+      verify(timeServedExternalRecordsService, times(1)).deleteTimeServedExternalRecord(
         existingLicence.nomsId,
         existingLicence.bookingId,
       )

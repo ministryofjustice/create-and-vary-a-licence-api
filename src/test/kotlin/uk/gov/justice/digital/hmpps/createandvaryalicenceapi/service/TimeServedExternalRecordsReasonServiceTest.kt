@@ -12,21 +12,21 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.RecordNomisTimeServedLicenceReason
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecords
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.TimeServedExternalRecordsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 
-class RecordNomisTimeServedLicenceReasonReasonServiceTest {
+class TimeServedExternalRecordsReasonServiceTest {
 
-  private val licenceRepository = mock<RecordNomisTimeServedLicenceReasonRepository>()
+  private val licenceRepository = mock<TimeServedExternalRecordsRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
 
-  private val service = RecordNomisTimeServedLicenceReasonService(
+  private val service = TimeServedExternalRecordsService(
     licenceRepository,
     staffRepository,
     auditEventRepository,
@@ -48,9 +48,9 @@ class RecordNomisTimeServedLicenceReasonReasonServiceTest {
   }
 
   @Test
-  fun `recordNomisLicenceReason throws ValidationException if staff username not found`() {
+  fun `recordTimeServedExternalRecord throws ValidationException if staff username not found`() {
     // Arrange
-    val request = RecordNomisLicenceReasonRequest(
+    val request = TimeServedExternalRecordsRequest(
       nomsId = "A1234BC",
       bookingId = 12345L,
       reason = "Some reason",
@@ -63,7 +63,7 @@ class RecordNomisTimeServedLicenceReasonReasonServiceTest {
 
     // Act
     val exception = assertThrows<IllegalStateException> {
-      service.recordNomisLicenceReason(request)
+      service.createTimeServedExternalRecord(request)
     }
 
     // Assert
@@ -85,7 +85,7 @@ class RecordNomisTimeServedLicenceReasonReasonServiceTest {
     val username = "tcom1"
 
     // Mock existing licence record
-    val existingLicence = RecordNomisTimeServedLicenceReason(
+    val existingLicence = TimeServedExternalRecords(
       nomsId = nomsId,
       bookingId = bookingId,
       reason = "Old reason",
@@ -101,7 +101,7 @@ class RecordNomisTimeServedLicenceReasonReasonServiceTest {
 
     // Act
     val exception = assertThrows<IllegalStateException> {
-      service.updateNomisLicenceReason(nomsId, bookingId, request)
+      service.updateTimeServedExternalRecord(nomsId, bookingId, request)
     }
 
     // Assert
