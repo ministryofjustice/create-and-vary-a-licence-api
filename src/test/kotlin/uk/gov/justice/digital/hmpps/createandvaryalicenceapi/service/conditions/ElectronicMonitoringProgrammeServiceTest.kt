@@ -106,7 +106,7 @@ class ElectronicMonitoringProgrammeServiceTest {
   }
 
   @Test
-  fun `Adds EM provider when not required`() {
+  fun `Does not add EM provider when not required`() {
     assertThat(aLicenceEntity.electronicMonitoringProvider).isNull()
 
     whenCheckingIfElectronicMonitoringProviderIsRequired(aLicenceEntity).thenReturn(false)
