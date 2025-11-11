@@ -62,7 +62,7 @@ class NotStartedCaseloadService(
   private fun createNotStartedLicenceForCase(
     cases: List<ManagedCaseDto>,
   ): List<CaCase> {
-    val nomisLicenceFlags = fetchNomisLicenceFlagsByBookingIds(cases)
+    val timeServedExternalRecordsFlags = fetchTimeServedExternalRecordFlags(cases)
 
     return cases.map { case ->
       var licenceStatus = NOT_STARTED
@@ -89,19 +89,19 @@ class NotStartedCaseloadService(
         prisonCode = case.nomisRecord.prisonId,
         prisonDescription = case.nomisRecord.prisonName,
         hardStopKind = case.cvlRecord.hardStopKind,
-        hasNomisLicence = nomisLicenceFlags[case.nomisRecord.bookingId?.toLong()] ?: false,
+        hasNomisLicence = timeServedExternalRecordsFlags[case.nomisRecord.bookingId?.toLong()] ?: false,
       )
     }
   }
 
-  private fun fetchNomisLicenceFlagsByBookingIds(cases: List<ManagedCaseDto>): Map<Long, Boolean> {
+  private fun fetchTimeServedExternalRecordFlags(cases: List<ManagedCaseDto>): Map<Long, Boolean> {
     val bookingIds = cases
       .filter { it.cvlRecord.hardStopKind == TIME_SERVED }
       .mapNotNull { it.nomisRecord.bookingId }
 
     if (bookingIds.isEmpty()) return emptyMap()
 
-    return licenceRepository.getNomisLicenceFlagsByBookingIds(bookingIds)
+    return licenceRepository.getTimeServedExternalRecordFlags(bookingIds)
       .associate { it.bookingId to it.hasNomisLicence }
   }
 
