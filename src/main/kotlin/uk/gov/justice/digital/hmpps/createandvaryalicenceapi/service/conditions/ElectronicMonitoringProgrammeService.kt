@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,23 +24,7 @@ class ElectronicMonitoringProgrammeService(
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
-  @param:Value("\${feature.toggle.electronicMonitoringResponseHandling:false}")
-  private val electronicMonitoringResponseHandlingEnabled: Boolean = false,
 ) {
-
-  @Transactional
-  fun handleUpdatedConditionsIfEnabled(licence: Licence, conditionCodes: Set<String>) {
-    if (electronicMonitoringResponseHandlingEnabled) {
-      processUpdatedElectronicMonitoringConditions(licence, conditionCodes)
-    }
-  }
-
-  @Transactional
-  fun handleRemovedConditionsIfEnabled(licence: Licence, removedConditionCodes: Set<String>) {
-    if (electronicMonitoringResponseHandlingEnabled) {
-      processRemovedElectronicMonitoringConditions(licence, removedConditionCodes)
-    }
-  }
 
   @Transactional
   fun updateElectronicMonitoringProgramme(licenceId: Long, request: UpdateElectronicMonitoringProgrammeRequest) {
@@ -75,7 +58,7 @@ class ElectronicMonitoringProgrammeService(
   }
 
   @Transactional
-  fun processUpdatedElectronicMonitoringConditions(licenceEntity: Licence, conditionCodes: Set<String>) {
+  fun createMonitoringProviderIfRequired(licenceEntity: Licence, conditionCodes: Set<String>) {
     val version = requireNotNull(licenceEntity.version) { "Licence version cannot be null" }
     val isResponseRequired = licencePolicyService.isElectronicMonitoringResponseRequired(conditionCodes, version)
     if (isResponseRequired) {
@@ -84,7 +67,7 @@ class ElectronicMonitoringProgrammeService(
   }
 
   @Transactional
-  fun processRemovedElectronicMonitoringConditions(licenceEntity: Licence, removedConditionCodes: Set<String>) {
+  fun removeMonitoringProviderIfNoLongerRequired(licenceEntity: Licence, removedConditionCodes: Set<String>) {
     val version = requireNotNull(licenceEntity.version) { "Licence version cannot be null" }
     val removedConditionsRequiringEmResponse =
       licencePolicyService.getConditionsRequiringElectronicMonitoringResponse(version, removedConditionCodes)
@@ -114,8 +97,7 @@ class ElectronicMonitoringProgrammeService(
     }
   }
 
-  @Transactional
-  fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
+  private fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
     check(licenceEntity is HasElectronicMonitoringResponseProvider) {
       "ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitoringResponseProvider"
     }
