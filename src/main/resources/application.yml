@@ -164,7 +164,6 @@ address:
 
 feature:
   toggle:
-    electronicMonitoringResponseHandling: false
     recall: ${RECALL_ENABLED}
     timeServed:
       enabled: ${FEATURE_TOGGLE_TIMESERVED_ENABLED}
