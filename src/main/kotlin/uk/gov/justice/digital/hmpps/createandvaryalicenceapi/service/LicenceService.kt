@@ -57,6 +57,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -1135,9 +1137,10 @@ class LicenceService(
 
   @Transactional
   fun updateLicenceKind(licence: EntityLicence, updatedKind: LicenceKind): EntityLicence {
-    if (licence.kind == LicenceKind.HDC) return licence
+    if (licence.kind == HDC) return licence
 
-    val isKindUpdated = licence.kind != LicenceKind.HARD_STOP && updatedKind != licence.kind
+    val isKindUpdated =
+      licence.kind !in listOf(HARD_STOP, VARIATION) && updatedKind != licence.kind
     val isEligibleKindUpdated = updatedKind != licence.eligibleKind
 
     val newKind = if (isKindUpdated) updatedKind else licence.kind
