@@ -1158,7 +1158,7 @@ class LicenceService(
         userUpdating,
       )
       licenceRepository.updateLicenceKinds(licence.id, newKind, newEligibleKind)
-      return licenceRepository.findById(licence.id).orElseThrow { EntityNotFoundException("$licence.id") }
+      return getLicence(licence.id)
     }
     return licence
   }
