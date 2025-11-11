@@ -437,9 +437,15 @@ class LicenceConditionServiceTest {
       service.updateAdditionalConditions(2L, request)
       service.updateAdditionalConditions(3L, request)
 
-      verify(electronicMonitoringProgrammeService, times(1)).handleUpdatedConditionsIfEnabled(crdLicence, setOf("code"))
-      verify(electronicMonitoringProgrammeService, times(1)).handleUpdatedConditionsIfEnabled(hdcLicence, setOf("code"))
-      verify(electronicMonitoringProgrammeService, times(0)).handleUpdatedConditionsIfEnabled(
+      verify(electronicMonitoringProgrammeService, times(1)).createMonitoringProviderIfRequired(
+        crdLicence,
+        setOf("code"),
+      )
+      verify(electronicMonitoringProgrammeService, times(1)).createMonitoringProviderIfRequired(
+        hdcLicence,
+        setOf("code"),
+      )
+      verify(electronicMonitoringProgrammeService, times(0)).createMonitoringProviderIfRequired(
         variationLicence,
         setOf("code"),
       )

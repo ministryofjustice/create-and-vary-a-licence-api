@@ -101,7 +101,10 @@ class LicenceConditionService(
     )
 
     if (licenceEntity is HasElectronicMonitoringResponseProvider) {
-      electronicMonitoringProgrammeService.handleUpdatedConditionsIfEnabled(licenceEntity, setOf(request.conditionCode))
+      electronicMonitoringProgrammeService.createMonitoringProviderIfRequired(
+        licenceEntity,
+        setOf(request.conditionCode),
+      )
     }
 
     licenceRepository.saveAndFlush(licenceEntity)
@@ -164,10 +167,10 @@ class LicenceConditionService(
 
     if (licenceEntity is HasElectronicMonitoringResponseProvider) {
       newConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
-        electronicMonitoringProgrammeService.handleUpdatedConditionsIfEnabled(licenceEntity, it)
+        electronicMonitoringProgrammeService.createMonitoringProviderIfRequired(licenceEntity, it)
       }
       removedConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
-        electronicMonitoringProgrammeService.handleRemovedConditionsIfEnabled(licenceEntity, it)
+        electronicMonitoringProgrammeService.removeMonitoringProviderIfNoLongerRequired(licenceEntity, it)
       }
     }
 
@@ -349,7 +352,7 @@ class LicenceConditionService(
 
     if (licenceEntity is HasElectronicMonitoringResponseProvider) {
       removedAdditionalConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
-        electronicMonitoringProgrammeService.handleRemovedConditionsIfEnabled(licenceEntity, it)
+        electronicMonitoringProgrammeService.removeMonitoringProviderIfNoLongerRequired(licenceEntity, it)
       }
     }
 
