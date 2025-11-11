@@ -1,4 +1,4 @@
-INSERT INTO record_nomis_time_served_licence_reason (
+INSERT INTO time_served_external_records (
     noms_id,
     booking_id,
     reason,
