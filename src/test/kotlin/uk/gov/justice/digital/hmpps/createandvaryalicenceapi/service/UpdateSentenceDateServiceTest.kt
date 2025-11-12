@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
@@ -904,7 +905,7 @@ class UpdateSentenceDateServiceTest {
 
     @Test
     fun `should not time out if the licence is in hard stop period but is not a CRD licence`() {
-      val licence = createVariationLicence()
+      val licence = createHardStopLicence()
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
       whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
