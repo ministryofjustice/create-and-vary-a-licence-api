@@ -203,8 +203,9 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
   @Query(
     """
         SELECT 
-          l.licenceStartDate,
           l.idInternal,
+          l.crn,
+          l.licenceStartDate,
           l.nomsId as prisonNumber,
           com.username,
           l.typeCode,
@@ -220,8 +221,9 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
   @Query(
     """
         SELECT 
-          l.licenceStartDate,
           l.idInternal,
+          l.crn,
+          l.licenceStartDate,
           l.nomsId as prisonNumber,
           com.username,
           l.typeCode,
