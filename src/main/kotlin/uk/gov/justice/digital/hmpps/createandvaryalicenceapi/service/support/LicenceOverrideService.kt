@@ -17,7 +17,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
@@ -30,6 +32,8 @@ class LicenceOverrideService(
   private val domainEventsService: DomainEventsService,
   private val staffRepository: StaffRepository,
   private val licenceService: LicenceService,
+  private val releaseDateService: ReleaseDateService,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
 ) {
 
   companion object {
@@ -38,7 +42,7 @@ class LicenceOverrideService(
 
   /**
    * Override licence status
-   * @throws jakarta.validation.ValidationException if new status is already in use by another licence
+   * @throws ValidationException if new status is already in use by another licence
    */
   @Transactional
   fun changeStatus(licenceId: Long, newStatus: LicenceStatus, reason: String) {
@@ -99,20 +103,17 @@ class LicenceOverrideService(
   fun changeDates(licenceId: Long, request: OverrideLicenceDatesRequest) {
     val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
-
     log.info(
       buildString {
-        append("Current licence dates - ID $licenceId ")
-        append("CRD ${licence.conditionalReleaseDate} ")
-        append("ARD ${licence.actualReleaseDate} ")
-        append("SSD ${licence.sentenceStartDate} ")
-        append("SED ${licence.sentenceEndDate} ")
-        append("LSD ${licence.licenceStartDate} ")
-        append("LED ${licence.licenceExpiryDate} ")
-        append("TUSSD ${licence.topupSupervisionStartDate} ")
+        append("Current licence - ID $licenceId")
+        append("kind ${licence.kind}")
+        append("CRD ${licence.conditionalReleaseDate}")
+        append("ARD ${licence.actualReleaseDate}")
+        append("SSD ${licence.sentenceStartDate}")
+        append("SED ${licence.sentenceEndDate}")
+        append("LSD ${licence.licenceStartDate}")
+        append("LED ${licence.licenceExpiryDate}")
+        append("TUSSD ${licence.topupSupervisionStartDate}")
         append("TUSED ${licence.topupSupervisionExpiryDate}")
         append("PRRD ${licence.postRecallReleaseDate}")
         append("PRRD ${licence.postRecallReleaseDate}")
@@ -123,16 +124,36 @@ class LicenceOverrideService(
       },
     )
 
+    val prisonerSearchPrisoner =
+      prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)).first()
+    val prisonerSearchPrisonerOverriddenDates = prisonerSearchPrisoner.copy(
+      conditionalReleaseDate = request.conditionalReleaseDate,
+      confirmedReleaseDate = request.actualReleaseDate,
+      sentenceStartDate = request.sentenceStartDate,
+      sentenceExpiryDate = request.sentenceEndDate,
+      licenceExpiryDate = request.licenceExpiryDate,
+      topupSupervisionStartDate = request.topupSupervisionStartDate,
+      topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
+      postRecallReleaseDate = request.postRecallReleaseDate,
+      homeDetentionCurfewActualDate = request.homeDetentionCurfewActualDate,
+      homeDetentionCurfewEndDate = request.homeDetentionCurfewEndDate,
+    )
+
+    val updatedLicence = licenceService.updateLicenceKind(licence, request.updatedKind)
+    val licenceStartDate =
+      releaseDateService.getLicenceStartDate(prisonerSearchPrisonerOverriddenDates, updatedLicence.eligibleKind)
+
     log.info(
       buildString {
-        append("Updated dates - ID $licenceId ")
-        append("CRD ${request.conditionalReleaseDate} ")
-        append("ARD ${request.actualReleaseDate} ")
-        append("SSD ${request.sentenceStartDate} ")
-        append("SED ${request.sentenceEndDate} ")
-        append("LSD ${request.licenceStartDate} ")
-        append("LED ${request.licenceExpiryDate} ")
-        append("TUSSD ${request.topupSupervisionStartDate} ")
+        append("Updated kind and dates - ID $licenceId")
+        append("kind ${request.updatedKind}")
+        append("CRD ${request.conditionalReleaseDate}")
+        append("ARD ${request.actualReleaseDate}")
+        append("SSD ${request.sentenceStartDate}")
+        append("SED ${request.sentenceEndDate}")
+        append("LSD $licenceStartDate")
+        append("LED ${request.licenceExpiryDate}")
+        append("TUSSD ${request.topupSupervisionStartDate}")
         append("TUSED ${request.topupSupervisionExpiryDate}")
         append("PRRD ${request.postRecallReleaseDate}")
         if (licence is HdcLicence) {
@@ -142,33 +163,33 @@ class LicenceOverrideService(
       },
     )
 
-    licence.updateLicenceDates(
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+    updatedLicence.updateLicenceDates(
       conditionalReleaseDate = request.conditionalReleaseDate,
       actualReleaseDate = request.actualReleaseDate,
       sentenceStartDate = request.sentenceStartDate,
       sentenceEndDate = request.sentenceEndDate,
-      licenceStartDate = request.licenceStartDate,
+      licenceStartDate = licenceStartDate,
       licenceExpiryDate = request.licenceExpiryDate,
       topupSupervisionStartDate = request.topupSupervisionStartDate,
       topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
       postRecallReleaseDate = request.postRecallReleaseDate,
       homeDetentionCurfewActualDate = request.homeDetentionCurfewActualDate,
       homeDetentionCurfewEndDate = request.homeDetentionCurfewEndDate,
-
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(licence)
-
+    licenceRepository.saveAndFlush(updatedLicence)
     auditEventRepository.saveAndFlush(
       AuditEvent(
-        licenceId = licence.id,
-        detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
+        licenceId = updatedLicence.id,
+        detail = "ID ${updatedLicence.id} type ${updatedLicence.typeCode} status ${updatedLicence.statusCode} version ${updatedLicence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
         username = staffMember?.username ?: Licence.SYSTEM_USER,
         fullName = staffMember?.fullName ?: Licence.SYSTEM_USER,
-        summary = "Sentence dates overridden for ${licence.forename} ${licence.surname}: ${request.reason}",
+        summary = "Sentence dates overridden for ${updatedLicence.forename} ${updatedLicence.surname}: ${request.reason}",
       ),
     )
   }

@@ -116,6 +116,7 @@ class LicenceServiceTest {
   private val exclusionZoneService = mock<ExclusionZoneService>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val telemetryService = mock<TelemetryService>()
+  private val auditService = mock<AuditService>()
 
   private val service =
     LicenceService(
@@ -135,6 +136,7 @@ class LicenceServiceTest {
       exclusionZoneService,
       deliusApiClient,
       telemetryService,
+      auditService,
     )
 
   @BeforeEach
@@ -3759,6 +3761,70 @@ class LicenceServiceTest {
     }
   }
 
+  @Test
+  fun `should update the licence kind and eligible kind if different to the current licence values`() {
+    val licence = aLicenceEntity
+    val updatedKind = LicenceKind.PRRD
+    val updatedLicence = createPrrdLicence()
+    val staff = communityOffenderManager()
+
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(updatedLicence))
+
+    val result = service.updateLicenceKind(licence, updatedKind)
+
+    assertThat(result).isEqualTo(updatedLicence)
+    verify(licenceRepository).updateLicenceKinds(licence.id, updatedKind, updatedKind)
+    verify(auditService).recordAuditEventLicenceKindUpdated(
+      licence,
+      licence.kind,
+      updatedKind,
+      licence.eligibleKind,
+      updatedKind,
+      staff,
+    )
+  }
+
+  @Test
+  fun `should not update the licence kind if eligible kind is the same as the current licence kind`() {
+    val licence = aLicenceEntity
+    val eligibleKind = licence.kind
+    val staff = communityOffenderManager()
+
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+
+    val result = service.updateLicenceKind(licence, eligibleKind)
+
+    assertThat(result).isEqualTo(licence)
+    verify(licenceRepository, never()).updateLicenceKinds(any(), any(), any())
+    verify(auditService, never()).recordAuditEventLicenceKindUpdated(any(), any(), any(), any(), any(), any())
+  }
+
+  @Test
+  fun `should not update the licence kind for a hard stop licence`() {
+    val licence = createHardStopLicence().copy(eligibleKind = LicenceKind.CRD)
+    val newEligibleKind = LicenceKind.PRRD
+    val updatedLicence = licence.copy(eligibleKind = newEligibleKind)
+    val staff = communityOffenderManager()
+
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(updatedLicence))
+
+    val result = service.updateLicenceKind(licence, newEligibleKind)
+
+    assertThat(result).isEqualTo(updatedLicence)
+    verify(licenceRepository).updateLicenceKinds(licence.id, licence.kind, newEligibleKind)
+    verify(auditService).recordAuditEventLicenceKindUpdated(
+      licence,
+      licence.kind,
+      licence.kind,
+      licence.eligibleKind,
+      newEligibleKind,
+      staff,
+    )
+  }
+
   val aCom = communityOffenderManager()
   val aPreviousUser = anotherCommunityOffenderManager()
 
@@ -3874,74 +3940,6 @@ class LicenceServiceTest {
     standardConditions = emptyList(),
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
-    approvedByName = "jim smith",
-    approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-  ).let {
-    it.copy(
-      standardConditions = listOf(
-        EntityStandardCondition(
-          id = 1,
-          conditionCode = "goodBehaviour",
-          conditionSequence = 1,
-          conditionText = "Be of good behaviour",
-          conditionType = "AP",
-          licence = it,
-        ),
-        EntityStandardCondition(
-          id = 2,
-          conditionCode = "notBreakLaw",
-          conditionSequence = 2,
-          conditionText = "Do not break any law",
-          conditionType = "AP",
-          licence = it,
-        ),
-        EntityStandardCondition(
-          id = 3,
-          conditionCode = "attendMeetings",
-          conditionSequence = 3,
-          conditionText = "Attend meetings",
-          conditionType = "AP",
-          licence = it,
-        ),
-      ),
-    )
-  }
-
-  val anHardStopLicenceEntity = createHardStopLicence().copy(
-    id = 1,
-    typeCode = LicenceType.AP,
-    version = "1.1",
-    statusCode = LicenceStatus.IN_PROGRESS,
-    nomsId = "A1234AA",
-    bookingNo = "123456",
-    bookingId = 54321,
-    crn = "X12345",
-    pnc = "2019/123445",
-    cro = "12345",
-    prisonCode = "MDI",
-    prisonDescription = "Moorland (HMP)",
-    forename = "John",
-    surname = "Smith",
-    dateOfBirth = LocalDate.of(1985, 12, 28),
-    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-    actualReleaseDate = LocalDate.of(2021, 10, 22),
-    sentenceStartDate = LocalDate.of(2018, 10, 22),
-    sentenceEndDate = LocalDate.of(2021, 10, 22),
-    licenceStartDate = LocalDate.of(2021, 10, 22),
-    licenceExpiryDate = LocalDate.of(2021, 10, 22),
-    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-    probationAreaCode = "N01",
-    probationAreaDescription = "Wales",
-    probationPduCode = "N01A",
-    probationPduDescription = "Cardiff",
-    probationLauCode = "N01A2",
-    probationLauDescription = "Cardiff South",
-    probationTeamCode = "NA01A2-A",
-    probationTeamDescription = "Cardiff South Team A",
-    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-    standardConditions = emptyList(),
-    responsibleCom = communityOffenderManager(),
     approvedByName = "jim smith",
     approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
   ).let {
