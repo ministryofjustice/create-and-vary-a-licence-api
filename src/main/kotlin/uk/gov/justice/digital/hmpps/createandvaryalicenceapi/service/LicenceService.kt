@@ -54,6 +54,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePreRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -441,6 +442,11 @@ class LicenceService(
         licenceEntity.submit(submitter as PrisonUser)
       }
 
+      is TimeServedLicence -> {
+        assertCaseIsEligible(eligibilityAssessment, licenceId)
+        licenceEntity.submit(submitter as PrisonUser)
+      }
+
       is HdcLicence -> {
         assertCaseIsEligible(eligibilityAssessment, licenceId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
@@ -724,7 +730,6 @@ class LicenceService(
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
-    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -756,8 +761,8 @@ class LicenceService(
     notifyService.sendVariationReferredEmail(
       licenceEntity.createdBy?.email ?: "",
       "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.getCom().email ?: "",
-      licenceEntity.getCom().fullName,
+      licenceEntity.responsibleCom?.email ?: "",
+      licenceEntity.responsibleCom?.fullName ?: "",
       "${licenceEntity.forename} ${licenceEntity.surname}",
       licenceId.toString(),
     )
@@ -768,7 +773,6 @@ class LicenceService(
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
-    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -800,8 +804,8 @@ class LicenceService(
     notifyService.sendVariationApprovedEmail(
       licenceEntity.createdBy?.email ?: "",
       "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.getCom().email ?: "",
-      licenceEntity.getCom().fullName,
+      licenceEntity.responsibleCom?.email ?: "",
+      licenceEntity.responsibleCom?.fullName ?: "",
       "${licenceEntity.forename} ${licenceEntity.surname}",
       licenceId.toString(),
     )
@@ -828,7 +832,7 @@ class LicenceService(
       .findById(licence.variationOfId!!)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    if (previousLicence is HardStopLicence) {
+    if (previousLicence is ReviewablePreRelease) {
       previousLicence.markAsReviewed(user)
       licenceEventRepository.saveAndFlush(
         EntityLicenceEvent(
@@ -1036,7 +1040,7 @@ class LicenceService(
   fun reviewWithNoVariationRequired(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
 
-    if (licenceEntity !is HardStopLicence) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
+    if (licenceEntity !is ReviewablePreRelease) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
