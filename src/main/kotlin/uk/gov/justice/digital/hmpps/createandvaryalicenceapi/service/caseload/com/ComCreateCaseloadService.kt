@@ -69,6 +69,7 @@ class ComCreateCaseloadService(
     }.toMap()
     val cvlRecords =
       cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord }, nomisIdsToAreaCodes)
+    println(cvlRecords)
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
     val cases = getCasesWithLicences(eligibleCases, cvlRecords)
     val filteredCases = filterHdcAndFutureReleases(cases)
