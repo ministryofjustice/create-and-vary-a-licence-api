@@ -442,11 +442,6 @@ class LicenceService(
         licenceEntity.submit(submitter as PrisonUser)
       }
 
-      is TimeServedLicence -> {
-        assertCaseIsEligible(eligibilityAssessment, licenceId)
-        licenceEntity.submit(submitter as PrisonUser)
-      }
-
       is HdcLicence -> {
         assertCaseIsEligible(eligibilityAssessment, licenceId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
