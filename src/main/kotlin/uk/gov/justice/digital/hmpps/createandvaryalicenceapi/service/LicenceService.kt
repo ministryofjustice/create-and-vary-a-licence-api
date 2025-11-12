@@ -57,9 +57,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -98,6 +99,7 @@ class LicenceService(
   private val exclusionZoneService: ExclusionZoneService,
   private val deliusApiClient: DeliusApiClient,
   private val telemetryService: TelemetryService,
+  private val auditService: AuditService,
 ) {
 
   @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
@@ -502,12 +504,6 @@ class LicenceService(
   fun findSubmittedVariationsByRegion(probationAreaCode: String): List<LicenceSummary> {
     val matchingLicences =
       licenceRepository.findByStatusCodeAndProbationAreaCode(VARIATION_SUBMITTED, probationAreaCode)
-    return matchingLicences.map { it.toSummary() }
-  }
-
-  @Transactional
-  fun findLicencesForCrnsAndStatuses(crns: List<String>, statusCodes: List<LicenceStatus>): List<LicenceSummary> {
-    val matchingLicences = licenceRepository.findAllByCrnInAndStatusCodeIn(crns, statusCodes)
     return matchingLicences.map { it.toSummary() }
   }
 
@@ -1137,6 +1133,34 @@ class LicenceService(
       teamCodes.contains(offenderManager.team.code)
     }
     return LicencePermissionsResponse(viewAccess)
+  }
+
+  @Transactional
+  fun updateLicenceKind(licence: EntityLicence, updatedKind: LicenceKind): EntityLicence {
+    if (licence.kind == HDC) return licence
+
+    val isKindUpdated =
+      licence.kind !in listOf(HARD_STOP, VARIATION) && updatedKind != licence.kind
+    val isEligibleKindUpdated = updatedKind != licence.eligibleKind
+
+    val newKind = if (isKindUpdated) updatedKind else licence.kind
+    val newEligibleKind = if (isEligibleKindUpdated) updatedKind else licence.eligibleKind
+
+    if (isKindUpdated || isEligibleKindUpdated) {
+      val userUpdating =
+        staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication.name)
+      auditService.recordAuditEventLicenceKindUpdated(
+        licence,
+        licence.kind,
+        newKind,
+        licence.eligibleKind,
+        newEligibleKind,
+        userUpdating,
+      )
+      licenceRepository.updateLicenceKinds(licence.id, newKind, newEligibleKind)
+      return getLicence(licence.id)
+    }
+    return licence
   }
 
   private fun EntityLicence.toSummary(): LicenceSummary {

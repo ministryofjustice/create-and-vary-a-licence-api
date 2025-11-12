@@ -1,5 +1,6 @@
 insert into licence (kind,
-					 type_code,
+                     eligible_kind,
+                     type_code,
                      version,
                      status_code,
                      noms_id,
@@ -28,8 +29,8 @@ insert into licence (kind,
                      responsible_com_id,
                      created_by_com_id,
                      licence_version,
-					 post_recall_release_date)
-values (
+                     post_recall_release_date)
+values ('PRRD',
         'PRRD',
         'AP',
         '1.0',
@@ -40,7 +41,7 @@ values (
         'CRN1',
         '2015/1234',
         'CRO1',
-        'MDI',
+        'ABC',
         'Moorland (HMP)',
         'Person',
         'One',
@@ -53,14 +54,14 @@ values (
         '2022-02-25',
         current_date,
         '2023-02-25',
-        'N01',
+        'REGION1',
         'PDU1',
         'LAU1',
         'TEAM1',
         1,
         1,
         '1.0',
-		'2025-02-25');
+        current_date + 1);
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');

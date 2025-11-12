@@ -137,7 +137,9 @@ class PrisonApiMockServer : WireMockServer(8091) {
                 "mostSerious": true
                }
             ],
+            "agencyId": "ABC",
             "legalStatus": "SENTENCED",
+            "status": "ACTIVE IN",
             "sentenceDetail": {
               "confirmedReleaseDate": "$releaseDate",
               "conditionalReleaseDate": "$releaseDate",
