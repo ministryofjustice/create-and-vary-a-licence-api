@@ -9,8 +9,8 @@ import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "record_nomis_time_served_licence_reason")
-class RecordNomisTimeServedLicenceReason(
+@Table(name = "time_served_external_records")
+class TimeServedExternalRecords(
   @Column(name = "noms_id", length = 7, nullable = false)
   val nomsId: String,
 

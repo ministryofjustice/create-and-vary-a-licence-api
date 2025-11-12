@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.RecordNomisLicenceReasonResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.TimeServedExternalRecordsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
@@ -84,7 +84,7 @@ class LicenceCreationServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
-  private val recordNomisTimeServedLicenceReasonService = mock<RecordNomisTimeServedLicenceReasonService>()
+  private val timeServedExternalRecordsService = mock<TimeServedExternalRecordsService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -101,7 +101,7 @@ class LicenceCreationServiceTest {
     cvlRecordService,
     isTimeServedLogicEnabled = true,
     telemetryService,
-    recordNomisTimeServedLicenceReasonService,
+    timeServedExternalRecordsService,
   )
 
   @Nested
@@ -159,7 +159,7 @@ class LicenceCreationServiceTest {
         assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(eligibleKind).isEqualTo(LicenceKind.CRD)
         assertThat(typeCode).isEqualTo(LicenceType.AP)
-        assertThat(version).isEqualTo("2.1")
+        assertThat(version).isEqualTo("3.0")
         assertThat(statusCode).isEqualTo(IN_PROGRESS)
         assertThat(versionOfId).isNull()
         assertThat(licenceVersion).isEqualTo("1.0")
@@ -641,7 +641,7 @@ class LicenceCreationServiceTest {
         assertThat(kind).isEqualTo(LicenceKind.PRRD)
         assertThat(eligibleKind).isEqualTo(LicenceKind.PRRD)
         assertThat(typeCode).isEqualTo(LicenceType.AP)
-        assertThat(version).isEqualTo("2.1")
+        assertThat(version).isEqualTo("3.0")
         assertThat(statusCode).isEqualTo(IN_PROGRESS)
         assertThat(versionOfId).isNull()
         assertThat(licenceVersion).isEqualTo("1.0")
@@ -1141,7 +1141,7 @@ class LicenceCreationServiceTest {
         assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
         assertThat(eligibleKind).isEqualTo(LicenceKind.CRD)
         assertThat(typeCode).isEqualTo(LicenceType.AP)
-        assertThat(version).isEqualTo("2.1")
+        assertThat(version).isEqualTo("3.0")
         assertThat(statusCode).isEqualTo(IN_PROGRESS)
         assertThat(licenceVersion).isEqualTo("1.0")
         assertThat(nomsId).isEqualTo(nomsId)
@@ -1649,7 +1649,7 @@ class LicenceCreationServiceTest {
         assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
         assertThat(eligibleKind).isEqualTo(LicenceKind.CRD)
         assertThat(typeCode).isEqualTo(LicenceType.AP)
-        assertThat(version).isEqualTo("2.1")
+        assertThat(version).isEqualTo("3.0")
         assertThat(statusCode).isEqualTo(IN_PROGRESS)
         assertThat(licenceVersion).isEqualTo("1.0")
         assertThat(nomsId).isEqualTo(nomsId)
@@ -1707,7 +1707,7 @@ class LicenceCreationServiceTest {
       with(licenceCaptor.value as TimeServedLicence) {
         assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
         assertThat(typeCode).isEqualTo(LicenceType.AP)
-        assertThat(version).isEqualTo("2.1")
+        assertThat(version).isEqualTo("3.0")
         assertThat(statusCode).isEqualTo(IN_PROGRESS)
         assertThat(licenceVersion).isEqualTo("1.0")
         assertThat(nomsId).isEqualTo(nomsId)
@@ -1747,7 +1747,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult =
         prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
 
-      val existingLicence = RecordNomisLicenceReasonResponse(
+      val existingLicence = TimeServedExternalRecordsResponse(
         nomsId = aPrisonerSearchResult.prisonerNumber,
         bookingId = aPrisonerSearchResult.bookingId!!.toLong(),
         reason = "Reason",
@@ -1766,13 +1766,13 @@ class LicenceCreationServiceTest {
         ),
       )
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
-      whenever(recordNomisTimeServedLicenceReasonService.findByNomsIdAndBookingId(any(), any())).thenReturn(
+      whenever(timeServedExternalRecordsService.findByNomsIdAndBookingId(any(), any())).thenReturn(
         existingLicence,
       )
 
       service.createHardStopLicence(PRISON_NUMBER)
 
-      verify(recordNomisTimeServedLicenceReasonService, times(1)).deleteNomisLicenceReason(
+      verify(timeServedExternalRecordsService, times(1)).deleteTimeServedExternalRecord(
         existingLicence.nomsId,
         existingLicence.bookingId,
       )

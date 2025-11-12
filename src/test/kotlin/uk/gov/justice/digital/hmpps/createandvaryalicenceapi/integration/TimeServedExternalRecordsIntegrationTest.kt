@@ -5,23 +5,23 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecordNomisLicenceReasonRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.TimeServedExternalRecordsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.RecordNomisTimeServedLicenceReasonRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 
-class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() {
+class TimeServedExternalRecordsIntegrationTest : IntegrationTestBase() {
 
   @Autowired
-  lateinit var licenceRepository: RecordNomisTimeServedLicenceReasonRepository
+  lateinit var licenceRepository: TimeServedExternalRecordsRepository
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
 
   @Test
   fun `should record NOMIS licence reason successfully`() {
-    val request = RecordNomisLicenceReasonRequest(
+    val request = TimeServedExternalRecordsRequest(
       nomsId = "A1234AA",
       bookingId = 123,
       reason = "Initial reason",
@@ -29,7 +29,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
     )
 
     webTestClient.post()
-      .uri("/time-served/nomis/licence/reason")
+      .uri("/time-served/external-records")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(request)
@@ -43,20 +43,20 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
     val auditEvents = auditEventRepository.findAll()
     assertThat(auditEvents).isNotEmpty
     val auditEvent = auditEvents.last()
-    assertThat(auditEvent.summary).isEqualTo("Recorded NOMIS licence reason")
+    assertThat(auditEvent.summary).isEqualTo("Recorded TimeServed External Record Reason")
     assertThat(auditEvent.changes).containsEntry("reason", "Initial reason")
     assertThat(auditEvent.username).isEqualTo("test-client")
   }
 
   @Test
-  @Sql("classpath:test_data/seed-record-nomis-licence-reason-id-1.sql")
+  @Sql("classpath:test_data/seed-time-served-external-records-id-1.sql")
   fun `should update NOMIS licence reason successfully`() {
     val updateRequest = UpdateNomisLicenceReasonRequest(
       reason = "Updated reason",
     )
 
     webTestClient.put()
-      .uri("/time-served/nomis/licence/reason/A1234AA/123")
+      .uri("/time-served/external-records/A1234AA/123")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updateRequest)
@@ -71,7 +71,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
     assertThat(auditEvents).isNotEmpty
     val auditEvent = auditEvents.last()
 
-    assertThat(auditEvent.summary).isEqualTo("Updated NOMIS licence reason")
+    assertThat(auditEvent.summary).isEqualTo("Updated TimeServed External Record reason")
     assertThat(auditEvent.changes).containsEntry("reason (old)", "Time served licence created for conditional release")
     assertThat(auditEvent.changes).containsEntry("reason (new)", "Updated reason")
     assertThat(auditEvent.changes).containsEntry("nomsId", "A1234AA")
@@ -81,10 +81,10 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
   }
 
   @Test
-  @Sql("classpath:test_data/seed-record-nomis-licence-reason-id-1.sql")
+  @Sql("classpath:test_data/seed-time-served-external-records-id-1.sql")
   fun `should retrieve NOMIS licence reason successfully`() {
     webTestClient.get()
-      .uri("/time-served/nomis/licence/reason/A1234AA/123")
+      .uri("/time-served/external-records/A1234AA/123")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -94,7 +94,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
 
   @Test
   fun `should return 400 for invalid request body`() {
-    val invalidRequest = RecordNomisLicenceReasonRequest(
+    val invalidRequest = TimeServedExternalRecordsRequest(
       nomsId = "",
       bookingId = 0,
       reason = "",
@@ -102,7 +102,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
     )
 
     webTestClient.post()
-      .uri("/time-served/nomis/licence/reason")
+      .uri("/time-served/external-records")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(invalidRequest)
@@ -112,7 +112,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
 
   @Test
   fun `should return 403 for unauthorized role`() {
-    val request = RecordNomisLicenceReasonRequest(
+    val request = TimeServedExternalRecordsRequest(
       nomsId = "A1234AA",
       bookingId = 12345,
       reason = "Test reason",
@@ -120,7 +120,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
     )
 
     webTestClient.post()
-      .uri("/time-served/nomis/licence/reason")
+      .uri("/time-served/external-records")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(request)
@@ -135,7 +135,7 @@ class RecordNomisTimeServedLicenceReasonIntegrationTest : IntegrationTestBase() 
     )
 
     webTestClient.put()
-      .uri("/time-served/nomis/licence/reason/A9999ZZ/99999")
+      .uri("/time-served/external-records/A9999ZZ/99999")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updateRequest)
