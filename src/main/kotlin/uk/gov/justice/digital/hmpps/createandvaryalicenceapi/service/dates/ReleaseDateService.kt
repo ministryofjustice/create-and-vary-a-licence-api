@@ -216,12 +216,14 @@ class ReleaseDateService(
     }
   }
 
-  fun calculatePrrdLicenceStartDate(prisoner: PrisonerSearchPrisoner): LocalDate? = when {
-    prisoner.postRecallReleaseDate == null -> null
-    prisoner.confirmedReleaseDate == null -> getLastWorkingDay(prisoner.postRecallReleaseDate)
-    prisoner.confirmedReleaseDate.isAfter(prisoner.postRecallReleaseDate) -> getLastWorkingDay(prisoner.postRecallReleaseDate)
-    prisoner.confirmedReleaseDate.isOnOrBefore(prisoner.conditionalReleaseDate) -> getLastWorkingDay(prisoner.postRecallReleaseDate)
-    else -> prisoner.confirmedReleaseDate
+  fun calculatePrrdLicenceStartDate(prisoner: PrisonerSearchPrisoner): LocalDate? = with(prisoner) {
+    when {
+      postRecallReleaseDate == null -> null
+      confirmedReleaseDate == null -> getLastWorkingDay(prisoner.postRecallReleaseDate)
+      confirmedReleaseDate.isAfter(prisoner.postRecallReleaseDate) -> getLastWorkingDay(prisoner.postRecallReleaseDate)
+      confirmedReleaseDate.isOnOrBefore(prisoner.conditionalReleaseDate) -> getLastWorkingDay(prisoner.postRecallReleaseDate)
+      else -> confirmedReleaseDate
+    }
   }
 
   private fun getLastWorkingDay(date: LocalDate?): LocalDate? = when {
