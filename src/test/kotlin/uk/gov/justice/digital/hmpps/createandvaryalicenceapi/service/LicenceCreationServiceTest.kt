@@ -84,7 +84,7 @@ class LicenceCreationServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
-  private val timeServedExternalRecordsService = mock<TimeServedExternalRecordsService>()
+  private val timeServedExternalRecordsService = mock<TimeServedExternalRecordService>()
 
   private val service = LicenceCreationService(
     licenceRepository,

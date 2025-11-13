@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.C
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
@@ -109,13 +108,6 @@ object TestData {
     name = Name("Joe", null, "Bloggs"),
     allocationDate = LocalDate.of(2000, 1, 1),
     unallocated = false,
-  )
-
-  fun ca() = PrisonUser(
-    username = "tca",
-    email = "testemail@probation.gov.uk",
-    firstName = "X",
-    lastName = "Y",
   )
 
   fun anAdditionalCondition(id: Long, licence: Licence) = AdditionalCondition(
@@ -321,12 +313,7 @@ object TestData {
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
     responsibleCom = communityOffenderManager(),
-    createdBy = PrisonUser(
-      username = "tca",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    createdBy = prisonUser(),
   ).let {
     it.copy(
       standardConditions = someEntityStandardConditions(it),
@@ -370,12 +357,7 @@ object TestData {
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
     responsibleCom = communityOffenderManager(),
-    createdBy = PrisonUser(
-      username = "tca",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    createdBy = prisonUser(),
   ).let {
     it.copy(
       standardConditions = someEntityStandardConditions(it),
@@ -419,12 +401,7 @@ object TestData {
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
     responsibleCom = communityOffenderManager(),
-    createdBy = PrisonUser(
-      username = "tca",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    createdBy = prisonUser(),
     postRecallReleaseDate = LocalDate.now(),
   ).let {
     it.copy(
@@ -672,11 +649,6 @@ object TestData {
     comStaffCode = "B1234",
     comName = "John Doe",
     comAllocationDate = LocalDate.parse("2025-01-27"),
-  )
-
-  fun managedOffenderCrn() = ManagedOffenderCrn(
-    crn = "X12348",
-    staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
   )
 
   fun offenderManager() = CommunityManager(
@@ -1030,5 +1002,12 @@ object TestData {
     username = "joebloggs",
     code = "X1234",
     name = Name(forename = "Delius", surname = "User"),
+  )
+
+  fun prisonUser(): PrisonUser = PrisonUser(
+    username = "tca",
+    email = "testemail@probation.gov.uk",
+    firstName = "X",
+    lastName = "Y",
   )
 }
