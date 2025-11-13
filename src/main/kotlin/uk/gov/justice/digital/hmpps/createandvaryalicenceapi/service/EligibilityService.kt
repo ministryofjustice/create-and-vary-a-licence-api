@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -13,30 +13,23 @@ import java.time.LocalDate
 @Service
 class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
+  private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
-  @param:Value("\${recall.enabled}") private val recallEnabled: Boolean = false,
-  @param:Value("\${recall.prisons}") private val recallEnabledPrisons: List<String> = emptyList(),
-  @param:Value("\${recall.regions}") private val recallEnabledRegions: List<String> = emptyList(),
 ) {
 
-  fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner, areaCode: String): EligibilityAssessment {
-    val assessments = getEligibilityAssessments(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))
+  fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner): EligibilityAssessment {
+    val assessments = getEligibilityAssessments(listOf(prisoner))
     return assessments.values.first()
   }
 
-  fun getEligibilityAssessments(
-    prisoners: List<PrisonerSearchPrisoner>,
-    nomisIdsToAreaCodes: Map<String, String>,
-  ): Map<String, EligibilityAssessment> {
+  fun getEligibilityAssessments(prisoners: List<PrisonerSearchPrisoner>): Map<String, EligibilityAssessment> {
     val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
-      val permitRecalls =
-        (recallEnabled || (recallEnabledPrisons.contains(prisoner.prisonId) && recallEnabledRegions.contains(nomisIdsToAreaCodes[prisoner.prisonerNumber])))
-
       val genericIneligibilityReasons = getGenericIneligibilityReasons(prisoner)
       val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner)
-      val prrdIneligibilityReasons = if (permitRecalls) getPrrdIneligibilityReasons(prisoner) else mutableListOf()
+      val prrdIneligibilityReasons = getPrrdIneligibilityReasons(prisoner)
 
-      val isEligible = genericIneligibilityReasons.isEmpty() && (crdIneligibilityReasons.isEmpty() || (permitRecalls && prrdIneligibilityReasons.isEmpty()))
+      val isEligible =
+        genericIneligibilityReasons.isEmpty() && (crdIneligibilityReasons.isEmpty() || prrdIneligibilityReasons.isEmpty())
 
       return@map prisoner.prisonerNumber to EligibilityAssessment(
         genericIneligibilityReasons,
@@ -46,9 +39,7 @@ class EligibilityService(
       )
     }.toMap()
 
-    val eligibleCases = overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
-
-    return eligibleCases
+    return overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
   }
 
   fun getGenericIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
@@ -78,6 +69,7 @@ class EligibilityService(
     val eligibilityCriteria = listOf(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
+      !isApSledRelease(prisoner) to "is AP-only being released at SLED",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
@@ -133,6 +125,16 @@ class EligibilityService(
 
   private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
 
+  private fun isApSledRelease(prisoner: PrisonerSearchPrisoner): Boolean = when {
+    prisoner.postRecallReleaseDate == null -> false
+    prisoner.licenceExpiryDate == null -> false
+    prisoner.topupSupervisionExpiryDate != null && prisoner.topupSupervisionExpiryDate.isAfter(prisoner.licenceExpiryDate) -> false
+    else -> {
+      val releaseDate = releaseDateService.calculatePrrdLicenceStartDate(prisoner)
+      releaseDateService.isReleaseAtLed(releaseDate, prisoner.licenceExpiryDate)
+    }
+  }
+
   // Shared eligibility rules
   private fun isPersonParoleEligible(prisoner: PrisonerSearchPrisoner): Boolean {
     if (prisoner.paroleEligibilityDate != null) {
@@ -164,7 +166,10 @@ class EligibilityService(
   }
 
   // Miscellaneous functions
-  private fun overrideNonFixedTermRecalls(prisoners: List<PrisonerSearchPrisoner>, nomisIdsToEligibilityAssessments: Map<String, EligibilityAssessment>): Map<String, EligibilityAssessment> {
+  private fun overrideNonFixedTermRecalls(
+    prisoners: List<PrisonerSearchPrisoner>,
+    nomisIdsToEligibilityAssessments: Map<String, EligibilityAssessment>,
+  ): Map<String, EligibilityAssessment> {
     val nonRecallCases = mutableMapOf<String, EligibilityAssessment>()
     val recallCases = mutableMapOf<String, EligibilityAssessment>()
 
@@ -176,12 +181,12 @@ class EligibilityService(
       }
     }
 
-    val overriddenRecallCases = overrideEligiblityForRecalls(prisoners, recallCases)
+    val overriddenRecallCases = overrideEligibilityForRecalls(prisoners, recallCases)
 
     return nonRecallCases + overriddenRecallCases
   }
 
-  private fun overrideEligiblityForRecalls(
+  private fun overrideEligibilityForRecalls(
     prisoners: List<PrisonerSearchPrisoner>,
     recallCases: Map<String, EligibilityAssessment>,
   ): Map<String, EligibilityAssessment> {
@@ -203,6 +208,7 @@ class EligibilityService(
             isEligible = false,
           )
         }
+
         case.sentenceTypeRecallTypes.any { it.recallType.isFixedTermRecall } -> nomisId to eligibilityAssessment
         else -> {
           nomisId to EligibilityAssessment(

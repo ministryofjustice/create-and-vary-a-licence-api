@@ -82,7 +82,7 @@ class ComCreateCaseloadServiceTest {
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(0)
-    verify(cvlRecordService, times(1)).getCvlRecords(emptyList(), emptyMap())
+    verify(cvlRecordService, times(1)).getCvlRecords(emptyList())
   }
 
   @Test
@@ -120,7 +120,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -129,7 +129,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -172,7 +172,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -181,7 +181,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -246,7 +246,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
         aCvlRecord(nomsId = "AB1234F", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
@@ -365,7 +365,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(caseloadItems)
 
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
         aCvlRecord(
@@ -523,7 +523,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = LocalDate.now().minusDays(2)),
         aCvlRecord(nomsId = "AB1234F", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
@@ -630,7 +630,7 @@ class ComCreateCaseloadServiceTest {
     )
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(caseloadItems)
 
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
         aCvlRecord(
@@ -750,7 +750,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
         aCvlRecord(
@@ -811,7 +811,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(caseLoadItem))
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = prisonerNumber,
@@ -844,7 +844,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(caseLoadItem))
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = prisonerNumber,
@@ -893,7 +893,7 @@ class ComCreateCaseloadServiceTest {
         recall = true,
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
       ),
@@ -924,7 +924,7 @@ class ComCreateCaseloadServiceTest {
       ),
     )
 
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -977,7 +977,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -1039,7 +1039,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -1093,7 +1093,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -1140,7 +1140,7 @@ class ComCreateCaseloadServiceTest {
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       emptyList(),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -1196,7 +1196,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -1250,7 +1250,7 @@ class ComCreateCaseloadServiceTest {
     )
 
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(listOf(comCase))
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
@@ -1306,7 +1306,7 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",

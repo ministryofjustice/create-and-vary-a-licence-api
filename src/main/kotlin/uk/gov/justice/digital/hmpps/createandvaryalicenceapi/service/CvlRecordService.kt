@@ -4,9 +4,11 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
+import java.time.LocalDate
 
 @Service
 class CvlRecordService(
@@ -14,16 +16,15 @@ class CvlRecordService(
   private val releaseDateService: ReleaseDateService,
 ) {
 
-  fun getCvlRecord(prisoner: PrisonerSearchPrisoner, areaCode: String): CvlRecord {
-    val recordList = getCvlRecords(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))
+  fun getCvlRecord(prisoner: PrisonerSearchPrisoner): CvlRecord {
+    val recordList = getCvlRecords(listOf(prisoner))
     return recordList.first { it.nomisId == prisoner.prisonerNumber }
   }
 
   fun getCvlRecords(
     prisoners: List<PrisonerSearchPrisoner>,
-    nomisIdsToAreaCodes: Map<String, String>,
   ): List<CvlRecord> {
-    val nomisIdsToEligibility = eligibilityService.getEligibilityAssessments(prisoners, nomisIdsToAreaCodes)
+    val nomisIdsToEligibility = eligibilityService.getEligibilityAssessments(prisoners)
     val nomisIdsToEligibleKinds =
       nomisIdsToEligibility.map { (nomisId, eligibility) -> nomisId to eligibility.eligibleKind }.toMap()
     val nomisIdsToLicenceStartDates = releaseDateService.getLicenceStartDates(prisoners, nomisIdsToEligibleKinds)
@@ -50,15 +51,24 @@ class CvlRecordService(
         isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           licenceStartDate,
         ),
-        licenceType = getLicenceType(prisoner),
+        licenceType = getLicenceType(prisoner, licenceStartDate, eligibility.eligibleKind),
       )
     }
   }
 
-  private fun getLicenceType(nomisRecord: PrisonerSearchPrisoner) = when {
+  private fun getLicenceType(nomisRecord: PrisonerSearchPrisoner, licenceStartDate: LocalDate?, kind: LicenceKind?) = when {
     nomisRecord.licenceExpiryDate == null && nomisRecord.topupSupervisionExpiryDate == null -> AP
     nomisRecord.licenceExpiryDate == null -> PSS
     nomisRecord.topupSupervisionExpiryDate == null || nomisRecord.topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
+    kind == LicenceKind.PRRD -> getRecallLicenceType(nomisRecord, licenceStartDate)
+    else -> AP_PSS
+  }
+
+  private fun getRecallLicenceType(nomisRecord: PrisonerSearchPrisoner, licenceStartDate: LocalDate?) = when {
+    // If release at SLED, go directly into PSS period
+    releaseDateService.isReleaseAtLed(licenceStartDate, nomisRecord.licenceExpiryDate) -> PSS
+
+    // If early release, the period spent on early release is AP
     else -> AP_PSS
   }
 }

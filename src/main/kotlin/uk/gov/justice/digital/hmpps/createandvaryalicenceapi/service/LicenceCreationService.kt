@@ -52,7 +52,7 @@ class LicenceCreationService(
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
   private val isTimeServedLogicEnabled: Boolean = false,
   private val telemetryService: TelemetryService,
-  private val timeServedExternalRecordsService: TimeServedExternalRecordsService,
+  private val timeServedExternalRecordService: TimeServedExternalRecordService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -70,7 +70,7 @@ class LicenceCreationService(
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
       ?: error("No active offender manager found for $prisonNumber")
-    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord, currentResponsibleOfficerDetails.team.provider.code)
+    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
       ?: createCom(currentResponsibleOfficerDetails.id)
@@ -127,8 +127,7 @@ class LicenceCreationService(
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
-    val areaCode = currentResponsibleOfficerDetails?.team?.provider?.code ?: ""
-    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord, areaCode)
+    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
     val responsibleCom = currentResponsibleOfficerDetails?.let {
       staffRepository.findByStaffIdentifier(it.id) ?: createCom(it.id)
     }
@@ -193,9 +192,10 @@ class LicenceCreationService(
     if (isTimeServedLicenceCreation) {
       val nomisId = nomisRecord.prisonerNumber
       val bookingId = nomisRecord.bookingId!!.toLong()
-      val existingReasonForCreatingLicenceInNomis = timeServedExternalRecordsService.findByNomsIdAndBookingId(nomisId, bookingId)
+      val existingReasonForCreatingLicenceInNomis =
+        timeServedExternalRecordService.findByNomsIdAndBookingId(nomisId, bookingId)
       if (existingReasonForCreatingLicenceInNomis != null) {
-        timeServedExternalRecordsService.deleteTimeServedExternalRecord(nomisId, bookingId)
+        timeServedExternalRecordService.deleteTimeServedExternalRecord(nomisId, bookingId)
       }
     }
 

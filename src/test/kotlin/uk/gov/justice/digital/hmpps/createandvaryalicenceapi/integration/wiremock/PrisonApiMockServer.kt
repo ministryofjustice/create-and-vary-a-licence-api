@@ -9,6 +9,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import java.time.LocalDate
 
@@ -203,6 +204,16 @@ class PrisonApiMockServer : WireMockServer(8091) {
             ]
           }]
           """.trimMargin(),
+        ).withStatus(200),
+      ),
+    )
+  }
+
+  fun stubGetSentenceAndRecallTypes(sentenceAndRecallTypes: List<BookingSentenceAndRecallTypes>) {
+    stubFor(
+      post(urlEqualTo("/api/offender-sentences/bookings/sentence-and-recall-types")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          objectMapper.writeValueAsString(sentenceAndRecallTypes),
         ).withStatus(200),
       ),
     )

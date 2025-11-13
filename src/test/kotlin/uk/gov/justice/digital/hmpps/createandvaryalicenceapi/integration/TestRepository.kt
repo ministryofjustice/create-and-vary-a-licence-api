@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecords
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedProbationConfirmContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -54,8 +54,8 @@ interface TestAdditionalConditionRepository : JpaRepository<AdditionalCondition,
 interface TestAddressRepository : JpaRepository<Address, Long>
 
 @Repository
-interface TestTimeServedExternalRecordsRepository : JpaRepository<TimeServedExternalRecords, Long> {
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecords?
+interface TestTimeServedExternalRecordsRepository : JpaRepository<TimeServedExternalRecord, Long> {
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecord?
 }
 
 @Repository
@@ -104,6 +104,7 @@ class TestRepository(
     if (assertNotEmpty) assertThat(licences).isNotEmpty
     return licences
   }
+
   fun countLicence(): Long = licenceRepository.count()
 
   fun findAllAuditEventsByLicenceIdIn(list: List<Long>, assertNotEmpty: Boolean = true): List<AuditEvent> {
@@ -119,6 +120,8 @@ class TestRepository(
   }
 
   fun getAuditEventCount(): Long = auditEventRepository.count()
+
+  fun findAllAuditEvents(): List<AuditEvent> = auditEventRepository.findAll()
 
   fun findFirstAuditEvent(licenceId: Long = 1L): AuditEvent {
     val event = auditEventRepository.findAllByLicenceIdIn(listOf(licenceId)).firstOrNull()
@@ -152,7 +155,11 @@ class TestRepository(
     return list
   }
 
-  fun findTimeServedExternalRecordByNomsIdAndBookingId(nomsId: String, bookingId: Long, assertNotNull: Boolean = true): TimeServedExternalRecords? {
+  fun findTimeServedExternalRecordByNomsIdAndBookingId(
+    nomsId: String,
+    bookingId: Long,
+    assertNotNull: Boolean = true,
+  ): TimeServedExternalRecord? {
     val reason = testTimeServedExternalRecordsRepository.findByNomsIdAndBookingId(nomsId, bookingId)
     if (assertNotNull) assertThat(reason).isNotNull
     return reason
