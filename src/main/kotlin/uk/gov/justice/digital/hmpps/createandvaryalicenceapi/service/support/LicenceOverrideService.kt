@@ -146,18 +146,18 @@ class LicenceOverrideService(
     log.info(
       buildString {
         append("Updated kind and dates - ID $licenceId")
-        append("kind ${request.updatedKind}")
-        append("CRD ${request.conditionalReleaseDate}")
-        append("ARD ${request.actualReleaseDate}")
-        append("SSD ${request.sentenceStartDate}")
-        append("SED ${request.sentenceEndDate}")
-        append("LSD $licenceStartDate")
-        append("LED ${request.licenceExpiryDate}")
-        append("TUSSD ${request.topupSupervisionStartDate}")
-        append("TUSED ${request.topupSupervisionExpiryDate}")
+        append("kind ${request.updatedKind}, ")
+        append("CRD ${request.conditionalReleaseDate}, ")
+        append("ARD ${request.actualReleaseDate}. ")
+        append("SSD ${request.sentenceStartDate}, ")
+        append("SED ${request.sentenceEndDate}, ")
+        append("LSD $licenceStartDate, ")
+        append("LED ${request.licenceExpiryDate}, ")
+        append("TUSSD ${request.topupSupervisionStartDate}, ")
+        append("TUSED ${request.topupSupervisionExpiryDate}, ")
         append("PRRD ${request.postRecallReleaseDate}")
         if (licence is HdcLicence) {
-          append("HDCAD ${request.homeDetentionCurfewActualDate}")
+          append("HDCAD ${request.homeDetentionCurfewActualDate}, ")
           append("HDCEndDate ${request.homeDetentionCurfewEndDate}")
         }
       },

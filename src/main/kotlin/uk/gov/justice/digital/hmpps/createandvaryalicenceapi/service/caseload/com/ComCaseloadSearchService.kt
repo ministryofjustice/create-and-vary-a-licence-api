@@ -54,11 +54,7 @@ class ComCaseloadSearchService(
 
     val deliusRecordsToLicences = teamCaseloadResult.map { it to getLicence(it.crn) }
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsToLicences)
-
-    val nomisIdsToAreaCodes = teamCaseloadResult
-      .filter { it.nomisId != null }
-      .associate { it.nomisId!! to it.team.provider.code }
-    val cvlRecords = cvlRecordService.getCvlRecords(prisonerRecords.values.toList(), nomisIdsToAreaCodes)
+    val cvlRecords = cvlRecordService.getCvlRecords(prisonerRecords.values.toList())
 
     val cvlSearchRecords = deliusRecordsToLicences.map { (caseloadResult, licence) ->
       val prisonRecord = prisonerRecords[caseloadResult.nomisId]
