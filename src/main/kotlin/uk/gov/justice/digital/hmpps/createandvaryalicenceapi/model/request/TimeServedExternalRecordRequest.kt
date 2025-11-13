@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Request object for creating a new NOMIS Time Served licence creation reason")
-data class TimeServedExternalRecordsRequest(
+data class TimeServedExternalRecordRequest(
   @field:Schema(description = "The prison NOMIS identifier for this offender", example = "A1234AA")
   @field:NotBlank(message = "nomsId must not be blank")
   val nomsId: String,

@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import jakarta.persistence.EntityNotFoundException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecords
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.TimeServedExternalRecordsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateNomisLicenceReasonRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ExternalTimeServedRecordRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.TimeServedExternalRecordsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -16,21 +14,38 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
 
+private const val CREATED_MESSAGE = "TimeServed External Record Reason created"
+private const val UPDATED_MESSAGE = "TimeServed External Record Reason updated"
+private const val DELETED_MESSAGE = "Deleted NOMIS licence reason"
+
 @Service
-class TimeServedExternalRecordsService(
-  private val licenceRepository: TimeServedExternalRecordsRepository,
+class TimeServedExternalRecordService(
+  private val timesServedRecordService: TimeServedExternalRecordsRepository,
   private val staffRepository: StaffRepository,
   private val auditEventRepository: AuditEventRepository,
 ) {
 
   @Transactional
-  fun createTimeServedExternalRecord(request: TimeServedExternalRecordsRequest) {
+  fun setTimeServedExternalRecord(prisonNumber: String, bookingId: Long, request: ExternalTimeServedRecordRequest) {
+    val record = timesServedRecordService.findByNomsIdAndBookingId(prisonNumber, bookingId)
+    if (record == null) {
+      createTimeServedExternalRecord(prisonNumber, bookingId, request)
+    } else {
+      updateTimeServedExternalRecord(record, request)
+    }
+  }
+
+  private fun createTimeServedExternalRecord(
+    prisonNumber: String,
+    bookingId: Long,
+    request: ExternalTimeServedRecordRequest,
+  ) {
     val staff = getCurrentStaff()
 
-    val licenceRecord = licenceRepository.saveAndFlush(
-      TimeServedExternalRecords(
-        nomsId = request.nomsId,
-        bookingId = request.bookingId,
+    val licenceRecord = timesServedRecordService.saveAndFlush(
+      TimeServedExternalRecord(
+        nomsId = prisonNumber,
+        bookingId = bookingId,
         reason = request.reason,
         prisonCode = request.prisonCode,
         updatedByCa = staff,
@@ -38,7 +53,7 @@ class TimeServedExternalRecordsService(
     )
 
     saveAuditEvent(
-      summary = "Recorded TimeServed External Record Reason",
+      summary = CREATED_MESSAGE,
       detail = "Created TimeServed External Record: ID=${licenceRecord.id}",
       staff = staff,
       changes = mapOf(
@@ -50,34 +65,39 @@ class TimeServedExternalRecordsService(
     )
   }
 
-  @Transactional
-  fun updateTimeServedExternalRecord(nomsId: String, bookingId: Long, request: UpdateNomisLicenceReasonRequest) {
-    val licenceRecord = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
-      ?: throw EntityNotFoundException("TimeServed External Record with nomsId $nomsId and bookingId $bookingId not found")
+  private fun updateTimeServedExternalRecord(
+    record: TimeServedExternalRecord,
+    request: ExternalTimeServedRecordRequest,
+  ) {
+    val oldReason = record.reason
+    val oldPrisonCode = record.prisonCode
 
     val staff = getCurrentStaff()
-    val oldReason = licenceRecord.reason
 
-    licenceRecord.reason = request.reason
-    licenceRecord.updatedByCa = staff
-    licenceRecord.dateLastUpdated = LocalDateTime.now()
+    record.reason = request.reason
+    record.prisonCode = request.prisonCode
+    record.updatedByCa = staff
+    record.dateLastUpdated = LocalDateTime.now()
+
+    val updatedLicence = timesServedRecordService.saveAndFlush(record)
 
     saveAuditEvent(
-      summary = "Updated TimeServed External Record reason",
-      detail = "Updated TimeServed External Record: ID=${licenceRecord.id}",
+      summary = UPDATED_MESSAGE,
+      detail = "Updated TimeServed External Record: ID=${updatedLicence.id}",
       staff = staff,
       changes = mapOf(
+        "nomsId" to updatedLicence.nomsId,
+        "bookingId" to updatedLicence.bookingId,
         "reason (old)" to oldReason,
-        "reason (new)" to licenceRecord.reason,
-        "nomsId" to licenceRecord.nomsId,
-        "bookingId" to licenceRecord.bookingId,
-        "prisonCode" to licenceRecord.prisonCode,
+        "reason (new)" to request.reason,
+        "prisonCode (old)" to oldPrisonCode,
+        "prisonCode (new)" to request.prisonCode,
       ),
     )
   }
 
   @Transactional(readOnly = true)
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecordsResponse? = licenceRepository
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecordsResponse? = timesServedRecordService
     .findByNomsIdAndBookingId(nomsId, bookingId)?.let {
       TimeServedExternalRecordsResponse(
         nomsId = it.nomsId,
@@ -91,15 +111,15 @@ class TimeServedExternalRecordsService(
 
   @Transactional
   fun deleteTimeServedExternalRecord(nomsId: String, bookingId: Long) {
-    val reasonEntity = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
+    val reasonEntity = timesServedRecordService.findByNomsIdAndBookingId(nomsId, bookingId)
       ?: return
 
     val staff = getCurrentStaff()
 
-    licenceRepository.delete(reasonEntity)
+    timesServedRecordService.delete(reasonEntity)
 
     saveAuditEvent(
-      summary = "Deleted NOMIS licence reason",
+      summary = DELETED_MESSAGE,
       detail = "Deleted NOMIS licence record: ID=${reasonEntity.id}",
       staff = staff,
       changes = mapOf(
