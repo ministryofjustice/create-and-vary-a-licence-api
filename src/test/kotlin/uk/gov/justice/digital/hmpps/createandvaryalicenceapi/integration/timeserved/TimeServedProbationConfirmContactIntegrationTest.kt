@@ -48,6 +48,9 @@ class TimeServedProbationConfirmContactIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
+  @Sql(
+    "classpath:test_data/seed-probation-confirm-id-1.sql",
+  )
   fun `Update existing probation contact record`() {
     // Given
     val licenceId = 1L
@@ -67,6 +70,7 @@ class TimeServedProbationConfirmContactIntegrationTest : IntegrationTestBase() {
       ContactStatus.WILL_CONTACT_SOON,
       setOf(CommunicationMethod.TEAMS, CommunicationMethod.OTHER),
       expectedOtherDetail = "In person",
+      update = true
     )
   }
 
@@ -135,6 +139,7 @@ class TimeServedProbationConfirmContactIntegrationTest : IntegrationTestBase() {
     expectedContacted: ContactStatus,
     expectedCommunication: Set<CommunicationMethod>,
     expectedOtherDetail: String? = null,
+    update: Boolean = false,
   ) {
     val entity = testRepository.findTimeServedProbationConfirmContact(licenceId)
     assertThat(entity).isNotNull
@@ -147,8 +152,13 @@ class TimeServedProbationConfirmContactIntegrationTest : IntegrationTestBase() {
 
       val now = LocalDateTime.now()
       val tolerance = Duration.ofSeconds(5) // allow 5 seconds difference
-      assertThat(it.dateCreated).isCloseTo(now, within(tolerance))
-      assertThat(it.dateLastUpdated).isCloseTo(now, within(tolerance))
+      if (update) {
+        assertThat(it.dateCreated).isBefore(it.dateLastUpdated)
+        assertThat(it.dateLastUpdated).isCloseTo(now, within(tolerance))
+      } else {
+        assertThat(it.dateCreated).isCloseTo(now, within(tolerance))
+        assertThat(it.dateLastUpdated).isCloseTo(now, within(tolerance))
+      }
     }
   }
 
