@@ -52,7 +52,7 @@ class LicenceCreationService(
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
   private val isTimeServedLogicEnabled: Boolean = false,
   private val telemetryService: TelemetryService,
-  private val timeServedExternalRecordsService: TimeServedExternalRecordsService,
+  private val timeServedExternalRecordService: TimeServedExternalRecordService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -193,9 +193,10 @@ class LicenceCreationService(
     if (isTimeServedLicenceCreation) {
       val nomisId = nomisRecord.prisonerNumber
       val bookingId = nomisRecord.bookingId!!.toLong()
-      val existingReasonForCreatingLicenceInNomis = timeServedExternalRecordsService.findByNomsIdAndBookingId(nomisId, bookingId)
+      val existingReasonForCreatingLicenceInNomis =
+        timeServedExternalRecordService.findByNomsIdAndBookingId(nomisId, bookingId)
       if (existingReasonForCreatingLicenceInNomis != null) {
-        timeServedExternalRecordsService.deleteTimeServedExternalRecord(nomisId, bookingId)
+        timeServedExternalRecordService.deleteTimeServedExternalRecord(nomisId, bookingId)
       }
     }
 
