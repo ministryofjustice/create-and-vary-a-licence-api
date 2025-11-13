@@ -52,28 +52,26 @@ class TimeServedExternalRecordsService(
 
   @Transactional
   fun updateTimeServedExternalRecord(nomsId: String, bookingId: Long, request: UpdateNomisLicenceReasonRequest) {
-    val licence = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
+    val licenceRecord = licenceRepository.findByNomsIdAndBookingId(nomsId, bookingId)
       ?: throw EntityNotFoundException("TimeServed External Record with nomsId $nomsId and bookingId $bookingId not found")
 
     val staff = getCurrentStaff()
-    val oldReason = licence.reason
+    val oldReason = licenceRecord.reason
 
-    licence.reason = request.reason
-    licence.updatedByCa = staff
-    licence.dateLastUpdated = LocalDateTime.now()
-
-    val updatedLicence = licenceRepository.saveAndFlush(licence)
+    licenceRecord.reason = request.reason
+    licenceRecord.updatedByCa = staff
+    licenceRecord.dateLastUpdated = LocalDateTime.now()
 
     saveAuditEvent(
       summary = "Updated TimeServed External Record reason",
-      detail = "Updated TimeServed External Record: ID=${updatedLicence.id}",
+      detail = "Updated TimeServed External Record: ID=${licenceRecord.id}",
       staff = staff,
       changes = mapOf(
         "reason (old)" to oldReason,
-        "reason (new)" to updatedLicence.reason,
-        "nomsId" to updatedLicence.nomsId,
-        "bookingId" to updatedLicence.bookingId,
-        "prisonCode" to updatedLicence.prisonCode,
+        "reason (new)" to licenceRecord.reason,
+        "nomsId" to licenceRecord.nomsId,
+        "bookingId" to licenceRecord.bookingId,
+        "prisonCode" to licenceRecord.prisonCode,
       ),
     )
   }
