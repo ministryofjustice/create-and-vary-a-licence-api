@@ -95,11 +95,6 @@ notify:
 policyv3:
   enabled: true
 
-recall:
-  enabled: false
-  prisons: "ABC"
-  regions: "REGION1"
-
 oauth:
   client:
     id: client-id

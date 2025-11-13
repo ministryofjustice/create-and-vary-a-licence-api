@@ -421,7 +421,7 @@ class LicenceService(
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licenceEntity.nomsId!!)).first()
     val eligibilityAssessment =
-      eligibilityService.getEligibilityAssessment(nomisRecord, licenceEntity.probationAreaCode!!)
+      eligibilityService.getEligibilityAssessment(nomisRecord)
 
     when (licenceEntity) {
       is PrrdLicence -> {
@@ -636,7 +636,7 @@ class LicenceService(
     }
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)).first()
-    val eligibilityAssessment = eligibilityService.getEligibilityAssessment(nomisRecord, licence.probationAreaCode!!)
+    val eligibilityAssessment = eligibilityService.getEligibilityAssessment(nomisRecord)
 
     assertCaseIsEligible(eligibilityAssessment, licenceId)
 

@@ -16,16 +16,15 @@ class CvlRecordService(
   private val releaseDateService: ReleaseDateService,
 ) {
 
-  fun getCvlRecord(prisoner: PrisonerSearchPrisoner, areaCode: String): CvlRecord {
-    val recordList = getCvlRecords(listOf(prisoner), mapOf(prisoner.prisonerNumber to areaCode))
+  fun getCvlRecord(prisoner: PrisonerSearchPrisoner): CvlRecord {
+    val recordList = getCvlRecords(listOf(prisoner))
     return recordList.first { it.nomisId == prisoner.prisonerNumber }
   }
 
   fun getCvlRecords(
     prisoners: List<PrisonerSearchPrisoner>,
-    nomisIdsToAreaCodes: Map<String, String>,
   ): List<CvlRecord> {
-    val nomisIdsToEligibility = eligibilityService.getEligibilityAssessments(prisoners, nomisIdsToAreaCodes)
+    val nomisIdsToEligibility = eligibilityService.getEligibilityAssessments(prisoners)
     val nomisIdsToEligibleKinds =
       nomisIdsToEligibility.map { (nomisId, eligibility) -> nomisId to eligibility.eligibleKind }.toMap()
     val nomisIdsToLicenceStartDates = releaseDateService.getLicenceStartDates(prisoners, nomisIdsToEligibleKinds)
