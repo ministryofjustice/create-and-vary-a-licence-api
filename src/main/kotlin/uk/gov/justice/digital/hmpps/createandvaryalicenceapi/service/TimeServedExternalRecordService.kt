@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ExternalTimeServedRecordRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.TimeServedExternalRecordsResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ExternalTimeServedRecordResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
@@ -97,9 +97,9 @@ class TimeServedExternalRecordService(
   }
 
   @Transactional(readOnly = true)
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecordsResponse? = timesServedRecordService
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): ExternalTimeServedRecordResponse? = timesServedRecordService
     .findByNomsIdAndBookingId(nomsId, bookingId)?.let {
-      TimeServedExternalRecordsResponse(
+      ExternalTimeServedRecordResponse(
         nomsId = it.nomsId,
         bookingId = it.bookingId,
         reason = it.reason,
@@ -110,7 +110,7 @@ class TimeServedExternalRecordService(
     }
 
   @Transactional
-  fun deleteTimeServedExternalRecord(nomsId: String, bookingId: Long) {
+  fun deleteTimeServedExternalRecordIfPresent(nomsId: String, bookingId: Long) {
     val reasonEntity = timesServedRecordService.findByNomsIdAndBookingId(nomsId, bookingId)
       ?: return
 
