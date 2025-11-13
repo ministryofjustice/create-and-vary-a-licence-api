@@ -67,7 +67,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
-      stubSearchPrisonersByNomisId(releaseDate, sled)
+      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
       prisonApiMockServer.stubGetCourtOutcomes()
       prisonApiMockServer.stubGetSentenceAndRecallTypes(6)
 
@@ -103,7 +104,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
-      stubSearchPrisonersByNomisId(releaseDate, sled)
+      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
       prisonApiMockServer.stubGetCourtOutcomes()
       prisonApiMockServer.stubGetSentenceAndRecallTypes(6)
 
@@ -135,12 +137,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       )
     }
 
-    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String) {
+    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String) {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("staff-create-case-load-prisoners").replace(
           "\$releaseDate",
           releaseDate,
-        ).replace("\$sled", sled),
+        ).replace("\$sled", sled).replace("\$tused", tused),
       )
     }
   }
@@ -179,15 +181,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
-        readFile("team-create-case-load-prisoners").replace(
-          "\$releaseDate",
-          releaseDate,
-        ).replace(
-          "\$sled",
-          sled,
-        ),
-      )
+      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
       prisonApiMockServer.stubGetCourtOutcomes()
       prisonApiMockServer.stubGetSentenceAndRecallTypes(3)
 
@@ -216,6 +211,15 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
+    }
+
+    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String) {
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        readFile("team-create-case-load-prisoners").replace(
+          "\$releaseDate",
+          releaseDate,
+        ).replace("\$sled", sled).replace("\$tused", tused),
+      )
     }
   }
 

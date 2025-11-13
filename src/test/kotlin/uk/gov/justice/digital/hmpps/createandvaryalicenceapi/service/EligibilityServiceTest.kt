@@ -10,6 +10,7 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSentenceAndRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -22,7 +23,8 @@ import java.time.ZoneId
 
 class EligibilityServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
-  private var service = EligibilityService(prisonApiClient, clock, false)
+  private val releaseDateService = mock<ReleaseDateService>()
+  private var service = EligibilityService(prisonApiClient, releaseDateService, clock, false)
 
   @Nested
   inner class CrdCases {
@@ -372,7 +374,7 @@ class EligibilityServiceTest {
   inner class PrrdCases {
     @BeforeEach
     fun setup() {
-      service = EligibilityService(prisonApiClient, clock, true)
+      service = EligibilityService(prisonApiClient, releaseDateService, clock, true)
 
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
@@ -382,6 +384,8 @@ class EligibilityServiceTest {
           ),
         ),
       )
+      whenever(releaseDateService.calculatePrrdLicenceStartDate(any())).thenReturn(aRecallPrisonerSearchResult.licenceExpiryDate)
+      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
     }
 
     @Test
@@ -626,6 +630,18 @@ class EligibilityServiceTest {
       assertThat(result.prrdIneligibilityReasons).containsExactly("is on an unidentified non-fixed term recall")
       assertThat(result.eligibleKind).isNull()
     }
+
+    @Test
+    fun `Person who would be on an AP licence being released at SLED - not eligible for CVL`() {
+      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(true)
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, "")
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("is AP-only being released at SLED")
+      assertThat(result.eligibleKind).isNull()
+    }
   }
 
   @Nested
@@ -635,7 +651,14 @@ class EligibilityServiceTest {
 
     @BeforeEach
     fun setup() {
-      service = EligibilityService(prisonApiClient, clock, false, eligiblePrisonCodes, eligibleRegionCodes)
+      service = EligibilityService(
+        prisonApiClient,
+        releaseDateService,
+        clock,
+        false,
+        eligiblePrisonCodes,
+        eligibleRegionCodes,
+      )
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
           BookingSentenceAndRecallTypes(
@@ -644,6 +667,8 @@ class EligibilityServiceTest {
           ),
         ),
       )
+      whenever(releaseDateService.calculatePrrdLicenceStartDate(any())).thenReturn(aRecallPrisonerSearchResult.postRecallReleaseDate)
+      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
     }
 
     @Test

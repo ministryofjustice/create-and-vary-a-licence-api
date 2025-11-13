@@ -101,11 +101,17 @@ class ReleaseDateService(
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
     return prisoners.associate {
       it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
-        PRRD -> it.calculatePrrdLicenceStartDate()
+        PRRD -> calculatePrrdLicenceStartDate(it)
         CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
         else -> null
       }
     }
+  }
+
+  fun isReleaseAtLed(releaseDate: LocalDate?, licenceExpiryDate: LocalDate?): Boolean {
+    if (releaseDate == null) return false
+
+    return releaseDate == workingDaysService.getLastWorkingDay(licenceExpiryDate)
   }
 
   private fun isTimeServed(
@@ -210,12 +216,14 @@ class ReleaseDateService(
     }
   }
 
-  private fun PrisonerSearchPrisoner.calculatePrrdLicenceStartDate(): LocalDate? = when {
-    postRecallReleaseDate == null -> null
-    confirmedReleaseDate == null -> getLastWorkingDay(postRecallReleaseDate)
-    confirmedReleaseDate.isAfter(postRecallReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
-    confirmedReleaseDate.isOnOrBefore(conditionalReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
-    else -> confirmedReleaseDate
+  fun calculatePrrdLicenceStartDate(prisoner: PrisonerSearchPrisoner): LocalDate? = with(prisoner) {
+    when {
+      postRecallReleaseDate == null -> null
+      confirmedReleaseDate == null -> getLastWorkingDay(prisoner.postRecallReleaseDate)
+      confirmedReleaseDate.isAfter(prisoner.postRecallReleaseDate) -> getLastWorkingDay(prisoner.postRecallReleaseDate)
+      confirmedReleaseDate.isOnOrBefore(prisoner.conditionalReleaseDate) -> getLastWorkingDay(prisoner.postRecallReleaseDate)
+      else -> confirmedReleaseDate
+    }
   }
 
   private fun getLastWorkingDay(date: LocalDate?): LocalDate? = when {

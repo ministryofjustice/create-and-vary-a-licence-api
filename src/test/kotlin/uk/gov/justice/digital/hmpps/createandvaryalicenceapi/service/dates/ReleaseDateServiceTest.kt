@@ -1137,6 +1137,50 @@ class ReleaseDateServiceTest {
     }
   }
 
+  @Nested
+  inner class `isReleaseAtLed` {
+
+    @Test
+    fun `returns false if release date is null`() {
+      val licenceExpiryDate = LocalDate.of(2022, 10, 10)
+      assertThat(service.isReleaseAtLed(null, licenceExpiryDate)).isFalse()
+    }
+
+    @Test
+    fun `returns false if licence expiry date is null`() {
+      val releaseDate = LocalDate.of(2022, 10, 10)
+      assertThat(service.isReleaseAtLed(releaseDate, null)).isFalse()
+    }
+
+    @Test
+    fun `returns false if both dates date are null`() {
+      assertThat(service.isReleaseAtLed(null, null)).isFalse()
+    }
+
+    @Test
+    fun `returns true if release date is equal to LED`() {
+      val licenceExpiryDate = LocalDate.of(2022, 10, 10)
+      val releaseDate = LocalDate.of(2022, 10, 10)
+      assertThat(service.isReleaseAtLed(releaseDate, licenceExpiryDate)).isTrue()
+    }
+
+    @Test
+    fun `returns true if release date is equal to last working day before LED`() {
+      // Stubbed non-working day
+      val licenceExpiryDate = LocalDate.of(2018, 12, 4)
+
+      val releaseDate = LocalDate.of(2018, 11, 30)
+      assertThat(service.isReleaseAtLed(releaseDate, licenceExpiryDate)).isTrue()
+    }
+
+    @Test
+    fun `returns false if release date is not equal to LED`() {
+      val licenceExpiryDate = LocalDate.of(2022, 10, 10)
+      val releaseDate = LocalDate.of(2022, 10, 5)
+      assertThat(service.isReleaseAtLed(releaseDate, licenceExpiryDate)).isFalse()
+    }
+  }
+
   private companion object {
     val bankHolidays = listOf(
       LocalDate.parse("2018-01-01"),
