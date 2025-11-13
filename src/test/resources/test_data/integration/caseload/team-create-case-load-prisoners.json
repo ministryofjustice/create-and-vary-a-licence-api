@@ -40,7 +40,7 @@
     "recall": true,
     "licenceExpiryDate": "$sled",
     "sentenceExpiryDate": "$sled",
-    "topupSupervisionExpiryDate": "2023-06-22",
+    "topupSupervisionExpiryDate": "$tused",
     "postRecallReleaseDate": "$releaseDate",
     "prisonId":  "ABC",
     "licenceType": "PSS",
