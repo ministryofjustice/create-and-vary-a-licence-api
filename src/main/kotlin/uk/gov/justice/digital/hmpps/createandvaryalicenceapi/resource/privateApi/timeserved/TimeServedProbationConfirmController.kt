@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.timeserved
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
