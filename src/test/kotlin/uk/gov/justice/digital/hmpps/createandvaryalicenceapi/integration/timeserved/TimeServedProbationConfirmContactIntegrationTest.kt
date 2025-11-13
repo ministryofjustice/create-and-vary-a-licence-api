@@ -153,7 +153,7 @@ class TimeServedProbationConfirmContactIntegrationTest : IntegrationTestBase() {
       val now = LocalDateTime.now()
       val tolerance = Duration.ofSeconds(5) // allow 5 seconds difference
       if (update) {
-        assertThat(it.dateCreated).isBefore(it.dateLastUpdated)
+        assertThat(it.dateCreated.toLocalDate()).isBefore(it.dateLastUpdated.toLocalDate())
         assertThat(it.dateLastUpdated).isCloseTo(now, within(tolerance))
       } else {
         assertThat(it.dateCreated).isCloseTo(now, within(tolerance))
