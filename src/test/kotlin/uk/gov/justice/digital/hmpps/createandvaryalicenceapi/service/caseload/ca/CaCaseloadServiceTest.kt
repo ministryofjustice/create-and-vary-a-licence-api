@@ -251,7 +251,7 @@ class CaCaseloadServiceTest {
           licenceStatus = LicenceStatus.NOT_STARTED,
         )
 
-        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
@@ -268,7 +268,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1",
-                  prisonerNumber = licenceCase.prisonNumber!!,
+                  prisonerNumber = licenceCase.prisonNumber,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -294,7 +294,7 @@ class CaCaseloadServiceTest {
           PrisonQuery.statusCodes,
           PrisonQuery.prisonCodes,
         )
-        verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber!!))
+        verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber))
         verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
       }
     }
@@ -664,7 +664,7 @@ class CaCaseloadServiceTest {
         whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
-        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
           listOf(
             aCvlRecord(
               nomsId = "A1234AA",
@@ -727,7 +727,7 @@ class CaCaseloadServiceTest {
         whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(listOf(licenceCase))
 
-        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
           listOf(
             aCvlRecord(
               nomsId = "A1234AA",
@@ -749,7 +749,7 @@ class CaCaseloadServiceTest {
         whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
-        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
           listOf(
             aCvlRecord(
               nomsId = aPrisonerSearchPrisoner.prisonerNumber,
@@ -794,7 +794,7 @@ class CaCaseloadServiceTest {
         whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
-        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
           listOf(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow)),
         )
 
@@ -855,7 +855,7 @@ class CaCaseloadServiceTest {
           licenceStatus = LicenceStatus.NOT_STARTED,
         )
 
-        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
@@ -873,7 +873,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1234",
-                  prisonerNumber = licenceCase.prisonNumber!!,
+                  prisonerNumber = licenceCase.prisonNumber,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -925,7 +925,7 @@ class CaCaseloadServiceTest {
           licenceStatus = LicenceStatus.NOT_STARTED,
         )
 
-        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
@@ -943,7 +943,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1234",
-                  prisonerNumber = licenceCase.prisonNumber!!,
+                  prisonerNumber = licenceCase.prisonNumber,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -995,7 +995,7 @@ class CaCaseloadServiceTest {
           licenceStatus = LicenceStatus.NOT_STARTED,
         )
 
-        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
@@ -1013,7 +1013,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1234",
-                  prisonerNumber = licenceCase.prisonNumber!!,
+                  prisonerNumber = licenceCase.prisonNumber,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -1052,7 +1052,7 @@ class CaCaseloadServiceTest {
         whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
           .thenReturn(emptyList())
 
-        whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
           listOf(aCvlRecord(kind = LicenceKind.CRD)),
         )
 

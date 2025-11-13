@@ -5,13 +5,11 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 
 @Service
 class CaseService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val cvlRecordService: CvlRecordService,
-  private val deliusApiClient: DeliusApiClient,
 ) {
 
   fun getPrisoner(nomisId: String): PrisonerWithCvlFields {
@@ -19,8 +17,7 @@ class CaseService(
       prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(
         nomisId,
       )
-    val comRecord = deliusApiClient.getOffenderManager(nomisId)!!
-    val cvlRecord = cvlRecordService.getCvlRecord(prisoner, comRecord.team.provider.code)
+    val cvlRecord = cvlRecordService.getCvlRecord(prisoner)
 
     return PrisonerWithCvlFields(
       prisoner = prisoner.toPrisoner(),

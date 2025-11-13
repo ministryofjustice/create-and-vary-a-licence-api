@@ -28,8 +28,7 @@ class CaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val deliusApiClient = mock<DeliusApiClient>()
-  private val service =
-    CaseService(prisonerSearchApiClient, cvlRecordService, deliusApiClient)
+  private val service = CaseService(prisonerSearchApiClient, cvlRecordService)
 
   @BeforeEach
   fun reset() {
@@ -48,7 +47,7 @@ class CaseloadServiceTest {
   @Test
   fun getPrisoner() {
     whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager())
-    whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
       aCvlRecord(
         kind = LicenceKind.CRD,
         licenceStartDate = LocalDate.of(2021, 10, 22),

@@ -59,14 +59,7 @@ class PromptComService(
     val withDeliusDetails = enrichWithDeliusData(withoutHdc)
     log.info("{}/{} + with delius information", withDeliusDetails.size, withoutHdc.size)
 
-    val nomisIdsToAreaCodes = withDeliusDetails.map { (nomisRecord, deliusRecord) ->
-      nomisRecord.prisonerNumber to deliusRecord.team.provider.code
-    }.toMap()
-
-    val cvlRecords = cvlRecordService.getCvlRecords(
-      withDeliusDetails.map { (nomisRecord, _) -> nomisRecord },
-      nomisIdsToAreaCodes,
-    )
+    val cvlRecords = cvlRecordService.getCvlRecords(withDeliusDetails.map { (nomisRecord, _) -> nomisRecord })
 
     val eligible = excludeIneligibleCases(withDeliusDetails, cvlRecords)
     log.info("{}/{} prisoners eligible", eligible.size, candidates.size)
