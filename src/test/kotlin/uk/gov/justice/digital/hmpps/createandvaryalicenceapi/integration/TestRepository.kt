@@ -13,10 +13,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecords
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
 import java.util.Optional
 
 @Repository
@@ -51,11 +50,16 @@ interface TestAdditionalConditionRepository : JpaRepository<AdditionalCondition,
 }
 
 @Repository
+interface TestTimeServedExternalRecordRepository : JpaRepository<TimeServedExternalRecord, Long> {
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecord?
+}
+
+@Repository
 interface TestAddressRepository : JpaRepository<Address, Long>
 
 @Repository
-interface TestTimeServedExternalRecordsRepository : JpaRepository<TimeServedExternalRecords, Long> {
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecords?
+interface TestTimeServedExternalRecordsRepository : JpaRepository<TimeServedExternalRecord, Long> {
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecord?
 }
 
 @Component
@@ -69,7 +73,7 @@ class TestRepository(
   private val bespokeConditionRepository: TestBespokeConditionRepository,
   private val additionalConditionRepository: TestAdditionalConditionRepository,
   private val standardConditionRepository: StandardConditionRepository,
-  private val timeServedExternalRecordsRepository: TimeServedExternalRecordsRepository,
+  private val timeServedExternalRecordsRepository: TestTimeServedExternalRecordRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -92,6 +96,7 @@ class TestRepository(
     if (assertNotEmpty) assertThat(licences).isNotEmpty
     return licences
   }
+
   fun countLicence(): Long = licenceRepository.count()
 
   fun findAllAuditEventsByLicenceIdIn(list: List<Long>, assertNotEmpty: Boolean = true): List<AuditEvent> {
@@ -107,6 +112,8 @@ class TestRepository(
   }
 
   fun getAuditEventCount(): Long = auditEventRepository.count()
+
+  fun findAllAuditEvents(): List<AuditEvent> = auditEventRepository.findAll()
 
   fun findFirstAuditEvent(licenceId: Long = 1L): AuditEvent {
     val event = auditEventRepository.findAllByLicenceIdIn(listOf(licenceId)).firstOrNull()
@@ -140,7 +147,11 @@ class TestRepository(
     return list
   }
 
-  fun findTimeServedExternalRecordByNomsIdAndBookingId(nomsId: String, bookingId: Long, assertNotNull: Boolean = true): TimeServedExternalRecords? {
+  fun findTimeServedExternalRecordByNomsIdAndBookingId(
+    nomsId: String,
+    bookingId: Long,
+    assertNotNull: Boolean = true,
+  ): TimeServedExternalRecord? {
     val reason = timeServedExternalRecordsRepository.findByNomsIdAndBookingId(nomsId, bookingId)
     if (assertNotNull) assertThat(reason).isNotNull
     return reason
