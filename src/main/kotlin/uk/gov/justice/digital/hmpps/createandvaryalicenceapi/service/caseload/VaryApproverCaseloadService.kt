@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceVaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
@@ -18,91 +17,78 @@ class VaryApproverCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceCaseRepository: LicenceCaseRepository,
 ) {
-  fun findLicencesCasesForProbation(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<LicenceVaryApproverCase> {
-    if (varyApproverCaseloadSearchRequest.probationPduCodes != null) {
-      return licenceCaseRepository.findSubmittedVariationsByPduCodes(probationPduCodes = varyApproverCaseloadSearchRequest.probationPduCodes)
-    } else if (varyApproverCaseloadSearchRequest.probationAreaCode != null) {
-      return licenceCaseRepository.findSubmittedVariationsByRegion(varyApproverCaseloadSearchRequest.probationAreaCode)
-    }
-    return emptyList()
+
+  fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
+    val licenceCases = findLicencesCasesForProbation(varyApproverCaseloadSearchRequest)
+    return processLicences(licenceCases, varyApproverCaseloadSearchRequest.searchTerm)
   }
 
-  fun searchLicences(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): Pair<List<LicenceVaryApproverCase>, List<LicenceVaryApproverCase>> {
-    val pduLicences = if (varyApproverCaseloadSearchRequest.probationPduCodes != null) {
-      licenceCaseRepository.findSubmittedVariationsByPduCodes(probationPduCodes = varyApproverCaseloadSearchRequest.probationPduCodes)
+  fun searchForOffenderOnVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): VaryApproverCaseloadSearchResponse {
+    val (pduLicences, regionLicences) = searchLicences(varyApproverCaseloadSearchRequest)
+    val pduCasesResults = processLicences(pduLicences, varyApproverCaseloadSearchRequest.searchTerm)
+    val regionCasesResults = processLicences(regionLicences, varyApproverCaseloadSearchRequest.searchTerm)
+    return VaryApproverCaseloadSearchResponse(pduCasesResults, regionCasesResults)
+  }
+
+  private fun findLicencesCasesForProbation(request: VaryApproverCaseloadSearchRequest) = when {
+    request.probationPduCodes != null ->
+      licenceCaseRepository.findSubmittedVariationsByPduCodes(request.probationPduCodes)
+
+    request.probationAreaCode != null ->
+      licenceCaseRepository.findSubmittedVariationsByRegion(request.probationAreaCode)
+
+    else -> emptyList()
+  }
+
+  private fun searchLicences(request: VaryApproverCaseloadSearchRequest): Pair<List<LicenceVaryApproverCase>, List<LicenceVaryApproverCase>> {
+    val pduLicences = if (request.probationPduCodes != null) {
+      licenceCaseRepository.findSubmittedVariationsByPduCodes(request.probationPduCodes)
     } else {
       emptyList()
     }
-    val regionLicences = if (varyApproverCaseloadSearchRequest.probationAreaCode != null) {
-      licenceCaseRepository.findSubmittedVariationsByRegion(varyApproverCaseloadSearchRequest.probationAreaCode)
+    val regionLicences = if (request.probationAreaCode != null) {
+      licenceCaseRepository.findSubmittedVariationsByRegion(request.probationAreaCode)
     } else {
       emptyList()
     }
-    return Pair(pduLicences, regionLicences)
+    return pduLicences to regionLicences
   }
 
-  private fun mapLicencesToOffenders(licences: List<LicenceVaryApproverCase>): List<AcoCase> {
+  private fun processLicences(
+    cases: List<LicenceVaryApproverCase>,
+    searchTerm: String?,
+  ) = mapLicencesToOffenders(cases).run { applySearchFilter(this, searchTerm) }.run { applySort(this) }
+
+  private fun mapLicencesToOffenders(licences: List<LicenceVaryApproverCase>): List<VaryApproverCase> {
     val prisonNumbers = licences.map { it.prisonNumber!! }
-    val deliusRecords = deliusApiClient.getProbationCases(prisonNumbers)
-    val nomisRecords = prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
+    val deliusRecords = deliusApiClient.getProbationCases(prisonNumbers).associateBy { it.nomisId }
+    val nomisRecords =
+      prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers).associateBy { it.prisonerNumber }
+    val probationPractitioners = getProbationPractitioners(licences.map { it.crn })
 
     return licences.mapNotNull { licence ->
-      val nomisRecord = nomisRecords.find { it.prisonerNumber == licence.prisonNumber }
-      val deliusRecord = deliusRecords.find { it.nomisId == licence.prisonNumber }
-      if (nomisRecord != null && deliusRecord != null) {
-        AcoCase(
-          crn = deliusRecord.crn,
-          nomisRecord = nomisRecord,
-          licence = licence,
-        )
-      } else {
+      val nomisRecord = nomisRecords[licence.prisonNumber]
+      val deliusRecord = deliusRecords[licence.prisonNumber]
+      if (nomisRecord == null || deliusRecord == null) {
         null
-      }
-    }
-  }
-
-  private fun addProbationPractitionerCases(caseload: List<AcoCase>): List<AcoCase> {
-    val comUsernames = caseload.mapNotNull { it.licence.comUsername }
-
-    val deliusStaffNames = deliusApiClient.getStaffDetailsByUsername(comUsernames)
-    return caseload.map { case ->
-      val responsibleCom = deliusStaffNames.find { com ->
-        com.username?.lowercase() == case.licence.comUsername?.lowercase()
-      }
-
-      if (responsibleCom != null) {
-        case.copy(probationPractitioner = responsibleCom.name.fullName())
       } else {
-        val coms = deliusApiClient.getOffenderManagers(caseload.map { it.crn })
-        val com = coms.find { it.case.crn == case.crn }
-        if (com == null || com.unallocated) {
-          case
-        } else {
-          case.copy(probationPractitioner = com.name.fullName())
-        }
+        VaryApproverCase(
+          licenceId = licence.licenceId,
+          name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim()
+            .convertToTitleCase(),
+          crnNumber = licence.crn,
+          licenceType = licence.typeCode,
+          variationRequestDate = licence.dateCreated?.toLocalDate(),
+          releaseDate = licence.licenceStartDate,
+          probationPractitioner = probationPractitioners[deliusRecord.crn.lowercase()],
+        )
       }
     }
   }
 
-  private fun buildCaseload(cases: List<AcoCase>, searchTerm: String?): List<VaryApproverCase> {
-    var caseload = cases.map { mapAcoCaseToView(it) }
-    caseload = applySearchFilter(caseload, searchTerm)
-    return applySort(caseload)
-  }
-
-  private fun mapAcoCaseToView(acoCase: AcoCase): VaryApproverCase {
-    val licence = acoCase.licence
-    return VaryApproverCase(
-      licenceId = licence.licenceId,
-      name = "${acoCase.nomisRecord.firstName} ${acoCase.nomisRecord.lastName}".trim()
-        .convertToTitleCase(),
-      crnNumber = acoCase.crn,
-      licenceType = licence.typeCode,
-      variationRequestDate = licence.dateCreated?.toLocalDate(),
-      releaseDate = licence.licenceStartDate,
-      probationPractitioner = acoCase.probationPractitioner,
-    )
-  }
+  private fun getProbationPractitioners(crns: List<String>) = deliusApiClient.getOffenderManagersWithoutUser(crns)
+    .filter { !it.unallocated }
+    .associate { it.case.crn.lowercase() to it.name.fullName() }
 
   private fun applySearchFilter(cases: List<VaryApproverCase>, searchTerm: String?): List<VaryApproverCase> {
     if (searchTerm == null) {
@@ -118,33 +104,5 @@ class VaryApproverCaseloadService(
     }
   }
 
-  private fun processLicences(
-    licenceCases: List<LicenceVaryApproverCase>,
-    searchTerm: String?,
-  ): List<VaryApproverCase> {
-    val cases = mapLicencesToOffenders(licenceCases)
-    val enrichedCases = addProbationPractitionerCases(cases)
-    return buildCaseload(enrichedCases, searchTerm)
-  }
-
-  fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
-    val licenceCases = findLicencesCasesForProbation(varyApproverCaseloadSearchRequest)
-    return processLicences(licenceCases, varyApproverCaseloadSearchRequest.searchTerm)
-  }
-
-  fun searchForOffenderOnVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): VaryApproverCaseloadSearchResponse {
-    val (pduLicences, regionLicences) = searchLicences(varyApproverCaseloadSearchRequest)
-    val pduCasesResults = processLicences(pduLicences, varyApproverCaseloadSearchRequest.searchTerm)
-    val regionCasesResults = processLicences(regionLicences, varyApproverCaseloadSearchRequest.searchTerm)
-    return VaryApproverCaseloadSearchResponse(pduCasesResults, regionCasesResults)
-  }
+  private fun applySort(cases: List<VaryApproverCase>): List<VaryApproverCase> = cases.sortedBy { it.releaseDate }
 }
-
-private fun applySort(cases: List<VaryApproverCase>): List<VaryApproverCase> = cases.sortedBy { it.releaseDate }
-
-private data class AcoCase(
-  val crn: String,
-  val nomisRecord: PrisonerSearchPrisoner,
-  val licence: LicenceVaryApproverCase,
-  val probationPractitioner: String? = null,
-)

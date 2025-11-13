@@ -68,10 +68,9 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
     )
     @Test
     fun `Successfully retrieve vary approver caseload`() {
-      deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       deliusMockServer.stubGetProbationCases()
-      deliusMockServer.stubGetManagersForGetApprovalCaseload()
+      deliusMockServer.stubGetManagersWithoutUserDetails()
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("vary-approver-case-load-prisoners").replace(
@@ -101,7 +100,8 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
 
   @Nested
   inner class VaryApproverCaseloadSearch {
-    private val caseSearchRequest = VaryApproverCaseloadSearchRequest(probationPduCodes = null, probationAreaCode = "N55", searchTerm = "Test")
+    private val caseSearchRequest =
+      VaryApproverCaseloadSearchRequest(probationPduCodes = null, probationAreaCode = "N55", searchTerm = "Test")
 
     @Test
     fun `Get forbidden (403) when incorrect roles are supplied`() {

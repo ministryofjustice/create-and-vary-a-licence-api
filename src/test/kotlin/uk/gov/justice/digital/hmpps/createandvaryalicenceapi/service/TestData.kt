@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Sent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
@@ -79,6 +80,35 @@ object TestData {
     email = "testemail2@probation.gov.uk",
     firstName = "A",
     lastName = "B",
+  )
+
+  fun aCommunityManagerWithoutUser() = CommunityManagerWithoutUser(
+    code = "X1234",
+    id = 2000L,
+    team = TeamDetail(
+      code = "NA01A2-A",
+      description = "Cardiff South Team A",
+      borough = Detail(
+        code = "N01A",
+        description = "Cardiff",
+      ),
+      district = Detail(
+        code = "N01A2",
+        description = "Cardiff South",
+      ),
+      provider = Detail(
+        code = "N01",
+        description = "Wales",
+      ),
+    ),
+    provider = Detail(
+      code = "N01",
+      description = "Wales",
+    ),
+    case = ProbationCase(crn = "A123456", nomisId = "A1234AA"),
+    name = Name("Joe", null, "Bloggs"),
+    allocationDate = LocalDate.of(2000, 1, 1),
+    unallocated = false,
   )
 
   fun ca() = PrisonUser(
