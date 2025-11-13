@@ -720,7 +720,6 @@ class LicenceService(
     )
   }
 
-  @TimeServedConsiderations("Do we refer this variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
     val licenceEntity = getLicence(licenceId)
@@ -763,7 +762,6 @@ class LicenceService(
     )
   }
 
-  @TimeServedConsiderations("Do we approve a variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)

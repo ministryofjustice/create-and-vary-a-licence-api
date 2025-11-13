@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Comp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
@@ -71,6 +72,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -2082,6 +2084,40 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `creating a variation with no responsible communityOffenderManager allocated`() {
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(aTimeServedLicence.copy(responsibleCom = null)),
+    )
+    whenever(licenceRepository.save(any())).thenReturn(aTimeServedLicence)
+    whenever(releaseDateService.getHardStopKind(any(), any())).thenReturn(LicenceKind.TIME_SERVED)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+
+    service.createVariation(1L)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    with(licenceCaptor.value as VariationLicence) {
+      assertThat(kind).isEqualTo(LicenceKind.VARIATION)
+      assertThat(version).isEqualTo("2.1")
+      assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+      assertThat(variationOfId).isEqualTo(1)
+      assertThat(licenceVersion).isEqualTo("2.0")
+      assertThat(responsibleCom).isNull()
+    }
+    verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
+    assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VARIATION_CREATED)
+  }
+
+  @Test
   fun `editing an approved licence creates and saves a new licence version`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
     whenever(licencePolicyService.currentPolicy()).thenReturn(
@@ -2475,6 +2511,54 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `referring a licence variation with no responsible communityOffenderManager allocated`() {
+    val referVariationRequest = ReferVariationRequest(reasonForReferral = "reason")
+    val variation = createVariationLicence().copy(responsibleCom = null)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    service.referLicenceVariation(1L, referVariationRequest)
+
+    verify(licenceRepository, times(1)).findById(1L)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+
+    assertThat(licenceCaptor.value)
+      .extracting("responsibleCom", "statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(null, LicenceStatus.VARIATION_REJECTED, aCom.username, aCom))
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "username", "eventDescription")
+      .isEqualTo(listOf(1L, LicenceEventType.VARIATION_REFERRED, aCom.username, "reason"))
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          1L,
+          aCom.username,
+          "X Y",
+          "Licence variation rejected for ${variation.forename} ${variation.surname}",
+        ),
+      )
+
+    verify(notifyService, times(1)).sendVariationReferredEmail(
+      variation.createdBy?.email ?: "",
+      "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
+      "",
+      "",
+      "${variation.forename} ${variation.surname}",
+      "1",
+    )
+  }
+
+  @Test
   fun `approving a licence variation`() {
     val variation = createVariationLicence().copy(id = 2, variationOfId = 1L)
     whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(variation))
@@ -2577,6 +2661,60 @@ class LicenceServiceTest {
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
       variation.getCom().email ?: "",
       variation.getCom().fullName,
+      "${variation.forename} ${variation.surname}",
+      "2",
+    )
+  }
+
+  @Test
+  fun `approving a licence variation with no responsible communityOffenderManager allocated`() {
+    val variation = createVariationLicence().copy(id = 2, variationOfId = 1L, responsibleCom = null)
+    whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(variation))
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    service.approveLicenceVariation(2L)
+
+    verify(licenceRepository, times(1)).findById(2L)
+
+    // Capture calls to licence, history and audit saveAndFlush - as a list
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+
+    // Check all calls were made
+    assertThat(licenceCaptor.allValues.size).isEqualTo(1)
+    assertThat(eventCaptor.allValues.size).isEqualTo(1)
+    assertThat(auditCaptor.allValues.size).isEqualTo(1)
+
+    assertThat(licenceCaptor.allValues[0])
+      .extracting("id", "responsibleCom", "statusCode", "updatedByUsername", "approvedByUsername", "approvedByName", "updatedBy")
+      .isEqualTo(listOf(2L, null, LicenceStatus.VARIATION_APPROVED, aCom.username, aCom.username, "X Y", aCom))
+
+    assertThat(eventCaptor.allValues[0])
+      .extracting("licenceId", "eventType", "username")
+      .isEqualTo(listOf(2L, LicenceEventType.VARIATION_APPROVED, aCom.username))
+
+    assertThat(auditCaptor.allValues[0])
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          2L,
+          aCom.username,
+          "X Y",
+          "Licence variation approved for ${variation.forename} ${variation.surname}",
+        ),
+      )
+
+    verify(notifyService, times(1)).sendVariationApprovedEmail(
+      variation.createdBy?.email ?: "",
+      "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
+      "",
+      "",
       "${variation.forename} ${variation.surname}",
       "2",
     )
@@ -3001,6 +3139,44 @@ class LicenceServiceTest {
     }
 
     @Test
+    fun happyPathWithTimeServedLicenceAndNoComAllocated() {
+      whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
+      val timeServedLicence = aTimeServedLicence
+        .copy(id = 1L, statusCode = LicenceStatus.ACTIVE, licenceVersion = "2.0", reviewDate = null, responsibleCom = null)
+
+      whenever(licenceRepository.findById(timeServedLicence.id)).thenReturn(Optional.of(timeServedLicence))
+
+      service.reviewWithNoVariationRequired(1L)
+
+      argumentCaptor<TimeServedLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
+        assertThat(firstValue.dateLastUpdated?.toLocalDate()).isEqualTo(LocalDate.now())
+        assertThat(firstValue.updatedByUsername).isEqualTo(aCom.username)
+        assertThat(firstValue.updatedBy).isEqualTo(aCom)
+      }
+
+      argumentCaptor<EntityAuditEvent>().apply {
+        verify(auditEventRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.licenceId).isEqualTo(timeServedLicence.id)
+        assertThat(firstValue.username).isEqualTo(aCom.username)
+        assertThat(firstValue.fullName).isEqualTo("X Y")
+        assertThat(firstValue.summary).isEqualTo("Licence reviewed without being varied for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(USER_EVENT)
+      }
+
+      argumentCaptor<LicenceEvent>().apply {
+        verify(licenceEventRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.licenceId).isEqualTo(timeServedLicence.id)
+        assertThat(firstValue.username).isEqualTo(aCom.username)
+        assertThat(firstValue.eventDescription).isEqualTo("Licence reviewed without being varied for John Smith")
+        assertThat(firstValue.forenames).isEqualTo("X")
+        assertThat(firstValue.surname).isEqualTo("Y")
+        assertThat(firstValue.eventType).isEqualTo(LicenceEventType.REVIEWED_WITHOUT_VARIATION)
+      }
+    }
+
+    @Test
     fun alreadyReviewed() {
       val hardstopLicence = createHardStopLicence()
         .copy(id = 1L, reviewDate = LocalDateTime.now())
@@ -3229,6 +3405,67 @@ class LicenceServiceTest {
       verify(licenceRepository, never()).saveAndFlush(any())
       verify(auditEventRepository, never()).saveAndFlush(any())
       verify(licenceEventRepository, never()).saveAndFlush(any())
+    }
+
+    @Test
+    fun happyPathWhenVaryingTimeServedLicenceWithNoComAllocated() {
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(
+          aTimeServedLicence.copy(
+            id = 1L,
+            reviewDate = null,
+          ),
+        ),
+      )
+      whenever(licenceRepository.findById(2L)).thenReturn(
+        Optional.of(
+          createVariationLicence().copy(
+            id = 2L,
+            variationOfId = 1L,
+            statusCode = LicenceStatus.VARIATION_APPROVED,
+            responsibleCom = null,
+          ),
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
+
+      service.activateVariation(2L)
+
+      argumentCaptor<Licence>().apply {
+        verify(licenceRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue).isInstanceOf(VariationLicence::class.java)
+        assertThat(firstValue.statusCode).isEqualTo(LicenceStatus.ACTIVE)
+        assertThat(firstValue.responsibleCom).isNull()
+
+        assertThat(secondValue).isInstanceOf(TimeServedLicence::class.java)
+        assertThat((secondValue as TimeServedLicence).reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
+
+        assertThat(secondValue.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+      }
+
+      argumentCaptor<EntityAuditEvent>().apply {
+        verify(auditEventRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue.licenceId).isEqualTo(2L)
+        assertThat(firstValue.summary).isEqualTo("Licence set to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(USER_EVENT)
+
+        assertThat(secondValue.licenceId).isEqualTo(1L)
+        assertThat(secondValue.summary).isEqualTo("Licence set to INACTIVE for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(USER_EVENT)
+      }
+
+      argumentCaptor<LicenceEvent>().apply {
+        verify(licenceEventRepository, times(3)).saveAndFlush(capture())
+
+        assertThat(firstValue.eventDescription).isEqualTo("Licence updated to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(LicenceEventType.ACTIVATED)
+
+        assertThat(secondValue.eventDescription).isEqualTo("Licence reviewed with variation for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(LicenceEventType.REVIEWED_WITH_VARIATION)
+
+        assertThat(thirdValue.eventDescription).isEqualTo("Licence updated to INACTIVE for John Smith")
+        assertThat(thirdValue.eventType).isEqualTo(LicenceEventType.SUPERSEDED)
+      }
     }
   }
 
@@ -3869,8 +4106,8 @@ class LicenceServiceTest {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = communityOffenderManager(),
-    createdBy = communityOffenderManager(),
+    responsibleCom = aCom,
+    createdBy = aCom,
     approvedByName = "jim smith",
     approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
   ).let {
@@ -3938,8 +4175,8 @@ class LicenceServiceTest {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    responsibleCom = communityOffenderManager(),
-    createdBy = communityOffenderManager(),
+    responsibleCom = aCom,
+    createdBy = aCom,
     approvedByName = "jim smith",
     approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
   ).let {
@@ -3974,6 +4211,8 @@ class LicenceServiceTest {
   }
 
   private val aVariationLicence = createVariationLicence()
+
+  private val aTimeServedLicence = createTimeServedLicence()
 
   val anHdcVariationLicence = createHdcVariationLicence()
 
