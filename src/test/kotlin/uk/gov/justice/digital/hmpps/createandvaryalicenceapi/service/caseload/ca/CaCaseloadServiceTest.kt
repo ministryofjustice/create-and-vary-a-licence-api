@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.caCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -41,12 +42,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -224,7 +222,7 @@ class CaCaseloadServiceTest {
     whenever(deliusApiClient.getProbationCases(any(), anyOrNull())).thenReturn(listOf(probationCase))
     whenever(deliusApiClient.getOffenderManagersWithoutUser(any(), anyOrNull())).thenReturn(
       listOf(
-        aCommunityManagerWithoutUser,
+        aCommunityManagerWithoutUser(),
       ),
     )
   }
@@ -2104,36 +2102,6 @@ class CaCaseloadServiceTest {
       topupSupervisionStartDate = null,
       croNumber = null,
     )
-
-    val aCommunityManagerWithoutUser =
-      CommunityManagerWithoutUser(
-        code = "X1234",
-        id = 2000L,
-        team = TeamDetail(
-          code = "NA01A2-A",
-          description = "Cardiff South Team A",
-          borough = Detail(
-            code = "N01A",
-            description = "Cardiff",
-          ),
-          district = Detail(
-            code = "N01A2",
-            description = "Cardiff South",
-          ),
-          provider = Detail(
-            code = "N01",
-            description = "Wales",
-          ),
-        ),
-        provider = Detail(
-          code = "N01",
-          description = "Wales",
-        ),
-        case = ProbationCase(crn = "A123456", nomisId = "A1234AA"),
-        name = Name("Joe", null, "Bloggs"),
-        allocationDate = LocalDate.of(2000, 1, 1),
-        unallocated = false,
-      )
 
     val aPrisonUserSearchRequest = PrisonUserSearchRequest(
       query = "Person",
