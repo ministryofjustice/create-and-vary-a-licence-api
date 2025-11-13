@@ -70,7 +70,7 @@ class TimeServedProbationConfirmContactIntegrationTest : IntegrationTestBase() {
       ContactStatus.WILL_CONTACT_SOON,
       setOf(CommunicationMethod.TEAMS, CommunicationMethod.OTHER),
       expectedOtherDetail = "In person",
-      update = true
+      update = true,
     )
   }
 
