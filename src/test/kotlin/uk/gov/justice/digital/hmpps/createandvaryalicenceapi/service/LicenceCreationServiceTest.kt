@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.TimeServedExternalRecordsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
@@ -64,7 +63,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -1747,15 +1745,6 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult =
         prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
 
-      val existingLicence = TimeServedExternalRecordsResponse(
-        nomsId = aPrisonerSearchResult.prisonerNumber,
-        bookingId = aPrisonerSearchResult.bookingId!!.toLong(),
-        reason = "Reason",
-        prisonCode = "PRISON1",
-        dateCreated = LocalDateTime.now(),
-        dateLastUpdated = LocalDateTime.now(),
-      )
-
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
@@ -1766,15 +1755,12 @@ class LicenceCreationServiceTest {
         ),
       )
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
-      whenever(timeServedExternalRecordsService.findByNomsIdAndBookingId(any(), any())).thenReturn(
-        existingLicence,
-      )
 
       service.createHardStopLicence(PRISON_NUMBER)
 
-      verify(timeServedExternalRecordsService, times(1)).deleteTimeServedExternalRecord(
-        existingLicence.nomsId,
-        existingLicence.bookingId,
+      verify(timeServedExternalRecordsService, times(1)).deleteTimeServedExternalRecordIfPresent(
+        aPrisonerSearchResult.prisonerNumber,
+        aPrisonerSearchResult.bookingId!!.toLong(),
       )
     }
   }

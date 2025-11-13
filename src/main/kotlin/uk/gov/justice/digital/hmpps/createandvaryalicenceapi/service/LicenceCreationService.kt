@@ -193,11 +193,7 @@ class LicenceCreationService(
     if (isTimeServedLicenceCreation) {
       val nomisId = nomisRecord.prisonerNumber
       val bookingId = nomisRecord.bookingId!!.toLong()
-      val existingReasonForCreatingLicenceInNomis =
-        timeServedExternalRecordService.findByNomsIdAndBookingId(nomisId, bookingId)
-      if (existingReasonForCreatingLicenceInNomis != null) {
-        timeServedExternalRecordService.deleteTimeServedExternalRecord(nomisId, bookingId)
-      }
+      timeServedExternalRecordService.deleteTimeServedExternalRecordIfPresent(nomisId, bookingId)
     }
 
     return LicenceCreationResponse(createdLicence.id)

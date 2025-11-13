@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ExternalTimeServedRecordRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.TimeServedExternalRecordsResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ExternalTimeServedRecordResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TimeServedExternalRecordService
 
@@ -85,7 +85,7 @@ class TimeServedExternalRecordsController(
         content = [
           Content(
             mediaType = "application/json",
-            schema = Schema(implementation = TimeServedExternalRecordsResponse::class),
+            schema = Schema(implementation = ExternalTimeServedRecordResponse::class),
           ),
         ],
       ),
