@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "time_served_external_records")
-class TimeServedExternalRecords(
+class TimeServedExternalRecord(
   @Column(name = "noms_id", length = 7, nullable = false)
   val nomsId: String,
 

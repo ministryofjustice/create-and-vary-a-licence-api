@@ -29,10 +29,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.DayOfWeek
 import java.time.LocalDateTime
@@ -877,7 +877,7 @@ class AuditServiceTest {
     fun `records an audit event when the COM allocated to an offender is updated`() {
       val existingCom = communityOffenderManager()
       val updatedCom = anotherCommunityOffenderManager()
-      val user = ca()
+      val user = prisonUser()
 
       service.recordAuditEventComUpdated(
         aLicenceEntity,
@@ -922,7 +922,7 @@ class AuditServiceTest {
   inner class `audits events when probation team updated` {
     @Test
     fun `records an audit event when the the probation team on a licence is updated`() {
-      val user = ca()
+      val user = prisonUser()
 
       val updateTeamRequest = UpdateProbationTeamRequest(
         probationAreaCode = "N02",
