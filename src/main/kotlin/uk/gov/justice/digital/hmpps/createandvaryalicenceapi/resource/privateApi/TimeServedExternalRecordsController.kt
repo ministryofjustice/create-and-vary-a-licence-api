@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Exte
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TimeServedExternalRecordService
 
-@Tag(name = Tags.TIME_SERVED_EXTERNAL_RECORDS)
+@Tag(name = Tags.TIME_SERVED)
 @RestController
 @RequestMapping("/time-served/external-records", produces = [MediaType.APPLICATION_JSON_VALUE])
 class TimeServedExternalRecordsController(
