@@ -804,7 +804,7 @@ class LicenceService(
       licenceEntity.responsibleCom?.email.orEmpty(),
       licenceEntity.responsibleCom?.fullName ?: creatorName,
       "${licenceEntity.forename.orEmpty()} ${licenceEntity.surname.orEmpty()}",
-      licenceId.toString()
+      licenceId.toString(),
     )
   }
 
@@ -1185,9 +1185,7 @@ class LicenceService(
     }
   }
 
-  private fun CommunityOffenderManager.fullName(): String {
-    return "${firstName.orEmpty()} ${lastName.orEmpty()}".trim()
-  }
+  private fun CommunityOffenderManager.fullName(): String = "${firstName.orEmpty()} ${lastName.orEmpty()}".trim()
 
   private fun getLicence(licenceId: Long): EntityLicence = licenceRepository
     .findById(licenceId)
