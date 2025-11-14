@@ -8,7 +8,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePreRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Reviewable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -134,7 +134,7 @@ class TimeServedLicence(
   updatedBy = updatedBy,
   responsibleCom = responsibleCom,
 ),
-  ReviewablePreRelease,
+  Reviewable,
   ReviewablePostRelease {
 
   fun copy(

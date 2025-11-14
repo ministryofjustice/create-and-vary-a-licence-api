@@ -54,7 +54,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePreRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Reviewable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -825,7 +825,7 @@ class LicenceService(
       .findById(licence.variationOfId!!)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    if (previousLicence is ReviewablePreRelease) {
+    if (previousLicence is Reviewable) {
       previousLicence.markAsReviewed(user)
       licenceEventRepository.saveAndFlush(
         EntityLicenceEvent(
@@ -1033,7 +1033,7 @@ class LicenceService(
   fun reviewWithNoVariationRequired(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
 
-    if (licenceEntity !is ReviewablePreRelease) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
+    if (licenceEntity !is Reviewable) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 

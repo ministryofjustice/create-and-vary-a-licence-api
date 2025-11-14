@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Comp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import java.time.LocalDateTime
 
-interface ReviewablePreRelease {
+interface Reviewable {
   var dateLastUpdated: LocalDateTime?
   var updatedBy: Staff?
   var updatedByUsername: String?
