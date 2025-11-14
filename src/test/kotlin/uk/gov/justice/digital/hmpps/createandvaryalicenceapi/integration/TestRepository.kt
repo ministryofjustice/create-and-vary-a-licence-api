@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedProbationConfirmContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import java.util.Optional
 
@@ -50,16 +51,16 @@ interface TestAdditionalConditionRepository : JpaRepository<AdditionalCondition,
 }
 
 @Repository
-interface TestTimeServedExternalRecordRepository : JpaRepository<TimeServedExternalRecord, Long> {
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecord?
-}
-
-@Repository
 interface TestAddressRepository : JpaRepository<Address, Long>
 
 @Repository
 interface TestTimeServedExternalRecordsRepository : JpaRepository<TimeServedExternalRecord, Long> {
   fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecord?
+}
+
+@Repository
+interface TestTimeServedProbationConfirmContactRepository : JpaRepository<TimeServedProbationConfirmContact, Long> {
+  fun findByLicenceId(licenceId: Long): TimeServedProbationConfirmContact?
 }
 
 @Component
@@ -73,12 +74,19 @@ class TestRepository(
   private val bespokeConditionRepository: TestBespokeConditionRepository,
   private val additionalConditionRepository: TestAdditionalConditionRepository,
   private val standardConditionRepository: StandardConditionRepository,
-  private val timeServedExternalRecordsRepository: TestTimeServedExternalRecordRepository,
+  private val testTimeServedExternalRecordsRepository: TestTimeServedExternalRecordsRepository,
+  private val testTimeServedProbationConfirmContactRepository: TestTimeServedProbationConfirmContactRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
   fun clearAll() {
     jdbcTemplate.execute("DISCARD ALL")
+  }
+
+  fun findTimeServedProbationConfirmContact(id: Long = 1L): TimeServedProbationConfirmContact? {
+    val probationConfirmContact = testTimeServedProbationConfirmContactRepository.findByLicenceId(id)
+    assertThat(probationConfirmContact).isNotNull
+    return probationConfirmContact
   }
 
   fun findLicence(id: Long = 1L): Licence {
@@ -152,7 +160,7 @@ class TestRepository(
     bookingId: Long,
     assertNotNull: Boolean = true,
   ): TimeServedExternalRecord? {
-    val reason = timeServedExternalRecordsRepository.findByNomsIdAndBookingId(nomsId, bookingId)
+    val reason = testTimeServedExternalRecordsRepository.findByNomsIdAndBookingId(nomsId, bookingId)
     if (assertNotNull) assertThat(reason).isNotNull
     return reason
   }

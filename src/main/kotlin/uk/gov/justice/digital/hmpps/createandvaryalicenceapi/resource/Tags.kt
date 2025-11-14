@@ -22,6 +22,6 @@ class Tags {
     const val SAR = "Subject Access Request"
     const val HDC_LICENCE_CURFEW_TIMES = "HDC Licence Curfew Times"
     const val ELECTRONIC_MONITORING_PROGRAMME = "Electronic Monitoring Programme"
-    const val TIME_SERVED_EXTERNAL_RECORDS = "Time Served External Records"
+    const val TIME_SERVED = "Time Served"
   }
 }
