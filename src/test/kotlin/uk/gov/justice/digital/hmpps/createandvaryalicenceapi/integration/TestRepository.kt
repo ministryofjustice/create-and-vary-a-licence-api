@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedProbationConfirmContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import java.util.Optional
@@ -54,7 +54,7 @@ interface TestAdditionalConditionRepository : JpaRepository<AdditionalCondition,
 interface TestAddressRepository : JpaRepository<Address, Long>
 
 @Repository
-interface TestTimeServedExternalRecordsRepository : JpaRepository<TimeServedExternalRecord, Long> {
+interface TestTimeServedExternalRecordRepository : JpaRepository<TimeServedExternalRecord, Long> {
   fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecord?
 }
 
@@ -74,7 +74,7 @@ class TestRepository(
   private val bespokeConditionRepository: TestBespokeConditionRepository,
   private val additionalConditionRepository: TestAdditionalConditionRepository,
   private val standardConditionRepository: StandardConditionRepository,
-  private val testTimeServedExternalRecordsRepository: TestTimeServedExternalRecordsRepository,
+  private val testTimeServedExternalRecordRepository: TestTimeServedExternalRecordRepository,
   private val testTimeServedProbationConfirmContactRepository: TestTimeServedProbationConfirmContactRepository,
 ) {
 
@@ -160,7 +160,7 @@ class TestRepository(
     bookingId: Long,
     assertNotNull: Boolean = true,
   ): TimeServedExternalRecord? {
-    val reason = testTimeServedExternalRecordsRepository.findByNomsIdAndBookingId(nomsId, bookingId)
+    val reason = testTimeServedExternalRecordRepository.findByNomsIdAndBookingId(nomsId, bookingId)
     if (assertNotNull) assertThat(reason).isNotNull
     return reason
   }

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.timeserved
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
