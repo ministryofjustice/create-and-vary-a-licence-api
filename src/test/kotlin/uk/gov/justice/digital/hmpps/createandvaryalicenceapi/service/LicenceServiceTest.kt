@@ -3138,7 +3138,7 @@ class LicenceServiceTest {
     }
 
     @Test
-    fun happyPathWithTimeServedLicenceAndNoComAllocated() {
+    fun `Review time served licence with no responsible COM allocated`() {
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
       val timeServedLicence = aTimeServedLicence
         .copy(id = 1L, statusCode = LicenceStatus.ACTIVE, licenceVersion = "2.0", reviewDate = null, responsibleCom = null)
@@ -3407,7 +3407,7 @@ class LicenceServiceTest {
     }
 
     @Test
-    fun happyPathWhenVaryingTimeServedLicenceWithNoComAllocated() {
+    fun `Activate time served licence variation with no responsible COM allocated`() {
       whenever(licenceRepository.findById(1L)).thenReturn(
         Optional.of(
           aTimeServedLicence.copy(
