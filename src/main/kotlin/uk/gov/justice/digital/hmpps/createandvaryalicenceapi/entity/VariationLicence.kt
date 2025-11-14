@@ -77,7 +77,7 @@ class VariationLicence(
   @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   override var createdBy: CommunityOffenderManager? = null,
-  responsibleCom: CommunityOffenderManager,
+  responsibleCom: CommunityOffenderManager? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.VARIATION,
@@ -132,8 +132,7 @@ class VariationLicence(
   updatedBy = updatedBy,
   responsibleCom = responsibleCom,
 ),
-  Variation,
-  AlwaysHasCom {
+  Variation {
 
   fun copy(
     id: Long? = this.id,
@@ -188,7 +187,7 @@ class VariationLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager = this.getCom(),
+    responsibleCom: CommunityOffenderManager? = this.responsibleCom,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,
@@ -329,8 +328,6 @@ class VariationLicence(
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy" +
     ")"
-
-  override fun getCom(): CommunityOffenderManager = this.responsibleCom!!
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
