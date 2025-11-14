@@ -64,11 +64,8 @@ class ComCreateCaseloadService(
 
   private fun buildCreateCaseload(managedOffenders: List<ManagedOffenderCrn>): List<ComCase> {
     val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
-    val nomisIdsToAreaCodes = deliusAndNomisRecords.map { (deliusRecord, nomisRecord) ->
-      nomisRecord.prisonerNumber to (deliusRecord.team?.provider?.code ?: "")
-    }.toMap()
     val cvlRecords =
-      cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord }, nomisIdsToAreaCodes)
+      cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
     val cases = getCasesWithLicences(eligibleCases, cvlRecords)
     val filteredCases = filterHdcAndFutureReleases(cases)

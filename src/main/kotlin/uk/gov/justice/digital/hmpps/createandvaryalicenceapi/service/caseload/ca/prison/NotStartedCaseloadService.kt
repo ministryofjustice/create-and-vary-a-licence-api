@@ -47,10 +47,7 @@ class NotStartedCaseloadService(
     }.toList()
 
     val nomisRecordsToDeliusRecords = pairNomisRecordsWithDelius(prisonersWithoutLicences)
-    val nomisIdsToAreaCodes =
-      nomisRecordsToDeliusRecords.associate { (nomisRecord, deliusRecord) -> nomisRecord.prisonerNumber to deliusRecord.team.provider.code }
-
-    val cvlRecords = cvlRecordService.getCvlRecords(prisonersWithoutLicences, nomisIdsToAreaCodes)
+    val cvlRecords = cvlRecordService.getCvlRecords(prisonersWithoutLicences)
 
     val casesWithoutLicences = buildManagedCaseDto(nomisRecordsToDeliusRecords, cvlRecords)
 
@@ -75,7 +72,10 @@ class NotStartedCaseloadService(
         name = "${case.nomisRecord.firstName} ${case.nomisRecord.lastName}".convertToTitleCase(),
         prisonerNumber = case.nomisRecord.prisonerNumber,
         releaseDate = case.cvlRecord.licenceStartDate,
-        releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(case.cvlRecord.licenceStartDate, case.nomisRecord),
+        releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(
+          case.cvlRecord.licenceStartDate,
+          case.nomisRecord,
+        ),
         licenceStatus = licenceStatus,
         nomisLegalStatus = case.nomisRecord.legalStatus,
         isInHardStopPeriod = case.cvlRecord.isInHardStopPeriod,

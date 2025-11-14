@@ -51,7 +51,7 @@ class UpdateSentenceDateService(
     val currentLicence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val prisoner = prisonApiClient.getPrisonerDetail(currentLicence.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
-    val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner, currentLicence.probationAreaCode!!)
+    val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner)
 
     // If the licence is now ineligible then the LSD will be calculated to be null. This will cause the case to move to the
     // attention needed tab in the prison caseload and so the prison will correct the dates to make the case eligible again

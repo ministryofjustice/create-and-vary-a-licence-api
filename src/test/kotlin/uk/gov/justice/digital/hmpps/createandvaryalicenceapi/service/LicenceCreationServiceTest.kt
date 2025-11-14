@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TimeServedLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.TimeServedExternalRecordsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
@@ -64,7 +63,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -134,7 +132,7 @@ class LicenceCreationServiceTest {
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
     }
 
     @Test
@@ -142,7 +140,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
@@ -240,7 +238,7 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with middlename if provided`() {
+    fun `Populates licence with middle name if provided`() {
       val prisoner = prisonerSearchResult().copy(
         middleNames = "Timothy",
       )
@@ -262,7 +260,7 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with default middlename if not provided`() {
+    fun `Populates licence with default middle name if not provided`() {
       val prisoner = prisonerSearchResult().copy(
         middleNames = null,
       )
@@ -316,7 +314,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceType = LicenceType.PSS,
@@ -352,7 +350,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceType = LicenceType.AP_PSS,
@@ -617,7 +615,7 @@ class LicenceCreationServiceTest {
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
     }
 
     @Test
@@ -625,7 +623,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.PRRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
@@ -810,7 +808,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.PRRD,
           licenceType = LicenceType.PSS,
@@ -846,7 +844,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.PRRD,
           licenceType = LicenceType.AP_PSS,
@@ -1116,7 +1114,7 @@ class LicenceCreationServiceTest {
 
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
     }
 
     @Test
@@ -1124,7 +1122,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
@@ -1348,7 +1346,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceType = LicenceType.PSS,
@@ -1385,7 +1383,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(
         aProbationCaseResult,
       )
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceType = LicenceType.AP_PSS,
@@ -1604,7 +1602,7 @@ class LicenceCreationServiceTest {
         prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
@@ -1632,7 +1630,7 @@ class LicenceCreationServiceTest {
         prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
@@ -1690,7 +1688,7 @@ class LicenceCreationServiceTest {
         prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
@@ -1747,18 +1745,9 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult =
         prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
 
-      val existingLicence = TimeServedExternalRecordsResponse(
-        nomsId = aPrisonerSearchResult.prisonerNumber,
-        bookingId = aPrisonerSearchResult.bookingId!!.toLong(),
-        reason = "Reason",
-        prisonCode = "PRISON1",
-        dateCreated = LocalDateTime.now(),
-        dateLastUpdated = LocalDateTime.now(),
-      )
-
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
-      whenever(cvlRecordService.getCvlRecord(any(), any())).thenReturn(
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
@@ -1766,15 +1755,12 @@ class LicenceCreationServiceTest {
         ),
       )
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
-      whenever(timeServedExternalRecordsService.findByNomsIdAndBookingId(any(), any())).thenReturn(
-        existingLicence,
-      )
 
       service.createHardStopLicence(PRISON_NUMBER)
 
-      verify(timeServedExternalRecordsService, times(1)).deleteTimeServedExternalRecord(
-        existingLicence.nomsId,
-        existingLicence.bookingId,
+      verify(timeServedExternalRecordsService, times(1)).deleteTimeServedExternalRecordIfPresent(
+        aPrisonerSearchResult.prisonerNumber,
+        aPrisonerSearchResult.bookingId!!.toLong(),
       )
     }
   }

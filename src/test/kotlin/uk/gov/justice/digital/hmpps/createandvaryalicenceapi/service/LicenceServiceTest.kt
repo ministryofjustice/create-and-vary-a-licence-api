@@ -1366,7 +1366,6 @@ class LicenceServiceTest {
     whenever(
       eligibilityService.getEligibilityAssessment(
         eq(aPrisonerSearchPrisoner),
-        any(),
       ),
     ).thenReturn(anEligibilityAssessment())
 
@@ -1428,7 +1427,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardStopLicence))
     whenever(staffRepository.findByUsernameIgnoreCase("tca")).thenReturn(caseAdmin)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
       anEligibilityAssessment(),
     )
 
@@ -1476,7 +1475,7 @@ class LicenceServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
     val eligibilityAssessment = anEligibilityAssessment().copy(isEligible = false)
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
       eligibilityAssessment,
     )
 
@@ -1499,7 +1498,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
       anEligibilityAssessment(),
     )
 
@@ -2130,7 +2129,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
       anEligibilityAssessment(),
     )
 
@@ -2172,7 +2171,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
       anEligibilityAssessment(),
     )
 
@@ -2210,7 +2209,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
       anEligibilityAssessment(),
     )
 
@@ -2258,7 +2257,7 @@ class LicenceServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
     val eligibilityAssessment = anEligibilityAssessment().copy(isEligible = false)
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
       eligibilityAssessment,
     )
 
@@ -3771,7 +3770,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hdcLicence))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
         anEligibilityAssessment(),
       )
 
@@ -3825,7 +3824,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
         anEligibilityAssessment(),
       )
 
@@ -3893,7 +3892,7 @@ class LicenceServiceTest {
         Optional.of(approvedLicence),
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
         anEligibilityAssessment(),
       )
 
@@ -3940,7 +3939,7 @@ class LicenceServiceTest {
         Optional.of(approvedLicence),
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner), any())).thenReturn(
+      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
         anEligibilityAssessment(),
       )
 

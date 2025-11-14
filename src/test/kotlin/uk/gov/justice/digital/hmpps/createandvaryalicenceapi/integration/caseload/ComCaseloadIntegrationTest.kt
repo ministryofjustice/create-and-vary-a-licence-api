@@ -19,6 +19,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -63,6 +66,17 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `Successfully retrieve staff create caseload with no licences`() {
+      val ftr14Ora =
+        SentenceAndRecallType(
+          "14FTR_ORA",
+          RecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
+        )
+      val lrSopc21 =
+        SentenceAndRecallType(
+          "LR_SOPC21",
+          RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
+        )
+
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
@@ -70,7 +84,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
       stubSearchPrisonersByNomisId(releaseDate, sled, tused)
       prisonApiMockServer.stubGetCourtOutcomes()
-      prisonApiMockServer.stubGetSentenceAndRecallTypes(6)
+      prisonApiMockServer.stubGetSentenceAndRecallTypes(
+        listOf(
+          BookingSentenceAndRecallTypes(6, listOf(ftr14Ora)),
+          BookingSentenceAndRecallTypes(7, listOf(lrSopc21)),
+        ),
+      )
 
       val caseload = webTestClient.get()
         .uri(GET_STAFF_CREATE_CASELOAD)
@@ -100,6 +119,16 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun `Successfully retrieve a caseload with licences`() {
       // Given
+      val ftr14Ora =
+        SentenceAndRecallType(
+          "14FTR_ORA",
+          RecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
+        )
+      val lrSopc21 =
+        SentenceAndRecallType(
+          "LR_SOPC21",
+          RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
+        )
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
@@ -107,7 +136,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
       stubSearchPrisonersByNomisId(releaseDate, sled, tused)
       prisonApiMockServer.stubGetCourtOutcomes()
-      prisonApiMockServer.stubGetSentenceAndRecallTypes(6)
+      prisonApiMockServer.stubGetSentenceAndRecallTypes(
+        listOf(
+          BookingSentenceAndRecallTypes(6, listOf(ftr14Ora)),
+          BookingSentenceAndRecallTypes(7, listOf(lrSopc21)),
+        ),
+      )
 
       // When
       val result = webTestClient.get()

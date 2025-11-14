@@ -19,21 +19,27 @@ import kotlin.comparisons.nullsLast
 private interface DeliusStage {
   fun enrichWithDeliusData(): CvlRecordStage
 }
+
 private interface CvlRecordStage {
   fun enrichWithCvlRecords(): EligibleCandidatesStage
 }
+
 private interface EligibleCandidatesStage {
   fun withEligibleCandidates(): PreSubmissionStage
 }
+
 private interface PreSubmissionStage {
   fun withPreSubmissionState(): HdcFilterStage
 }
+
 private interface HdcFilterStage {
   fun filterOutHdcEligible(): LicenceStartStage
 }
+
 private interface LicenceStartStage {
   fun filterByLicenceStartDates(): BuildStage
 }
+
 private interface BuildStage {
   fun build(): List<LastMinuteHandoverCaseResponse>
 }
@@ -105,11 +111,7 @@ class LastMinuteReportBuilder(
   }
 
   override fun enrichWithCvlRecords() = apply {
-    val nomisIdsToAreaCodes = prisoners.keys.associate {
-      val deliusRecord = deliusData[it]
-      return@associate it to deliusRecord!!.team.provider.code
-    }
-    cvlRecords = cvlRecordService.getCvlRecords(prisoners.values.toList(), nomisIdsToAreaCodes)
+    cvlRecords = cvlRecordService.getCvlRecords(prisoners.values.toList())
   }
 
   override fun filterByLicenceStartDates() = apply {
