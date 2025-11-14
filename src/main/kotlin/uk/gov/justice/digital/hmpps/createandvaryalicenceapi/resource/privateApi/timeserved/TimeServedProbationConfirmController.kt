@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.times
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.TimeServedProbationConfirmContactService
 
-@Tag(name = Tags.TIME_SERVED_PROBATION_CONFIRM_CONTROLLER)
+@Tag(name = Tags.TIME_SERVED)
 @RestController
 @RequestMapping("/licences/time-served")
 class TimeServedProbationConfirmController(

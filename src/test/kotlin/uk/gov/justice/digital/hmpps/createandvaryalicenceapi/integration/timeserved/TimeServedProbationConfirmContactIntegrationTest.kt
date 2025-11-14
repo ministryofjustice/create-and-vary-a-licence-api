@@ -45,36 +45,6 @@ class TimeServedProbationConfirmContactIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  @Sql(
-    "classpath:test_data/seed-probation-confirm-id-1.sql",
-  )
-  fun `Update existing probation contact record`() {
-    // Given
-    val licenceId = 1L
-    val request = TimeServedProbationConfirmContactRequest(
-      ContactStatus.WILL_CONTACT_SOON,
-      communicationMethods = listOf(CommunicationMethod.TEAMS, CommunicationMethod.OTHER),
-      otherCommunicationDetail = "In person",
-    )
-
-    // When
-    val response = putTimeServedProbationConfirmContact(licenceId, request)
-
-    // Then
-    response.expectStatus().isNoContent
-    assertConfirmProbationEntity(
-      licenceId,
-      ContactStatus.WILL_CONTACT_SOON,
-      setOf(CommunicationMethod.TEAMS, CommunicationMethod.OTHER),
-      expectedOtherDetail = "In person",
-      update = true,
-    )
-  }
-
-  @Test
   fun `Validation fails when contacted is null`() {
     // Given
     val licenceId = 1L
@@ -139,7 +109,6 @@ class TimeServedProbationConfirmContactIntegrationTest : IntegrationTestBase() {
     expectedContacted: ContactStatus,
     expectedCommunication: Set<CommunicationMethod>,
     expectedOtherDetail: String? = null,
-    update: Boolean = false,
   ) {
     val entity = testRepository.findTimeServedProbationConfirmContact(licenceId)
     assertThat(entity).isNotNull
@@ -152,13 +121,7 @@ class TimeServedProbationConfirmContactIntegrationTest : IntegrationTestBase() {
 
       val now = LocalDateTime.now()
       val tolerance = Duration.ofSeconds(5) // allow 5 seconds difference
-      if (update) {
-        assertThat(it.dateCreated.toLocalDate()).isBefore(it.dateLastUpdated.toLocalDate())
-        assertThat(it.dateLastUpdated).isCloseTo(now, within(tolerance))
-      } else {
-        assertThat(it.dateCreated).isCloseTo(now, within(tolerance))
-        assertThat(it.dateLastUpdated).isCloseTo(now, within(tolerance))
-      }
+      assertThat(it.dateCreated).isCloseTo(now, within(tolerance))
     }
   }
 

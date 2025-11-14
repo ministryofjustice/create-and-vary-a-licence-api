@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "time_served_probation_confirm_contact")
 class TimeServedProbationConfirmContact(
-  @Column(name = "licence_id", nullable = false, unique = true)
+  @Column(name = "licence_id", nullable = false)
   var licenceId: Long,
 
   @Enumerated(EnumType.STRING)
@@ -31,7 +31,4 @@ class TimeServedProbationConfirmContact(
 
   @Column(name = "date_created", nullable = false)
   var dateCreated: LocalDateTime = LocalDateTime.now(),
-
-  @Column(name = "date_last_updated", nullable = false)
-  var dateLastUpdated: LocalDateTime = LocalDateTime.now(),
 ) : AbstractIdEntity()
