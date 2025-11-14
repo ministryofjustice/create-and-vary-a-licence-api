@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.timeserved.TimeServedCasesController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.timeServed.TimeServedCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.timeServed.TimeServedCaseloadService
 
