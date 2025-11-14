@@ -70,7 +70,7 @@ class LicenceCreationService(
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
       ?: error("No active offender manager found for $prisonNumber")
-    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord, currentResponsibleOfficerDetails.team.provider.code)
+    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
       ?: createCom(currentResponsibleOfficerDetails.id)
@@ -127,8 +127,7 @@ class LicenceCreationService(
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
-    val areaCode = currentResponsibleOfficerDetails?.team?.provider?.code ?: ""
-    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord, areaCode)
+    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
     val responsibleCom = currentResponsibleOfficerDetails?.let {
       staffRepository.findByStaffIdentifier(it.id) ?: createCom(it.id)
     }
@@ -193,11 +192,7 @@ class LicenceCreationService(
     if (isTimeServedLicenceCreation) {
       val nomisId = nomisRecord.prisonerNumber
       val bookingId = nomisRecord.bookingId!!.toLong()
-      val existingReasonForCreatingLicenceInNomis =
-        timeServedExternalRecordService.findByNomsIdAndBookingId(nomisId, bookingId)
-      if (existingReasonForCreatingLicenceInNomis != null) {
-        timeServedExternalRecordService.deleteTimeServedExternalRecord(nomisId, bookingId)
-      }
+      timeServedExternalRecordService.deleteTimeServedExternalRecordIfPresent(nomisId, bookingId)
     }
 
     return LicenceCreationResponse(createdLicence.id)

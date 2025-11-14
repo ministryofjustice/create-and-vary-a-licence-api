@@ -164,10 +164,8 @@ address:
 
 feature:
   toggle:
-    recall: ${RECALL_ENABLED}
     timeServed:
       enabled: ${FEATURE_TOGGLE_TIMESERVED_ENABLED}
-
 
 hmpps:
   cases:

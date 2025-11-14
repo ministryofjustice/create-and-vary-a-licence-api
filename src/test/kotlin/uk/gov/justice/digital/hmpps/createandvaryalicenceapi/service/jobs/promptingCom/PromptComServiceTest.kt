@@ -61,7 +61,7 @@ class PromptComServiceTest {
 
     whenever(promptComListBuilder.enrichWithDeliusData(any())).thenReturn(casesWithDeliusData)
 
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(cvlRecords)
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(cvlRecords)
 
     whenever(promptComListBuilder.excludeIneligibleCases(any(), any())).thenReturn(casesWithDeliusData)
 
@@ -114,7 +114,7 @@ class PromptComServiceTest {
     whenever(promptComListBuilder.excludeIneligibleCases(any(), any())).thenReturn(casesWithDeliusData)
     whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
     whenever(promptComListBuilder.excludePrisonersWithHdc(any())).thenReturn(cases)
-    whenever(cvlRecordService.getCvlRecords(any(), any())).thenReturn(cvlRecords)
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(cvlRecords)
     whenever(promptComListBuilder.enrichWithDeliusData(any())).thenReturn(casesWithDeliusData)
     whenever(promptComListBuilder.enrichWithComEmail(any())).thenReturn(casesWithEmails)
     whenever(promptComListBuilder.enrichWithLicenceStartDates(any(), any())).thenReturn(casesWithEmailsAndLocalDates)
@@ -132,13 +132,13 @@ class PromptComServiceTest {
   }
 
   companion object {
-    val clock = Clock.fixed(
+    val clock: Clock = Clock.fixed(
       Instant.parse("2025-01-29T10:15:30.00Z"),
       ZoneId.of("Europe/London"),
     )
 
-    val start = LocalDate.parse("2025-01-27")
-    val end = LocalDate.parse("2025-02-24")
+    val start: LocalDate = LocalDate.parse("2025-01-27")
+    val end: LocalDate = LocalDate.parse("2025-02-24")
 
     val cases = listOf(prisonerSearchResult())
     val casesWithDeliusData = mapOf(prisonerSearchResult() to offenderManager())

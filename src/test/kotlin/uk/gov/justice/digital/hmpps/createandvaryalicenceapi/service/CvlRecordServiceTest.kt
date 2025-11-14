@@ -38,7 +38,6 @@ class CvlRecordServiceTest {
           aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB"),
           aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC"),
         ),
-        nomisIdsToAreaCodes,
       ),
     ).thenReturn(
       mapOf(
@@ -80,7 +79,6 @@ class CvlRecordServiceTest {
         aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB"),
         aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC"),
       ),
-      nomisIdsToAreaCodes,
     )
     assertThat(results).containsExactlyInAnyOrder(
       CvlRecord(
@@ -133,7 +131,6 @@ class CvlRecordServiceTest {
     whenever(
       eligibilityService.getEligibilityAssessments(
         listOf(aPrisonerSearchPrisoner),
-        mapOf(aPrisonerSearchPrisoner.prisonerNumber to "AREA1"),
       ),
     ).thenReturn(mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()))
 
@@ -146,7 +143,7 @@ class CvlRecordServiceTest {
       ),
     ).thenReturn(mapOf(aPrisonerSearchPrisoner.prisonerNumber to LocalDate.of(2021, 10, 22)))
 
-    val result = service.getCvlRecord(aPrisonerSearchPrisoner, "AREA1")
+    val result = service.getCvlRecord(aPrisonerSearchPrisoner)
 
     assertThat(result).isEqualTo(
       CvlRecord(
@@ -167,7 +164,7 @@ class CvlRecordServiceTest {
   inner class LicenceTypeTest {
     @BeforeEach
     fun reset() {
-      whenever(eligibilityService.getEligibilityAssessments(any(), any())).thenReturn(
+      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
         mapOf(prisonerSearchResult().prisonerNumber to anEligibilityAssessment()),
       )
       whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
@@ -177,15 +174,15 @@ class CvlRecordServiceTest {
     fun `should default to AP`() {
       val nomisRecord =
         prisonerSearchResult().copy(licenceExpiryDate = null, topupSupervisionExpiryDate = null)
-      val cvlRecord = service.getCvlRecord(nomisRecord, "AREA1")
-      assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.AP)
+      val cvlRecord = service.getCvlRecord(nomisRecord)
+      assertThat(cvlRecord.licenceType).isEqualTo(AP)
     }
 
     @Test
     fun `should be PSS when TUSED is defined and LED is undefined`() {
       val nomisRecord = prisonerSearchResult()
         .copy(licenceExpiryDate = null, topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22))
-      val cvlRecord = service.getCvlRecord(nomisRecord, "AREA1")
+      val cvlRecord = service.getCvlRecord(nomisRecord)
       assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.PSS)
     }
 
@@ -193,8 +190,8 @@ class CvlRecordServiceTest {
     fun `should be AP when LED is defined and TUSED is undefined`() {
       val nomisRecord = prisonerSearchResult()
         .copy(licenceExpiryDate = LocalDate.of(2021, 10, 22), topupSupervisionExpiryDate = null)
-      val cvlRecord = service.getCvlRecord(nomisRecord, "AREA1")
-      assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.AP)
+      val cvlRecord = service.getCvlRecord(nomisRecord)
+      assertThat(cvlRecord.licenceType).isEqualTo(AP)
     }
 
     @Test
@@ -203,8 +200,8 @@ class CvlRecordServiceTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 21),
       )
-      val cvlRecord = service.getCvlRecord(nomisRecord, "AREA1")
-      assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.AP)
+      val cvlRecord = service.getCvlRecord(nomisRecord)
+      assertThat(cvlRecord.licenceType).isEqualTo(AP)
     }
 
     @Test
@@ -213,8 +210,8 @@ class CvlRecordServiceTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       )
-      val cvlRecord = service.getCvlRecord(nomisRecord, "AREA1")
-      assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.AP)
+      val cvlRecord = service.getCvlRecord(nomisRecord)
+      assertThat(cvlRecord.licenceType).isEqualTo(AP)
     }
 
     @Test
@@ -223,13 +220,13 @@ class CvlRecordServiceTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
       )
-      val cvlRecord = service.getCvlRecord(nomisRecord, "AREA1")
+      val cvlRecord = service.getCvlRecord(nomisRecord)
       assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.AP_PSS)
     }
 
     @Test
     fun `AP_PSS recall cases are PSS-only if the licence start date is equal to the LED`() {
-      whenever(eligibilityService.getEligibilityAssessments(any(), any())).thenReturn(
+      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
         mapOf(prisonerSearchResult().prisonerNumber to prrdEligibilityAssessment),
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
@@ -241,13 +238,13 @@ class CvlRecordServiceTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
       )
-      val cvlRecord = service.getCvlRecord(nomisRecord, "AREA1")
+      val cvlRecord = service.getCvlRecord(nomisRecord)
       assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.PSS)
     }
 
     @Test
     fun `AP_PSS recall cases are PSS-only if the licence start date is equal to the last working day before a non-working day LED`() {
-      whenever(eligibilityService.getEligibilityAssessments(any(), any())).thenReturn(
+      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
         mapOf(prisonerSearchResult().prisonerNumber to prrdEligibilityAssessment),
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
@@ -259,7 +256,7 @@ class CvlRecordServiceTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
       )
-      val cvlRecord = service.getCvlRecord(nomisRecord, "AREA1")
+      val cvlRecord = service.getCvlRecord(nomisRecord)
       assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.PSS)
     }
 
@@ -270,11 +267,6 @@ class CvlRecordServiceTest {
   }
 
   private val aPrisonerSearchPrisoner = prisonerSearchResult()
-  private val nomisIdsToAreaCodes = mapOf(
-    aPrisonerSearchPrisoner.prisonerNumber to "AREA1",
-    "A1234AB" to "AREA2",
-    "A1234AC" to "AREA3",
-  )
   private val prrdEligibilityAssessment = anEligibilityAssessment().copy(
     crdIneligibilityReasons = listOf("Some reason"),
     eligibleKind = LicenceKind.PRRD,
