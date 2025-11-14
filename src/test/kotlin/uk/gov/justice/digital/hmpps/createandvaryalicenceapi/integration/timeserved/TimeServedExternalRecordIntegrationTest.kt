@@ -1,12 +1,13 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.timeserved
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ExternalTimeServedRecordRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.TimeServedExternalRecordRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.timeserved.TimeServedExternalRecordRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 
 class TimeServedExternalRecordIntegrationTest : IntegrationTestBase() {

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -6,6 +6,8 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AbstractIdEntity
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import java.time.LocalDateTime
 
 @Entity
