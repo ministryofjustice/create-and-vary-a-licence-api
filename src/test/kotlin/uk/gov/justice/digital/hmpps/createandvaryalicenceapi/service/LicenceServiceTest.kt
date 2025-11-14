@@ -2551,7 +2551,7 @@ class LicenceServiceTest {
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
       "",
-      "",
+      "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
       "${variation.forename} ${variation.surname}",
       "1",
     )
@@ -2713,7 +2713,7 @@ class LicenceServiceTest {
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
       "",
-      "",
+      "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
       "${variation.forename} ${variation.surname}",
       "2",
     )

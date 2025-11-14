@@ -752,12 +752,14 @@ class LicenceService(
       ),
     )
 
+    val creatorName = licenceEntity.createdBy?.fullName().orEmpty()
+
     notifyService.sendVariationReferredEmail(
-      licenceEntity.createdBy?.email ?: "",
-      "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.responsibleCom?.email ?: "",
-      licenceEntity.responsibleCom?.fullName ?: "",
-      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceEntity.createdBy?.email.orEmpty(),
+      creatorName,
+      licenceEntity.responsibleCom?.email.orEmpty(),
+      licenceEntity.responsibleCom?.fullName ?: creatorName,
+      "${licenceEntity.forename.orEmpty()} ${licenceEntity.surname.orEmpty()}",
       licenceId.toString(),
     )
   }
@@ -794,13 +796,15 @@ class LicenceService(
       ),
     )
 
+    val creatorName = licenceEntity.createdBy?.fullName().orEmpty()
+
     notifyService.sendVariationApprovedEmail(
-      licenceEntity.createdBy?.email ?: "",
-      "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.responsibleCom?.email ?: "",
-      licenceEntity.responsibleCom?.fullName ?: "",
-      "${licenceEntity.forename} ${licenceEntity.surname}",
-      licenceId.toString(),
+      licenceEntity.createdBy?.email.orEmpty(),
+      creatorName,
+      licenceEntity.responsibleCom?.email.orEmpty(),
+      licenceEntity.responsibleCom?.fullName ?: creatorName,
+      "${licenceEntity.forename.orEmpty()} ${licenceEntity.surname.orEmpty()}",
+      licenceId.toString()
     )
   }
 
@@ -1179,6 +1183,10 @@ class LicenceService(
     if (!eligibilityAssessment.isEligible) {
       throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
     }
+  }
+
+  private fun CommunityOffenderManager.fullName(): String {
+    return "${firstName.orEmpty()} ${lastName.orEmpty()}".trim()
   }
 
   private fun getLicence(licenceId: Long): EntityLicence = licenceRepository
