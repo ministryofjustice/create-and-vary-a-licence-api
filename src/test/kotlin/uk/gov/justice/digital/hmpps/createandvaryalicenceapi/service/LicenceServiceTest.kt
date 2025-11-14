@@ -39,8 +39,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Comp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
