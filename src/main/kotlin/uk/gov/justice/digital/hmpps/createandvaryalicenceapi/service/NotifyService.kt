@@ -338,16 +338,14 @@ class NotifyService(
     }
   }
 
-  private fun getContacts(creatorEmail: String, creatorName: String, comEmail: String, comName: String): List<Contact> {
-    return when {
-      creatorEmail.isBlank() && comEmail.isNotBlank() -> listOf(Contact(comEmail, comName))
-      comEmail.isBlank() && creatorEmail.isNotBlank() -> listOf(Contact(creatorEmail, creatorName))
-      creatorEmail == comEmail -> listOf(Contact(creatorEmail, creatorName))
-      else -> listOf(
-        Contact(creatorEmail, creatorName),
-        Contact(comEmail, comName),
-      )
-    }
+  private fun getContacts(creatorEmail: String, creatorName: String, comEmail: String, comName: String): List<Contact> = when {
+    creatorEmail.isBlank() && comEmail.isNotBlank() -> listOf(Contact(comEmail, comName))
+    comEmail.isBlank() && creatorEmail.isNotBlank() -> listOf(Contact(creatorEmail, creatorName))
+    creatorEmail == comEmail -> listOf(Contact(creatorEmail, creatorName))
+    else -> listOf(
+      Contact(creatorEmail, creatorName),
+      Contact(comEmail, comName),
+    )
   }
 
   companion object {
@@ -359,4 +357,3 @@ class NotifyService(
     var name: String,
   )
 }
-
