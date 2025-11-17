@@ -54,6 +54,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Reviewable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -719,12 +720,10 @@ class LicenceService(
     )
   }
 
-  @TimeServedConsiderations("Do we refer this variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
-    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -753,22 +752,22 @@ class LicenceService(
       ),
     )
 
+    val creatorName = licenceEntity.createdBy?.fullName().orEmpty()
+
     notifyService.sendVariationReferredEmail(
-      licenceEntity.createdBy?.email ?: "",
-      "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.getCom().email ?: "",
-      licenceEntity.getCom().fullName,
-      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceEntity.createdBy?.email.orEmpty(),
+      creatorName,
+      licenceEntity.responsibleCom?.email.orEmpty(),
+      licenceEntity.responsibleCom?.fullName ?: creatorName,
+      "${licenceEntity.forename.orEmpty()} ${licenceEntity.surname.orEmpty()}",
       licenceId.toString(),
     )
   }
 
-  @TimeServedConsiderations("Do we approve a variation if it does not have a COM - should variations always have a COM?")
   @Transactional
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
-    check(licenceEntity is AlwaysHasCom) { "Licence has no responsible COM: ${licenceEntity.id}" }
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -797,12 +796,14 @@ class LicenceService(
       ),
     )
 
+    val creatorName = licenceEntity.createdBy?.fullName().orEmpty()
+
     notifyService.sendVariationApprovedEmail(
-      licenceEntity.createdBy?.email ?: "",
-      "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.getCom().email ?: "",
-      licenceEntity.getCom().fullName,
-      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceEntity.createdBy?.email.orEmpty(),
+      creatorName,
+      licenceEntity.responsibleCom?.email.orEmpty(),
+      licenceEntity.responsibleCom?.fullName ?: creatorName,
+      "${licenceEntity.forename.orEmpty()} ${licenceEntity.surname.orEmpty()}",
       licenceId.toString(),
     )
   }
@@ -828,7 +829,7 @@ class LicenceService(
       .findById(licence.variationOfId!!)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    if (previousLicence is HardStopLicence) {
+    if (previousLicence is Reviewable) {
       previousLicence.markAsReviewed(user)
       licenceEventRepository.saveAndFlush(
         EntityLicenceEvent(
@@ -1036,7 +1037,7 @@ class LicenceService(
   fun reviewWithNoVariationRequired(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
 
-    if (licenceEntity !is HardStopLicence) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
+    if (licenceEntity !is Reviewable) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -1183,6 +1184,8 @@ class LicenceService(
       throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
     }
   }
+
+  private fun CommunityOffenderManager.fullName(): String = "${firstName.orEmpty()} ${lastName.orEmpty()}".trim()
 
   private fun getLicence(licenceId: Long): EntityLicence = licenceRepository
     .findById(licenceId)
