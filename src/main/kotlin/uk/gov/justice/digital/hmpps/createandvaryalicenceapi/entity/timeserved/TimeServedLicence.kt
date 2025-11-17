@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Reviewable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -141,6 +142,7 @@ class TimeServedLicence(
   updatedBy = updatedBy,
   responsibleCom = responsibleCom,
 ),
+  Reviewable,
   ReviewablePostRelease {
 
   fun copy(
@@ -264,13 +266,6 @@ class TimeServedLicence(
     submittedDate = LocalDateTime.now()
     dateLastUpdated = LocalDateTime.now()
     updatedBy = submittedBy
-  }
-
-  fun markAsReviewed(staff: Staff?) {
-    reviewDate = LocalDateTime.now()
-    dateLastUpdated = LocalDateTime.now()
-    updatedByUsername = staff?.username ?: SYSTEM_USER
-    updatedBy = staff ?: this.updatedBy
   }
 
   override fun getCreator() = createdBy ?: error("licence: $id has no CA/creator")
