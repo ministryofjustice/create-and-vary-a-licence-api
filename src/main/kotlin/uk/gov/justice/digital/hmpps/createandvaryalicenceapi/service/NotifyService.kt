@@ -21,7 +21,7 @@ class NotifyService(
   @param:Value("\${notify.enabled}") private val enabled: Boolean,
   @param:Value("\${self.link}") private val selfLink: String,
   @param:Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String,
-  @param:Value("\${notify.templates.variationReApproval}") private val variationForReApprovalTemplateId: String,
+  @param:Value("\${notify.templates.omuReApproval}") private val licenceRequiresOmuReApprovalTemplateId: String,
   @param:Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String,
   @param:Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String,
   @param:Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String,
@@ -62,7 +62,7 @@ class NotifyService(
     }
   }
 
-  fun sendVariationForReApprovalEmail(
+  fun sendLicenceToOmuForReApprovalEmail(
     emailAddress: String?,
     firstName: String,
     lastName: String,
@@ -78,11 +78,11 @@ class NotifyService(
         "crd" to (crd?.format(dateFormat) ?: ""),
         "lsd" to lsd.format(dateFormat),
       )
-      if (sendEmail(variationForReApprovalTemplateId, emailAddress, values)) {
-        log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
+      if (sendEmail(licenceRequiresOmuReApprovalTemplateId, emailAddress, values)) {
+        log.info("Notification sent to OMU $emailAddress FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
       }
     } else {
-      log.error("Notification failed (variationReApproval) for PrisonerNumber $prisonerNumber - OMU email and CRD must be present")
+      log.error("Notification failed (omuReapproval) for PrisonerNumber $prisonerNumber - OMU email and CRD must be present")
     }
   }
 

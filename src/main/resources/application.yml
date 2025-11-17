@@ -119,7 +119,7 @@ notify:
     urgentLicencePrompt: 8fb9669b-bc0a-497e-870f-b0c37923f3fc
     variationApproved: 24ad56b7-7bec-4fdb-ac8b-3b5af6f18666
     variationForApproval: 2dc01a48-73f1-4dde-931e-05eaf502441e
-    variationReApproval: 4a1c5ba4-e8e7-46a6-8ff7-149bdc99db8f
+    omuReApproval: 4a1c5ba4-e8e7-46a6-8ff7-149bdc99db8f
     variationReferred: e124b2ff-68e1-4364-894b-b723289d1fdc
     hardStopLicenceApproved: 0cf3be7c-7179-41d1-b287-1bd269057714
     editedLicenceTimedOut: 3db6954b-f16f-4c77-b028-ccfa4f87fb62
