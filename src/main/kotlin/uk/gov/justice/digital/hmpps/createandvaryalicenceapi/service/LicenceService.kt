@@ -285,7 +285,7 @@ class LicenceService(
 
     // if previous status was APPROVED and the new status is SUBMITTED then email OMU regarding re-approval
     if (isReApproval) {
-      notifyReApprovalNeeded(licenceEntity)
+      notifyOmuReApprovalNeeded(licenceEntity)
     }
 
     if (request.status === APPROVED && licenceEntity is HardStopLicence) {
@@ -356,9 +356,9 @@ class LicenceService(
     )
   }
 
-  private fun notifyReApprovalNeeded(licenceEntity: EntityLicence) {
+  private fun notifyOmuReApprovalNeeded(licenceEntity: EntityLicence) {
     val omuEmail = licenceEntity.prisonCode?.let { omuService.getOmuContactEmail(it)?.email }
-    notifyService.sendVariationForReApprovalEmail(
+    notifyService.sendLicenceToOmuForReApprovalEmail(
       omuEmail,
       licenceEntity.forename ?: "unknown",
       licenceEntity.surname ?: "unknown",
@@ -652,7 +652,7 @@ class LicenceService(
 
     val licenceCopy = populateCopyAndAudit(licence.kind, licence, copyToEdit, creator)
 
-    notifyReApprovalNeeded(licence)
+    notifyOmuReApprovalNeeded(licence)
     return licenceCopy.toSummary()
   }
 

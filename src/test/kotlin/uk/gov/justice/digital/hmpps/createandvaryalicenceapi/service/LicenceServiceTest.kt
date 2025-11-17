@@ -526,7 +526,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
+    verify(notifyService, times(0)).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
@@ -589,7 +589,7 @@ class LicenceServiceTest {
 
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
+    verify(notifyService, never()).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(firstVersionOfLicence)
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
@@ -676,7 +676,7 @@ class LicenceServiceTest {
 
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
+    verify(notifyService, never()).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(firstVersionOfLicence)
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
@@ -765,7 +765,7 @@ class LicenceServiceTest {
 
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
+    verify(notifyService, never()).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(firstVersionOfLicence)
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
@@ -850,7 +850,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
+    verify(notifyService, never()).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
@@ -914,7 +914,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(
+    verify(notifyService, never()).sendLicenceToOmuForReApprovalEmail(
       eq("test@test.com"),
       eq(aLicenceEntity.forename ?: "unknown"),
       eq(aLicenceEntity.surname ?: "unknown"),
@@ -971,7 +971,7 @@ class LicenceServiceTest {
     service.updateLicenceStatus(1L, request)
 
     // Then
-    verify(notifyService, times(1)).sendVariationForReApprovalEmail(
+    verify(notifyService, times(1)).sendLicenceToOmuForReApprovalEmail(
       eq("test@test.com"),
       eq(aLicenceEntity.forename!!),
       eq(aLicenceEntity.surname!!),
@@ -1001,7 +1001,7 @@ class LicenceServiceTest {
       StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X", fullName = "Y"),
     )
 
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(
+    verify(notifyService, times(0)).sendLicenceToOmuForReApprovalEmail(
       eq("test@test.com"),
       eq(aLicenceEntity.forename ?: ""),
       eq(aLicenceEntity.surname ?: ""),
@@ -1276,7 +1276,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
+    verify(notifyService, times(0)).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
@@ -1295,7 +1295,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
+    verify(notifyService, times(0)).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
@@ -2230,7 +2230,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
 
     service.editLicence(1L)
-    verify(notifyService, times(1)).sendVariationForReApprovalEmail(
+    verify(notifyService, times(1)).sendLicenceToOmuForReApprovalEmail(
       eq("test@test.com"),
       eq(aLicenceEntity.forename ?: "unknown"),
       eq(aLicenceEntity.surname ?: "unknown"),
@@ -2326,7 +2326,7 @@ class LicenceServiceTest {
 
     service.editLicence(1L)
 
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
+    verify(notifyService, never()).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
   }
 
   @Test

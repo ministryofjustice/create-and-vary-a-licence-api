@@ -34,7 +34,7 @@ class NotifyServiceTest {
     datesChangedTemplateId = TEMPLATE_ID,
     variationApprovedTemplateId = TEMPLATE_ID,
     variationReferredTemplateId = TEMPLATE_ID,
-    variationForReApprovalTemplateId = TEMPLATE_ID,
+    licenceRequiresOmuReApprovalTemplateId = TEMPLATE_ID,
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
     editedLicenceTimedOutTemplateId = TEMPLATE_ID,
@@ -222,7 +222,7 @@ class NotifyServiceTest {
   @Test
   fun `send variation re-approval email`() {
     val lsd = LocalDate.of(2016, Month.FEBRUARY, 10)
-    notifyService.sendVariationForReApprovalEmail(
+    notifyService.sendLicenceToOmuForReApprovalEmail(
       EMAIL_ADDRESS,
       "John",
       "Doe",
@@ -243,7 +243,7 @@ class NotifyServiceTest {
 
   @Test
   fun `No re-approval email is sent when LSD is empty`() {
-    notifyService.sendVariationForReApprovalEmail(
+    notifyService.sendLicenceToOmuForReApprovalEmail(
       EMAIL_ADDRESS,
       "John",
       "Doe",
@@ -264,7 +264,7 @@ class NotifyServiceTest {
       datesChangedTemplateId = TEMPLATE_ID,
       variationApprovedTemplateId = TEMPLATE_ID,
       variationReferredTemplateId = TEMPLATE_ID,
-      variationForReApprovalTemplateId = TEMPLATE_ID,
+      licenceRequiresOmuReApprovalTemplateId = TEMPLATE_ID,
       unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
       client = notificationClient,
       internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
