@@ -381,7 +381,6 @@ class LicenceService(
       licenceEntity.licenceStartDate,
       licenceEntity.id.toString(),
       licenceEntity.prisonDescription!!,
-      isTimeServedLicence = false,
     )
   }
 

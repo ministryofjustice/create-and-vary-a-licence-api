@@ -211,7 +211,7 @@ class NotifyService(
     lsd: LocalDate?,
     licenceId: String,
     prisonName: String,
-    isTimeServedLicence: Boolean,
+    isTimeServedLicence: Boolean = false,
   ) {
     val isTimeServed = isTimeServedLogicEnabled && isTimeServedLicence
     val templateId = if (isTimeServedLogicEnabled) reviewableLicenceApprovedTemplateId else hardStopLicenceApprovedTemplateId
@@ -236,7 +236,7 @@ class NotifyService(
       put("lastName", lastName)
       put("crn", crn ?: "")
       put("releaseDate", lsd.format(dateFormat))
-      if (isTimeServed) {
+      if (isTimeServedLogicEnabled) {
         put("reasonForStandardLicence", reasonForStandardLicence)
         put("prisonName", prisonName)
       }
@@ -303,7 +303,7 @@ class NotifyService(
       put("firstName", firstName)
       put("lastName", lastName)
       put("crn", crn!!)
-      if (isTimeServed) {
+      if (isTimeServedLogicEnabled) {
         put("reasonForStandardLicence", reasonForStandardLicence)
       }
     }

@@ -28,7 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Licenc
 @AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = [WarnLicenceReviewOverdueController::class])
 @WebAppConfiguration
-class LicenceReviewOverdueControllerTest {
+class WarnLicenceReviewOverdueControllerTest {
   @MockitoBean
   private lateinit var licenceReviewOverdueService: LicenceReviewOverdueService
 
@@ -48,7 +48,7 @@ class LicenceReviewOverdueControllerTest {
   @Test
   fun `send email to COM`() {
     mvc.perform(
-      MockMvcRequestBuilders.post("/jobs/warn-review-overdue")
+      MockMvcRequestBuilders.post("/jobs/warn-licence-review-overdue")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON),
     )

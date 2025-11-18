@@ -26,7 +26,7 @@ class NotifyServiceTest {
   private val notificationClient = mock<NotificationClient>()
   private val releaseDateService = mock<ReleaseDateService>()
 
-  private val notifyService = NotifyService(
+  private fun notifyService(isTimeServedEnabled: Boolean = false): NotifyService = NotifyService(
     enabled = true,
     selfLink = "http://somewhere",
     variationForApprovalTemplateId = TEMPLATE_ID,
@@ -44,7 +44,7 @@ class NotifyServiceTest {
     releaseDateService = releaseDateService,
     reviewableLicenceApprovedTemplateId = TEMPLATE_ID,
     licenceReviewOverdueTemplateId = TEMPLATE_ID,
-    isTimeServedLogicEnabled = false,
+    isTimeServedLogicEnabled = isTimeServedEnabled,
   )
 
   @Test
@@ -65,7 +65,7 @@ class NotifyServiceTest {
       "isEligibleForEarlyRelease" to "yes",
     )
 
-    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
+    notifyService().sendInitialLicenceCreateEmails(listOf(comToEmail))
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
   }
 
@@ -95,7 +95,7 @@ class NotifyServiceTest {
     )
 
     // , Test Three (CRN: X12444), who is due to leave prison as a standard release on Friday 11 November 2022], "createLicenceLink" = "http://somewhere/licence/create/caseload", "isEligibleForEarlyRelease" = "yes"},
-    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
+    notifyService().sendInitialLicenceCreateEmails(listOf(comToEmail))
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
   }
 
@@ -121,7 +121,7 @@ class NotifyServiceTest {
       "isEligibleForEarlyRelease" to "no",
     )
 
-    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
+    notifyService().sendInitialLicenceCreateEmails(listOf(comToEmail))
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
   }
 
@@ -129,7 +129,7 @@ class NotifyServiceTest {
   fun `send dates changed email to the COM`() {
     val datesChanged = listOf("Release date", "Licence end date")
 
-    notifyService.sendDatesChangedEmail(
+    notifyService().sendDatesChangedEmail(
       "1",
       EMAIL_ADDRESS,
       "Joe Bloggs",
@@ -151,7 +151,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send variation approved email - just the creator`() {
-    notifyService.sendVariationApprovedEmail(
+    notifyService().sendVariationApprovedEmail(
       creatorEmail = EMAIL_ADDRESS,
       creatorName = "Joe Bloggs",
       comEmail = "",
@@ -171,7 +171,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send variation approved email - creator and COM are the same`() {
-    notifyService.sendVariationApprovedEmail(
+    notifyService().sendVariationApprovedEmail(
       creatorEmail = EMAIL_ADDRESS,
       creatorName = "Joe Bloggs",
       comEmail = EMAIL_ADDRESS,
@@ -191,7 +191,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send variation approved email - creator and COM are different`() {
-    notifyService.sendVariationApprovedEmail(
+    notifyService().sendVariationApprovedEmail(
       creatorEmail = EMAIL_ADDRESS,
       creatorName = "Joe Bloggs",
       comEmail = EMAIL_ADDRESS2,
@@ -204,7 +204,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send variation referred email - just the creator`() {
-    notifyService.sendVariationReferredEmail(
+    notifyService().sendVariationReferredEmail(
       creatorEmail = EMAIL_ADDRESS,
       creatorName = "Joe Bloggs",
       comEmail = "",
@@ -225,7 +225,7 @@ class NotifyServiceTest {
   @Test
   fun `send variation re-approval email`() {
     val lsd = LocalDate.of(2016, Month.FEBRUARY, 10)
-    notifyService.sendLicenceToOmuForReApprovalEmail(
+    notifyService().sendLicenceToOmuForReApprovalEmail(
       EMAIL_ADDRESS,
       "John",
       "Doe",
@@ -246,7 +246,7 @@ class NotifyServiceTest {
 
   @Test
   fun `No re-approval email is sent when LSD is empty`() {
-    notifyService.sendLicenceToOmuForReApprovalEmail(
+    notifyService().sendLicenceToOmuForReApprovalEmail(
       EMAIL_ADDRESS,
       "John",
       "Doe",
@@ -287,14 +287,14 @@ class NotifyServiceTest {
   fun `Notify service catches and swallows exceptions`() {
     whenever(notificationClient.sendEmail(any(), any(), any(), any())).thenThrow(NotificationClientException("error"))
     assertDoesNotThrow {
-      notifyService.sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
+      notifyService().sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
     }
   }
 
   @Test
   fun `swallows the error and does not send email when contact info is null`() {
     assertDoesNotThrow {
-      notifyService.sendVariationForApprovalEmail(NotifyRequest(null, null), "1", "First", "Last", "crn", "ComName")
+      notifyService().sendVariationForApprovalEmail(NotifyRequest(null, null), "1", "First", "Last", "crn", "ComName")
     }
     verifyNoInteractions(notificationClient)
   }
@@ -319,16 +319,16 @@ class NotifyServiceTest {
       "comName" to "comFirst comLast",
     )
 
-    notifyService.sendUnapprovedLicenceEmail(emailContent)
+    notifyService().sendUnapprovedLicenceEmail(emailContent)
     verify(notificationClient).sendEmail(TEMPLATE_ID, "joe.bloggs@test.com", expectedMap, null)
     verify(notificationClient).sendEmail(TEMPLATE_ID, INTERNAL_EMAIL_ADDRESS, expectedMap, null)
   }
 
   @Nested
-  inner class `approving hard stop licences` {
+  inner class `approving review needed licences` {
     @Test
     fun `send hard stop licence approved email to probation practitioner`() {
-      notifyService.sendReviewableLicenceApprovedEmail(
+      notifyService().sendReviewableLicenceApprovedEmail(
         emailAddress = EMAIL_ADDRESS,
         firstName = "John",
         lastName = "Doe",
@@ -350,8 +350,85 @@ class NotifyServiceTest {
     }
 
     @Test
+    fun `send time served licence approved email to probation practitioner or creator`() {
+      notifyService().sendReviewableLicenceApprovedEmail(
+        emailAddress = EMAIL_ADDRESS,
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        lsd = LocalDate.of(2024, 4, 17),
+        licenceId = "1",
+        prisonName = "Some Prison",
+        isTimeServedLicence = true,
+      )
+
+      val expectedMap = mapOf(
+        "firstName" to "John",
+        "lastName" to "Doe",
+        "crn" to "A123456",
+        "releaseDate" to "17 April 2024",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
+    fun `send hard stop licence approved email to probation practitioner with isTimeServedLogic Enabled`() {
+      val notifyServiceWithTimeServedLogic = notifyService(isTimeServedEnabled = true)
+
+      notifyServiceWithTimeServedLogic.sendReviewableLicenceApprovedEmail(
+        emailAddress = EMAIL_ADDRESS,
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        lsd = LocalDate.of(2024, 4, 17),
+        licenceId = "1",
+        prisonName = "Some Prison",
+        isTimeServedLicence = false,
+      )
+
+      val expectedMap = mapOf(
+        "firstName" to "John",
+        "lastName" to "Doe",
+        "crn" to "A123456",
+        "releaseDate" to "17 April 2024",
+        "reasonForStandardLicence" to "none was submitted in time for their final release checks",
+        "prisonName" to "Some Prison",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
+    fun `send time served licence approved email to probation practitioner or creator with isTimeServedLogic Enabled`() {
+      val notifyServiceWithTimeServedLogic = notifyService(isTimeServedEnabled = true)
+
+      notifyServiceWithTimeServedLogic.sendReviewableLicenceApprovedEmail(
+        emailAddress = EMAIL_ADDRESS,
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        lsd = LocalDate.of(2024, 4, 17),
+        licenceId = "1",
+        prisonName = "Some Prison",
+        isTimeServedLicence = true,
+      )
+
+      val expectedMap = mapOf(
+        "firstName" to "John",
+        "lastName" to "Doe",
+        "crn" to "A123456",
+        "releaseDate" to "17 April 2024",
+        "reasonForStandardLicence" to "this person was released immediately following sentencing having served time on remand",
+        "prisonName" to "Some Prison",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
     fun `No hard stop approval licence email is sent when CRD is empty`() {
-      notifyService.sendReviewableLicenceApprovedEmail(
+      notifyService().sendReviewableLicenceApprovedEmail(
         emailAddress = EMAIL_ADDRESS,
         firstName = "John",
         lastName = "Doe",
@@ -366,7 +443,7 @@ class NotifyServiceTest {
 
     @Test
     fun `No hard stop approval licence email is sent when email address is empty`() {
-      notifyService.sendReviewableLicenceApprovedEmail(
+      notifyService().sendReviewableLicenceApprovedEmail(
         emailAddress = null,
         firstName = "John",
         lastName = "Doe",
@@ -384,7 +461,7 @@ class NotifyServiceTest {
   inner class `edited licences timed out` {
     @Test
     fun `send edited licence timed out email to COM`() {
-      notifyService.sendEditedLicenceTimedOutEmail(
+      notifyService().sendEditedLicenceTimedOutEmail(
         emailAddress = EMAIL_ADDRESS,
         comName = "Joe Bloggs",
         firstName = "John",
@@ -407,7 +484,7 @@ class NotifyServiceTest {
 
     @Test
     fun `No edited licence timed out email is sent when CRD is empty`() {
-      notifyService.sendEditedLicenceTimedOutEmail(
+      notifyService().sendEditedLicenceTimedOutEmail(
         emailAddress = EMAIL_ADDRESS,
         comName = "Joe Bloggs",
         firstName = "John",
@@ -421,7 +498,7 @@ class NotifyServiceTest {
 
     @Test
     fun `No edited licence timed out email is sent when email address is empty`() {
-      notifyService.sendEditedLicenceTimedOutEmail(
+      notifyService().sendEditedLicenceTimedOutEmail(
         emailAddress = null,
         comName = "Joe Bloggs",
         firstName = "John",
@@ -435,10 +512,10 @@ class NotifyServiceTest {
   }
 
   @Nested
-  inner class `hard stop licence review overdue` {
+  inner class `licence review overdue` {
     @Test
     fun `send hard stop licence review overdue email to COM`() {
-      notifyService.sendLicenceReviewOverdueEmail(
+      notifyService().sendLicenceReviewOverdueEmail(
         emailAddress = EMAIL_ADDRESS,
         comName = "Joe Bloggs",
         firstName = "John",
@@ -459,8 +536,80 @@ class NotifyServiceTest {
     }
 
     @Test
+    fun `send time served licence review overdue email to COM`() {
+      notifyService().sendLicenceReviewOverdueEmail(
+        emailAddress = EMAIL_ADDRESS,
+        comName = "Joe Bloggs",
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        licenceId = "1",
+        isTimeServedLicence = true,
+      )
+
+      val expectedMap = mapOf(
+        "comName" to "Joe Bloggs",
+        "firstName" to "John",
+        "lastName" to "Doe",
+        "crn" to "A123456",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
+    fun `send hard stop licence review overdue email to COM with isTimeServedLogic Enabled`() {
+      val notifyServiceWithTimeServedLogic = notifyService(isTimeServedEnabled = true)
+
+      notifyServiceWithTimeServedLogic.sendLicenceReviewOverdueEmail(
+        emailAddress = EMAIL_ADDRESS,
+        comName = "Joe Bloggs",
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        licenceId = "1",
+        isTimeServedLicence = false,
+      )
+
+      val expectedMap = mapOf(
+        "comName" to "Joe Bloggs",
+        "firstName" to "John",
+        "lastName" to "Doe",
+        "crn" to "A123456",
+        "reasonForStandardLicence" to "none was submitted in time for their final release checks",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
+    fun `send time served licence review overdue email to COM with isTimeServedLogic Enabled`() {
+      val notifyServiceWithTimeServedLogic = notifyService(isTimeServedEnabled = true)
+
+      notifyServiceWithTimeServedLogic.sendLicenceReviewOverdueEmail(
+        emailAddress = EMAIL_ADDRESS,
+        comName = "Joe Bloggs",
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        licenceId = "1",
+        isTimeServedLicence = true,
+      )
+
+      val expectedMap = mapOf(
+        "comName" to "Joe Bloggs",
+        "firstName" to "John",
+        "lastName" to "Doe",
+        "crn" to "A123456",
+        "reasonForStandardLicence" to "this person was released immediately following sentencing having served time on remand",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
     fun `No hard stop licence review overdue email is sent when email address is empty`() {
-      notifyService.sendLicenceReviewOverdueEmail(
+      notifyService().sendLicenceReviewOverdueEmail(
         emailAddress = null,
         comName = "Joe Bloggs",
         firstName = "John",
