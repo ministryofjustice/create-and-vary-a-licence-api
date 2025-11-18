@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.4"
   id("org.owasp.dependencycheck") version "12.1.6"
   kotlin("plugin.spring") version "2.2.20"
   kotlin("plugin.jpa") version "2.2.20"
@@ -14,13 +14,18 @@ repositories {
   mavenCentral()
 }
 
-ext["logback.version"] = "1.5.14"
+ext["logback.version"] = "1.5.19"
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   // hmpps-kotlin-lib
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.7.0")
+  constraints {
+    implementation("org.apache.commons:commons-compress:1.26.0") {
+      because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
+    }
+  }
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.8.1")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")

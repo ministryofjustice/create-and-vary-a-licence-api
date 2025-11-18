@@ -922,6 +922,7 @@ fun Licence.getSubmittedByFullName(): String? {
     is VariationLicence -> this.submittedBy
     is HdcLicence -> this.submittedBy
     is HdcVariationLicence -> this.submittedBy
+    is TimeServedLicence -> this.submittedBy
     else -> error("Unexpected licence type: $this")
   }
   return if (staffMember != null) {
