@@ -11,13 +11,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderCrnTransformer.toProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.RelevantLicenceFinder.findRelevantLicencePerCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -101,7 +101,7 @@ class ComCreateCaseloadService(
     return cases.mapNotNull { (deliusRecord, nomisRecord) ->
       val licences = licencesByCrn[deliusRecord.crn!!] ?: emptyList()
       val cvlRecord = cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!
-      val probationPractitioner = deliusRecord.getProbationPractitioner()
+      val probationPractitioner = deliusRecord.toProbationPractitioner()
 
       when {
         // No licences found for this offender so treat as a not started case
@@ -144,15 +144,6 @@ class ComCreateCaseloadService(
     // populated by findRelevantLicencePerCase
     licenceCreationType = null,
   )
-
-  private fun ManagedOffenderCrn?.getProbationPractitioner() = this?.staff
-    ?.takeUnless { it.unallocated == true }
-    ?.let {
-      ProbationPractitioner(
-        staffCode = it.code,
-        name = it.name?.fullName(),
-      )
-    }
 
   private fun createNotStartedLicenceDto(
     deliusRecord: ManagedOffenderCrn,
