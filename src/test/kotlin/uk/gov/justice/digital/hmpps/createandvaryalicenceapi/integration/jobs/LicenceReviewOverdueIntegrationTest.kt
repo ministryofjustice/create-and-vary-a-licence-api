@@ -36,7 +36,7 @@ class LicenceReviewOverdueIntegrationTest : IntegrationTestBase() {
   )
   fun `Run hard stop licence review overdue job`() {
     webTestClient.post()
-      .uri("/jobs/warn-review-overdue")
+      .uri("/jobs/warn-licence-review-overdue")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk

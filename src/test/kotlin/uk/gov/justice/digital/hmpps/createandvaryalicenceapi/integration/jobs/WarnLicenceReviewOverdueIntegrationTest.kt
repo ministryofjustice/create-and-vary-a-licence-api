@@ -3,9 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.MediaType
@@ -33,20 +31,20 @@ class WarnLicenceReviewOverdueIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isOk
 
-    val licenceIdCaptor = argumentCaptor<String>()
-    verify(notifyService, times(4)).sendReviewableLicenceApprovedEmail(
-      anyOrNull(),
+    val licenceCrnCaptor = argumentCaptor<String>()
+    verify(notifyService, times(4)).sendLicenceReviewOverdueEmail(
       any(),
       any(),
       any(),
-      anyOrNull(),
-      licenceIdCaptor.capture(), // captor is allowed
+      any(),
+      licenceCrnCaptor.capture(),
+      any(),
       any(),
     )
 
     assertEquals(
-      listOf(eq("U328968"), eq("H598679"), eq("I511234"), eq("Z265290")),
-      licenceIdCaptor.allValues,
+      listOf("U328968", "H598679", "I511234", "Z265290"),
+      licenceCrnCaptor.allValues,
     )
   }
 }

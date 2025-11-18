@@ -106,9 +106,9 @@ jobs:
     cron: "0 4 * * *" # 4am every day
     allowRetry: true
 
-  - name: warn-review-overdue-job
+  - name: warn-licence-review-overdue-job
     enabled: true
-    path: /warn-review-overdue
+    path: /warn-licence-review-overdue
     cron: "0 8 * * 1-5" # 8am UTC Monday - Friday
     allowRetry: false
 
