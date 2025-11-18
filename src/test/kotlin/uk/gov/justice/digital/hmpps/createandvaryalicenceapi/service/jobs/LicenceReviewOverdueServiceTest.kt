@@ -68,7 +68,7 @@ class LicenceReviewOverdueServiceTest {
       aLicenceReviewEntity.surname!!,
       aLicenceReviewEntity.crn!!,
       aLicenceReviewEntity.id.toString(),
-      aLicenceReviewEntity.kind == TIME_SERVED
+      aLicenceReviewEntity.kind == TIME_SERVED,
     )
   }
 
