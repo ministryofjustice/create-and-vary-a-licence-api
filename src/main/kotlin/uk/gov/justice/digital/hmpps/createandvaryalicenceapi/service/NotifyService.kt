@@ -30,6 +30,7 @@ class NotifyService(
   @param:Value("\${notify.templates.hardStopLicenceApproved}") private val hardStopLicenceApprovedTemplateId: String,
   @param:Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
   @param:Value("\${notify.templates.hardStopLicenceReviewOverdue}") private val hardStopLicenceReviewOverdueTemplateId: String,
+  @param:Value("\${notify.templates.initialComAllocation}") private val initialComAllocationTemplateId: String,
   @param:Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
@@ -310,6 +311,34 @@ class NotifyService(
           )
         }",
       )
+    }
+  }
+
+  internal fun sendInitialComAllocationEmail(
+    emailAddress: String?,
+    comName: String,
+    offenderName: String,
+    crn: String?,
+    licenceId: String,
+  ) {
+    if (emailAddress.isNullOrBlank()) {
+      log.error("Notification failed (sendInitialComAllocationEmail) - Email address not present for licence Id $licenceId")
+      return
+    }
+    if (crn.isNullOrBlank()) {
+      log.error("Notification failed (sendInitialComAllocationEmail) - CRN not present for licence Id $licenceId")
+      return
+    }
+
+    log.info("Sending initial com allocation email to: $emailAddress for $crn licence $licenceId")
+
+    val values: Map<String, String> = mapOf(
+      "comName" to comName,
+      "popName" to offenderName,
+      "crn" to crn,
+    )
+    if (sendEmail(initialComAllocationTemplateId, emailAddress, values)) {
+      log.info("Notification sent to $emailAddress INITIAL COM ALLOCATED for $licenceId $offenderName")
     }
   }
 

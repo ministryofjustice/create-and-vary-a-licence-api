@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
@@ -100,6 +102,32 @@ OffenderService(
       }
     } else {
       log.info("No in-progress licence found for CRN={}", crn)
+    }
+
+    val potentialLicencesWithoutComAllocated = offenderLicences.filter { it.kind == TIME_SERVED || it.kind == VARIATION }
+    if (potentialLicencesWithoutComAllocated.isNotEmpty()) {
+      potentialLicencesWithoutComAllocated.forEach {
+        log.info(
+          "Found ${it.kind} licence (id={}) for CRN={} - checking if a PP was previously allocated",
+          it.id,
+          crn,
+        )
+
+        // Only send if there was no COM allocated previously, and now there is one
+        if (existingCom == null) {
+          log.info("No previous PP allocated for CRN={}", crn)
+
+          notifyService.sendInitialComAllocationEmail(
+            newCom.email!!,
+            "${newCom.firstName} ${newCom.lastName}",
+            "${it.forename} ${it.surname}",
+            it.crn!!,
+            it.id.toString(),
+          )
+        }
+      }
+    } else {
+      log.info("No time served or variation licences without a COM found for CRN={}", crn)
     }
 
     val username = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER

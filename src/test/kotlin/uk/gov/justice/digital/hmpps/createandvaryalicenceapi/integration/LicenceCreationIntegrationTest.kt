@@ -287,7 +287,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-time-served-external-records-id-1.sql",
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
-  fun `Create a time served licence after the user initially selects they wish to create the licence in NOMISs`() {
+  fun `Create a time served licence after the user initially selects they wish to create the licence in NOMIS`() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
