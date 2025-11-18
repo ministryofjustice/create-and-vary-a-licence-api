@@ -22,9 +22,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -35,7 +36,8 @@ class ComVaryCaseloadServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val telemetryService = mock<TelemetryService>()
 
-  private val service = ComVaryCaseloadService(deliusApiClient, licenceCaseRepository, releaseDateService, telemetryService)
+  private val service =
+    ComVaryCaseloadService(deliusApiClient, licenceCaseRepository, releaseDateService, telemetryService)
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
   private val tenDaysFromNow = LocalDate.now().plusDays(10)
@@ -63,19 +65,7 @@ class ComVaryCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "johndoe",
-        ),
-      ),
-    )
-
-    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
-      listOf(
-        StaffNameResponse(
-          username = "johndoe",
-          code = "X54321",
-          name = Name(forename = "John", surname = "Doe"),
-          id = Long.MIN_VALUE,
+          licenceStatus = VARIATION_IN_PROGRESS,
         ),
       ),
     )
@@ -86,12 +76,11 @@ class ComVaryCaseloadServiceTest {
       caseload[0],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
-      expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+      expectedLicenceStatus = VARIATION_IN_PROGRESS,
       expectedLicenceType = LicenceType.AP,
       expectedProbationPractitioner = ProbationPractitioner(
-        staffCode = "X54321",
-        name = "John Doe",
-        staffUsername = "johndoe",
+        staffCode = "X1234",
+        name = "Joe Bloggs",
       ),
     )
   }
@@ -114,25 +103,12 @@ class ComVaryCaseloadServiceTest {
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
           licenceStatus = LicenceStatus.ACTIVE,
-          comUsername = "johndoe",
         ),
         createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "johndoe",
-        ),
-      ),
-    )
-
-    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
-      listOf(
-        StaffNameResponse(
-          username = "johndoe",
-          code = "X54321",
-          name = Name(forename = "John", surname = "Doe"),
-          id = Long.MIN_VALUE,
+          licenceStatus = VARIATION_IN_PROGRESS,
         ),
       ),
     )
@@ -143,12 +119,11 @@ class ComVaryCaseloadServiceTest {
       caseload[0],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
-      expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+      expectedLicenceStatus = VARIATION_IN_PROGRESS,
       expectedLicenceType = LicenceType.AP,
       expectedProbationPractitioner = ProbationPractitioner(
-        staffCode = "X54321",
-        name = "John Doe",
-        staffUsername = "johndoe",
+        staffCode = "X1234",
+        name = "Joe Bloggs",
       ),
     )
   }
@@ -171,25 +146,12 @@ class ComVaryCaseloadServiceTest {
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
           licenceStatus = LicenceStatus.ACTIVE,
-          comUsername = "johndoe",
         ),
         createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "johndoe",
-        ),
-      ),
-    )
-
-    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
-      listOf(
-        StaffNameResponse(
-          username = "johndoe",
-          code = "X54321",
-          name = Name(forename = "John", surname = "Doe"),
-          id = Long.MIN_VALUE,
+          licenceStatus = VARIATION_IN_PROGRESS,
         ),
       ),
     )
@@ -231,45 +193,25 @@ class ComVaryCaseloadServiceTest {
         createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
-          kind = LicenceKind.VARIATION,
-          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "joebloggs",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
           licenceStartDate = tenDaysFromNow,
           forename = "ABCX XYZ",
         ),
         createLicenceComCase(
           crn = "X12349",
           nomisId = "AB1234F",
-          kind = LicenceKind.VARIATION,
-          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "johndoe",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
           licenceStartDate = tenDaysFromNow,
           forename = "ABC XYZ",
         ),
         createLicenceComCase(
           crn = "X12350",
           nomisId = "AB1234G",
-          kind = LicenceKind.VARIATION,
-          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "johndoe",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
           licenceStartDate = elevenDaysFromNow,
-        ),
-      ),
-    )
-
-    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
-      listOf(
-        StaffNameResponse(
-          username = "johndoe",
-          code = "X54321",
-          name = Name(forename = "John", surname = "Doe"),
-          id = Long.MIN_VALUE,
-        ),
-        StaffNameResponse(
-          username = "joebloggs",
-          code = "X1234",
-          name = Name(forename = "Joe", surname = "Bloggs"),
-          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -304,19 +246,7 @@ class ComVaryCaseloadServiceTest {
           kind = LicenceKind.HARD_STOP,
           licenceStatus = LicenceStatus.ACTIVE,
           licenceStartDate = tenDaysFromNow,
-          comUsername = "johndoe",
           reviewDate = null,
-        ),
-      ),
-    )
-
-    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
-      listOf(
-        StaffNameResponse(
-          username = "johndoe",
-          code = "X54321",
-          name = Name(forename = "John", surname = "Doe"),
-          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -332,9 +262,8 @@ class ComVaryCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
-        staffCode = "X54321",
-        name = "John Doe",
-        staffUsername = "johndoe",
+        staffCode = "X1234",
+        name = "Joe Bloggs",
       ),
       expectedReviewNeeded = true,
     )
@@ -368,47 +297,27 @@ class ComVaryCaseloadServiceTest {
         createLicenceComCase(
           crn = "X12348",
           nomisId = "AB1234E",
-          kind = LicenceKind.VARIATION,
+          kind = VARIATION,
           typeCode = LicenceType.PSS,
-          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "joebloggs",
+          licenceStatus = VARIATION_IN_PROGRESS,
           licenceStartDate = tenDaysFromNow,
           forename = "ABCX XYZ",
         ),
         createLicenceComCase(
           crn = "X12349",
           nomisId = "AB1234F",
-          kind = LicenceKind.VARIATION,
+          kind = VARIATION,
           typeCode = LicenceType.AP,
-          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "johndoe",
+          licenceStatus = VARIATION_IN_PROGRESS,
           licenceStartDate = tenDaysFromNow,
           forename = "ABC XYZ",
         ),
         createLicenceComCase(
           crn = "X12350",
           nomisId = "AB1234G",
-          kind = LicenceKind.VARIATION,
-          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "johndoe",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
           licenceStartDate = elevenDaysFromNow,
-        ),
-      ),
-    )
-
-    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
-      listOf(
-        StaffNameResponse(
-          username = "johndoe",
-          code = "X54321",
-          name = Name(forename = "John", surname = "Doe"),
-          id = Long.MIN_VALUE,
-        ),
-        StaffNameResponse(
-          username = "joebloggs",
-          code = "X1234",
-          name = Name(forename = "Joe", surname = "Bloggs"),
-          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -422,12 +331,11 @@ class ComVaryCaseloadServiceTest {
       expectedCrn = "X12349",
       expectedPrisonerNumber = "AB1234F",
       expectedLicenceType = LicenceType.AP,
-      expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+      expectedLicenceStatus = VARIATION_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
         name = "John Doe",
-        staffUsername = "johndoe",
       ),
     )
     verifyCase(
@@ -435,12 +343,11 @@ class ComVaryCaseloadServiceTest {
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceType = LicenceType.PSS,
-      expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+      expectedLicenceStatus = VARIATION_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X1234",
         name = "Joe Bloggs",
-        staffUsername = "joebloggs",
       ),
     )
     verifyCase(
@@ -448,12 +355,11 @@ class ComVaryCaseloadServiceTest {
       expectedCrn = "X12350",
       expectedPrisonerNumber = "AB1234G",
       expectedLicenceType = LicenceType.AP,
-      expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+      expectedLicenceStatus = VARIATION_IN_PROGRESS,
       expectedReleaseDate = elevenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
         name = "John Doe",
-        staffUsername = "johndoe",
       ),
     )
   }
@@ -478,20 +384,8 @@ class ComVaryCaseloadServiceTest {
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
           licenceStatus = LicenceStatus.ACTIVE,
-          comUsername = "johndoe",
           licenceStartDate = LocalDate.now(),
           reviewDate = null,
-        ),
-      ),
-    )
-
-    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
-      listOf(
-        StaffNameResponse(
-          username = "johndoe",
-          code = "X54321",
-          name = Name(forename = "John", surname = "Doe"),
-          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -507,9 +401,8 @@ class ComVaryCaseloadServiceTest {
       expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedReleaseDate = LocalDate.now(),
       expectedProbationPractitioner = ProbationPractitioner(
-        staffCode = "X54321",
-        name = "John Doe",
-        staffUsername = "johndoe",
+        staffCode = "X1234",
+        name = "Joe Bloggs",
       ),
       expectedReviewNeeded = true,
     )
@@ -542,7 +435,6 @@ class ComVaryCaseloadServiceTest {
     typeCode: LicenceType = LicenceType.AP,
     licenceStatus: LicenceStatus,
     kind: LicenceKind = LicenceKind.CRD,
-    comUsername: String? = null,
     sentenceStartDate: LocalDate? = null,
     conditionalReleaseDate: LocalDate? = null,
     confirmedReleaseDate: LocalDate? = null,
@@ -558,7 +450,7 @@ class ComVaryCaseloadServiceTest {
     licenceId = 1,
     typeCode = typeCode,
     statusCode = licenceStatus,
-    comUsername = comUsername,
+    comUsername = null,
     sentenceStartDate = sentenceStartDate,
     conditionalReleaseDate = conditionalReleaseDate,
     actualReleaseDate = confirmedReleaseDate,
