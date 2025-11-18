@@ -67,9 +67,9 @@ jobs:
     cron: "20 8 * * *" # 8:20am every day
     allowRetry: true
 
-  - name: warn-hard-stop-review-overdue-job
+  - name: warn-review-overdue-job
     enabled: true
-    path: /warn-hard-stop-review-overdue
+    path: /warn-review-overdue
     cron: "5 9 * * 1-5" # 9:05am UTC Monday - Friday
     allowRetry: false
 

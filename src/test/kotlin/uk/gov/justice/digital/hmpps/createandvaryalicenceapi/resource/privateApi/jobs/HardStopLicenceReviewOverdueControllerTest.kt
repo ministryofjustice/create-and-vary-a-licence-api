@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.HardStopLicenceReviewOverdueService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceReviewOverdueService
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -30,17 +30,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.HardSt
 @WebAppConfiguration
 class HardStopLicenceReviewOverdueControllerTest {
   @MockitoBean
-  private lateinit var hardStopLicenceReviewOverdueService: HardStopLicenceReviewOverdueService
+  private lateinit var licenceReviewOverdueService: LicenceReviewOverdueService
 
   @Autowired
   private lateinit var mvc: MockMvc
 
   @BeforeEach
   fun reset() {
-    reset(hardStopLicenceReviewOverdueService)
+    reset(licenceReviewOverdueService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(WarnHardStopReviewOverdueController(hardStopLicenceReviewOverdueService))
+      .standaloneSetup(WarnHardStopReviewOverdueController(licenceReviewOverdueService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -48,11 +48,11 @@ class HardStopLicenceReviewOverdueControllerTest {
   @Test
   fun `send email to COM`() {
     mvc.perform(
-      MockMvcRequestBuilders.post("/jobs/warn-hard-stop-review-overdue")
+      MockMvcRequestBuilders.post("/jobs/warn-review-overdue")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON),
     )
       .andExpect(MockMvcResultMatchers.status().isOk)
-    verify(hardStopLicenceReviewOverdueService, times(1)).sendComReviewEmail()
+    verify(licenceReviewOverdueService, times(1)).sendComReviewEmail()
   }
 }

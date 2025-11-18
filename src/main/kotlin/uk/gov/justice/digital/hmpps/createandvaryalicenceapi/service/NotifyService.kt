@@ -28,11 +28,15 @@ class NotifyService(
   @param:Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String,
   @param:Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
   @param:Value("\${notify.templates.hardStopLicenceApproved}") private val hardStopLicenceApprovedTemplateId: String,
+  @param:Value("\${notify.templates.reviewableLicenceApproved}") private val reviewableLicenceApprovedTemplateId: String,
   @param:Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
   @param:Value("\${notify.templates.hardStopLicenceReviewOverdue}") private val hardStopLicenceReviewOverdueTemplateId: String,
+  @param:Value("\${notify.templates.licenceReviewOverdue}") private val licenceReviewOverdueTemplateId: String,
   @param:Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
+  @param:Value("\${feature.toggle.timeServed.enabled:false}")
+  private val isTimeServedLogicEnabled: Boolean = false,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
   val releaseDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE dd LLLL yyyy")
@@ -199,27 +203,51 @@ class NotifyService(
     }
   }
 
-  @TimeServedConsiderations("If a COM is not present, where should this email be sent to?")
-  fun sendHardStopLicenceApprovedEmail(
+  fun sendReviewableLicenceApprovedEmail(
     emailAddress: String?,
     firstName: String,
     lastName: String,
     crn: String?,
     lsd: LocalDate?,
     licenceId: String,
+    prisonName: String,
+    isTimeServedLicence: Boolean,
   ) {
+    val isTimeServed = isTimeServedLogicEnabled && isTimeServedLicence
+    val templateId = if (isTimeServedLogicEnabled) reviewableLicenceApprovedTemplateId else hardStopLicenceApprovedTemplateId
     if (emailAddress == null || lsd == null) {
-      log.error("Notification failed (hardStopLicenceApproved) for licence $licenceId - email and CRD must be present")
+      val approvalType = if (isTimeServed) "timeServedLicenceApproved" else "hardStopLicenceApproved"
+      log.error(
+        "Notification failed ($approvalType) " +
+          "for licence $licenceId - email and CRD must be present",
+      )
+
       return
     }
-    val values: Map<String, String> = mapOf(
-      "firstName" to firstName,
-      "lastName" to lastName,
-      "crn" to crn!!,
-      "releaseDate" to lsd.format(dateFormat),
-    )
-    if (sendEmail(hardStopLicenceApprovedTemplateId, emailAddress, values)) {
-      log.info("Notification sent to $emailAddress HARD STOP LICENCE APPROVED for $licenceId $firstName $lastName")
+
+    val reasonForStandardLicence = if (isTimeServed) {
+      "this person was released immediately following sentencing having served time on remand"
+    } else {
+      "none was submitted in time for their final release checks"
+    }
+
+    val values = buildMap<String, String> {
+      put("firstName", firstName)
+      put("lastName", lastName)
+      put("crn", crn ?: "")
+      put("releaseDate", lsd.format(dateFormat))
+      if (isTimeServed) {
+        put("reasonForStandardLicence", reasonForStandardLicence)
+        put("prisonName", prisonName)
+      }
+    }
+
+    if (sendEmail(templateId, emailAddress, values)) {
+      val licenceStatus = if (isTimeServed) "TIME SERVED" else "HARD STOP"
+      log.info(
+        "Notification sent to $emailAddress $licenceStatus LICENCE APPROVED " +
+          "for $licenceId $firstName $lastName",
+      )
     }
   }
 
@@ -249,26 +277,39 @@ class NotifyService(
     }
   }
 
-  fun sendHardStopLicenceReviewOverdueEmail(
+  fun sendLicenceReviewOverdueEmail(
     emailAddress: String?,
     comName: String,
     firstName: String,
     lastName: String,
     crn: String?,
     licenceId: String,
+    isTimeServedLicence: Boolean,
   ) {
+    val isTimeServed = isTimeServedLogicEnabled && isTimeServedLicence
+    val templateId = if (isTimeServedLogicEnabled) licenceReviewOverdueTemplateId else hardStopLicenceReviewOverdueTemplateId
     if (emailAddress == null) {
-      log.error("Notification failed (hardStopLicenceReviewOverdue) for licence $licenceId - email and CRD must be present")
+      val licenceReviewOverdueType = if (isTimeServed) "timeServedLicenceReviewOverdue" else "hardStopLicenceReviewOverdue"
+      log.error("Notification failed ($licenceReviewOverdueType) for licence $licenceId - email and CRD must be present")
       return
     }
-    val values: Map<String, String> = mapOf(
-      "comName" to comName,
-      "firstName" to firstName,
-      "lastName" to lastName,
-      "crn" to crn!!,
-    )
-    if (sendEmail(hardStopLicenceReviewOverdueTemplateId, emailAddress, values)) {
-      log.info("Notification sent to $emailAddress HARD STOP LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
+    val reasonForStandardLicence = if (isTimeServed) {
+      "this person was released immediately following sentencing having served time on remand"
+    } else {
+      "none was submitted in time for their final release checks"
+    }
+    val values = buildMap<String, String> {
+      put("comName", comName)
+      put("firstName", firstName)
+      put("lastName", lastName)
+      put("crn", crn!!)
+      if (isTimeServed) {
+        put("reasonForStandardLicence", reasonForStandardLicence)
+      }
+    }
+    if (sendEmail(templateId, emailAddress, values)) {
+      val licenceStatus = if (isTimeServed) "TIME SERVED" else "HARD STOP"
+      log.info("Notification sent to $emailAddress $licenceStatus LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
     }
   }
 

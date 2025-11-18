@@ -288,8 +288,11 @@ class LicenceService(
       notifyOmuReApprovalNeeded(licenceEntity)
     }
 
-    if (request.status === APPROVED && licenceEntity is HardStopLicence) {
-      notifyComAboutHardstopLicenceApproval(licenceEntity)
+    if (request.status == APPROVED) {
+      when (licenceEntity) {
+        is HardStopLicence -> notifyComAboutHardstopLicenceApproval(licenceEntity)
+        is TimeServedLicence -> notifyComOrCreatorOnTimeServedLicenceApproval(licenceEntity)
+      }
     }
 
     recordLicenceEventForStatus(licenceEntity, request)
@@ -370,13 +373,32 @@ class LicenceService(
 
   private fun notifyComAboutHardstopLicenceApproval(licenceEntity: HardStopLicence) {
     val com = licenceEntity.getCom()
-    notifyService.sendHardStopLicenceApprovedEmail(
+    notifyService.sendReviewableLicenceApprovedEmail(
       com.email,
       licenceEntity.forename!!,
       licenceEntity.surname!!,
       licenceEntity.crn,
       licenceEntity.licenceStartDate,
       licenceEntity.id.toString(),
+      licenceEntity.prisonDescription!!,
+      isTimeServedLicence = false,
+    )
+  }
+
+  private fun notifyComOrCreatorOnTimeServedLicenceApproval(licenceEntity: TimeServedLicence) {
+    val recipientEmail = licenceEntity.responsibleCom?.email
+      ?.takeIf { it.isNotBlank() }
+      ?: getCommunityOffenderManagerForCurrentUser().email
+
+    notifyService.sendReviewableLicenceApprovedEmail(
+      recipientEmail,
+      licenceEntity.forename!!,
+      licenceEntity.surname!!,
+      licenceEntity.crn,
+      licenceEntity.licenceStartDate,
+      licenceEntity.id.toString(),
+      licenceEntity.prisonDescription!!,
+      isTimeServedLicence = true,
     )
   }
 

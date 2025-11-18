@@ -14,11 +14,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HardStop
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 
-class HardStopLicenceReviewOverdueServiceTest {
+class LicenceReviewOverdueServiceTest {
   private val hardStopLicenceRepository = mock<HardStopLicenceRepository>()
   private val notifyService = mock<NotifyService>()
 
-  private val service = HardStopLicenceReviewOverdueService(
+  private val service = LicenceReviewOverdueService(
     hardStopLicenceRepository,
     notifyService,
   )
