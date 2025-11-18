@@ -24,11 +24,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Licenc
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
-@WebMvcTest(controllers = [WarnHardStopReviewOverdueController::class])
+@WebMvcTest(controllers = [WarnLicenceReviewOverdueController::class])
 @AutoConfigureMockMvc(addFilters = false)
-@ContextConfiguration(classes = [WarnHardStopReviewOverdueController::class])
+@ContextConfiguration(classes = [WarnLicenceReviewOverdueController::class])
 @WebAppConfiguration
-class HardStopLicenceReviewOverdueControllerTest {
+class LicenceReviewOverdueControllerTest {
   @MockitoBean
   private lateinit var licenceReviewOverdueService: LicenceReviewOverdueService
 
@@ -40,7 +40,7 @@ class HardStopLicenceReviewOverdueControllerTest {
     reset(licenceReviewOverdueService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(WarnHardStopReviewOverdueController(licenceReviewOverdueService))
+      .standaloneSetup(WarnLicenceReviewOverdueController(licenceReviewOverdueService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }

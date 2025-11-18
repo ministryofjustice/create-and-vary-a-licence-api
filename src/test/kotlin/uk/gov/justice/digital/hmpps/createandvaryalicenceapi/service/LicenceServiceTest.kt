@@ -3534,13 +3534,15 @@ class LicenceServiceTest {
       verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
       verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, LicenceStatus.APPROVED)
       verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
-      verify(notifyService, times(1)).sendHardStopLicenceApprovedEmail(
+      verify(notifyService, times(1)).sendReviewableLicenceApprovedEmail(
         aCom.email,
         submittedLicence.forename!!,
         submittedLicence.surname!!,
         submittedLicence.crn,
         submittedLicence.licenceStartDate,
         submittedLicence.id.toString(),
+        submittedLicence.prisonDescription!!,
+        isTimeServedLicence = false,
       )
 
       assertThat(licenceCaptor.value)

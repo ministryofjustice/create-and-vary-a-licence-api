@@ -42,6 +42,9 @@ class NotifyServiceTest {
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
     releaseDateService = releaseDateService,
+    reviewableLicenceApprovedTemplateId = TEMPLATE_ID,
+    licenceReviewOverdueTemplateId = TEMPLATE_ID,
+    isTimeServedLogicEnabled = false,
   )
 
   @Test
@@ -272,6 +275,9 @@ class NotifyServiceTest {
       hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
       editedLicenceTimedOutTemplateId = TEMPLATE_ID,
       hardStopLicenceReviewOverdueTemplateId = TEMPLATE_ID,
+      reviewableLicenceApprovedTemplateId = TEMPLATE_ID,
+      licenceReviewOverdueTemplateId = TEMPLATE_ID,
+      isTimeServedLogicEnabled = false,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)
@@ -322,13 +328,15 @@ class NotifyServiceTest {
   inner class `approving hard stop licences` {
     @Test
     fun `send hard stop licence approved email to probation practitioner`() {
-      notifyService.sendHardStopLicenceApprovedEmail(
+      notifyService.sendReviewableLicenceApprovedEmail(
         emailAddress = EMAIL_ADDRESS,
         firstName = "John",
         lastName = "Doe",
         crn = "A123456",
         lsd = LocalDate.of(2024, 4, 17),
         licenceId = "1",
+        prisonName = "Some Prison",
+        isTimeServedLicence = false,
       )
 
       val expectedMap = mapOf(
@@ -343,26 +351,30 @@ class NotifyServiceTest {
 
     @Test
     fun `No hard stop approval licence email is sent when CRD is empty`() {
-      notifyService.sendHardStopLicenceApprovedEmail(
+      notifyService.sendReviewableLicenceApprovedEmail(
         emailAddress = EMAIL_ADDRESS,
         firstName = "John",
         lastName = "Doe",
         crn = "A123456",
         lsd = null,
         licenceId = "1",
+        prisonName = "Some Prison",
+        isTimeServedLicence = false,
       )
       verifyNoInteractions(notificationClient)
     }
 
     @Test
     fun `No hard stop approval licence email is sent when email address is empty`() {
-      notifyService.sendHardStopLicenceApprovedEmail(
+      notifyService.sendReviewableLicenceApprovedEmail(
         emailAddress = null,
         firstName = "John",
         lastName = "Doe",
         crn = "A123456",
         lsd = LocalDate.of(2024, 4, 17),
         licenceId = "1",
+        prisonName = "Some Prison",
+        isTimeServedLicence = false,
       )
       verifyNoInteractions(notificationClient)
     }
@@ -426,13 +438,14 @@ class NotifyServiceTest {
   inner class `hard stop licence review overdue` {
     @Test
     fun `send hard stop licence review overdue email to COM`() {
-      notifyService.sendHardStopLicenceReviewOverdueEmail(
+      notifyService.sendLicenceReviewOverdueEmail(
         emailAddress = EMAIL_ADDRESS,
         comName = "Joe Bloggs",
         firstName = "John",
         lastName = "Doe",
         crn = "A123456",
         licenceId = "1",
+        isTimeServedLicence = false,
       )
 
       val expectedMap = mapOf(
@@ -447,13 +460,14 @@ class NotifyServiceTest {
 
     @Test
     fun `No hard stop licence review overdue email is sent when email address is empty`() {
-      notifyService.sendHardStopLicenceReviewOverdueEmail(
+      notifyService.sendLicenceReviewOverdueEmail(
         emailAddress = null,
         comName = "Joe Bloggs",
         firstName = "John",
         lastName = "Doe",
         crn = "A123456",
         licenceId = "1",
+        isTimeServedLicence = false,
       )
       verifyNoInteractions(notificationClient)
     }

@@ -10,16 +10,17 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HardStopLicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceReviewRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 
 class LicenceReviewOverdueServiceTest {
-  private val hardStopLicenceRepository = mock<HardStopLicenceRepository>()
+  private val licenceReviewRepository = mock<LicenceReviewRepository>()
   private val notifyService = mock<NotifyService>()
 
   private val service = LicenceReviewOverdueService(
-    hardStopLicenceRepository,
+    licenceReviewRepository,
     notifyService,
   )
 
@@ -33,44 +34,45 @@ class LicenceReviewOverdueServiceTest {
     SecurityContextHolder.setContext(securityContext)
 
     reset(
-      hardStopLicenceRepository,
+      licenceReviewRepository,
       notifyService,
     )
   }
 
   @Test
   fun `should not send notifications if there are no eligible licences`() {
-    whenever(hardStopLicenceRepository.getHardStopLicencesNeedingReview()).thenReturn(emptyList())
+    whenever(licenceReviewRepository.getLicencesNeedingReview()).thenReturn(emptyList())
 
     service.sendComReviewEmail()
 
-    verify(hardStopLicenceRepository, times(1)).getHardStopLicencesNeedingReview()
-    verify(hardStopLicenceRepository, times(0)).saveAllAndFlush(emptyList())
+    verify(licenceReviewRepository, times(1)).getLicencesNeedingReview()
+    verify(licenceReviewRepository, times(0)).saveAllAndFlush(emptyList())
   }
 
   @Test
   fun `should send notifications if there are eligible licences`() {
-    whenever(hardStopLicenceRepository.getHardStopLicencesNeedingReview()).thenReturn(
+    whenever(licenceReviewRepository.getLicencesNeedingReview()).thenReturn(
       listOf(
-        aHardStopLicenceEntity,
+        aLicenceReviewEntity,
       ),
     )
 
     service.sendComReviewEmail()
 
-    verify(hardStopLicenceRepository, times(1)).getHardStopLicencesNeedingReview()
+    verify(licenceReviewRepository, times(1)).getLicencesNeedingReview()
 
-    verify(notifyService, times(1)).sendHardStopLicenceReviewOverdueEmail(
-      aHardStopLicenceEntity.getCom().email,
-      aHardStopLicenceEntity.getCom().fullName,
-      aHardStopLicenceEntity.forename!!,
-      aHardStopLicenceEntity.surname!!,
-      aHardStopLicenceEntity.crn!!,
-      aHardStopLicenceEntity.id.toString(),
+    verify(notifyService, times(1)).sendLicenceReviewOverdueEmail(
+      aLicenceReviewEntity.getCom().email,
+      aLicenceReviewEntity.getCom().fullName,
+      aLicenceReviewEntity.forename!!,
+      aLicenceReviewEntity.surname!!,
+      aLicenceReviewEntity.crn!!,
+      aLicenceReviewEntity.id.toString(),
+      aLicenceReviewEntity.kind == TIME_SERVED
     )
   }
 
   private companion object {
-    val aHardStopLicenceEntity = TestData.createHardStopLicence().copy()
+    val aLicenceReviewEntity = TestData.createHardStopLicence().copy()
   }
 }
