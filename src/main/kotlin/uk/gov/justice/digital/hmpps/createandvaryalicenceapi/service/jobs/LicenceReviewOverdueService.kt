@@ -37,7 +37,7 @@ class LicenceReviewOverdueService(
       if (com != null) {
         notifyService.sendLicenceReviewOverdueEmail(
           com.email,
-          "${com.firstName} ${com.lastName}",
+          com.fullName,
           it.forename!!,
           it.surname!!,
           it.crn,
