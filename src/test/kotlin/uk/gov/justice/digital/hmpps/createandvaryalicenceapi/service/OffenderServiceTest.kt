@@ -12,7 +12,11 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
@@ -22,6 +26,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
@@ -49,7 +55,16 @@ class OffenderServiceTest {
   )
 
   @BeforeEach
-  fun reset() = reset(licenceRepository, auditEventRepository, auditService, notifyService, releaseDateService, staffRepository)
+  fun reset() {
+    val authentication = mock<Authentication>()
+    val securityContext = mock<SecurityContext>()
+    whenever(authentication.name).thenReturn("tcom1")
+    whenever(securityContext.authentication).thenReturn(authentication)
+
+    SecurityContextHolder.setContext(securityContext)
+
+    reset(licenceRepository, auditEventRepository, auditService, notifyService, releaseDateService, staffRepository)
+  }
 
   @Test
   fun `updates all in-flight licences associated with an offender with COM details`() {
@@ -242,6 +257,84 @@ class OffenderServiceTest {
         ),
       )
     }
+  }
+
+  @Test
+  fun `does not send licence create email when all in-flight licences are created by prison`() {
+    val prisonLicence = createTimeServedLicence().copy(
+      statusCode = LicenceStatus.IN_PROGRESS,
+    )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(prisonLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
+
+    verifyNoInteractions(notifyService)
+  }
+
+  @Test
+  fun `sends initial COM allocation email when time served licence exists and no previous COM was allocated`() {
+    val timeServedLicence = createTimeServedLicence().copy(
+      responsibleCom = null,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(timeServedLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", null, newCom)
+
+    verify(notifyService, times(1)).sendInitialComAllocationEmail(
+      emailAddress = newCom.email!!,
+      comName = "${newCom.firstName} ${newCom.lastName}",
+      offenderName = "${timeServedLicence.forename} ${timeServedLicence.surname}",
+      crn = timeServedLicence.crn!!,
+      licenceId = timeServedLicence.id.toString(),
+    )
+  }
+
+  @Test
+  fun `sends initial COM allocation email when variation licence exists and no previous COM was allocated`() {
+    val variationLicence = createVariationLicence().copy(
+      responsibleCom = null,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(variationLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", null, newCom)
+
+    verify(notifyService, times(1)).sendInitialComAllocationEmail(
+      emailAddress = newCom.email!!,
+      comName = "${newCom.firstName} ${newCom.lastName}",
+      offenderName = "${variationLicence.forename} ${variationLicence.surname}",
+      crn = variationLicence.crn!!,
+      licenceId = variationLicence.id.toString(),
+    )
+  }
+
+  @Test
+  fun `does not send initial COM allocation email when time served or variation licence exists and previous COM was allocated`() {
+    val timeServedLicence = createTimeServedLicence()
+    val variationLicence = createVariationLicence()
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(timeServedLicence, variationLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(originalCom.username)).thenReturn(originalCom)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
+
+    verifyNoInteractions(notifyService)
+  }
+
+  @Test
+  fun `does not send initial COM allocation email when no time served licence or variation licence exists`() {
+    val crdLicence = createCrdLicence()
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", null, newCom)
+
+    verifyNoInteractions(notifyService)
   }
 
   val originalCom = communityOffenderManager()

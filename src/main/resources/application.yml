@@ -126,6 +126,7 @@ notify:
     editedLicenceTimedOut: 3db6954b-f16f-4c77-b028-ccfa4f87fb62
     hardStopLicenceReviewOverdue: fd1388a3-8d22-4d51-898f-4cd277ab8314
     licenceReviewOverdue: 2eeff8dd-8935-404c-ab39-0eed5e083db5
+    initialComAllocation: a584b741-82ce-41de-adce-0a665dc27b0f
 
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'
