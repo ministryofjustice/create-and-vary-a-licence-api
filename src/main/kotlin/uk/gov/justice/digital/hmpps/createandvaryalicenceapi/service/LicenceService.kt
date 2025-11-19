@@ -294,10 +294,8 @@ class LicenceService(
     if (request.status == APPROVED) {
       when (licenceEntity) {
         is HardStopLicence -> notifyComAboutHardstopLicenceApproval(licenceEntity)
-        is TimeServedLicence -> {
-          if (licenceEntity.responsibleCom != null) {
-            notifyComAboutTimeServedLicenceApproval(licenceEntity)
-          }
+        is TimeServedLicence -> licenceEntity.responsibleCom?.let {
+          notifyComAboutTimeServedLicenceApproval(licenceEntity)
         }
       }
     }
