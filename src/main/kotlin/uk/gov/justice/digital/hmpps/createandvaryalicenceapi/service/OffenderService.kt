@@ -59,7 +59,7 @@ OffenderService(
     offenderLicences.forEach { it.responsibleCom = newCom }
     licenceRepository.saveAllAndFlush(offenderLicences)
 
-    val inProgressLicence = offenderLicences.find { it.kind != HARD_STOP && it.statusCode == IN_PROGRESS }
+    val inProgressLicence = offenderLicences.find { !it.kind.isCreatedByPrison() && it.statusCode == IN_PROGRESS }
 
     if (inProgressLicence != null) {
       log.info(
@@ -104,27 +104,25 @@ OffenderService(
       log.info("No in-progress licence found for CRN={}", crn)
     }
 
-    val potentialLicencesWithoutComAllocated = offenderLicences.filter { it.kind == TIME_SERVED || it.kind == VARIATION }
-    if (potentialLicencesWithoutComAllocated.isNotEmpty()) {
-      potentialLicencesWithoutComAllocated.forEach {
-        log.info(
-          "Found ${it.kind} licence (id={}) for CRN={} - checking if a PP was previously allocated",
-          it.id,
-          crn,
+    val potentialLicencesWithoutComAllocated = offenderLicences.find { it.kind == TIME_SERVED || it.kind == VARIATION }
+    if (potentialLicencesWithoutComAllocated != null) {
+      log.info(
+        "Found ${potentialLicencesWithoutComAllocated.kind} licence (id={}) for CRN={} - checking if a PP was previously allocated",
+        potentialLicencesWithoutComAllocated.id,
+        crn,
+      )
+
+      // Only send if there was no COM allocated previously, and now there is one
+      if (existingCom == null) {
+        log.info("No previous PP allocated for CRN={}", crn)
+
+        notifyService.sendInitialComAllocationEmail(
+          newCom.email!!,
+          "${newCom.firstName} ${newCom.lastName}",
+          "${potentialLicencesWithoutComAllocated.forename} ${potentialLicencesWithoutComAllocated.surname}",
+          potentialLicencesWithoutComAllocated.crn!!,
+          potentialLicencesWithoutComAllocated.id.toString(),
         )
-
-        // Only send if there was no COM allocated previously, and now there is one
-        if (existingCom == null) {
-          log.info("No previous PP allocated for CRN={}", crn)
-
-          notifyService.sendInitialComAllocationEmail(
-            newCom.email!!,
-            "${newCom.firstName} ${newCom.lastName}",
-            "${it.forename} ${it.surname}",
-            it.crn!!,
-            it.id.toString(),
-          )
-        }
       }
     } else {
       log.info("No time served or variation licences without a COM found for CRN={}", crn)

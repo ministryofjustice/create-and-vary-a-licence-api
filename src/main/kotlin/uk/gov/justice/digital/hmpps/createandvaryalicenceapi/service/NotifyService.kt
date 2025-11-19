@@ -318,15 +318,11 @@ class NotifyService(
     emailAddress: String?,
     comName: String,
     offenderName: String,
-    crn: String?,
+    crn: String,
     licenceId: String,
   ) {
     if (emailAddress.isNullOrBlank()) {
       log.error("Notification failed (sendInitialComAllocationEmail) - Email address not present for licence Id $licenceId")
-      return
-    }
-    if (crn.isNullOrBlank()) {
-      log.error("Notification failed (sendInitialComAllocationEmail) - CRN not present for licence Id $licenceId")
       return
     }
 
