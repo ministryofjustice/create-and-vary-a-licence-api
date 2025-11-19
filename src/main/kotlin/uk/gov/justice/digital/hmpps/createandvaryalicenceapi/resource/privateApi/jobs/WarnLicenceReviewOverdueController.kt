@@ -11,26 +11,26 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ProtectedByIngress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.HardStopLicenceReviewOverdueService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceReviewOverdueService
 
 @Tag(name = Tags.JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
-class WarnHardStopReviewOverdueController(
-  private val hardStopLicenceReviewOverdueService: HardStopLicenceReviewOverdueService,
+class WarnLicenceReviewOverdueController(
+  private val licenceReviewOverdueService: LicenceReviewOverdueService,
 ) {
 
   @ProtectedByIngress
-  @PostMapping(value = ["/jobs/warn-hard-stop-review-overdue"])
+  @PostMapping(value = ["/jobs/warn-licence-review-overdue"])
   @Operation(
-    summary = "Reminds COMs to review hard stop licences after release.",
-    description = "Triggers a job that sends a notification when the COM has not reviewed a hard stop licence 5 days after activation.",
+    summary = "Reminds COMs to review licences after release.",
+    description = "Triggers a job that sends a notification when the COM has not reviewed a review needed licence 5 days after activation.",
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Hard stop licence review overdue job executed.",
+        description = "licence review overdue job executed.",
       ),
       ApiResponse(
         responseCode = "401",
@@ -39,5 +39,5 @@ class WarnHardStopReviewOverdueController(
       ),
     ],
   )
-  fun runHardStopLicenceReviewOverdueJob() = hardStopLicenceReviewOverdueService.sendComReviewEmail()
+  fun runLicenceReviewOverdueJob() = licenceReviewOverdueService.sendComReviewEmail()
 }
