@@ -1,0 +1,60 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
+
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderCrnTransformer.toProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+
+class ManagedOffenderCrnTransformerTest {
+
+  @Test
+  fun `should return null when ManagedOffenderCrn is null`() {
+    val result = (null as ManagedOffenderCrn?).toProbationPractitioner()
+    assertThat(result).isNull()
+  }
+
+  @Test
+  fun `should return null when staff is null`() {
+    val offender = ManagedOffenderCrn(staff = null)
+    val result = offender.toProbationPractitioner()
+    assertThat(result).isNull()
+  }
+
+  @Test
+  fun `should return null when staff is unallocated`() {
+    val staff = StaffDetail(code = "X123", name = Name("John", null, "Doe"), unallocated = true)
+    val offender = ManagedOffenderCrn(staff = staff)
+
+    val result = offender.toProbationPractitioner()
+
+    assertThat(result).isNull()
+  }
+
+  @Test
+  fun `should map staff to ProbationPractitioner when allocated`() {
+    val staff = StaffDetail(code = "X123", name = Name("John", null, "Doe"), unallocated = false)
+    val offender = ManagedOffenderCrn(staff = staff)
+
+    val result = offender.toProbationPractitioner()
+
+    assertThat(result)
+      .isNotNull
+      .extracting("staffCode", "name")
+      .containsExactly("X123", "John Doe")
+  }
+
+  @Test
+  fun `should handle null name gracefully`() {
+    val staff = StaffDetail(code = "X123", name = null, unallocated = false)
+    val offender = ManagedOffenderCrn(staff = staff)
+
+    val result = offender.toProbationPractitioner()
+
+    assertThat(result)
+      .isNotNull
+      .extracting("staffCode", "name")
+      .containsExactly("X123", null)
+  }
+}
