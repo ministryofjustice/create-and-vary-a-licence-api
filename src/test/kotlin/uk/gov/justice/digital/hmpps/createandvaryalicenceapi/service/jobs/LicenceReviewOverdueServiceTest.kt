@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -42,17 +43,30 @@ class LicenceReviewOverdueServiceTest {
 
   @Test
   fun `should not send notifications if there are no eligible licences`() {
-    whenever(licenceReviewRepository.getLicencesNeedingReview()).thenReturn(emptyList())
+    whenever(
+      licenceReviewRepository.getLicencesNeedingReview(
+        start = any(),
+        end = any(),
+      ),
+    ).thenReturn(emptyList())
 
     service.sendComReviewEmail()
 
-    verify(licenceReviewRepository, times(1)).getLicencesNeedingReview()
+    verify(licenceReviewRepository, times(1)).getLicencesNeedingReview(
+      start = any(),
+      end = any(),
+    )
     verify(licenceReviewRepository, times(0)).saveAllAndFlush(emptyList())
   }
 
   @Test
   fun `should send notifications if there are eligible licences`() {
-    whenever(licenceReviewRepository.getLicencesNeedingReview()).thenReturn(
+    whenever(
+      licenceReviewRepository.getLicencesNeedingReview(
+        start = any(),
+        end = any(),
+      ),
+    ).thenReturn(
       listOf(
         aLicenceReviewEntity,
       ),
@@ -60,7 +74,10 @@ class LicenceReviewOverdueServiceTest {
 
     service.sendComReviewEmail()
 
-    verify(licenceReviewRepository, times(1)).getLicencesNeedingReview()
+    verify(licenceReviewRepository, times(1)).getLicencesNeedingReview(
+      start = any(),
+      end = any(),
+    )
 
     verify(notifyService, times(1)).sendLicenceReviewOverdueEmail(
       aLicenceReviewEntity.getCom().email,
