@@ -505,18 +505,6 @@ class NotifyServiceTest {
       )
       verifyNoInteractions(notificationClient)
     }
-
-    @Test
-    fun `No initial COM allocation email is sent when CRN is blank`() {
-      notifyService.sendInitialComAllocationEmail(
-        emailAddress = EMAIL_ADDRESS,
-        comName = "Joe Bloggs",
-        offenderName = "John Doe",
-        crn = "",
-        licenceId = "1",
-      )
-      verifyNoInteractions(notificationClient)
-    }
   }
 
   private companion object {

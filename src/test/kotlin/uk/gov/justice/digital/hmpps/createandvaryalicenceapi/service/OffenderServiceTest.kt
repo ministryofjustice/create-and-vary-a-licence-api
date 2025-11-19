@@ -55,7 +55,7 @@ class OffenderServiceTest {
   )
 
   @BeforeEach
-  fun reset(){
+  fun reset() {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
     whenever(authentication.name).thenReturn("tcom1")
@@ -271,7 +271,6 @@ class OffenderServiceTest {
 
     verifyNoInteractions(notifyService)
   }
-
 
   @Test
   fun `sends initial COM allocation email when time served licence exists and no previous COM was allocated`() {
