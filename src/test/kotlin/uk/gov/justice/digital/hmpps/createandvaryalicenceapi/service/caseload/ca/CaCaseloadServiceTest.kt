@@ -827,8 +827,6 @@ class CaCaseloadServiceTest {
               probationPractitioner = ProbationPractitioner(
                 staffCode = "X1234",
                 name = "Joe Bloggs",
-                staffIdentifier = null,
-                staffUsername = null,
               ),
               lastWorkedOnBy = null,
               hardStopKind = LicenceKind.HARD_STOP,
