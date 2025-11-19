@@ -20,7 +20,7 @@
     <ID>LongMethod:LicenceService.kt$LicenceService$fun transform( licence: EntityLicence, earliestReleaseDate: LocalDate?, isEligibleForEarlyRelease: Boolean, conditionPolicyData: Map&lt;String, ConditionPolicyData&gt;, ): Licence</ID>
     <ID>LongMethod:LicenceService.kt$LicenceService$private fun populateCopyAndAudit( kind: LicenceKind, licence: EntityLicence, licenceCopy: EntityLicence, creator: CommunityOffenderManager, ): EntityLicence</ID>
     <ID>LongMethod:LicenceService.kt$LicenceService$private fun updateLicenceStatus(licenceEntity: EntityLicence, request: StatusUpdateRequest)</ID>
-    <ID>LongMethod:OffenderService.kt$OffenderService$@TimeServedConsiderations("When updating responsible COM for a CRN, should anything additional happen if the COM was null to begin with, is it licence dependent?") @Transactional fun updateOffenderWithResponsibleCom( crn: String, existingCom: CommunityOffenderManager?, newCom: CommunityOffenderManager, )</ID>
+    <ID>LongMethod:OffenderService.kt$OffenderService$@TimeServedConsiderations("When updating responsible COM for a CRN, should anything additional happen if the COM was null to begin with, is it licence dependent?") @Transactional fun updateOffenderWithResponsibleCom( crn: String, existingComRecord: CommunityOffenderManager?, newComRecord: CommunityOffenderManager, )</ID>
     <ID>LongMethod:PrrdLicence.kt$PrrdLicence$override fun toString(): String</ID>
     <ID>LongMethod:TimeServedLicence.kt$TimeServedLicence$override fun toString(): String</ID>
     <ID>LongMethod:ToModelTransformers.kt$@TimeServedConsiderations("Is COM required for variation, if so the responsibleCOM would never be null") fun toVariation( licence: VariationLicence, earliestReleaseDate: LocalDate?, isEligibleForEarlyRelease: Boolean, conditionPolicyData: Map&lt;String, ConditionPolicyData&gt;, ): ModelVariationLicence</ID>
@@ -108,7 +108,6 @@
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt$ComAllocatedHandler$e: Exception</ID>
     <ID>TooManyFunctions:AppointmentService.kt$AppointmentService</ID>
-    <ID>TooManyFunctions:ApproverCaseloadService.kt$ApproverCaseloadService</ID>
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
     <ID>TooManyFunctions:CaseloadController.kt$CaseloadController</ID>
     <ID>TooManyFunctions:ComCreateCaseloadService.kt$ComCreateCaseloadService</ID>

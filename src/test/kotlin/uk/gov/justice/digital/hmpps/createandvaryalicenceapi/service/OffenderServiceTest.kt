@@ -313,6 +313,21 @@ class OffenderServiceTest {
   }
 
   @Test
+  fun `sends initial COM allocation email only once when multiple time served and variation licences exist against a CRN without a COM`() {
+    val timeServedLicence = createTimeServedLicence().copy(responsibleCom = null)
+    val variationLicence = createVariationLicence().copy(responsibleCom = null)
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(listOf(timeServedLicence, variationLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", null, newCom)
+
+    // Should only send email once even though two licences match criteria
+    verify(notifyService, times(1)).sendInitialComAllocationEmail(any(), any(), any(), any(), any())
+  }
+
+  @Test
   fun `does not send initial COM allocation email when time served or variation licence exists and previous COM was allocated`() {
     val timeServedLicence = createTimeServedLicence()
     val variationLicence = createVariationLicence()
@@ -333,6 +348,20 @@ class OffenderServiceTest {
     whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
 
     service.updateOffenderWithResponsibleCom("exampleCrn", null, newCom)
+
+    verifyNoInteractions(notifyService)
+  }
+
+  @Test
+  fun `does not send initial COM allocation email when a time served licence has a COM but VARIATION does not`() {
+    val timeServedLicence = createTimeServedLicence().copy(responsibleCom = originalCom)
+    val variationLicence = createVariationLicence().copy(responsibleCom = null)
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(listOf(timeServedLicence, variationLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
 
     verifyNoInteractions(notifyService)
   }
