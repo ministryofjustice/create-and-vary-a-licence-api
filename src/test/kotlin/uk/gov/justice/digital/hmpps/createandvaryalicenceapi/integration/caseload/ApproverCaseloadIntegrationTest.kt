@@ -249,16 +249,16 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
       }
 
       with(result.recentlyApprovedResponse.first()) {
-        assertThat(name).isEqualTo("Person Ten")
-        assertThat(prisonerNumber).isEqualTo("B1234BB")
+        assertThat(name).isEqualTo("Person Eighteen")
+        assertThat(prisonerNumber).isEqualTo("F2504MG")
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isBeforeOrEqualTo(LocalDate.now().minusDays(10))
       }
 
       with(result.recentlyApprovedResponse.last()) {
-        assertThat(name).isEqualTo("Person Eighteen")
-        assertThat(prisonerNumber).isEqualTo("F2504MG")
+        assertThat(name).isEqualTo("Person Ten")
+        assertThat(prisonerNumber).isEqualTo("B1234BB")
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isBeforeOrEqualTo(LocalDate.now().minusDays(10))

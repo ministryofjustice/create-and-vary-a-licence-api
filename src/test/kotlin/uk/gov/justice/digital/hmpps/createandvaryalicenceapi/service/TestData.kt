@@ -711,7 +711,7 @@ object TestData {
     lastWorkedOnBy = "John Smith",
     isInHardStopPeriod = false,
     tabType = CaViewCasesTab.FUTURE_RELEASES,
-    probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
+    probationPractitioner = ProbationPractitioner(),
   )
 
   fun approvalCase() = ApprovalCase(
@@ -723,7 +723,7 @@ object TestData {
     urgentApproval = false,
     approvedBy = null,
     approvedOn = null,
-    probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
+    probationPractitioner = ProbationPractitioner(),
     kind = LicenceKind.CRD,
     prisonCode = "MDI",
     prisonDescription = "Moorland (HMP)",
