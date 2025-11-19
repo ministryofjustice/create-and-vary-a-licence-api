@@ -39,6 +39,7 @@ class NotifyServiceTest {
     hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
     editedLicenceTimedOutTemplateId = TEMPLATE_ID,
     hardStopLicenceReviewOverdueTemplateId = TEMPLATE_ID,
+    initialComAllocationTemplateId = TEMPLATE_ID,
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
     releaseDateService = releaseDateService,
@@ -272,6 +273,7 @@ class NotifyServiceTest {
       hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
       editedLicenceTimedOutTemplateId = TEMPLATE_ID,
       hardStopLicenceReviewOverdueTemplateId = TEMPLATE_ID,
+      initialComAllocationTemplateId = TEMPLATE_ID,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)
@@ -452,6 +454,52 @@ class NotifyServiceTest {
         comName = "Joe Bloggs",
         firstName = "John",
         lastName = "Doe",
+        crn = "A123456",
+        licenceId = "1",
+      )
+      verifyNoInteractions(notificationClient)
+    }
+  }
+
+  @Nested
+  inner class `initial COM allocation` {
+    @Test
+    fun `send initial COM allocation email to probation practitioner`() {
+      notifyService.sendInitialComAllocationEmail(
+        emailAddress = EMAIL_ADDRESS,
+        comName = "Joe Bloggs",
+        offenderName = "John Doe",
+        crn = "A123456",
+        licenceId = "1",
+      )
+
+      val expectedMap = mapOf(
+        "comName" to "Joe Bloggs",
+        "popName" to "John Doe",
+        "crn" to "A123456",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
+    fun `No initial COM allocation email is sent when email address is blank`() {
+      notifyService.sendInitialComAllocationEmail(
+        emailAddress = "",
+        comName = "Joe Bloggs",
+        offenderName = "John Doe",
+        crn = "A123456",
+        licenceId = "1",
+      )
+      verifyNoInteractions(notificationClient)
+    }
+
+    @Test
+    fun `No initial COM allocation email is sent when email address is null`() {
+      notifyService.sendInitialComAllocationEmail(
+        emailAddress = null,
+        comName = "Joe Bloggs",
+        offenderName = "John Doe",
         crn = "A123456",
         licenceId = "1",
       )
