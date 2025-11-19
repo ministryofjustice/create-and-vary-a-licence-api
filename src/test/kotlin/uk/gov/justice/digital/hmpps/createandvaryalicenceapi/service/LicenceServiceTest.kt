@@ -139,6 +139,7 @@ class LicenceServiceTest {
       deliusApiClient,
       telemetryService,
       auditService,
+      isTimeServedLogicEnabled = true,
     )
 
   @BeforeEach
@@ -3516,6 +3517,80 @@ class LicenceServiceTest {
   inner class `approving hard stop licences` {
     @Test
     fun `approving a hard stop licence sends a hard stop licence approval email`() {
+      val service =
+        LicenceService(
+          licenceRepository,
+          crdLicenceRepository,
+          staffRepository,
+          licenceEventRepository,
+          licencePolicyService,
+          additionalConditionUploadDetailRepository,
+          auditEventRepository,
+          notifyService,
+          omuService,
+          releaseDateService,
+          domainEventsService,
+          prisonerSearchApiClient,
+          eligibilityService,
+          exclusionZoneService,
+          deliusApiClient,
+          telemetryService,
+          auditService,
+          isTimeServedLogicEnabled = false,
+        )
+      val submittedLicence =
+        createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
+
+      whenever(licenceRepository.findById(submittedLicence.id)).thenReturn(Optional.of(submittedLicence))
+      whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
+
+      service.updateLicenceStatus(
+        submittedLicence.id,
+        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = "Y"),
+      )
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, LicenceStatus.APPROVED)
+      verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+      verify(notifyService, times(1)).sendHardStopLicenceApprovedEmail(
+        aCom.email,
+        submittedLicence.forename!!,
+        submittedLicence.surname!!,
+        submittedLicence.crn,
+        submittedLicence.licenceStartDate,
+        submittedLicence.id.toString(),
+      )
+
+      assertThat(licenceCaptor.value)
+        .extracting("id", "statusCode", "approvedByUsername", "updatedByUsername", "updatedBy")
+        .isEqualTo(
+          listOf(
+            submittedLicence.id,
+            LicenceStatus.APPROVED,
+            aCom.username,
+            aCom.username,
+            aCom,
+          ),
+        )
+
+      assertThat(auditCaptor.firstValue).extracting("licenceId", "username", "fullName", "summary", "eventType")
+        .isEqualTo(
+          listOf(
+            submittedLicence.id,
+            aCom.username,
+            "${aCom.firstName} ${aCom.lastName}",
+            "Licence approved for ${submittedLicence.forename} ${submittedLicence.surname}",
+            USER_EVENT,
+          ),
+        )
+    }
+
+    @Test
+    fun `approving a hard stop licence sends a hard stop reviewable licence approval email`() {
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
 

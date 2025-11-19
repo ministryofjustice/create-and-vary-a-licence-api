@@ -22,6 +22,7 @@ class LicenceReviewOverdueServiceTest {
   private val service = LicenceReviewOverdueService(
     licenceReviewRepository,
     notifyService,
+    isTimeServedLogicEnabled = true,
   )
 
   @BeforeEach

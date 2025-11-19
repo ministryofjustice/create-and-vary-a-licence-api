@@ -35,8 +35,6 @@ class NotifyService(
   @param:Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
-  @param:Value("\${feature.toggle.timeServed.enabled:false}")
-  private val isTimeServedLogicEnabled: Boolean = false,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
   val releaseDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE dd LLLL yyyy")
@@ -213,19 +211,13 @@ class NotifyService(
     prisonName: String,
     isTimeServedLicence: Boolean = false,
   ) {
-    val isTimeServed = isTimeServedLogicEnabled && isTimeServedLicence
-    val templateId = if (isTimeServedLogicEnabled) reviewableLicenceApprovedTemplateId else hardStopLicenceApprovedTemplateId
     if (emailAddress == null || lsd == null) {
-      val approvalType = if (isTimeServed) "timeServedLicenceApproved" else "hardStopLicenceApproved"
-      log.error(
-        "Notification failed ($approvalType) " +
-          "for licence $licenceId - email and CRD must be present",
-      )
-
+      val approvalType = if (isTimeServedLicence) "timeServedLicenceApproved" else "hardStopLicenceApproved"
+      log.error("Notification failed ($approvalType) for licence $licenceId - email and CRD must be present")
       return
     }
 
-    val reasonForStandardLicence = if (isTimeServed) {
+    val reasonForStandardLicence = if (isTimeServedLicence) {
       "this person was released immediately following sentencing having served time on remand"
     } else {
       "none was submitted in time for their final release checks"
@@ -236,18 +228,39 @@ class NotifyService(
       put("lastName", lastName)
       put("crn", crn ?: "")
       put("releaseDate", lsd.format(dateFormat))
-      if (isTimeServedLogicEnabled) {
-        put("reasonForStandardLicence", reasonForStandardLicence)
-        put("prisonName", prisonName)
-      }
+      put("reasonForStandardLicence", reasonForStandardLicence)
+      put("prisonName", prisonName)
     }
 
-    if (sendEmail(templateId, emailAddress, values)) {
-      val licenceStatus = if (isTimeServed) "TIME SERVED" else "HARD STOP"
-      log.info(
-        "Notification sent to $emailAddress $licenceStatus LICENCE APPROVED " +
-          "for $licenceId $firstName $lastName",
-      )
+    if (sendEmail(reviewableLicenceApprovedTemplateId, emailAddress, values)) {
+      val licenceStatus = if (isTimeServedLicence) "TIME SERVED" else "HARD STOP"
+      log.info("Notification sent to $emailAddress $licenceStatus LICENCE APPROVED for $licenceId $firstName $lastName")
+    }
+  }
+
+  @Deprecated(
+    message = "Use sendReviewableLicenceApprovedEmail() instead. This function will be removed once isTimeServedLogicEnabled toggle is retired.",
+  )
+  fun sendHardStopLicenceApprovedEmail(
+    emailAddress: String?,
+    firstName: String,
+    lastName: String,
+    crn: String?,
+    lsd: LocalDate?,
+    licenceId: String,
+  ) {
+    if (emailAddress == null || lsd == null) {
+      log.error("Notification failed (hardStopLicenceApproved) for licence $licenceId - email and CRD must be present")
+      return
+    }
+    val values: Map<String, String> = mapOf(
+      "firstName" to firstName,
+      "lastName" to lastName,
+      "crn" to crn!!,
+      "releaseDate" to lsd.format(dateFormat),
+    )
+    if (sendEmail(hardStopLicenceApprovedTemplateId, emailAddress, values)) {
+      log.info("Notification sent to $emailAddress HARD STOP LICENCE APPROVED for $licenceId $firstName $lastName")
     }
   }
 
@@ -286,30 +299,52 @@ class NotifyService(
     licenceId: String,
     isTimeServedLicence: Boolean,
   ) {
-    val isTimeServed = isTimeServedLogicEnabled && isTimeServedLicence
-    val templateId = if (isTimeServedLogicEnabled) licenceReviewOverdueTemplateId else hardStopLicenceReviewOverdueTemplateId
     if (emailAddress == null) {
-      val licenceReviewOverdueType = if (isTimeServed) "timeServedLicenceReviewOverdue" else "hardStopLicenceReviewOverdue"
+      val licenceReviewOverdueType = if (isTimeServedLicence) "timeServedLicenceReviewOverdue" else "hardStopLicenceReviewOverdue"
       log.error("Notification failed ($licenceReviewOverdueType) for licence $licenceId - email and CRD must be present")
       return
     }
-    val reasonForStandardLicence = if (isTimeServed) {
+    val reasonForStandardLicence = if (isTimeServedLicence) {
       "this person was released immediately following sentencing having served time on remand"
     } else {
       "none was submitted in time for their final release checks"
     }
-    val values = buildMap<String, String> {
+    val values = buildMap {
       put("comName", comName)
       put("firstName", firstName)
       put("lastName", lastName)
       put("crn", crn!!)
-      if (isTimeServedLogicEnabled) {
-        put("reasonForStandardLicence", reasonForStandardLicence)
-      }
+      put("reasonForStandardLicence", reasonForStandardLicence)
     }
-    if (sendEmail(templateId, emailAddress, values)) {
-      val licenceStatus = if (isTimeServed) "TIME SERVED" else "HARD STOP"
+    if (sendEmail(licenceReviewOverdueTemplateId, emailAddress, values)) {
+      val licenceStatus = if (isTimeServedLicence) "TIME SERVED" else "HARD STOP"
       log.info("Notification sent to $emailAddress $licenceStatus LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
+    }
+  }
+
+  @Deprecated(
+    message = "Use sendLicenceReviewOverdueEmail() instead. This function will be removed once isTimeServedLogicEnabled toggle is retired.",
+  )
+  fun sendHardStopLicenceReviewOverdueEmail(
+    emailAddress: String?,
+    comName: String,
+    firstName: String,
+    lastName: String,
+    crn: String?,
+    licenceId: String,
+  ) {
+    if (emailAddress == null) {
+      log.error("Notification failed (hardStopLicenceReviewOverdue) for licence $licenceId - email and CRD must be present")
+      return
+    }
+    val values: Map<String, String> = mapOf(
+      "comName" to comName,
+      "firstName" to firstName,
+      "lastName" to lastName,
+      "crn" to crn!!,
+    )
+    if (sendEmail(hardStopLicenceReviewOverdueTemplateId, emailAddress, values)) {
+      log.info("Notification sent to $emailAddress HARD STOP LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
     }
   }
 

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -101,6 +102,8 @@ class LicenceService(
   private val deliusApiClient: DeliusApiClient,
   private val telemetryService: TelemetryService,
   private val auditService: AuditService,
+  @param:Value("\${feature.toggle.timeServed.enabled:false}")
+  private val isTimeServedLogicEnabled: Boolean = false,
 ) {
 
   @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
@@ -373,15 +376,26 @@ class LicenceService(
 
   private fun notifyComAboutHardstopLicenceApproval(licenceEntity: HardStopLicence) {
     val com = licenceEntity.getCom()
-    notifyService.sendReviewableLicenceApprovedEmail(
-      com.email,
-      licenceEntity.forename!!,
-      licenceEntity.surname!!,
-      licenceEntity.crn,
-      licenceEntity.licenceStartDate,
-      licenceEntity.id.toString(),
-      licenceEntity.prisonDescription!!,
-    )
+    if (isTimeServedLogicEnabled) {
+      notifyService.sendReviewableLicenceApprovedEmail(
+        com.email,
+        licenceEntity.forename!!,
+        licenceEntity.surname!!,
+        licenceEntity.crn,
+        licenceEntity.licenceStartDate,
+        licenceEntity.id.toString(),
+        licenceEntity.prisonDescription!!,
+      )
+    } else {
+      notifyService.sendHardStopLicenceApprovedEmail(
+        com.email,
+        licenceEntity.forename!!,
+        licenceEntity.surname!!,
+        licenceEntity.crn,
+        licenceEntity.licenceStartDate,
+        licenceEntity.id.toString(),
+      )
+    }
   }
 
   private fun notifyComOrCreatorOnTimeServedLicenceApproval(licenceEntity: TimeServedLicence) {

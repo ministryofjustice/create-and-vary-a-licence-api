@@ -4,9 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 @Repository
 interface LicenceReviewRepository : JpaRepository<Licence, Long> {
@@ -19,8 +17,5 @@ interface LicenceReviewRepository : JpaRepository<Licence, Long> {
       AND l.licenceActivatedDate BETWEEN :start AND :end
     """,
   )
-  fun getLicencesNeedingReview(
-    start: LocalDateTime = LocalDate.now().minusDays(5).atStartOfDay(),
-    end: LocalDateTime = LocalDate.now().minusDays(5).atTime(LocalTime.MAX),
-  ): List<Licence>
+  fun getLicencesNeedingReview(start: LocalDateTime, end: LocalDateTime): List<Licence>
 }
