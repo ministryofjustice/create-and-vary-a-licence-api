@@ -294,7 +294,11 @@ class LicenceService(
     if (request.status == APPROVED) {
       when (licenceEntity) {
         is HardStopLicence -> notifyComAboutHardstopLicenceApproval(licenceEntity)
-        is TimeServedLicence -> notifyComOrCreatorOnTimeServedLicenceApproval(licenceEntity)
+        is TimeServedLicence -> {
+          if (licenceEntity.responsibleCom != null) {
+            notifyComAboutTimeServedLicenceApproval(licenceEntity)
+          }
+        }
       }
     }
 
@@ -398,13 +402,10 @@ class LicenceService(
     }
   }
 
-  private fun notifyComOrCreatorOnTimeServedLicenceApproval(licenceEntity: TimeServedLicence) {
-    val recipientEmail = licenceEntity.responsibleCom?.email
-      ?.takeIf { it.isNotBlank() }
-      ?: getCommunityOffenderManagerForCurrentUser().email
-
+  private fun notifyComAboutTimeServedLicenceApproval(licenceEntity: TimeServedLicence) {
+    val comEmail = licenceEntity.responsibleCom?.email
     notifyService.sendReviewableLicenceApprovedEmail(
-      recipientEmail,
+      comEmail,
       licenceEntity.forename!!,
       licenceEntity.surname!!,
       licenceEntity.crn,

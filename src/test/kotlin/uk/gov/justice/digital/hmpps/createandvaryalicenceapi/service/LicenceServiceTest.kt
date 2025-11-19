@@ -3700,67 +3700,6 @@ class LicenceServiceTest {
     }
 
     @Test
-    fun `approving a time served licence with no responsible COM does send a hard stop licence approval email to creator`() {
-      val authentication = mock<Authentication>()
-      val securityContext = mock<SecurityContext>()
-
-      whenever(authentication.name).thenReturn(aCreator.username)
-      whenever(securityContext.authentication).thenReturn(authentication)
-      SecurityContextHolder.setContext(securityContext)
-      val submittedLicence =
-        aTimeServedLicence.copy(id = 2L, statusCode = LicenceStatus.SUBMITTED, responsibleCom = null)
-
-      whenever(licenceRepository.findById(submittedLicence.id)).thenReturn(Optional.of(submittedLicence))
-      whenever(staffRepository.findByUsernameIgnoreCase(aCreator.username)).thenReturn(aCreator)
-
-      service.updateLicenceStatus(
-        submittedLicence.id,
-        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCreator.username, fullName = "Y"),
-      )
-
-      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, LicenceStatus.APPROVED)
-      verify(staffRepository, times(2)).findByUsernameIgnoreCase(aCreator.username)
-      verify(notifyService, times(1)).sendReviewableLicenceApprovedEmail(
-        aCreator.email,
-        submittedLicence.forename!!,
-        submittedLicence.surname!!,
-        submittedLicence.crn,
-        submittedLicence.licenceStartDate,
-        submittedLicence.id.toString(),
-        submittedLicence.prisonDescription!!,
-        isTimeServedLicence = true,
-      )
-
-      assertThat(licenceCaptor.value)
-        .extracting("id", "statusCode", "approvedByUsername", "updatedByUsername", "updatedBy")
-        .isEqualTo(
-          listOf(
-            submittedLicence.id,
-            LicenceStatus.APPROVED,
-            aCreator.username,
-            aCreator.username,
-            aCreator,
-          ),
-        )
-
-      assertThat(auditCaptor.firstValue).extracting("licenceId", "username", "fullName", "summary", "eventType")
-        .isEqualTo(
-          listOf(
-            submittedLicence.id,
-            aCreator.username,
-            "${aCreator.firstName} ${aCreator.lastName}",
-            "Licence approved for ${submittedLicence.forename} ${submittedLicence.surname}",
-            USER_EVENT,
-          ),
-        )
-    }
-
-    @Test
     fun `approving a CRD licence does not send a hard stop licence approval email`() {
       val submittedLicence =
         aLicenceEntity.copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
