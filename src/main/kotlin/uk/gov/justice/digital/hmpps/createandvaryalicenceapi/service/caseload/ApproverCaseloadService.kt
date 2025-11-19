@@ -16,52 +16,45 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.LocalDate
 
+private const val CENTRAL_ADMIN_CASELOAD = "CADM"
+
 @Service
 class ApproverCaseloadService(
   private val prisonApproverService: PrisonApproverService,
   private val deliusApiClient: DeliusApiClient,
   private val releaseDateService: ReleaseDateService,
 ) {
+  private val byApprovedOnAndName = compareByDescending<ApprovalCase> { it.approvedOn }
+    .thenBy { it.name?.lowercase().orEmpty() }
 
-  fun getSortedApprovalNeededCases(prisons: List<String>): List<ApprovalCase> = sortByLicenceStartAndName(getApprovalNeeded(prisons))
+  private val byLicenceStartAndName = compareBy<ApprovalCase, LocalDate?>(
+    nullsFirst(naturalOrder()),
+  ) { it.releaseDate }
+    .thenBy { it.name?.lowercase().orEmpty() }
 
-  fun getSortedRecentlyApprovedCases(prisons: List<String>): List<ApprovalCase> = sortByApprovedOnAndName(getRecentlyApproved(prisons))
-
-  private fun sortByLicenceStartAndName(
-    approvalCaseList: List<ApprovalCase>,
-  ): List<ApprovalCase> {
-    val comparator = compareBy<ApprovalCase, LocalDate?>(
-      nullsFirst(naturalOrder()),
-    ) { it.releaseDate }
-      .thenBy { it.name?.lowercase().orEmpty() }
-    return approvalCaseList.sortedWith(comparator)
+  fun searchForOffenderOnApproverCaseload(request: ApproverSearchRequest): ApproverSearchResponse {
+    val approvalNeeded = getApprovalNeeded(request.prisonCaseloads).run { applySearch(this, request.query) }
+    val recentlyApproved = getRecentlyApproved(request.prisonCaseloads).run { applySearch(this, request.query) }
+    return ApproverSearchResponse(approvalNeeded, recentlyApproved)
   }
 
-  private fun sortByApprovedOnAndName(
-    approvalCaseList: List<ApprovalCase>,
-  ): List<ApprovalCase> {
-    val comparator = compareByDescending<ApprovalCase> { it.approvedOn }
-      .thenBy { it.name?.lowercase().orEmpty() }
-    return approvalCaseList.sortedWith(comparator)
-  }
-
-  private fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
+  fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
     val licenceCases = prisonApproverService.getLicenceCasesReadyForApproval(prisons.filterOutAdminPrisonCode())
     if (licenceCases.isEmpty()) {
       return emptyList()
     }
-    return createApprovalCaseload(licenceCases)
+    return createApprovalCaseload(licenceCases).sortedWith(byLicenceStartAndName)
   }
 
-  private fun getRecentlyApproved(prisons: List<String>): List<ApprovalCase> {
+  fun getRecentlyApproved(prisons: List<String>): List<ApprovalCase> {
     val licenceCases = prisonApproverService.findRecentlyApprovedLicenceCases(prisons.filterOutAdminPrisonCode())
     if (licenceCases.isEmpty()) {
       return emptyList()
     }
-    return createApprovalCaseload(licenceCases)
+    return createApprovalCaseload(licenceCases).sortedWith(byApprovedOnAndName)
   }
 
-  private fun List<String>.filterOutAdminPrisonCode() = filterNot { it == "CADM" }
+  private fun List<String>.filterOutAdminPrisonCode() = filterNot { it == CENTRAL_ADMIN_CASELOAD }
 
   private fun createApprovalCaseload(licenceApproverCases: List<LicenceApproverCase>): List<ApprovalCase> {
     val prisonNumbers = licenceApproverCases.mapNotNull { it.prisonNumber }
@@ -91,18 +84,6 @@ class ApproverCaseloadService(
         prisonCode = licenceApproverCase.prisonCode,
         prisonDescription = licenceApproverCase.prisonDescription,
       )
-    }.sortedWith(compareBy(nullsFirst()) { it.releaseDate })
-  }
-
-  private fun applySearch(cases: List<ApprovalCase>, searchString: String?): List<ApprovalCase> {
-    if (searchString == null) {
-      return cases
-    }
-    val term = searchString.lowercase()
-    return cases.filter {
-      it.name?.lowercase()?.contains(term) ?: false ||
-        it.prisonerNumber?.lowercase()?.contains(term) ?: false ||
-        it.probationPractitioner?.name?.lowercase()?.contains(term) ?: false
     }
   }
 
@@ -129,11 +110,15 @@ class ApproverCaseloadService(
     }
   }
 
-  fun searchForOffenderOnApproverCaseload(approverSearchRequest: ApproverSearchRequest): ApproverSearchResponse {
-    val approvalNeededResults =
-      applySearch(getApprovalNeeded(approverSearchRequest.prisonCaseloads), approverSearchRequest.query)
-    val recentlyApprovedResults =
-      applySearch(getRecentlyApproved(approverSearchRequest.prisonCaseloads), approverSearchRequest.query)
-    return ApproverSearchResponse(approvalNeededResults, recentlyApprovedResults)
+  private fun applySearch(cases: List<ApprovalCase>, searchString: String?): List<ApprovalCase> {
+    if (searchString == null) {
+      return cases
+    }
+    val term = searchString.lowercase()
+    return cases.filter {
+      it.name?.lowercase()?.contains(term) ?: false ||
+        it.prisonerNumber?.lowercase()?.contains(term) ?: false ||
+        it.probationPractitioner?.name?.lowercase()?.contains(term) ?: false
+    }
   }
 }
