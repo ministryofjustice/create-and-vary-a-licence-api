@@ -32,6 +32,7 @@ class TimeServedCaseloadService(
         isTimeServedCaseByCrdsRule = it.isEligibleViaCRDSRule(today),
         isTimeServedCaseByNonCrdsRule = it.isEligibleViaNonCRDSRule(today),
         isTimeServedCaseByAllPrisonRule = it.isEligibleViaAllPrisonRule(today),
+        isTimeServedCaseByIgnoreArdRule = it.isTimeServedCaseByIgnoringArdRule(),
         sentenceStartDate = it.sentenceStartDate,
         conditionalReleaseDate = it.conditionalReleaseDate,
         conditionalReleaseDateOverride = it.conditionalReleaseDateOverrideDate,
@@ -61,5 +62,11 @@ class TimeServedCaseloadService(
       sentenceStartDate == today &&
         confirmedReleaseDate == today &&
         (conditionalReleaseDateOverrideDate ?: conditionalReleaseDate) == today
+      )
+
+  // Prisons may not release on CRD but the next working day so we should ignore ARD and include cases with CRD in the past
+  fun PrisonerSearchPrisoner.isTimeServedCaseByIgnoringArdRule() = //
+    (
+      sentenceStartDate == (conditionalReleaseDateOverrideDate ?: conditionalReleaseDate)
       )
 }
