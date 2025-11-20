@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import java.time.Duration
 
-class HardStopLicenceReviewOverdueIntegrationTest : IntegrationTestBase() {
+class LicenceReviewOverdueIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -36,18 +36,19 @@ class HardStopLicenceReviewOverdueIntegrationTest : IntegrationTestBase() {
   )
   fun `Run hard stop licence review overdue job`() {
     webTestClient.post()
-      .uri("/jobs/warn-hard-stop-review-overdue")
+      .uri("/jobs/warn-licence-review-overdue")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
 
-    verify(notifyService, times(1)).sendHardStopLicenceReviewOverdueEmail(
+    verify(notifyService, times(1)).sendLicenceReviewOverdueEmail(
       emailAddress = "testClient@probation.gov.uk",
       comName = "Test Client",
       firstName = "Test Forename 1",
       lastName = "Test Surname 1",
       crn = "A123456",
       licenceId = "1",
+      isTimeServedLicence = false,
     )
   }
 
