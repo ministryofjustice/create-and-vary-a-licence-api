@@ -53,8 +53,10 @@ data class TimeServedCase(
   val isTimeServedCaseByNonCrdsRule: Boolean,
   @field:Schema(description = "This case is a time served based on All prison rule", example = "true")
   val isTimeServedCaseByAllPrisonRule: Boolean,
+  @field:Schema(description = "This case is a time served based on ignoring the confirmed release date", example = "true")
+  val isTimeServedCaseByIgnoreArdRule: Boolean,
 
   @field:Schema(description = "This is a suspected time serve case", example = "true")
-  val isTimeServedCase: Boolean = isTimeServedCaseByCrdsRule || isTimeServedCaseByNonCrdsRule || isTimeServedCaseByAllPrisonRule,
+  val isTimeServedCase: Boolean = isTimeServedCaseByCrdsRule || isTimeServedCaseByNonCrdsRule || isTimeServedCaseByAllPrisonRule || isTimeServedCaseByIgnoreArdRule,
 
 )
