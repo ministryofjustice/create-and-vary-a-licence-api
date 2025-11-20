@@ -64,7 +64,7 @@ class TimeServedCaseloadService(
         (conditionalReleaseDateOverrideDate ?: conditionalReleaseDate) == today
       )
 
-  // Retrieve cases where the prison doesn't release on CRD but the next working day
+  // Retrieve cases where the prison doesn't release on CRD but the next working day by ignoring ARD
   fun PrisonerSearchPrisoner.isTimeServedCaseByIgnoringArdRule() = //
     (
       sentenceStartDate == (conditionalReleaseDateOverrideDate ?: conditionalReleaseDate)
