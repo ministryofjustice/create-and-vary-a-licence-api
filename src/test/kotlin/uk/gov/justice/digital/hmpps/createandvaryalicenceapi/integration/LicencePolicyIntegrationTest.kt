@@ -60,4 +60,17 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
       .expectBody()
       .json(policy("V3"), STRICT)
   }
+
+  @Test
+  fun currentPolicy() {
+    webTestClient.get()
+      .uri("/licence-policy/active?licenceStartDate=2026-02-18")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json(policy("V4"), STRICT)
+  }
 }
