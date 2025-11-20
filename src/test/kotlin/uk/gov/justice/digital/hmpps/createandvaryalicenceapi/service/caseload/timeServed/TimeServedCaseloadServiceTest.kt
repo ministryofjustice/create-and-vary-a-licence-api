@@ -146,4 +146,74 @@ class TimeServedCaseloadServiceTest {
         assertThat(it.isTimeServedCase).isFalse()
       }
   }
+
+  @Test
+  fun `should classify prisoner as time served by ignoring ARD rule when sentence start matches CRD`() {
+    val today = LocalDate.now(fixedClock)
+    val prisoner = prisonerSearchResult(
+      sentenceStartDate = today,
+      confirmedReleaseDate = today.plusDays(1),
+      conditionalReleaseDate = today,
+      conditionalReleaseDateOverrideDate = null,
+    )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(prisoner)))
+
+    val result = service.getCases("MDI")
+
+    assertThat(result.identifiedCases)
+      .hasSize(1)
+      .allSatisfy {
+        assertThat(it.isTimeServedCaseByIgnoreArdRule).isTrue()
+        assertThat(it.isTimeServedCase).isTrue()
+      }
+  }
+
+  @Test
+  fun `should classify prisoner as time served by ignoring ARD rule when sentence start matches CRD override`() {
+    val today = LocalDate.now(fixedClock)
+    val prisoner = prisonerSearchResult(
+      sentenceStartDate = today,
+      confirmedReleaseDate = today.plusDays(1),
+      conditionalReleaseDate = today.minusDays(1),
+      conditionalReleaseDateOverrideDate = today,
+    )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(prisoner)))
+
+    val result = service.getCases("MDI")
+
+    assertThat(result.identifiedCases)
+      .hasSize(1)
+      .allSatisfy {
+        assertThat(it.isTimeServedCaseByIgnoreArdRule).isTrue()
+        assertThat(it.isTimeServedCase).isTrue()
+      }
+  }
+
+  @Test
+  fun `should not classify prisoner as time served by ignoring ARD rule when sentence start does not match CRD`() {
+    val today = LocalDate.now(fixedClock)
+    val prisoner = prisonerSearchResult(
+      sentenceStartDate = today.minusDays(1),
+      confirmedReleaseDate = today,
+      conditionalReleaseDate = today,
+      conditionalReleaseDateOverrideDate = null,
+    )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(prisoner)))
+
+    val result = service.getCases("MDI")
+
+    assertThat(result.otherCases)
+      .hasSize(1)
+      .allSatisfy {
+        assertThat(it.isTimeServedCaseByIgnoreArdRule).isFalse()
+        assertThat(it.isTimeServedCase).isFalse()
+      }
+  }
+
 }
