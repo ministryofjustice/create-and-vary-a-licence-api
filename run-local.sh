@@ -66,7 +66,7 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
 # Feature toggles
-export FEATURE_TOGGLE_TIMESERVED_ENABLED=true
+export FEATURE_TOGGLE_TIMESERVED_ENABLED=false
 
 SKIP_DOCKER=false
 DEBUG=""

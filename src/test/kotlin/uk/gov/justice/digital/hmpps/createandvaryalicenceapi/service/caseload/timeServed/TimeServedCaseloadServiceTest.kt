@@ -215,5 +215,4 @@ class TimeServedCaseloadServiceTest {
         assertThat(it.isTimeServedCase).isFalse()
       }
   }
-
 }
