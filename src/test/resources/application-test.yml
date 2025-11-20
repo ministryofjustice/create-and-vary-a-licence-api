@@ -127,3 +127,8 @@ update:
     details:
       handler:
         enabled: false
+
+
+progression:
+  model:
+    policy-start-date: 2025-09-19

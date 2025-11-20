@@ -34,9 +34,6 @@ echo "Getting NOTIFY_API_KEY..."
 export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json | jq -r '.data.NOTIFY_API_KEY | @base64d')
 
 # --- Booleans / Flags ---
-export RECALL_ENABLED=false
-export RECALL_PRISONS="MDI"
-export RECALL_REGIONS="N55"
 export FEATURE_TOGGLE_TIMESERVED_ENABLED=false
 
 
@@ -65,12 +62,7 @@ cat > "$fileToAddVars" <<EOF
   NOTIFY_API_KEY="${NOTIFY_API_KEY}"
 
 # --- Flags ---
-  RECALL_ENABLED=${RECALL_ENABLED}
   FEATURE_TOGGLE_TIMESERVED_ENABLED=${FEATURE_TOGGLE_TIMESERVED_ENABLED}
-
-# --- Recall trial ---
-  RECALL_PRISONS=${RECALL_PRISONS}
-  RECALL_REGIONS=${RECALL_REGIONS}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"

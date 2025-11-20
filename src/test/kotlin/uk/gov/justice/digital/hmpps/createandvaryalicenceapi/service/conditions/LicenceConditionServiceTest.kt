@@ -98,7 +98,7 @@ class LicenceConditionServiceTest {
     @Test
     fun `update standard conditions for an individual licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(policyService.currentPolicy()).thenReturn(aPolicy)
+      whenever(policyService.currentPolicy(any())).thenReturn(aPolicy)
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val apConditions = listOf(
@@ -753,7 +753,7 @@ class LicenceConditionServiceTest {
 
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf(Licence.Companion.SYSTEM_USER, aPreviousUser))
+        .isEqualTo(listOf(Licence.SYSTEM_USER, aPreviousUser))
       assertThat(licenceCaptor.value).extracting("bespokeConditions")
         .isEqualTo(emptyList<BespokeCondition>())
 
@@ -789,19 +789,6 @@ class LicenceConditionServiceTest {
 
     val someBespokeConditions =
       BespokeConditionRequest(conditions = listOf("Condition 1", "Condition 2", "Condition 3"))
-
-    val anAdditionalConditionEntity = AdditionalCondition(
-      id = 1,
-      conditionVersion = "1.0",
-      licence = aLicenceEntity,
-      conditionCode = "code1",
-      conditionCategory = "category1",
-      conditionSequence = 4,
-      conditionText = "text",
-      additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = mutableListOf(),
-      conditionType = "AP",
-    )
 
     val aPolicy = LicencePolicy(
       "2.1",

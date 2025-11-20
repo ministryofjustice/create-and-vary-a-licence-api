@@ -40,9 +40,7 @@ generic-service:
     DB_SSL_ENABLED: "true"
     HMPPS_GOVUK_API_URL: "https://www.gov.uk"
     HMPPS_SQS_USE_WEB_TOKEN: true
-    RECALL_ENABLED: false
-    RECALL_PRISONS: "DNI"
-    RECALL_REGIONS: "N55"
+    PROGRESSION_MODEL_POLICY_START_DATE: 2026-09-01
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:

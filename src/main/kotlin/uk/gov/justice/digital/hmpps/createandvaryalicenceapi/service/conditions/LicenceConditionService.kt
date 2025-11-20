@@ -60,7 +60,7 @@ class LicenceConditionService(
       staffMember = staffMember,
     )
 
-    val currentPolicyVersion = licencePolicyService.currentPolicy().version
+    val currentPolicyVersion = licencePolicyService.currentPolicy(licenceEntity.licenceStartDate).version
 
     licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventUpdateStandardCondition(licenceEntity, currentPolicyVersion, staffMember)

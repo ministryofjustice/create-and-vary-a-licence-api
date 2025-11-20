@@ -23,3 +23,11 @@ fun LocalDate.isOnOrBefore(other: LocalDate?): Boolean {
 
   return this.isBefore(other) || this == other
 }
+
+fun LocalDate?.isOnOrAfter(other: LocalDate?): Boolean {
+  if (this == null || other == null) {
+    return false
+  }
+
+  return this.isAfter(other) || this == other
+}

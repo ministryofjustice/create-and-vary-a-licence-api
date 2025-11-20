@@ -90,4 +90,32 @@ class DateFunctionsTest {
       assertThat(LocalDate.now().plusDays(1).isOnOrBefore(LocalDate.now())).isFalse()
     }
   }
+
+  @Nested
+  inner class IsOnOrAfter {
+    @Test
+    fun `returns false if the date is null`() {
+      assertThat(null.isOnOrAfter(LocalDate.now())).isFalse
+    }
+
+    @Test
+    fun `returns false if the comparison date is null`() {
+      assertThat(LocalDate.now().isOnOrAfter(null)).isFalse
+    }
+
+    @Test
+    fun `returns true if the calling date is after the comparison date`() {
+      assertThat(LocalDate.now().plusDays(1).isOnOrAfter(LocalDate.now())).isTrue()
+    }
+
+    @Test
+    fun `returns true if the calling date is equal to the comparison date`() {
+      assertThat(LocalDate.now().isOnOrAfter(LocalDate.now())).isTrue()
+    }
+
+    @Test
+    fun `returns false if the calling date is before the comparison date`() {
+      assertThat(LocalDate.now().minusDays(1).isOnOrAfter(LocalDate.now())).isFalse()
+    }
+  }
 }

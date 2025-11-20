@@ -690,7 +690,7 @@ class LicenceService(
     return licenceCopy.toSummary()
   }
 
-  private fun isNotValidLicenceForEdit(licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence?): Boolean = licence != null &&
+  private fun isNotValidLicenceForEdit(licence: EntityLicence?): Boolean = licence != null &&
     licence !is CrdLicence &&
     licence !is HdcLicence &&
     licence !is PrrdLicence
@@ -945,7 +945,7 @@ class LicenceService(
     licenceCopy.standardConditions.clear()
     licenceCopy.additionalConditions.clear()
 
-    licenceCopy.version = licencePolicyService.currentPolicy().version
+    licenceCopy.version = licencePolicyService.currentPolicy(licence.licenceStartDate).version
     licenceCopy.standardConditions.addAll(
       licence.standardConditions.map { it.copy(id = null, licence = licenceCopy) },
     )

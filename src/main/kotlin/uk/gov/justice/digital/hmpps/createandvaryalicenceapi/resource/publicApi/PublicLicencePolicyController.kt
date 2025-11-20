@@ -13,12 +13,14 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicencePolicyService
+import java.time.LocalDate
 
 @RestController
 @Tag(name = Tags.LICENCE_POLICY)
@@ -94,5 +96,10 @@ class PublicLicencePolicyController(private val publicLicencePolicyService: Publ
       ),
     ],
   )
-  fun getLatestPolicy() = publicLicencePolicyService.getLatestLicencePolicy()
+  fun getLatestPolicy(
+    @RequestParam(
+      name = "licenceStartDate",
+      required = false,
+    ) licenceStartDate: LocalDate?,
+  ) = publicLicencePolicyService.getLatestLicencePolicy(licenceStartDate)
 }

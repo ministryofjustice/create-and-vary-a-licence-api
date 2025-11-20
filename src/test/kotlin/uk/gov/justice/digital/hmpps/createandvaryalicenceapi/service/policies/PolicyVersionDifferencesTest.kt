@@ -8,11 +8,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REMOVED_NO_REPLACEMENTS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REPLACED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.TEXT_CHANGE
+import java.time.LocalDate
 
 // This doesn't actually assert anything but dumps the differences between different versions of the policy
 class PolicyVersionDifferencesTest {
 
-  private val licencePolicyService = LicencePolicyService()
+  private val licencePolicyService = LicencePolicyService(progressionModelPolicyStartDate = LocalDate.now())
 
   @Test
   fun `1_0 to 2_0`() {

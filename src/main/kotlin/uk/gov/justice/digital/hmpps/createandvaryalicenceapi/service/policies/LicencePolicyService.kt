@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -14,10 +16,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licencePolicyChanges
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
+import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 
 enum class ConditionChangeType {
@@ -57,13 +60,22 @@ data class LicenceConditionChanges(
 @Service
 class LicencePolicyService(
   private var policies: List<LicencePolicy> = emptyList(),
+  @param:Value("\${progression.model.policy-start-date}")
+  @param:DateTimeFormat(pattern = "yyyy-MM-dd")
+  private val progressionModelPolicyStartDate: LocalDate,
 ) {
 
   init {
-    policies = listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3_0)
+    policies = listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3_0, POLICY_V4_0)
   }
 
-  fun currentPolicy(): LicencePolicy = policies.maxBy { it.version }
+  fun currentPolicy(licenceStartDate: LocalDate? = null): LicencePolicy {
+    if (licenceStartDate?.isOnOrAfter(progressionModelPolicyStartDate) == true) {
+      return POLICY_V4_0
+    }
+    return POLICY_V3_0
+  }
+
   fun policyByVersion(version: String): LicencePolicy = policies.find { it.version == version }
     ?: throw EntityNotFoundException("policy version $version not found")
 
@@ -123,16 +135,16 @@ class LicencePolicyService(
     return false
   }
 
-  fun getCurrentStandardConditions(licenceType: LicenceType) = if (licenceType == PSS) {
+  fun getCurrentStandardConditions(licence: Licence) = if (licence.typeCode == PSS) {
     emptyList()
   } else {
-    currentPolicy().standardConditions.standardConditionsAp
+    currentPolicy(licence.licenceStartDate).standardConditions.standardConditionsAp
   }
 
-  fun getCurrentPssRequirements(licenceType: LicenceType) = if (licenceType == AP) {
+  fun getCurrentPssRequirements(licence: Licence) = if (licence.typeCode == AP) {
     emptyList()
   } else {
-    currentPolicy().standardConditions.standardConditionsPss
+    currentPolicy(licence.licenceStartDate).standardConditions.standardConditionsPss
   }
 
   private fun toEntityStandardCondition(licence: Licence, type: String) = { i: Int, condition: ILicenceCondition ->
@@ -160,9 +172,9 @@ class LicencePolicyService(
 
   fun getStandardConditionsForLicence(licence: Licence): List<StandardCondition> {
     val standardConditions =
-      getCurrentStandardConditions(licence.typeCode).mapIndexed(toEntityStandardCondition(licence, "AP"))
+      getCurrentStandardConditions(licence).mapIndexed(toEntityStandardCondition(licence, "AP"))
     val pssRequirements =
-      getCurrentPssRequirements(licence.typeCode).mapIndexed(toEntityStandardCondition(licence, "PSS"))
+      getCurrentPssRequirements(licence).mapIndexed(toEntityStandardCondition(licence, "PSS"))
 
     return standardConditions + pssRequirements
   }

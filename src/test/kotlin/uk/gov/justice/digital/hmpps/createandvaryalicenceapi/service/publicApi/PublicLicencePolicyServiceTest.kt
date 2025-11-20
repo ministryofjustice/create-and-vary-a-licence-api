@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.ConditionTypes
@@ -115,9 +116,9 @@ class PublicLicencePolicyServiceTest {
 
   @Test
   fun `given policies when get latest policy then return latest policy`() {
-    whenever(licencePolicyService.currentPolicy()).thenReturn(POLICY_V2_1)
+    whenever(licencePolicyService.currentPolicy(isNull())).thenReturn(POLICY_V2_1)
 
-    val policy = service.getLatestLicencePolicy()
+    val policy = service.getLatestLicencePolicy(null)
 
     assertThat(policy.version).isEqualTo(PolicyVersion.V2_1)
   }

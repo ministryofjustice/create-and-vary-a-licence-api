@@ -1978,7 +1978,7 @@ class LicenceServiceTest {
   @Test
   fun `creating a variation`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-    whenever(licencePolicyService.currentPolicy()).thenReturn(
+    whenever(licencePolicyService.currentPolicy(any())).thenReturn(
       LicencePolicy(
         "2.1",
         standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -2011,7 +2011,7 @@ class LicenceServiceTest {
   @Test
   fun `creating an HDC variation`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-    whenever(licencePolicyService.currentPolicy()).thenReturn(
+    whenever(licencePolicyService.currentPolicy(any())).thenReturn(
       LicencePolicy(
         "2.1",
         standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -2044,7 +2044,7 @@ class LicenceServiceTest {
   @Test
   fun `creating a variation not PSS period should not delete AP conditions`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-    whenever(licencePolicyService.currentPolicy()).thenReturn(
+    whenever(licencePolicyService.currentPolicy(any())).thenReturn(
       LicencePolicy(
         "2.1",
         standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -2086,7 +2086,7 @@ class LicenceServiceTest {
   @Test
   fun `creating a variation with no responsible communityOffenderManager allocated`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-    whenever(licencePolicyService.currentPolicy()).thenReturn(
+    whenever(licencePolicyService.currentPolicy(any())).thenReturn(
       LicencePolicy(
         "2.1",
         standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -2120,7 +2120,7 @@ class LicenceServiceTest {
   @Test
   fun `editing an approved licence creates and saves a new licence version`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-    whenever(licencePolicyService.currentPolicy()).thenReturn(
+    whenever(licencePolicyService.currentPolicy(any())).thenReturn(
       LicencePolicy(
         "2.1",
         standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -2162,7 +2162,7 @@ class LicenceServiceTest {
   @Test
   fun `editing an approved licence creates and saves a new licence version returns all conditions`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-    whenever(licencePolicyService.currentPolicy()).thenReturn(
+    whenever(licencePolicyService.currentPolicy(any())).thenReturn(
       LicencePolicy(
         "2.1",
         standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -2200,7 +2200,7 @@ class LicenceServiceTest {
   @Test
   fun `editing an approved licence creates and saves a new licence version and sends a reapproval email`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-    whenever(licencePolicyService.currentPolicy()).thenReturn(
+    whenever(licencePolicyService.currentPolicy(any())).thenReturn(
       LicencePolicy(
         "2.1",
         standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -2692,7 +2692,15 @@ class LicenceServiceTest {
     assertThat(auditCaptor.allValues.size).isEqualTo(1)
 
     assertThat(licenceCaptor.allValues[0])
-      .extracting("id", "responsibleCom", "statusCode", "updatedByUsername", "approvedByUsername", "approvedByName", "updatedBy")
+      .extracting(
+        "id",
+        "responsibleCom",
+        "statusCode",
+        "updatedByUsername",
+        "approvedByUsername",
+        "approvedByName",
+        "updatedBy",
+      )
       .isEqualTo(listOf(2L, null, LicenceStatus.VARIATION_APPROVED, aCom.username, aCom.username, "X Y", aCom))
 
     assertThat(eventCaptor.allValues[0])
@@ -3142,7 +3150,13 @@ class LicenceServiceTest {
     fun `Review time served licence with no responsible COM allocated`() {
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
       val timeServedLicence = aTimeServedLicence
-        .copy(id = 1L, statusCode = LicenceStatus.ACTIVE, licenceVersion = "2.0", reviewDate = null, responsibleCom = null)
+        .copy(
+          id = 1L,
+          statusCode = LicenceStatus.ACTIVE,
+          licenceVersion = "2.0",
+          reviewDate = null,
+          responsibleCom = null,
+        )
 
       whenever(licenceRepository.findById(timeServedLicence.id)).thenReturn(Optional.of(timeServedLicence))
 
@@ -4011,7 +4025,7 @@ class LicenceServiceTest {
     @Test
     fun `editing an approved HDC licence creates and saves a new licence version`() {
       whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-      whenever(licencePolicyService.currentPolicy()).thenReturn(
+      whenever(licencePolicyService.currentPolicy(any())).thenReturn(
         LicencePolicy(
           "2.1",
           standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -4054,7 +4068,7 @@ class LicenceServiceTest {
     @Test
     fun `editing an approved HDC licence creates and saves a new licence version returns all conditions`() {
       whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-      whenever(licencePolicyService.currentPolicy()).thenReturn(
+      whenever(licencePolicyService.currentPolicy(any())).thenReturn(
         LicencePolicy(
           "2.1",
           standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -4194,7 +4208,6 @@ class LicenceServiceTest {
   }
 
   val aCom = communityOffenderManager()
-  val aCreator = anotherCommunityOffenderManager()
   val aPreviousUser = anotherCommunityOffenderManager()
 
   val anAdditionalCondition = AdditionalConditionAp(
