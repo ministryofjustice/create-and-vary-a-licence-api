@@ -27,6 +27,14 @@ class ComAllocatedHandler(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
+  fun syncComAllocation(crn: String) {
+    log.info("Syncing COM allocation for CRN: {}", crn)
+    val offenderManager = getOffenderManagerFromDelius(crn)
+    if (isValidOffenderManager(offenderManager, crn)) {
+      processComAllocation(offenderManager!!)
+    }
+  }
+
   fun handleEvent(message: String) {
     log.info("Received COM allocation event")
 
@@ -46,14 +54,12 @@ class ComAllocatedHandler(
   }
 
   @TimeServedConsiderations("If we have a null offender manager, we don't process the COM allocation, however, if this was the unallocated COM member on a team or belonging to an unallocated team, what would we do?")
-  fun processComAllocation(offenderManager: OffenderManager) {
+  private fun processComAllocation(offenderManager: OffenderManager) {
     log.info("Processing COM allocation for CRN ${offenderManager.crn} code is ${offenderManager.code}")
 
     // If they were allocated unallocated and then allocated to a real com, need to fire an audit event
     deliusApiClient.assignDeliusRole(offenderManager.username!!)
-    val existingCom =
-      staffService.findCommunityOffenderManager(offenderManager.staffIdentifier, offenderManager.username)
-        .firstOrNull()
+
     val newCom = staffService.updateComDetails(
       UpdateComRequest(
         staffIdentifier = offenderManager.staffIdentifier,
@@ -65,7 +71,7 @@ class ComAllocatedHandler(
       ),
     )
 
-    offenderService.updateOffenderWithResponsibleCom(offenderManager.crn, existingCom, newCom)
+    offenderService.updateResponsibleCom(offenderManager.crn, newCom)
 
     offenderService.updateProbationTeam(
       offenderManager.crn,
@@ -113,14 +119,6 @@ class ComAllocatedHandler(
     } else {
       log.warn("No Delius data found for CRN: {}", crn)
       null
-    }
-  }
-
-  fun syncComAllocation(crn: String) {
-    log.info("Syncing COM allocation for CRN: {}", crn)
-    val offenderManager = getOffenderManagerFromDelius(crn)
-    if (isValidOffenderManager(offenderManager, crn)) {
-      processComAllocation(offenderManager!!)
     }
   }
 

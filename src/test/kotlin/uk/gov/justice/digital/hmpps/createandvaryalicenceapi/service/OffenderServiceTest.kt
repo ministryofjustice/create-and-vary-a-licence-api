@@ -76,7 +76,7 @@ class OffenderServiceTest {
     )
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(anotherCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, anotherCom)
+    service.updateResponsibleCom("exampleCrn", anotherCom)
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
     verify(licenceRepository, times(1)).saveAllAndFlush(listOf(licenceWithNewCom))
@@ -94,9 +94,8 @@ class OffenderServiceTest {
     whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(true)
 
     whenever(staffRepository.findByUsernameIgnoreCase(originalCom.username)).thenReturn(originalCom)
-    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
+    service.updateResponsibleCom("exampleCrn", newCom)
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
     verify(licenceRepository, times(1)).saveAllAndFlush(listOf(licenceWithNewCom))
@@ -116,7 +115,7 @@ class OffenderServiceTest {
     whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
+    service.updateResponsibleCom("exampleCrn", newCom)
 
     val newLicence = licenceWithNewCom.copy(actualReleaseDate = LocalDate.parse("2023-11-20"))
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
@@ -138,7 +137,7 @@ class OffenderServiceTest {
     whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase(originalCom.username)).thenReturn(originalCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
+    service.updateResponsibleCom("exampleCrn", newCom)
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
 
@@ -267,21 +266,19 @@ class OffenderServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(prisonLicence))
     whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
+    service.updateResponsibleCom("exampleCrn", newCom)
 
     verifyNoInteractions(notifyService)
   }
 
   @Test
   fun `sends initial COM allocation email when time served licence exists and no previous COM was allocated`() {
-    val timeServedLicence = createTimeServedLicence().copy(
-      responsibleCom = null,
-    )
+    val timeServedLicence = createTimeServedLicence().copy(responsibleCom = null)
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(timeServedLicence))
     whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", null, newCom)
+    service.updateResponsibleCom("exampleCrn", newCom)
 
     verify(notifyService, times(1)).sendInitialComAllocationEmail(
       emailAddress = newCom.email!!,
@@ -294,14 +291,12 @@ class OffenderServiceTest {
 
   @Test
   fun `sends initial COM allocation email when variation licence exists and no previous COM was allocated`() {
-    val variationLicence = createVariationLicence().copy(
-      responsibleCom = null,
-    )
+    val variationLicence = createVariationLicence().copy(responsibleCom = null)
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(variationLicence))
     whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", null, newCom)
+    service.updateResponsibleCom("exampleCrn", newCom)
 
     verify(notifyService, times(1)).sendInitialComAllocationEmail(
       emailAddress = newCom.email!!,
@@ -314,25 +309,30 @@ class OffenderServiceTest {
 
   @Test
   fun `does not send initial COM allocation email when time served or variation licence exists and previous COM was allocated`() {
-    val timeServedLicence = createTimeServedLicence()
-    val variationLicence = createVariationLicence()
+    val timeServedLicence = createTimeServedLicence().copy(responsibleCom = originalCom)
+    val variationLicence = createVariationLicence().copy(responsibleCom = originalCom)
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(timeServedLicence, variationLicence))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        timeServedLicence,
+        variationLicence,
+      ),
+    )
     whenever(staffRepository.findByUsernameIgnoreCase(originalCom.username)).thenReturn(originalCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", originalCom, newCom)
+    service.updateResponsibleCom("exampleCrn", newCom)
 
     verifyNoInteractions(notifyService)
   }
 
   @Test
-  fun `does not send initial COM allocation email when no time served licence or variation licence exists`() {
+  fun `does not send initial COM allocation email for CRD licences`() {
     val crdLicence = createCrdLicence()
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
 
-    service.updateOffenderWithResponsibleCom("exampleCrn", null, newCom)
+    service.updateResponsibleCom("exampleCrn", newCom)
 
     verifyNoInteractions(notifyService)
   }

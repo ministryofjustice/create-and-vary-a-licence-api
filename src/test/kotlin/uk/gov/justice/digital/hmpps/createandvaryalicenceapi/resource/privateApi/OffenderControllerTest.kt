@@ -94,7 +94,7 @@ class OffenderControllerTest {
     mvc.perform(request).andExpect(status().isOk)
 
     verify(staffService, times(1)).updateComDetails(body)
-    verify(offenderService, times(1)).updateOffenderWithResponsibleCom("exampleCrn", null, expectedCom)
+    verify(offenderService, times(1)).updateResponsibleCom("exampleCrn", expectedCom)
   }
 
   @Test

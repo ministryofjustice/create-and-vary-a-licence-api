@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TI
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
+import java.time.LocalDateTime
 
 @Service
 class
@@ -38,13 +38,8 @@ OffenderService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  @TimeServedConsiderations("When updating responsible COM for a CRN, should anything additional happen if the COM was null to begin with, is it licence dependent?")
   @Transactional
-  fun updateOffenderWithResponsibleCom(
-    crn: String,
-    existingCom: CommunityOffenderManager?,
-    newCom: CommunityOffenderManager,
-  ) {
+  fun updateResponsibleCom(crn: String, newCom: CommunityOffenderManager) {
     log.info(
       "Updating responsible COM for CRN={} to {} {} (email={})",
       crn,
@@ -55,86 +50,105 @@ OffenderService(
 
     val offenderLicences = licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
-    offenderLicences.forEach { it.responsibleCom = newCom }
+    val previousCom = offenderLicences.firstOrNull()?.responsibleCom
+
+    if (previousCom?.id == newCom.id) {
+      log.info("Same staff record so no update required for CRN={}, staffCode: {}", crn, newCom.staffCode)
+      return
+    }
+
+    offenderLicences.forEach {
+      log.info("Updating COM assignment for licence: {}, staffCode: {}", it.id, newCom.staffCode)
+      it.responsibleCom = newCom
+      it.dateLastUpdated = LocalDateTime.now()
+    }
+
     licenceRepository.saveAllAndFlush(offenderLicences)
 
-    val inProgressLicence = offenderLicences.find { !it.kind.isCreatedByPrison() && it.statusCode == IN_PROGRESS }
+    notifyComIfLateAllocation(offenderLicences, crn)
 
-    if (inProgressLicence != null) {
-      log.info(
-        "Found in-progress licence (id={}) for CRN={} - checking for late allocation warning.",
-        inProgressLicence.id,
+    notifyComIfFirstAllocation(offenderLicences, crn, previousCom)
+
+    val username = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    offenderLicences.forEach {
+      auditService.recordAuditEventComUpdated(it, previousCom, newCom, staffMember)
+    }
+
+    log.info("Completed update of responsible COM for CRN={}", crn)
+  }
+
+  private fun notifyComIfLateAllocation(licences: List<Licence>, crn: String) {
+    val inProgressLicence = licences.find { !it.kind.isCreatedByPrison() && it.statusCode == IN_PROGRESS }
+
+    if (inProgressLicence == null || inProgressLicence.responsibleCom == null) {
+      log.info("No relevant in-progress licence found for CRN={}", crn)
+      return
+    }
+
+    val newCom = inProgressLicence.responsibleCom!!
+    log.info(
+      "Found in-progress licence (id={}) for CRN={} - checking for late allocation warning.",
+      inProgressLicence.id,
+      crn,
+    )
+
+    val releaseDate = inProgressLicence.licenceStartDate
+    if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {
+      log.warn(
+        "Late allocation warning triggered for CRN={} licenceId={} with releaseDate={}",
         crn,
+        inProgressLicence.id,
+        releaseDate,
       )
 
-      val releaseDate = inProgressLicence.licenceStartDate
-      if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {
-        log.warn(
-          "Late allocation warning triggered for CRN={} licenceId={} with releaseDate={}",
-          crn,
-          inProgressLicence.id,
-          releaseDate,
-        )
-
-        val prisoner = listOf(
+      notifyService.sendLicenceCreateEmail(
+        urgentLicencePromptTemplateId,
+        newCom.email!!,
+        "${newCom.firstName} ${newCom.lastName}",
+        listOf(
           Case(
             "${inProgressLicence.forename} ${inProgressLicence.surname}",
             inProgressLicence.crn!!,
             releaseDate!!,
             kind = inProgressLicence.kind,
           ),
-        )
-
-        notifyService.sendLicenceCreateEmail(
-          urgentLicencePromptTemplateId,
-          newCom.email!!,
-          "${newCom.firstName} ${newCom.lastName}",
-          prisoner,
-        )
-
-        log.info(
-          "Late allocation email sent to {} for CRN={} and licenceId={}",
-          newCom.email,
-          crn,
-          inProgressLicence.id,
-        )
-      }
-    } else {
-      log.info("No in-progress licence found for CRN={}", crn)
-    }
-
-    val potentialLicencesWithoutComAllocated = offenderLicences.find { it.kind == TIME_SERVED || it.kind == VARIATION }
-    if (potentialLicencesWithoutComAllocated != null) {
-      log.info(
-        "Found ${potentialLicencesWithoutComAllocated.kind} licence (id={}) for CRN={} - checking if a PP was previously allocated",
-        potentialLicencesWithoutComAllocated.id,
-        crn,
+        ),
       )
 
-      // Only send if there was no COM allocated previously, and now there is one
-      if (existingCom == null) {
-        log.info("No previous PP allocated for CRN={}", crn)
+      log.info("Late allocation email sent to {} for CRN={} and licenceId={}", newCom.email, crn, inProgressLicence.id)
+    }
+  }
 
-        notifyService.sendInitialComAllocationEmail(
-          newCom.email!!,
-          "${newCom.firstName} ${newCom.lastName}",
-          "${potentialLicencesWithoutComAllocated.forename} ${potentialLicencesWithoutComAllocated.surname}",
-          potentialLicencesWithoutComAllocated.crn!!,
-          potentialLicencesWithoutComAllocated.id.toString(),
-        )
-      }
-    } else {
+  private fun notifyComIfFirstAllocation(licences: List<Licence>, crn: String, previousCom: CommunityOffenderManager?) {
+    val licence = licences.find { it.kind == TIME_SERVED || it.kind == VARIATION }
+
+    if (licence == null || licence.responsibleCom == null) {
       log.info("No time served or variation licences without a COM found for CRN={}", crn)
+      return
     }
 
-    val username = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+    log.info(
+      "Found {} licence (id={}) for CRN={} - checking if a PP was previously allocated",
+      licence.kind,
+      licence.id,
+      crn,
+    )
+    val newCom = licence.responsibleCom!!
 
-    offenderLicences.forEach {
-      auditService.recordAuditEventComUpdated(it, existingCom, newCom, staffMember)
+    // Only send if there was no COM allocated previously, and now there is one
+    if (previousCom == null) {
+      log.info("No previous PP allocated for CRN={}", crn)
+
+      notifyService.sendInitialComAllocationEmail(
+        newCom.email!!,
+        "${newCom.firstName} ${newCom.lastName}",
+        "${licence.forename} ${licence.surname}",
+        licence.crn!!,
+        licence.id.toString(),
+      )
     }
-
-    log.info("Completed update of responsible COM for CRN={}", crn)
   }
 
   @Transactional

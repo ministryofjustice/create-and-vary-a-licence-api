@@ -280,9 +280,8 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     firstName: String = "Test",
     lastName: String = "User",
   ) {
-    verify(offenderService).updateOffenderWithResponsibleCom(
+    verify(offenderService).updateResponsibleCom(
       crn,
-      null,
       communityOffenderManager().copy(
         id = id,
         staffCode = staffCode,
