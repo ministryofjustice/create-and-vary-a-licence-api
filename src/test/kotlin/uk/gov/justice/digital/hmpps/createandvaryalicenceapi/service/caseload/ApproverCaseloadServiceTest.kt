@@ -13,13 +13,12 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
@@ -34,294 +33,208 @@ class ApproverCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(prisonApproverService, deliusApiClient)
+    reset(prisonApproverService, deliusApiClient, releaseDateService)
   }
 
   @Nested
-  inner class `Build getApprovalNeeded caseload` {
-    @Nested
-    inner class `Build approval caseload` {
-      @Test
-      fun `It builds the approval needed caseload successfully`() {
-        val nomisId = "A1234AA"
-        val comUsernames = listOf("tcom")
+  inner class `Build approval needed caseload` {
+    @Test
+    fun `It builds the approval needed caseload successfully with multiple cases`() {
+      val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
 
-        whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
-          listOf(
-            aLicenceApproverCase(),
+      whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
+        listOf(
+          aLicenceApproverCase(),
+          aLicenceApproverCase(
+            licenceId = 2L,
+            prisonNumber = "B1234BB",
+            forename = "John",
+            surname = "Doe",
+            prisonCode = "ABC",
+            prisonDescription = "ABC (HMP)",
+            comUsername = "jdoe",
           ),
-        )
-        whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
+          aLicenceApproverCase(
+            licenceId = 3L,
+            prisonNumber = "C1234CC",
+            forename = "Jane",
+            surname = "Doe",
+            prisonCode = "MDI",
+            comUsername = "jdoe",
+          ),
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManagersWithoutUser(nomisIds)).thenReturn(
+        listOf(
+          aCommunityManager(),
+          aCommunityManager(
+            case = aProbationCaseResult(
+              crn = "Y12345",
+              croNumber = "DE01/234567F",
+              pncNumber = null,
+              nomisId = "B1234BB",
+            ),
+          ),
+        ),
+      )
 
-        val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
 
-        assertThat(approvalCases).hasSize(1)
+      assertThat(approvalCases).hasSize(2)
 
-        with(approvalCases.first()) {
-          assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Person One")
-          assertThat(prisonerNumber).isEqualTo("A1234AA")
-          assertThat(submittedByFullName).isEqualTo("X Y")
-          assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
-          assertThat(urgentApproval).isFalse()
-          assertThat(approvedBy).isEqualTo("jim smith")
-          assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          with(probationPractitioner!!) {
-            assertThat(staffCode).isEqualTo("AB012C")
-            assertThat(name).isEqualTo("Test Test")
-          }
-          assertThat(kind).isEqualTo(LicenceKind.CRD)
-          assertThat(prisonCode).isEqualTo("MDI")
-          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
+      with(approvalCases[0]) {
+        assertThat(licenceId).isEqualTo(2L)
+        assertThat(name).isEqualTo("John Doe")
+        assertThat(prisonerNumber).isEqualTo("B1234BB")
+        assertThat(submittedByFullName).isEqualTo("X Y")
+        assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
+        assertThat(urgentApproval).isFalse()
+        assertThat(approvedBy).isEqualTo("jim smith")
+        assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
+        with(probationPractitioner!!) {
+          assertThat(staffCode).isEqualTo("AB012C")
+          assertThat(name).isEqualTo("Test Test")
         }
-
-        verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
-        verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
-        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
+        assertThat(prisonCode).isEqualTo("ABC")
+        assertThat(prisonDescription).isEqualTo("ABC (HMP)")
       }
 
-      @Test
-      fun `It builds the approval needed caseload successfully with multiple cases`() {
-        val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
-        val comUsernames = listOf("tcom", "jdoe")
-
-        whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
-          listOf(
-            aLicenceApproverCase(),
-            aLicenceApproverCase(
-              licenceId = 2L,
-              prisonNumber = "B1234BB",
-              forename = "John",
-              surname = "Doe",
-              prisonCode = "ABC",
-              prisonDescription = "ABC (HMP)",
-              comUsername = "jdoe",
-            ),
-            aLicenceApproverCase(
-              licenceId = 3L,
-              prisonNumber = "C1234CC",
-              forename = "Jane",
-              surname = "Doe",
-              prisonCode = "MDI",
-              comUsername = "jdoe",
-            ),
-          ),
-        )
-        whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
-          listOf(
-            aCommunityManager(),
-            aCommunityManager(
-              case = aProbationCaseResult(
-                crn = "Y12345",
-                croNumber = "DE01/234567F",
-                pncNumber = null,
-                nomisId = "B1234BB",
-              ),
-            ),
-          ),
-        )
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
-          listOf(
-            aStaffNameResponse(),
-            aStaffNameResponse(
-              id = 3000,
-              username = "jdoe",
-              forename = "Test2",
-              surname = "Test2",
-              code = "DE012F",
-            ),
-          ),
-        )
-
-        val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
-
-        assertThat(approvalCases).hasSize(2)
-
-        with(approvalCases[0]) {
-          assertThat(licenceId).isEqualTo(2L)
-          assertThat(name).isEqualTo("John Doe")
-          assertThat(prisonerNumber).isEqualTo("B1234BB")
-          assertThat(submittedByFullName).isEqualTo("X Y")
-          assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
-          assertThat(urgentApproval).isFalse()
-          assertThat(approvedBy).isEqualTo("jim smith")
-          assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          with(probationPractitioner!!) {
-            assertThat(staffCode).isEqualTo("DE012F")
-            assertThat(name).isEqualTo("Test2 Test2")
-          }
-          assertThat(kind).isEqualTo(LicenceKind.CRD)
-          assertThat(prisonCode).isEqualTo("ABC")
-          assertThat(prisonDescription).isEqualTo("ABC (HMP)")
+      with(approvalCases[1]) {
+        assertThat(licenceId).isEqualTo(1L)
+        assertThat(name).isEqualTo("Person One")
+        assertThat(prisonerNumber).isEqualTo("A1234AA")
+        assertThat(submittedByFullName).isEqualTo("X Y")
+        assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
+        assertThat(urgentApproval).isFalse()
+        assertThat(approvedBy).isEqualTo("jim smith")
+        assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
+        with(probationPractitioner!!) {
+          assertThat(staffCode).isEqualTo("AB012C")
+          assertThat(name).isEqualTo("Test Test")
         }
-
-        with(approvalCases[1]) {
-          assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Person One")
-          assertThat(prisonerNumber).isEqualTo("A1234AA")
-          assertThat(submittedByFullName).isEqualTo("X Y")
-          assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
-          assertThat(urgentApproval).isFalse()
-          assertThat(approvedBy).isEqualTo("jim smith")
-          assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          with(probationPractitioner!!) {
-            assertThat(staffCode).isEqualTo("AB012C")
-            assertThat(name).isEqualTo("Test Test")
-          }
-          assertThat(kind).isEqualTo(LicenceKind.CRD)
-          assertThat(prisonCode).isEqualTo("MDI")
-          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
-        }
-
-        verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
-        verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
-        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
+        assertThat(prisonCode).isEqualTo("MDI")
+        assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
       }
 
-      @Test
-      fun `the approval needed caseload is sorted correctly`() {
-        val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
-        val comUsernames = listOf("tcom", "jdoe")
+      verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
+      verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(nomisIds)
+    }
 
-        whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
-          listOf(
-            aLicenceApproverCase(
-              licenceStartDate = LocalDate.of(2024, 6, 21),
-            ),
-            aLicenceApproverCase(
-              licenceId = 2L,
-              prisonNumber = "B1234BB",
-              forename = "John",
-              surname = "Doe",
-              prisonCode = "ABC",
-              prisonDescription = "ABC (HMP)",
-              comUsername = "jdoe",
-              licenceStartDate = LocalDate.of(2024, 6, 20),
-            ),
-            aLicenceApproverCase(
-              licenceId = 3L,
-              prisonNumber = "C1234CC",
-              forename = "Jane",
-              surname = "Doe",
-              prisonCode = "MDI",
-              comUsername = "jdoe",
+    @Test
+    fun `the approval needed caseload is sorted correctly`() {
+      val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
+
+      whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
+        listOf(
+          aLicenceApproverCase(
+            licenceStartDate = LocalDate.of(2024, 6, 21),
+          ),
+          aLicenceApproverCase(
+            licenceId = 2L,
+            prisonNumber = "B1234BB",
+            forename = "John",
+            surname = "Doe",
+            prisonCode = "ABC",
+            prisonDescription = "ABC (HMP)",
+            comUsername = "jdoe",
+            licenceStartDate = LocalDate.of(2024, 6, 20),
+          ),
+          aLicenceApproverCase(
+            licenceId = 3L,
+            prisonNumber = "C1234CC",
+            forename = "Jane",
+            surname = "Doe",
+            prisonCode = "MDI",
+            comUsername = "jdoe",
+          ),
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManagersWithoutUser(nomisIds)).thenReturn(
+        listOf(
+          aCommunityManager(),
+          aCommunityManager(
+            case = aProbationCaseResult(
+              crn = "Y12345",
+              croNumber = "DE01/234567F",
+              pncNumber = null,
+              nomisId = "B1234BB",
             ),
           ),
-        )
-        whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
-          listOf(
-            aCommunityManager(),
-            aCommunityManager(
-              case = aProbationCaseResult(
-                crn = "Y12345",
-                croNumber = "DE01/234567F",
-                pncNumber = null,
-                nomisId = "B1234BB",
-              ),
+        ),
+      )
+
+      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+
+      verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
+      verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(nomisIds)
+
+      assertThat(approvalCases).hasSize(2)
+      assertThat(approvalCases).extracting<Long> { it.licenceId }.containsExactly(2, 1)
+    }
+
+    @Test
+    fun `null release dates are surfaced above other release dates for the approval needed caseload`() {
+      val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
+
+      whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
+        listOf(
+          aLicenceApproverCase(
+            licenceStartDate = LocalDate.of(2024, 6, 21),
+          ),
+          aLicenceApproverCase(
+            licenceId = 2L,
+            prisonNumber = "B1234BB",
+            forename = "John",
+            surname = "Doe",
+            prisonCode = "ABC",
+            prisonDescription = "ABC (HMP)",
+            comUsername = "jdoe",
+            licenceStatus = LicenceStatus.APPROVED,
+            licenceStartDate = LocalDate.of(2024, 6, 20),
+          ),
+          aLicenceApproverCase(
+            licenceId = 3L,
+            prisonNumber = "C1234CC",
+            forename = "Jane",
+            surname = "Doe",
+            prisonCode = "MDI",
+            comUsername = "tcom",
+            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStartDate = null,
+          ),
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManagersWithoutUser(nomisIds)).thenReturn(
+        listOf(
+          aCommunityManager(),
+          aCommunityManager(
+            case = aProbationCaseResult(
+              crn = "Y12345",
+              croNumber = "DE01/234567F",
+              pncNumber = null,
+              nomisId = "B1234BB",
             ),
           ),
-        )
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
-          listOf(
-            aStaffNameResponse(),
-            aStaffNameResponse(
-              id = 3000,
-              username = "jdoe",
-              forename = "Test2",
-              surname = "Test2",
-              code = "DE012F",
+          aCommunityManager(
+            case = aProbationCaseResult(
+              crn = "Z12345",
+              croNumber = "GH01/234567I",
+              pncNumber = null,
+              nomisId = "C1234CC",
             ),
           ),
-        )
+        ),
+      )
 
-        val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
 
-        verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
-        verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
-        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+      verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
+      verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(nomisIds)
 
-        assertThat(approvalCases).hasSize(2)
-        assertThat(approvalCases).extracting<Long> { it.licenceId }.containsExactly(2, 1)
-      }
-
-      @Test
-      fun `null release dates are surfaced above other release dates for the approval needed caseload`() {
-        val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
-        val comUsernames = listOf("tcom", "jdoe", "tcom")
-
-        whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
-          listOf(
-            aLicenceApproverCase(
-              licenceStartDate = LocalDate.of(2024, 6, 21),
-            ),
-            aLicenceApproverCase(
-              licenceId = 2L,
-              prisonNumber = "B1234BB",
-              forename = "John",
-              surname = "Doe",
-              prisonCode = "ABC",
-              prisonDescription = "ABC (HMP)",
-              comUsername = "jdoe",
-              licenceStatus = LicenceStatus.APPROVED,
-              licenceStartDate = LocalDate.of(2024, 6, 20),
-            ),
-            aLicenceApproverCase(
-              licenceId = 3L,
-              prisonNumber = "C1234CC",
-              forename = "Jane",
-              surname = "Doe",
-              prisonCode = "MDI",
-              comUsername = "tcom",
-              licenceStatus = LicenceStatus.ACTIVE,
-              licenceStartDate = null,
-            ),
-          ),
-        )
-        whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
-          listOf(
-            aCommunityManager(),
-            aCommunityManager(
-              case = aProbationCaseResult(
-                crn = "Y12345",
-                croNumber = "DE01/234567F",
-                pncNumber = null,
-                nomisId = "B1234BB",
-              ),
-            ),
-            aCommunityManager(
-              case = aProbationCaseResult(
-                crn = "Z12345",
-                croNumber = "GH01/234567I",
-                pncNumber = null,
-                nomisId = "C1234CC",
-              ),
-            ),
-          ),
-        )
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
-          listOf(
-            aStaffNameResponse(),
-            aStaffNameResponse(
-              id = 3000,
-              username = "jdoe",
-              forename = "Test2",
-              surname = "Test2",
-              code = "DE012F",
-            ),
-            aStaffNameResponse(),
-          ),
-        )
-
-        val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
-
-        verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
-        verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
-        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
-
-        assertThat(approvalCases).hasSize(3)
-        assertThat(approvalCases).extracting<Long> { it.licenceId }.containsExactly(3, 2, 1)
-      }
+      assertThat(approvalCases).hasSize(3)
+      assertThat(approvalCases).extracting<Long> { it.licenceId }.containsExactly(3, 2, 1)
     }
 
     @Test
@@ -344,277 +257,168 @@ class ApproverCaseloadServiceTest {
       val caseload = service.getApprovalNeeded(aListOfPrisonCodes)
 
       verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
-      verify(deliusApiClient, times(1)).getOffenderManagers(emptyList())
-      verify(deliusApiClient, times(1)).getStaffDetailsByUsername(emptyList())
+      verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(emptyList())
       assertThat(caseload).isEmpty()
-    }
-
-    @Test
-    fun `LSD is selected for releaseDate`() {
-      val nomisId = "A1234AA"
-      val comUsernames = listOf("tcom")
-
-      whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
-        listOf(
-          aLicenceApproverCase(
-            actualReleaseDate = LocalDate.of(2024, 6, 20),
-            conditionalReleaseDate = LocalDate.of(2024, 6, 19),
-            licenceStartDate = LocalDate.of(2024, 6, 18),
-          ),
-        ),
-      )
-      whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
-      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
-
-      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
-
-      assertThat(approvalCases).hasSize(1)
-
-      with(approvalCases.first()) {
-        assertThat(releaseDate).isEqualTo((LocalDate.of(2024, 6, 18)))
-      }
-
-      verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
-      verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
-      verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
   }
 
   @Nested
-  inner class `Build getRecentlyApproved caseload` {
+  inner class `Build recently approved caseload` {
+    @Test
+    fun `It builds the recently approved caseload successfully with multiple cases`() {
+      val nomisIds = listOf("B1234BB", "C1234CC")
 
-    @Nested
-    inner class `Build recently approved caseload` {
-      @Test
-      fun `It builds the recently approved caseload successfully`() {
-        val nomisId = "A1234AA"
-        val comUsernames = listOf("tcom")
-
-        val aLicenceSummaryApproverView = aLicenceApproverCase(
-          licenceStatus = LicenceStatus.APPROVED,
-          licenceStartDate = LocalDate.now().minusDays(14),
-        )
-
-        whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
-          listOf(
-            aLicenceSummaryApproverView,
+      whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
+        listOf(
+          aLicenceApproverCase(
+            licenceId = 2L,
+            prisonNumber = "B1234BB",
+            forename = "John",
+            surname = "Doe",
+            prisonCode = "ABC",
+            prisonDescription = "ABC (HMP)",
+            comUsername = "jdoe",
+            licenceStatus = LicenceStatus.APPROVED,
+            licenceStartDate = LocalDate.now().minusDays(14),
+            approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
           ),
-        )
-        whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
+          aLicenceApproverCase(
+            licenceId = 3L,
+            prisonNumber = "C1234CC",
+            forename = "Jane",
+            surname = "Doe",
+            prisonCode = "MDI",
+            comUsername = "tcom",
+            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStartDate = LocalDate.now().minusDays(14),
+            approvedDate = LocalDateTime.of(2023, 9, 29, 16, 38, 42),
+          ),
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManagersWithoutUser(nomisIds)).thenReturn(
+        listOf(
+          aCommunityManager(
+            case = aProbationCaseResult(
+              crn = "Y12345",
+              croNumber = "DE01/234567F",
+              pncNumber = null,
+              nomisId = "B1234BB",
+            ),
+          ),
+          aCommunityManager(
+            case = aProbationCaseResult(
+              crn = "Z12345",
+              croNumber = "GH01/234567I",
+              pncNumber = null,
+              nomisId = "C1234CC",
+            ),
+          ),
+        ),
+      )
 
-        val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
+      val caseload = service.getRecentlyApproved(aListOfPrisonCodes)
 
-        assertThat(approvalCases).hasSize(1)
+      assertThat(caseload).hasSize(2)
 
-        with(approvalCases.first()) {
-          assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Person One")
-          assertThat(prisonerNumber).isEqualTo("A1234AA")
-          assertThat(submittedByFullName).isEqualTo("X Y")
-          assertThat(releaseDate).isEqualTo((LocalDate.now().minusDays(14)))
-          assertThat(urgentApproval).isFalse()
-          assertThat(approvedBy).isEqualTo("jim smith")
-          assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          with(probationPractitioner!!) {
-            assertThat(staffCode).isEqualTo("AB012C")
-            assertThat(name).isEqualTo("Test Test")
-          }
-          assertThat(kind).isEqualTo(LicenceKind.CRD)
-          assertThat(prisonCode).isEqualTo("MDI")
-          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
+      with(caseload[0]) {
+        assertThat(licenceId).isEqualTo(3L)
+        assertThat(name).isEqualTo("Jane Doe")
+        assertThat(prisonerNumber).isEqualTo("C1234CC")
+        assertThat(submittedByFullName).isEqualTo("X Y")
+        assertThat(releaseDate).isEqualTo(LocalDate.now().minusDays(14))
+        assertThat(urgentApproval).isFalse()
+        assertThat(approvedBy).isEqualTo("jim smith")
+        assertThat(approvedOn).isEqualTo(LocalDateTime.of(2023, 9, 29, 16, 38, 42))
+        with(probationPractitioner!!) {
+          assertThat(staffCode).isEqualTo("AB012C")
+          assertThat(name).isEqualTo("Test Test")
         }
-
-        verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
-        verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
-        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
+        assertThat(prisonCode).isEqualTo("MDI")
+        assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
       }
 
-      @Test
-      fun `It builds the recently approved caseload successfully with multiple cases`() {
-        val nomisIds = listOf("B1234BB", "C1234CC")
-        val comUsernames = listOf("jdoe", "tcom")
-
-        whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
-          listOf(
-            aLicenceApproverCase(
-              licenceId = 2L,
-              prisonNumber = "B1234BB",
-              forename = "John",
-              surname = "Doe",
-              prisonCode = "ABC",
-              prisonDescription = "ABC (HMP)",
-              comUsername = "jdoe",
-              licenceStatus = LicenceStatus.APPROVED,
-              licenceStartDate = LocalDate.now().minusDays(14),
-              approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-            ),
-            aLicenceApproverCase(
-              licenceId = 3L,
-              prisonNumber = "C1234CC",
-              forename = "Jane",
-              surname = "Doe",
-              prisonCode = "MDI",
-              comUsername = "tcom",
-              licenceStatus = LicenceStatus.ACTIVE,
-              licenceStartDate = LocalDate.now().minusDays(14),
-              approvedDate = LocalDateTime.of(2023, 9, 29, 16, 38, 42),
-            ),
-          ),
-        )
-        whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
-          listOf(
-            aCommunityManager(
-              case = aProbationCaseResult(
-                crn = "Y12345",
-                croNumber = "DE01/234567F",
-                pncNumber = null,
-                nomisId = "B1234BB",
-              ),
-            ),
-            aCommunityManager(
-              case = aProbationCaseResult(
-                crn = "Z12345",
-                croNumber = "GH01/234567I",
-                pncNumber = null,
-                nomisId = "C1234CC",
-              ),
-            ),
-          ),
-        )
-
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
-          listOf(
-            aStaffNameResponse(
-              id = 3000,
-              username = "jdoe",
-              forename = "Test2",
-              surname = "Test2",
-              code = "DE012F",
-            ),
-            aStaffNameResponse(),
-          ),
-        )
-
-        val caseload = service.getRecentlyApproved(aListOfPrisonCodes)
-
-        assertThat(caseload).hasSize(2)
-
-        with(caseload[0]) {
-          assertThat(licenceId).isEqualTo(3L)
-          assertThat(name).isEqualTo("Jane Doe")
-          assertThat(prisonerNumber).isEqualTo("C1234CC")
-          assertThat(submittedByFullName).isEqualTo("X Y")
-          assertThat(releaseDate).isEqualTo(LocalDate.now().minusDays(14))
-          assertThat(urgentApproval).isFalse()
-          assertThat(approvedBy).isEqualTo("jim smith")
-          assertThat(approvedOn).isEqualTo(LocalDateTime.of(2023, 9, 29, 16, 38, 42))
-          with(probationPractitioner!!) {
-            assertThat(staffCode).isEqualTo("AB012C")
-            assertThat(name).isEqualTo("Test Test")
-          }
-          assertThat(kind).isEqualTo(LicenceKind.CRD)
-          assertThat(prisonCode).isEqualTo("MDI")
-          assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
+      with(caseload[1]) {
+        assertThat(licenceId).isEqualTo(2L)
+        assertThat(name).isEqualTo("John Doe")
+        assertThat(prisonerNumber).isEqualTo("B1234BB")
+        assertThat(submittedByFullName).isEqualTo("X Y")
+        assertThat(releaseDate).isEqualTo(LocalDate.now().minusDays(14))
+        assertThat(urgentApproval).isFalse()
+        assertThat(approvedBy).isEqualTo("jim smith")
+        assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
+        with(probationPractitioner!!) {
+          assertThat(staffCode).isEqualTo("AB012C")
+          assertThat(name).isEqualTo("Test Test")
         }
-
-        with(caseload[1]) {
-          assertThat(licenceId).isEqualTo(2L)
-          assertThat(name).isEqualTo("John Doe")
-          assertThat(prisonerNumber).isEqualTo("B1234BB")
-          assertThat(submittedByFullName).isEqualTo("X Y")
-          assertThat(releaseDate).isEqualTo(LocalDate.now().minusDays(14))
-          assertThat(urgentApproval).isFalse()
-          assertThat(approvedBy).isEqualTo("jim smith")
-          assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-          with(probationPractitioner!!) {
-            assertThat(staffCode).isEqualTo("DE012F")
-            assertThat(name).isEqualTo("Test2 Test2")
-          }
-          assertThat(kind).isEqualTo(LicenceKind.CRD)
-          assertThat(prisonCode).isEqualTo("ABC")
-          assertThat(prisonDescription).isEqualTo("ABC (HMP)")
-        }
-
-        verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
-        verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
-        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
+        assertThat(prisonCode).isEqualTo("ABC")
+        assertThat(prisonDescription).isEqualTo("ABC (HMP)")
       }
 
-      @Test
-      fun `the recently approved caseload is sorted correctly`() {
-        val nomisIds = listOf("B1234BB", "C1234CC")
-        val comUsernames = listOf("jdoe", "tcom")
+      verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
+      verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(nomisIds)
+    }
 
-        whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
-          listOf(
-            aLicenceApproverCase(
-              licenceId = 2L,
-              prisonNumber = "B1234BB",
-              forename = "John",
-              surname = "Doe",
-              prisonCode = "ABC",
-              prisonDescription = "ABC (HMP)",
-              comUsername = "jdoe",
-              licenceStatus = LicenceStatus.APPROVED,
-              licenceStartDate = LocalDate.now().minusDays(13),
-              approvedDate = LocalDateTime.of(2023, 9, 29, 16, 38, 42),
-            ),
-            aLicenceApproverCase(
-              licenceId = 3L,
-              prisonNumber = "C1234CC",
-              forename = "Jane",
-              surname = "Doe",
-              prisonCode = "MDI",
-              comUsername = "tcom",
-              licenceStatus = LicenceStatus.ACTIVE,
-              licenceStartDate = LocalDate.now().minusDays(14),
-              approvedDate = LocalDateTime.of(2023, 9, 28, 16, 38, 42),
+    @Test
+    fun `the recently approved caseload is sorted correctly`() {
+      val nomisIds = listOf("B1234BB", "C1234CC")
+
+      whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
+        listOf(
+          aLicenceApproverCase(
+            licenceId = 2L,
+            prisonNumber = "B1234BB",
+            forename = "John",
+            surname = "Doe",
+            prisonCode = "ABC",
+            prisonDescription = "ABC (HMP)",
+            comUsername = "jdoe",
+            licenceStatus = LicenceStatus.APPROVED,
+            licenceStartDate = LocalDate.now().minusDays(13),
+            approvedDate = LocalDateTime.of(2023, 9, 29, 16, 38, 42),
+          ),
+          aLicenceApproverCase(
+            licenceId = 3L,
+            prisonNumber = "C1234CC",
+            forename = "Jane",
+            surname = "Doe",
+            prisonCode = "MDI",
+            comUsername = "tcom",
+            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStartDate = LocalDate.now().minusDays(14),
+            approvedDate = LocalDateTime.of(2023, 9, 28, 16, 38, 42),
+          ),
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManagersWithoutUser(nomisIds)).thenReturn(
+        listOf(
+          aCommunityManager(
+            case = aProbationCaseResult(
+              crn = "Y12345",
+              croNumber = "DE01/234567F",
+              pncNumber = null,
+              nomisId = "B1234BB",
             ),
           ),
-        )
-        whenever(deliusApiClient.getOffenderManagers(nomisIds)).thenReturn(
-          listOf(
-            aCommunityManager(
-              case = aProbationCaseResult(
-                crn = "Y12345",
-                croNumber = "DE01/234567F",
-                pncNumber = null,
-                nomisId = "B1234BB",
-              ),
-            ),
-            aCommunityManager(
-              case = aProbationCaseResult(
-                crn = "Z12345",
-                croNumber = "GH01/234567I",
-                pncNumber = null,
-                nomisId = "C1234CC",
-              ),
+          aCommunityManager(
+            case = aProbationCaseResult(
+              crn = "Z12345",
+              croNumber = "GH01/234567I",
+              pncNumber = null,
+              nomisId = "C1234CC",
             ),
           ),
-        )
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
-          listOf(
-            aStaffNameResponse(
-              id = 3000,
-              username = "jdoe",
-              forename = "Test2",
-              surname = "Test2",
-              code = "DE012F",
-            ),
-            aStaffNameResponse(),
-          ),
-        )
+        ),
+      )
 
-        val caseload = service.getRecentlyApproved(aListOfPrisonCodes)
+      val caseload = service.getRecentlyApproved(aListOfPrisonCodes)
 
-        verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
-        verify(deliusApiClient, times(1)).getOffenderManagers(nomisIds)
-        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+      verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
+      verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(nomisIds)
 
-        assertThat(caseload).hasSize(2)
-        assertThat(caseload).extracting<Long> { it.licenceId }.containsExactly(2, 3)
-      }
+      assertThat(caseload).hasSize(2)
+      assertThat(caseload).extracting<Long> { it.licenceId }.containsExactly(2, 3)
     }
 
     @Test
@@ -627,8 +431,6 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `a null release date is returned when LSD is not set`() {
       val nomisId = "A1234AA"
-      val comUsernames = listOf("tcom")
-
       whenever(prisonApproverService.findRecentlyApprovedLicenceCases(aListOfPrisonCodes)).thenReturn(
         listOf(
           aLicenceApproverCase(
@@ -636,8 +438,7 @@ class ApproverCaseloadServiceTest {
           ),
         ),
       )
-      whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
-      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
+      whenever(deliusApiClient.getOffenderManagersWithoutUser(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
 
       val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
 
@@ -648,14 +449,12 @@ class ApproverCaseloadServiceTest {
       }
 
       verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
-      verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
-      verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+      verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(listOf(nomisId))
     }
 
     @Test
     fun `It derives if urgent approval is needed`() {
       val nomisId = "A1234AA"
-      val comUsernames = listOf("tcom")
 
       whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(
         true,
@@ -666,8 +465,7 @@ class ApproverCaseloadServiceTest {
           aLicenceApproverCase(),
         ),
       )
-      whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
-      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse()))
+      whenever(deliusApiClient.getOffenderManagersWithoutUser(listOf(nomisId))).thenReturn(listOf(aCommunityManager()))
 
       val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
 
@@ -678,76 +476,7 @@ class ApproverCaseloadServiceTest {
       }
 
       verify(prisonApproverService, times(1)).findRecentlyApprovedLicenceCases(aListOfPrisonCodes)
-      verify(deliusApiClient, times(1)).getOffenderManagers(listOf(nomisId))
-      verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
-    }
-  }
-
-  @Nested
-  inner class `Retrieve the correct probation practitioner` {
-    @Test
-    fun `The correct com is retrieved`() {
-      val users = listOf(
-        aStaffNameResponse(),
-        aStaffNameResponse(
-          id = 1000,
-          username = "jdoe",
-          forename = "Test2",
-          surname = "Test2",
-          code = "CD012E",
-        ),
-      )
-
-      val com = service.findProbationPractitioner(aLicenceApproverCase().comUsername, users, aCommunityManager())
-
-      assertThat(com?.staffCode).isEqualTo("AB012C")
-      assertThat(com?.name).isEqualTo("Test Test")
-    }
-
-    @Test
-    fun `If the com is not found in the list of coms, the delius record details are used instead`() {
-      val users = listOf(
-        aStaffNameResponse(
-          username = "test1",
-          code = "test1",
-          forename = "Test1",
-          surname = "Test1",
-        ),
-        aStaffNameResponse(
-          username = "test2",
-          code = "test2",
-          forename = "Test2",
-          surname = "Test2",
-        ),
-      )
-
-      val com = service.findProbationPractitioner(aLicenceApproverCase().comUsername, users, aCommunityManager())
-
-      assertThat(com?.staffCode).isEqualTo("AB012C")
-      assertThat(com?.name).isEqualTo("Test Test")
-    }
-
-    @Test
-    fun `return null if com is unallocated`() {
-      val users = listOf(
-        aStaffNameResponse(
-          username = "test1",
-          code = "test1",
-          forename = "Test1",
-          surname = "Test1",
-        ),
-        aStaffNameResponse(
-          username = "test2",
-          code = "test2",
-          forename = "Test2",
-          surname = "Test2",
-        ),
-      )
-      val unallocatedCom = aCommunityManager(unallocated = true)
-
-      val com = service.findProbationPractitioner(aLicenceApproverCase().comUsername, users, unallocatedCom)
-
-      assertThat(com).isNull()
+      verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(listOf(nomisId))
     }
   }
 
@@ -800,19 +529,6 @@ class ApproverCaseloadServiceTest {
     return licenceApproverCase
   }
 
-  private fun aStaffNameResponse(
-    id: Long = 2000,
-    username: String = "tcom",
-    forename: String = "Test",
-    surname: String = "Test",
-    code: String = "AB012C",
-  ) = StaffNameResponse(
-    id = id,
-    username = username,
-    name = Name(forename, surname = surname),
-    code = code,
-  )
-
   private fun aProbationCaseResult(
     crn: String = "X12345",
     croNumber: String = "AB01/234567C",
@@ -840,7 +556,7 @@ class ApproverCaseloadServiceTest {
     name: Name = Name("Test", null, "Test"),
     allocationDate: LocalDate = LocalDate.of(2000, 1, 1),
     unallocated: Boolean = false,
-  ) = CommunityManager(
+  ) = CommunityManagerWithoutUser(
     code = code,
     id = id,
     team = team,

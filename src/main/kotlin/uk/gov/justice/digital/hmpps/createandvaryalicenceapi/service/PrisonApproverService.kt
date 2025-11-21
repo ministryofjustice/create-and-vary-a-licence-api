@@ -37,7 +37,8 @@ class PrisonApproverService(
   ): List<LicenceApproverCase> {
     try {
       val releasedAfterDate = LocalDate.now().minusDays(TWO_WEEKS)
-      val recentlyApprovedCases = getRecentlyApprovedLicenceCases(prisonCodes, releasedAfterDate)
+      val recentlyApprovedCases =
+        licenceCaseRepository.findRecentlyApprovedLicenceCasesAfter(prisonCodes, releasedAfterDate)
 
       // if a licence is an active variation then we want to return the original
       // licence that the variation was created from and not the variation itself
@@ -53,11 +54,6 @@ class PrisonApproverService(
       throw ValidationException(e.message, e)
     }
   }
-
-  private fun getRecentlyApprovedLicenceCases(
-    prisonCodes: List<String>,
-    releasedAfterDate: LocalDate,
-  ): List<LicenceApproverCase> = licenceCaseRepository.findRecentlyApprovedLicenceCasesAfter(prisonCodes, releasedAfterDate)
 
   private fun enrichWithSubmitterNames(cases: List<LicenceApproverCase>): List<LicenceApproverCase> {
     if (cases.isNotEmpty()) {
