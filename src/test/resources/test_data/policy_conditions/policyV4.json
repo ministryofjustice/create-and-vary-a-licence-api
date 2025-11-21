@@ -1266,6 +1266,19 @@
         "requiresElectronicMonitoringResponse": false
       },
       {
+        "code": "d523d711-9975-4a9a-a37e-a17bd611140f",
+        "category": "Freedom of movement",
+        "text": "DRIVING PROHIBITION PLACEHOLDER",
+        "tpl": null,
+        "requiresInput": false,
+        "inputs": null,
+        "categoryShort": null,
+        "subtext": null,
+        "type": null,
+        "skippable": false,
+        "requiresElectronicMonitoringResponse": false
+      },
+      {
         "code": "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
         "text": "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
