@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
+import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicy as PublicLicencePolicy
 
 @Service
@@ -17,5 +18,5 @@ class PublicLicencePolicyService(
     return policy.transformToPublicLicencePolicy()
   }
 
-  fun getLatestLicencePolicy(): PublicLicencePolicy = licencePolicyService.currentPolicy().transformToPublicLicencePolicy()
+  fun getLatestLicencePolicy(licenceStartDate: LocalDate?): PublicLicencePolicy = licencePolicyService.currentPolicy(licenceStartDate).transformToPublicLicencePolicy()
 }

@@ -83,7 +83,7 @@ class LicenceCreationService(
       LicenceKind.PRRD -> LicenceFactory.createPrrd(
         licenceType = cvlRecord.licenceType,
         nomsId = nomisRecord.prisonerNumber,
-        version = licencePolicyService.currentPolicy().version,
+        version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
         nomisRecord = nomisRecord,
         prisonInformation = prisonInformation,
         currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
@@ -96,7 +96,7 @@ class LicenceCreationService(
       LicenceKind.CRD -> LicenceFactory.createCrd(
         licenceType = cvlRecord.licenceType,
         nomsId = nomisRecord.prisonerNumber,
-        version = licencePolicyService.currentPolicy().version,
+        version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
         nomisRecord = nomisRecord,
         prisonInformation = prisonInformation,
         currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
@@ -135,7 +135,7 @@ class LicenceCreationService(
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
     val licenceType = cvlRecord.licenceType
-    val version = licencePolicyService.currentPolicy().version
+    val version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version
     val licenceStartDate = cvlRecord.licenceStartDate
     val hardStopKind = cvlRecord.hardStopKind
       ?: error("No hardStopKind on CVL record for $prisonNumber - not eligible for hard stop licence")

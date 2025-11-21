@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
@@ -21,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicenceConditionChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
+import java.time.LocalDate
 
 @Tag(name = Tags.LICENCE_POLICY)
 @RestController
@@ -58,7 +60,12 @@ class LicencePolicyController(
       ),
     ],
   )
-  fun getCurrentPolicy(): LicencePolicy? = licencePolicyService.currentPolicy()
+  fun getCurrentPolicy(
+    @RequestParam(
+      name = "licenceStartDate",
+      required = false,
+    ) licenceStartDate: LocalDate?,
+  ): LicencePolicy? = licencePolicyService.currentPolicy(licenceStartDate)
 
   @GetMapping(value = ["/version/{version}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -84,11 +91,6 @@ class LicencePolicyController(
       ApiResponse(
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
@@ -148,7 +150,11 @@ class LicencePolicyController(
     else -> emptyList()
   }
 
-  fun getPolicyChanges(currentLicence: ModelVariation, parentLicenceId: Long?, version: String): List<LicenceConditionChanges> {
+  fun getPolicyChanges(
+    currentLicence: ModelVariation,
+    parentLicenceId: Long?,
+    version: String,
+  ): List<LicenceConditionChanges> {
     if (parentLicenceId === null) return emptyList()
     val parentLicence = licenceService.getLicenceById(parentLicenceId)
 

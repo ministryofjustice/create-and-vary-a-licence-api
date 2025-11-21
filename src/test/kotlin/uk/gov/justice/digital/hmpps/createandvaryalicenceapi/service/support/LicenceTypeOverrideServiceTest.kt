@@ -474,7 +474,9 @@ class LicenceTypeOverrideServiceTest {
   }
 
   private companion object {
-    val policyService = LicencePolicyService()
+    val licenceStartDate: LocalDate = LocalDate.now()
+    val policyService = LicencePolicyService(progressionModelPolicyStartDate = licenceStartDate.plusDays(5))
+    val currentPolicy = policyService.currentPolicy(licenceStartDate)
     val aCom = communityOffenderManager()
 
     val pssLicenceWithAllConditions = createCrdLicence().let { licence ->
@@ -507,7 +509,7 @@ class LicenceTypeOverrideServiceTest {
       )
     }
 
-    private fun standardConditions(licence: CrdLicence): List<StandardCondition> = policyService.currentPolicy().standardConditions.standardConditionsAp
+    private fun standardConditions(licence: CrdLicence): List<StandardCondition> = currentPolicy.standardConditions.standardConditionsAp
       .mapIndexed { i: Int, condition: ILicenceCondition ->
         StandardCondition(
           licence = licence,
@@ -518,7 +520,7 @@ class LicenceTypeOverrideServiceTest {
         )
       }
 
-    private fun pssRequirement(licence: CrdLicence): List<StandardCondition> = policyService.currentPolicy().standardConditions.standardConditionsPss
+    private fun pssRequirement(licence: CrdLicence): List<StandardCondition> = currentPolicy.standardConditions.standardConditionsPss
       .mapIndexed { i: Int, condition: ILicenceCondition ->
         StandardCondition(
           licence = licence,
@@ -529,7 +531,7 @@ class LicenceTypeOverrideServiceTest {
         )
       }
 
-    private fun pssAdditionalConditions(licence: CrdLicence): List<AdditionalCondition> = policyService.currentPolicy().additionalConditions.pss.mapIndexed { i: Int, condition: AdditionalConditionPss ->
+    private fun pssAdditionalConditions(licence: CrdLicence): List<AdditionalCondition> = currentPolicy.additionalConditions.pss.mapIndexed { i: Int, condition: AdditionalConditionPss ->
       AdditionalCondition(
         licence = licence,
         conditionType = "PSS",
@@ -542,7 +544,7 @@ class LicenceTypeOverrideServiceTest {
       )
     }
 
-    private fun additionalConditions(licence: CrdLicence): List<AdditionalCondition> = policyService.currentPolicy().additionalConditions.ap.mapIndexed { i: Int, condition: AdditionalConditionAp ->
+    private fun additionalConditions(licence: CrdLicence): List<AdditionalCondition> = currentPolicy.additionalConditions.ap.mapIndexed { i: Int, condition: AdditionalConditionAp ->
       AdditionalCondition(
         licence = licence,
         conditionType = "AP",

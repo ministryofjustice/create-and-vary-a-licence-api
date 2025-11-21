@@ -106,7 +106,7 @@ class ComAllocatedHandler(
     return if (isDeliusEvent) {
       getOffenderManagerFromDelius(crn)
     } else {
-      getOffenderManagerFromApop(event.detailUrl!!)
+      getOffenderManagerFromApop(event.detailUrl)
     }
   }
 
