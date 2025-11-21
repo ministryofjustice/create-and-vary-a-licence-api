@@ -60,9 +60,9 @@ data class LicenceConditionChanges(
 @Service
 class LicencePolicyService(
   private var policies: List<LicencePolicy> = emptyList(),
-  @param:Value("\${progression.model.policy-start-date}")
+  @param:Value("\${progression.model.policy-start-date:null}")
   @param:DateTimeFormat(pattern = "yyyy-MM-dd")
-  private val progressionModelPolicyStartDate: LocalDate,
+  private val progressionModelPolicyStartDate: LocalDate? = null,
 ) {
 
   init {
