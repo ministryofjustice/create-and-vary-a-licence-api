@@ -1,10 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.json.JsonCompareMode.STRICT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V4_0
 import java.nio.charset.StandardCharsets.UTF_8
 
 class LicencePolicyIntegrationTest : IntegrationTestBase() {
@@ -65,8 +63,6 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun currentPolicy() {
-    val policy = jacksonObjectMapper().writeValueAsString(POLICY_V4_0)
-    println(policy)
     webTestClient.get()
       .uri("/licence-policy/active?licenceStartDate=2026-02-18")
       .accept(MediaType.APPLICATION_JSON)
