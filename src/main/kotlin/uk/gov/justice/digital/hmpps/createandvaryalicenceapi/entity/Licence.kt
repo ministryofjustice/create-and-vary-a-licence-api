@@ -339,6 +339,7 @@ abstract class Licence(
     this.middleNames = middleNames
     this.surname = surname
     this.dateOfBirth = dateOfBirth
+    this.dateLastUpdated = LocalDateTime.now()
   }
 
   fun updateProbationTeam(
@@ -359,6 +360,7 @@ abstract class Licence(
     this.probationLauDescription = probationLauDescription
     this.probationTeamCode = probationTeamCode
     this.probationTeamDescription = probationTeamDescription
+    this.dateLastUpdated = LocalDateTime.now()
   }
 
   abstract fun getCreator(): Creator

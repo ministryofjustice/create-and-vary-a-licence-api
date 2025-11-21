@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
@@ -64,25 +63,21 @@ class ComAllocatedHandlerTest {
     val eventJson = buildEventJson(crn, detailUrl = null)
     val deliusResponse = mock<CommunityManager>()
     val offenderManager = buildOffenderManager()
-    val existingCom = communityOffenderManager()
     val com = mock<CommunityOffenderManager>()
 
     whenever(deliusApiClient.getOffenderManager(crn)).thenReturn(deliusResponse)
     whenever(offenderManagerMapper.mapFrom(deliusResponse)).thenReturn(offenderManager)
     whenever(deliusApiClient.assignDeliusRole(offenderManager.username!!)).thenReturn(ResponseEntity.ok().build())
     whenever(staffService.updateComDetails(any())).thenReturn(com)
-    whenever(staffService.findCommunityOffenderManager(any(), any())).thenReturn(
-      listOf(existingCom),
-    )
 
-    doNothing().whenever(offenderService).updateOffenderWithResponsibleCom(crn, existingCom, com)
+    doNothing().whenever(offenderService).updateResponsibleCom(crn, com)
     doNothing().whenever(offenderService).updateProbationTeam(anyString(), any())
 
     // When
     handler.handleEvent(eventJson)
 
     // Then
-    assertProcess(crn, offenderManager, existingCom, com)
+    assertProcess(crn, offenderManager, com)
   }
 
   @Test
@@ -94,7 +89,6 @@ class ComAllocatedHandlerTest {
     val staffCodes = mock<WorkLoadAllocationResponse>()
     val staff = mock<User>()
     val offenderManager = buildOffenderManager()
-    val existingCom = null
     val com = mock<CommunityOffenderManager>()
 
     whenever(workLoadApiClient.getStaffDetails(personUuid)).thenReturn(staffCodes)
@@ -105,14 +99,14 @@ class ComAllocatedHandlerTest {
     whenever(staffService.findCommunityOffenderManager(any(), any())).thenReturn(
       emptyList(),
     )
-    doNothing().whenever(offenderService).updateOffenderWithResponsibleCom(crn, existingCom, com)
+    doNothing().whenever(offenderService).updateResponsibleCom(crn, com)
     doNothing().whenever(offenderService).updateProbationTeam(anyString(), any())
 
     // When
     handler.handleEvent(eventJson)
 
     // Then
-    assertProcess(crn, offenderManager, existingCom, com)
+    assertProcess(crn, offenderManager, com)
   }
 
   @Test
@@ -177,12 +171,11 @@ class ComAllocatedHandlerTest {
   private fun assertProcess(
     crn: String,
     offenderManager: OffenderManager,
-    existingCom: CommunityOffenderManager?,
     com: CommunityOffenderManager,
   ) {
     verify(deliusApiClient).assignDeliusRole(offenderManager.username!!)
     verify(staffService).updateComDetails(updateComRequestCaptor.capture())
-    verify(offenderService).updateOffenderWithResponsibleCom(crn, existingCom, com)
+    verify(offenderService).updateResponsibleCom(crn, com)
     verify(offenderService).updateProbationTeam(eq(crn), updateProbationTeamRequestCaptor.capture())
 
     val capturedRequest = updateComRequestCaptor.firstValue

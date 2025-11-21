@@ -81,10 +81,8 @@ class OffenderController(
     if (domainEventListenerEnabled) {
       log.info("Domain event listener to process COM allocation events enabled so ignoring updateResponsibleCom Endpoint!")
     } else {
-      val existingCom =
-        staffService.findCommunityOffenderManager(body.staffIdentifier, body.staffUsername).firstOrNull()
       val newCom = staffService.updateComDetails(body)
-      offenderService.updateOffenderWithResponsibleCom(crn, existingCom, newCom)
+      offenderService.updateResponsibleCom(crn, newCom)
     }
   }
 
