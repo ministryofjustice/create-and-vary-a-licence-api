@@ -41,7 +41,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
@@ -107,6 +106,30 @@ object TestData {
     case = ProbationCase(crn = "A123456", nomisId = "A1234AA"),
     name = Name("Joe", null, "Bloggs"),
     allocationDate = LocalDate.of(2000, 1, 1),
+    unallocated = false,
+  )
+
+  fun createCommunityManager(id: Long, nomisId: String): CommunityManagerWithoutUser = CommunityManagerWithoutUser(
+    id = id,
+    code = "staff-code-$id",
+    case = ProbationCase(
+      crn = "A${id}2345",
+      nomisId = nomisId,
+    ),
+    name = Name(
+      forename = "Test$id",
+      middleName = "Middle$id",
+      surname = "Test$id",
+    ),
+    allocationDate = LocalDate.of(2022, 1, 2),
+    team = TeamDetail(
+      code = "team-code-$id",
+      description = "staff-description-$id",
+      borough = Detail("borough-code-$id", "borough-description-$id"),
+      district = Detail("district-code-$id", "district-description-$id"),
+      provider = Detail("probationArea-code-$id", "probationArea-description-$id"),
+    ),
+    provider = Detail("probationArea-code-$id", "probationArea-description-$id"),
     unallocated = false,
   )
 
@@ -617,6 +640,54 @@ object TestData {
     postRecallReleaseDate = postRecallReleaseDate,
   )
 
+  fun createPrisonerSearchResult(
+    today: LocalDate = LocalDate.now(),
+    tomorrow: LocalDate = today.plusDays(1),
+    prisonerNumber: String = "A1234AA",
+    bookingId: String = "123",
+    status: String = "ACTIVE",
+    prisonId: String = "ABC",
+    bookNumber: String = "12345A",
+    firstName: String = "Test1",
+    lastName: String = "Person1",
+    dateOfBirth: LocalDate = LocalDate.of(1985, 1, 1),
+    mostSeriousOffence: String = "Robbery",
+    licenceExpiryDate: LocalDate? = today.plusYears(1),
+    topupSupervisionExpiryDate: LocalDate? = licenceExpiryDate,
+    homeDetentionCurfewEligibilityDate: LocalDate? = null,
+    releaseDate: LocalDate? = tomorrow,
+    confirmedReleaseDate: LocalDate? = null,
+    conditionalReleaseDate: LocalDate? = null,
+    paroleEligibilityDate: LocalDate? = null,
+    actualParoleDate: LocalDate? = null,
+    postRecallReleaseDate: LocalDate? = null,
+    legalStatus: String = "SENTENCED",
+    indeterminateSentence: Boolean = false,
+    recall: Boolean = false,
+  ): PrisonerSearchPrisoner = PrisonerSearchPrisoner(
+    prisonerNumber = prisonerNumber,
+    bookingId = bookingId,
+    status = status,
+    mostSeriousOffence = mostSeriousOffence,
+    licenceExpiryDate = licenceExpiryDate,
+    topupSupervisionExpiryDate = topupSupervisionExpiryDate,
+    homeDetentionCurfewEligibilityDate = homeDetentionCurfewEligibilityDate,
+    releaseDate = releaseDate,
+    confirmedReleaseDate = confirmedReleaseDate,
+    conditionalReleaseDate = conditionalReleaseDate,
+    paroleEligibilityDate = paroleEligibilityDate,
+    actualParoleDate = actualParoleDate,
+    postRecallReleaseDate = postRecallReleaseDate,
+    legalStatus = legalStatus,
+    indeterminateSentence = indeterminateSentence,
+    recall = recall,
+    prisonId = prisonId,
+    bookNumber = bookNumber,
+    firstName = firstName,
+    lastName = lastName,
+    dateOfBirth = dateOfBirth,
+  )
+
   fun aPrisonApiPrisoner() = PrisonApiPrisoner(
     offenderNo = "A1234AA",
     firstName = "A",
@@ -995,13 +1066,6 @@ object TestData {
     nomisId = nomisId,
     crn = crn,
     croNumber = "AB01/234567C",
-  )
-
-  fun aDeliusUser() = StaffNameResponse(
-    id = 1,
-    username = "joebloggs",
-    code = "X1234",
-    name = Name(forename = "Delius", surname = "User"),
   )
 
   fun prisonUser(): PrisonUser = PrisonUser(

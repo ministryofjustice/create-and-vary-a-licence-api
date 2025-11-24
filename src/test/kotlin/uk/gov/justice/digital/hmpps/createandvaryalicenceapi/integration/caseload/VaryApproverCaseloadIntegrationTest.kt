@@ -137,7 +137,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       deliusMockServer.stubGetProbationCases()
-      deliusMockServer.stubGetManagersForGetApprovalCaseload()
+      deliusMockServer.stubGetManagers()
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("vary-approver-case-load-prisoners").replace(

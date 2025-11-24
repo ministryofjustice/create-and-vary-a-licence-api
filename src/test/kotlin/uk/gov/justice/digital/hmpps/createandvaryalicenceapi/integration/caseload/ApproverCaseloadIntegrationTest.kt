@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Appro
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCommunityManager
 import java.time.LocalDate
 
 class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
@@ -60,8 +61,15 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-submitted-licences.sql",
     )
     fun `Successfully retrieve approval caseload in the ascending release date and ascending name order`() {
-      deliusMockServer.stubGetManagersForGetApprovalCaseload()
-      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagers(
+        excludeUserInfo = true,
+        managers = listOf(
+          createCommunityManager(1, "A1234BC"),
+          createCommunityManager(2, "A1234AB"),
+          createCommunityManager(3, "C1234BC"),
+          createCommunityManager(4, "B1234BC"),
+        ),
+      )
 
       val caseload = webTestClient.post()
         .uri("/caseload/prison-approver/approval-needed")
@@ -138,8 +146,14 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-recently-approved-licences.sql",
     )
     fun `Successfully retrieve recently approved caseload in the desc approval date and ascending name order`() {
-      deliusMockServer.stubGetManagersForRecentlyApprovedCaseload()
-      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagers(
+        excludeUserInfo = true,
+        managers = listOf(
+          createCommunityManager(1, "F2504MG"),
+          createCommunityManager(2, "B1234BB"),
+          createCommunityManager(3, "C1234BC"),
+        ),
+      )
 
       val caseload = webTestClient.post()
         .uri("/caseload/prison-approver/recently-approved")
@@ -217,8 +231,15 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-approver-caseload-licences.sql",
     )
     fun successfullyRetrieveSubmittedAndRecentlyApprovedCases() {
-      deliusMockServer.stubGetManagersForGetApprovalAndRecentlyApprovedCaseload()
-      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagers(
+        excludeUserInfo = true,
+        managers = listOf(
+          createCommunityManager(1, "A1234BC"),
+          createCommunityManager(2, "B1234BC"),
+          createCommunityManager(3, "F2504MG"),
+          createCommunityManager(4, "B1234BB"),
+        ),
+      )
 
       val result = webTestClient.post()
         .uri("/caseload/prison-approver/case-search")
@@ -231,7 +252,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<ApproverSearchResponse>())
         .returnResult().responseBody!!
 
-      assertThat(result.approvalNeededResponse).hasSize(3)
+      assertThat(result.approvalNeededResponse).hasSize(2)
       assertThat(result.recentlyApprovedResponse).hasSize(2)
 
       with(result.approvalNeededResponse.first()) {
