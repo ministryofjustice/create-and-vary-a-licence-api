@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.json.JsonCompareMode.STRICT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V4_0
 import java.nio.charset.StandardCharsets.UTF_8
 
 class LicencePolicyIntegrationTest : IntegrationTestBase() {
