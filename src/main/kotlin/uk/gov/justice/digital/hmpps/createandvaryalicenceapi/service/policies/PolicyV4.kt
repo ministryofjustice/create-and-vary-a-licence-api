@@ -775,6 +775,12 @@ val POLICY_V4_0 = LicencePolicy(
         text = "DRINKING ESTABLISHMENT PLACEHOLDER",
       ),
       AdditionalConditionAp(
+        category = "Freedom of movement",
+        code = "344a87e0-677a-49be-9adc-1f1891b1bd50",
+        requiresInput = false,
+        text = "FOREIGN TRAVEL RESTRICTION PLACEHOLDER",
+      ),
+      AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
         categoryShort = "Supervision in the community",
         code = "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
