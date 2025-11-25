@@ -19,13 +19,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCommunityManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -264,81 +262,8 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
-    deliusMockServer.stubGetManagers(managers, includeUserInfo = true)
+    deliusMockServer.stubGetManagers(managers, excludeUserInfo = true)
   }
-
-  fun createCommunityManager(id: Long, nomisId: String): CommunityManagerWithoutUser = CommunityManagerWithoutUser(
-    id = id,
-    code = "staff-code-$id",
-    case = ProbationCase(
-      crn = "A${id}2345",
-      nomisId = nomisId,
-    ),
-    name = Name(
-      forename = "Test$id",
-      middleName = "Middle$id",
-      surname = "Test$id",
-    ),
-    allocationDate = LocalDate.of(2022, 1, 2),
-    team = TeamDetail(
-      code = "team-code-$id",
-      description = "staff-description-$id",
-      borough = Detail("borough-code-$id", "borough-description-$id"),
-      district = Detail("district-code-$id", "district-description-$id"),
-      provider = Detail("probationArea-code-$id", "probationArea-description-$id"),
-    ),
-    provider = Detail("probationArea-code-$id", "probationArea-description-$id"),
-    unallocated = false,
-  )
-
-  fun createPrisonerSearchResult(
-    today: LocalDate = LocalDate.now(),
-    tomorrow: LocalDate = today.plusDays(1),
-    nextWorking: LocalDate = prisonerSearchMockServer.nextWorkingDate(),
-    prisonerNumber: String = "A1234AA",
-    bookingId: String = "123",
-    status: String = "ACTIVE",
-    prisonId: String = "ABC",
-    bookNumber: String = "12345A",
-    firstName: String = "Test1",
-    lastName: String = "Person1",
-    dateOfBirth: LocalDate = LocalDate.of(1985, 1, 1),
-    mostSeriousOffence: String = "Robbery",
-    licenceExpiryDate: LocalDate? = today.plusYears(1),
-    topupSupervisionExpiryDate: LocalDate? = licenceExpiryDate,
-    homeDetentionCurfewEligibilityDate: LocalDate? = null,
-    releaseDate: LocalDate? = tomorrow,
-    confirmedReleaseDate: LocalDate? = nextWorking,
-    conditionalReleaseDate: LocalDate? = nextWorking,
-    paroleEligibilityDate: LocalDate? = null,
-    actualParoleDate: LocalDate? = null,
-    postRecallReleaseDate: LocalDate? = null,
-    legalStatus: String = "SENTENCED",
-    indeterminateSentence: Boolean = false,
-    recall: Boolean = false,
-  ): PrisonerSearchPrisoner = PrisonerSearchPrisoner(
-    prisonerNumber = prisonerNumber,
-    bookingId = bookingId,
-    status = status,
-    mostSeriousOffence = mostSeriousOffence,
-    licenceExpiryDate = licenceExpiryDate,
-    topupSupervisionExpiryDate = topupSupervisionExpiryDate,
-    homeDetentionCurfewEligibilityDate = homeDetentionCurfewEligibilityDate,
-    releaseDate = releaseDate,
-    confirmedReleaseDate = confirmedReleaseDate,
-    conditionalReleaseDate = conditionalReleaseDate,
-    paroleEligibilityDate = paroleEligibilityDate,
-    actualParoleDate = actualParoleDate,
-    postRecallReleaseDate = postRecallReleaseDate,
-    legalStatus = legalStatus,
-    indeterminateSentence = indeterminateSentence,
-    recall = recall,
-    prisonId = prisonId,
-    bookNumber = bookNumber,
-    firstName = firstName,
-    lastName = lastName,
-    dateOfBirth = dateOfBirth,
-  )
 
   private companion object {
     val govUkMockServer = GovUkMockServer()
