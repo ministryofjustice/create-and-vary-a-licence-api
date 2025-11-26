@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
@@ -288,6 +289,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
   fun `Create a time served licence after the user initially selects they wish to create the licence in NOMIS`() {
+    // Given
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
@@ -302,20 +304,19 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     val currentReason = testRepository.findTimeServedExternalRecordByNomsIdAndBookingId("A1234AA", 123)
     assertThat(currentReason?.reason).isEqualTo("Time served licence created for conditional release")
 
-    val result = webTestClient.post()
+    // When
+    val reponse = webTestClient.post()
       .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = HARD_STOP))
+      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = TIME_SERVED))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java)
-      .returnResult().responseBody!!
 
-    log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
-
-    assertThat(result.licenceId).isGreaterThan(0L)
+    // Then
+    reponse.expectStatus().isOk
+    reponse.expectHeader().contentType(MediaType.APPLICATION_JSON)
+    val licenceDto = reponse.expectBody(LicenceCreationResponse::class.java).returnResult().responseBody!!
+    assertThat(licenceDto.licenceId).isGreaterThan(0L)
 
     val licences = testRepository.findAllLicence()
     assertThat(licences).hasSize(1)
