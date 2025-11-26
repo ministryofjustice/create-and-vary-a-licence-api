@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceApproverCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
@@ -75,9 +76,8 @@ class PrisonApproverService(
       val parentLicence = licenceCaseRepository.findLicenceApproverCase(currentLicence.variationOfId!!)
 
       when (parentLicence.kind) {
-        CRD, PRRD, HARD_STOP, HDC -> return parentLicence
+        CRD, PRRD, HARD_STOP, HDC, TIME_SERVED -> return parentLicence
         VARIATION, HDC_VARIATION -> currentLicence = parentLicence
-        else -> error("Unknown licence type in hierarchy: ${parentLicence.kind}")
       }
     }
     error("Original licence not found for licenceId=${variationLicenceCase.licenceId}")

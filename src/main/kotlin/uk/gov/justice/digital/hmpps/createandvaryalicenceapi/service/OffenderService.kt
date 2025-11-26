@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
@@ -9,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
@@ -17,6 +19,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -141,13 +148,24 @@ OffenderService(
     if (previousCom == null) {
       log.info("No previous PP allocated for CRN={}", crn)
 
-      notifyService.sendInitialComAllocationEmail(
-        newCom.email!!,
-        "${newCom.firstName} ${newCom.lastName}",
-        "${licence.forename} ${licence.surname}",
-        licence.crn!!,
-        licence.id.toString(),
-      )
+      val shouldSendEmail = when {
+        licence.kind == TIME_SERVED -> true
+        licence.kind == VARIATION && licence is VariationLicence -> {
+          val originalLicence = findOriginalLicenceForVariation(licence)
+          originalLicence.kind == TIME_SERVED
+        }
+        else -> false
+      }
+
+      if (shouldSendEmail) {
+        notifyService.sendInitialComAllocationEmail(
+          newCom.email!!,
+          "${newCom.firstName} ${newCom.lastName}",
+          "${licence.forename} ${licence.surname}",
+          licence.crn!!,
+          licence.id.toString(),
+        )
+      }
     }
   }
 
@@ -217,4 +235,20 @@ OffenderService(
       this.surname != request.surname ||
       this.dateOfBirth != request.dateOfBirth
     )
+
+  private fun findOriginalLicenceForVariation(licence: VariationLicence): Licence {
+    var currentLicence = licence
+
+    while (currentLicence.variationOfId != null) {
+      val parentLicence = licenceRepository.findById(currentLicence.variationOfId!!)
+        .orElseThrow { EntityNotFoundException("$currentLicence.variationOfId") }
+
+      when (parentLicence.kind) {
+        CRD, PRRD, HARD_STOP, HDC, TIME_SERVED -> return parentLicence
+        VARIATION, HDC_VARIATION -> currentLicence = parentLicence as VariationLicence
+      }
+    }
+    error("Original licence not found for licenceId=${licence.id}")
+  }
+
 }
