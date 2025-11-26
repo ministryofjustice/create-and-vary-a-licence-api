@@ -1889,19 +1889,6 @@
         "requiresElectronicMonitoringResponse": false
       },
       {
-        "code": "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
-        "category": "Drug, alcohol and solvent abuse",
-        "text": "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
-        "tpl": null,
-        "requiresInput": false,
-        "inputs": null,
-        "categoryShort": null,
-        "subtext": null,
-        "type": null,
-        "skippable": false,
-        "requiresElectronicMonitoringResponse": false
-      },
-      {
         "code": "f1d2888b-be86-4732-8874-44cb867865c2",
         "category": "Drug, alcohol and solvent abuse",
         "text": "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A CONTROLLED DRUG / ALCOHOL / SOLVENTS].",
