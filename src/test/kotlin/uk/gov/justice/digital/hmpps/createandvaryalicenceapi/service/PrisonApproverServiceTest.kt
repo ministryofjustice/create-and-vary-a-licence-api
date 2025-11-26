@@ -119,7 +119,7 @@ class PrisonApproverServiceTest {
       val originalCrdLicence = licenceApproverCase(
         licenceId = 1L,
         kind = LicenceKind.CRD,
-        licenceStatus = LicenceStatus.ACTIVE,
+        licenceStatus = LicenceStatus.INACTIVE,
       )
       val variationLicence = licenceApproverCase(
         licenceId = 2L,
@@ -144,13 +144,13 @@ class PrisonApproverServiceTest {
     fun `traverses multiple variations to find original licence`() {
       val originalLicence = licenceApproverCase(
         licenceId = 1L,
-        kind = LicenceKind.HDC,
-        licenceStatus = LicenceStatus.ACTIVE,
+        kind = LicenceKind.CRD,
+        licenceStatus = LicenceStatus.INACTIVE,
       )
       val firstVariation = licenceApproverCase(
         licenceId = 2L,
         kind = LicenceKind.VARIATION,
-        licenceStatus = LicenceStatus.ACTIVE,
+        licenceStatus = LicenceStatus.INACTIVE,
         variationOfId = 1L,
       )
       val secondVariation = licenceApproverCase(
@@ -171,27 +171,33 @@ class PrisonApproverServiceTest {
 
       assertThat(result).hasSize(1)
       assertThat(result.first().licenceId).isEqualTo(1L)
-      assertThat(result.first().kind).isEqualTo(LicenceKind.HDC)
+      assertThat(result.first().kind).isEqualTo(LicenceKind.CRD)
     }
 
     @Test
-    fun `returns variation itself when not active status`() {
+    fun `returns original TIME_SERVED licence when variation is active`() {
+      val originalTimeServedLicence = licenceApproverCase(
+        licenceId = 1L,
+        kind = LicenceKind.TIME_SERVED,
+        licenceStatus = LicenceStatus.INACTIVE,
+      )
       val variationLicence = licenceApproverCase(
         licenceId = 2L,
         kind = LicenceKind.VARIATION,
-        licenceStatus = LicenceStatus.APPROVED,
+        licenceStatus = LicenceStatus.ACTIVE,
         variationOfId = 1L,
       )
 
       whenever(licenceCaseRepository.findRecentlyApprovedLicenceCasesAfter(anyList(), any()))
         .thenReturn(listOf(variationLicence))
+      whenever(licenceCaseRepository.findLicenceApproverCase(1L))
+        .thenReturn(originalTimeServedLicence)
 
       val result = service.findRecentlyApprovedLicenceCases(emptyList())
 
       assertThat(result).hasSize(1)
-      assertThat(result.first().licenceId).isEqualTo(2L)
-      assertThat(result.first().kind).isEqualTo(LicenceKind.VARIATION)
-      verifyNoInteractions(licenceCaseRepository)
+      assertThat(result.first().licenceId).isEqualTo(1L)
+      assertThat(result.first().kind).isEqualTo(LicenceKind.TIME_SERVED)
     }
   }
 
