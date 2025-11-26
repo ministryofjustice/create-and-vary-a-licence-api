@@ -435,6 +435,7 @@ class ComVaryCaseloadServiceTest {
     typeCode: LicenceType = LicenceType.AP,
     licenceStatus: LicenceStatus,
     kind: LicenceKind = LicenceKind.CRD,
+    prisonCode: String = "MDI",
     sentenceStartDate: LocalDate? = null,
     conditionalReleaseDate: LocalDate? = null,
     confirmedReleaseDate: LocalDate? = null,
@@ -463,5 +464,6 @@ class ComVaryCaseloadServiceTest {
     updatedByFirstName = "firstName",
     updatedByLastName = "lastName",
     reviewDate = reviewDate,
+    prisonCode = prisonCode,
   )
 }

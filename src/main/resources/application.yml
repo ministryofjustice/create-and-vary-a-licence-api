@@ -170,6 +170,9 @@ feature:
     timeServed:
       enabled: ${FEATURE_TOGGLE_TIMESERVED_ENABLED}
 
+timeServed:
+  prisons: ${TIME_SERVED_PRISONS}
+
 hmpps:
   cases:
     last-minute:

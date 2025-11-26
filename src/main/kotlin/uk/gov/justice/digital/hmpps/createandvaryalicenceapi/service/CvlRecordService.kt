@@ -31,7 +31,7 @@ class CvlRecordService(
     return prisoners.map { prisoner ->
       val eligibility = nomisIdsToEligibility[prisoner.prisonerNumber]!!
       val licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber]
-      val hardStopKind = releaseDateService.getHardStopKind(prisoner.toSentenceDateHolder(licenceStartDate))
+      val hardStopKind = releaseDateService.getHardStopKind(prisoner.toSentenceDateHolder(licenceStartDate), prisoner.prisonId)
 
       CvlRecord(
         nomisId = prisoner.prisonerNumber,

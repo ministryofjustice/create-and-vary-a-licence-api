@@ -66,7 +66,7 @@ class CvlRecordServiceTest {
         "A1234AC" to null,
       ),
     )
-    whenever(releaseDateService.getHardStopKind(anyOrNull(), anyOrNull())).thenReturn(LicenceKind.HARD_STOP)
+    whenever(releaseDateService.getHardStopKind(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(LicenceKind.HARD_STOP)
     whenever(releaseDateService.getHardStopDate(anyOrNull())).thenReturn(LocalDate.of(2023, 10, 12))
     whenever(releaseDateService.getHardStopWarningDate(anyOrNull())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(anyOrNull(), anyOrNull())).thenReturn(true)

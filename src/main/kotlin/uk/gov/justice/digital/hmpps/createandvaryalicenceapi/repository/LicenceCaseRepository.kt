@@ -59,6 +59,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.versionOfId,
           l.statusCode,
           l.nomsId as prisonNumber,
+          l.prisonCode,
           l.surname,
           l.forename,
           l.sentenceStartDate,

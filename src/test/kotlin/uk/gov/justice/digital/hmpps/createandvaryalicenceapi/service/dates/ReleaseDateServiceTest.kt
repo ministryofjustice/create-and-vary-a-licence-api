@@ -39,6 +39,7 @@ class ReleaseDateServiceTest {
       workingDaysService,
       iS91DeterminationService,
       isTimeServedEnabled = true,
+      timeServedEnabledPrisons = listOf("MDI"),
     )
 
   @BeforeEach
@@ -1048,6 +1049,7 @@ class ReleaseDateServiceTest {
     val thisClock = createClock("2024-04-22T00:00:00Z")
     val today = LocalDate.now(thisClock)
     val cutOff = getCutOffDateForLicenceTimeOut(thisClock)
+    val prisonCode = "MDI"
 
     @Test
     fun `returns HARD_STOP when is in Hard Stop Period`() {
@@ -1058,7 +1060,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDateOverrideDate = today.minusDays(1),
       )
 
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), thisClock)
+      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
 
@@ -1070,7 +1072,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = null,
         conditionalReleaseDateOverrideDate = null,
       )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(null), thisClock)
+      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(null), prisonCode, thisClock)
       assertNull(result)
     }
 
@@ -1082,7 +1084,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today,
         conditionalReleaseDateOverrideDate = null,
       )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), thisClock)
+      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
       assertEquals(LicenceKind.TIME_SERVED, result)
     }
 
@@ -1094,7 +1096,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today,
         conditionalReleaseDateOverrideDate = null,
       )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), thisClock)
+      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
 
@@ -1106,7 +1108,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today,
         conditionalReleaseDateOverrideDate = null,
       )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), thisClock)
+      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
 
@@ -1118,7 +1120,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today.minusDays(1),
         conditionalReleaseDateOverrideDate = today.minusDays(1),
       )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), thisClock)
+      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
 
@@ -1132,7 +1134,21 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = today.minusDays(1),
         conditionalReleaseDateOverrideDate = today,
       )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), thisClock)
+      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
+      assertEquals(LicenceKind.HARD_STOP, result)
+    }
+
+    @Test
+    fun `returns HARD_STOP when all dates are today and isTimeServedEnabled flag is enabled but prison is not in the enabled list`() {
+      val service =
+        ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, isTimeServedEnabled = true, timeServedEnabledPrisons = listOf("LEI", "BXI"))
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+        conditionalReleaseDateOverrideDate = today,
+      )
+      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
       assertEquals(LicenceKind.HARD_STOP, result)
     }
   }

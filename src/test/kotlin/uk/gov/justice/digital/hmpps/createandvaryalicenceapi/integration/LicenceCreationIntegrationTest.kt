@@ -245,9 +245,9 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
   fun `Create a Timeserved licence`() {
-    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetPrison(prisonId = "MDI")
     prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(prisonId = "MDI")
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
 
@@ -288,9 +288,9 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
   fun `Create a time served licence after the user initially selects they wish to create the licence in NOMIS`() {
-    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetPrison(prisonId = "MDI")
     prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(prisonId = "MDI")
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
 

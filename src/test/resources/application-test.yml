@@ -132,3 +132,6 @@ update:
 progression:
   model:
     policy-start-date: 2025-09-19
+
+timeServed:
+  prisons: "MDI, GHI"

@@ -169,7 +169,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
-      hardStopKind = releaseDateService.getHardStopKind(licence.toSentenceDateHolder()),
+      hardStopKind = releaseDateService.getHardStopKind(licence.toSentenceDateHolder(), licence.prisonCode),
     )
 
     is TimeServedLicence -> toTimeServed(
@@ -181,7 +181,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
-      hardStopKind = releaseDateService.getHardStopKind(licence.toSentenceDateHolder()),
+      hardStopKind = releaseDateService.getHardStopKind(licence.toSentenceDateHolder(), licence.prisonCode),
     )
 
     is HdcLicence -> toHdc(
@@ -1199,7 +1199,7 @@ class LicenceService(
   }
 
   private fun EntityLicence.toSummary(): LicenceSummary {
-    val hardStopKind = releaseDateService.getHardStopKind(this)
+    val hardStopKind = releaseDateService.getHardStopKind(this, this.prisonCode)
 
     return transformToLicenceSummary(
       this,

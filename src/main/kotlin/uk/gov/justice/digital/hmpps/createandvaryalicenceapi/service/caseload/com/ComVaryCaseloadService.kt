@@ -67,7 +67,7 @@ class ComVaryCaseloadService(
             licenceStatus = licence.statusCode,
             crnNumber = licence.crn,
             prisonerNumber = licence.prisonNumber,
-            hardStopKind = releaseDateService.getHardStopKind(licence),
+            hardStopKind = releaseDateService.getHardStopKind(licence, licence.prisonCode),
             kind = licence.kind,
             name = "${licence.forename} ${licence.surname}".trim().convertToTitleCase(),
             releaseDate = licence.licenceStartDate,
