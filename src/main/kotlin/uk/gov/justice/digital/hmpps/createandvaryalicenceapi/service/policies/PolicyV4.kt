@@ -1516,6 +1516,10 @@ val POLICY_V4_0 = LicencePolicy(
         code = "7d416906-0e94-4fde-ae86-8339d339ccb7",
         text = "Not travel outside the United Kingdom, the Channel Islands or the Isle of Man except with the prior permission of the supervising officer or for the purposes of immigration deportation or removal.",
       ),
+      StandardConditionAp(
+        code = "2cbfc6ef-576e-482d-97c1-f6f937a34de8",
+        text = "Mandatory Drug Testing.",
+      ),
     ),
     standardConditionsPss = listOf(
       StandardConditionPss(
