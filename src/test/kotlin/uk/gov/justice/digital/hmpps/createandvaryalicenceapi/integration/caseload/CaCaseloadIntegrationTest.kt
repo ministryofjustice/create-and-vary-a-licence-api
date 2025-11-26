@@ -80,7 +80,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
       prisonApiMockServer.getHdcStatuses()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-      deliusMockServer.stubGetManagersForGetApprovalCaseload()
+      deliusMockServer.stubGetManagers()
       deliusMockServer.stubGetStaffDetailsByUsername()
 
       val caseload = webTestClient.post()
