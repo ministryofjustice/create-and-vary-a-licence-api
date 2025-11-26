@@ -150,8 +150,9 @@ OffenderService(
 
       val shouldSendEmail = when {
         licence.kind == TIME_SERVED -> true
-        licence.kind == VARIATION && licence is VariationLicence -> {
-          val originalLicence = findOriginalLicenceForVariation(licence)
+        licence.kind == VARIATION -> {
+          val variationLicence = licence as VariationLicence
+          val originalLicence = findOriginalLicenceForVariation(variationLicence)
           originalLicence.kind == TIME_SERVED
         }
         else -> false
@@ -243,9 +244,9 @@ OffenderService(
       val parentLicence = licenceRepository.findById(currentLicence.variationOfId!!)
         .orElseThrow { EntityNotFoundException("$currentLicence.variationOfId") }
 
-      when (parentLicence.kind) {
-        CRD, PRRD, HARD_STOP, HDC, TIME_SERVED -> return parentLicence
-        VARIATION, HDC_VARIATION -> currentLicence = parentLicence as VariationLicence
+      when {
+        parentLicence.kind  == VARIATION -> currentLicence = parentLicence as VariationLicence
+        else -> return parentLicence
       }
     }
     error("Original licence not found for licenceId=${licence.id}")
