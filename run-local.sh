@@ -21,7 +21,7 @@ restart_docker () {
   #Prune existing containers
   #Comment in if you wish to perform a fresh install of all containers where all containers are removed and deleted
   #You will be prompted to continue with the deletion in the terminal
-  docker system prune --all
+  #docker system prune --all
 
   echo "Pulling back end containers ..."
   docker compose pull
@@ -66,7 +66,7 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
 # Feature toggles
-export FEATURE_TOGGLE_TIMESERVED_ENABLED=true
+export FEATURE_TOGGLE_TIMESERVED_ENABLED=false
 
 SKIP_DOCKER=false
 DEBUG=""
