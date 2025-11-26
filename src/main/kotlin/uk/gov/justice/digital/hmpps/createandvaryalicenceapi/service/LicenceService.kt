@@ -482,6 +482,10 @@ class LicenceService(
       }
 
       is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+      is TimeServedLicence -> {
+        assertCaseIsEligible(eligibilityAssessment, licenceId)
+        licenceEntity.submit(submitter as PrisonUser)
+      }
       else -> error("Unexpected licence type: $licenceEntity")
     }
 

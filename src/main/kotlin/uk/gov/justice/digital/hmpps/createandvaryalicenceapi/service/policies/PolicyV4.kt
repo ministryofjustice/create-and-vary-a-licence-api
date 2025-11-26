@@ -1164,12 +1164,6 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Drug, alcohol and solvent abuse",
-        code = "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
-        requiresInput = false,
-        text = "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
-      ),
-      AdditionalConditionAp(
-        category = "Drug, alcohol and solvent abuse",
         code = "f1d2888b-be86-4732-8874-44cb867865c2",
         inputs = listOf(
           Input(
@@ -1515,6 +1509,10 @@ val POLICY_V4_0 = LicencePolicy(
       StandardConditionAp(
         code = "7d416906-0e94-4fde-ae86-8339d339ccb7",
         text = "Not travel outside the United Kingdom, the Channel Islands or the Isle of Man except with the prior permission of the supervising officer or for the purposes of immigration deportation or removal.",
+      ),
+      StandardConditionAp(
+        code = "2cbfc6ef-576e-482d-97c1-f6f937a34de8",
+        text = "Mandatory Drug Testing.",
       ),
     ),
     standardConditionsPss = listOf(

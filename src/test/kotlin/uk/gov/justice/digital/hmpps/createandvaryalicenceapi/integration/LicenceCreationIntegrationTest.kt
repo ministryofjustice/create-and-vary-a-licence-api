@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
@@ -87,7 +88,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
-    assertThat(standardConditionRepository.count()).isEqualTo(9)
+    assertThat(standardConditionRepository.count()).isEqualTo(10)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -126,7 +127,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(9)
+    assertThat(standardConditionRepository.count()).isEqualTo(10)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -236,7 +237,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.getCom().username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(standardConditionRepository.count()).isEqualTo(9)
+    assertThat(standardConditionRepository.count()).isEqualTo(10)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
 
@@ -278,7 +279,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(9)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(1)
   }
 
@@ -302,20 +303,19 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     val currentReason = testRepository.findTimeServedExternalRecordByNomsIdAndBookingId("A1234AA", 123)
     assertThat(currentReason?.reason).isEqualTo("Time served licence created for conditional release")
 
-    val result = webTestClient.post()
+    // When
+    val reponse = webTestClient.post()
       .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = HARD_STOP))
+      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = TIME_SERVED))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java)
-      .returnResult().responseBody!!
 
-    log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
-
-    assertThat(result.licenceId).isGreaterThan(0L)
+    // Then
+    reponse.expectStatus().isOk
+    reponse.expectHeader().contentType(MediaType.APPLICATION_JSON)
+    val licenceDto = reponse.expectBody(LicenceCreationResponse::class.java).returnResult().responseBody!!
+    assertThat(licenceDto.licenceId).isGreaterThan(0L)
 
     val licences = testRepository.findAllLicence()
     assertThat(licences).hasSize(1)
@@ -325,7 +325,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(9)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(2)
 
     // Verify the record is deleted
@@ -336,7 +336,10 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     val auditEvent = testRepository.findAllAuditEventsByLicenceIdNull().first()
     assertThat(auditEvent).isNotNull
     assertThat(auditEvent.summary).isEqualTo("Deleted NOMIS licence reason")
-    assertThat(auditEvent.changes).containsEntry("reason (deleted)", "Time served licence created for conditional release")
+    assertThat(auditEvent.changes).containsEntry(
+      "reason (deleted)",
+      "Time served licence created for conditional release",
+    )
     assertThat(auditEvent.username).isEqualTo("pca")
   }
 
@@ -383,7 +386,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(hardStopLicence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(hardStopLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(9)
+    assertThat(standardConditionRepository.count()).isEqualTo(10)
     assertThat(additionalConditionRepository.count()).isEqualTo(1)
 
     assertThat(auditEventRepository.count()).isEqualTo(1)
