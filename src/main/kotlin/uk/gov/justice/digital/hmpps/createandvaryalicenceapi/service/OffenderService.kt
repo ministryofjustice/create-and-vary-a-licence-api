@@ -19,10 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
@@ -245,7 +241,7 @@ OffenderService(
         .orElseThrow { EntityNotFoundException("$currentLicence.variationOfId") }
 
       when {
-        parentLicence.kind  == VARIATION -> currentLicence = parentLicence as VariationLicence
+        parentLicence.kind == VARIATION -> currentLicence = parentLicence as VariationLicence
         else -> return parentLicence
       }
     }
