@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -33,6 +35,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.LocalDate
+import java.util.Optional
 
 const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
 
@@ -290,24 +293,6 @@ class OffenderServiceTest {
   }
 
   @Test
-  fun `sends initial COM allocation email when variation licence exists and no previous COM was allocated`() {
-    val variationLicence = createVariationLicence().copy(responsibleCom = null)
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(variationLicence))
-    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
-
-    service.updateResponsibleCom("exampleCrn", newCom)
-
-    verify(notifyService, times(1)).sendInitialComAllocationEmail(
-      emailAddress = newCom.email!!,
-      comName = "${newCom.firstName} ${newCom.lastName}",
-      offenderName = "${variationLicence.forename} ${variationLicence.surname}",
-      crn = variationLicence.crn!!,
-      licenceId = variationLicence.id.toString(),
-    )
-  }
-
-  @Test
   fun `does not send initial COM allocation email when time served or variation licence exists and previous COM was allocated`() {
     val timeServedLicence = createTimeServedLicence().copy(responsibleCom = originalCom)
     val variationLicence = createVariationLicence().copy(responsibleCom = originalCom)
@@ -335,6 +320,93 @@ class OffenderServiceTest {
     service.updateResponsibleCom("exampleCrn", newCom)
 
     verifyNoInteractions(notifyService)
+  }
+
+  @Test
+  fun `sends initial COM allocation email when variation of time served licence exists and no previous COM was allocated`() {
+    val timeServedLicence = createTimeServedLicence().copy(id = 1, responsibleCom = null)
+    val variationLicence = createVariationLicence().copy(
+      id = 2,
+      responsibleCom = null,
+      variationOfId = 1,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(variationLicence))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(timeServedLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    service.updateResponsibleCom("exampleCrn", newCom)
+
+    verify(notifyService, times(1)).sendInitialComAllocationEmail(
+      emailAddress = newCom.email!!,
+      comName = "${newCom.firstName} ${newCom.lastName}",
+      offenderName = "${variationLicence.forename} ${variationLicence.surname}",
+      crn = variationLicence.crn!!,
+      licenceId = variationLicence.id.toString(),
+    )
+  }
+
+  @Test
+  fun `sends initial COM allocation email when variation of variation of time served licence exists and no previous COM was allocated`() {
+    val timeServedLicence = createTimeServedLicence().copy(id = 1, responsibleCom = null)
+    val firstVariationLicence = createVariationLicence().copy(
+      id = 2,
+      responsibleCom = null,
+      variationOfId = 1,
+    )
+    val secondVariationLicence = createVariationLicence().copy(
+      id = 3,
+      responsibleCom = null,
+      variationOfId = 2,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(secondVariationLicence))
+    whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(firstVariationLicence))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(timeServedLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    service.updateResponsibleCom("exampleCrn", newCom)
+
+    verify(notifyService, times(1)).sendInitialComAllocationEmail(
+      emailAddress = newCom.email!!,
+      comName = "${newCom.firstName} ${newCom.lastName}",
+      offenderName = "${secondVariationLicence.forename} ${secondVariationLicence.surname}",
+      crn = secondVariationLicence.crn!!,
+      licenceId = secondVariationLicence.id.toString(),
+    )
+  }
+
+  @Test
+  fun `throws EntityNotFoundException when parent licence not found in variation chain`() {
+    val variationLicence = createVariationLicence().copy(
+      id = 2,
+      responsibleCom = null,
+      variationOfId = 999,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(variationLicence))
+    whenever(licenceRepository.findById(999L)).thenReturn(Optional.empty())
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    assertThrows<EntityNotFoundException> {
+      service.updateResponsibleCom("exampleCrn", newCom)
+    }
+  }
+
+  @Test
+  fun `throws IllegalStateException when variation chain has no original licence`() {
+    val firstVariationLicence = createVariationLicence().copy(
+      id = 1,
+      responsibleCom = null,
+      variationOfId = null,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(firstVariationLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase(newCom.username)).thenReturn(newCom)
+
+    assertThrows<IllegalStateException> {
+      service.updateResponsibleCom("exampleCrn", newCom)
+    }
   }
 
   val originalCom = communityOffenderManager()
