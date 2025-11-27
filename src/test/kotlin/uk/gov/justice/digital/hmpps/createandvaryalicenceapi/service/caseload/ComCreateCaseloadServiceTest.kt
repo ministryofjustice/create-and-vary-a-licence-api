@@ -1363,6 +1363,7 @@ class ComCreateCaseloadServiceTest {
     typeCode: LicenceType,
     licenceStatus: LicenceStatus,
     kind: LicenceKind = LicenceKind.CRD,
+    prisonCode: String = "MDI",
     comUsername: String? = null,
     sentenceStartDate: LocalDate? = null,
     conditionalReleaseDate: LocalDate? = null,
@@ -1390,6 +1391,7 @@ class ComCreateCaseloadServiceTest {
     updatedByFirstName = "firstName",
     updatedByLastName = "lastName",
     reviewDate = reviewDate,
+    prisonCode = prisonCode,
   )
 
   private fun aManagedOffenderCrn(nomisId: String? = "ABC123"): ManagedOffenderCrn = ManagedOffenderCrn(

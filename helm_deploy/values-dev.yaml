@@ -26,6 +26,7 @@ generic-service:
     DOMAIN_EVENT_LISTENER_ENABLED: true
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: false
     FEATURE_TOGGLE_TIMESERVED_ENABLED: true
+    TIME_SERVED_PRISONS: "MDI, BAI, BNI"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:

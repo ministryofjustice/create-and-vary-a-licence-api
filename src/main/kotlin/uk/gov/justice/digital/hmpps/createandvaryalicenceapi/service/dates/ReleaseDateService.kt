@@ -25,6 +25,8 @@ class ReleaseDateService(
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
   private val isTimeServedEnabled: Boolean = false,
+  @param:Value("\${feature.toggle.timeServed.prisons}")
+  private val timeServedEnabledPrisons: List<String> = emptyList(),
 ) {
   fun isInHardStopPeriod(licenceStartDate: LocalDate?, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
@@ -118,12 +120,14 @@ class ReleaseDateService(
     sentenceStartDate: LocalDate?,
     confirmedReleaseDate: LocalDate?,
     conditionalReleaseDate: LocalDate?,
+    prisonCode: String?,
     overrideClock: Clock? = null,
   ): Boolean {
     val clockToUse = overrideClock ?: clock
     val today = LocalDate.now(clockToUse)
 
     return isTimeServedEnabled &&
+      timeServedEnabledPrisons.contains(prisonCode) &&
       sentenceStartDate == today &&
       confirmedReleaseDate == today &&
       conditionalReleaseDate == today
@@ -134,24 +138,26 @@ class ReleaseDateService(
     sentenceStartDate: LocalDate?,
     confirmedReleaseDate: LocalDate?,
     conditionalReleaseDate: LocalDate?,
+    prisonCode: String?,
     overrideClock: Clock? = null,
   ): LicenceKind? {
     if (licenceStartDate == null || !isInHardStopPeriod(licenceStartDate, overrideClock)) {
       return null
     }
 
-    return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate, overrideClock)) {
+    return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate, prisonCode, overrideClock)) {
       LicenceKind.TIME_SERVED
     } else {
       LicenceKind.HARD_STOP
     }
   }
 
-  fun getHardStopKind(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
+  fun getHardStopKind(sentenceDateHolder: SentenceDateHolder, prisonCode: String?, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
     sentenceDateHolder.licenceStartDate,
     sentenceDateHolder.sentenceStartDate,
     sentenceDateHolder.actualReleaseDate,
     sentenceDateHolder.conditionalReleaseDate,
+    prisonCode,
     overrideClock,
   )
 

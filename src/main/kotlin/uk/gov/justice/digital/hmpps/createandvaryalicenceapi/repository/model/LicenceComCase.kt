@@ -13,6 +13,7 @@ data class LicenceComCase(
   override val versionOfId: Long?,
   override val statusCode: LicenceStatus,
   override val prisonNumber: String?,
+  val prisonCode: String?,
   override val surname: String?,
   override val forename: String?,
   override val sentenceStartDate: LocalDate?,
