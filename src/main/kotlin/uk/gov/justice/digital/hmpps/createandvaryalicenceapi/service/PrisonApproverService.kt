@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HA
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.LocalDate
@@ -75,9 +76,8 @@ class PrisonApproverService(
       val parentLicence = licenceCaseRepository.findLicenceApproverCase(currentLicence.variationOfId!!)
 
       when (parentLicence.kind) {
-        CRD, PRRD, HARD_STOP, HDC -> return parentLicence
+        CRD, PRRD, HARD_STOP, HDC, TIME_SERVED -> return parentLicence
         VARIATION, HDC_VARIATION -> currentLicence = parentLicence
-        else -> error("Unknown licence type in hierarchy: ${parentLicence.kind}")
       }
     }
     error("Original licence not found for licenceId=${variationLicenceCase.licenceId}")

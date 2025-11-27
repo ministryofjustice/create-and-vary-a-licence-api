@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
@@ -9,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
@@ -141,13 +143,25 @@ OffenderService(
     if (previousCom == null) {
       log.info("No previous PP allocated for CRN={}", crn)
 
-      notifyService.sendInitialComAllocationEmail(
-        newCom.email!!,
-        "${newCom.firstName} ${newCom.lastName}",
-        "${licence.forename} ${licence.surname}",
-        licence.crn!!,
-        licence.id.toString(),
-      )
+      val shouldSendEmail = when {
+        licence.kind == TIME_SERVED -> true
+        licence.kind == VARIATION -> {
+          val variationLicence = licence as VariationLicence
+          val originalLicence = findOriginalLicenceForVariation(variationLicence)
+          originalLicence.kind == TIME_SERVED
+        }
+        else -> false
+      }
+
+      if (shouldSendEmail) {
+        notifyService.sendInitialComAllocationEmail(
+          newCom.email!!,
+          "${newCom.firstName} ${newCom.lastName}",
+          "${licence.forename} ${licence.surname}",
+          licence.crn!!,
+          licence.id.toString(),
+        )
+      }
     }
   }
 
@@ -217,4 +231,19 @@ OffenderService(
       this.surname != request.surname ||
       this.dateOfBirth != request.dateOfBirth
     )
+
+  private fun findOriginalLicenceForVariation(licence: VariationLicence): Licence {
+    var currentLicence = licence
+
+    while (currentLicence.variationOfId != null) {
+      val parentLicence = licenceRepository.findById(currentLicence.variationOfId!!)
+        .orElseThrow { EntityNotFoundException("$currentLicence.variationOfId") }
+
+      when {
+        parentLicence.kind == VARIATION -> currentLicence = parentLicence as VariationLicence
+        else -> return parentLicence
+      }
+    }
+    error("Original licence not found for licenceId=${licence.id}")
+  }
 }
