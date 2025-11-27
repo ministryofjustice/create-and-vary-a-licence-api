@@ -67,6 +67,7 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
 # Feature toggles
 export FEATURE_TOGGLE_TIMESERVED_ENABLED=false
+export TIME_SERVED_PRISONS="MDI, BAI, BNI"
 
 SKIP_DOCKER=false
 DEBUG=""
