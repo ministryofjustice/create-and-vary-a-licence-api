@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
@@ -97,7 +97,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCase>>())
+        .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(4)
@@ -152,7 +152,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       // Then
       val caseload = result.expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCase>>())
+        .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(4)
@@ -231,7 +231,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       result.expectStatus().isEqualTo(OK.value())
 
       val caseload = result.expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCase>>())
+        .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(3)
@@ -299,7 +299,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isEqualTo(OK.value())
       .expectHeader().contentType(APPLICATION_JSON)
-      .expectBody(typeReference<List<ComCase>>())
+      .expectBody(typeReference<List<ComCreateCase>>())
       .returnResult().responseBody!!
 
     assertThat(caseload).hasSize(1)
@@ -351,7 +351,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCase>>())
+        .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(1)

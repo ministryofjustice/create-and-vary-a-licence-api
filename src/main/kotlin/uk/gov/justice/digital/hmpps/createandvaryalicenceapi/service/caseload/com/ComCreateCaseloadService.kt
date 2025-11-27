@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
@@ -39,7 +39,7 @@ class ComCreateCaseloadService(
     private val COM_CREATE_LICENCE_STATUSES = listOf(ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT)
   }
 
-  fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
+  fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCreateCase> {
     val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
     val cases = buildCreateCaseload(managedOffenders)
 
@@ -47,7 +47,7 @@ class ComCreateCaseloadService(
     return cases
   }
 
-  fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCase> {
+  fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCreateCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = deliusApiClient.getManagedOffendersByTeam(teamCode)
     val cases = buildCreateCaseload(managedOffenders)
@@ -62,7 +62,7 @@ class ComCreateCaseloadService(
     probationTeamCodes.first()
   }
 
-  private fun buildCreateCaseload(managedOffenders: List<ManagedOffenderCrn>): List<ComCase> {
+  private fun buildCreateCaseload(managedOffenders: List<ManagedOffenderCrn>): List<ComCreateCase> {
     val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
     val cvlRecords =
       cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
@@ -187,9 +187,9 @@ class ComCreateCaseloadService(
     }
   }
 
-  private fun transformToCreateCaseload(cases: List<Case>): List<ComCase> = cases.map {
+  private fun transformToCreateCaseload(cases: List<Case>): List<ComCreateCase> = cases.map {
     with(it.licenceSummary) {
-      ComCase(
+      ComCreateCase(
         licenceId = licenceId,
         licenceStatus = licenceStatus,
         licenceType = licenceType,
@@ -206,7 +206,7 @@ class ComCreateCaseloadService(
         isReviewNeeded = isReviewNeeded,
       )
     }
-  }.sortedWith(compareBy<ComCase> { it.releaseDate }.thenBy { it.name })
+  }.sortedWith(compareBy<ComCreateCase> { it.releaseDate }.thenBy { it.name })
 
   private data class Case(
     val probationPractitioner: ProbationPractitioner?,

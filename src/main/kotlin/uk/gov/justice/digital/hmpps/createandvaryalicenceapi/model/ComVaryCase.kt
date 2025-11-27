@@ -7,16 +7,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
-enum class LicenceCreationType {
-  LICENCE_CHANGES_NOT_APPROVED_IN_TIME,
-  PRISON_WILL_CREATE_THIS_LICENCE,
-  LICENCE_CREATED_BY_PRISON,
-  LICENCE_NOT_STARTED,
-  LICENCE_IN_PROGRESS,
-}
-
 @Schema(description = "Describes an COM case")
-data class ComCase(
+data class ComVaryCase(
   @field:Schema(description = "The full name of the person on licence", example = "John Doe")
   val name: String,
 
@@ -45,9 +37,6 @@ data class ComCase(
   @field:Schema(description = "The details for the active supervising probation officer")
   val probationPractitioner: ProbationPractitioner?,
 
-  @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.HARD_STOP)
-  val hardStopKind: LicenceKind? = null,
-
   @field:Schema(description = "Date which the hard stop period will start", example = "03/05/2023")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val hardStopDate: LocalDate? = null,
@@ -58,7 +47,4 @@ data class ComCase(
 
   @field:Schema(description = "Type of this licence", example = LicenceKinds.CRD)
   val kind: LicenceKind,
-
-  @field:Schema(description = "How this licence will need to be created", example = "PRISON_WILL_CREATE_THIS_LICENCE")
-  val licenceCreationType: LicenceCreationType? = null,
 )
