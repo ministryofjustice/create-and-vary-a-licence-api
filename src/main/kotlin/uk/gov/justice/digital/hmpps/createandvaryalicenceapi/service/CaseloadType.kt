@@ -1,7 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
@@ -24,24 +25,29 @@ sealed interface CaseloadType<T> {
     override val name: String = "CA_PROBATION"
   }
 
-  abstract class ComCaseload : CaseloadType<ComCase> {
-    override fun kindExtractor(item: ComCase) = item.kind
-    override fun isUnstarted(item: ComCase) = item.licenceStatus == NOT_STARTED
+  abstract class ComCreateCaseload : CaseloadType<ComCreateCase> {
+    override fun kindExtractor(item: ComCreateCase) = item.kind
+    override fun isUnstarted(item: ComCreateCase) = item.licenceStatus == NOT_STARTED
   }
 
-  object ComCreateStaffCaseload : ComCaseload() {
+  object ComCreateStaffCaseload : ComCreateCaseload() {
     override val name: String = "COM_CREATE_STAFF"
   }
 
-  object ComCreateTeamCaseload : ComCaseload() {
+  object ComCreateTeamCaseload : ComCreateCaseload() {
     override val name: String = "COM_CREATE_TEAM"
   }
 
-  object ComVaryStaffCaseload : ComCaseload() {
+  abstract class ComVaryCaseload : CaseloadType<ComVaryCase> {
+    override fun kindExtractor(item: ComVaryCase) = item.kind
+    override fun isUnstarted(item: ComVaryCase) = item.licenceStatus == NOT_STARTED
+  }
+
+  object ComVaryStaffCaseload : ComVaryCaseload() {
     override val name: String = "COM_VARY_STAFF"
   }
 
-  object ComVaryTeamCaseload : ComCaseload() {
+  object ComVaryTeamCaseload : ComVaryCaseload() {
     override val name: String = "COM_VARY_TEAM"
   }
 }

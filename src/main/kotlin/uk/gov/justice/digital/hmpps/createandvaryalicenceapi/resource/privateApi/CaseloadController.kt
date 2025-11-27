@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
@@ -404,7 +405,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ComCase::class)),
+            array = ArraySchema(schema = Schema(implementation = ComCreateCase::class)),
           ),
         ],
       ),
@@ -447,7 +448,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ComCase::class)),
+            array = ArraySchema(schema = Schema(implementation = ComCreateCase::class)),
           ),
         ],
       ),
@@ -473,7 +474,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comCreateCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
+  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCreateCase> = comCreateCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
 
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/vary-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -490,7 +491,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ComCase::class)),
+            array = ArraySchema(schema = Schema(implementation = ComVaryCase::class)),
           ),
         ],
       ),
@@ -533,7 +534,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ComCase::class)),
+            array = ArraySchema(schema = Schema(implementation = ComVaryCase::class)),
           ),
         ],
       ),
@@ -559,7 +560,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comVaryCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
+  fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComVaryCase> = comVaryCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
 
   @PostMapping("/caseload/vary-approver")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

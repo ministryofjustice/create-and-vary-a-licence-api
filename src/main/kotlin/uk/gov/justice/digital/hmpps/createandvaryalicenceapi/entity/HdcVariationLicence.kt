@@ -357,7 +357,7 @@ class HdcVariationLicence(
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is VariationLicence) return false
+    if (other !is HdcVariationLicence) return false
     if (!super.equals(other)) return false
     return true
   }
