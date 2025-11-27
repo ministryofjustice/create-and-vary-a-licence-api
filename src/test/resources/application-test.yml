@@ -82,6 +82,7 @@ feature:
   toggle:
     timeServed:
       enabled: true
+      prisons: "MDI, GHI"
 
 os:
   places:
@@ -132,6 +133,3 @@ update:
 progression:
   model:
     policy-start-date: 2025-09-19
-
-timeServed:
-  prisons: "MDI, GHI"

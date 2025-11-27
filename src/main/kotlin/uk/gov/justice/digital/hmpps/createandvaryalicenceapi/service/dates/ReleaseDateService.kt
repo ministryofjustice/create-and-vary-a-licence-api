@@ -25,7 +25,7 @@ class ReleaseDateService(
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
   private val isTimeServedEnabled: Boolean = false,
-  @param:Value("\${timeServed.prisons}")
+  @param:Value("\${feature.toggle.timeServed.prisons}")
   private val timeServedEnabledPrisons: List<String> = emptyList(),
 ) {
   fun isInHardStopPeriod(licenceStartDate: LocalDate?, overrideClock: Clock? = null): Boolean {
