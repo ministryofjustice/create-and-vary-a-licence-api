@@ -10,7 +10,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
@@ -1331,7 +1331,7 @@ class ComCreateCaseloadServiceTest {
   }
 
   private fun verifyCase(
-    case: ComCase,
+    case: ComCreateCase,
     expectedCrn: String,
     expectedPrisonerNumber: String,
     expectedLicenceStatus: LicenceStatus,

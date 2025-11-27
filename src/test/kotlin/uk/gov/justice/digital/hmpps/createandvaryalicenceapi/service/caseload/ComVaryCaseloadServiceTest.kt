@@ -9,7 +9,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComVaryCaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
@@ -33,11 +32,10 @@ import java.time.LocalDateTime
 class ComVaryCaseloadServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
-  private val releaseDateService = mock<ReleaseDateService>()
   private val telemetryService = mock<TelemetryService>()
 
   private val service =
-    ComVaryCaseloadService(deliusApiClient, licenceCaseRepository, releaseDateService, telemetryService)
+    ComVaryCaseloadService(deliusApiClient, licenceCaseRepository, telemetryService)
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
   private val tenDaysFromNow = LocalDate.now().plusDays(10)
@@ -409,7 +407,7 @@ class ComVaryCaseloadServiceTest {
   }
 
   private fun verifyCase(
-    case: ComCase,
+    case: ComVaryCase,
     expectedCrn: String,
     expectedPrisonerNumber: String,
     expectedLicenceStatus: LicenceStatus,
