@@ -1203,6 +1203,12 @@ class LicenceService(
     return licence
   }
 
+  @Transactional(readOnly = true)
+  fun isRootLicenceTimeServed(licenceId: Long): Boolean = licenceRepository.isRootLicenceTimeServed(licenceId) ?: false
+
+  @Transactional(readOnly = true)
+  fun isParentLicenceTimeServed(licenceId: Long): Boolean = licenceRepository.isParentLicenceTimeServed(licenceId) ?: false
+
   private fun EntityLicence.toSummary(): LicenceSummary {
     val hardStopKind = releaseDateService.getHardStopKind(this, this.prisonCode)
 
