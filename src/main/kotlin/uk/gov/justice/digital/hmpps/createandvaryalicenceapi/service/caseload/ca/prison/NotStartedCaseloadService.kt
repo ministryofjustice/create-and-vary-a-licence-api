@@ -152,10 +152,14 @@ class NotStartedCaseloadService(
       ManagedCaseDto(
         nomisRecord = nomisRecord,
         cvlRecord = cvlRecord,
-        probationPractitioner = if (com.unallocated) null else ProbationPractitioner(
-          staffCode = com.code,
-          name = com.name.fullName(),
-        ),
+        probationPractitioner = if (com.unallocated) {
+          null
+        } else {
+          ProbationPractitioner(
+            staffCode = com.code,
+            name = com.name.fullName(),
+          )
+        },
       )
     }
 
