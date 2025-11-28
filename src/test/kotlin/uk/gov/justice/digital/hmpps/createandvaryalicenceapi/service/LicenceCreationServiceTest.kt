@@ -64,6 +64,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
+import kotlin.code
+import kotlin.times
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -1763,6 +1765,84 @@ class LicenceCreationServiceTest {
         aPrisonerSearchResult.prisonerNumber,
         aPrisonerSearchResult.bookingId!!.toLong(),
       )
+    }
+
+    @Test
+    fun `service creates time served licence without COM when no active offender manager found`() {
+      val aPrisonerSearchResult =
+        prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+          hardStopKind = LicenceKind.TIME_SERVED,
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
+
+      service.createHardStopLicence(PRISON_NUMBER)
+
+      argumentCaptor<TimeServedLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.responsibleCom).isNull()
+        assertThat(firstValue.probationAreaCode).isNull()
+        assertThat(firstValue.probationTeamCode).isNull()
+      }
+    }
+
+    @Test
+    fun `service creates time served licence without COM when offender manager is unallocated`() {
+      val aPrisonerSearchResult =
+        prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+          hardStopKind = LicenceKind.TIME_SERVED,
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager.copy(unallocated = true))
+
+      service.createHardStopLicence(PRISON_NUMBER)
+
+      argumentCaptor<TimeServedLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.responsibleCom).isNull()
+        assertThat(firstValue.probationAreaCode).isNull()
+        assertThat(firstValue.probationTeamCode).isNull()
+      }
+
+      verify(staffRepository, times(0)).findByStaffIdentifier(any())
+    }
+
+    @Test
+    fun `service creates time served licence with COM when active offender manager exists`() {
+      val aPrisonerSearchResult =
+        prisonerSearchResult(postRecallReleaseDate = null, conditionalReleaseDate = LocalDate.now())
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+          hardStopKind = LicenceKind.TIME_SERVED,
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
+
+      service.createHardStopLicence(PRISON_NUMBER)
+
+      argumentCaptor<TimeServedLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.responsibleCom).isEqualTo(com)
+        assertThat(firstValue.probationAreaCode).isEqualTo(aCommunityManager.team.provider.code)
+        assertThat(firstValue.probationTeamCode).isEqualTo(aCommunityManager.team.code)
+      }
     }
   }
 
