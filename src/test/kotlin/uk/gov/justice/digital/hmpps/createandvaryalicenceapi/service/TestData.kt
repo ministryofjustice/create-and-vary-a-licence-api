@@ -109,7 +109,7 @@ object TestData {
     unallocated = false,
   )
 
-  fun createCommunityManager(id: Long, nomisId: String): CommunityManagerWithoutUser = CommunityManagerWithoutUser(
+  fun createCommunityManager(id: Long, nomisId: String, unallocated: Boolean = true): CommunityManagerWithoutUser = CommunityManagerWithoutUser(
     id = id,
     code = "staff-code-$id",
     case = ProbationCase(
@@ -130,7 +130,7 @@ object TestData {
       provider = Detail("probationArea-code-$id", "probationArea-description-$id"),
     ),
     provider = Detail("probationArea-code-$id", "probationArea-description-$id"),
-    unallocated = false,
+    unallocated = unallocated,
   )
 
   fun anAdditionalCondition(id: Long, licence: Licence) = AdditionalCondition(
@@ -804,7 +804,7 @@ object TestData {
     licenceId = 1,
     name = "A Prisoner",
     crnNumber = "X12348",
-    licenceType = LicenceType.AP,
+    licenceType = AP,
     variationRequestDate = LocalDate.of(2023, 11, 24),
     releaseDate = LocalDate.of(2021, 10, 22),
     probationPractitioner = "Delius User",

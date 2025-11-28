@@ -182,6 +182,44 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Successfully retrieve ca caseloads with no licences when un allocated probation practitioner return null name`() {
+    // Given
+    val nextWorking = prisonerSearchMockServer.nextWorkingDate()
+
+    val test = createPrisonerSearchResult(
+      prisonerNumber = "A1234AB",
+      bookingId = "123",
+      conditionalReleaseDate = nextWorking,
+      confirmedReleaseDate = nextWorking.plusDays(1),
+    )
+
+    val prisoners = listOf(test)
+    val managers = prisoners.mapIndexed { index, prisonerSearchPrisoner ->
+      createCommunityManager(index.toLong(), test.prisonerNumber, true)
+    }
+
+    stubClients(prisoners, managers)
+
+    // When
+    val result = webTestClient.post()
+      .uri(GET_PRISON_CASELOAD)
+      .bodyValue(caCaseloadSearch)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    val caseload = result.expectStatus().isOk
+      .expectHeader().contentType(APPLICATION_JSON)
+      .expectBody(typeReference<List<CaCase>>())
+      .returnResult().responseBody!!
+
+    assertThat(caseload).hasSize(1)
+    with(caseload[0]) {
+      assertThat(probationPractitioner).isNull()
+    }
+  }
+
+  @Test
   fun `Retrieve no ca caseload when prisoner CRD is in the past`() {
     // Given
     val prisoners = listOf(
