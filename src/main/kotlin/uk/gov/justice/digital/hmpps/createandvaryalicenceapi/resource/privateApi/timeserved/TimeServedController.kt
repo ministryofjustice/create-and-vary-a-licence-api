@@ -24,7 +24,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ExternalTimeServedRecordRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.timeserved.TimeServedProbationConfirmContactRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ExternalTimeServedRecordResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.IsTimeServedResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.TimeServedExternalRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.TimeServedProbationConfirmContactService
 
@@ -34,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.
 class TimeServedController(
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
   private val timeServedProbationConfirmContactService: TimeServedProbationConfirmContactService,
+  private val licenceService: LicenceService,
 ) {
 
   companion object {
@@ -168,5 +171,93 @@ class TimeServedController(
     log.info("Adding probation contact confirmation for licenceId=$licenceId with body=$body")
     timeServedProbationConfirmContactService.addConfirmContact(licenceId, body)
     log.debug("Probation contact confirmation added successfully for licenceId=$licenceId")
+  }
+
+  @GetMapping(
+    value = ["/time-served/root/is/time-served/{licenceId}"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Retrieve the timeserved status of a root licence",
+    description = "Fetches whether the root licence for a given licence ID is time served. Returns false if no record exists. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The timeserved status was retrieved successfully",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = IsTimeServedResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, invalid parameters",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid OAuth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun isRootLicenceTimeServed(@PathVariable licenceId: Long): IsTimeServedResponse {
+    val timeServed = licenceService.isRootLicenceTimeServed(licenceId)
+    return IsTimeServedResponse(timeServed)
+  }
+
+  @GetMapping(
+    value = ["/time-served/parent/is/time-served/{licenceId}"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Retrieve the timeserved status of a parent licence",
+    description = "Fetches whether the parent licence for a given licence ID is time served. Returns false if no record exists. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The timeserved status was retrieved successfully",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = IsTimeServedResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, invalid parameters",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid OAuth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun isParentLicenceTimeServed(@PathVariable licenceId: Long): IsTimeServedResponse {
+    val timeServed = licenceService.isParentLicenceTimeServed(licenceId)
+    return IsTimeServedResponse(timeServed)
   }
 }

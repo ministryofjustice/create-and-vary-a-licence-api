@@ -217,4 +217,30 @@ interface LicenceRepository :
     """,
   )
   fun updateLicenceKinds(id: Long, newKind: LicenceKind, newEligibleKind: LicenceKind?)
+
+  @Query(
+    value = """
+        WITH RECURSIVE root AS (
+            SELECT id, variation_of_id, kind FROM licence WHERE id = :licenceId
+          UNION ALL
+            SELECT l.id, l.variation_of_id, l.kind FROM licence l
+                JOIN root r ON l.id = r.variation_of_id
+                WHERE r.variation_of_id IS NOT NULL
+        )
+        SELECT CASE WHEN kind = 'TIME_SERVED' THEN TRUE ELSE FALSE END
+            FROM root WHERE variation_of_id IS NULL LIMIT 1
+    """,
+    nativeQuery = true,
+  )
+  fun isRootLicenceTimeServed(licenceId: Long): Boolean?
+
+  @Query(
+    value = """
+        SELECT CASE WHEN p.kind = 'TIME_SERVED' THEN TRUE ELSE FALSE END FROM licence l
+          JOIN licence p ON p.id = l.variation_of_id
+          WHERE l.id = :licenceId and l.variation_of_id is not null
+    """,
+    nativeQuery = true,
+  )
+  fun isParentLicenceTimeServed(licenceId: Long): Boolean?
 }
