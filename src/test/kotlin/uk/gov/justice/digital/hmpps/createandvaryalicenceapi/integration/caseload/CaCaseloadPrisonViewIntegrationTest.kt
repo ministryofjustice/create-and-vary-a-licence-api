@@ -215,7 +215,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
 
     assertThat(caseload).hasSize(1)
     with(caseload[0]) {
-      assertThat(probationPractitioner?.name).isNull()
+      assertThat(probationPractitioner).isNull()
     }
   }
 

@@ -152,9 +152,9 @@ class NotStartedCaseloadService(
       ManagedCaseDto(
         nomisRecord = nomisRecord,
         cvlRecord = cvlRecord,
-        probationPractitioner = ProbationPractitioner(
+        probationPractitioner = if (com.unallocated) null else ProbationPractitioner(
           staffCode = com.code,
-          name = if (com.unallocated) null else com.name.fullName(),
+          name = com.name.fullName(),
         ),
       )
     }
@@ -162,6 +162,6 @@ class NotStartedCaseloadService(
   private data class ManagedCaseDto(
     val nomisRecord: PrisonerSearchPrisoner,
     val cvlRecord: CvlRecord,
-    val probationPractitioner: ProbationPractitioner,
+    val probationPractitioner: ProbationPractitioner?,
   )
 }
