@@ -154,7 +154,7 @@ class NotStartedCaseloadService(
         cvlRecord = cvlRecord,
         probationPractitioner = ProbationPractitioner(
           staffCode = com.code,
-          name = com.name.fullName(),
+          name = if (com.unallocated) null else com.name.fullName(),
         ),
       )
     }
