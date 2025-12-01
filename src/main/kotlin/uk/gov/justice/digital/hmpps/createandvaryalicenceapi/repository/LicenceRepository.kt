@@ -157,7 +157,8 @@ interface LicenceRepository :
         FROM Licence l
         LEFT JOIN Licence l2 ON l.id = l2.variationOfId
         WHERE l.kind IN (
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
         )
         AND l.statusCode = 'ACTIVE'
         AND l.reviewDate IS NULL
@@ -173,7 +174,8 @@ interface LicenceRepository :
         FROM Licence l
         LEFT JOIN Licence l2 ON l.id = l2.variationOfId
         WHERE l.kind IN (
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
         )
         AND l.statusCode = 'ACTIVE'
         AND l.reviewDate IS NULL
