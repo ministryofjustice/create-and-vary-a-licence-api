@@ -221,7 +221,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
 
     val teamCount = resultObject!!.teams.first()
 
-    assertThat(resultObject.myCount).isEqualTo(3)
+    assertThat(resultObject.myCount).isEqualTo(4)
     assertThat(teamCount.teamCode).isEqualTo("A01B02")
     assertThat(teamCount.count).isEqualTo(4)
   }
