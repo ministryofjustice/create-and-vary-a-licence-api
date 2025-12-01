@@ -204,7 +204,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
-    "classpath:test_data/seed-hard-stop-licences.sql",
+    "classpath:test_data/seed-unreviewed-licences.sql",
   )
   fun `Get counts of cases needing a review`() {
     deliusMockServer.stubGetTeamCodesForUser(2000)
@@ -221,9 +221,9 @@ class StaffIntegrationTest : IntegrationTestBase() {
 
     val teamCount = resultObject!!.teams.first()
 
-    assertThat(resultObject.myCount).isEqualTo(2)
+    assertThat(resultObject.myCount).isEqualTo(3)
     assertThat(teamCount.teamCode).isEqualTo("A01B02")
-    assertThat(teamCount.count).isEqualTo(2)
+    assertThat(teamCount.count).isEqualTo(4)
   }
 
   @Test
