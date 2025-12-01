@@ -5,14 +5,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.LICENCE_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.LICENCE_NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 
 object RelevantLicenceFinder {
   fun findRelevantLicencePerCase(licences: List<ComCreateCaseloadLicenceDto>) = when {
-    licences.any { it.kind == HARD_STOP } -> findHardStopLicenceToDisplay(licences)
+    licences.any { it.kind == HARD_STOP } -> prepareLicenceForDisplayByKind(licences, HARD_STOP)
+    licences.any { it.kind == TIME_SERVED } -> prepareLicenceForDisplayByKind(licences, TIME_SERVED)
     licences.any { it.licenceStatus == TIMED_OUT } -> findTimedOutLicenceToDisplay(licences)
     else -> findLicenceToDisplay(licences)
   }
@@ -33,19 +36,16 @@ object RelevantLicenceFinder {
     return timedOutLicence.copy(licenceCreationType = PRISON_WILL_CREATE_THIS_LICENCE)
   }
 
-  private fun findHardStopLicenceToDisplay(licences: List<ComCreateCaseloadLicenceDto>): ComCreateCaseloadLicenceDto {
-    val hardStopLicence = licences.find { it.kind == HARD_STOP }!!
-
-    if (hardStopLicence.licenceId == null || hardStopLicence.licenceStatus == IN_PROGRESS) {
-      return hardStopLicence.copy(
-        licenceStatus = TIMED_OUT,
-        licenceCreationType = PRISON_WILL_CREATE_THIS_LICENCE,
-      )
+  private fun prepareLicenceForDisplayByKind(licences: List<ComCreateCaseloadLicenceDto>, kind: LicenceKind): ComCreateCaseloadLicenceDto {
+    val licence = licences.find { it.kind == kind }!!
+    val creationType = if (licence.licenceId == null || licence.licenceStatus == IN_PROGRESS) {
+      PRISON_WILL_CREATE_THIS_LICENCE
+    } else {
+      LICENCE_CREATED_BY_PRISON
     }
-
-    return hardStopLicence.copy(
+    return licence.copy(
       licenceStatus = TIMED_OUT,
-      licenceCreationType = LICENCE_CREATED_BY_PRISON,
+      licenceCreationType = creationType
     )
   }
 
