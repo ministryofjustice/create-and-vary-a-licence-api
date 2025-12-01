@@ -259,7 +259,13 @@ class LicenceCreationService(
 
   private fun getCurrentResponsibleOfficer(
     deliusRecord: ProbationCase,
-  ): CommunityManager? = deliusApiClient.getOffenderManager(deliusRecord.crn)
+  ): CommunityManager? {
+    val com = deliusApiClient.getOffenderManager(deliusRecord.crn)
+    if (com == null || com.unallocated) {
+      return null
+    }
+    return com
+  }
 
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
 }
