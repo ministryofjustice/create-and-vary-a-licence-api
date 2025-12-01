@@ -45,7 +45,7 @@ object RelevantLicenceFinder {
     }
     return licence.copy(
       licenceStatus = TIMED_OUT,
-      licenceCreationType = creationType
+      licenceCreationType = creationType,
     )
   }
 
