@@ -482,7 +482,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No active offender manager found for NOMSID")
+        .hasMessage("Offender manager for NOMSID not found")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -502,7 +502,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No active offender manager found for NOMSID")
+        .hasMessage("Offender manager for NOMSID not found")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -977,7 +977,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No active offender manager found for NOMSID")
+        .hasMessage("Offender manager for NOMSID not found")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -998,7 +998,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No active offender manager found for NOMSID")
+        .hasMessage("Offender manager for NOMSID not found")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -1488,13 +1488,13 @@ class LicenceCreationServiceTest {
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
 
-      val exception = assertThrows<IllegalStateException> {
+      val exception = assertThrows<IllegalArgumentException> {
         service.createHardStopLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
-        .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No active offender manager found for NOMSID")
+        .isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessage("Offender manager for X12345 not found")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -1503,18 +1503,18 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `service throws an error if no responsible officer details found for this person`() {
-      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
+    fun `service throws an error if no allocated officer details found for this person`() {
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager.copy(unallocated = true))
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
-      val exception = assertThrows<IllegalStateException> {
+      val exception = assertThrows<IllegalArgumentException> {
         service.createHardStopLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
-        .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No active offender manager found for NOMSID")
+        .isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessage("offender NOMSID is currently unallocated in delius")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -1697,7 +1697,7 @@ class LicenceCreationServiceTest {
           hardStopKind = LicenceKind.TIME_SERVED,
         ),
       )
-      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager.copy(unallocated = true))
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1752,8 +1752,8 @@ class LicenceCreationServiceTest {
       argumentCaptor<TimeServedLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.responsibleCom).isNull()
-        assertThat(firstValue.probationAreaCode).isNull()
-        assertThat(firstValue.probationTeamCode).isNull()
+        assertThat(firstValue.probationAreaCode).isEqualTo(aCommunityManager.team.provider.code)
+        assertThat(firstValue.probationTeamCode).isEqualTo(aCommunityManager.team.code)
       }
 
       verify(staffRepository, times(0)).findByStaffIdentifier(any())

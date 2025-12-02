@@ -24,9 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.TimeServedExternalRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -69,12 +67,14 @@ class LicenceCreationService(
 
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
-    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
-      ?: error("No active offender manager found for $prisonNumber")
+    val offenderManager =
+      deliusApiClient.getOffenderManager(deliusRecord.crn) ?: error("Offender manager for $prisonNumber not found")
+
+    require(!offenderManager.unallocated) { "offender $prisonNumber is currently unallocated in delius" }
+
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
-      ?: createCom(currentResponsibleOfficerDetails.id)
+    val responsibleCom = getOrCreateCom(offenderManager.id)
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
       ?: error("Staff with username $username not found")
@@ -86,7 +86,7 @@ class LicenceCreationService(
         version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
         nomisRecord = nomisRecord,
         prisonInformation = prisonInformation,
-        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
+        team = offenderManager.team,
         deliusRecord = deliusRecord,
         responsibleCom = responsibleCom,
         creator = createdBy,
@@ -99,7 +99,7 @@ class LicenceCreationService(
         version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
         nomisRecord = nomisRecord,
         prisonInformation = prisonInformation,
-        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
+        team = offenderManager.team,
         deliusRecord = deliusRecord,
         responsibleCom = responsibleCom,
         creator = createdBy,
@@ -127,11 +127,9 @@ class LicenceCreationService(
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
-    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord)
+    val offenderManager = deliusApiClient.getOffenderManager(deliusRecord.crn)
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
-    val responsibleCom = currentResponsibleOfficerDetails?.let {
-      staffRepository.findByStaffIdentifier(it.id) ?: createCom(it.id)
-    }
+
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
     val licenceType = cvlRecord.licenceType
@@ -143,6 +141,13 @@ class LicenceCreationService(
     val isTimeServedLicenceCreation = isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED
 
     val licence = if (isTimeServedLicenceCreation) {
+      val responsibleCom =
+        if (offenderManager == null || offenderManager.unallocated) {
+          null
+        } else {
+          getOrCreateCom(offenderManager.id)
+        }
+
       LicenceFactory.createTimeServe(
         licenceType = licenceType,
         eligibleKind = cvlRecord.eligibleKind,
@@ -150,14 +155,16 @@ class LicenceCreationService(
         version = version,
         nomisRecord = nomisRecord,
         prisonInformation = prisonInformation,
-        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
+        team = offenderManager?.team,
         deliusRecord = deliusRecord,
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = licenceStartDate,
       )
     } else {
-      requireNotNull(responsibleCom) { error("No active offender manager found for $prisonNumber") }
+      require(offenderManager != null) { "Offender manager for ${deliusRecord.crn} not found" }
+      require(!offenderManager.unallocated) { "offender $prisonNumber is currently unallocated in delius" }
+      val responsibleCom = getOrCreateCom(offenderManager.id)
 
       val timedOutLicence: CrdLicence? = crdLicenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
         listOf(nomisRecord.bookingId!!.toLong()),
@@ -170,7 +177,7 @@ class LicenceCreationService(
         version = version,
         nomisRecord = nomisRecord,
         prisonInformation = prisonInformation,
-        currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
+        team = offenderManager.team,
         deliusRecord = deliusRecord,
         responsibleCom = responsibleCom,
         creator = createdBy,
@@ -242,7 +249,11 @@ class LicenceCreationService(
     }
   }
 
-  private fun createCom(staffId: Long): CommunityOffenderManager {
+  private fun getOrCreateCom(staffId: Long): CommunityOffenderManager {
+    val staff = staffRepository.findByStaffIdentifier(staffId)
+    if (staff != null) {
+      return staff
+    }
     log.info("Creating com record for staff with identifier: $staffId")
     val com = deliusApiClient.getStaffByIdentifier(staffId) ?: missing(staffId, "record in delius")
     return staffRepository.saveAndFlush(
@@ -255,16 +266,6 @@ class LicenceCreationService(
         lastName = com.name.surname,
       ),
     )
-  }
-
-  private fun getCurrentResponsibleOfficer(
-    deliusRecord: ProbationCase,
-  ): CommunityManager? {
-    val com = deliusApiClient.getOffenderManager(deliusRecord.crn)
-    if (com == null || com.unallocated) {
-      return null
-    }
-    return com
   }
 
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
