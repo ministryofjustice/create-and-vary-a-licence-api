@@ -113,20 +113,25 @@ notify:
   enabled: true
   templates:
     datesChanged: 18e25609-607b-4067-b39f-04003eb6f416
+
     initialLicencePrompt: c63e2cc8-afa9-4073-b134-e62fcdfef1f4
-    licenceApproved: ee742763-7e91-44fb-a429-42e5ed97ee54
-    unapprovedLicence: 11f3d28e-d7d9-47f9-bbad-57bd32fbed45
     urgentLicencePrompt: 8fb9669b-bc0a-497e-870f-b0c37923f3fc
-    variationApproved: 24ad56b7-7bec-4fdb-ac8b-3b5af6f18666
-    variationForApproval: 2dc01a48-73f1-4dde-931e-05eaf502441e
+
+    licenceApproved: ee742763-7e91-44fb-a429-42e5ed97ee54
     omuReApproval: 4a1c5ba4-e8e7-46a6-8ff7-149bdc99db8f
-    variationReferred: e124b2ff-68e1-4364-894b-b723289d1fdc
+
     reviewableLicenceApproved: a4474dc5-ffe5-4e2a-8fb5-76ff4449cf68
     hardStopLicenceApproved: 0cf3be7c-7179-41d1-b287-1bd269057714
-    editedLicenceTimedOut: 3db6954b-f16f-4c77-b028-ccfa4f87fb62
-    hardStopLicenceReviewOverdue: fd1388a3-8d22-4d51-898f-4cd277ab8314
-    licenceReviewOverdue: 2eeff8dd-8935-404c-ab39-0eed5e083db5
     initialComAllocation: a584b741-82ce-41de-adce-0a665dc27b0f
+    editedLicenceTimedOut: 3db6954b-f16f-4c77-b028-ccfa4f87fb62
+    unapprovedLicence: 11f3d28e-d7d9-47f9-bbad-57bd32fbed45
+
+    # Variation emails
+    variationForApproval: 2dc01a48-73f1-4dde-931e-05eaf502441e
+    variationApproved: 24ad56b7-7bec-4fdb-ac8b-3b5af6f18666
+    variationReferred: e124b2ff-68e1-4364-894b-b723289d1fdc
+    licenceReviewOverdue: 2eeff8dd-8935-404c-ab39-0eed5e083db5
+    hardStopLicenceReviewOverdue: fd1388a3-8d22-4d51-898f-4cd277ab8314
 
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'

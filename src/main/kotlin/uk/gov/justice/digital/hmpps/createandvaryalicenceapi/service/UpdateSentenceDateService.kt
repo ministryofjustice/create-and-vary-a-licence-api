@@ -31,7 +31,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 
 @Service
 class UpdateSentenceDateService(
@@ -119,7 +118,6 @@ class UpdateSentenceDateService(
     }
   }
 
-  @TimeServedConsiderations("Notify COM of date change event for a licence, if a COM is not set, should this be a team email?")
   private fun notifyComOfUpdate(
     licence: Licence,
     dateChanges: DateChanges,

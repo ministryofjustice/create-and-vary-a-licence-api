@@ -27,8 +27,8 @@ generic-service:
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     DOMAIN_EVENT_LISTENER_ENABLED: true
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
-    FEATURE_TOGGLE_TIMESERVED_ENABLED: false
-    TIME_SERVED_PRISONS: ~
+    FEATURE_TOGGLE_TIMESERVED_ENABLED: true
+    TIME_SERVED_PRISONS: "MDI, BAI, BNI"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
@@ -38,8 +38,8 @@ generic-service:
     enabled: true
     businessHoursOnly: true
 
-# CloudPlatform AlertManager receiver to route promethues alerts to slack
-# See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
+#CloudPlatform AlertManager receiver to route promethues alerts to slack
+#See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: cvl-alerts-non-prod
   businessHoursOnly: true

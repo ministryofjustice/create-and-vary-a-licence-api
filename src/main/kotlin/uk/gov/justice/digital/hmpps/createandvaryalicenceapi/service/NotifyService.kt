@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -265,7 +264,6 @@ class NotifyService(
     }
   }
 
-  @TimeServedConsiderations("If a COM is not present, where should this email be sent to?")
   fun sendEditedLicenceTimedOutEmail(
     emailAddress: String?,
     comName: String,
@@ -301,7 +299,8 @@ class NotifyService(
     isTimeServedLicence: Boolean,
   ) {
     if (emailAddress == null) {
-      val licenceReviewOverdueType = if (isTimeServedLicence) "timeServedLicenceReviewOverdue" else "hardStopLicenceReviewOverdue"
+      val licenceReviewOverdueType =
+        if (isTimeServedLicence) "timeServedLicenceReviewOverdue" else "hardStopLicenceReviewOverdue"
       log.error("Notification failed ($licenceReviewOverdueType) for licence $licenceId - email and CRD must be present")
       return
     }
