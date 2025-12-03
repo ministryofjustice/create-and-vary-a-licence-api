@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMoni
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
@@ -59,7 +58,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
-@TimeServedConsiderations("Without a COM, we would just surface null and handle on the frontend")
 fun transformToLicenceSummary(
   licence: Licence,
   hardStopKind: LicenceKind?,
@@ -298,7 +296,6 @@ fun toTimeServed(
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
-@TimeServedConsiderations("Is COM required for variation, if so the responsibleCOM would never be null")
 fun toVariation(
   licence: VariationLicence,
   earliestReleaseDate: LocalDate?,
