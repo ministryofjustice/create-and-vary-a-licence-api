@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPrac
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.TimeServedExternalRecordFlags
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.TimeServedExternalSummaryRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaPrisonCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -268,7 +268,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -294,7 +294,7 @@ class CaCaseloadServiceTest {
           PrisonQuery.statusCodes,
           PrisonQuery.prisonCodes,
         )
-        verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber))
+        verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber!!))
         verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
       }
     }
@@ -871,7 +871,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1234",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -879,12 +879,13 @@ class CaCaseloadServiceTest {
             ),
           )
 
-        whenever(timeServedExternalRecordsRepository.getTimeServedExternalRecordFlags(any<List<String>>()))
+        whenever(timeServedExternalRecordsRepository.getTimeServedExternalSummaryRecords(any<List<String>>()))
           .thenReturn(
             listOf(
-              TimeServedExternalRecordFlags(
+              TimeServedExternalSummaryRecord(
                 bookingId = 1234L,
-                hasNomisLicence = true,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
               ),
             ),
           )
@@ -902,6 +903,7 @@ class CaCaseloadServiceTest {
           assertThat(isInHardStopPeriod).isTrue()
           assertThat(hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
           assertThat(hasNomisLicence).isTrue()
+          assertThat(lastWorkedOnBy).isEqualTo("Firstname Secondname")
         }
       }
 
@@ -941,7 +943,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1234",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -949,12 +951,13 @@ class CaCaseloadServiceTest {
             ),
           )
 
-        whenever(timeServedExternalRecordsRepository.getTimeServedExternalRecordFlags(any<List<String>>()))
+        whenever(timeServedExternalRecordsRepository.getTimeServedExternalSummaryRecords(any<List<String>>()))
           .thenReturn(
             listOf(
-              TimeServedExternalRecordFlags(
+              TimeServedExternalSummaryRecord(
                 bookingId = 1234L,
-                hasNomisLicence = true,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
               ),
             ),
           )
@@ -1011,7 +1014,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1234",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -1019,12 +1022,13 @@ class CaCaseloadServiceTest {
             ),
           )
 
-        whenever(timeServedExternalRecordsRepository.getTimeServedExternalRecordFlags(any<List<String>>()))
+        whenever(timeServedExternalRecordsRepository.getTimeServedExternalSummaryRecords(any<List<String>>()))
           .thenReturn(
             listOf(
-              TimeServedExternalRecordFlags(
-                bookingId = 1234L,
-                hasNomisLicence = false,
+              TimeServedExternalSummaryRecord(
+                bookingId = 1111,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
               ),
             ),
           )
@@ -1042,6 +1046,7 @@ class CaCaseloadServiceTest {
           assertThat(isInHardStopPeriod).isTrue()
           assertThat(hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
           assertThat(hasNomisLicence).isFalse()
+          assertThat(lastWorkedOnBy).isNull()
         }
       }
 

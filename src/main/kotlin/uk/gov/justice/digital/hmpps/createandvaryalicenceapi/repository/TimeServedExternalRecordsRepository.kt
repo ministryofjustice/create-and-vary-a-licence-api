@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.TimeServedExternalRecordFlags
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.TimeServedExternalSummaryRecord
 
 @Repository
 interface TimeServedExternalRecordsRepository : JpaRepository<TimeServedExternalRecord, Long> {
@@ -14,10 +14,10 @@ interface TimeServedExternalRecordsRepository : JpaRepository<TimeServedExternal
 
   @Query(
     """
-    SELECT t.bookingId, true AS hasNomisLicence FROM TimeServedExternalRecord t
+    SELECT t.bookingId, t.updatedByCa.firstName, t.updatedByCa.lastName FROM TimeServedExternalRecord t
         WHERE t.bookingId IN :bookingIds
-    GROUP BY t.bookingId
+        ORDER BY t.id DESC
     """,
   )
-  fun getTimeServedExternalRecordFlags(@Param("bookingIds") bookingIds: List<String>): List<TimeServedExternalRecordFlags>
+  fun getTimeServedExternalSummaryRecords(@Param("bookingIds") bookingIds: List<String>): List<TimeServedExternalSummaryRecord>
 }
