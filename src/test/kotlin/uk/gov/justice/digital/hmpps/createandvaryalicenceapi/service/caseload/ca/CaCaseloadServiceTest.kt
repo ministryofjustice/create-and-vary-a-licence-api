@@ -908,6 +908,75 @@ class CaCaseloadServiceTest {
       }
 
       @Test
+      fun `should operate correctly when edge case of two booking ids on time served external record is present`() {
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+          listOf(
+            aPrisonerSearchPrisoner,
+          ),
+        )
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+          .thenReturn(emptyList())
+
+        val licenceCase = createLicenceCase(
+          licenceId = 1,
+          nomisId = "A1234AA",
+          forename = "Person",
+          surname = "Four",
+          licenceStatus = LicenceStatus.NOT_STARTED,
+        )
+
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+          listOf(
+            aCvlRecord(
+              nomsId = licenceCase.prisonNumber!!,
+              kind = LicenceKind.CRD,
+              licenceStartDate = twoDaysFromNow,
+              isInHardStopPeriod = true,
+              hardStopKind = LicenceKind.TIME_SERVED,
+            ),
+          ),
+        )
+
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+          .thenReturn(
+            PageImpl(
+              listOf(
+                aPrisonerSearchPrisoner.copy(
+                  bookingId = "1234",
+                  prisonerNumber = licenceCase.prisonNumber!!,
+                  confirmedReleaseDate = twoMonthsFromNow,
+                  conditionalReleaseDate = twoDaysFromNow,
+                ),
+              ),
+            ),
+          )
+
+        whenever(timeServedExternalRecordsRepository.getTimeServedExternalSummaryRecords(any<List<String>>()))
+          .thenReturn(
+            listOf(
+              TimeServedExternalSummaryRecord(
+                bookingId = 1234L,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
+              ),
+              TimeServedExternalSummaryRecord(
+                bookingId = 1234L,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
+              ),
+            ),
+          )
+
+        whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+        // WHEN
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
+
+        // THEN
+        assertThat(prisonOmuCaseload).hasSize(1)
+      }
+
+      @Test
       fun `should return hasNomisLicence when a hardStopKind is not TIME_SERVED`() {
         whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
           listOf(
