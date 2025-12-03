@@ -30,10 +30,30 @@ class RelevantLicenceFinderTest {
   }
 
   @Test
+  fun `Time served case for not started licence returns PRISON_WILL_CREATE_THIS_LICENCE and TIMED_OUT`() {
+    val timeServed = createLicenceSummary(licenceId = null, kind = LicenceKind.TIME_SERVED, licenceStatus = IN_PROGRESS)
+
+    val result = findRelevantLicencePerCase(listOf(timeServed))
+
+    assertThat(result.licenceStatus).isEqualTo(TIMED_OUT)
+    assertThat(result.licenceCreationType).isEqualTo(PRISON_WILL_CREATE_THIS_LICENCE)
+  }
+
+  @Test
   fun `Hard stop case with existing licence returns LICENCE_CREATED_BY_PRISON and TIMED_OUT`() {
     val hardStop = createLicenceSummary(licenceId = 2L, kind = HARD_STOP, licenceStatus = APPROVED)
 
     val result = findRelevantLicencePerCase(listOf(hardStop))
+
+    assertThat(result.licenceStatus).isEqualTo(TIMED_OUT)
+    assertThat(result.licenceCreationType).isEqualTo(LICENCE_CREATED_BY_PRISON)
+  }
+
+  @Test
+  fun `Time served case with existing licence returns LICENCE_CREATED_BY_PRISON and TIMED_OUT`() {
+    val timeServed = createLicenceSummary(licenceId = 2L, kind = LicenceKind.TIME_SERVED, licenceStatus = APPROVED)
+
+    val result = findRelevantLicencePerCase(listOf(timeServed))
 
     assertThat(result.licenceStatus).isEqualTo(TIMED_OUT)
     assertThat(result.licenceCreationType).isEqualTo(LICENCE_CREATED_BY_PRISON)

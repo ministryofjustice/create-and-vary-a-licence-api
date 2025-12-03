@@ -71,6 +71,7 @@ class CaseloadServiceTest {
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
           licenceStartDate = LocalDate.of(2021, 10, 22),
           licenceKind = LicenceKind.CRD,
+          hardStopKind = LicenceKind.HARD_STOP,
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",

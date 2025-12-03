@@ -40,6 +40,9 @@ data class CvlFields(
     example = "CRD",
   )
   val licenceKind: LicenceKind?,
+
+  @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.TIME_SERVED)
+  val hardStopKind: LicenceKind?,
 )
 
 @Schema(description = "A combination of the NOMIS prisoner record and additional CVL fields")
