@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import org.springframework.test.context.jdbc.Sql
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
@@ -20,6 +21,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.WorkFlowMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
@@ -35,9 +38,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
 import java.time.Duration
+import kotlin.jvm.optionals.getOrNull
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["domain.event.listener.enabled=true"])
+@TestPropertySource(properties = ["domain.event.listener.enabled=true", "update.offender.details.handler.enabled=true"])
 class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
@@ -57,6 +61,12 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var staffRepository: StaffRepository
+
+  @Autowired
+  lateinit var auditRepository: AuditEventRepository
+
+  @Autowired
+  lateinit var licenceRepository: LicenceRepository
 
   private val awaitAtMost30Secs
     get() = await.atMost(Duration.ofSeconds(30))
@@ -170,7 +180,29 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     assertComExistsInDb(staffIdentifier, staffCode, userName, emailAddress, firstName, lastName)
   }
 
+  private fun sendEvent(message: String?, eventType: String?) {
+    domainEventsTopicSnsClient.publish(
+      PublishRequest.builder()
+        .topicArn(domainEventsTopicArn)
+        .message(message)
+        .messageAttributes(
+          mapOf(
+            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(eventType!!).build(),
+          ),
+        )
+        .build(),
+    )
+
+    awaitAtMost30Secs untilAsserted {
+      verify(domainEventListener).finishedEventProcessing(any())
+    }
+    assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
+  }
+
   @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
   fun `A prisoner updated event is processed`() {
     // Given
     val nomsId = "A1234AA"
@@ -192,25 +224,32 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     // Then
     verify(prisonerUpdatedHandler).handleEvent(message)
-  }
 
-  private fun sendEvent(message: String?, eventType: String?) {
-    domainEventsTopicSnsClient.publish(
-      PublishRequest.builder()
-        .topicArn(domainEventsTopicArn)
-        .message(message)
-        .messageAttributes(
-          mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(eventType!!).build(),
-          ),
-        )
-        .build(),
+    val licence = licenceRepository.findById(1).getOrNull()
+    assertThat(licence).isNotNull
+    assertThat(licence!!.forename).isEqualTo("Test1")
+    assertThat(licence.middleNames).isNull()
+    assertThat(licence.surname).isEqualTo("Person1")
+    assertThat(licence.dateOfBirth).isEqualTo("1985-01-01")
+
+    val auditEvent = auditRepository.findAll().firstOrNull()
+    assertThat(auditEvent).isNotNull
+    assertThat(auditEvent!!.summary).isEqualTo("Offender details updated to forename: Test1, middleNames: null, surname: Person1, date of birth: 1985-01-01")
+    assertThat(auditEvent.changes).isEqualTo(
+      mapOf(
+        "type" to "Updated offender details",
+        "changes" to mapOf(
+          "oldForename" to "Person",
+          "newForename" to "Test1",
+          "oldMiddleNames" to "",
+          "newMiddleNames" to null,
+          "oldSurname" to "One",
+          "newSurname" to "Person1",
+          "oldDob" to listOf(2020, 10, 25),
+          "newDob" to listOf(1985, 1, 1),
+        ),
+      ),
     )
-
-    awaitAtMost30Secs untilAsserted {
-      verify(domainEventListener).finishedEventProcessing(any())
-    }
-    assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
   }
 
   private fun assertComExistsInDb(
