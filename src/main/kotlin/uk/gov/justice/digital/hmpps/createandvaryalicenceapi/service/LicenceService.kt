@@ -77,7 +77,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.TimeServedConsiderations
 import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -106,7 +105,6 @@ class LicenceService(
   private val isTimeServedLogicEnabled: Boolean = false,
 ) {
 
-  @TimeServedConsiderations("Spike finding - uses COM when retrieving the licence - should be fine - need to change transform if new licence kind created or existing licence has nullable COM")
   @Transactional(readOnly = true)
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
