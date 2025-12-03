@@ -162,6 +162,7 @@ class TestRepository(
   ): TimeServedExternalRecord? {
     val reason = testTimeServedExternalRecordRepository.findByNomsIdAndBookingId(nomsId, bookingId)
     if (assertNotNull) assertThat(reason).isNotNull
+    reason?.updatedByCa?.fullName
     return reason
   }
 }

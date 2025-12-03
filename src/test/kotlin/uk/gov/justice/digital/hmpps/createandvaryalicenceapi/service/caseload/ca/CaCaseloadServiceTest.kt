@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPrac
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.TimeServedExternalRecordFlags
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.TimeServedExternalSummaryRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaPrisonCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.CaProbationCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -268,7 +268,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -294,7 +294,7 @@ class CaCaseloadServiceTest {
           PrisonQuery.statusCodes,
           PrisonQuery.prisonCodes,
         )
-        verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber))
+        verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber!!))
         verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
       }
     }
@@ -871,7 +871,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1234",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -879,12 +879,13 @@ class CaCaseloadServiceTest {
             ),
           )
 
-        whenever(timeServedExternalRecordsRepository.getTimeServedExternalRecordFlags(any<List<String>>()))
+        whenever(timeServedExternalRecordsRepository.getTimeServedExternalSummaryRecords(any<List<String>>()))
           .thenReturn(
             listOf(
-              TimeServedExternalRecordFlags(
+              TimeServedExternalSummaryRecord(
                 bookingId = 1234L,
-                hasNomisLicence = true,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
               ),
             ),
           )
@@ -902,7 +903,77 @@ class CaCaseloadServiceTest {
           assertThat(isInHardStopPeriod).isTrue()
           assertThat(hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
           assertThat(hasNomisLicence).isTrue()
+          assertThat(lastWorkedOnBy).isEqualTo("Firstname Secondname")
         }
+      }
+
+      @Test
+      fun `should operate correctly when edge case of two booking ids on time served external record is present`() {
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+          listOf(
+            aPrisonerSearchPrisoner,
+          ),
+        )
+        whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes))
+          .thenReturn(emptyList())
+
+        val licenceCase = createLicenceCase(
+          licenceId = 1,
+          nomisId = "A1234AA",
+          forename = "Person",
+          surname = "Four",
+          licenceStatus = LicenceStatus.NOT_STARTED,
+        )
+
+        whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+          listOf(
+            aCvlRecord(
+              nomsId = licenceCase.prisonNumber!!,
+              kind = LicenceKind.CRD,
+              licenceStartDate = twoDaysFromNow,
+              isInHardStopPeriod = true,
+              hardStopKind = LicenceKind.TIME_SERVED,
+            ),
+          ),
+        )
+
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+          .thenReturn(
+            PageImpl(
+              listOf(
+                aPrisonerSearchPrisoner.copy(
+                  bookingId = "1234",
+                  prisonerNumber = licenceCase.prisonNumber!!,
+                  confirmedReleaseDate = twoMonthsFromNow,
+                  conditionalReleaseDate = twoDaysFromNow,
+                ),
+              ),
+            ),
+          )
+
+        whenever(timeServedExternalRecordsRepository.getTimeServedExternalSummaryRecords(any<List<String>>()))
+          .thenReturn(
+            listOf(
+              TimeServedExternalSummaryRecord(
+                bookingId = 1234L,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
+              ),
+              TimeServedExternalSummaryRecord(
+                bookingId = 1234L,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
+              ),
+            ),
+          )
+
+        whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+        // WHEN
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
+
+        // THEN
+        assertThat(prisonOmuCaseload).hasSize(1)
       }
 
       @Test
@@ -941,7 +1012,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1234",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -949,12 +1020,13 @@ class CaCaseloadServiceTest {
             ),
           )
 
-        whenever(timeServedExternalRecordsRepository.getTimeServedExternalRecordFlags(any<List<String>>()))
+        whenever(timeServedExternalRecordsRepository.getTimeServedExternalSummaryRecords(any<List<String>>()))
           .thenReturn(
             listOf(
-              TimeServedExternalRecordFlags(
+              TimeServedExternalSummaryRecord(
                 bookingId = 1234L,
-                hasNomisLicence = true,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
               ),
             ),
           )
@@ -1011,7 +1083,7 @@ class CaCaseloadServiceTest {
               listOf(
                 aPrisonerSearchPrisoner.copy(
                   bookingId = "1234",
-                  prisonerNumber = licenceCase.prisonNumber,
+                  prisonerNumber = licenceCase.prisonNumber!!,
                   confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
@@ -1019,12 +1091,13 @@ class CaCaseloadServiceTest {
             ),
           )
 
-        whenever(timeServedExternalRecordsRepository.getTimeServedExternalRecordFlags(any<List<String>>()))
+        whenever(timeServedExternalRecordsRepository.getTimeServedExternalSummaryRecords(any<List<String>>()))
           .thenReturn(
             listOf(
-              TimeServedExternalRecordFlags(
-                bookingId = 1234L,
-                hasNomisLicence = false,
+              TimeServedExternalSummaryRecord(
+                bookingId = 1111,
+                lastWorkedOnFirstName = "firstName",
+                lastWorkedOnLastName = "secondName",
               ),
             ),
           )
@@ -1042,6 +1115,7 @@ class CaCaseloadServiceTest {
           assertThat(isInHardStopPeriod).isTrue()
           assertThat(hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
           assertThat(hasNomisLicence).isFalse()
+          assertThat(lastWorkedOnBy).isNull()
         }
       }
 

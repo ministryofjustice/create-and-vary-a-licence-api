@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceCaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.TimeServedExternalSummaryRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
@@ -66,6 +67,7 @@ class NotStartedCaseloadService(
       if (case.cvlRecord.isInHardStopPeriod) {
         licenceStatus = TIMED_OUT
       }
+      val timeServedExternalRecord = timeServedExternalRecordsFlags[case.nomisRecord.bookingId?.toLong()]
 
       CaCase(
         kind = case.cvlRecord.eligibleKind,
@@ -89,20 +91,21 @@ class NotStartedCaseloadService(
         prisonCode = case.nomisRecord.prisonId,
         prisonDescription = case.nomisRecord.prisonName,
         hardStopKind = case.cvlRecord.hardStopKind,
-        hasNomisLicence = timeServedExternalRecordsFlags[case.nomisRecord.bookingId?.toLong()] ?: false,
+        hasNomisLicence = timeServedExternalRecord != null,
+        lastWorkedOnBy = timeServedExternalRecord?.lastWorkedOnBy,
       )
     }
   }
 
-  private fun fetchTimeServedExternalRecordFlags(cases: List<ManagedCaseDto>): Map<Long, Boolean> {
+  private fun fetchTimeServedExternalRecordFlags(cases: List<ManagedCaseDto>): Map<Long, TimeServedExternalSummaryRecord> {
     val bookingIds = cases
       .filter { it.cvlRecord.hardStopKind == TIME_SERVED }
       .mapNotNull { it.nomisRecord.bookingId }
 
     if (bookingIds.isEmpty()) return emptyMap()
 
-    return licenceRepository.getTimeServedExternalRecordFlags(bookingIds)
-      .associate { it.bookingId to it.hasNomisLicence }
+    return licenceRepository.getTimeServedExternalSummaryRecords(bookingIds)
+      .associate { it.bookingId to it }
   }
 
   private fun filterOffendersEligibleForLicence(offenders: List<ManagedCaseDto>): List<ManagedCaseDto> {

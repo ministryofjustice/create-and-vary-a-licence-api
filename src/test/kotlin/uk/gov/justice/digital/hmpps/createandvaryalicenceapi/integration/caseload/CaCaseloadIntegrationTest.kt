@@ -214,6 +214,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
         assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
         assertThat(isInHardStopPeriod).isTrue()
+        assertThat(lastWorkedOnBy).isEqualTo("Test Client")
         assertThat(hasNomisLicence).isTrue()
       }
     }

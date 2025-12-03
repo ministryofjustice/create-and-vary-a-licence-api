@@ -13,21 +13,38 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 class TimeServedExternalRecordIntegrationTest : IntegrationTestBase() {
   @Nested
   inner class `Setting time served external record` {
+
     @Test
     fun `should record NOMIS licence reason successfully`() {
+      // Given
+      val roles = listOf("ROLE_CVL_ADMIN")
       val request = ExternalTimeServedRecordRequest(
         reason = "Initial reason",
         prisonCode = "PRI",
       )
 
-      webTestClient.put().uri("/time-served/external-records/A1234AA/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).contentType(APPLICATION_JSON)
-        .bodyValue(request).exchange().expectStatus().isOk
+      // When
+      val response = webTestClient.put().uri("/time-served/external-records/A1234AA/123")
+        .headers(setAuthorisation(roles = roles))
+        .contentType(APPLICATION_JSON)
+        .bodyValue(request)
+        .exchange()
+
+      // Then
+      response.expectStatus().isOk
 
       val saved = testRepository.findTimeServedExternalRecordByNomsIdAndBookingId("A1234AA", 123)
-      assertThat(saved?.reason).isEqualTo("Initial reason")
+      assertThat(saved).isNotNull
+      assertThat(saved!!.reason).isEqualTo("Initial reason")
+      assertThat(saved.prisonCode).isEqualTo("PRI")
+      assertThat(saved.nomsId).isEqualTo("A1234AA")
+      assertThat(saved.bookingId).isEqualTo(123)
+      assertThat(saved.bookingId).isEqualTo(123)
+      assertThat(saved.updatedByCa).isNotNull
+      assertThat(saved.updatedByCa.fullName).isEqualTo("Test Client")
+      assertThat(saved.dateCreated).isNotNull
+      assertThat(saved.dateLastUpdated).isNotNull
 
-      // Audit event exists
       val auditEvents = testRepository.findAllAuditEvents()
       assertThat(auditEvents).isNotEmpty
       val auditEvent = auditEvents.last()
@@ -39,28 +56,32 @@ class TimeServedExternalRecordIntegrationTest : IntegrationTestBase() {
     @Test
     @Sql("classpath:test_data/seed-time-served-external-records-id-1.sql")
     fun `should update NOMIS licence reason successfully`() {
+      // Given
+      val roles = listOf("ROLE_CVL_ADMIN")
       val updateRequest = ExternalTimeServedRecordRequest(
         prisonCode = "LEI",
         reason = "Updated reason",
       )
 
-      webTestClient.put().uri("/time-served/external-records/A1234AA/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).contentType(APPLICATION_JSON)
-        .bodyValue(updateRequest).exchange().expectStatus().isOk
+      // When
+      val response = webTestClient.put().uri("/time-served/external-records/A1234AA/123")
+        .headers(setAuthorisation(roles = roles))
+        .contentType(APPLICATION_JSON)
+        .bodyValue(updateRequest)
+        .exchange()
+
+      // Then
+      response.expectStatus().isOk
 
       val updated = testRepository.findTimeServedExternalRecordByNomsIdAndBookingId("A1234AA", 123)
       assertThat(updated?.reason).isEqualTo("Updated reason")
 
-      // Audit event created
       val auditEvents = testRepository.findAllAuditEvents()
       assertThat(auditEvents).isNotEmpty
       val auditEvent = auditEvents.last()
 
       assertThat(auditEvent.summary).isEqualTo("TimeServed External Record Reason updated")
-      assertThat(auditEvent.changes).containsEntry(
-        "reason (old)",
-        "Time served licence created for conditional release",
-      )
+      assertThat(auditEvent.changes).containsEntry("reason (old)", "Time served licence created for conditional release")
       assertThat(auditEvent.changes).containsEntry("reason (new)", "Updated reason")
       assertThat(auditEvent.changes).containsEntry("nomsId", "A1234AA")
       assertThat(auditEvent.changes).containsEntry("bookingId", 123)
@@ -70,6 +91,8 @@ class TimeServedExternalRecordIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `should return 400 for invalid request body`() {
+      // Given
+      val roles = listOf("ROLE_CVL_ADMIN")
       val invalidRequest = TimeServedExternalRecordRequest(
         nomsId = "",
         bookingId = 0,
@@ -77,13 +100,21 @@ class TimeServedExternalRecordIntegrationTest : IntegrationTestBase() {
         prisonCode = "",
       )
 
-      webTestClient.put().uri("/time-served/external-records/A1234AA/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).contentType(APPLICATION_JSON)
-        .bodyValue(invalidRequest).exchange().expectStatus().isBadRequest
+      // When
+      val response = webTestClient.put().uri("/time-served/external-records/A1234AA/123")
+        .headers(setAuthorisation(roles = roles))
+        .contentType(APPLICATION_JSON)
+        .bodyValue(invalidRequest)
+        .exchange()
+
+      // Then
+      response.expectStatus().isBadRequest
     }
 
     @Test
     fun `should return 403 for unauthorized role`() {
+      // Given
+      val wrongRoles = listOf("ROLE_CVL_WRONG")
       val request = TimeServedExternalRecordRequest(
         nomsId = "A1234AA",
         bookingId = 12345,
@@ -91,33 +122,64 @@ class TimeServedExternalRecordIntegrationTest : IntegrationTestBase() {
         prisonCode = "PRI",
       )
 
-      webTestClient.put().uri("/time-served/external-records/A1234AA/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG"))).contentType(APPLICATION_JSON)
-        .bodyValue(request).exchange().expectStatus().isForbidden
+      // When
+      val response = webTestClient.put().uri("/time-served/external-records/A1234AA/123")
+        .headers(setAuthorisation(roles = wrongRoles))
+        .contentType(APPLICATION_JSON)
+        .bodyValue(request)
+        .exchange()
+
+      // Then
+      response.expectStatus().isForbidden
     }
   }
 
   @Nested
   inner class `Retrieving time served external record` {
+
     @Test
     @Sql("classpath:test_data/seed-time-served-external-records-id-1.sql")
     fun `should retrieve NOMIS licence reason successfully`() {
-      webTestClient.get().uri("/time-served/external-records/A1234AA/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange().expectStatus().isOk.expectBody()
+      // Given
+      val roles = listOf("ROLE_CVL_ADMIN")
+
+      // When
+      val response = webTestClient.get().uri("/time-served/external-records/A1234AA/123")
+        .headers(setAuthorisation(roles = roles))
+        .exchange()
+
+      // Then
+      response.expectStatus().isOk
+        .expectBody()
         .jsonPath("$.reason").isEqualTo("Time served licence created for conditional release")
     }
 
     @Test
     fun `should return 404 for missing NOMIS licence`() {
-      webTestClient.get().uri("/time-served/external-records/A1234AA/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange().expectStatus().isNotFound
+      // Given
+      val roles = listOf("ROLE_CVL_ADMIN")
+
+      // When
+      val response = webTestClient.get().uri("/time-served/external-records/A1234AA/123")
+        .headers(setAuthorisation(roles = roles))
+        .exchange()
+
+      // Then
+      response.expectStatus().isNotFound
     }
 
     @Test
     fun `should return 403 for unauthorized role`() {
-      webTestClient.get().uri("/time-served/external-records/A1234AA/123")
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG")))
-        .exchange().expectStatus().isForbidden
+      // Given
+      val wrongRoles = listOf("ROLE_CVL_WRONG")
+
+      // When
+      val response = webTestClient.get().uri("/time-served/external-records/A1234AA/123")
+        .headers(setAuthorisation(roles = wrongRoles))
+        .exchange()
+
+      // Then
+      response.expectStatus().isForbidden
     }
   }
 }
