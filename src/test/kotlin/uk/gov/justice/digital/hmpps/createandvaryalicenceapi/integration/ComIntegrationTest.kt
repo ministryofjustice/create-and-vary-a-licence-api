@@ -201,6 +201,77 @@ class ComIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `Given a COM user has searched for an offender with a started time served case which is unallocated to a probation practitioner`() {
+    // Given
+    deliusMockServer.stubGetTeamManagedUnallocatedCases()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+      prisonId = "MDI",
+      sentenceStartDate = LocalDate.now(),
+      confirmedReleaseDate = LocalDate.now(),
+      conditionalReleaseDate = LocalDate.now(),
+    )
+
+    // When
+    val result = webTestClient.post()
+      .uri("/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+    val searchResult = result.expectBody(ProbationSearchResult::class.java)
+      .returnResult().responseBody
+
+    assertThat(searchResult).isNotNull
+    val resultsList = searchResult!!.results
+    assertThat(resultsList.size).isEqualTo(1)
+    assertThat(resultsList[0].hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(resultsList[0].comName).isNull()
+    assertThat(resultsList[0].comStaffCode).isNull()
+  }
+
+  @Test
+  fun `Given a COM user has searched for an offender with a not started time served case which is unallocated to a probation practitioner`() {
+    // Given
+    deliusMockServer.stubGetTeamManagedUnallocatedCases()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+      prisonId = "MDI",
+      sentenceStartDate = LocalDate.now(),
+      confirmedReleaseDate = LocalDate.now(),
+      conditionalReleaseDate = LocalDate.now(),
+    )
+
+    // When
+    val result = webTestClient.post()
+      .uri("/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+    val searchResult = result.expectBody(ProbationSearchResult::class.java)
+      .returnResult().responseBody
+
+    assertThat(searchResult).isNotNull
+    val resultsList = searchResult!!.results
+    assertThat(resultsList.size).isEqualTo(1)
+    assertThat(resultsList[0].hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(resultsList[0].comName).isNull()
+    assertThat(resultsList[0].comStaffCode).isNull()
+  }
+
+  @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from team caseload`() {
     prisonApiMockServer.stubGetCourtOutcomes()
 
