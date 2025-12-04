@@ -956,13 +956,13 @@ class CaCaseloadServiceTest {
             listOf(
               TimeServedExternalSummaryRecord(
                 bookingId = 1234L,
-                lastWorkedOnFirstName = "firstName",
-                lastWorkedOnLastName = "secondName",
+                lastWorkedOnFirstName = "firstName1",
+                lastWorkedOnLastName = "secondName1",
               ),
               TimeServedExternalSummaryRecord(
                 bookingId = 1234L,
-                lastWorkedOnFirstName = "firstName",
-                lastWorkedOnLastName = "secondName",
+                lastWorkedOnFirstName = "firstName2",
+                lastWorkedOnLastName = "secondName2",
               ),
             ),
           )

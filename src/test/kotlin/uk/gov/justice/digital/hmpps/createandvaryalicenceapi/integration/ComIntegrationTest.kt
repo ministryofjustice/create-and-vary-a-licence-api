@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.LicenceCaseloadSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
@@ -123,6 +124,47 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     assertThat(inPrisonCount).isEqualTo(2)
     assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `Given a offender has served there time and has no licence then the case is time served`() {
+    // Given
+    deliusMockServer.stubGetTeamManagedCases()
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+      prisonId = "MDI",
+      sentenceStartDate = LocalDate.now(),
+      confirmedReleaseDate = LocalDate.now(),
+      conditionalReleaseDate = LocalDate.now(),
+    )
+    prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
+
+    // When
+    val result = webTestClient.post()
+      .uri("/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+
+    val searchResult = result.expectBody(ProbationSearchResult::class.java)
+      .returnResult().responseBody
+
+    val resultsList = searchResult?.results
+    val offender = resultsList?.first()
+    assertThat(resultsList?.size).isEqualTo(2)
+    assertThat(offender)
+      .extracting { tuple(it?.kind, it?.hardStopKind) }
+      .isEqualTo(
+        tuple(
+          null,
+          LicenceKind.TIME_SERVED,
+        ),
+      )
   }
 
   @Test

@@ -138,6 +138,7 @@ class ComCaseloadSearchService(
     prisonOffender: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
   ): FoundProbationRecord = this.transformToUnstartedRecord(
+    cvlRecord.hardStopKind,
     releaseDate = cvlRecord.licenceStartDate,
     bookingId = prisonOffender.bookingId?.toLong(),
     licenceType = cvlRecord.licenceType,
