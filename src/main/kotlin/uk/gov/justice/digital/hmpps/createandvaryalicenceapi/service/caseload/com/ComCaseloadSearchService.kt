@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
@@ -119,7 +120,7 @@ class ComCaseloadSearchService(
     licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
 
     prisonOffender == null || cvlRecord == null -> null
-    cvlRecord.isEligible -> deliusOffender.toStartedRecord(licence)
+    cvlRecord.isEligible -> deliusOffender.toStartedRecord(licence, cvlRecord.hardStopKind)
     else -> null
   }
 
@@ -150,8 +151,12 @@ class ComCaseloadSearchService(
     releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(cvlRecord.licenceStartDate, prisonOffender),
   )
 
-  private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(
+  private fun CaseloadResult.toStartedRecord(
+    licence: Licence,
+    hardStopKind: LicenceKind? = null,
+  ) = this.transformToModelFoundProbationRecord(
     licence = licence,
+    hardStopKind = hardStopKind,
     hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
@@ -168,12 +173,14 @@ class ComCaseloadSearchService(
 
   fun CaseloadResult.transformToModelFoundProbationRecord(
     licence: Licence,
+    hardStopKind: LicenceKind? = null,
     hardStopDate: LocalDate?,
     hardStopWarningDate: LocalDate?,
     isInHardStopPeriod: Boolean,
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   ): FoundProbationRecord = FoundProbationRecord(
     kind = licence.kind,
+    hardStopKind = hardStopKind,
     bookingId = licence.bookingId,
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = licence.crn,
