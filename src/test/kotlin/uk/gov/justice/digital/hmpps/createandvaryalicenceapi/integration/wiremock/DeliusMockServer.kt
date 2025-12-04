@@ -1011,7 +1011,6 @@ class DeliusMockServer : WireMockServer(8093) {
         .willReturn(
           aResponse().withHeader("Content-Type", "application/json")
             .withBody(
-              // language=json
               """{
                 "content": [
                   {
