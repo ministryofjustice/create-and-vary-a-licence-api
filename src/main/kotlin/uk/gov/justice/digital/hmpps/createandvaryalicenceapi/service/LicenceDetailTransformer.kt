@@ -10,9 +10,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ExclusionZoneAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
@@ -81,6 +83,7 @@ fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditio
   when (it.code) {
     ELECTRONIC_TAG_COND_CODE -> transformElectronicMonitoring(it)
     EXCLUSION_ZONE_COND_CODE -> transformMultipleExclusionZonesCondition(it)
+    EVENT_EXCLUSION_COND_CODE -> transformSingleExclusionZoneCondition(it)
     else -> standardAdditionalCondition(it)
   }
 }
@@ -97,9 +100,18 @@ fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitor
   },
 )
 
-fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): ExclusionZoneAdditionalCondition = ExclusionZoneAdditionalCondition(
+fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): MultipleExclusionZoneAdditionalCondition = MultipleExclusionZoneAdditionalCondition(
   category = model.category.orEmpty(),
   type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
+  id = model.id ?: 0,
+  code = model.code.orEmpty(),
+  text = model.expandedText.orEmpty(),
+  hasImageUpload = model.uploadSummary.isNotEmpty(),
+)
+
+fun transformSingleExclusionZoneCondition(model: AdditionalCondition): SingleUploadAdditionalCondition = SingleUploadAdditionalCondition(
+  category = model.category.orEmpty(),
+  type = ConditionTypes.SINGLE_UPLOAD,
   id = model.id ?: 0,
   code = model.code.orEmpty(),
   text = model.expandedText.orEmpty(),

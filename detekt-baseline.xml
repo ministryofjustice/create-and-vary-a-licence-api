@@ -123,6 +123,7 @@
     <ID>TooManyFunctions:Licence.kt$Licence : AbstractIdEntitySentenceDateHolder</ID>
     <ID>TooManyFunctions:LicenceConditionService.kt$LicenceConditionService</ID>
     <ID>TooManyFunctions:LicenceController.kt$LicenceController</ID>
+    <ID>TooManyFunctions:LicenceDetailTransformer.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceDetailTransformer.kt</ID>
     <ID>TooManyFunctions:LicenceFactory.kt$LicenceFactory</ID>
     <ID>TooManyFunctions:LicencePolicyService.kt$LicencePolicyService</ID>
     <ID>TooManyFunctions:LicenceRepository.kt$LicenceRepository : JpaRepositoryJpaSpecificationExecutor</ID>

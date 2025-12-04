@@ -2,20 +2,31 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.text.orEmpty
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.GenericAdditionalCondition as PublicModelAdditionalCondition
 
 class LicenceDetailTransformerTest {
 
@@ -23,6 +34,47 @@ class LicenceDetailTransformerTest {
   fun transformToPublicLicence() {
     val actualLicence = modelLicence.transformToPublicLicence()
     assertThat(actualLicence).isEqualTo(publicLicence)
+    assertThat(actualLicence.conditions.apConditions.additional).containsExactlyInAnyOrder(
+      PublicModelAdditionalCondition(
+        category = "",
+        type = ConditionTypes.STANDARD,
+        id = 1,
+        code = "associateWith",
+        text = "Do not associate with value1 for a period of value2",
+      ),
+      MultipleExclusionZoneAdditionalCondition(
+        category = "",
+        type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
+        id = 2,
+        code = EXCLUSION_ZONE_COND_CODE,
+        text = "Do not enter the area defined in the attached map.",
+        hasImageUpload = true,
+      ),
+      MultipleExclusionZoneAdditionalCondition(
+        category = "",
+        type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
+        id = 3,
+        code = EXCLUSION_ZONE_COND_CODE,
+        text = "Do not enter the area defined in the attached map.",
+        hasImageUpload = true,
+      ),
+      SingleUploadAdditionalCondition(
+        category = "",
+        type = ConditionTypes.SINGLE_UPLOAD,
+        id = 4,
+        code = EVENT_EXCLUSION_COND_CODE,
+        text = "Do not enter the area defined in the attached map for the duration of The Event.",
+        hasImageUpload = true,
+      ),
+      ElectronicMonitoringAdditionalConditionWithRestriction(
+        category = "",
+        type = ConditionTypes.ELECTRONIC_MONITORING,
+        id = 5,
+        code = ELECTRONIC_TAG_COND_CODE,
+        text = "You must wear an electronic monitoring tag for curfew purposes.",
+        restrictions = listOf(ElectronicMonitoringType.CURFEW),
+      ),
+    )
   }
 
   @Test
@@ -86,6 +138,74 @@ class LicenceDetailTransformerTest {
         readyToSubmit = true,
         requiresInput = true,
       ),
+      ModelAdditionalCondition(
+        id = 2,
+        code = EXCLUSION_ZONE_COND_CODE,
+        sequence = 2,
+        text = "Do not enter the area defined in the attached map.",
+        expandedText = "Do not enter the area defined in the attached map.",
+        data = someAssociationData,
+        readyToSubmit = true,
+        requiresInput = true,
+        uploadSummary = listOf(
+          AdditionalConditionUploadSummary(
+            id = 1,
+            fileSize = 1,
+            uploadDetailId = 1,
+          ),
+        ),
+      ),
+      ModelAdditionalCondition(
+        id = 3,
+        code = EXCLUSION_ZONE_COND_CODE,
+        sequence = 3,
+        text = "Do not enter the area defined in the attached map.",
+        expandedText = "Do not enter the area defined in the attached map.",
+        data = someAssociationData,
+        readyToSubmit = true,
+        requiresInput = true,
+        uploadSummary = listOf(
+          AdditionalConditionUploadSummary(
+            id = 2,
+            fileSize = 1,
+            uploadDetailId = 2,
+          ),
+        ),
+      ),
+      ModelAdditionalCondition(
+        id = 4,
+        code = EVENT_EXCLUSION_COND_CODE,
+        sequence = 4,
+        text = "Do not enter the area defined in the attached map for the duration of [EVENT NAME].",
+        expandedText = "Do not enter the area defined in the attached map for the duration of The Event.",
+        data = someAssociationData,
+        readyToSubmit = true,
+        requiresInput = true,
+        uploadSummary = listOf(
+          AdditionalConditionUploadSummary(
+            id = 3,
+            fileSize = 1,
+            uploadDetailId = 3,
+          ),
+        ),
+      ),
+      ModelAdditionalCondition(
+        id = 5,
+        code = ELECTRONIC_TAG_COND_CODE,
+        sequence = 5,
+        text = "You must wear an electronic monitoring tag for [REASON] purposes.",
+        expandedText = "You must wear an electronic monitoring tag for curfew purposes.",
+        data = listOf(
+          ModelAdditionalConditionData(
+            id = 5,
+            field = "electronicMonitoringTypes",
+            value = "curfew",
+            sequence = 1,
+          ),
+        ),
+        readyToSubmit = true,
+        requiresInput = true,
+      ),
     )
 
     val someBespokeConditions = listOf(
@@ -94,7 +214,7 @@ class LicenceDetailTransformerTest {
         sequence = 1,
         text = "Bespoke one text",
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition(
+      ModelBespokeCondition(
         id = 2,
         sequence = 2,
         text = "Bespoke two text",
