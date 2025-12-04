@@ -204,7 +204,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Given a staff member has searched for an offender that has served there time and has a unallocated prisoner with a licence then no com details`() {
+  fun `Given a COM user has searched for an offender with a started time served case which is unallocated to a probation practitioner`() {
     // Given
     deliusMockServer.stubGetTeamManagedUnallocatedCases()
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -238,7 +238,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Given a staff member has searched for an offender that has served there time and has is unallocated prisoner then no com details`() {
+  fun `Given a COM user has searched for an offender with a not started time served case which is unallocated to a probation practitioner`() {
     // Given
     deliusMockServer.stubGetTeamManagedUnallocatedCases()
     prisonApiMockServer.stubGetCourtOutcomes()
