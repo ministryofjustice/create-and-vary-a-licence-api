@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(
   description = "Describes an instance of the multiple exclusion zone condition on the licence",
 )
-data class ExclusionZoneAdditionalCondition(
+data class MultipleExclusionZoneAdditionalCondition(
   @field:Schema(description = "The ID of the condition", example = "123456") override val id: Long,
 
   @field:Schema(
