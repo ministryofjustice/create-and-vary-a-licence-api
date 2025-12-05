@@ -12,6 +12,9 @@ data class FoundProbationRecord(
   @field:Schema(description = "kind of licence, null if no licence exists", example = "CRD")
   val kind: LicenceKind? = null,
 
+  @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.TIME_SERVED)
+  val hardStopKind: LicenceKind? = null,
+
   @field:Schema(description = "the prison booking id", example = "123")
   val bookingId: Long? = null,
 

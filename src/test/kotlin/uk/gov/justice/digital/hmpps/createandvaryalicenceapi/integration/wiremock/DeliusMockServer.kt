@@ -1004,4 +1004,59 @@ class DeliusMockServer : WireMockServer(8093) {
         ),
     )
   }
+
+  fun stubGetTeamManagedUnallocatedCases() {
+    stubFor(
+      post(urlPathMatching("/staff/byid/.+/caseload/team-managed-offenders"))
+        .willReturn(
+          aResponse().withHeader("Content-Type", "application/json")
+            .withBody(
+              """{
+                "content": [
+                  {
+                    "crn": "CRN1",
+                    "nomisId": "A1234AA",
+                    "name": {
+                      "surname": "Surname",
+                      "forename": "Test",
+                      "middleName": ""
+                    },
+                    "staff": {
+                      "code": "A01B02C",
+                      "unallocated": true,
+                      "name": {
+                        "surname": "Surname",
+                        "forename": "Staff"
+                      }
+                    },
+                    "team": {
+                      "code": "A01B02",
+                      "description": "Test Team",
+                      "borough": {
+                        "code": "A01B02",
+                        "description": "description"
+                      },
+                      "district": {
+                        "code": "A01B02",
+                        "description": "description"
+                      },
+                      "provider": { 
+                        "code": "probationArea-code-1", 
+                        "description": "probationArea-description-1"
+                      }
+                    },
+                    "allocationDate": "2023-05-24"
+                  }
+                ],
+                "page": {
+                  "number": 0,
+                  "size": 100,
+                  "totalPages": 1,
+                  "totalElements": 2
+                }
+              }""",
+            ).withStatus(200),
+        ),
+    )
+  }
 }

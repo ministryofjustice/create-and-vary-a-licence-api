@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
@@ -119,7 +120,7 @@ class ComCaseloadSearchService(
     licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
 
     prisonOffender == null || cvlRecord == null -> null
-    cvlRecord.isEligible -> deliusOffender.toStartedRecord(licence)
+    cvlRecord.isEligible -> deliusOffender.toStartedRecord(licence, cvlRecord.hardStopKind)
     else -> null
   }
 
@@ -138,6 +139,7 @@ class ComCaseloadSearchService(
     prisonOffender: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
   ): FoundProbationRecord = this.transformToUnstartedRecord(
+    cvlRecord.hardStopKind,
     releaseDate = cvlRecord.licenceStartDate,
     bookingId = prisonOffender.bookingId?.toLong(),
     licenceType = cvlRecord.licenceType,
@@ -149,8 +151,12 @@ class ComCaseloadSearchService(
     releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(cvlRecord.licenceStartDate, prisonOffender),
   )
 
-  private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(
+  private fun CaseloadResult.toStartedRecord(
+    licence: Licence,
+    hardStopKind: LicenceKind? = null,
+  ) = this.transformToModelFoundProbationRecord(
     licence = licence,
+    hardStopKind = hardStopKind,
     hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
@@ -167,32 +173,38 @@ class ComCaseloadSearchService(
 
   fun CaseloadResult.transformToModelFoundProbationRecord(
     licence: Licence,
+    hardStopKind: LicenceKind? = null,
     hardStopDate: LocalDate?,
     hardStopWarningDate: LocalDate?,
     isInHardStopPeriod: Boolean,
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  ): FoundProbationRecord = FoundProbationRecord(
-    kind = licence.kind,
-    bookingId = licence.bookingId,
-    name = "${name.forename} ${name.surname}".convertToTitleCase(),
-    crn = licence.crn,
-    nomisId = licence.nomsId,
-    comName = staff.name?.fullName()?.convertToTitleCase(),
-    comStaffCode = staff.code,
-    teamName = team.description,
-    releaseDate = licence.licenceStartDate,
-    licenceId = licence.id,
-    versionOf = getVersionOf(licence),
-    licenceType = licence.typeCode,
-    licenceStatus = licence.statusCode,
-    isOnProbation = licence.statusCode.isOnProbation(),
-    hardStopDate = hardStopDate,
-    hardStopWarningDate = hardStopWarningDate,
-    isInHardStopPeriod = isInHardStopPeriod,
-    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-    releaseDateLabel = releaseDateLabelFactory.fromLicence(licence),
-    isReviewNeeded = licence is ReviewablePostRelease && licence.isReviewNeeded(),
-  )
+  ): FoundProbationRecord {
+    val com = if (staff.unallocated == true) null else staff
+
+    return FoundProbationRecord(
+      kind = licence.kind,
+      hardStopKind = hardStopKind,
+      bookingId = licence.bookingId,
+      name = "${name.forename} ${name.surname}".convertToTitleCase(),
+      crn = licence.crn,
+      nomisId = licence.nomsId,
+      comName = com?.name?.fullName()?.convertToTitleCase(),
+      comStaffCode = com?.code,
+      teamName = team.description,
+      releaseDate = licence.licenceStartDate,
+      licenceId = licence.id,
+      versionOf = getVersionOf(licence),
+      licenceType = licence.typeCode,
+      licenceStatus = licence.statusCode,
+      isOnProbation = licence.statusCode.isOnProbation(),
+      hardStopDate = hardStopDate,
+      hardStopWarningDate = hardStopWarningDate,
+      isInHardStopPeriod = isInHardStopPeriod,
+      isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+      releaseDateLabel = releaseDateLabelFactory.fromLicence(licence),
+      isReviewNeeded = licence is ReviewablePostRelease && licence.isReviewNeeded(),
+    )
+  }
 
   private val versionComparator = Comparator<Licence> { l1, l2 ->
     val (major1, minor1) = l1.licenceVersion?.split('.')?.mapNotNull { it.toIntOrNull() } ?: listOf(0, 0)

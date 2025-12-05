@@ -871,6 +871,7 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent
 )
 
 fun CaseloadResult.transformToUnstartedRecord(
+  hardStopKind: LicenceKind?,
   bookingId: Long?,
   releaseDate: LocalDate?,
   licenceType: LicenceType?,
@@ -880,27 +881,32 @@ fun CaseloadResult.transformToUnstartedRecord(
   isInHardStopPeriod: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   releaseDateLabel: String,
-): ModelFoundProbationRecord = ModelFoundProbationRecord(
-  kind = null,
-  bookingId = bookingId,
-  name = name.fullName(),
-  crn = crn,
-  nomisId = nomisId,
-  comName = staff.name?.fullName()?.convertToTitleCase(),
-  comStaffCode = staff.code,
-  teamName = team.description,
-  releaseDate = releaseDate,
-  licenceId = null,
-  licenceType = licenceType,
-  licenceStatus = licenceStatus,
-  isOnProbation = false,
-  hardStopDate = hardStopDate,
-  hardStopWarningDate = hardStopWarningDate,
-  isInHardStopPeriod = isInHardStopPeriod,
-  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-  releaseDateLabel = releaseDateLabel,
-  isReviewNeeded = false,
-)
+): ModelFoundProbationRecord {
+  val com = if (staff.unallocated == true) null else staff
+
+  return ModelFoundProbationRecord(
+    kind = null,
+    hardStopKind = hardStopKind,
+    bookingId = bookingId,
+    name = name.fullName(),
+    crn = crn,
+    nomisId = nomisId,
+    comName = com?.name?.fullName()?.convertToTitleCase(),
+    comStaffCode = com?.code,
+    teamName = team.description,
+    releaseDate = releaseDate,
+    licenceId = null,
+    licenceType = licenceType,
+    licenceStatus = licenceStatus,
+    isOnProbation = false,
+    hardStopDate = hardStopDate,
+    hardStopWarningDate = hardStopWarningDate,
+    isInHardStopPeriod = isInHardStopPeriod,
+    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+    releaseDateLabel = releaseDateLabel,
+    isReviewNeeded = false,
+  )
+}
 
 fun Licence.getUpdatedByFullName(): String? {
   val staffMember = this.updatedBy
