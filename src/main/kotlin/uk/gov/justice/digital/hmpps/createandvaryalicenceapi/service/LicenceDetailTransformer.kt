@@ -29,7 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 private const val ELECTRONIC_MONITORING_TYPES = "electronicMonitoringTypes"
 
 fun ModelLicence.transformToPublicLicence(): Licence {
-  val licenseConditions = Conditions(
+  val licenceConditions = Conditions(
     apConditions = ApConditions(
       this.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
       this.additionalLicenceConditions.transformToResourceAdditional(),
@@ -59,7 +59,7 @@ fun ModelLicence.transformToPublicLicence(): Licence {
     updatedDateTime = this.dateLastUpdated,
     licenceStartDate = this.licenceStartDate,
     isInPssPeriod = this.isInPssPeriod ?: false,
-    conditions = licenseConditions,
+    conditions = licenceConditions,
   )
 }
 
@@ -88,7 +88,7 @@ fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditio
   }
 }
 
-fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitoringAdditionalConditionWithRestriction = ElectronicMonitoringAdditionalConditionWithRestriction(
+fun transformElectronicMonitoring(model: AdditionalCondition) = ElectronicMonitoringAdditionalConditionWithRestriction(
   category = model.category.orEmpty(),
   type = ConditionTypes.ELECTRONIC_MONITORING,
   id = model.id ?: 0,
@@ -100,7 +100,7 @@ fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitor
   },
 )
 
-fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): MultipleExclusionZoneAdditionalCondition = MultipleExclusionZoneAdditionalCondition(
+fun transformMultipleExclusionZonesCondition(model: AdditionalCondition) = MultipleExclusionZoneAdditionalCondition(
   category = model.category.orEmpty(),
   type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
   id = model.id ?: 0,
@@ -109,7 +109,7 @@ fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): Multip
   hasImageUpload = model.uploadSummary.isNotEmpty(),
 )
 
-fun transformSingleExclusionZoneCondition(model: AdditionalCondition): SingleUploadAdditionalCondition = SingleUploadAdditionalCondition(
+fun transformSingleExclusionZoneCondition(model: AdditionalCondition) = SingleUploadAdditionalCondition(
   category = model.category.orEmpty(),
   type = ConditionTypes.SINGLE_UPLOAD,
   id = model.id ?: 0,
@@ -120,7 +120,7 @@ fun transformSingleExclusionZoneCondition(model: AdditionalCondition): SingleUpl
 
 typealias PublicStandardAdditionalCondition = ModelStandardAdditionalCondition
 
-fun standardAdditionalCondition(model: AdditionalCondition): PublicStandardAdditionalCondition = PublicStandardAdditionalCondition(
+fun standardAdditionalCondition(model: AdditionalCondition) = PublicStandardAdditionalCondition(
   category = model.category.orEmpty(),
   type = ConditionTypes.STANDARD,
   id = model.id ?: 0,
