@@ -21,8 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.WorkFlowMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
@@ -38,7 +36,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
 import java.time.Duration
-import kotlin.jvm.optionals.getOrNull
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = ["domain.event.listener.enabled=true", "update.offender.details.handler.enabled=true"])
@@ -61,12 +58,6 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var staffRepository: StaffRepository
-
-  @Autowired
-  lateinit var auditRepository: AuditEventRepository
-
-  @Autowired
-  lateinit var licenceRepository: LicenceRepository
 
   private val awaitAtMost30Secs
     get() = await.atMost(Duration.ofSeconds(30))
@@ -225,16 +216,14 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     // Then
     verify(prisonerUpdatedHandler).handleEvent(message)
 
-    val licence = licenceRepository.findById(1).getOrNull()
-    assertThat(licence).isNotNull
-    assertThat(licence!!.forename).isEqualTo("Test1")
+    val licence = testRepository.findLicence(1)
+    assertThat(licence.forename).isEqualTo("Test1")
     assertThat(licence.middleNames).isNull()
     assertThat(licence.surname).isEqualTo("Person1")
     assertThat(licence.dateOfBirth).isEqualTo("1985-01-01")
 
-    val auditEvent = auditRepository.findAll().firstOrNull()
-    assertThat(auditEvent).isNotNull
-    assertThat(auditEvent!!.summary).isEqualTo("Offender details updated to forename: Test1, middleNames: null, surname: Person1, date of birth: 1985-01-01")
+    val auditEvent = testRepository.findFirstAuditEvent(1)
+    assertThat(auditEvent.summary).isEqualTo("Offender details updated to forename: Test1, middleNames: null, surname: Person1, date of birth: 1985-01-01")
     assertThat(auditEvent.changes).isEqualTo(
       mapOf(
         "type" to "Updated offender details",
