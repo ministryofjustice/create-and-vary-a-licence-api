@@ -150,6 +150,7 @@ OffenderService(
           val originalLicence = findOriginalLicenceForVariation(variationLicence)
           originalLicence.kind == TIME_SERVED
         }
+
         else -> false
       }
 
@@ -203,6 +204,31 @@ OffenderService(
     val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, IN_FLIGHT_LICENCES)
     val licencesToChange = existingLicences.filter { it.isOffenderDetailUpdated(request) }
     if (licencesToChange.isNotEmpty()) {
+      val events = licencesToChange.map {
+        val changes = mapOf(
+          "type" to "Updated offender details",
+          "changes" to mapOf(
+            "oldForename" to (it.forename ?: ""),
+            "newForename" to request.forename,
+            "oldMiddleNames" to (it.middleNames ?: ""),
+            "newMiddleNames" to request.middleNames,
+            "oldSurname" to (it.surname ?: ""),
+            "newSurname" to request.surname,
+            "oldDob" to (it.dateOfBirth ?: ""),
+            "newDob" to request.dateOfBirth,
+          ),
+        )
+
+        AuditEvent(
+          licenceId = it.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          summary = "Offender details updated to forename: ${request.forename}, middleNames: ${request.middleNames}, surname: ${request.surname}, date of birth: ${request.dateOfBirth}",
+          detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
+          changes = changes,
+        )
+      }
+
       licencesToChange.forEach {
         it.updateOffenderDetails(
           forename = request.forename,
@@ -211,16 +237,8 @@ OffenderService(
           dateOfBirth = request.dateOfBirth,
         )
       }
-      this.licenceRepository.saveAllAndFlush(licencesToChange)
-      val events = licencesToChange.map {
-        AuditEvent(
-          licenceId = it.id,
-          username = "SYSTEM",
-          fullName = "SYSTEM",
-          summary = "Offender details updated to forename: ${request.forename}, middleNames: ${request.middleNames}, surname: ${request.surname}, date of birth: ${request.dateOfBirth}",
-          detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
-        )
-      }
+
+      licenceRepository.saveAllAndFlush(licencesToChange)
       auditEventRepository.saveAllAndFlush(events)
     }
   }
