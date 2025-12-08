@@ -1115,7 +1115,7 @@ class LicenceCreationServiceTest {
 
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, hardStopKind = LicenceKind.HARD_STOP))
     }
 
     @Test
@@ -1126,6 +1126,7 @@ class LicenceCreationServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
+          hardStopKind = LicenceKind.HARD_STOP,
           licenceStartDate = LocalDate.of(2022, 10, 10),
         ),
       )
@@ -1350,6 +1351,7 @@ class LicenceCreationServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
+          hardStopKind = LicenceKind.HARD_STOP,
           licenceType = LicenceType.PSS,
         ),
       )
@@ -1387,6 +1389,7 @@ class LicenceCreationServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
+          hardStopKind = LicenceKind.HARD_STOP,
           licenceType = LicenceType.AP_PSS,
         ),
       )
