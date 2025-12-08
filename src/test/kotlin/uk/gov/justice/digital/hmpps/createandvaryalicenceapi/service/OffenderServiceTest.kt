@@ -211,27 +211,27 @@ class OffenderServiceTest {
 
   @Test
   fun `updates all non-inactive licences for an offender if the offender's personal details have changed`() {
+    val licence1 = licenceWithOriginalCom
+    val licence2 = licence1.copy(id = 2, statusCode = LicenceStatus.ACTIVE)
     whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
-        licenceWithOriginalCom,
-        licenceWithOriginalCom.copy(id = 2, statusCode = LicenceStatus.ACTIVE),
+        licence1,
+        licence2,
       ),
     )
 
     val expectedUpdatedLicences = listOf(
-      licenceWithOriginalCom.copy(
-        forename = "Peter",
-        middleNames = "Robin",
-        surname = "Smith",
-        dateOfBirth = LocalDate.parse("1970-02-01"),
+      licence1.copy(
+        forename = newOffenderDetails.forename,
+        middleNames = newOffenderDetails.middleNames,
+        surname = newOffenderDetails.surname,
+        dateOfBirth = newOffenderDetails.dateOfBirth,
       ),
-      licenceWithOriginalCom.copy(
-        id = 2,
-        statusCode = LicenceStatus.ACTIVE,
-        forename = "Peter",
-        middleNames = "Robin",
-        surname = "Smith",
-        dateOfBirth = LocalDate.parse("1970-02-01"),
+      licence2.copy(
+        forename = newOffenderDetails.forename,
+        middleNames = newOffenderDetails.middleNames,
+        surname = newOffenderDetails.surname,
+        dateOfBirth = newOffenderDetails.dateOfBirth,
       ),
     )
 
@@ -242,19 +242,45 @@ class OffenderServiceTest {
 
     argumentCaptor<List<AuditEvent>>().apply {
       verify(auditEventRepository).saveAllAndFlush(capture())
-      assertThat(firstValue).extracting("licenceId", "username", "fullName", "summary").isEqualTo(
+      assertThat(firstValue).extracting("licenceId", "username", "fullName", "summary", "changes").isEqualTo(
         listOf(
           Tuple(
             1L,
             "SYSTEM",
             "SYSTEM",
             "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01",
+            mapOf(
+              "type" to "Updated offender details",
+              "changes" to mapOf(
+                "oldForename" to "John",
+                "newForename" to newOffenderDetails.forename,
+                "oldMiddleNames" to "",
+                "newMiddleNames" to newOffenderDetails.middleNames,
+                "oldSurname" to "Smith",
+                "newSurname" to newOffenderDetails.surname,
+                "oldDob" to LocalDate.parse("1985-12-28"),
+                "newDob" to newOffenderDetails.dateOfBirth,
+              ),
+            ),
           ),
           Tuple(
             2L,
             "SYSTEM",
             "SYSTEM",
             "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01",
+            mapOf(
+              "type" to "Updated offender details",
+              "changes" to mapOf(
+                "oldForename" to "John",
+                "newForename" to newOffenderDetails.forename,
+                "oldMiddleNames" to "",
+                "newMiddleNames" to newOffenderDetails.middleNames,
+                "oldSurname" to "Smith",
+                "newSurname" to newOffenderDetails.surname,
+                "oldDob" to LocalDate.parse("1985-12-28"),
+                "newDob" to newOffenderDetails.dateOfBirth,
+              ),
+            ),
           ),
         ),
       )
