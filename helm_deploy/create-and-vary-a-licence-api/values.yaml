@@ -40,7 +40,8 @@ generic-service:
     DB_SSL_ENABLED: "true"
     HMPPS_GOVUK_API_URL: "https://www.gov.uk"
     HMPPS_SQS_USE_WEB_TOKEN: true
-
+    FEATURE_TOGGLE_TIMESERVED_ENABLED: true
+    TIME_SERVED_PRISONS: "BNI"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
