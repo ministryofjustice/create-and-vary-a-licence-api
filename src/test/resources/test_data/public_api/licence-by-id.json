@@ -34,14 +34,14 @@
       ],
       "additional": [
         {
-          "category": "",
+          "category": "Associates",
           "type": "STANDARD",
           "id": 1,
           "code": "associateWith",
           "text": "Do not associate with value1 for a period of value2"
         },
         {
-          "category": "",
+          "category": "FreedomOfMovement",
           "type": "MULTIPLE_EXCLUSION_ZONE",
           "id": 2,
           "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
@@ -49,7 +49,7 @@
           "hasImageUpload": true
         },
         {
-          "category": "",
+          "category": "FreedomOfMovement",
           "type": "MULTIPLE_EXCLUSION_ZONE",
           "id": 3,
           "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
@@ -57,7 +57,7 @@
           "hasImageUpload": true
         },
         {
-          "category": "",
+          "category": "FreedomOfMovement",
           "type": "SINGLE_UPLOAD",
           "id": 4,
           "code": "99195049-f355-46fb-b7d8-aef87a1b19c5",

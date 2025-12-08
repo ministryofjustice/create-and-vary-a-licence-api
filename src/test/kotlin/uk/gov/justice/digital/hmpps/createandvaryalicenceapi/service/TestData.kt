@@ -869,6 +869,7 @@ object TestData {
   fun someModelAdditionalConditions() = listOf(
     ModelAdditionalCondition(
       id = 1,
+      category = "Associates",
       code = "associateWith",
       sequence = 1,
       text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
@@ -879,6 +880,7 @@ object TestData {
     ),
     ModelAdditionalCondition(
       id = 2,
+      category = "FreedomOfMovement",
       code = EXCLUSION_ZONE_COND_CODE,
       sequence = 2,
       text = "Do not enter the area defined in the attached map.",
@@ -896,6 +898,7 @@ object TestData {
     ),
     ModelAdditionalCondition(
       id = 3,
+      category = "FreedomOfMovement",
       code = EXCLUSION_ZONE_COND_CODE,
       sequence = 3,
       text = "Do not enter the area defined in the attached map.",
@@ -913,6 +916,7 @@ object TestData {
     ),
     ModelAdditionalCondition(
       id = 4,
+      category = "FreedomOfMovement",
       code = EVENT_EXCLUSION_COND_CODE,
       sequence = 4,
       text = "Do not enter the area defined in the attached map for the duration of [EVENT NAME].",
