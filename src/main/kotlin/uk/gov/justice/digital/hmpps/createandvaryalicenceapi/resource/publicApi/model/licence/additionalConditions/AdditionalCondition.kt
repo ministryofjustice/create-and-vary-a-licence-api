@@ -30,7 +30,7 @@ object ConditionTypes {
     ),
   ],
 )
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXISTING_PROPERTY)
 sealed interface AdditionalCondition {
   @get:Schema(
     description = "The category to which the additional condition belongs",

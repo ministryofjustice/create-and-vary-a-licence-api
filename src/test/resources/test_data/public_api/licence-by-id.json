@@ -1,5 +1,5 @@
 {
-  "id": 1,
+  "id": 1234,
   "kind": "CRD",
   "licenceType": "AP",
   "policyVersion": "V2_1",
@@ -32,7 +32,49 @@
           "text": "Attend meetings"
         }
       ],
-      "additional": [],
+      "additional": [
+        {
+          "category": "",
+          "type": "STANDARD",
+          "id": 1,
+          "code": "associateWith",
+          "text": "Do not associate with value1 for a period of value2"
+        },
+        {
+          "category": "",
+          "type": "MULTIPLE_EXCLUSION_ZONE",
+          "id": 2,
+          "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
+          "text": "Do not enter the area defined in the attached map.",
+          "hasImageUpload": true
+        },
+        {
+          "category": "",
+          "type": "MULTIPLE_EXCLUSION_ZONE",
+          "id": 3,
+          "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
+          "text": "Do not enter the area defined in the attached map.",
+          "hasImageUpload": true
+        },
+        {
+          "category": "",
+          "type": "SINGLE_UPLOAD",
+          "id": 4,
+          "code": "99195049-f355-46fb-b7d8-aef87a1b19c5",
+          "text": "Do not enter the area defined in the attached map for the duration of The Event.",
+          "hasImageUpload": true
+        },
+        {
+          "category": "",
+          "type": "ELECTRONIC_MONITORING",
+          "id": 5,
+          "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
+          "text": "You must wear an electronic monitoring tag for curfew purposes.",
+          "restrictions": [
+            "CURFEW"
+          ]
+        }
+      ],
       "bespoke": []
     },
     "PSS": {
