@@ -34,14 +34,14 @@ class LicenceDetailTransformerTest {
     assertThat(actualLicence).isEqualTo(publicLicence)
     assertThat(actualLicence.conditions.apConditions.additional).containsExactlyInAnyOrder(
       PublicModelAdditionalCondition(
-        category = "",
+        category = "Associates",
         type = ConditionTypes.STANDARD,
         id = 1,
         code = "associateWith",
         text = "Do not associate with value1 for a period of value2",
       ),
       MultipleExclusionZoneAdditionalCondition(
-        category = "",
+        category = "FreedomOfMovement",
         type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
         id = 2,
         code = EXCLUSION_ZONE_COND_CODE,
@@ -49,7 +49,7 @@ class LicenceDetailTransformerTest {
         hasImageUpload = true,
       ),
       MultipleExclusionZoneAdditionalCondition(
-        category = "",
+        category = "FreedomOfMovement",
         type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
         id = 3,
         code = EXCLUSION_ZONE_COND_CODE,
@@ -57,7 +57,7 @@ class LicenceDetailTransformerTest {
         hasImageUpload = true,
       ),
       SingleUploadAdditionalCondition(
-        category = "",
+        category = "FreedomOfMovement",
         type = ConditionTypes.SINGLE_UPLOAD,
         id = 4,
         code = EVENT_EXCLUSION_COND_CODE,
