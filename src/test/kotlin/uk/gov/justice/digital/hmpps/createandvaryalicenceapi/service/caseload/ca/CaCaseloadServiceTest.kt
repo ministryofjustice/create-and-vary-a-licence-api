@@ -256,6 +256,7 @@ class CaCaseloadServiceTest {
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
               kind = LicenceKind.CRD,
+              hardStopKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
             ),
@@ -287,7 +288,7 @@ class CaCaseloadServiceTest {
           assertThat(name).isEqualTo("Person Four")
           assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
-          assertThat(hardStopKind).isEqualTo(LicenceKind.HARD_STOP)
+          assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
         }
 
         verify(licenceCaseRepository, times(1)).findLicenceCases(
@@ -829,7 +830,6 @@ class CaCaseloadServiceTest {
                 name = "Joe Bloggs",
               ),
               lastWorkedOnBy = null,
-              hardStopKind = LicenceKind.HARD_STOP,
             ),
           ),
         )
@@ -901,7 +901,6 @@ class CaCaseloadServiceTest {
           assertThat(name).isEqualTo("Person Four")
           assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
-          assertThat(hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
           assertThat(hasNomisLicence).isTrue()
           assertThat(lastWorkedOnBy).isEqualTo("Firstname Secondname")
         }
@@ -999,9 +998,9 @@ class CaCaseloadServiceTest {
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
               kind = LicenceKind.CRD,
+              hardStopKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.HARD_STOP,
             ),
           ),
         )
@@ -1042,7 +1041,7 @@ class CaCaseloadServiceTest {
           assertThat(name).isEqualTo("Person Four")
           assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
-          assertThat(hardStopKind).isEqualTo(LicenceKind.HARD_STOP)
+          assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
           assertThat(hasNomisLicence).isFalse()
         }
       }
@@ -1113,7 +1112,7 @@ class CaCaseloadServiceTest {
           assertThat(name).isEqualTo("Person Four")
           assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
-          assertThat(hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
+          assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
           assertThat(hasNomisLicence).isFalse()
           assertThat(lastWorkedOnBy).isNull()
         }

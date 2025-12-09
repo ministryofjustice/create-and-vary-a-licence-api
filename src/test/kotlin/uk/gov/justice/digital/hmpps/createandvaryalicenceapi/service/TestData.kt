@@ -147,7 +147,7 @@ object TestData {
     nomsId: String = "A1234AA",
     licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22),
     kind: LicenceKind?,
-    hardStopKind: LicenceKind? = LicenceKind.HARD_STOP,
+    hardStopKind: LicenceKind? = null,
     hardStopDate: LocalDate? = null,
     hardStopWarningDate: LocalDate? = null,
     isEligibleForEarlyRelease: Boolean = false,

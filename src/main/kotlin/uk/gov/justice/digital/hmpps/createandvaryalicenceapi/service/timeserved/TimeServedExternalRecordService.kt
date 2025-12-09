@@ -20,14 +20,14 @@ private const val DELETED_MESSAGE = "Deleted NOMIS licence reason"
 
 @Service
 class TimeServedExternalRecordService(
-  private val timesServedRecordService: TimeServedExternalRecordsRepository,
+  private val timeServedExternalRecordsRepository: TimeServedExternalRecordsRepository,
   private val staffRepository: StaffRepository,
   private val auditEventRepository: AuditEventRepository,
 ) {
 
   @Transactional
   fun setTimeServedExternalRecord(prisonNumber: String, bookingId: Long, request: ExternalTimeServedRecordRequest) {
-    val record = timesServedRecordService.findByNomsIdAndBookingId(prisonNumber, bookingId)
+    val record = timeServedExternalRecordsRepository.findByNomsIdAndBookingId(prisonNumber, bookingId)
     if (record == null) {
       createTimeServedExternalRecord(prisonNumber, bookingId, request)
     } else {
@@ -42,7 +42,7 @@ class TimeServedExternalRecordService(
   ) {
     val staff = getCurrentStaff()
 
-    val licenceRecord = timesServedRecordService.saveAndFlush(
+    val licenceRecord = timeServedExternalRecordsRepository.saveAndFlush(
       TimeServedExternalRecord(
         nomsId = prisonNumber,
         bookingId = bookingId,
@@ -79,7 +79,7 @@ class TimeServedExternalRecordService(
     record.updatedByCa = staff
     record.dateLastUpdated = LocalDateTime.now()
 
-    val updatedLicence = timesServedRecordService.saveAndFlush(record)
+    val updatedLicence = timeServedExternalRecordsRepository.saveAndFlush(record)
 
     saveAuditEvent(
       summary = UPDATED_MESSAGE,
@@ -97,7 +97,7 @@ class TimeServedExternalRecordService(
   }
 
   @Transactional(readOnly = true)
-  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): ExternalTimeServedRecordResponse? = timesServedRecordService
+  fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): ExternalTimeServedRecordResponse? = timeServedExternalRecordsRepository
     .findByNomsIdAndBookingId(nomsId, bookingId)?.let {
       ExternalTimeServedRecordResponse(
         nomsId = it.nomsId,
@@ -111,12 +111,12 @@ class TimeServedExternalRecordService(
 
   @Transactional
   fun deleteTimeServedExternalRecordIfPresent(nomsId: String, bookingId: Long) {
-    val reasonEntity = timesServedRecordService.findByNomsIdAndBookingId(nomsId, bookingId)
+    val reasonEntity = timeServedExternalRecordsRepository.findByNomsIdAndBookingId(nomsId, bookingId)
       ?: return
 
     val staff = getCurrentStaff()
 
-    timesServedRecordService.delete(reasonEntity)
+    timeServedExternalRecordsRepository.delete(reasonEntity)
 
     saveAuditEvent(
       summary = DELETED_MESSAGE,
