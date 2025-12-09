@@ -807,7 +807,7 @@ object TestData {
     licenceType = AP,
     variationRequestDate = LocalDate.of(2023, 11, 24),
     releaseDate = LocalDate.of(2021, 10, 22),
-    probationPractitioner = "Delius User",
+    probationPractitioner = ProbationPractitioner(),
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
