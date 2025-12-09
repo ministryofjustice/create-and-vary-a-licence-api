@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceVaryApproverCase
@@ -64,11 +65,12 @@ class VaryApproverCaseloadService(
     val deliusRecords = deliusApiClient.getProbationCases(prisonNumbers).associateBy { it.nomisId }
     val nomisRecords =
       prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers).associateBy { it.prisonerNumber }
-    val probationPractitioners = getProbationPractitioners(licences.map { it.crn })
+    val probationPractitioners = getProbationPractitioners(prisonNumbers)
 
     return licences.mapNotNull { licence ->
       val nomisRecord = nomisRecords[licence.prisonNumber]
       val deliusRecord = deliusRecords[licence.prisonNumber]
+      val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()]
       if (nomisRecord == null || deliusRecord == null) {
         null
       } else {
@@ -80,15 +82,20 @@ class VaryApproverCaseloadService(
           licenceType = licence.typeCode,
           variationRequestDate = licence.dateCreated?.toLocalDate(),
           releaseDate = licence.licenceStartDate,
-          probationPractitioner = probationPractitioners[deliusRecord.crn.lowercase()],
+          probationPractitioner = probationPractitioner,
         )
       }
     }
   }
 
-  private fun getProbationPractitioners(crns: List<String>) = deliusApiClient.getOffenderManagersWithoutUser(crns)
+  private fun getProbationPractitioners(prisonNumbers: List<String>) = deliusApiClient.getOffenderManagersWithoutUser(prisonNumbers)
     .filter { !it.unallocated }
-    .associate { it.case.crn.lowercase() to it.name.fullName() }
+    .associate {
+      it.case.nomisId!!.lowercase() to ProbationPractitioner(
+        staffCode = it.code,
+        name = it.name.fullName(),
+      )
+    }
 
   private fun applySearchFilter(cases: List<VaryApproverCase>, searchTerm: String?): List<VaryApproverCase> {
     if (searchTerm == null) {
@@ -100,7 +107,7 @@ class VaryApproverCaseloadService(
     return cases.filter { case ->
       case.crnNumber.lowercase().contains(searchString) ||
         case.name?.lowercase()?.contains(searchString) ?: false ||
-        case.probationPractitioner?.lowercase()?.contains(searchString) ?: false
+        case.probationPractitioner?.name?.lowercase()?.contains(searchString) ?: false
     }
   }
 
