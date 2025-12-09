@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
@@ -25,6 +26,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
@@ -808,7 +812,7 @@ object TestData {
     licenceType = AP,
     variationRequestDate = LocalDate.of(2023, 11, 24),
     releaseDate = LocalDate.of(2021, 10, 22),
-    probationPractitioner = "Delius User",
+    probationPractitioner = ProbationPractitioner(),
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
@@ -863,14 +867,86 @@ object TestData {
     ),
   )
 
-  private fun someModelAdditionalConditions() = listOf(
+  fun someModelAdditionalConditions() = listOf(
     ModelAdditionalCondition(
       id = 1,
+      category = "Associates",
       code = "associateWith",
       sequence = 1,
       text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
       expandedText = "Do not associate with value1 for a period of value2",
       data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+    ),
+    ModelAdditionalCondition(
+      id = 2,
+      category = "FreedomOfMovement",
+      code = EXCLUSION_ZONE_COND_CODE,
+      sequence = 2,
+      text = "Do not enter the area defined in the attached map.",
+      expandedText = "Do not enter the area defined in the attached map.",
+      data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(
+          id = 1,
+          fileSize = 1,
+          uploadDetailId = 1,
+        ),
+      ),
+    ),
+    ModelAdditionalCondition(
+      id = 3,
+      category = "FreedomOfMovement",
+      code = EXCLUSION_ZONE_COND_CODE,
+      sequence = 3,
+      text = "Do not enter the area defined in the attached map.",
+      expandedText = "Do not enter the area defined in the attached map.",
+      data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(
+          id = 2,
+          fileSize = 1,
+          uploadDetailId = 2,
+        ),
+      ),
+    ),
+    ModelAdditionalCondition(
+      id = 4,
+      category = "FreedomOfMovement",
+      code = EVENT_EXCLUSION_COND_CODE,
+      sequence = 4,
+      text = "Do not enter the area defined in the attached map for the duration of [EVENT NAME].",
+      expandedText = "Do not enter the area defined in the attached map for the duration of The Event.",
+      data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(
+          id = 3,
+          fileSize = 1,
+          uploadDetailId = 3,
+        ),
+      ),
+    ),
+    ModelAdditionalCondition(
+      id = 5,
+      code = ELECTRONIC_TAG_COND_CODE,
+      sequence = 5,
+      text = "You must wear an electronic monitoring tag for [REASON] purposes.",
+      expandedText = "You must wear an electronic monitoring tag for curfew purposes.",
+      data = listOf(
+        AdditionalConditionData(
+          id = 5,
+          field = "electronicMonitoringTypes",
+          value = "curfew",
+          sequence = 1,
+        ),
+      ),
       readyToSubmit = true,
       requiresInput = true,
     ),

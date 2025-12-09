@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 object ConditionTypes {
   const val ELECTRONIC_MONITORING = "ELECTRONIC_MONITORING"
   const val MULTIPLE_EXCLUSION_ZONE = "MULTIPLE_EXCLUSION_ZONE"
+  const val SINGLE_UPLOAD = "SINGLE_UPLOAD"
   const val STANDARD = "STANDARD"
 }
 
@@ -21,11 +22,15 @@ object ConditionTypes {
     ),
     DiscriminatorMapping(
       value = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
-      schema = ExclusionZoneAdditionalCondition::class,
+      schema = MultipleExclusionZoneAdditionalCondition::class,
+    ),
+    DiscriminatorMapping(
+      value = ConditionTypes.SINGLE_UPLOAD,
+      schema = SingleUploadAdditionalCondition::class,
     ),
   ],
 )
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXISTING_PROPERTY)
 sealed interface AdditionalCondition {
   @get:Schema(
     description = "The category to which the additional condition belongs",
