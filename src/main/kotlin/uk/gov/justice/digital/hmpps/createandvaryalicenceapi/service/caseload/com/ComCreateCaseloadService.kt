@@ -67,7 +67,7 @@ class ComCreateCaseloadService(
     val cvlRecords =
       cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
-    val cases = getCasesWithLicences(eligibleCases, cvlRecords)
+    val cases = createComCases(eligibleCases, cvlRecords)
     val filteredCases = filterHdcAndFutureReleases(cases)
 
     return transformToCreateCaseload(filteredCases)
@@ -90,7 +90,7 @@ class ComCreateCaseloadService(
     cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }.isEligible
   }
 
-  private fun getCasesWithLicences(
+  private fun createComCases(
     cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>,
     cvlRecords: List<CvlRecord>,
   ): List<Case> {
@@ -150,7 +150,7 @@ class ComCreateCaseloadService(
     nomisRecord: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
   ): ComCreateCaseloadLicenceDto {
-    val licenceKind = cvlRecord.eligibleKind!!
+    val kind = cvlRecord.hardStopKind ?: cvlRecord.eligibleKind!!
     val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
 
     val licenceStatus = if (cvlRecord.isInHardStopPeriod) {
@@ -168,9 +168,8 @@ class ComCreateCaseloadService(
       nomisId = nomisRecord.prisonerNumber,
       name = name,
       releaseDate = cvlRecord.licenceStartDate,
-      kind = licenceKind,
+      kind = kind,
       isReviewNeeded = false,
-      // populated by findRelevantLicencePerCase
       licenceCreationType = null,
     )
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
@@ -181,14 +180,14 @@ class ComCreateCaseloadService(
   ): List<Case> {
     val hdcStatuses = hdcService.getHdcStatus(cases.map { it.nomisRecord })
     return cases.filter {
-      val kind = it.licenceSummary.kind
+      val kind = it.comCreateCaseLoad.kind
       val bookingId = it.nomisRecord.bookingId?.toLong()!!
-      hdcStatuses.canBeSeenByCom(kind, bookingId) && it.licenceSummary.releaseDate.isTodayOrInTheFuture()
+      hdcStatuses.canBeSeenByCom(kind, bookingId) && it.comCreateCaseLoad.releaseDate.isTodayOrInTheFuture()
     }
   }
 
   private fun transformToCreateCaseload(cases: List<Case>): List<ComCreateCase> = cases.map {
-    with(it.licenceSummary) {
+    with(it.comCreateCaseLoad) {
       ComCreateCase(
         licenceId = licenceId,
         licenceStatus = licenceStatus,
@@ -199,7 +198,6 @@ class ComCreateCaseloadService(
         releaseDate = releaseDate,
         probationPractitioner = it.probationPractitioner,
         hardStopDate = it.cvlRecord.hardStopDate,
-        hardStopKind = it.cvlRecord.hardStopKind,
         hardStopWarningDate = it.cvlRecord.hardStopWarningDate,
         kind = kind,
         licenceCreationType = licenceCreationType,
@@ -212,6 +210,6 @@ class ComCreateCaseloadService(
     val probationPractitioner: ProbationPractitioner?,
     val nomisRecord: PrisonerSearchPrisoner,
     val cvlRecord: CvlRecord,
-    val licenceSummary: ComCreateCaseloadLicenceDto,
+    val comCreateCaseLoad: ComCreateCaseloadLicenceDto,
   )
 }
