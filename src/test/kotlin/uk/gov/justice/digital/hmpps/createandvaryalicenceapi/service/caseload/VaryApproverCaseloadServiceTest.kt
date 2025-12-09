@@ -51,7 +51,7 @@ class VaryApproverCaseloadServiceTest {
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
     )
-    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.crn })).thenReturn(
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
       listOf(aCommunityManagerWithoutUser()),
     )
 
@@ -68,7 +68,10 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      assertThat(probationPractitioner).isEqualTo("Delius User")
+      with(probationPractitioner!!) {
+        assertThat(staffCode).isEqualTo("AB012C")
+        assertThat(name).isEqualTo("Delius User")
+      }
     }
     verify(licenceCaseRepository).findSubmittedVariationsByRegion(probationAreaCode)
   }
@@ -89,7 +92,7 @@ class VaryApproverCaseloadServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
       listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
     )
-    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.crn })).thenReturn(
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
       listOf(aCommunityManagerWithoutUser()),
     )
 
@@ -127,7 +130,7 @@ class VaryApproverCaseloadServiceTest {
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
     )
-    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.crn })).thenReturn(
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
       listOf(aCommunityManagerWithoutUser()),
     )
 
@@ -144,7 +147,10 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      assertThat(probationPractitioner).isEqualTo("Delius User")
+      with(probationPractitioner!!) {
+        assertThat(staffCode).isEqualTo("AB012C")
+        assertThat(name).isEqualTo("Delius User")
+      }
     }
     verify(licenceCaseRepository).findSubmittedVariationsByPduCodes(pdus)
   }
@@ -167,7 +173,7 @@ class VaryApproverCaseloadServiceTest {
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
     )
-    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.crn })).thenReturn(
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
       listOf(aCommunityManagerWithoutUser()),
     )
 
@@ -189,7 +195,10 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      assertThat(probationPractitioner).isEqualTo("Delius User")
+      with(probationPractitioner!!) {
+        assertThat(staffCode).isEqualTo("AB012C")
+        assertThat(name).isEqualTo("Delius User")
+      }
     }
     assertThat(searchResults.regionCasesResponse).hasSize(0)
 
@@ -219,7 +228,7 @@ class VaryApproverCaseloadServiceTest {
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
     )
-    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.crn })).thenReturn(
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
       listOf(aCommunityManagerWithoutUser()),
     )
 
@@ -241,7 +250,10 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      assertThat(probationPractitioner).isEqualTo("Delius User")
+      with(probationPractitioner!!) {
+        assertThat(staffCode).isEqualTo("AB012C")
+        assertThat(name).isEqualTo("Delius User")
+      }
     }
     assertThat(searchResults.pduCasesResponse).hasSize(0)
 
@@ -273,7 +285,7 @@ class VaryApproverCaseloadServiceTest {
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
     )
-    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.crn })).thenReturn(
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
       listOf(aCommunityManagerWithoutUser()),
     )
 
@@ -296,7 +308,10 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      assertThat(probationPractitioner).isEqualTo("Delius User")
+      with(probationPractitioner!!) {
+        assertThat(staffCode).isEqualTo("AB012C")
+        assertThat(name).isEqualTo("Delius User")
+      }
     }
 
     assertThat(searchResults.regionCasesResponse).hasSize(1)
@@ -307,7 +322,10 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      assertThat(probationPractitioner).isEqualTo("Delius User")
+      with(probationPractitioner!!) {
+        assertThat(staffCode).isEqualTo("AB012C")
+        assertThat(name).isEqualTo("Delius User")
+      }
     }
 
     verify(licenceCaseRepository).findSubmittedVariationsByPduCodes(pdus)
@@ -334,7 +352,7 @@ class VaryApproverCaseloadServiceTest {
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
     )
-    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.crn })).thenReturn(
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
       listOf(aCommunityManagerWithoutUser()),
     )
 
@@ -371,5 +389,6 @@ class VaryApproverCaseloadServiceTest {
   fun aCommunityManagerWithoutUser() = TestData.aCommunityManagerWithoutUser().copy(
     case = ProbationCase(crn = "X12348", nomisId = "AB1234E"),
     name = Name("Delius", null, "User"),
+    code = "AB012C",
   )
 }
