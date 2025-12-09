@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someModelAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toCrd
@@ -48,7 +49,7 @@ import java.time.LocalDateTime
 @AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = [PublicLicenceController::class])
 @WebAppConfiguration
-class PublicLicenceControllerTest {
+class PublicLicenceControllerIntegrationTest {
 
   @MockitoBean
   private lateinit var publicLicenceService: PublicLicenceService
@@ -164,7 +165,7 @@ class PublicLicenceControllerTest {
 
   private companion object {
     val aLicence = toCrd(
-      licence = createCrdLicence().copy(version = "2.1"),
+      licence = createCrdLicence().copy(id = 1234, version = "2.1"),
       earliestReleaseDate = LocalDate.of(2024, 1, 3),
       isEligibleForEarlyRelease = true,
       hardStopDate = LocalDate.of(2024, 1, 1),
@@ -172,7 +173,7 @@ class PublicLicenceControllerTest {
       isInHardStopPeriod = true,
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       conditionPolicyData = emptyMap(),
-    ).transformToPublicLicence()
+    ).copy(additionalLicenceConditions = someModelAdditionalConditions()).transformToPublicLicence()
 
     val aLicenceSummary = LicenceSummary(
       id = 1,
