@@ -6,16 +6,25 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someModelAdditionalConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
+import kotlin.text.orEmpty
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.GenericAdditionalCondition as PublicModelAdditionalCondition
 
 class LicenceDetailTransformerTest {
 
@@ -23,6 +32,47 @@ class LicenceDetailTransformerTest {
   fun transformToPublicLicence() {
     val actualLicence = modelLicence.transformToPublicLicence()
     assertThat(actualLicence).isEqualTo(publicLicence)
+    assertThat(actualLicence.conditions.apConditions.additional).containsExactlyInAnyOrder(
+      PublicModelAdditionalCondition(
+        category = "Associates",
+        type = ConditionTypes.STANDARD,
+        id = 1,
+        code = "associateWith",
+        text = "Do not associate with value1 for a period of value2",
+      ),
+      MultipleExclusionZoneAdditionalCondition(
+        category = "FreedomOfMovement",
+        type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
+        id = 2,
+        code = EXCLUSION_ZONE_COND_CODE,
+        text = "Do not enter the area defined in the attached map.",
+        hasImageUpload = true,
+      ),
+      MultipleExclusionZoneAdditionalCondition(
+        category = "FreedomOfMovement",
+        type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
+        id = 3,
+        code = EXCLUSION_ZONE_COND_CODE,
+        text = "Do not enter the area defined in the attached map.",
+        hasImageUpload = true,
+      ),
+      SingleUploadAdditionalCondition(
+        category = "FreedomOfMovement",
+        type = ConditionTypes.SINGLE_UPLOAD,
+        id = 4,
+        code = EVENT_EXCLUSION_COND_CODE,
+        text = "Do not enter the area defined in the attached map for the duration of The Event.",
+        hasImageUpload = true,
+      ),
+      ElectronicMonitoringAdditionalConditionWithRestriction(
+        category = "",
+        type = ConditionTypes.ELECTRONIC_MONITORING,
+        id = 5,
+        code = ELECTRONIC_TAG_COND_CODE,
+        text = "You must wear an electronic monitoring tag for curfew purposes.",
+        restrictions = listOf(ElectronicMonitoringType.CURFEW),
+      ),
+    )
   }
 
   @Test
@@ -60,41 +110,13 @@ class LicenceDetailTransformerTest {
       ),
     )
 
-    val someAssociationData = listOf(
-      ModelAdditionalConditionData(
-        id = 1,
-        field = "field1",
-        value = "value1",
-        sequence = 1,
-      ),
-      ModelAdditionalConditionData(
-        id = 2,
-        field = "numberOfCurfews",
-        value = "value2",
-        sequence = 2,
-      ),
-    )
-
-    val someAdditionalConditions = listOf(
-      ModelAdditionalCondition(
-        id = 1,
-        code = "associateWith",
-        sequence = 1,
-        text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
-        expandedText = "Do not associate with value1 for a period of value2",
-        data = someAssociationData,
-        readyToSubmit = true,
-        requiresInput = true,
-      ),
-    )
-
     val someBespokeConditions = listOf(
       ModelBespokeCondition(
         id = 1,
         sequence = 1,
         text = "Bespoke one text",
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition(
+      ModelBespokeCondition(
         id = 2,
         sequence = 2,
         text = "Bespoke two text",
@@ -144,14 +166,14 @@ class LicenceDetailTransformerTest {
       createdByUsername = "TestCreator",
       standardLicenceConditions = someStandardConditions,
       standardPssConditions = someStandardConditions,
-      additionalLicenceConditions = someAdditionalConditions,
-      additionalPssConditions = someAdditionalConditions,
+      additionalLicenceConditions = someModelAdditionalConditions(),
+      additionalPssConditions = someModelAdditionalConditions(),
       bespokeConditions = someBespokeConditions,
       licenceVersion = "1.4",
       updatedByUsername = "TestUpdater",
     )
 
-    val publicLicenseConditions = Conditions(
+    val publicLicenceConditions = Conditions(
       apConditions = ApConditions(
         modelLicence.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
         modelLicence.additionalLicenceConditions.transformToResourceAdditional(),
@@ -180,7 +202,7 @@ class LicenceDetailTransformerTest {
       updatedDateTime = modelLicence.dateLastUpdated,
       licenceStartDate = modelLicence.licenceStartDate,
       isInPssPeriod = modelLicence.isInPssPeriod ?: false,
-      conditions = publicLicenseConditions,
+      conditions = publicLicenceConditions,
     )
   }
 }
