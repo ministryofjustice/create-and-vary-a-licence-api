@@ -50,6 +50,7 @@ class CaseloadServiceTest {
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
       aCvlRecord(
         kind = LicenceKind.CRD,
+        hardStopKind = LicenceKind.HARD_STOP,
         licenceStartDate = LocalDate.of(2021, 10, 22),
         hardStopDate = LocalDate.of(2023, 10, 12),
         hardStopWarningDate = LocalDate.of(2023, 10, 11),

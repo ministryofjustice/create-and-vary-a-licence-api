@@ -68,9 +68,10 @@ class NotStartedCaseloadService(
         licenceStatus = TIMED_OUT
       }
       val timeServedExternalRecord = timeServedExternalRecordsFlags[case.nomisRecord.bookingId?.toLong()]
+      val kind = case.cvlRecord.hardStopKind ?: case.cvlRecord.eligibleKind
 
       CaCase(
-        kind = case.cvlRecord.eligibleKind,
+        kind = kind,
         name = "${case.nomisRecord.firstName} ${case.nomisRecord.lastName}".convertToTitleCase(),
         prisonerNumber = case.nomisRecord.prisonerNumber,
         releaseDate = case.cvlRecord.licenceStartDate,
@@ -90,7 +91,6 @@ class NotStartedCaseloadService(
         probationPractitioner = case.probationPractitioner,
         prisonCode = case.nomisRecord.prisonId,
         prisonDescription = case.nomisRecord.prisonName,
-        hardStopKind = case.cvlRecord.hardStopKind,
         hasNomisLicence = timeServedExternalRecord != null,
         lastWorkedOnBy = timeServedExternalRecord?.lastWorkedOnBy,
       )
