@@ -180,14 +180,14 @@ class ComCreateCaseloadService(
   ): List<Case> {
     val hdcStatuses = hdcService.getHdcStatus(cases.map { it.nomisRecord })
     return cases.filter {
-      val kind = it.comCreateCaseLoad.kind
+      val kind = it.comLicenceCase.kind
       val bookingId = it.nomisRecord.bookingId?.toLong()!!
-      hdcStatuses.canBeSeenByCom(kind, bookingId) && it.comCreateCaseLoad.releaseDate.isTodayOrInTheFuture()
+      hdcStatuses.canBeSeenByCom(kind, bookingId) && it.comLicenceCase.releaseDate.isTodayOrInTheFuture()
     }
   }
 
   private fun transformToCreateCaseload(cases: List<Case>): List<ComCreateCase> = cases.map {
-    with(it.comCreateCaseLoad) {
+    with(it.comLicenceCase) {
       ComCreateCase(
         licenceId = licenceId,
         licenceStatus = licenceStatus,
@@ -210,6 +210,6 @@ class ComCreateCaseloadService(
     val probationPractitioner: ProbationPractitioner?,
     val nomisRecord: PrisonerSearchPrisoner,
     val cvlRecord: CvlRecord,
-    val comCreateCaseLoad: ComCreateCaseloadLicenceDto,
+    val comLicenceCase: ComCreateCaseloadLicenceDto,
   )
 }
