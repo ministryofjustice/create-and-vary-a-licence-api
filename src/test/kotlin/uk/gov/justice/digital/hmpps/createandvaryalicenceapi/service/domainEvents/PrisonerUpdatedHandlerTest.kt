@@ -9,6 +9,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 
 class PrisonerUpdatedHandlerTest {
@@ -26,7 +27,7 @@ class PrisonerUpdatedHandlerTest {
     )
     val nomsId = "A1234AA"
 
-    val prisoner = prisonerSearchResult()
+    val prisoner = prisonerSearchResult().copy(firstName = "ABCDEF")
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsId))).thenReturn(listOf(prisoner))
 
     handler.handleEvent(
@@ -41,9 +42,9 @@ class PrisonerUpdatedHandlerTest {
     verify(offenderService).updateOffenderDetails(
       nomsId,
       UpdateOffenderDetailsRequest(
-        forename = prisoner.firstName,
-        middleNames = prisoner.middleNames,
-        surname = prisoner.lastName,
+        forename = prisoner.firstName.convertToTitleCase(),
+        middleNames = prisoner.middleNames?.convertToTitleCase(),
+        surname = prisoner.lastName.convertToTitleCase(),
         dateOfBirth = prisoner.dateOfBirth,
       ),
     )
