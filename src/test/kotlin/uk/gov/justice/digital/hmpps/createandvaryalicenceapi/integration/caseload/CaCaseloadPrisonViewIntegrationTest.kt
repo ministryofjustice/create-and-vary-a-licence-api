@@ -70,7 +70,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
       .expectBody(typeReference<List<CaCase>>())
       .returnResult().responseBody!!
 
-    assertThat(caseload).hasSize(4)
+    assertThat(caseload).hasSize(5)
     with(caseload[0]) {
       assertThat(name).isEqualTo("Person Two")
       assertThat(prisonerNumber).isEqualTo("A1234AB")
