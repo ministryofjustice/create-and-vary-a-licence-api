@@ -150,7 +150,7 @@ object TestData {
   fun aCvlRecord(
     nomsId: String = "A1234AA",
     licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22),
-    kind: LicenceKind? = LicenceKind.CRD,
+    kind: LicenceKind?,
     hardStopKind: LicenceKind? = null,
     hardStopDate: LocalDate? = null,
     hardStopWarningDate: LocalDate? = null,
@@ -614,14 +614,13 @@ object TestData {
   }
 
   fun prisonerSearchResult(
-    prisonerNumber: String = "A1234AA",
     conditionalReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
     conditionalReleaseDateOverrideDate: LocalDate? = null,
     sentenceStartDate: LocalDate? = LocalDate.of(2018, 10, 22),
     confirmedReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
     postRecallReleaseDate: LocalDate? = null,
   ) = PrisonerSearchPrisoner(
-    prisonerNumber = prisonerNumber,
+    prisonerNumber = "A1234AA",
     bookingId = "123456",
     status = "ACTIVE IN",
     mostSeriousOffence = "Robbery",

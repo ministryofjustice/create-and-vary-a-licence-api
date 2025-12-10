@@ -45,6 +45,9 @@ data class ComCreateCase(
   @field:Schema(description = "The details for the active supervising probation officer")
   val probationPractitioner: ProbationPractitioner?,
 
+  @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.HARD_STOP)
+  val hardStopKind: LicenceKind? = null,
+
   @field:Schema(description = "Date which the hard stop period will start", example = "03/05/2023")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val hardStopDate: LocalDate? = null,
