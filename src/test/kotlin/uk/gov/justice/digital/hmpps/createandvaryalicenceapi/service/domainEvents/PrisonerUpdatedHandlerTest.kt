@@ -27,7 +27,7 @@ class PrisonerUpdatedHandlerTest {
     )
     val nomsId = "A1234AA"
 
-    val prisoner = prisonerSearchResult().copy(firstName = "ABCDEF")
+    val prisoner = prisonerSearchResult().copy(firstName = "ABCDEF", middleNames = null)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsId))).thenReturn(listOf(prisoner))
 
     handler.handleEvent(
@@ -43,7 +43,7 @@ class PrisonerUpdatedHandlerTest {
       nomsId,
       UpdateOffenderDetailsRequest(
         forename = prisoner.firstName.convertToTitleCase(),
-        middleNames = prisoner.middleNames?.convertToTitleCase(),
+        middleNames = "",
         surname = prisoner.lastName.convertToTitleCase(),
         dateOfBirth = prisoner.dateOfBirth,
       ),

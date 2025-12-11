@@ -37,7 +37,7 @@ class PrisonerUpdatedHandler(
       nomsId,
       UpdateOffenderDetailsRequest(
         forename = prisoner.firstName.convertToTitleCase(),
-        middleNames = prisoner.middleNames?.convertToTitleCase(),
+        middleNames = if (prisoner.middleNames == null) "" else prisoner.middleNames.convertToTitleCase(),
         surname = prisoner.lastName.convertToTitleCase(),
         dateOfBirth = prisoner.dateOfBirth,
       ),
