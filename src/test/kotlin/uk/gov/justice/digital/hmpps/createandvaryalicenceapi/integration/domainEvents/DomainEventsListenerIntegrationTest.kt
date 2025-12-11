@@ -218,7 +218,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     val licence = testRepository.findLicence(1)
     assertThat(licence.forename).isEqualTo("Test1")
-    assertThat(licence.middleNames).isNull()
+    assertThat(licence.middleNames).isEqualTo("")
     assertThat(licence.surname).isEqualTo("Person1")
     assertThat(licence.dateOfBirth).isEqualTo("1985-01-01")
 
