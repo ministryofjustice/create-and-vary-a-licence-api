@@ -31,7 +31,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -82,7 +82,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -140,7 +140,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     // When
     val result = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -174,7 +174,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     // When
     val result = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -211,7 +211,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     // When
     val result = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -247,7 +247,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     // When
     val result = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -272,7 +272,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultList = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -292,7 +292,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
 
     val resultList = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -313,7 +313,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -364,7 +364,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -385,7 +385,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
-      .uri("/com/case-search")
+      .uri("/caseload/com/case-search")
       .bodyValue(aProbationUserSearchRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))

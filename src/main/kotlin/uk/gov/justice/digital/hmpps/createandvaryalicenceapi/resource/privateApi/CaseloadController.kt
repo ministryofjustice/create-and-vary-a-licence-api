@@ -664,6 +664,55 @@ class CaseloadController(
 
   @Tag(name = Tags.COM)
   @PostMapping(
+    value = ["/com/case-search", "/caseload/com/case-search"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Search for offenders on a given staff member's caseload.",
+    description = "Search for offenders on a given staff member's caseload. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The query retrieved a set of enriched results",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ComSearchResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun searchForOffenderOnProbationUserCaseload(
+    @Valid @RequestBody
+    body: ProbationUserSearchRequest,
+  ) = comCaseloadSearchService.searchForOffenderOnProbationUserCaseload(body)
+
+  @Deprecated(
+    "Use /caseload/com/case-search instead",
+    ReplaceWith("Use /caseload/com/case-search instead"),
+  )
+  @Tag(name = Tags.COM)
+  @PostMapping(
     value = ["/com/case-search"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
@@ -705,5 +754,5 @@ class CaseloadController(
   fun searchForOffenderOnStaffCaseload(
     @Valid @RequestBody
     body: ProbationUserSearchRequest,
-  ) = comCaseloadSearchService.searchForOffenderOnStaffCaseload(body)
+  ) = comCaseloadSearchService.searchForOffenderOnProbationUserCaseload(body)
 }

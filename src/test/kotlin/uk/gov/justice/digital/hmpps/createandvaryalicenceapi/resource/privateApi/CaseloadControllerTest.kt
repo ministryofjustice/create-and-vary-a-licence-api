@@ -264,9 +264,9 @@ class CaseloadControllerTest {
     // Given
     val body = ProbationUserSearchRequest(query = "Test", staffIdentifier = 2000)
 
-    whenever(comCaseloadSearchService.searchForOffenderOnStaffCaseload(body)).thenReturn(aFoundProbationRecord)
+    whenever(comCaseloadSearchService.searchForOffenderOnProbationUserCaseload(body)).thenReturn(aFoundProbationRecord)
 
-    val request = post("/com/case-search")
+    val request = post("/caseload/com/case-search")
       .accept(MediaType.APPLICATION_JSON)
       .contentType(MediaType.APPLICATION_JSON)
       .content(mapper.writeValueAsBytes(body))
@@ -283,7 +283,7 @@ class CaseloadControllerTest {
     assertThat(result.response.contentAsString)
       .isEqualTo(mapper.writeValueAsString(aFoundProbationRecord))
 
-    verify(comCaseloadSearchService, times(1)).searchForOffenderOnStaffCaseload(body)
+    verify(comCaseloadSearchService, times(1)).searchForOffenderOnProbationUserCaseload(body)
   }
 
   private companion object {

@@ -42,7 +42,7 @@ class ComCaseloadSearchService(
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
 ) {
-  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ComSearchResponse {
+  fun searchForOffenderOnProbationUserCaseload(body: ProbationUserSearchRequest): ComSearchResponse {
     val teamCaseloadResult = deliusApiClient.getTeamManagedOffenders(
       body.staffIdentifier,
       body.query,
@@ -60,7 +60,7 @@ class ComCaseloadSearchService(
     val searchResults = deliusRecordsToLicences.mapNotNull { (caseloadResult, licence) ->
       val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
       val cvlRecord = cvlRecords.find { it.nomisId == prisonerRecord?.prisonerNumber }
-      createFoundComCase(licence, caseloadResult, prisonerRecord, cvlRecord)
+      createCase(licence, caseloadResult, prisonerRecord, cvlRecord)
     }.filterOutPastReleaseDate()
       .filterOutHdc(prisonerRecords)
 
@@ -74,15 +74,15 @@ class ComCaseloadSearchService(
     )
   }
 
-  private fun createFoundComCase(
+  private fun createCase(
     licence: Licence?,
     caseloadResult: CaseloadResult,
     prisonerRecord: PrisonerSearchPrisoner?,
     cvlRecord: CvlRecord?,
   ): FoundComCase? = if (licence == null) {
-    createNotStartedFoundComCase(caseloadResult, prisonerRecord, cvlRecord)
+    createNotStartedCase(caseloadResult, prisonerRecord, cvlRecord)
   } else {
-    createFoundComCaseWithLicecence(caseloadResult, licence, prisonerRecord, cvlRecord)
+    createCaseWithExistingLicence(caseloadResult, licence, prisonerRecord, cvlRecord)
   }
 
   private fun getLicence(crn: String): Licence? {
@@ -103,7 +103,7 @@ class ComCaseloadSearchService(
     return prisoners.associateBy { it.prisonerNumber }
   }
 
-  private fun createNotStartedFoundComCase(
+  private fun createNotStartedCase(
     deliusOffender: CaseloadResult,
     prisonOffender: PrisonerSearchPrisoner?,
     cvlRecord: CvlRecord?,
@@ -115,7 +115,7 @@ class ComCaseloadSearchService(
     else -> deliusOffender.toUnstartedRecord(prisonOffender, cvlRecord)
   }
 
-  private fun createFoundComCaseWithLicecence(
+  private fun createCaseWithExistingLicence(
     deliusOffender: CaseloadResult,
     licence: Licence,
     prisonOffender: PrisonerSearchPrisoner?,
