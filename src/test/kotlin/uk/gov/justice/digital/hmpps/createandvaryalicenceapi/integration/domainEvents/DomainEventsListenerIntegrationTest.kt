@@ -223,7 +223,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(licence.dateOfBirth).isEqualTo("1985-01-01")
 
     val auditEvent = testRepository.findFirstAuditEvent(1)
-    assertThat(auditEvent.summary).isEqualTo("Offender details updated to forename: Test1, middleNames: null, surname: Person1, date of birth: 1985-01-01")
+    assertThat(auditEvent.summary).isEqualTo("Offender details updated to forename: Test1, middleNames: , surname: Person1, date of birth: 1985-01-01")
     assertThat(auditEvent.changes).isEqualTo(
       mapOf(
         "type" to "Updated offender details",
@@ -231,7 +231,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
           "oldForename" to "Person",
           "newForename" to "Test1",
           "oldMiddleNames" to "",
-          "newMiddleNames" to null,
+          "newMiddleNames" to "",
           "oldSurname" to "One",
           "newSurname" to "Person1",
           "oldDob" to listOf(2020, 10, 25),
