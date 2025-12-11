@@ -4,9 +4,9 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.FoundComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -42,7 +42,7 @@ class ComCaseloadSearchService(
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
 ) {
-  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
+  fun searchForOffenderOnProbationUserCaseload(body: ProbationUserSearchRequest): ComSearchResponse {
     val teamCaseloadResult = deliusApiClient.getTeamManagedOffenders(
       body.staffIdentifier,
       body.query,
@@ -55,30 +55,34 @@ class ComCaseloadSearchService(
 
     val deliusRecordsToLicences = teamCaseloadResult.map { it to getLicence(it.crn) }
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsToLicences)
-    val cvlRecords = cvlRecordService.getCvlRecords(prisonerRecords.values.toList())
+    val cvlRecordsByPrisonNumber = cvlRecordService.getCvlRecords(prisonerRecords.values.toList()).associateBy { it.nomisId }
 
-    val cvlSearchRecords = deliusRecordsToLicences.map { (caseloadResult, licence) ->
-      val prisonRecord = prisonerRecords[caseloadResult.nomisId]
-      CvlProbationSearchRecord(
-        caseloadResult = caseloadResult,
-        prisonerSearchPrisoner = prisonRecord,
-        licence = licence,
-      )
-    }
-
-    val searchResults = cvlSearchRecords.mapNotNull {
-      val cvlRecord: CvlRecord? =
-        cvlRecords.find { cvlRecord -> it.prisonerSearchPrisoner?.prisonerNumber == cvlRecord.nomisId }
-      when (it.licence) {
-        null -> createNotStartedRecord(it.caseloadResult, it.prisonerSearchPrisoner, cvlRecord)
-        else -> createRecord(it.caseloadResult, it.licence, it.prisonerSearchPrisoner, cvlRecord)
-      }
-    }.filterOutPastReleaseDate().filterOutHdc(prisonerRecords)
+    val searchResults = deliusRecordsToLicences.mapNotNull { (caseloadResult, licence) ->
+      val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
+      val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
+      createCase(licence, caseloadResult, prisonerRecord, cvlRecord)
+    }.filterOutPastReleaseDate()
+      .filterOutHdc(prisonerRecords)
 
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
 
-    return ProbationSearchResult(searchResults, inPrisonCount, onProbationCount)
+    return ComSearchResponse(
+      results = searchResults,
+      inPrisonCount = inPrisonCount,
+      onProbationCount = onProbationCount,
+    )
+  }
+
+  private fun createCase(
+    licence: Licence?,
+    caseloadResult: CaseloadResult,
+    prisonerRecord: PrisonerSearchPrisoner?,
+    cvlRecord: CvlRecord?,
+  ): FoundComCase? = if (licence == null) {
+    createNotStartedCase(caseloadResult, prisonerRecord, cvlRecord)
+  } else {
+    createCaseWithExistingLicence(caseloadResult, licence, prisonerRecord, cvlRecord)
   }
 
   private fun getLicence(crn: String): Licence? {
@@ -99,7 +103,7 @@ class ComCaseloadSearchService(
     return prisoners.associateBy { it.prisonerNumber }
   }
 
-  private fun createNotStartedRecord(
+  private fun createNotStartedCase(
     deliusOffender: CaseloadResult,
     prisonOffender: PrisonerSearchPrisoner?,
     cvlRecord: CvlRecord?,
@@ -111,12 +115,12 @@ class ComCaseloadSearchService(
     else -> deliusOffender.toUnstartedRecord(prisonOffender, cvlRecord)
   }
 
-  private fun createRecord(
+  private fun createCaseWithExistingLicence(
     deliusOffender: CaseloadResult,
     licence: Licence,
     prisonOffender: PrisonerSearchPrisoner?,
     cvlRecord: CvlRecord?,
-  ): FoundProbationRecord? = when {
+  ): FoundComCase? = when {
     licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
 
     prisonOffender == null || cvlRecord == null -> null
@@ -124,7 +128,7 @@ class ComCaseloadSearchService(
     else -> null
   }
 
-  private fun List<FoundProbationRecord>.filterOutHdc(prisoners: Map<String, PrisonerSearchPrisoner>): List<FoundProbationRecord> {
+  private fun List<FoundComCase>.filterOutHdc(prisoners: Map<String, PrisonerSearchPrisoner>): List<FoundComCase> {
     if (prisoners.isEmpty()) {
       return this
     }
@@ -138,8 +142,8 @@ class ComCaseloadSearchService(
   private fun CaseloadResult.toUnstartedRecord(
     prisonOffender: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
-  ): FoundProbationRecord = this.transformToUnstartedRecord(
-    cvlRecord.hardStopKind,
+  ): FoundComCase = this.transformToUnstartedRecord(
+    cvlRecord.hardStopKind ?: cvlRecord.eligibleKind!!,
     releaseDate = cvlRecord.licenceStartDate,
     bookingId = prisonOffender.bookingId?.toLong(),
     licenceType = cvlRecord.licenceType,
@@ -163,7 +167,7 @@ class ComCaseloadSearchService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
   )
 
-  private fun List<FoundProbationRecord>.filterOutPastReleaseDate(): List<FoundProbationRecord> = this.filter {
+  private fun List<FoundComCase>.filterOutPastReleaseDate(): List<FoundComCase> = this.filter {
     if (it.isOnProbation == true) {
       true
     } else {
@@ -178,12 +182,11 @@ class ComCaseloadSearchService(
     hardStopWarningDate: LocalDate?,
     isInHardStopPeriod: Boolean,
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-  ): FoundProbationRecord {
+  ): FoundComCase {
     val com = if (staff.unallocated == true) null else staff
 
-    return FoundProbationRecord(
+    return FoundComCase(
       kind = licence.kind,
-      hardStopKind = hardStopKind,
       bookingId = licence.bookingId,
       name = "${name.forename} ${name.surname}".convertToTitleCase(),
       crn = licence.crn,
@@ -216,10 +219,4 @@ class ComCaseloadSearchService(
       minor1.compareTo(minor2)
     }
   }
-
-  private data class CvlProbationSearchRecord(
-    val caseloadResult: CaseloadResult,
-    val prisonerSearchPrisoner: PrisonerSearchPrisoner?,
-    val licence: Licence? = null,
-  )
 }

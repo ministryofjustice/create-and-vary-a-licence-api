@@ -28,16 +28,24 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.FoundComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.CaCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCaseloadSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -65,6 +73,9 @@ class CaseloadControllerTest {
   @MockitoBean
   private lateinit var varyApproverCaseloadService: VaryApproverCaseloadService
 
+  @MockitoBean
+  private lateinit var comCaseloadSearchService: ComCaseloadSearchService
+
   @Autowired
   private lateinit var mvc: MockMvc
 
@@ -73,7 +84,7 @@ class CaseloadControllerTest {
 
   @BeforeEach
   fun reset() {
-    reset(caseService, approverCaseloadService)
+    reset(caseService, approverCaseloadService, comCaseloadSearchService)
 
     mvc = MockMvcBuilders
       .standaloneSetup(
@@ -84,6 +95,7 @@ class CaseloadControllerTest {
           comCreateCaseloadService,
           comVaryCaseloadService,
           varyApproverCaseloadService,
+          comCaseloadSearchService,
         ),
       )
       .setControllerAdvice(ControllerAdvice())
@@ -92,6 +104,7 @@ class CaseloadControllerTest {
 
   @Test
   fun `Get licences for approval`() {
+    // Given
     val request = listOf(
       "MDI",
       "ABC",
@@ -103,22 +116,27 @@ class CaseloadControllerTest {
 
     whenever(approverCaseloadService.getApprovalNeeded(request)).thenReturn(listOf(approvalCase))
 
-    val response = mvc.perform(
+    // When
+    val result = mvc.perform(
       post("/caseload/prison-approver/approval-needed")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content(mapper.writeValueAsBytes(request)),
     )
+
+    // Then
+    result
       .andExpect(status().isOk)
       .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-      .andReturn().response.contentAsString
 
+    val response = result.andReturn().response.contentAsString
     assertThat(mapper.readValue(response, Array<ApprovalCase>::class.java)).isEqualTo(arrayOf(approvalCase))
     verify(approverCaseloadService, times(1)).getApprovalNeeded(request)
   }
 
   @Test
   fun `Get recently approved licences`() {
+    // Given
     val request = listOf(
       "MDI",
       "ABC",
@@ -130,22 +148,27 @@ class CaseloadControllerTest {
 
     whenever(approverCaseloadService.getRecentlyApproved(request)).thenReturn(listOf(approvalCase))
 
-    val response = mvc.perform(
+    // When
+    val result = mvc.perform(
       post("/caseload/prison-approver/recently-approved")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content(mapper.writeValueAsBytes(request)),
     )
+
+    // Then
+    result
       .andExpect(status().isOk)
       .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-      .andReturn().response.contentAsString
 
+    val response = result.andReturn().response.contentAsString
     assertThat(mapper.readValue(response, Array<ApprovalCase>::class.java)).isEqualTo(arrayOf(approvalCase))
     verify(approverCaseloadService, times(1)).getRecentlyApproved(request)
   }
 
   @Test
   fun `Search for offender on prison case admin caseload`() {
+    // Given
     val request = PrisonUserSearchRequest(
       "ABC",
       setOf("MDI"),
@@ -156,22 +179,27 @@ class CaseloadControllerTest {
 
     whenever(caCaseloadService.searchForOffenderOnPrisonCaseAdminCaseload(request)).thenReturn(result)
 
-    val response = mvc.perform(
+    // When
+    val mvcResult = mvc.perform(
       post("/caseload/case-admin/case-search")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content(mapper.writeValueAsBytes(request)),
     )
+
+    // Then
+    mvcResult
       .andExpect(status().isOk)
       .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-      .andReturn().response.contentAsString
 
+    val response = mvcResult.andReturn().response.contentAsString
     assertThat(mapper.readValue(response, PrisonCaseAdminSearchResult::class.java)).isEqualTo(result)
     verify(caCaseloadService, times(1)).searchForOffenderOnPrisonCaseAdminCaseload(request)
   }
 
   @Test
   fun `Search for offender on approver caseload`() {
+    // Given
     val request = ApproverSearchRequest(
       listOf("MDI"),
       "ABC",
@@ -181,22 +209,27 @@ class CaseloadControllerTest {
 
     whenever(approverCaseloadService.searchForOffenderOnApproverCaseload(request)).thenReturn(result)
 
-    val response = mvc.perform(
+    // When
+    val mvcResult = mvc.perform(
       post("/caseload/prison-approver/case-search")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content(mapper.writeValueAsBytes(request)),
     )
+
+    // Then
+    mvcResult
       .andExpect(status().isOk)
       .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-      .andReturn().response.contentAsString
 
+    val response = mvcResult.andReturn().response.contentAsString
     assertThat(mapper.readValue(response, ApproverSearchResponse::class.java)).isEqualTo(result)
     verify(approverCaseloadService, times(1)).searchForOffenderOnApproverCaseload(request)
   }
 
   @Test
   fun `Search for offender on vary approver caseload`() {
+    // Given
     val request = VaryApproverCaseloadSearchRequest(
       listOf("N55PDV"),
       null,
@@ -208,17 +241,71 @@ class CaseloadControllerTest {
 
     whenever(varyApproverCaseloadService.searchForOffenderOnVaryApproverCaseload(request)).thenReturn(result)
 
-    val response = mvc.perform(
+    // When
+    val mvcResult = mvc.perform(
       post("/caseload/vary-approver/case-search")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content(mapper.writeValueAsBytes(request)),
     )
+
+    // Then
+    mvcResult
       .andExpect(status().isOk)
       .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-      .andReturn().response.contentAsString
 
+    val response = mvcResult.andReturn().response.contentAsString
     assertThat(mapper.readValue(response, VaryApproverCaseloadSearchResponse::class.java)).isEqualTo(result)
     verify(varyApproverCaseloadService, times(1)).searchForOffenderOnVaryApproverCaseload(request)
+  }
+
+  @Test
+  fun `Search for offenders on a given staff member's caseload`() {
+    // Given
+    val body = ProbationUserSearchRequest(query = "Test", staffIdentifier = 2000)
+
+    whenever(comCaseloadSearchService.searchForOffenderOnProbationUserCaseload(body)).thenReturn(aFoundProbationRecord)
+
+    val request = post("/caseload/com/case-search")
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content(mapper.writeValueAsBytes(body))
+
+    // When
+    val mvcResult = mvc.perform(request)
+
+    // Then
+    mvcResult
+      .andExpect(status().isOk)
+      .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+
+    val result = mvcResult.andReturn()
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(aFoundProbationRecord))
+
+    verify(comCaseloadSearchService, times(1)).searchForOffenderOnProbationUserCaseload(body)
+  }
+
+  private companion object {
+    val aFoundProbationRecord = ComSearchResponse(
+      listOf(
+        FoundComCase(
+          kind = LicenceKind.CRD,
+          name = "Test Surname",
+          crn = "CRN1",
+          nomisId = "NOMS1",
+          comName = "Staff Surname",
+          comStaffCode = "A01B02C",
+          teamName = "Test Team",
+          releaseDate = LocalDate.of(2021, 10, 22),
+          licenceId = 1L,
+          licenceType = LicenceType.AP,
+          licenceStatus = LicenceStatus.IN_PROGRESS,
+          isOnProbation = false,
+        ),
+      ),
+      1,
+      0,
+    )
   }
 }
