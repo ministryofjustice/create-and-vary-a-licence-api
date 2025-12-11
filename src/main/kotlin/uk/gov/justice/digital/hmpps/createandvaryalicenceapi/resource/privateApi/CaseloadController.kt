@@ -664,7 +664,7 @@ class CaseloadController(
 
   @Tag(name = Tags.COM)
   @PostMapping(
-    value = ["/com/case-search", "/caseload/com/case-search"],
+    value = ["/caseload/com/case-search"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
