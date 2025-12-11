@@ -42,7 +42,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord as ModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HardStopLicence as ModelHardstopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
@@ -52,6 +51,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TimeServedLicence as ModelTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.FoundComCase as ModelFoundProbationRecord
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
@@ -871,7 +871,7 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent
 )
 
 fun CaseloadResult.transformToUnstartedRecord(
-  hardStopKind: LicenceKind?,
+  kind: LicenceKind,
   bookingId: Long?,
   releaseDate: LocalDate?,
   licenceType: LicenceType?,
@@ -885,8 +885,7 @@ fun CaseloadResult.transformToUnstartedRecord(
   val com = if (staff.unallocated == true) null else staff
 
   return ModelFoundProbationRecord(
-    kind = null,
-    hardStopKind = hardStopKind,
+    kind = kind,
     bookingId = bookingId,
     name = name.fullName(),
     crn = crn,

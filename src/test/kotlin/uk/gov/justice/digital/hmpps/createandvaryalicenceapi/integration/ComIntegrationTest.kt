@@ -12,8 +12,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -38,7 +38,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
+      .expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody
 
     val resultsList = resultObject?.results
@@ -89,7 +89,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
+      .expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody
 
     val resultsList = resultObject?.results
@@ -150,91 +150,14 @@ class ComIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isOk
     result.expectHeader().contentType(MediaType.APPLICATION_JSON)
 
-    val searchResult = result.expectBody(ProbationSearchResult::class.java)
+    val searchResult = result.expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody
 
     assertThat(searchResult).isNotNull
     val resultsList = searchResult!!.results
     assertThat(resultsList.size).isEqualTo(2)
-    assertThat(resultsList[0].kind).isNull()
-    assertThat(resultsList[0].hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
-    assertThat(resultsList[1].kind).isNull()
-    assertThat(resultsList[1].hardStopKind).isEqualTo(LicenceKind.HARD_STOP)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `Given a staff member has searched for an offender that has served there time and has a licence then the case is time served`() {
-    // Given
-    deliusMockServer.stubGetTeamManagedCases()
-    prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
-      prisonId = "MDI",
-      sentenceStartDate = LocalDate.now(),
-      confirmedReleaseDate = LocalDate.now(),
-      conditionalReleaseDate = LocalDate.now(),
-    )
-
-    // When
-    val result = webTestClient.post()
-      .uri("/com/case-search")
-      .bodyValue(aProbationUserSearchRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-
-    // Then
-    result.expectStatus().isOk
-    result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-    val searchResult = result.expectBody(ProbationSearchResult::class.java)
-      .returnResult().responseBody
-
-    assertThat(searchResult).isNotNull
-    val resultsList = searchResult!!.results
-    assertThat(resultsList.size).isEqualTo(2)
-    assertThat(resultsList[0].kind).isEqualTo(LicenceKind.CRD)
-    assertThat(resultsList[0].hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
-    assertThat(resultsList[1].kind).isNull()
-    assertThat(resultsList[1].hardStopKind).isEqualTo(LicenceKind.HARD_STOP)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `Given a COM user has searched for an offender with a started time served case which is unallocated to a probation practitioner`() {
-    // Given
-    deliusMockServer.stubGetTeamManagedUnallocatedCases()
-    prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
-      prisonId = "MDI",
-      sentenceStartDate = LocalDate.now(),
-      confirmedReleaseDate = LocalDate.now(),
-      conditionalReleaseDate = LocalDate.now(),
-    )
-
-    // When
-    val result = webTestClient.post()
-      .uri("/com/case-search")
-      .bodyValue(aProbationUserSearchRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-
-    // Then
-    result.expectStatus().isOk
-    result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-    val searchResult = result.expectBody(ProbationSearchResult::class.java)
-      .returnResult().responseBody
-
-    assertThat(searchResult).isNotNull
-    val resultsList = searchResult!!.results
-    assertThat(resultsList.size).isEqualTo(1)
-    assertThat(resultsList[0].hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
-    assertThat(resultsList[0].comName).isNull()
-    assertThat(resultsList[0].comStaffCode).isNull()
+    assertThat(resultsList[0].kind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(resultsList[1].kind).isEqualTo(LicenceKind.HARD_STOP)
   }
 
   @Test
@@ -260,13 +183,86 @@ class ComIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isOk
     result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-    val searchResult = result.expectBody(ProbationSearchResult::class.java)
+    val searchResult = result.expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody
 
     assertThat(searchResult).isNotNull
     val resultsList = searchResult!!.results
     assertThat(resultsList.size).isEqualTo(1)
-    assertThat(resultsList[0].hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(resultsList[0].kind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(resultsList[0].comName).isNull()
+    assertThat(resultsList[0].comStaffCode).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-time-served-licence-id-1.sql",
+  )
+  fun `Given a staff member has searched for an offender that has served there time and has a licence then the case is time served`() {
+    // Given
+    deliusMockServer.stubGetTeamManagedCases()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+      prisonId = "MDI",
+      sentenceStartDate = LocalDate.now(),
+      confirmedReleaseDate = LocalDate.now(),
+      conditionalReleaseDate = LocalDate.now(),
+    )
+
+    // When
+    val result = webTestClient.post()
+      .uri("/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+    val searchResult = result.expectBody(ComSearchResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(searchResult).isNotNull
+    val resultsList = searchResult!!.results
+    assertThat(resultsList.size).isEqualTo(2)
+    assertThat(resultsList[0].kind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(resultsList[1].kind).isEqualTo(LicenceKind.HARD_STOP)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-time-served-licence-id-1.sql",
+  )
+  fun `Given a COM user has searched for an offender with a started time served case which is unallocated to a probation practitioner`() {
+    // Given
+    deliusMockServer.stubGetTeamManagedUnallocatedCases()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+      prisonId = "MDI",
+      sentenceStartDate = LocalDate.now(),
+      confirmedReleaseDate = LocalDate.now(),
+      conditionalReleaseDate = LocalDate.now(),
+    )
+
+    // When
+    val result = webTestClient.post()
+      .uri("/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+    val searchResult = result.expectBody(ComSearchResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(searchResult).isNotNull
+    val resultsList = searchResult!!.results
+    assertThat(resultsList.size).isEqualTo(1)
+    assertThat(resultsList[0].kind).isEqualTo(LicenceKind.TIME_SERVED)
     assertThat(resultsList[0].comName).isNull()
     assertThat(resultsList[0].comStaffCode).isNull()
   }
@@ -283,7 +279,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
+      .expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody
 
     assertThat(resultList?.results?.size).isEqualTo(0)
@@ -303,7 +299,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
+      .expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody
 
     assertThat(resultList?.results?.size).isEqualTo(0)
@@ -324,7 +320,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
+      .expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody
 
     val resultsList = resultObject?.results
@@ -375,7 +371,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
+      .expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody?.results
 
     assertThat(resultObject).filteredOn("nomisId", "A1234AD").isNotEmpty
@@ -396,7 +392,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
+      .expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody?.results
     assertThat(resultObject).filteredOn("nomisId", "A1234AE").isEmpty()
   }

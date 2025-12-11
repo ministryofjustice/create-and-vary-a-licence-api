@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
@@ -7,13 +7,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
-@Schema(description = "Describes a search result which has been found and enriched")
-data class FoundProbationRecord(
-  @field:Schema(description = "kind of licence, null if no licence exists", example = "CRD")
-  val kind: LicenceKind? = null,
-
-  @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.TIME_SERVED)
-  val hardStopKind: LicenceKind? = null,
+@Schema(description = "Describes a com search result which has been found and enriched")
+data class FoundComCase(
+  @field:Schema(description = "kind of licence", example = "CRD")
+  val kind: LicenceKind,
 
   @field:Schema(description = "the prison booking id", example = "123")
   val bookingId: Long? = null,

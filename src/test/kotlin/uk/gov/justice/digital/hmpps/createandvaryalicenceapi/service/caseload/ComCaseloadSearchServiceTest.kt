@@ -598,7 +598,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
 
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId.toLong())))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -630,7 +630,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
 
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId.toLong())))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -662,7 +662,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
 
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId.toLong())))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -693,7 +693,7 @@ class ComCaseloadSearchServiceTest {
   }
 
   @Test
-  fun `search for offenders in prison without a licence, eligible for CVL, HDC case but without HDCED`() {
+  fun `search for offenders in prison without a licence, eligible for CVL, HDC case and is approved for HDC`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
@@ -705,7 +705,7 @@ class ComCaseloadSearchServiceTest {
       ),
     )
 
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(123456)))
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
