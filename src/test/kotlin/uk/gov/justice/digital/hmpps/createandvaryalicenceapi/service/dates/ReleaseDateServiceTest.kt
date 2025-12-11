@@ -1195,12 +1195,12 @@ class ReleaseDateServiceTest {
     }
 
     @Test
-    fun `returns true if release date is equal to last working day before LED`() {
+    fun `returns false if release date is equal to last working day before LED`() {
       // Stubbed non-working day
       val licenceExpiryDate = LocalDate.of(2018, 12, 4)
 
       val releaseDate = LocalDate.of(2018, 11, 30)
-      assertThat(service.isReleaseAtLed(releaseDate, licenceExpiryDate)).isTrue()
+      assertThat(service.isReleaseAtLed(releaseDate, licenceExpiryDate)).isFalse()
     }
 
     @Test
