@@ -55,11 +55,11 @@ class ComCaseloadSearchService(
 
     val deliusRecordsToLicences = teamCaseloadResult.map { it to getLicence(it.crn) }
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsToLicences)
-    val cvlRecords = cvlRecordService.getCvlRecords(prisonerRecords.values.toList())
+    val cvlRecordsByPrisonNumber = cvlRecordService.getCvlRecords(prisonerRecords.values.toList()).associateBy { it.nomisId }
 
     val searchResults = deliusRecordsToLicences.mapNotNull { (caseloadResult, licence) ->
       val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
-      val cvlRecord = cvlRecords.find { it.nomisId == prisonerRecord?.prisonerNumber }
+      val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
       createCase(licence, caseloadResult, prisonerRecord, cvlRecord)
     }.filterOutPastReleaseDate()
       .filterOutHdc(prisonerRecords)
