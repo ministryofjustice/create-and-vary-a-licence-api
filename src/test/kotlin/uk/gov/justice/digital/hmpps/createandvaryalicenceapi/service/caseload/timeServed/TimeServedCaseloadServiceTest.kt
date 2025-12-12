@@ -215,4 +215,27 @@ class TimeServedCaseloadServiceTest {
         assertThat(it.isTimeServedCase).isFalse()
       }
   }
+
+  @Test
+  fun `should not classify prisoner as time served by ignoring ARD rule when sentence start is null`() {
+    val today = LocalDate.now(fixedClock)
+    val prisoner = prisonerSearchResult(
+      sentenceStartDate = null,
+      confirmedReleaseDate = today.plusDays(1),
+      conditionalReleaseDate = today,
+      conditionalReleaseDateOverrideDate = null,
+    )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(prisoner)))
+
+    val result = service.getCases("MDI")
+
+    assertThat(result.otherCases)
+      .hasSize(1)
+      .allSatisfy {
+        assertThat(it.isTimeServedCaseByIgnoreArdRule).isFalse()
+        assertThat(it.isTimeServedCase).isFalse()
+      }
+  }
 }
