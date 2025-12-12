@@ -161,7 +161,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<PrisonCaseAdminSearchResult>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.inPrisonResults).hasSize(3)
+      assertThat(caseload.inPrisonResults).hasSize(4)
       assertThat(caseload.onProbationResults).hasSize(2)
       assertThat(caseload.attentionNeededResults).hasSize(1)
 
@@ -206,7 +206,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<PrisonCaseAdminSearchResult>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.inPrisonResults).hasSize(3)
+      assertThat(caseload.inPrisonResults).hasSize(4)
 
       with(caseload.inPrisonResults[1]) {
         assertThat(name).isEqualTo("Test5 Person5")

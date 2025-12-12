@@ -1168,6 +1168,56 @@ class ComCreateCaseloadServiceTest {
   }
 
   @Test
+  fun `when time served case with no licence then case kind uses CvlRecord hard stop kind`() {
+    val prisonerNumber = "A1234AA"
+    val managedOffenders = listOf(ManagedOffenderCrn(crn = "X12348", prisonerNumber))
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(prisonerSearchResult(prisonerNumber = prisonerNumber)),
+    )
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(emptyList())
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+      listOf(
+        aCvlRecord(
+          nomsId = prisonerNumber,
+          hardStopKind = LicenceKind.TIME_SERVED,
+          licenceStartDate = LocalDate.now(),
+          isInHardStopPeriod = true,
+        ),
+      ),
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    assertThat(caseload[0].kind).isEqualTo(LicenceKind.TIME_SERVED)
+  }
+
+  @Test
+  fun `when not time served case with no licence then case kind uses CvlRecord kind`() {
+    val prisonerNumber = "A1234AA"
+    val managedOffenders = listOf(ManagedOffenderCrn(crn = "X12348", prisonerNumber))
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(prisonerSearchResult(prisonerNumber = prisonerNumber)),
+    )
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(emptyList())
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+      listOf(
+        aCvlRecord(
+          nomsId = prisonerNumber,
+          licenceStartDate = tenDaysFromNow,
+        ),
+      ),
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    assertThat(caseload[0].kind).isEqualTo(LicenceKind.CRD)
+  }
+
+  @Test
   fun `it sets LicenceCreationType to LICENCE_CREATED_BY_PRISON if the hard stop licence has been submitted`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),

@@ -695,7 +695,7 @@ class PublicLicenceServiceTest {
       additionalConditionUploadSummary = mutableListOf(),
     )
 
-    val publicLicenseConditions = Conditions(
+    val publicLicenceConditions = Conditions(
       apConditions = ApConditions(
         modelLicence.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
         modelLicence.additionalLicenceConditions.transformToResourceAdditional(),
@@ -724,7 +724,7 @@ class PublicLicenceServiceTest {
       updatedByUsername = modelLicence.updatedByUsername,
       updatedDateTime = modelLicence.dateLastUpdated,
       isInPssPeriod = modelLicence.isInPssPeriod ?: false,
-      conditions = publicLicenseConditions,
+      conditions = publicLicenceConditions,
       licenceStartDate = modelLicence.licenceStartDate,
     )
   }

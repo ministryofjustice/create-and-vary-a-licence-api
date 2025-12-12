@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.prison.CaPrisonCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.probation.CaProbationCaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab.ATTENTION_NEEDED
 
 @Service
 class CaCaseloadService(
@@ -23,7 +23,7 @@ class CaCaseloadService(
   fun searchForOffenderOnPrisonCaseAdminCaseload(body: PrisonUserSearchRequest): PrisonCaseAdminSearchResult {
     val prisonCases = getPrisonOmuCaseload(body.prisonCaseloads, body.query)
 
-    val (attentionNeededCases, inPrisonCases) = prisonCases.partition { it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
+    val (attentionNeededCases, inPrisonCases) = prisonCases.partition { it.tabType == ATTENTION_NEEDED }
 
     val probationCases = getProbationOmuCaseload(body.prisonCaseloads, body.query)
 

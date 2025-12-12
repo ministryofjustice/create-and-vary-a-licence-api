@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
@@ -25,6 +26,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
@@ -146,8 +150,9 @@ object TestData {
   fun aCvlRecord(
     nomsId: String = "A1234AA",
     licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22),
-    kind: LicenceKind?,
-    hardStopKind: LicenceKind? = LicenceKind.HARD_STOP,
+    kind: LicenceKind? = LicenceKind.CRD,
+    isEligible: Boolean = true,
+    hardStopKind: LicenceKind? = null,
     hardStopDate: LocalDate? = null,
     hardStopWarningDate: LocalDate? = null,
     isEligibleForEarlyRelease: Boolean = false,
@@ -157,7 +162,7 @@ object TestData {
   ) = CvlRecord(
     nomisId = nomsId,
     licenceStartDate = licenceStartDate,
-    isEligible = true,
+    isEligible = isEligible,
     eligibleKind = kind,
     ineligibilityReasons = emptyList(),
     hardStopKind = hardStopKind,
@@ -388,51 +393,6 @@ object TestData {
     )
   }
 
-  fun createHardStopRecallLicence() = HardStopLicence(
-    id = 1,
-    typeCode = AP,
-    eligibleKind = LicenceKind.PRRD,
-    version = "2.1",
-    statusCode = LicenceStatus.IN_PROGRESS,
-    nomsId = "A1234AA",
-    bookingNo = "123456",
-    bookingId = 54321,
-    crn = "X12345",
-    pnc = "2019/123445",
-    cro = "12345",
-    prisonCode = "MDI",
-    prisonDescription = "Moorland (HMP)",
-    forename = "John",
-    surname = "Smith",
-    dateOfBirth = LocalDate.of(1985, 12, 28),
-    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-    actualReleaseDate = LocalDate.of(2021, 10, 22),
-    sentenceStartDate = LocalDate.of(2018, 10, 22),
-    sentenceEndDate = LocalDate.of(2021, 10, 22),
-    licenceStartDate = LocalDate.of(2021, 10, 22),
-    licenceExpiryDate = LocalDate.of(2021, 10, 22),
-    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-    probationAreaCode = "N01",
-    probationAreaDescription = "Wales",
-    probationPduCode = "N01A",
-    probationPduDescription = "Cardiff",
-    probationLauCode = "N01A2",
-    probationLauDescription = "Cardiff South",
-    probationTeamCode = "NA01A2-A",
-    probationTeamDescription = "Cardiff South Team A",
-    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-    standardConditions = emptyList(),
-    responsibleCom = communityOffenderManager(),
-    createdBy = prisonUser(),
-    postRecallReleaseDate = LocalDate.now(),
-  ).let {
-    it.copy(
-      standardConditions = someEntityStandardConditions(it),
-      additionalConditions = listOf(hardStopAdditionalCondition(it)),
-    )
-  }
-
   fun createVariationLicence() = VariationLicence(
     id = 1,
     typeCode = AP,
@@ -610,13 +570,14 @@ object TestData {
   }
 
   fun prisonerSearchResult(
+    prisonerNumber: String = "A1234AA",
     conditionalReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
     conditionalReleaseDateOverrideDate: LocalDate? = null,
     sentenceStartDate: LocalDate? = LocalDate.of(2018, 10, 22),
     confirmedReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
     postRecallReleaseDate: LocalDate? = null,
   ) = PrisonerSearchPrisoner(
-    prisonerNumber = "A1234AA",
+    prisonerNumber = prisonerNumber,
     bookingId = "123456",
     status = "ACTIVE IN",
     mostSeriousOffence = "Robbery",
@@ -807,7 +768,7 @@ object TestData {
     licenceType = AP,
     variationRequestDate = LocalDate.of(2023, 11, 24),
     releaseDate = LocalDate.of(2021, 10, 22),
-    probationPractitioner = "Delius User",
+    probationPractitioner = ProbationPractitioner(),
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
@@ -862,14 +823,86 @@ object TestData {
     ),
   )
 
-  private fun someModelAdditionalConditions() = listOf(
+  fun someModelAdditionalConditions() = listOf(
     ModelAdditionalCondition(
       id = 1,
+      category = "Associates",
       code = "associateWith",
       sequence = 1,
       text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
       expandedText = "Do not associate with value1 for a period of value2",
       data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+    ),
+    ModelAdditionalCondition(
+      id = 2,
+      category = "FreedomOfMovement",
+      code = EXCLUSION_ZONE_COND_CODE,
+      sequence = 2,
+      text = "Do not enter the area defined in the attached map.",
+      expandedText = "Do not enter the area defined in the attached map.",
+      data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(
+          id = 1,
+          fileSize = 1,
+          uploadDetailId = 1,
+        ),
+      ),
+    ),
+    ModelAdditionalCondition(
+      id = 3,
+      category = "FreedomOfMovement",
+      code = EXCLUSION_ZONE_COND_CODE,
+      sequence = 3,
+      text = "Do not enter the area defined in the attached map.",
+      expandedText = "Do not enter the area defined in the attached map.",
+      data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(
+          id = 2,
+          fileSize = 1,
+          uploadDetailId = 2,
+        ),
+      ),
+    ),
+    ModelAdditionalCondition(
+      id = 4,
+      category = "FreedomOfMovement",
+      code = EVENT_EXCLUSION_COND_CODE,
+      sequence = 4,
+      text = "Do not enter the area defined in the attached map for the duration of [EVENT NAME].",
+      expandedText = "Do not enter the area defined in the attached map for the duration of The Event.",
+      data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(
+          id = 3,
+          fileSize = 1,
+          uploadDetailId = 3,
+        ),
+      ),
+    ),
+    ModelAdditionalCondition(
+      id = 5,
+      code = ELECTRONIC_TAG_COND_CODE,
+      sequence = 5,
+      text = "You must wear an electronic monitoring tag for [REASON] purposes.",
+      expandedText = "You must wear an electronic monitoring tag for curfew purposes.",
+      data = listOf(
+        AdditionalConditionData(
+          id = 5,
+          field = "electronicMonitoringTypes",
+          value = "curfew",
+          sequence = 1,
+        ),
+      ),
       readyToSubmit = true,
       requiresInput = true,
     ),

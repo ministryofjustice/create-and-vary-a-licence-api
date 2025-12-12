@@ -63,8 +63,5 @@ data class CaCase(
   @field:Schema(description = "The agency description of the detaining prison", example = "Leeds (HMP)")
   val prisonDescription: String? = null,
 
-  @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.TIME_SERVED)
-  val hardStopKind: LicenceKind? = null,
-
   val hasNomisLicence: Boolean = false,
 )

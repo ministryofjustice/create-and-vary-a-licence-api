@@ -29,12 +29,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.CaCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCaseloadSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
@@ -54,6 +57,7 @@ class CaseloadController(
   val comCreateCaseloadService: ComCreateCaseloadService,
   val comVaryCaseloadService: ComVaryCaseloadService,
   val varyApproverCaseloadService: VaryApproverCaseloadService,
+  val comCaseloadSearchService: ComCaseloadSearchService,
 ) {
 
   @GetMapping("/prisoner-search/nomisid/{nomsId}")
@@ -657,4 +661,98 @@ class CaseloadController(
     @Valid @RequestBody
     varyApproverSearchRequest: VaryApproverCaseloadSearchRequest,
   ) = varyApproverCaseloadService.searchForOffenderOnVaryApproverCaseload(varyApproverSearchRequest)
+
+  @Tag(name = Tags.COM)
+  @PostMapping(
+    value = ["/caseload/com/case-search"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Search for offenders on a given staff member's caseload.",
+    description = "Search for offenders on a given staff member's caseload. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The query retrieved a set of enriched results",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ComSearchResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun searchForOffenderOnProbationUserCaseload(
+    @Valid @RequestBody
+    body: ProbationUserSearchRequest,
+  ) = comCaseloadSearchService.searchForOffenderOnProbationUserCaseload(body)
+
+  @Deprecated(
+    "Use /caseload/com/case-search instead",
+    ReplaceWith("Use /caseload/com/case-search instead"),
+  )
+  @Tag(name = Tags.COM)
+  @PostMapping(
+    value = ["/com/case-search"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Search for offenders on a given staff member's caseload.",
+    description = "Search for offenders on a given staff member's caseload. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The query retrieved a set of enriched results",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ComSearchResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun searchForOffenderOnStaffCaseload(
+    @Valid @RequestBody
+    body: ProbationUserSearchRequest,
+  ) = comCaseloadSearchService.searchForOffenderOnProbationUserCaseload(body)
 }
