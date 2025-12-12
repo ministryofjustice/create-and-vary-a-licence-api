@@ -61,7 +61,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -167,7 +166,6 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
-      hardStopKind = HARD_STOP,
     )
 
     is TimeServedLicence -> toTimeServed(
@@ -179,7 +177,6 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
-      hardStopKind = TIME_SERVED,
     )
 
     is HdcLicence -> toHdc(
@@ -1206,7 +1203,6 @@ class LicenceService(
 
     return transformToLicenceSummary(
       this,
-      hardStopKind = hardStopKind,
       hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),

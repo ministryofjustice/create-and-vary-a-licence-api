@@ -347,8 +347,6 @@ class LicenceServiceTest {
         aLicenceEntity,
       ),
     )
-    whenever(releaseDateService.getHardStopKind(any(), any(), any())).thenReturn(null)
-
     val licenceSummaries = service.findLicencesMatchingCriteria(LicenceQueryObject())
 
     assertThat(licenceSummaries).hasSize(1)

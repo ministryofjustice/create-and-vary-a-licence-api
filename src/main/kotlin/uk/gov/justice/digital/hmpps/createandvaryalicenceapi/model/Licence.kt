@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -312,8 +311,4 @@ sealed interface Licence {
     example = "NOT_NEEDED",
   )
   val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus
-
-  @get:Schema(description = "Type of hardstop licence", example = LicenceKinds.TIME_SERVED)
-  val hardStopKind: LicenceKind?
-    get() = null
 }
