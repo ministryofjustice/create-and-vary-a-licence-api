@@ -112,9 +112,6 @@ data class LicenceSummary(
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val postRecallReleaseDate: LocalDate? = null,
 
-  @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.HARD_STOP)
-  val hardStopKind: LicenceKind? = null,
-
   @field:Schema(
     description = "The date when the hard stop period starts",
     example = "11/09/2022",
