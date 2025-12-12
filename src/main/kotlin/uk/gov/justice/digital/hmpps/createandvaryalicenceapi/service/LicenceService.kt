@@ -1198,19 +1198,15 @@ class LicenceService(
     return licence
   }
 
-  private fun EntityLicence.toSummary(): LicenceSummary {
-    val hardStopKind = releaseDateService.getHardStopKind(this, this.prisonCode)
-
-    return transformToLicenceSummary(
-      this,
-      hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-        licenceStartDate,
-      ),
-    )
-  }
+  private fun EntityLicence.toSummary(): LicenceSummary = transformToLicenceSummary(
+    this,
+    hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
+    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+      licenceStartDate,
+    ),
+  )
 
   private fun assertCaseIsEligible(eligibilityAssessment: EligibilityAssessment, licenceId: Long) {
     if (!eligibilityAssessment.isEligible) {
