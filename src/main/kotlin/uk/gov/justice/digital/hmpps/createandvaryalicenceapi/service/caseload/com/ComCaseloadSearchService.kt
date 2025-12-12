@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
@@ -121,10 +120,9 @@ class ComCaseloadSearchService(
     prisonOffender: PrisonerSearchPrisoner?,
     cvlRecord: CvlRecord?,
   ): FoundComCase? = when {
-    licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
-
+    licence.statusCode.isOnProbation() -> deliusOffender.toCaseWithLicence(licence)
     prisonOffender == null || cvlRecord == null -> null
-    cvlRecord.isEligible -> deliusOffender.toStartedRecord(licence, cvlRecord.hardStopKind)
+    cvlRecord.isEligible -> deliusOffender.toCaseWithLicence(licence)
     else -> null
   }
 
@@ -155,12 +153,10 @@ class ComCaseloadSearchService(
     releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(cvlRecord.licenceStartDate, prisonOffender),
   )
 
-  private fun CaseloadResult.toStartedRecord(
+  private fun CaseloadResult.toCaseWithLicence(
     licence: Licence,
-    hardStopKind: LicenceKind? = null,
-  ) = this.transformToModelFoundProbationRecord(
+  ) = this.transformToCaseWithLicence(
     licence = licence,
-    hardStopKind = hardStopKind,
     hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
     hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
     isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
@@ -175,9 +171,8 @@ class ComCaseloadSearchService(
     }
   }
 
-  fun CaseloadResult.transformToModelFoundProbationRecord(
+  fun CaseloadResult.transformToCaseWithLicence(
     licence: Licence,
-    hardStopKind: LicenceKind? = null,
     hardStopDate: LocalDate?,
     hardStopWarningDate: LocalDate?,
     isInHardStopPeriod: Boolean,
