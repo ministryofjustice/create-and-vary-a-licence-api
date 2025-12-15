@@ -22,4 +22,22 @@ class DateChangesTest {
 
     assertThat(dateChange.toDescription()).isEqualTo("${dateType.description} has been removed")
   }
+
+  @Test
+  fun `any changes should be true if any dates have changed and false otherwise`() {
+    val aDate = LocalDate.of(2025, 6, 15)
+    assertThat(
+      DateChanges(
+        listOf(DateChange(LicenceDateType.PRRD, null, aDate)),
+        isMaterial = true,
+      ).anyChanges,
+    ).isTrue()
+
+    assertThat(
+      DateChanges(
+        listOf(DateChange(LicenceDateType.PRRD, aDate, aDate)),
+        isMaterial = true,
+      ).anyChanges,
+    ).isFalse()
+  }
 }
