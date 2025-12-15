@@ -4205,6 +4205,30 @@ class LicenceServiceTest {
     )
   }
 
+  @Test
+  fun `should not update the licence kind for a time served licence`() {
+    val licence = createTimeServedLicence().copy(eligibleKind = LicenceKind.CRD)
+    val newEligibleKind = LicenceKind.PRRD
+    val updatedLicence = licence.copy(eligibleKind = newEligibleKind)
+    val staff = communityOffenderManager()
+
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(updatedLicence))
+
+    val result = service.updateLicenceKind(licence, newEligibleKind)
+
+    assertThat(result).isEqualTo(updatedLicence)
+    verify(licenceRepository).updateLicenceKinds(licence.id, licence.kind, newEligibleKind)
+    verify(auditService).recordAuditEventLicenceKindUpdated(
+      licence,
+      licence.kind,
+      licence.kind,
+      licence.eligibleKind,
+      newEligibleKind,
+      staff,
+    )
+  }
+
   val aCom = communityOffenderManager()
   val aPreviousUser = anotherCommunityOffenderManager()
 

@@ -77,6 +77,7 @@ fun transform(model: ModelAuditEvent): EntityAuditEvent = EntityAuditEvent(
   eventType = model.eventType,
   summary = model.summary,
   detail = model.detail,
+  changes = model.changes,
 )
 
 fun transform(model: ModelHdcCurfewAddress, licence: EntityLicence): EntityHdcCurfewAddress = EntityHdcCurfewAddress(
