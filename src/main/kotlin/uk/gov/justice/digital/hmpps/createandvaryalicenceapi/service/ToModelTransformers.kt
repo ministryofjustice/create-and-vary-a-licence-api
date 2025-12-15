@@ -60,7 +60,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Foun
 
 fun transformToLicenceSummary(
   licence: Licence,
-  hardStopKind: LicenceKind?,
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
@@ -103,7 +102,6 @@ fun transformToLicenceSummary(
   licenceVersion = licence.licenceVersion,
   versionOf = getVersionOf(licence),
   isReviewNeeded = licence is ReviewablePostRelease && licence.isReviewNeeded(),
-  hardStopKind = hardStopKind,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
@@ -119,7 +117,6 @@ fun toHardstop(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
-  hardStopKind: LicenceKind?,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelHardstopLicence(
@@ -197,7 +194,6 @@ fun toHardstop(
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isInHardStopPeriod = isInHardStopPeriod,
-  hardStopKind = hardStopKind,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
@@ -211,7 +207,6 @@ fun toTimeServed(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
-  hardStopKind: LicenceKind?,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ) = ModelTimeServedLicence(
@@ -289,7 +284,6 @@ fun toTimeServed(
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isInHardStopPeriod = isInHardStopPeriod,
-  hardStopKind = hardStopKind,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
