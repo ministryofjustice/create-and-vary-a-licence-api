@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -21,6 +22,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
@@ -184,6 +186,55 @@ class UpdateSentenceDateServiceTest {
     )
 
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+  }
+
+  @Test
+  fun `specific date changes are added to the audit`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
+    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+          postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        ),
+      ),
+    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+
+    service.updateSentenceDates(1L)
+
+    argumentCaptor<AuditEvent>().apply {
+      verify(auditService, times(1)).recordAuditEvent(capture())
+      assertThat(firstValue)
+        .extracting("licenceId", "username", "fullName", "summary", "changes")
+        .isEqualTo(
+          listOf(
+            1L,
+            "SYSTEM",
+            "SYSTEM",
+            "Sentence dates updated for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+            mapOf(
+              "CRD" to mapOf("from" to "2021-10-22", "to" to "2023-09-11"),
+              "ARD" to mapOf("from" to "2021-10-22", "to" to "2023-09-11"),
+              "LED" to mapOf("from" to "2021-10-22", "to" to "2024-09-11"),
+              "LSD" to mapOf("from" to "2021-10-22", "to" to "2023-09-11"),
+              "PRRD" to mapOf("from" to null, "to" to "2025-09-11"),
+              "SSD" to mapOf("from" to "2018-10-22", "to" to "2021-09-11"),
+              "SED" to mapOf("from" to "2021-10-22", "to" to "2024-09-11"),
+              "TUSED" to mapOf("from" to "2021-10-22", "to" to "2025-09-11"),
+              "TUSSD" to mapOf("from" to "2021-10-22", "to" to "2024-09-11"),
+            ),
+          ),
+        )
+    }
   }
 
   @Test
