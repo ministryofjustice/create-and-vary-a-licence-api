@@ -1189,11 +1189,11 @@ class LicenceService(
 
     if (isKindUpdated || isEligibleKindUpdated) {
       if (isKindUpdated) {
-        log.info("Updating licence kind for nomis id: ${licence.nomsId} fron ${licence.kind} to $newKind")
+        log.info("Updating licence kind for nomis id: ${licence.nomsId} from ${licence.kind} to $newKind")
       }
 
       if (isEligibleKindUpdated) {
-        log.info("Updating eligible licence kind for nomis id: ${licence.nomsId} fron ${licence.eligibleKind} to $newEligibleKind")
+        log.info("Updating eligible licence kind for nomis id: ${licence.nomsId} from ${licence.eligibleKind} to $newEligibleKind")
       }
 
       val userUpdating =
