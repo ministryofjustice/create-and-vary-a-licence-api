@@ -61,6 +61,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -219,7 +220,9 @@ class LicenceService(
       APPROVED -> {
         when (licenceEntity) {
           is VariationLicence -> error("Cannot approve a Variation licence: ${licenceEntity.id}")
+
           is HdcVariationLicence -> error("Cannot approve an HDC Variation licence: ${licenceEntity.id}")
+
           is PrrdLicence, is CrdLicence, is HdcLicence ->
             deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
         }
@@ -289,6 +292,7 @@ class LicenceService(
     if (request.status == APPROVED) {
       when (licenceEntity) {
         is HardStopLicence -> notifyComAboutHardstopLicenceApproval(licenceEntity)
+
         is TimeServedLicence -> licenceEntity.responsibleCom?.let {
           notifyComAboutTimeServedLicenceApproval(licenceEntity)
         }
@@ -466,6 +470,7 @@ class LicenceService(
       }
 
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+
       is HardStopLicence -> {
         assertCaseIsEligible(eligibilityAssessment, licenceId)
         licenceEntity.submit(submitter as PrisonUser)
@@ -477,6 +482,7 @@ class LicenceService(
       }
 
       is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+
       is TimeServedLicence -> {
         assertCaseIsEligible(eligibilityAssessment, licenceId)
         licenceEntity.submit(submitter as PrisonUser)
@@ -1175,13 +1181,21 @@ class LicenceService(
     if (licence.kind == HDC) return licence
 
     val isKindUpdated =
-      licence.kind !in listOf(HARD_STOP, VARIATION) && updatedKind != licence.kind
+      licence.kind !in listOf(HARD_STOP, TIME_SERVED, VARIATION) && updatedKind != licence.kind
     val isEligibleKindUpdated = updatedKind != licence.eligibleKind
 
     val newKind = if (isKindUpdated) updatedKind else licence.kind
     val newEligibleKind = if (isEligibleKindUpdated) updatedKind else licence.eligibleKind
 
     if (isKindUpdated || isEligibleKindUpdated) {
+      if (isKindUpdated) {
+        log.info("Updating licence kind for nomis id: ${licence.nomsId} from ${licence.kind} to $newKind")
+      }
+
+      if (isEligibleKindUpdated) {
+        log.info("Updating eligible licence kind for nomis id: ${licence.nomsId} from ${licence.eligibleKind} to $newEligibleKind")
+      }
+
       val userUpdating =
         staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication.name)
       auditService.recordAuditEventLicenceKindUpdated(
