@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
@@ -125,7 +124,10 @@ class UpdateSentenceDateService(
     dateChanges: DateChanges,
     isNotApprovedForHdc: Boolean,
   ) {
-    check(licence is AlwaysHasCom) { "Licence ${licence.id} does not have a responsible COM to notify of an update" }
+    if (licence.responsibleCom == null) {
+      log.info("Cannot notify COM of date change as licence has no responsible COM: ${licence.id}")
+      return
+    }
     val notifyCom = licence is HdcLicence || isNotApprovedForHdc
     if (!notifyCom) {
       log.info("Not notifying COM as now approved for HDC for ${licence.id}")
@@ -135,8 +137,8 @@ class UpdateSentenceDateService(
 
     notifyService.sendDatesChangedEmail(
       licence.id.toString(),
-      licence.getCom().email,
-      licence.getCom().fullName,
+      licence.responsibleCom!!.email,
+      licence.responsibleCom!!.fullName,
       "${licence.forename} ${licence.surname}",
       licence.crn,
       dateChanges.filter { it.notifyOfChange(licence.kind) }.map { it.toDescription() },
