@@ -80,12 +80,12 @@ class ApproverCaseloadService(
 
   private fun getProbationPractitioners(coms: List<CommunityManagerWithoutUser>) = coms
     .associate {
-        val name = if (it.unallocated) "Not Allocated" else it.name.fullName()
-        it.case.nomisId!!.lowercase() to ProbationPractitioner(
-          staffCode = it.code,
-          name = name,
-          allocated = !it.unallocated,
-        )
+      val name = if (it.unallocated) "Not Allocated" else it.name.fullName()
+      it.case.nomisId!!.lowercase() to ProbationPractitioner(
+        staffCode = it.code,
+        name = name,
+        allocated = !it.unallocated,
+      )
     }
 
   private fun List<LicenceApproverCase>.findLicenceToApprove(prisonNumber: String): LicenceApproverCase? {
