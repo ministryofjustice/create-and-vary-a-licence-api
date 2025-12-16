@@ -94,6 +94,7 @@ class ApproverCaseloadServiceTest {
         with(probationPractitioner!!) {
           assertThat(staffCode).isEqualTo("AB012C")
           assertThat(name).isEqualTo("Test Test")
+          assertThat(allocated).isEqualTo(true)
         }
         assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(prisonCode).isEqualTo("ABC")
@@ -112,10 +113,61 @@ class ApproverCaseloadServiceTest {
         with(probationPractitioner!!) {
           assertThat(staffCode).isEqualTo("AB012C")
           assertThat(name).isEqualTo("Test Test")
+          assertThat(allocated).isEqualTo(true)
         }
         assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(prisonCode).isEqualTo("MDI")
         assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
+      }
+
+      verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
+      verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(nomisIds)
+    }
+
+    @Test
+    fun `It builds the approval needed caseload successfully with an unallocated case`() {
+      val nomisIds = listOf("A1234UU")
+
+      whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
+        listOf(
+          aLicenceApproverCase(
+            licenceId = 2L,
+            prisonNumber = "A1234UU",
+            forename = "Person",
+            surname = "Two",
+            prisonCode = "ABC",
+            prisonDescription = "ABC (HMP)",
+            comUsername = "jdoe",
+          ),
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManagersWithoutUser(nomisIds)).thenReturn(
+        listOf(
+          anUnallocatedCommunityManager(),
+        ),
+      )
+
+      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+
+      assertThat(approvalCases).hasSize(1)
+
+      with(approvalCases[0]) {
+        assertThat(licenceId).isEqualTo(2L)
+        assertThat(name).isEqualTo("Person Two")
+        assertThat(prisonerNumber).isEqualTo("A1234UU")
+        assertThat(submittedByFullName).isEqualTo("X Y")
+        assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
+        assertThat(urgentApproval).isFalse()
+        assertThat(approvedBy).isEqualTo("jim smith")
+        assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
+        with(probationPractitioner!!) {
+          assertThat(staffCode).isEqualTo("A01B02C")
+          assertThat(name).isEqualTo("Not Allocated")
+          assertThat(allocated).isEqualTo(false)
+        }
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
+        assertThat(prisonCode).isEqualTo("ABC")
+        assertThat(prisonDescription).isEqualTo("ABC (HMP)")
       }
 
       verify(prisonApproverService, times(1)).getLicenceCasesReadyForApproval(aListOfPrisonCodes)
@@ -332,6 +384,7 @@ class ApproverCaseloadServiceTest {
         with(probationPractitioner!!) {
           assertThat(staffCode).isEqualTo("AB012C")
           assertThat(name).isEqualTo("Test Test")
+          assertThat(allocated).isEqualTo(true)
         }
         assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(prisonCode).isEqualTo("MDI")
@@ -350,6 +403,7 @@ class ApproverCaseloadServiceTest {
         with(probationPractitioner!!) {
           assertThat(staffCode).isEqualTo("AB012C")
           assertThat(name).isEqualTo("Test Test")
+          assertThat(allocated).isEqualTo(true)
         }
         assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(prisonCode).isEqualTo("ABC")
@@ -556,6 +610,37 @@ class ApproverCaseloadServiceTest {
     name: Name = Name("Test", null, "Test"),
     allocationDate: LocalDate = LocalDate.of(2000, 1, 1),
     unallocated: Boolean = false,
+  ) = CommunityManagerWithoutUser(
+    code = code,
+    id = id,
+    team = team,
+    provider = provider,
+    case = case,
+    name = name,
+    allocationDate = allocationDate,
+    unallocated = unallocated,
+  )
+
+  private fun anUnallocatedCommunityManager(
+    code: String = "A01B02C",
+    id: Long = 2000L,
+    team: TeamDetail = TeamDetail(
+      code = "A01B02",
+      description = "Test Team",
+      borough = Detail("A01B02", "description"),
+      district = Detail("A01B02", "description"),
+      provider = Detail("probationArea-code-1", "probationArea-description-1"),
+    ),
+    provider: Detail = Detail("N01", "Wales"),
+    case: ProbationCase = aProbationCaseResult(
+      crn = "X12345",
+      croNumber = "AB01/234567C",
+      pncNumber = null,
+      nomisId = "A1234UU",
+    ),
+    name: Name = Name("Staff", null, "Surname"),
+    allocationDate: LocalDate = LocalDate.of(2000, 1, 1),
+    unallocated: Boolean = true,
   ) = CommunityManagerWithoutUser(
     code = code,
     id = id,
