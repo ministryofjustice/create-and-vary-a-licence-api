@@ -14,6 +14,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -233,6 +234,38 @@ class UpdateSentenceDateServiceTest {
           ),
         )
     }
+  }
+
+  @Test
+  fun `does not audit if no dates have changed`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
+    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
+    whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(aCrdLicenceEntity.licenceStartDate)
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = aCrdLicenceEntity.conditionalReleaseDate,
+          confirmedReleaseDate = aCrdLicenceEntity.actualReleaseDate,
+          sentenceStartDate = aCrdLicenceEntity.sentenceStartDate,
+          sentenceExpiryDate = aCrdLicenceEntity.sentenceEndDate,
+          licenceExpiryDate = aCrdLicenceEntity.licenceExpiryDate,
+          topupSupervisionStartDate = aCrdLicenceEntity.topupSupervisionStartDate,
+          topupSupervisionExpiryDate = aCrdLicenceEntity.topupSupervisionExpiryDate,
+          postRecallReleaseDate = aCrdLicenceEntity.postRecallReleaseDate,
+        ),
+      ),
+    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+      aCvlRecord(
+        kind = LicenceKind.CRD,
+        licenceStartDate = aCrdLicenceEntity.licenceStartDate,
+      ),
+    )
+
+    service.updateSentenceDates(1L)
+
+    verifyNoInteractions(auditService)
   }
 
   @Test
