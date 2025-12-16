@@ -96,7 +96,7 @@ class UpdateSentenceDateService(
       licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
     } else {
       licenceRepository.saveAndFlush(updatedLicence)
-      if (dateChanges.isMaterial) {
+      if (dateChanges.anyChanges) {
         recordAuditEvent(updatedLicence, dateChanges)
       }
     }

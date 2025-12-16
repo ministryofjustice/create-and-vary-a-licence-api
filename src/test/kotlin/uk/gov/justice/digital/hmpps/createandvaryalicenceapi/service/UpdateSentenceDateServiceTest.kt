@@ -238,30 +238,35 @@ class UpdateSentenceDateServiceTest {
   }
 
   @Test
-  fun `does not attempt to notify COM is there isn't a responsible COM`() {
-    val licenceWithoutCOM = createTimeServedLicence().copy(responsibleCom = null)
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licenceWithoutCOM))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licenceWithoutCOM)
+  fun `does not audit if no dates have changed`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
+    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
+    whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(aCrdLicenceEntity.licenceStartDate)
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
-          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
-          sentenceStartDate = LocalDate.parse("2021-09-11"),
-          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
-          licenceExpiryDate = LocalDate.parse("2024-09-11"),
-          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-          postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+          conditionalReleaseDate = aCrdLicenceEntity.conditionalReleaseDate,
+          confirmedReleaseDate = aCrdLicenceEntity.actualReleaseDate,
+          sentenceStartDate = aCrdLicenceEntity.sentenceStartDate,
+          sentenceExpiryDate = aCrdLicenceEntity.sentenceEndDate,
+          licenceExpiryDate = aCrdLicenceEntity.licenceExpiryDate,
+          topupSupervisionStartDate = aCrdLicenceEntity.topupSupervisionStartDate,
+          topupSupervisionExpiryDate = aCrdLicenceEntity.topupSupervisionExpiryDate,
+          postRecallReleaseDate = aCrdLicenceEntity.postRecallReleaseDate,
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+      aCvlRecord(
+        kind = LicenceKind.CRD,
+        licenceStartDate = aCrdLicenceEntity.licenceStartDate,
+      ),
+    )
 
     service.updateSentenceDates(1L)
 
-    verifyNoInteractions(notifyService)
+    verifyNoInteractions(auditService)
   }
 
   @Test

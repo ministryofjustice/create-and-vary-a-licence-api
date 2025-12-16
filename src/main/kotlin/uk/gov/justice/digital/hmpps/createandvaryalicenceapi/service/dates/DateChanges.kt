@@ -17,6 +17,8 @@ data class DateChanges(
       it.type.name to mapOf("from" to it.oldDate?.toString(), "to" to it.newDate?.toString())
     }
 
+  val anyChanges = dates.any { it.changed }
+
   override fun iterator() = dates.iterator()
 }
 
