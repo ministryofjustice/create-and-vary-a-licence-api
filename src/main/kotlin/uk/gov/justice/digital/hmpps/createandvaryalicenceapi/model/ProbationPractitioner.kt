@@ -11,4 +11,7 @@ data class ProbationPractitioner(
   @field:Schema(description = "The full name of the probation practitioner", example = "Joe Bloggs")
   @field:NotBlank
   val name: String? = null,
+
+  @field:Schema(description = "Is a probation practitioner allocated?")
+  val allocated: Boolean = true,
 )
