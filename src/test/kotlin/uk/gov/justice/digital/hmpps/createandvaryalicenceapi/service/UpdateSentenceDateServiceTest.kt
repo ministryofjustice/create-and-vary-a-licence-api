@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
@@ -266,6 +267,33 @@ class UpdateSentenceDateServiceTest {
     service.updateSentenceDates(1L)
 
     verifyNoInteractions(auditService)
+  }
+
+  @Test
+  fun `does not attempt to notify COM is there isn't a responsible COM`() {
+    val licenceWithoutCOM = createTimeServedLicence().copy(responsibleCom = null)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licenceWithoutCOM))
+    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licenceWithoutCOM)
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+          postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        ),
+      ),
+    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+
+    service.updateSentenceDates(1L)
+
+    verifyNoInteractions(notifyService)
   }
 
   @Test
