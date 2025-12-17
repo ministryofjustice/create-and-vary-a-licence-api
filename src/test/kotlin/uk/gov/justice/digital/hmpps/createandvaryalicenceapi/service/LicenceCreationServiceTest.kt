@@ -195,12 +195,13 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with CRO from delius when provided`() {
-      val offender = aProbationCaseResult.copy(croNumber = "ZZZZZ")
+    fun `Populates licence with a valid CRO from delius when provided`() {
+      val croNumber = "43792/24M"
+      val offender = aProbationCaseResult.copy(croNumber = croNumber)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
           prisonerSearchResult().copy(
-            croNumber = "AAAAA",
+            croNumber = croNumber,
           ),
         ),
       )
@@ -217,9 +218,10 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with CRO from NOMIS when not provided by delius`() {
+    fun `Populates licence with a valid CRO from NOMIS when not provided by delius`() {
+      val croNumber = "240873/19Q"
       val prisoner = prisonerSearchResult().copy(
-        croNumber = "AAAAA",
+        croNumber = croNumber,
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
@@ -235,6 +237,30 @@ class LicenceCreationServiceTest {
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.cro).isEqualTo(prisoner.croNumber)
+      }
+    }
+
+    @Test
+    fun `Populates licence with a default CRO if neither Delius or NOMIS provide a valid value`() {
+      val deliusCroNumber = "234/P"
+      val nomisCroNumber = "A/19Q"
+      val prisoner = prisonerSearchResult().copy(
+        croNumber = nomisCroNumber,
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          prisoner,
+        ),
+      )
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
+        aProbationCaseResult.copy(croNumber = deliusCroNumber),
+      )
+
+      service.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.cro).isEqualTo("No CRO")
       }
     }
 
@@ -678,12 +704,13 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with CRO from delius when provided`() {
-      val offender = aProbationCaseResult.copy(croNumber = "ZZZZZ")
+      val croNumber = "943876/52W"
+      val offender = aProbationCaseResult.copy(croNumber = croNumber)
       val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = LocalDate.now())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
           aPrisonerSearchResult.copy(
-            croNumber = "AAAAA",
+            croNumber = croNumber,
           ),
         ),
       )
@@ -702,8 +729,9 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with CRO from NOMIS when not provided by delius`() {
+      val croNumber = "3298/92T"
       val prisoner = prisonerSearchResult(postRecallReleaseDate = LocalDate.now()).copy(
-        croNumber = "AAAAA",
+        croNumber = croNumber,
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
@@ -723,7 +751,7 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with middlename if provided`() {
+    fun `Populates licence with middle name if provided`() {
       val prisoner = prisonerSearchResult(postRecallReleaseDate = LocalDate.now()).copy(
         middleNames = "Timothy",
       )
@@ -745,7 +773,7 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with default middlename if not provided`() {
+    fun `Populates licence with default middle name if not provided`() {
       val prisoner = prisonerSearchResult(postRecallReleaseDate = LocalDate.now()).copy(
         middleNames = null,
       )
@@ -1115,7 +1143,12 @@ class LicenceCreationServiceTest {
 
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD, hardStopKind = LicenceKind.HARD_STOP))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          hardStopKind = LicenceKind.HARD_STOP,
+        ),
+      )
     }
 
     @Test
@@ -1195,11 +1228,12 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with CRO from delius when provided`() {
-      val offender = aProbationCaseResult.copy(croNumber = "ZZZZZ")
+      val croNumber = "923478/23B"
+      val offender = aProbationCaseResult.copy(croNumber = croNumber)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
           prisonerSearchResult().copy(
-            croNumber = "AAAAA",
+            croNumber = croNumber,
           ),
         ),
       )
@@ -1217,8 +1251,9 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with CRO from NOMIS when not provided by delius`() {
+      val croNumber = "322/57P"
       val prisoner = prisonerSearchResult().copy(
-        croNumber = "AAAAA",
+        croNumber = croNumber,
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
