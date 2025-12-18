@@ -9,7 +9,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.FORBIDDEN
+import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
@@ -28,8 +29,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
@@ -43,14 +45,22 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as VariationLicenceDto
 
 class LicenceIntegrationTest : IntegrationTestBase() {
+
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
 
@@ -137,7 +147,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()
-      .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+      .expectStatus().isEqualTo(FORBIDDEN.value())
       .expectBody(ErrorResponse::class.java)
       .returnResult().responseBody
 
@@ -153,7 +163,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
-      .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+      .expectStatus().isEqualTo(UNAUTHORIZED.value())
   }
 
   @Test
@@ -206,7 +216,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isOk
     val licence = testRepository.findLicence(1)
     assertThat(licence).isInstanceOf(PrrdLicence::class.java)
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.APPROVED)
+    assertThat(licence.statusCode).isEqualTo(APPROVED)
   }
 
   @Test
@@ -232,7 +242,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(LicenceDto::class.java)
       .returnResult().responseBody
 
-    assertThat(licenceV1?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licenceV1?.statusCode).isEqualTo(INACTIVE)
     assertThat(licenceV1?.updatedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
 
     val licenceV2 = webTestClient.get()
@@ -245,7 +255,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(LicenceDto::class.java)
       .returnResult().responseBody
 
-    assertThat(licenceV2?.statusCode).isEqualTo(LicenceStatus.APPROVED)
+    assertThat(licenceV2?.statusCode).isEqualTo(APPROVED)
     assertThat(licenceV2?.approvedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
     assertThat(licenceV2?.approvedByName).isEqualTo(aStatusToApprovedUpdateRequest.fullName)
   }
@@ -273,7 +283,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licence.kind).isEqualTo(LicenceKind.CRD)
 
     licence as CrdLicence
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(licence.statusCode).isEqualTo(SUBMITTED)
     assertThat(licence.responsibleCom?.username).isEqualTo("test-client")
     assertThat(licence.responsibleCom?.email).isEqualTo("testClient@probation.gov.uk")
     assertThat(licence.responsibleCom?.staffIdentifier).isEqualTo(2000)
@@ -303,7 +313,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licence).isInstanceOf(PrrdLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
     assertThat(licence.postRecallReleaseDate).isNotNull()
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(licence.statusCode).isEqualTo(SUBMITTED)
   }
 
   @Test
@@ -327,7 +337,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     val licence = testRepository.findLicence(1)
     assertThat(licence).isInstanceOf(HardStopLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.HARD_STOP)
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(licence.statusCode).isEqualTo(SUBMITTED)
   }
 
   @Test
@@ -350,7 +360,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     val licence = testRepository.findLicence(1)
     assertThat(licence).isInstanceOf(Variation::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.VARIATION)
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
+    assertThat(licence.statusCode).isEqualTo(VARIATION_SUBMITTED)
   }
 
   @Test
@@ -373,7 +383,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     val licence = testRepository.findLicence(1)
     assertThat(licence).isInstanceOf(HdcLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(licence.statusCode).isEqualTo(SUBMITTED)
   }
 
   @Test
@@ -396,7 +406,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     val licence = testRepository.findLicence(1)
     assertThat(licence).isInstanceOf(HdcVariationLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.HDC_VARIATION)
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
+    assertThat(licence.statusCode).isEqualTo(VARIATION_SUBMITTED)
   }
 
   @Test
@@ -413,14 +423,12 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isOk
 
-    val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceSummary::class.java)
+    val response = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateVariationResponse::class.java)
       .returnResult().responseBody
 
-    assertThat(licenceSummary).isNotNull
-    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
-    assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+    assertThat(response).isNotNull
+    assertThat(response!!.licenceId).isGreaterThan(1)
 
     assertThat(testRepository.countLicence()).isEqualTo(2)
     val oldLicence = testRepository.findLicence(1)
@@ -486,11 +494,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isOk
 
-    val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceSummary::class.java)
+    val response = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateVariationResponse::class.java)
       .returnResult().responseBody
 
-    val bespokeConditions = testRepository.getBespokeConditions(licenceSummary!!.licenceId, assertNotEmpty = false)
+    val bespokeConditions = testRepository.getBespokeConditions(response!!.licenceId, assertNotEmpty = false)
     assertThat(bespokeConditions.size).isEqualTo(0)
   }
 
@@ -549,25 +557,23 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isOk
 
     val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceSummary::class.java)
+      .expectBody(CreateVariationResponse::class.java)
       .returnResult().responseBody
 
     assertThat(licenceSummary).isNotNull
     assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
-    assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
 
-    val licences = testRepository.findAllLicence()
+    assertThat(testRepository.countLicence()).isEqualTo(2)
 
-    assertThat(licences).hasSize(2)
+    val licence = testRepository.findLicence(licenceSummary.licenceId)
 
-    val newLicence = licences.last()
-    newLicence.let {
-      assertThat(it.licenceVersion).isEqualTo("2.0")
-      assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
-      assertThat(it).isInstanceOf(HdcVariationLicence::class.java)
-      assertThat((it as HdcVariationLicence).variationOfId).isEqualTo(1)
-      assertLicenceHasExpectedAddress(it)
+    with(licence as HdcVariationLicence) {
+      assertThat(licenceVersion).isEqualTo("2.0")
+      assertThat(typeCode).isEqualTo(AP)
+      assertThat(statusCode).isEqualTo(VARIATION_IN_PROGRESS)
+      assertThat(appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+      assertThat(variationOfId).isEqualTo(1)
+      assertLicenceHasExpectedAddress(this)
     }
   }
 
@@ -587,14 +593,14 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isOk
 
-    val licence = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceSummary::class.java)
+    val response = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateVariationResponse::class.java)
       .returnResult().responseBody
 
-    assertThat(licence).isNotNull
-    assertThat(licence!!.kind).isEqualTo(LicenceKind.VARIATION)
+    assertThat(response).isNotNull
+    assertThat(response!!.licenceId).isGreaterThan(0)
 
-    val persistedLicence = testRepository.findLicence(licence.licenceId)
+    val persistedLicence = testRepository.findLicence(response.licenceId)
     assertThat(persistedLicence).isInstanceOf(EntityVariationLicence::class.java)
     val persistedVariationLicence = persistedLicence as EntityVariationLicence
     assertThat(persistedVariationLicence.id).isEqualTo(2)
@@ -979,7 +985,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .accept(MediaType.APPLICATION_JSON)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
         .exchange()
-        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+        .expectStatus().isEqualTo(FORBIDDEN.value())
         .expectBody(ErrorResponse::class.java)
         .returnResult().responseBody
 
@@ -992,7 +998,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .uri("/licence/id/1/review-with-no-variation-required")
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
-        .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+        .expectStatus().isEqualTo(UNAUTHORIZED.value())
     }
   }
 
@@ -1012,10 +1018,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
           .expectStatus().isOk
 
         val variation = testRepository.findLicence(2L) as EntityVariationLicence
-        assertThat(variation.statusCode).isEqualTo(LicenceStatus.VARIATION_APPROVED)
+        assertThat(variation.statusCode).isEqualTo(VARIATION_APPROVED)
 
         val original = testRepository.findLicence(1L) as CrdLicence
-        assertThat(original.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(original.statusCode).isEqualTo(IN_PROGRESS)
       }
 
       webTestClient.put()
@@ -1027,10 +1033,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
       run {
         val variation = testRepository.findLicence(2L) as EntityVariationLicence
-        assertThat(variation.statusCode).isEqualTo(LicenceStatus.ACTIVE)
+        assertThat(variation.statusCode).isEqualTo(ACTIVE)
 
         val original = testRepository.findLicence(1L) as CrdLicence
-        assertThat(original.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+        assertThat(original.statusCode).isEqualTo(INACTIVE)
       }
     }
 
@@ -1041,7 +1047,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .accept(MediaType.APPLICATION_JSON)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
         .exchange()
-        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+        .expectStatus().isEqualTo(FORBIDDEN.value())
         .expectBody(ErrorResponse::class.java)
         .returnResult().responseBody
 
@@ -1054,7 +1060,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .uri("/licence/id/1/activate-variation")
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
-        .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+        .expectStatus().isEqualTo(UNAUTHORIZED.value())
     }
   }
 
@@ -1084,7 +1090,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .expectBody(LicenceDto::class.java)
         .returnResult().responseBody
 
-      assertThat(result?.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(result?.statusCode).isEqualTo(IN_PROGRESS)
       assertThat(result?.comUsername).isEqualTo("test-client")
       assertThat(result?.comEmail).isEqualTo("testClient@probation.gov.uk")
       assertThat(result?.comStaffId).isEqualTo(2000)
@@ -1116,7 +1122,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .expectBody(LicenceDto::class.java)
         .returnResult().responseBody
 
-      assertThat(licence?.statusCode).isEqualTo(LicenceStatus.APPROVED)
+      assertThat(licence?.statusCode).isEqualTo(APPROVED)
       assertThat(licence?.licenceVersion).isEqualTo("1.0")
     }
   }
@@ -1124,18 +1130,19 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   private fun assertEdit(result: WebTestClient.ResponseSpec, expectedKind: LicenceKind, noAddress: Boolean = false) {
     result.expectStatus().isOk
     val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceSummary::class.java)
+      .expectBody(EditLicenceResponse::class.java)
       .returnResult().responseBody
 
     assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
-    assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
 
     assertThat(testRepository.countLicence()).isEqualTo(2)
 
     val newLicence = testRepository.findLicence(licenceSummary.licenceId)
     assertThat(newLicence.kind).isEqualTo(expectedKind)
     assertThat(newLicence.licenceVersion).isEqualTo("1.1")
+    assertThat(newLicence.typeCode).isEqualTo(AP)
+    assertThat(newLicence.statusCode).isEqualTo(IN_PROGRESS)
+
     if (noAddress) {
       assertLicenceHasExpectedAddress(newLicence, newAddress = true)
       assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
@@ -1199,11 +1206,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val aStatusToApprovedUpdateRequest =
-      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "AAA", fullName = "Y")
+      StatusUpdateRequest(status = APPROVED, username = "AAA", fullName = "Y")
     val aStatusToActiveUpdateRequest =
-      StatusUpdateRequest(status = LicenceStatus.ACTIVE, username = "AAA", fullName = "Y")
+      StatusUpdateRequest(status = ACTIVE, username = "AAA", fullName = "Y")
     val aStatusToInactiveUpdateRequest =
-      StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = "AAA", fullName = "Y")
+      StatusUpdateRequest(status = INACTIVE, username = "AAA", fullName = "Y")
 
     val aPrisonerMissingReleaseDate = """[{
       "prisonerNumber": "A1234AA",
