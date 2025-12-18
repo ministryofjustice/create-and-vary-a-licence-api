@@ -430,7 +430,6 @@ object LicenceFactory {
 
     val croPattern =
       Pattern.compile("^(([1-9]\\d{0,5}/\\d{2})|(SF(39|[4-8][0-9]|9[0-5])/[1-9]\\d{0,5}))[^IOS0-9]$")
-    // Pattern.compile("^([1-9]\\d{0,5}/\\d{2}[^IOS0-9]$)|(SF(39|[4-8][0-9]|9[0-5])/[1-9]\\d{0,5}[^IOS0-9]$)")
     return croPattern.matcher(cro).matches()
   }
 

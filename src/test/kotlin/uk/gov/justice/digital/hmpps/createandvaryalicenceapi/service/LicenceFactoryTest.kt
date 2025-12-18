@@ -61,8 +61,5 @@ class LicenceFactoryTest {
     assertThat(LicenceFactory.isValidCro("SF95/123456X")).isTrue
 
     assertThat(LicenceFactory.isValidCro("466835/10U")).isTrue
-    // for (cro in listOf()) {
-    //   if (!LicenceFactory.isValidCro(cro)) println(cro)
-    // }
   }
 }
