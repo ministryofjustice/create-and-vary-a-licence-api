@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
@@ -13,7 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.UUID
@@ -27,7 +25,6 @@ class ExclusionZoneService(
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val documentService: DocumentService,
-  private val documentCountsRepository: DocumentCountsRepository,
 ) {
 
   init {
@@ -102,13 +99,13 @@ class ExclusionZoneService(
       }
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   fun deleteDocumentsFor(additionalConditions: List<AdditionalCondition>) {
     val additionalConditionIds = additionalConditions.map { it.id!! }
 
     log.info("Deleting documents for AdditionalConditions with id in ({})", additionalConditionIds)
 
-    documentCountsRepository.countsOfDocumentsRelatedTo(additionalConditionIds)
+    additionalConditionUploadDetailRepository.countsOfDocumentsRelatedTo(additionalConditionIds)
       .filter { it.count == 1 }
       .also { log.info("Found {} documents to delete...", it.size) }
       .forEach { documentService.deleteDocument(UUID.fromString(it.uuid)) }
