@@ -35,6 +35,7 @@ VALUES
     );
 
 INSERT INTO additional_condition_upload_summary (
+    id,
     additional_condition_id,
     thumbnail_image_ds_uuid,
     upload_detail_id,
@@ -42,24 +43,27 @@ INSERT INTO additional_condition_upload_summary (
     file_type
 )
 VALUES
-    (
+    (1,
         1,
         '92939445-4159-4214-aa75-d07568a3e136',
         1,
         1,
         'image/png'
     ),
-    (
+    (2,
         3,
         '0bbf1459-ee7a-4114-b509-eb9a3fcc2756',
         2,
         1,
         'image/png'
     ),
-    (
+    ( 3,
         2,
         '53655fe1-1368-4ed3-bfb0-2727a4e73be5',
         3,
         1,
         'image/png'
     );
+
+ALTER SEQUENCE additional_condition_upload_summary_id_seq RESTART WITH 4;
+ALTER SEQUENCE additional_condition_upload_detail_id_seq RESTART WITH 4;

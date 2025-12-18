@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
@@ -114,6 +115,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-4.sql",
   )
   fun `should return ElectronicMonitoringProviderStatus as NOT_NEEDED`() {
+    documentApiMockServer.stubDownloadDocumentFile(
+      withUUID = "92939445-4159-4214-aa75-d07568a3e136",
+      document = byteArrayOf(9, 9, 9),
+    )
+
     val result = webTestClient.get()
       .uri("/licence/id/3")
       .accept(MediaType.APPLICATION_JSON)
@@ -654,16 +660,23 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-a-few-licences.sql",
+    "classpath:test_data/seed-uploads-for-copied-licences.sql",
   )
   fun `Discard licence`() {
+    documentApiMockServer.stubDeleteDocuments()
+
     webTestClient.delete()
-      .uri("/licence/id/1/discard")
+      .uri("/licence/id/2/discard")
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
 
-    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(testRepository.doesLicenceExist(2)).isFalse()
+
+    // 3 set up in the above sql , 2 associated with licence 2
+    assertThat(testRepository.findAllUploadSummary()).hasSize(1)
+    assertThat(testRepository.findAllUploadDetail()).hasSize(1)
   }
 
   @Test
@@ -1232,6 +1245,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     val govUkApiMockServer = GovUkMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
+    val documentApiMockServer = DocumentApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -1239,6 +1253,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       govUkApiMockServer.start()
       prisonerSearchApiMockServer.start()
       deliusMockServer.start()
+      documentApiMockServer.start()
     }
 
     @JvmStatic
@@ -1247,6 +1262,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       govUkApiMockServer.stop()
       prisonerSearchApiMockServer.stop()
       deliusMockServer.stop()
+      documentApiMockServer.stop()
     }
   }
 }

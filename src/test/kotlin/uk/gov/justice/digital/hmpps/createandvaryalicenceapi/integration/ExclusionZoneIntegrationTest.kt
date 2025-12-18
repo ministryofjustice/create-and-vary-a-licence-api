@@ -5,7 +5,6 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -16,18 +15,10 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZonePdfExtract
 import java.time.Duration
 
 class ExclusionZoneIntegrationTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var additionalConditionRepository: AdditionalConditionRepository
-
-  @Autowired
-  lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
 
   @BeforeEach
   fun setupClient() {
@@ -60,9 +51,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     // Read back the single additional condition from the repository
-    val conditions = additionalConditionRepository.findById(1)
-      .map { it.additionalConditionUploadSummary }
-      .orElseThrow()
+    val conditions = testRepository.findUploadSummary(1)
     assertThat(conditions).hasSize(1)
 
     val uploadFile =
@@ -93,10 +82,61 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     assertThat(uploadSummary.description?.trim()).isEqualTo("Description")
 
     // Check that the upload detail values are also stored and referenced by the ID column in the summary
-    val uploadDetail = additionalConditionUploadDetailRepository.findById(uploadSummary.uploadDetailId).orElseThrow()
-    assertThat(uploadDetail.licenceId).isEqualTo(2)
+    val uploadDetail = testRepository.findUploadDetailById(uploadSummary.uploadDetailId)
+    assertThat(uploadDetail).isNotNull
+    assertThat(uploadDetail!!.licenceId).isEqualTo(2)
     assertThat(uploadDetail.fullSizeImageDsUuid).isEqualTo(fullSizeUuid.toString())
     assertThat(uploadDetail.originalDataDsUuid).isEqualTo(pdfUuid.toString())
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-a-few-licences.sql",
+    "classpath:test_data/seed-uploads-for-copied-licences.sql",
+  )
+  fun `Uploading an exclusion zone file will remove previous uploaded file for same condition`() {
+    // Given
+    val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
+    val bodyBuilder = MultipartBodyBuilder()
+    documentApiMockServer.stubDeleteDocuments()
+
+    bodyBuilder
+      .part("file", fileResource.file.readBytes())
+      .header("Content-Disposition", "form-data; name=file; filename=" + fileResource.filename)
+      .header("Content-Type", "application/pdf")
+
+    assertThat(testRepository.findUploadSummaryById(1)).isNotNull
+    assertThat(testRepository.findUploadDetailById(1)).isNotNull
+
+    // When
+    val result = webTestClient.post()
+      .uri("/exclusion-zone/id/2/condition/id/1/file-upload")
+      .contentType(MediaType.MULTIPART_FORM_DATA)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+
+    val summary = testRepository.findUploadSummary(1)
+    assertThat(summary).isNotEmpty
+    assertThat(summary).hasSize(1)
+    assertThat(summary[0].id).isEqualTo(4)
+
+    assertThat(testRepository.findUploadSummaryById(1)).isNull()
+    assertThat(testRepository.findAllUploadSummary()).hasSize(3)
+
+    val detail = testRepository.findUploadDetail(1)
+    assertThat(detail).isNotEmpty
+    assertThat(detail).hasSize(1)
+    assertThat(detail[0].id).isEqualTo(4)
+
+    assertThat(testRepository.findUploadDetailById(1)).isNull()
+    assertThat(testRepository.findAllUploadDetail()).hasSize(3)
+
+    testRepository.findUploadDetailById(1)
   }
 
   @Test
@@ -130,11 +170,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
   fun `get full-sized image for exclusion zone upload`() {
-    // Given upload detail has UUID stored
-    additionalConditionUploadDetailRepository.save(
-      additionalConditionUploadDetailRepository.findById(1).orElseThrow()
-        .copy(fullSizeImageDsUuid = "44f8163c-6c97-4ff2-932b-ae24feb0c112"),
-    )
     // Given document service has the file uploaded to it
     documentApiMockServer.stubDownloadDocumentFile(
       withUUID = "44f8163c-6c97-4ff2-932b-ae24feb0c112",
@@ -172,6 +207,9 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .expectStatus().isNoContent
 
     documentApiMockServer.verifyDelete("20ca047a-0ae6-4c09-8b97-e3f211feb733")
+
+    assertThat(testRepository.findUploadDetail(2)).isEmpty()
+    assertThat(testRepository.findUploadSummary(2)).isEmpty()
   }
 
   @Test
