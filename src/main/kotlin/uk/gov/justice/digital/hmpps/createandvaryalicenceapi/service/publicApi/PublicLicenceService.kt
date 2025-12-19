@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToPublicLicence
@@ -20,14 +20,14 @@ class PublicLicenceService(
   fun getLicenceById(id: Long): Licence = licenceService.getLicenceById(id).transformToPublicLicence()
 
   @Transactional
-  fun getAllLicencesByCrn(crn: String): List<LicenceSummary> {
+  fun getAllLicencesByCrn(crn: String): List<PublicLicenceSummary> {
     val licences = licenceRepository.findAllByCrnAndStatusCodeIn(crn, LicenceStatus.IN_FLIGHT_LICENCES)
 
     return licences.map { it.transformToPublicLicenceSummary() }
   }
 
   @Transactional
-  fun getAllLicencesByPrisonNumber(prisonNumber: String): List<LicenceSummary> {
+  fun getAllLicencesByPrisonNumber(prisonNumber: String): List<PublicLicenceSummary> {
     val licences = licenceRepository.findAllByNomsIdAndStatusCodeIn(prisonNumber, LicenceStatus.IN_FLIGHT_LICENCES)
 
     return licences.map { it.transformToPublicLicenceSummary() }

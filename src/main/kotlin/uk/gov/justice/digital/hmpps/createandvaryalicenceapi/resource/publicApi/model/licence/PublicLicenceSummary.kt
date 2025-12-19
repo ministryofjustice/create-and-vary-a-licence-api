@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence summary within this service")
-data class LicenceSummary(
+data class PublicLicenceSummary(
 
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long = -1,
