@@ -16,8 +16,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.Integra
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -44,7 +44,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBodyList(LicenceSummary::class.java)
+        .expectBodyList(PublicLicenceSummary::class.java)
         .returnResult().responseBody
 
       assertThat(resultList?.size).isEqualTo(1)
@@ -94,7 +94,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBodyList(LicenceSummary::class.java)
+        .expectBodyList(PublicLicenceSummary::class.java)
         .returnResult().responseBody
 
       assertThat(resultList?.size).isEqualTo(1)

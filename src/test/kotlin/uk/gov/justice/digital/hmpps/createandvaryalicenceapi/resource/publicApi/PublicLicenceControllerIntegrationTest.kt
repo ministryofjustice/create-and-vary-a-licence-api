@@ -29,8 +29,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someModelAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
@@ -175,7 +175,7 @@ class PublicLicenceControllerIntegrationTest {
       conditionPolicyData = emptyMap(),
     ).copy(additionalLicenceConditions = someModelAdditionalConditions()).transformToPublicLicence()
 
-    val aLicenceSummary = LicenceSummary(
+    val aLicenceSummary = PublicLicenceSummary(
       id = 1,
       kind = LicenceKind.CRD,
       licenceType = LicenceType.AP,
