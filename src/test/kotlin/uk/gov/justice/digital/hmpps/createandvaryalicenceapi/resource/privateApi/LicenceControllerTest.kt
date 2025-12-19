@@ -35,7 +35,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
@@ -129,21 +131,6 @@ class LicenceControllerTest {
   }
 
   @Test
-  fun `get variation submitted for region`() {
-    whenever(licenceService.findSubmittedVariationsByRegion("N01A")).thenReturn(listOf(aLicenceSummary()))
-
-    val result = mvc.perform(get("/licence/variations/submitted/area/N01A").accept(APPLICATION_JSON))
-      .andExpect(status().isOk)
-      .andExpect(content().contentType(APPLICATION_JSON))
-      .andReturn()
-
-    assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary())))
-
-    verify(licenceService, times(1)).findSubmittedVariationsByRegion("N01A")
-  }
-
-  @Test
   fun `404 licence not found`() {
     whenever(licenceService.getLicenceById(1)).thenThrow(EntityNotFoundException(""))
 
@@ -159,7 +146,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create a PRRD licence`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(CreateLicenceResponse(1))
 
     val result = mvc.perform(
       post("/licence/create")
@@ -171,14 +158,14 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(LicenceCreationResponse(1))))
+    assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(CreateLicenceResponse(1))))
 
     verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
   fun `create a CRD licence`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(CreateLicenceResponse(1))
 
     val result = mvc.perform(
       post("/licence/create")
@@ -190,7 +177,7 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(LicenceCreationResponse(1))))
+    assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(CreateLicenceResponse(1))))
 
     verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
   }
@@ -198,7 +185,7 @@ class LicenceControllerTest {
   @Test
   fun `create a Hard Stop licence`() {
     whenever(licenceCreationService.createHardStopLicence(aCreateLicenceRequest.nomsId)).thenReturn(
-      LicenceCreationResponse(1),
+      CreateLicenceResponse(1),
     )
 
     val result = mvc.perform(
@@ -211,7 +198,7 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(LicenceCreationResponse(1)))
+    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(CreateLicenceResponse(1)))
 
     verify(licenceCreationService, times(1)).createHardStopLicence(aCreateLicenceRequest.nomsId)
   }
@@ -304,7 +291,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create variation`() {
-    whenever(licenceService.createVariation(4L)).thenReturn(aLicenceSummary())
+    whenever(licenceService.createVariation(4L)).thenReturn(CreateVariationResponse(4))
 
     mvc.perform(
       post("/licence/id/4/create-variation")
@@ -319,7 +306,7 @@ class LicenceControllerTest {
   @Test
   fun `edit a licence`() {
     val licenceId = 42L
-    whenever(licenceService.editLicence(licenceId)).thenReturn(aLicenceSummary())
+    whenever(licenceService.editLicence(licenceId)).thenReturn(EditLicenceResponse(licenceId))
 
     mvc.perform(
       post("/licence/id/$licenceId/edit")
