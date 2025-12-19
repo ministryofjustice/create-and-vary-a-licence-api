@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -51,6 +53,16 @@ interface TestAdditionalConditionRepository : JpaRepository<AdditionalCondition,
 }
 
 @Repository
+interface TestAdditionalConditionUploadDetailRepository : JpaRepository<AdditionalConditionUploadDetail, Long> {
+  fun findByAdditionalConditionId(additionalConditionIdeId: Long): List<AdditionalConditionUploadDetail>
+}
+
+@Repository
+interface TestAdditionalConditionUploadSummaryRepository : JpaRepository<AdditionalConditionUploadSummary, Long> {
+  fun findByAdditionalConditionId(additionalConditionIdeId: Long): List<AdditionalConditionUploadSummary>
+}
+
+@Repository
 interface TestAddressRepository : JpaRepository<Address, Long>
 
 @Repository
@@ -76,6 +88,8 @@ class TestRepository(
   private val standardConditionRepository: StandardConditionRepository,
   private val testTimeServedExternalRecordRepository: TestTimeServedExternalRecordRepository,
   private val testTimeServedProbationConfirmContactRepository: TestTimeServedProbationConfirmContactRepository,
+  private val testAdditionalConditionUploadDetailRepository: TestAdditionalConditionUploadDetailRepository,
+  private val testAdditionalConditionUploadSummaryRepository: TestAdditionalConditionUploadSummaryRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -97,6 +111,8 @@ class TestRepository(
     licence.additionalConditions = additionalConditionRepository.findByLicenceId(licenceId = licence.id).toMutableList()
     return licence
   }
+
+  fun doesLicenceExist(id: Long = 1L): Boolean = licenceRepository.existsById(id)
 
   fun findAllLicence(assertNotEmpty: Boolean = true): List<Licence> {
     val licences = licenceRepository.findAll()
@@ -154,6 +170,18 @@ class TestRepository(
     if (assertNotEmpty) assertThat(list).isNotEmpty
     return list
   }
+
+  fun findUploadDetail(conditionId: Long): List<AdditionalConditionUploadDetail> = testAdditionalConditionUploadDetailRepository.findByAdditionalConditionId(conditionId)
+
+  fun findAllUploadDetail(): List<AdditionalConditionUploadDetail> = testAdditionalConditionUploadDetailRepository.findAll()
+
+  fun findUploadSummary(conditionId: Long): List<AdditionalConditionUploadSummary> = testAdditionalConditionUploadSummaryRepository.findByAdditionalConditionId(conditionId)
+
+  fun findAllUploadSummary(): List<AdditionalConditionUploadSummary> = testAdditionalConditionUploadSummaryRepository.findAll()
+
+  fun findUploadDetailById(id: Long): AdditionalConditionUploadDetail? = testAdditionalConditionUploadDetailRepository.findById(id).orElse(null)
+
+  fun findUploadSummaryById(id: Long): AdditionalConditionUploadSummary? = testAdditionalConditionUploadSummaryRepository.findById(id).orElse(null)
 
   fun findTimeServedExternalRecordByNomsIdAndBookingId(
     nomsId: String,
