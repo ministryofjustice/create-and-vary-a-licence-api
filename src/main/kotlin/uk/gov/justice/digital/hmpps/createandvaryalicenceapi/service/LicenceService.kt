@@ -25,6 +25,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -72,7 +74,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
@@ -538,13 +539,6 @@ class LicenceService(
     }
   }
 
-  @Transactional(readOnly = true)
-  fun findSubmittedVariationsByRegion(probationAreaCode: String): List<LicenceSummary> {
-    val matchingLicences =
-      licenceRepository.findByStatusCodeAndProbationAreaCode(VARIATION_SUBMITTED, probationAreaCode)
-    return matchingLicences.map { it.toSummary() }
-  }
-
   @Transactional
   fun activateLicences(licences: List<EntityLicence>, reason: String? = null) {
     licences.forEach { it.activate() }
@@ -638,7 +632,7 @@ class LicenceService(
   }
 
   @Transactional
-  fun createVariation(licenceId: Long): LicenceSummary {
+  fun createVariation(licenceId: Long): CreateVariationResponse {
     val licence = getLicence(licenceId)
     val creator = getCommunityOffenderManagerForCurrentUser()
 
@@ -655,11 +649,11 @@ class LicenceService(
     }
 
     telemetryService.recordLicenceCreatedEvent(licenceVariation)
-    return licenceVariation.toSummary()
+    return CreateVariationResponse(licenceVariation.id)
   }
 
   @Transactional
-  fun editLicence(licenceId: Long): LicenceSummary {
+  fun editLicence(licenceId: Long): EditLicenceResponse {
     val licence = getLicence(licenceId)
     if (isNotValidLicenceForEdit(licence)) error("Trying to edit licence for non-crd,non-hdc or non-prrd licence: $licenceId")
 
@@ -670,7 +664,7 @@ class LicenceService(
     val inProgressVersions =
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(listOf(licenceId), listOf(IN_PROGRESS, SUBMITTED))
     if (inProgressVersions.isNotEmpty()) {
-      return inProgressVersions[0].toSummary()
+      return EditLicenceResponse(inProgressVersions[0].id)
     }
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)).first()
@@ -690,7 +684,7 @@ class LicenceService(
     val licenceCopy = populateCopyAndAudit(licence.kind, licence, copyToEdit, creator)
 
     notifyOmuReApprovalNeeded(licence)
-    return licenceCopy.toSummary()
+    return EditLicenceResponse(licenceCopy.id)
   }
 
   private fun isNotValidLicenceForEdit(licence: EntityLicence?): Boolean = licence != null &&

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
 
 @RestController
@@ -83,7 +83,7 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
+            array = ArraySchema(schema = Schema(implementation = PublicLicenceSummary::class)),
           ),
         ],
       ),
@@ -125,7 +125,7 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
+            array = ArraySchema(schema = Schema(implementation = PublicLicenceSummary::class)),
           ),
         ],
       ),

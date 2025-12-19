@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Creator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
@@ -58,7 +58,7 @@ class LicenceCreationService(
   }
 
   @Transactional
-  fun createLicence(prisonNumber: String): LicenceCreationResponse {
+  fun createLicence(prisonNumber: String): CreateLicenceResponse {
     verifyNoInFlightLicence(prisonNumber)
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -116,11 +116,11 @@ class LicenceCreationService(
 
     recordLicenceCreation(createdBy, createdLicence)
 
-    return LicenceCreationResponse(createdLicence.id)
+    return CreateLicenceResponse(createdLicence.id)
   }
 
   @Transactional
-  fun createHardStopLicence(prisonNumber: String): LicenceCreationResponse {
+  fun createHardStopLicence(prisonNumber: String): CreateLicenceResponse {
     verifyNoInFlightLicence(prisonNumber)
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -203,7 +203,7 @@ class LicenceCreationService(
       timeServedExternalRecordService.deleteTimeServedExternalRecordIfPresent(nomisId, bookingId)
     }
 
-    return LicenceCreationResponse(createdLicence.id)
+    return CreateLicenceResponse(createdLicence.id)
   }
 
   private fun recordLicenceCreation(
