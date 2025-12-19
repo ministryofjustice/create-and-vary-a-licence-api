@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -38,7 +37,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicencePermissionsResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
@@ -54,9 +52,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 class LicenceIntegrationTest : IntegrationTestBase() {
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
-
-  @Autowired
-  lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
 
   @BeforeEach
   fun reset() {
@@ -456,22 +451,20 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       { it.licence.id },
       { it.additionalConditionData.firstOrNull()?.id },
       { it.additionalConditionData.firstOrNull()?.additionalCondition?.id },
-      { it.additionalConditionUploadSummary.firstOrNull()?.id },
-      { it.additionalConditionUploadSummary.firstOrNull()?.additionalCondition?.id },
-      { it.additionalConditionUploadSummary.firstOrNull()?.uploadDetailId },
+      { it.additionalConditionUpload.firstOrNull()?.id },
+      { it.additionalConditionUpload.firstOrNull()?.additionalCondition?.id },
     )
     assertNoOverlaps(doNotContainSameValeCallbacks, newLicence.additionalConditions, oldLicence.additionalConditions)
 
-    val uploadDetailOld =
-      additionalConditionUploadDetailRepository.getReferenceById(oldLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
-    val uploadDetailNew =
-      additionalConditionUploadDetailRepository.getReferenceById(newLicence.additionalConditions.first().additionalConditionUploadSummary.first().uploadDetailId)
+    val uploadOld = oldLicence.additionalConditions.first().additionalConditionUpload.first()
+    val uploadNew = newLicence.additionalConditions.first().additionalConditionUpload.first()
+
     assertListsEqual(
-      listOf(uploadDetailNew),
-      listOf(uploadDetailOld),
-      listOf("id", "licenceId", "additionalConditionId"),
+      listOf(uploadNew),
+      listOf(uploadOld),
+      fieldsToIgnore = listOf("id", "additionalConditionId", "licence"),
     )
-    assertListsNotEqual(listOf(uploadDetailNew), listOf(uploadDetailOld), listOf("originalData", "fullSizeImage"))
+    assertListsNotEqual(listOf(uploadNew), listOf(uploadOld), listOf("originalData", "fullSizeImage"))
 
     assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
     assertListsEqual(newLicence.additionalConditions, oldLicence.additionalConditions)
@@ -676,7 +669,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     // 3 set up in the above sql , 2 associated with licence 2
     assertThat(testRepository.findAllUploadSummary()).hasSize(1)
-    assertThat(testRepository.findAllUploadDetail()).hasSize(1)
   }
 
   @Test

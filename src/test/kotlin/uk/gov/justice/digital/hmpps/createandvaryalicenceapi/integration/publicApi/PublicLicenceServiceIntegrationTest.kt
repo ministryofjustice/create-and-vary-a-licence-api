@@ -14,7 +14,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
@@ -28,7 +28,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
   lateinit var licenceRepository: LicenceRepository
 
   @Autowired
-  lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
+  lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadRepository
 
   @Nested
   inner class `Get licences by CRN` {

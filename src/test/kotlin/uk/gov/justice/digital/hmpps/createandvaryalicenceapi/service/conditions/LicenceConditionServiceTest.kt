@@ -177,7 +177,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
-      verify(exclusionZoneService, times(1)).deleteDocumentsFor(listOf(additionalCondition(2)))
+      verify(exclusionZoneService, times(1)).deleteDocumentsForConditions(listOf(additionalCondition(2)))
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -218,7 +218,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-      verify(exclusionZoneService, times(1)).deleteDocumentsFor(
+      verify(exclusionZoneService, times(1)).deleteDocumentsForConditions(
         listOf(additionalCondition(2), additionalCondition(3)),
       )
 
@@ -395,7 +395,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any(), any())
-      verify(exclusionZoneService, times(1)).deleteDocumentsFor(listOf(expectedToBeRemoved))
+      verify(exclusionZoneService, times(1)).deleteDocumentsForConditions(listOf(expectedToBeRemoved))
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1).copy(
