@@ -12,7 +12,6 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
@@ -31,8 +30,6 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
   @Autowired
   lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
 
-  @Autowired
-  lateinit var documentCountsRepository: DocumentCountsRepository
   val documentService: DocumentService = mock()
 
   @BeforeEach
@@ -42,7 +39,6 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       documentService,
-      documentCountsRepository,
     )
   }
 

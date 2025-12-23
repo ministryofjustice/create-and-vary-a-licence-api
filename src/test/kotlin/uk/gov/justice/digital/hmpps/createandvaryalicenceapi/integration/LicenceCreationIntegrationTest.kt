@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
@@ -67,7 +67,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(standardConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
-    val licenceCreationResponse = webTestClient.post()
+    val createLicenceResponse = webTestClient.post()
       .uri("/licence/create")
       .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
       .accept(MediaType.APPLICATION_JSON)
@@ -75,10 +75,10 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java)
+      .expectBody(CreateLicenceResponse::class.java)
       .returnResult().responseBody
 
-    assertThat(licenceCreationResponse?.licenceId).isGreaterThan(0L)
+    assertThat(createLicenceResponse?.licenceId).isGreaterThan(0L)
     val licences = testRepository.findAllLicence()
     assertThat(licences.count()).isEqualTo(1)
 
@@ -113,7 +113,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java)
+      .expectBody(CreateLicenceResponse::class.java)
       .returnResult().responseBody
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
@@ -151,7 +151,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java)
+      .expectBody(CreateLicenceResponse::class.java)
       .returnResult().responseBody!!
 
     val secondAttempt = webTestClient.post()
@@ -222,7 +222,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java)
+      .expectBody(CreateLicenceResponse::class.java)
       .returnResult().responseBody!!
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
@@ -264,7 +264,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java)
+      .expectBody(CreateLicenceResponse::class.java)
       .returnResult().responseBody!!
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
@@ -314,7 +314,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     // Then
     reponse.expectStatus().isOk
     reponse.expectHeader().contentType(MediaType.APPLICATION_JSON)
-    val licenceDto = reponse.expectBody(LicenceCreationResponse::class.java).returnResult().responseBody!!
+    val licenceDto = reponse.expectBody(CreateLicenceResponse::class.java).returnResult().responseBody!!
     assertThat(licenceDto.licenceId).isGreaterThan(0L)
 
     val licences = testRepository.findAllLicence()
@@ -367,7 +367,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java)
+      .expectBody(CreateLicenceResponse::class.java)
       .returnResult().responseBody!!
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
