@@ -14,12 +14,12 @@ import java.lang.reflect.Method
 class EndpointSecurityTest {
 
   private val controllersToIgnore = listOf(
-    // These only gets wired up in tests
     "uk.gov.justice.hmpps.sqs.HmppsQueueResource",
     "uk.gov.justice.hmpps.sqs.HmppsReactiveQueueResource",
     "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.controller.DashboardDefinitionController",
     "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.controller.DataApiSyncController",
     "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.controller.ReportDefinitionController",
+    "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.productCollection.ProductCollectionController",
   )
 
   private data class EndpointInfo(
