@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -10,45 +11,44 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.UpcomingReleasesWithMonitoringConditionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.LastMinuteHandoverCaseService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.UpcomingReleasesWithMonitoringConditionsReportService
 
 @RestController
-@Tag(name = Tags.SUPPORT)
-@RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
-class SupportController(
-  private val supportService: SupportService,
+@Tag(name = Tags.REPORTS)
+@RequestMapping(value = ["/cvl-report"], produces = [MediaType.APPLICATION_JSON_VALUE])
+class CvlReportController(
+  private val lastMinuteHandoverCaseService: LastMinuteHandoverCaseService,
+  private val upcomingElectronicMonitoringCasesService: UpcomingReleasesWithMonitoringConditionsReportService,
 ) {
-  @GetMapping(
-    value = ["/nomisid/{nomsId}/ineligibility-reasons"],
-    produces = [MediaType.APPLICATION_JSON_VALUE],
-  )
+  @GetMapping("/last-minute-handover-cases")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Retrieve ineligibility reasons for offender",
-    description = "Returns ineligibility reasons for creating a licence for a specific prisoner. Requires ROLE_CVL_ADMIN.",
+    summary = "Retrieve list of cases that need to be reported to the TAG team",
+    description = "Returns a list of LastMinuteHandoverCaseResponse objects",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "a list of ineligibility reasons",
+        description = "A list of last minute handover cases",
         content = [
           Content(
             mediaType = "application/json",
-            schema = Schema(implementation = EligibilityAssessment::class),
+            array = ArraySchema(schema = Schema(implementation = LastMinuteHandoverCaseResponse::class)),
           ),
         ],
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Bad request, request body must be valid",
+        description = "Bad request, request parameters must be valid",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
@@ -61,42 +61,32 @@ class SupportController(
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Could not find prisoner",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
     ],
   )
-  fun getIneligibilityReasons(
-    @PathVariable nomsId: String,
-  ) = supportService.getIneligibilityReasons(nomsId)
+  fun getLastMinuteCases(): List<LastMinuteHandoverCaseResponse> = lastMinuteHandoverCaseService.getLastMinuteCases()
 
-  @GetMapping(
-    value = ["/nomisid/{nomsId}/is-91-status"],
-    produces = [MediaType.APPLICATION_JSON_VALUE],
-  )
+  @GetMapping("/upcoming-releases-with-monitoring")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Retrieve IS-91 status for offender",
-    description = "Returns IS-91 status for creating a licence for a specific prisoner. Requires ROLE_CVL_ADMIN.",
+    summary = "Retrieve list of upcoming cases with electronic monitoring conditions for FTR-56 report",
+    description = "Returns a list of LastMinuteHandoverCaseResponse objects",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "a boolean for IS-91 status",
+        description = "A list of last minute handover cases",
         content = [
           Content(
             mediaType = "application/json",
-            schema = Schema(implementation = Boolean::class),
+            array = ArraySchema(schema = Schema(implementation = UpcomingReleasesWithMonitoringConditionsResponse::class)),
           ),
         ],
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Bad request, request body must be valid",
+        description = "Bad request, request parameters must be valid",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
@@ -109,14 +99,7 @@ class SupportController(
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Could not find prisoner",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
     ],
   )
-  fun getIS91Status(
-    @PathVariable nomsId: String,
-  ) = supportService.getIS91Status(nomsId)
+  fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> = upcomingElectronicMonitoringCasesService.getUpcomingReleasesWithMonitoringConditions()
 }

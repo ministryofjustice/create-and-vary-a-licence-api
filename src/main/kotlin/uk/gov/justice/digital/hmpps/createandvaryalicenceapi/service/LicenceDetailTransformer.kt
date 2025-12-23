@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
@@ -74,14 +74,14 @@ fun uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.mapTo
 fun List<uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition>.transformToResourceStandard(): List<StandardCondition> = map(::transform)
 
 fun transform(condition: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition): StandardCondition = StandardCondition(
-  code = condition.code.orEmpty(),
-  text = condition.text.orEmpty(),
+  code = condition.code,
+  text = condition.text,
 )
 
 // Transform a list of model additional conditions to resource additional conditions
 fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditionalCondition> = map {
   when (it.code) {
-    ELECTRONIC_TAG_COND_CODE -> transformElectronicMonitoring(it)
+    ELECTRONIC_TAG_COND_CODE_14A -> transformElectronicMonitoring(it)
     EXCLUSION_ZONE_COND_CODE -> transformMultipleExclusionZonesCondition(it)
     EVENT_EXCLUSION_COND_CODE -> transformSingleExclusionZoneCondition(it)
     else -> standardAdditionalCondition(it)

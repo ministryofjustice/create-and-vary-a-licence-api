@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 class Tags {
   private constructor()
+
   companion object {
     const val ADMIN = "Admin"
     const val ANCILLARY = "Ancillary"
@@ -19,7 +20,8 @@ class Tags {
     const val OMU_CONTACT_DETAILS = "OMU Contact details"
     const val CASELOAD = "Caseload"
     const val OFFENDER = "Offender"
-    const val SAR = "Subject Access Request"
+    const val SUPPORT = "Support"
+    const val REPORTS = "Reports"
     const val HDC_LICENCE_CURFEW_TIMES = "HDC Licence Curfew Times"
     const val ELECTRONIC_MONITORING_PROGRAMME = "Electronic Monitoring Programme"
     const val TIME_SERVED = "Time Served"
