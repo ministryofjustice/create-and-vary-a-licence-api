@@ -21,6 +21,7 @@ class WebClientConfiguration(
   @param:Value("\${hmpps.delius.api.url}") private val deliusApiUrl: String,
   @param:Value("\${hmpps.workload.api.url}") private val workLoadApiUrl: String,
   @param:Value("\${hmpps.prisonersearch.api.url}") private val prisonerSearchApiUrl: String,
+  @param:Value("\${hmpps.manageusers.api.url}") private val manageUsersApiUrl: String,
   @param:Value("\${hmpps.document.api.url}") private val documentApiUrl: String,
   @param:Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String,
   @param:Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
@@ -42,16 +43,34 @@ class WebClientConfiguration(
   fun oauthPrisonClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(prisonApiUrl, authorizedClientManager, builder)
 
   @Bean
-  fun oauthPrisonerSearchClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(prisonerSearchApiUrl, authorizedClientManager, builder)
+  fun oauthManageUsersWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = getWebClient(manageUsersApiUrl, authorizedClientManager, builder)
 
   @Bean
-  fun oauthDocumentApiClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(documentApiUrl, authorizedClientManager, builder)
+  fun oauthPrisonerSearchClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = getWebClient(prisonerSearchApiUrl, authorizedClientManager, builder)
 
   @Bean
-  fun oauthDeliusApiClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(deliusApiUrl, authorizedClientManager, builder)
+  fun oauthDocumentApiClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = getWebClient(documentApiUrl, authorizedClientManager, builder)
 
   @Bean
-  fun oauthWorkLoadApiClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(workLoadApiUrl, authorizedClientManager, builder)
+  fun oauthDeliusApiClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = getWebClient(deliusApiUrl, authorizedClientManager, builder)
+
+  @Bean
+  fun oauthWorkLoadApiClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = getWebClient(workLoadApiUrl, authorizedClientManager, builder)
 
   @Bean
   fun oauthHdcApiClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(hdcApiUrl, authorizedClientManager, builder)
