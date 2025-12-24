@@ -55,7 +55,7 @@ class ApproverCaseloadService(
     val probationPractitioners = getProbationPractitioners(deliusRecords)
 
     return deliusRecords.mapNotNull { record ->
-      val probationPractitioner = probationPractitioners[record.case.nomisId?.lowercase()]
+      val probationPractitioner = probationPractitioners[record.case.nomisId?.lowercase()]!!
       val licence = licenceApproverCases.findLicenceToApprove(record.case.nomisId!!)
       when {
         licence == null -> null
@@ -79,11 +79,13 @@ class ApproverCaseloadService(
   }
 
   private fun getProbationPractitioners(coms: List<CommunityManagerWithoutUser>) = coms
-    .filter { !it.unallocated }
     .associate {
+      val name = if (it.unallocated) "Not Allocated" else it.name.fullName()
+      val staffCode = if (it.unallocated) null else it.code
       it.case.nomisId!!.lowercase() to ProbationPractitioner(
-        staffCode = it.code,
-        name = it.name.fullName(),
+        staffCode = staffCode,
+        name = name,
+        allocated = !it.unallocated,
       )
     }
 

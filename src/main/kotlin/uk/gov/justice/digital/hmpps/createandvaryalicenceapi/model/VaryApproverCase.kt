@@ -50,5 +50,5 @@ data class VaryApproverCase(
   val releaseDate: LocalDate?,
 
   @field:Schema(description = "The details for the active supervising probation officer", requiredMode = NOT_REQUIRED)
-  val probationPractitioner: ProbationPractitioner? = null,
+  val probationPractitioner: ProbationPractitioner,
 )

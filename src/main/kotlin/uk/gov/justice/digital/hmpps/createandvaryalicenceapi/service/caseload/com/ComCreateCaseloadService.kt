@@ -106,7 +106,7 @@ class ComCreateCaseloadService(
       when {
         // No licences found for this offender so treat as a not started case
         licences.isEmpty() -> Case(
-          probationPractitioner,
+          probationPractitioner ?: ProbationPractitioner.UNALLOCATED,
           nomisRecord,
           cvlRecord,
           createNotStartedLicenceDto(deliusRecord, nomisRecord, cvlRecord),
@@ -118,7 +118,7 @@ class ComCreateCaseloadService(
 
         // Should appear in create caseload with relevant licence
         else ->
-          Case(probationPractitioner, nomisRecord, cvlRecord, findRelevantLicencePerCase(licences))
+          Case(probationPractitioner ?: ProbationPractitioner.UNALLOCATED, nomisRecord, cvlRecord, findRelevantLicencePerCase(licences))
       }
     }
   }
@@ -207,7 +207,7 @@ class ComCreateCaseloadService(
   }.sortedWith(compareBy<ComCreateCase> { it.releaseDate }.thenBy { it.name })
 
   private data class Case(
-    val probationPractitioner: ProbationPractitioner?,
+    val probationPractitioner: ProbationPractitioner,
     val nomisRecord: PrisonerSearchPrisoner,
     val cvlRecord: CvlRecord,
     val comLicenceCaseDto: ComCreateCaseloadLicenceDto,

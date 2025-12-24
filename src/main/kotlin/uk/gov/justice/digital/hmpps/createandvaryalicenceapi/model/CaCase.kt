@@ -26,7 +26,7 @@ data class CaCase(
   val prisonerNumber: String,
 
   @field:Schema(description = "The details for the active supervising probation officer")
-  val probationPractitioner: ProbationPractitioner? = null,
+  val probationPractitioner: ProbationPractitioner,
 
   @field:Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
