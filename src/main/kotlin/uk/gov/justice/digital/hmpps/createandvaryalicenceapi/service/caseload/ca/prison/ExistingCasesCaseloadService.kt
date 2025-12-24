@@ -46,7 +46,7 @@ class ExistingCasesCaseloadService(
         ProbationPractitioner(
           staffCode = entry.value.code,
           name = entry.value.name.fullName(),
-          allocated = true
+          allocated = true,
         )
       }
   }

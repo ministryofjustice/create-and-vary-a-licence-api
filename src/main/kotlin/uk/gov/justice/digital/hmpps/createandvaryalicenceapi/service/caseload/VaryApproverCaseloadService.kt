@@ -96,7 +96,7 @@ class VaryApproverCaseloadService(
         staffCode = staffCode,
         name = name,
         allocated = !it.unallocated,
-        )
+      )
     }
 
   private fun applySearchFilter(cases: List<VaryApproverCase>, searchTerm: String?): List<VaryApproverCase> {

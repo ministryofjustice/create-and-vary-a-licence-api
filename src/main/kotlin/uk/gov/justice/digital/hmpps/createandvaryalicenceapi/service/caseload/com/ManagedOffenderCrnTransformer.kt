@@ -11,7 +11,7 @@ object ManagedOffenderCrnTransformer {
       ProbationPractitioner(
         staffCode = it.code,
         name = it.name?.fullName(),
-        allocated = true
+        allocated = true,
       )
     }
 }
