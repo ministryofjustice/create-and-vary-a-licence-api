@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

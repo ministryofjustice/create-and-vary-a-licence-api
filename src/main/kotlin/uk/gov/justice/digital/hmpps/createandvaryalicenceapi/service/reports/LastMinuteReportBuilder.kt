@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import java.time.Clock
 import java.time.LocalDate
-import kotlin.comparisons.nullsLast
 
 // Staged builder interfaces to force order of operations
 private interface DeliusStage {
