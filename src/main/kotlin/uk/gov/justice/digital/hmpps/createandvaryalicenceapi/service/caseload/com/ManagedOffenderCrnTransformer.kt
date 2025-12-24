@@ -6,11 +6,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.f
 
 object ManagedOffenderCrnTransformer {
   fun ManagedOffenderCrn?.toProbationPractitioner() = this?.staff
-    ?.takeUnless { it.unallocated == true }
     ?.let {
+      if (it.unallocated == true) return@let ProbationPractitioner.UNALLOCATED
       ProbationPractitioner(
         staffCode = it.code,
         name = it.name?.fullName(),
+        allocated = true
       )
     }
 }

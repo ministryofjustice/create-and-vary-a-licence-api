@@ -46,6 +46,7 @@ class ExistingCasesCaseloadService(
         ProbationPractitioner(
           staffCode = entry.value.code,
           name = entry.value.name.fullName(),
+          allocated = true
         )
       }
   }
@@ -79,7 +80,7 @@ class ExistingCasesCaseloadService(
           licence,
           clock,
         ),
-        probationPractitioner = usernameToProbationPractitioner[licence.comUsername?.lowercase()],
+        probationPractitioner = usernameToProbationPractitioner[licence.comUsername?.lowercase()] ?: ProbationPractitioner.UNALLOCATED,
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
       )

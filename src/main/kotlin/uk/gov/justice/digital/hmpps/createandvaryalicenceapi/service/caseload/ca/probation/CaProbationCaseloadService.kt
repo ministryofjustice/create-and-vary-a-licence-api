@@ -59,7 +59,7 @@ class CaProbationCaseloadService(
         licenceStatus = licence.statusCode,
         lastWorkedOnBy = licence.updatedByFullName,
         isInHardStopPeriod = isInHardStopPeriod,
-        probationPractitioner = usernameToProbationPractitioner[licence.comUsername?.lowercase()],
+        probationPractitioner = usernameToProbationPractitioner[licence.comUsername?.lowercase()] ?: ProbationPractitioner.UNALLOCATED,
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
       )
@@ -81,6 +81,7 @@ class CaProbationCaseloadService(
         ProbationPractitioner(
           staffCode = entry.value.code,
           name = entry.value.name.fullName(),
+          allocated = true,
         )
       }
   }

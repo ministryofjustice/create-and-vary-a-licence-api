@@ -70,7 +70,7 @@ class VaryApproverCaseloadService(
     return licences.mapNotNull { licence ->
       val nomisRecord = nomisRecords[licence.prisonNumber]
       val deliusRecord = deliusRecords[licence.prisonNumber]
-      val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()]
+      val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()]!!
       if (nomisRecord == null || deliusRecord == null) {
         null
       } else {
@@ -89,12 +89,14 @@ class VaryApproverCaseloadService(
   }
 
   private fun getProbationPractitioners(prisonNumbers: List<String>) = deliusApiClient.getOffenderManagersWithoutUser(prisonNumbers)
-    .filter { !it.unallocated }
     .associate {
+      val name = if (it.unallocated) "Not Allocated" else it.name.fullName()
+      val staffCode = if (it.unallocated) null else it.code
       it.case.nomisId!!.lowercase() to ProbationPractitioner(
-        staffCode = it.code,
-        name = it.name.fullName(),
-      )
+        staffCode = staffCode,
+        name = name,
+        allocated = !it.unallocated,
+        )
     }
 
   private fun applySearchFilter(cases: List<VaryApproverCase>, searchTerm: String?): List<VaryApproverCase> {

@@ -13,5 +13,13 @@ data class ProbationPractitioner(
   val name: String? = null,
 
   @field:Schema(description = "Is a probation practitioner allocated?")
-  val allocated: Boolean = true,
-)
+  val allocated: Boolean,
+  ) {
+  companion object {
+    val UNALLOCATED = ProbationPractitioner(
+      null,
+      "Not allocated",
+      false
+    )
+  }
+}
