@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.Optional
@@ -18,7 +17,7 @@ class ExclusionZoneServiceGetFullImageTest {
 
   private val licenceRepository: LicenceRepository = mock()
   private val additionalConditionRepository: AdditionalConditionRepository = mock()
-  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository = mock()
+  private val additionalConditionUploadRepository: AdditionalConditionUploadRepository = mock()
   private val documentService: DocumentService = mock()
 
   private val fileStoredRemotely = byteArrayOf(1, 1, 1)
@@ -36,7 +35,7 @@ class ExclusionZoneServiceGetFullImageTest {
     val exclusionZoneService = ExclusionZoneService(
       licenceRepository,
       additionalConditionRepository,
-      additionalConditionUploadDetailRepository,
+      additionalConditionUploadRepository,
       documentService,
     )
 
@@ -51,7 +50,7 @@ class ExclusionZoneServiceGetFullImageTest {
     val exclusionZoneService = ExclusionZoneService(
       licenceRepository,
       additionalConditionRepository,
-      additionalConditionUploadDetailRepository,
+      additionalConditionUploadRepository,
       documentService,
     )
 
@@ -63,21 +62,21 @@ class ExclusionZoneServiceGetFullImageTest {
     whenever(licenceRepository.findById(licenceId)).thenReturn(Optional.of(mock()))
 
     whenever(additionalConditionRepository.findById(additionalConditionId)).thenReturn(
-      Optional.of(additionalCondition()),
+      Optional.of(additionalCondition(fullSizeImageUUID)),
     )
 
-    whenever(additionalConditionUploadDetailRepository.findById(additionalConditionUploadDetailId)).thenReturn(
-      Optional.of(additionalConditionUploadDetail(fullSizeImageUUID)),
+    whenever(additionalConditionUploadRepository.findById(additionalConditionUploadDetailId)).thenReturn(
+      Optional.of(additionalConditionUpload(fullSizeImageUUID)),
     )
 
     whenever(documentService.downloadDocument(uuid)).thenReturn(fileStoredRemotely)
   }
 
-  private fun additionalCondition(): AdditionalCondition = AdditionalCondition(
+  private fun additionalCondition(fullSizeImageUUID: UUID?): AdditionalCondition = AdditionalCondition(
     id = additionalConditionId,
     licence = mock(),
     additionalConditionData = mock(),
-    additionalConditionUploadSummary = mutableListOf(additionalConditionUploadSummary()),
+    additionalConditionUpload = mutableListOf(additionalConditionUpload(fullSizeImageUUID)),
     conditionVersion = "",
     conditionCode = "",
     conditionCategory = "",
@@ -86,16 +85,9 @@ class ExclusionZoneServiceGetFullImageTest {
     conditionType = "",
   )
 
-  private fun additionalConditionUploadSummary(): AdditionalConditionUploadSummary = AdditionalConditionUploadSummary(
+  private fun additionalConditionUpload(fullSizeImageUUID: UUID?): AdditionalConditionUpload = AdditionalConditionUpload(
     id = 3L,
     additionalCondition = mock(),
-    uploadDetailId = additionalConditionUploadDetailId,
-  )
-
-  private fun additionalConditionUploadDetail(fullSizeImageUUID: UUID?): AdditionalConditionUploadDetail = AdditionalConditionUploadDetail(
-    id = 4L,
-    licenceId = 1L,
-    additionalConditionId = 2L,
     fullSizeImageDsUuid = fullSizeImageUUID?.toString(),
   )
 }

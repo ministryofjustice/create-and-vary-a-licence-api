@@ -56,7 +56,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -106,7 +105,6 @@ class LicenceServiceTest {
   private val crdLicenceRepository = mock<CrdLicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
-  private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val licencePolicyService = mock<LicencePolicyService>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
@@ -127,7 +125,6 @@ class LicenceServiceTest {
       staffRepository,
       licenceEventRepository,
       licencePolicyService,
-      additionalConditionUploadDetailRepository,
       auditEventRepository,
       notifyService,
       omuService,
@@ -158,7 +155,6 @@ class LicenceServiceTest {
       staffRepository,
       licenceEventRepository,
       licencePolicyService,
-      additionalConditionUploadDetailRepository,
       auditEventRepository,
       notifyService,
       omuService,
@@ -2340,7 +2336,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).delete(aLicenceEntity)
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
-    verify(exclusionZoneService, times(1)).deleteDocumentsFor(aLicenceEntity.additionalConditions)
+    verify(exclusionZoneService, times(1)).deleteDocuments(any())
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -3536,7 +3532,6 @@ class LicenceServiceTest {
           staffRepository,
           licenceEventRepository,
           licencePolicyService,
-          additionalConditionUploadDetailRepository,
           auditEventRepository,
           notifyService,
           omuService,

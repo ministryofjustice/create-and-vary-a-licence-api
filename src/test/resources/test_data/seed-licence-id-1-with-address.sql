@@ -157,7 +157,7 @@ VALUES (
 		   'Town centre'
 	   );
 
-INSERT INTO additional_condition_upload_summary (
+INSERT INTO additional_condition_upload (
 	additional_condition_id,
 	filename,
 	file_type,
@@ -165,8 +165,7 @@ INSERT INTO additional_condition_upload_summary (
 	file_size,
 	image_size,
 	description,
-	thumbnail_image,
-	upload_detail_id
+	thumbnail_image_ds_uuid, original_data_ds_uuid, full_size_image_ds_uuid
 ) VALUES (
 			 (SELECT MAX(id) FROM additional_condition),
 			 'Test-file.pdf',
@@ -175,21 +174,12 @@ INSERT INTO additional_condition_upload_summary (
 			 12345,
 			 23456,
 			 'Description',
-			 'thumb',
-			 1
+            '44f8163c-6c97-4ff2-932b-ae24feb0c112',
+			 '54f8163c-6c97-4ff2-932b-ae24feb0c113',
+			 '64f8163c-6c97-4ff2-932b-ae24feb0c114'
 		 );
 
-INSERT INTO additional_condition_upload_detail (
-	licence_id,
-	additional_condition_id,
-	original_data,
-	full_size_image
-) VALUES (
-			 (SELECT MAX(id) FROM licence),
-			 (SELECT MAX(id) FROM additional_condition),
-			 'Some data',
-			 'some more data'
-		 );
+
 
 -- 10. Another address + staff_saved_appointment_address
 INSERT INTO address (

@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toBase64
 import java.util.UUID
 import javax.imageio.ImageIO
 
@@ -23,7 +23,7 @@ private const val IMAGE_TYPE = "image/png"
 class ExclusionZoneService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
-  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val additionalConditionUploadRepository: AdditionalConditionUploadRepository,
   private val documentService: DocumentService,
 ) {
 
@@ -45,8 +45,8 @@ class ExclusionZoneService(
 
     val licenceEntity = licence(licenceId)
     val additionalCondition = additionalCondition(conditionId)
-
-    deleteDocumentsFor(listOf(additionalCondition))
+    // get deletableDocumentUuids before data is changed on the DB
+    val deletableDocumentUuids = getDeletableDocumentUuids(listOf(additionalCondition))
 
     val pdfExtract = ExclusionZonePdfExtract
       .runCatching { fromMultipartFile(file) }
@@ -55,16 +55,7 @@ class ExclusionZoneService(
     val (originalDataDsUuid, fullSizeImageDsUuid, thumbnailImageDsUuid) =
       uploadExtractedExclusionZoneParts(file, pdfExtract, licenceEntity, additionalCondition)
 
-    val uploadDetail = AdditionalConditionUploadDetail(
-      licenceId = licenceEntity.id,
-      additionalConditionId = additionalCondition.id!!,
-      originalDataDsUuid = originalDataDsUuid?.toString(),
-      fullSizeImageDsUuid = fullSizeImageDsUuid?.toString(),
-    )
-
-    val savedDetail = additionalConditionUploadDetailRepository.saveAndFlush(uploadDetail)
-
-    val uploadSummary = AdditionalConditionUploadSummary(
+    val uploadSummary = AdditionalConditionUpload(
       additionalCondition = additionalCondition,
       filename = file.originalFilename,
       fileType = file.contentType,
@@ -73,49 +64,67 @@ class ExclusionZoneService(
       imageSize = pdfExtract.fullSizeImage.size,
       description = pdfExtract.description,
       thumbnailImageDsUuid = thumbnailImageDsUuid?.toString(),
-      uploadDetailId = savedDetail.id!!,
+      originalDataDsUuid = originalDataDsUuid?.toString(),
+      fullSizeImageDsUuid = fullSizeImageDsUuid?.toString(),
     )
 
-    additionalCondition.additionalConditionUploadSummary.clear()
-    additionalCondition.additionalConditionUploadSummary.add(uploadSummary)
+    additionalCondition.additionalConditionUpload.clear()
+    additionalCondition.additionalConditionUpload.add(uploadSummary)
+
+    // Delete Documents after all above work is done, just encase exception is thrown before now!
+    deleteDocuments(deletableDocumentUuids)
   }
 
   fun getExclusionZoneImage(licenceId: Long, conditionId: Long): ByteArray? {
     licence(licenceId)
-
-    val uploadDetail = additionalConditionUploadDetail(
-      additionalCondition(conditionId).additionalConditionUploadSummary.first().uploadDetailId,
-    )
-
+    val uploadDetail = additionalCondition(conditionId).additionalConditionUpload.first()
     return uploadDetail.fullSizeImageDsUuid?.let { uuid -> documentService.downloadDocument(UUID.fromString(uuid)) }
   }
 
-  fun preloadThumbnailsFor(licence: Licence) {
-    licence.additionalConditions
-      .flatMap { it.additionalConditionUploadSummary }
-      .filterNot { it.thumbnailImageDsUuid == null }
-      .forEach {
-        it.preloadedThumbnailImage = documentService.downloadDocument(UUID.fromString(it.thumbnailImageDsUuid))
+  fun preloadThumbnails(
+    entityLicence: Licence,
+    licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence,
+  ) {
+    val uploadThumbNailUuids = entityLicence.additionalConditions
+      .flatMap { it.additionalConditionUpload }
+      .filter { it.thumbnailImageDsUuid != null }
+      .associate { it.id!! to UUID.fromString(it.thumbnailImageDsUuid!!) }
+
+    licence.additionalLicenceConditions.forEach { condition ->
+      condition.uploadSummary.forEach { summary ->
+        uploadThumbNailUuids[summary.id]?.let { uuid ->
+          runCatching {
+            documentService.downloadDocument(uuid).toBase64()
+          }.onSuccess { base64 ->
+            summary.thumbnailImage = base64
+          }.onFailure { e ->
+            log.warn("Failed to download thumbnail for upload Id={}", summary.id, e)
+          }
+        }
       }
+    }
   }
 
   @Transactional
-  fun deleteDocumentsFor(additionalConditions: List<AdditionalCondition>) {
+  fun getDeletableDocumentUuids(additionalConditions: List<AdditionalCondition>): List<UUID> {
     val additionalConditionIds = additionalConditions.map { it.id!! }
-
     log.info("Deleting documents for AdditionalConditions with id in ({})", additionalConditionIds)
+    val documentUuids = additionalConditionUploadRepository.findDocumentUuidsFor(additionalConditionIds)
+    return documentUuids.filter {
+      additionalConditionUploadRepository.hasOnlyOneUpload(it)
+    }
+      .map { UUID.fromString(it) }
+  }
 
-    additionalConditionUploadDetailRepository.countsOfDocumentsRelatedTo(additionalConditionIds)
-      .filter { it.count == 1 }
-      .also { log.info("Found {} documents to delete...", it.size) }
-      .forEach { documentService.deleteDocument(UUID.fromString(it.uuid)) }
+  fun deleteDocuments(documentUuids: List<UUID>) {
+    log.info("Deleting documents for uuids in ({})", documentUuids)
+    documentUuids.also { log.info("Found {} documents to delete...", it.size) }
+      .forEach { documentService.deleteDocument(it) }
+  }
 
-    // Remove these after checking for duplicates otherwise there is a good chance you never find duplicates
-    additionalConditionUploadDetailRepository.deleteAllByIdInBatch(
-      additionalConditions
-        .flatMap { it.additionalConditionUploadSummary }
-        .map { it.uploadDetailId },
-    )
+  @Transactional
+  fun deleteDocumentsForConditions(additionalConditions: List<AdditionalCondition>) {
+    deleteDocuments(getDeletableDocumentUuids(additionalConditions))
   }
 
   private fun uploadExtractedExclusionZoneParts(
@@ -144,9 +153,6 @@ class ExclusionZoneService(
 
   private fun additionalCondition(id: Long) = additionalConditionRepository.findById(id)
     .orElseThrow { EntityNotFoundException("Unable to find AdditionalCondition id=$id") }
-
-  private fun additionalConditionUploadDetail(id: Long) = additionalConditionUploadDetailRepository.findById(id)
-    .orElseThrow { EntityNotFoundException("Unable to find AdditionalConditionUploadDetail id=$id") }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

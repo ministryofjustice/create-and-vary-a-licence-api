@@ -87,7 +87,7 @@ class AuditServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(auditEventRepository, times(1)).findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(
-      aUserRequest.licenceId,
+      aUserRequest.licenceId!!,
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
@@ -111,7 +111,7 @@ class AuditServiceTest {
     assertThat(response[0].summary).isEqualTo("Summary1")
 
     verify(auditEventRepository, times(1)).findAllByUsernameAndEventTimeBetweenOrderByEventTimeDesc(
-      aUserRequest.username,
+      aUserRequest.username!!,
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
@@ -1031,7 +1031,7 @@ class AuditServiceTest {
       conditionSequence = 4,
       conditionText = "text",
       additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = mutableListOf(),
+      additionalConditionUpload = mutableListOf(),
       conditionType = "AP",
     )
 

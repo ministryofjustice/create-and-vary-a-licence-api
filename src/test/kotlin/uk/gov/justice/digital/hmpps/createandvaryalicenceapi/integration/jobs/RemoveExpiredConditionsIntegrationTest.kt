@@ -96,7 +96,6 @@ class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
     }
 
     assertThat(testRepository.findAllUploadSummary()).isEmpty()
-    assertThat(testRepository.findAllUploadDetail()).isEmpty()
   }
 
   @Test
@@ -165,7 +164,6 @@ class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
     }
 
     assertThat(testRepository.findAllUploadSummary()).isEmpty()
-    assertThat(testRepository.findAllUploadDetail()).isEmpty()
   }
 
   private fun getLicence(id: Long) = webTestClient.get()

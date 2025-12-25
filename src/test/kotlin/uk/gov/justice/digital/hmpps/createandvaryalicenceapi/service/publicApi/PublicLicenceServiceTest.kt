@@ -12,10 +12,6 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -23,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublicLicenceType
@@ -637,62 +632,6 @@ class PublicLicenceServiceTest {
       dateLastUpdated = LocalDateTime.of(2023, 10, 11, 12, 0, 0),
       updatedByUsername = "testupdater",
       createdBy = aCom,
-    )
-
-    val someAdditionalConditionData = mutableListOf(
-      AdditionalConditionData(
-        id = 1,
-        dataField = "outOfBoundArea",
-        dataValue = "Bristol town centre",
-        additionalCondition = anAdditionalCondition(id = 1, aLicenceEntity),
-      ),
-      AdditionalConditionData(
-        id = 2,
-        dataField = "outOfBoundFile",
-        dataValue = "test.pdf",
-        additionalCondition = anAdditionalCondition(id = 2, licence = aLicenceEntity),
-      ),
-    )
-
-    val someUploadSummaryData = AdditionalConditionUploadSummary(
-      id = 1,
-      filename = "test.pdf",
-      fileType = "application/pdf",
-      description = "Description",
-      additionalCondition = someAdditionalConditionData[0].additionalCondition,
-      uploadDetailId = 1,
-    )
-
-    val anAdditionalConditionEntityWithUpload = AdditionalCondition(
-      id = 1,
-      conditionVersion = "1.0",
-      licence = aLicenceEntity,
-      conditionCode = "outOfBounds",
-      conditionCategory = "Freedom of movement",
-      conditionSequence = 1,
-      conditionText = "text",
-      conditionType = "AP",
-      additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = mutableListOf(someUploadSummaryData),
-    )
-
-    val anAdditionalConditionUploadDetailEntity = AdditionalConditionUploadDetail(
-      id = 1,
-      licenceId = 1,
-      additionalConditionId = 1,
-    )
-
-    val anAdditionalConditionEntityWithoutUpload = AdditionalCondition(
-      id = 1,
-      licence = aLicenceEntity,
-      conditionVersion = "1.0",
-      conditionCode = "outOfBounds",
-      conditionCategory = "Freedom of movement",
-      conditionSequence = 1,
-      conditionText = "text",
-      conditionType = "AP",
-      additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = mutableListOf(),
     )
 
     val publicLicenceConditions = Conditions(

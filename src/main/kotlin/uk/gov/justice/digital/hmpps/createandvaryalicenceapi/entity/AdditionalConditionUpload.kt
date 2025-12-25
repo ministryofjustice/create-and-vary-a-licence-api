@@ -14,8 +14,9 @@ import jakarta.validation.constraints.Positive
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "additional_condition_upload_summary")
-data class AdditionalConditionUploadSummary(
+@Table(name = "additional_condition_upload")
+data class AdditionalConditionUpload(
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @field:Positive
@@ -26,36 +27,25 @@ data class AdditionalConditionUploadSummary(
   var additionalCondition: AdditionalCondition,
 
   val filename: String? = null,
-
   val fileType: String? = null,
-
   val imageType: String? = null,
-
   val fileSize: Int = 0,
-
   val imageSize: Int? = 0,
-
   @param:NotNull
   val uploadedTime: LocalDateTime = LocalDateTime.now(),
-
   val description: String? = null,
-
   val thumbnailImageDsUuid: String? = null,
-
-  @param:NotNull
-  var uploadDetailId: Long,
+  var originalDataDsUuid: String? = null,
+  var fullSizeImageDsUuid: String? = null,
 ) {
 
-  @Transient
-  var preloadedThumbnailImage: ByteArray? = null
-
-  override fun toString(): String = "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, imageType=$imageType, fileSize=$fileSize, imageSize=$imageSize, uploadedTime=$uploadedTime, description=$description)"
+  override fun toString(): String = "AdditionalConditionUpload(id=$id, filename=$filename, fileType=$fileType, imageType=$imageType, fileSize=$fileSize, imageSize=$imageSize, uploadedTime=$uploadedTime, description=$description, thumbnailImageDsUuid=$thumbnailImageDsUuid, originalDataDsUuid=$originalDataDsUuid, fullSizeImageDsUuid=$fullSizeImageDsUuid)"
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
 
-    other as AdditionalConditionUploadSummary
+    other as AdditionalConditionUpload
 
     if (id != other.id) return false
     if (filename != other.filename) return false
