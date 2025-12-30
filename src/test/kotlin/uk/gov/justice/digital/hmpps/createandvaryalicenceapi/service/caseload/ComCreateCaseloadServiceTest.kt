@@ -19,8 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -41,7 +39,6 @@ class ComCreateCaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
-  private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
@@ -50,7 +47,6 @@ class ComCreateCaseloadServiceTest {
     prisonerSearchApiClient,
     deliusApiClient,
     licenceCaseRepository,
-    hdcService,
     cvlRecordService,
     telemetryService,
   )
@@ -64,8 +60,7 @@ class ComCreateCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(deliusApiClient, licenceCaseRepository, hdcService, eligibilityService)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    reset(deliusApiClient, licenceCaseRepository, eligibilityService)
   }
 
   @Test
@@ -370,12 +365,12 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234F",
-          kind = LicenceKind.CRD,
+          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(
           nomsId = "AB1234G",
-          kind = LicenceKind.CRD,
+          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(nomsId = "AB1234H", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
@@ -386,7 +381,7 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234M", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234N",
-          kind = LicenceKind.CRD,
+          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(nomsId = "AB1234P", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
@@ -860,51 +855,6 @@ class ComCreateCaseloadServiceTest {
     // Then
     assertThat(caseload).hasSize(1)
     assertThat(caseload.first().kind).isEqualTo(LicenceKind.PRRD)
-  }
-
-  @Test
-  fun `it filters out HDC approved licences on team create caseload`() {
-    val selectedTeam = "team C"
-
-    val managedOffenders = listOf(
-      ManagedOffenderCrn(
-        crn = "X12348",
-        nomisId = "AB1234E",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
-      ),
-      ManagedOffenderCrn(
-        crn = "X12349",
-        nomisId = "AB1234F",
-        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
-      ),
-    )
-
-    whenever(
-      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
-    ).thenReturn(managedOffenders)
-
-    val caseloadItems = listOf(
-      prisonerSearchResult().copy(
-        bookingId = "1",
-        prisonerNumber = "AB1234E",
-        conditionalReleaseDate = tenDaysFromNow,
-        releaseDate = tenDaysFromNow,
-        postRecallReleaseDate = tenDaysFromNow,
-        recall = true,
-      ),
-    )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-      listOf(
-        aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
-      ),
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(caseloadItems)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(caseloadItems[0].bookingId?.toLong()!!)))
-
-    val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
-
-    verify(deliusApiClient).getManagedOffendersByTeam("team C")
-    assertThat(caseload).isEmpty()
   }
 
   @Test

@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
@@ -19,7 +18,6 @@ import kotlin.collections.List
 class PromptComListBuilder(
   private val licenceRepository: LicenceRepository,
   private val releaseDateService: ReleaseDateService,
-  private val hdcService: HdcService,
   private val deliusApiClient: DeliusApiClient,
 ) {
 
@@ -31,11 +29,6 @@ class PromptComListBuilder(
       val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }
       return@filter cvlRecord.isEligible
     }
-  }
-
-  fun excludePrisonersWithHdc(prisoners: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
-    val hdcStatuses = hdcService.getHdcStatus(prisoners)
-    return prisoners.filterNot { hdcStatuses.isApprovedForHdc(it.bookingId?.toLong()!!) }
   }
 
   fun excludeInflightLicences(prisoners: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
