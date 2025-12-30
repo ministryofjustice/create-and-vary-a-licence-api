@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
@@ -44,7 +43,6 @@ class PromptComListBuilderTest {
   private val promptComListBuilder = PromptComListBuilder(
     licenceRepository,
     releaseDateService,
-    hdcService,
     deliusApiClient,
   )
 
@@ -119,31 +117,6 @@ class PromptComListBuilderTest {
       ).thenReturn(setOf(prisoner.bookingId!!.toLong()))
 
       val result = promptComListBuilder.excludeInflightLicences(listOf(prisoner))
-
-      assertThat(result).isEmpty()
-    }
-  }
-
-  @Nested
-  inner class ExcludePrisonersWithHdc {
-    @Test
-    fun eligibleCase() {
-      val prisoner = prisonerSearchResult()
-
-      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-
-      val result = promptComListBuilder.excludePrisonersWithHdc(listOf(prisoner))
-
-      assertThat(result).containsExactly(prisoner)
-    }
-
-    @Test
-    fun ineligibleCase() {
-      val prisoner = prisonerSearchResult().copy(homeDetentionCurfewEligibilityDate = LocalDate.of(2022, 1, 2))
-
-      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId?.toLong()!!)))
-
-      val result = promptComListBuilder.excludePrisonersWithHdc(listOf(prisoner))
 
       assertThat(result).isEmpty()
     }

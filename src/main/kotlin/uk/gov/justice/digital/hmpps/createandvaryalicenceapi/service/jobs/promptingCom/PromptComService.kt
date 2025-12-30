@@ -51,11 +51,8 @@ class PromptComService(
     val withoutLicences = excludeInflightLicences(candidates)
     log.info("{}/{} + without licences", withoutLicences.size, candidates.size)
 
-    val withoutHdc = excludePrisonersWithHdc(withoutLicences)
-    log.info("{}/{} + without allowed HDC", withoutHdc.size, withoutLicences.size)
-
-    val withDeliusDetails = enrichWithDeliusData(withoutHdc)
-    log.info("{}/{} + with delius information", withDeliusDetails.size, withoutHdc.size)
+    val withDeliusDetails = enrichWithDeliusData(withoutLicences)
+    log.info("{}/{} + with delius information", withDeliusDetails.size, withoutLicences.size)
 
     val cvlRecords = cvlRecordService.getCvlRecords(withDeliusDetails.map { (nomisRecord, _) -> nomisRecord })
 

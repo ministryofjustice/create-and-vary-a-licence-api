@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderCrnTransformer.toProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.RelevantLicenceFinder.findRelevantLicencePerCase
@@ -31,7 +30,6 @@ class ComCreateCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val deliusApiClient: DeliusApiClient,
   private val licenceCaseRepository: LicenceCaseRepository,
-  private val hdcService: HdcService,
   private val cvlRecordService: CvlRecordService,
   private val telemetryService: TelemetryService,
 ) {
@@ -68,7 +66,7 @@ class ComCreateCaseloadService(
       cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
     val cases = createComCases(eligibleCases, cvlRecords)
-    val filteredCases = filterHdcAndFutureReleases(cases)
+    val filteredCases = filterFutureReleases(cases)
 
     return transformToCreateCaseload(filteredCases)
   }
@@ -175,15 +173,10 @@ class ComCreateCaseloadService(
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
   }
 
-  private fun filterHdcAndFutureReleases(
+  private fun filterFutureReleases(
     cases: List<Case>,
-  ): List<Case> {
-    val hdcStatuses = hdcService.getHdcStatus(cases.map { it.nomisRecord })
-    return cases.filter {
-      val kind = it.comLicenceCaseDto.kind
-      val bookingId = it.nomisRecord.bookingId?.toLong()!!
-      hdcStatuses.canBeSeenByCom(kind, bookingId) && it.comLicenceCaseDto.releaseDate.isTodayOrInTheFuture()
-    }
+  ): List<Case> = cases.filter {
+    it.comLicenceCaseDto.releaseDate.isTodayOrInTheFuture()
   }
 
   private fun transformToCreateCaseload(cases: List<Case>): List<ComCreateCase> = cases.map {

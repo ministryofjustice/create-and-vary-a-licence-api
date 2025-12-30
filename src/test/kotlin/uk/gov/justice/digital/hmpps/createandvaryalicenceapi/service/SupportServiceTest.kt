@@ -16,13 +16,11 @@ import java.time.LocalDate
 
 class SupportServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
-  private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
 
   private val service = SupportService(
     prisonerSearchApiClient,
-    hdcService,
     eligibilityService,
     iS91DeterminationService,
   )
@@ -31,7 +29,6 @@ class SupportServiceTest {
   fun reset() {
     reset(
       prisonerSearchApiClient,
-      hdcService,
       eligibilityService,
       iS91DeterminationService,
     )
@@ -55,19 +52,13 @@ class SupportServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
     whenever(eligibilityService.getEligibilityAssessment(eq(hdcPrisoner))).thenReturn(
       EligibilityAssessment(
-        genericIneligibilityReasons = listOf("A reason"),
+        genericIneligibilityReasons = listOf("A reason", "Approved for HDC"),
         crdIneligibilityReasons = emptyList(),
         prrdIneligibilityReasons = emptyList(),
         isEligible = false,
         eligibleKind = null,
       ),
     )
-    whenever(
-      hdcService.isApprovedForHdc(
-        hdcPrisoner.bookingId!!.toLong(),
-        hdcPrisoner.homeDetentionCurfewEligibilityDate,
-      ),
-    ).thenReturn(true)
 
     val eligibilityAssessment = service.getIneligibilityReasons("A1234AA")
     assertThat(eligibilityAssessment.isEligible).isEqualTo(false)

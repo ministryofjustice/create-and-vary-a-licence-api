@@ -57,8 +57,6 @@ class PromptComServiceTest {
 
     whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
 
-    whenever(promptComListBuilder.excludePrisonersWithHdc(any())).thenReturn(cases)
-
     whenever(promptComListBuilder.enrichWithDeliusData(any())).thenReturn(casesWithDeliusData)
 
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(cvlRecords)
@@ -88,8 +86,6 @@ class PromptComServiceTest {
 
       verify(promptComListBuilder).excludeInflightLicences(cases)
 
-      verify(promptComListBuilder).excludePrisonersWithHdc(cases)
-
       verify(promptComListBuilder).enrichWithDeliusData(cases)
 
       verify(promptComListBuilder).excludeIneligibleCases(casesWithDeliusData, cvlRecords)
@@ -113,7 +109,6 @@ class PromptComServiceTest {
     whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(cases)
     whenever(promptComListBuilder.excludeIneligibleCases(any(), any())).thenReturn(casesWithDeliusData)
     whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
-    whenever(promptComListBuilder.excludePrisonersWithHdc(any())).thenReturn(cases)
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(cvlRecords)
     whenever(promptComListBuilder.enrichWithDeliusData(any())).thenReturn(casesWithDeliusData)
     whenever(promptComListBuilder.enrichWithComEmail(any())).thenReturn(casesWithEmails)
