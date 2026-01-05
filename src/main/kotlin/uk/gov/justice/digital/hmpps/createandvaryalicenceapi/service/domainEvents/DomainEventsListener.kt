@@ -5,13 +5,11 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 
 const val COM_ALLOCATED_EVENT_TYPE = "person.community.manager.allocated"
 const val PRISONER_UPDATED_EVENT_TYPE = "prisoner-offender-search.prisoner.updated"
 
-@ConditionalOnProperty(name = ["domain.event.listener.enabled"], havingValue = "true", matchIfMissing = false)
 @Service
 class DomainEventListener(
   private val comAllocatedHandler: ComAllocatedHandler,
