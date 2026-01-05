@@ -38,7 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import java.time.Duration
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["update.offender.details.handler.enabled=true"])
+@TestPropertySource(properties = ["domain.event.listener.disabled=false", "update.offender.details.handler.enabled=true"])
 class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
