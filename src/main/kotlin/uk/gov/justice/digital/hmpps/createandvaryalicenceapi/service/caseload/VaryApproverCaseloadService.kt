@@ -91,9 +91,8 @@ class VaryApproverCaseloadService(
   private fun getProbationPractitioners(prisonNumbers: List<String>) = deliusApiClient.getOffenderManagersWithoutUser(prisonNumbers)
     .associate {
       val name = if (it.unallocated) "Not Allocated" else it.name.fullName()
-      val staffCode = if (it.unallocated) null else it.code
       it.case.nomisId!!.lowercase() to ProbationPractitioner(
-        staffCode = staffCode,
+        staffCode = it.code,
         name = name,
         allocated = !it.unallocated,
       )

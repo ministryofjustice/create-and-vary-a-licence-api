@@ -23,17 +23,17 @@ class ManagedOffenderCrnTransformerTest {
   }
 
   @Test
-  fun `should return null when staff is unallocated`() {
+  fun `should map staff to unallocated ProbationPractitioner when staff is unallocated`() {
     val staff = StaffDetail(code = "X123", name = Name("John", null, "Doe"), unallocated = true)
     val offender = ManagedOffenderCrn(staff = staff)
 
     val result = offender.toProbationPractitioner()
 
-    assertThat(result).isNull()
+    assertThat(result).isNotNull.extracting("allocated").isEqualTo(false)
   }
 
   @Test
-  fun `should map staff to ProbationPractitioner when allocated`() {
+  fun `should map staff to allocated ProbationPractitioner when allocated`() {
     val staff = StaffDetail(code = "X123", name = Name("John", null, "Doe"), unallocated = false)
     val offender = ManagedOffenderCrn(staff = staff)
 
@@ -41,8 +41,8 @@ class ManagedOffenderCrnTransformerTest {
 
     assertThat(result)
       .isNotNull
-      .extracting("staffCode", "name")
-      .containsExactly("X123", "John Doe")
+      .extracting("staffCode", "name", "allocated")
+      .containsExactly("X123", "John Doe", true)
   }
 
   @Test
