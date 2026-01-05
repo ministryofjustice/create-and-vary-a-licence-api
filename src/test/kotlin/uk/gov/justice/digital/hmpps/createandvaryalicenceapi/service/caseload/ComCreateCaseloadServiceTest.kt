@@ -1002,7 +1002,7 @@ class ComCreateCaseloadServiceTest {
       LicenceType.AP_PSS,
       LicenceCreationType.LICENCE_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
-      )
+    )
   }
 
   @Test
