@@ -85,10 +85,8 @@ interface LicenceRepository :
         WHERE l.kind IN ('CRD', 'HDC', 'PRRD')
         AND l.licence_start_date = CURRENT_DATE
         AND l.status_code = 'SUBMITTED'
-        AND (
-            EXISTS (SELECT 1 FROM audit_event ae WHERE l.id = ae.licence_id AND ae.detail LIKE '%APPROVED%')
-            OR l.version_of_id IS NOT NULL
-        ) ORDER BY l.id
+        AND l.version_of_id IS NOT NULL
+        ORDER BY l.id
     """,
     nativeQuery = true,
   )
