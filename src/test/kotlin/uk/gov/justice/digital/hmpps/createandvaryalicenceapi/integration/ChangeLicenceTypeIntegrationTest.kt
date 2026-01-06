@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceTypeRequest
@@ -61,7 +61,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.post().uri("/licence/create").bodyValue(CreateLicenceRequest(nomsId = "A1234AA"))
       .accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isOk.expectHeader().contentType(APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java).returnResult().responseBody!!
+      .expectBody(CreateLicenceResponse::class.java).returnResult().responseBody!!
 
     webTestClient.post().uri("/licence/id/1/additional-condition/AP").bodyValue(
       AddAdditionalConditionRequest(
@@ -138,7 +138,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.post().uri("/licence/create").bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
       .accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isOk.expectHeader().contentType(APPLICATION_JSON)
-      .expectBody(LicenceCreationResponse::class.java).returnResult().responseBody!!
+      .expectBody(CreateLicenceResponse::class.java).returnResult().responseBody!!
 
     val response = webTestClient.post().uri("/licence/id/${result.licenceId}/override/type")
       .bodyValue(OverrideLicenceTypeRequest(licenceType = LicenceType.PSS, reason = "Some Reason"))

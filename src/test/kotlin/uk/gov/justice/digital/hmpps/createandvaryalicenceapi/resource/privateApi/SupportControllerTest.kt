@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LastMinuteHandoverCaseService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
 
 @ExtendWith(SpringExtension::class)
@@ -36,9 +35,6 @@ class SupportControllerTest {
   @MockitoBean
   private lateinit var supportService: SupportService
 
-  @MockitoBean
-  private lateinit var lastMinuteHandoverCaseService: LastMinuteHandoverCaseService
-
   @Autowired
   private lateinit var mvc: MockMvc
 
@@ -50,7 +46,7 @@ class SupportControllerTest {
     reset(supportService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(SupportController(supportService, lastMinuteHandoverCaseService))
+      .standaloneSetup(SupportController(supportService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -72,7 +68,12 @@ class SupportControllerTest {
 
     val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
 
-    assertThat(mapper.readValue(response, EligibilityAssessment::class.java).ineligibilityReasons).isEqualTo(listOf("A Reason"))
+    assertThat(
+      mapper.readValue(
+        response,
+        EligibilityAssessment::class.java,
+      ).ineligibilityReasons,
+    ).isEqualTo(listOf("A Reason"))
   }
 
   @Test

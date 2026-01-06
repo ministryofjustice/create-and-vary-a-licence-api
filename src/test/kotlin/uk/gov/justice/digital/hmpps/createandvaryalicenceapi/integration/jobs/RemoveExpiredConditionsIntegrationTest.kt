@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -28,6 +29,12 @@ class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-4.sql",
   )
   fun `Update sentence dates`() {
+    documentApiMockServer.stubDownloadDocumentFile(
+      withUUID = "92939445-4159-4214-aa75-d07568a3e136",
+      document = byteArrayOf(9, 9, 9),
+    )
+    documentApiMockServer.stubDeleteDocuments()
+
     webTestClient.post()
       .uri("/jobs/remove-expired-conditions")
       .accept(MediaType.APPLICATION_JSON)
@@ -87,6 +94,9 @@ class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
       assertThat(standardLicenceConditions).hasSize(1)
       assertThat(standardPssConditions).hasSize(1)
     }
+
+    assertThat(testRepository.findAllUploadSummary()).isEmpty()
+    assertThat(testRepository.findAllUploadDetail()).isEmpty()
   }
 
   @Test
@@ -153,6 +163,9 @@ class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
       assertThat(standardLicenceConditions).hasSize(1)
       assertThat(standardPssConditions).hasSize(1)
     }
+
+    assertThat(testRepository.findAllUploadSummary()).isEmpty()
+    assertThat(testRepository.findAllUploadDetail()).isEmpty()
   }
 
   private fun getLicence(id: Long) = webTestClient.get()
@@ -167,17 +180,20 @@ class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
+    val documentApiMockServer = DocumentApiMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
+      documentApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       govUkApiMockServer.stop()
+      documentApiMockServer.stop()
     }
   }
 }

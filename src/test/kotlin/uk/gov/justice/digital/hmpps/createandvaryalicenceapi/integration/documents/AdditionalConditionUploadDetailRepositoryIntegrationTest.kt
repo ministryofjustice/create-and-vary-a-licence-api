@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.DocumentCountsRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 
-class DocumentCountsRepositoryIntegrationTest : IntegrationTestBase() {
+class AdditionalConditionUploadDetailRepositoryIntegrationTest : IntegrationTestBase() {
 
   @Autowired
-  lateinit var repository: DocumentCountsRepository
+  lateinit var repository: AdditionalConditionUploadDetailRepository
 
   private val allAdditionalConditions = listOf(1L, 2L, 3L)
   private val someAdditionalConditions = listOf(1L, 2L)

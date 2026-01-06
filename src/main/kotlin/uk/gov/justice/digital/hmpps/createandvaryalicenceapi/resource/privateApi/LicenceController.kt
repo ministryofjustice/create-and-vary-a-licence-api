@@ -23,8 +23,10 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.EntityAlreadyExistsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
@@ -70,7 +72,7 @@ class LicenceController(
         responseCode = "200",
         description = "Licence created",
         content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = LicenceCreationResponse::class)),
+          Content(mediaType = "application/json", schema = Schema(implementation = CreateLicenceResponse::class)),
         ],
       ),
       ApiResponse(
@@ -108,7 +110,7 @@ class LicenceController(
   fun createLicence(
     @RequestBody @Valid
     request: CreateLicenceRequest,
-  ): LicenceCreationResponse = when (request.type) {
+  ): CreateLicenceResponse = when (request.type) {
     HARD_STOP, TIME_SERVED -> licenceCreationService.createHardStopLicence(request.nomsId)
     else -> licenceCreationService.createLicence(request.nomsId)
   }
@@ -163,52 +165,6 @@ class LicenceController(
     ],
   )
   fun getLicenceById(@PathVariable("licenceId") licenceId: Long): Licence = licenceService.getLicenceById(licenceId)
-
-  @Tag(name = Tags.LICENCE_VARIATIONS)
-  @GetMapping(value = ["/variations/submitted/area/{areaCode}"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Get a list of licence summaries for submitted variations by probation area.",
-    description = "Get a list of licence summaries for all submitted variations belonging to the specified probation area code. Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returned matching licence summary details - empty if no matches.",
-        content = [
-          Content(
-            mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun findSubmittedVariations(
-    @PathVariable("areaCode") probationAreaCode: String,
-  ): List<LicenceSummary> = licenceService.findSubmittedVariationsByRegion(probationAreaCode)
 
   @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/match"])
@@ -405,7 +361,7 @@ class LicenceController(
         responseCode = "200",
         description = "Licence variation created",
         content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class)),
+          Content(mediaType = "application/json", schema = Schema(implementation = CreateVariationResponse::class)),
         ],
       ),
       ApiResponse(
@@ -452,7 +408,7 @@ class LicenceController(
   )
   fun createVariation(
     @PathVariable("licenceId") licenceId: Long,
-  ): LicenceSummary = licenceService.createVariation(licenceId)
+  ): CreateVariationResponse = licenceService.createVariation(licenceId)
 
   @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/id/{licenceId}/edit"])
@@ -468,7 +424,7 @@ class LicenceController(
         responseCode = "200",
         description = "Licence version created",
         content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class)),
+          Content(mediaType = "application/json", schema = Schema(implementation = EditLicenceResponse::class)),
         ],
       ),
       ApiResponse(
@@ -505,7 +461,7 @@ class LicenceController(
   )
   fun editLicence(
     @PathVariable("licenceId") licenceId: Long,
-  ): LicenceSummary = licenceService.editLicence(licenceId)
+  ): EditLicenceResponse = licenceService.editLicence(licenceId)
 
   @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/spo-discussion"])

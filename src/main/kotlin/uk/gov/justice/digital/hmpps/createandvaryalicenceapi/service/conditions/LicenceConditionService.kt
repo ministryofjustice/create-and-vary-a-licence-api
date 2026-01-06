@@ -157,6 +157,7 @@ class LicenceConditionService(
     val newConditions = existingConditions.getAddedConditions(submittedConditions)
 
     val removedConditions = existingConditions.getRemovedConditions(submittedConditions, request)
+    exclusionZoneService.deleteDocumentsFor(removedConditions)
 
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
 
@@ -173,8 +174,6 @@ class LicenceConditionService(
         electronicMonitoringProgrammeService.removeMonitoringProviderIfNoLongerRequired(licenceEntity, it)
       }
     }
-
-    exclusionZoneService.deleteDocumentsFor(removedConditions)
 
     licenceRepository.saveAndFlush(licenceEntity)
 
@@ -329,6 +328,8 @@ class LicenceConditionService(
     val removedAdditionalConditions =
       licenceEntity.additionalConditions.filter { additionalConditionIds.contains(it.id) }
 
+    exclusionZoneService.deleteDocumentsFor(removedAdditionalConditions)
+
     // return all conditions except condition with submitted conditionIds
     val revisedStandardConditions =
       licenceEntity.standardConditions.filter { !standardConditionIds.contains(it.id) }
@@ -355,8 +356,6 @@ class LicenceConditionService(
         electronicMonitoringProgrammeService.removeMonitoringProviderIfNoLongerRequired(licenceEntity, it)
       }
     }
-
-    exclusionZoneService.deleteDocumentsFor(removedAdditionalConditions)
 
     licenceRepository.saveAndFlush(licenceEntity)
 

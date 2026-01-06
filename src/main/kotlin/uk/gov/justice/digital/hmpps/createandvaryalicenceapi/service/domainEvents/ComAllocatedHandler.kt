@@ -5,9 +5,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.WorkLoadApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.mapper.OffenderManagerMapper
@@ -73,7 +73,7 @@ class ComAllocatedHandler(
 
     offenderService.updateProbationTeam(
       offenderManager.crn,
-      UpdateProbationTeamRequest(
+      UpdateProbationTeamEvent(
         probationAreaCode = offenderManager.providerCode,
         probationAreaDescription = offenderManager.providerDescription,
         probationPduCode = offenderManager.boroughCode,
