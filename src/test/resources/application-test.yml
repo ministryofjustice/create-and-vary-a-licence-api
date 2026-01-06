@@ -121,7 +121,7 @@ hmpps.sqs:
 domain:
   event:
     listener:
-      enabled: false
+      disabled: true
 
 update:
   offender:

@@ -14,6 +14,7 @@ import java.time.LocalDate
 class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
   private val releaseDateService: ReleaseDateService,
+  private val hdcService: HdcService,
   private val clock: Clock,
 ) {
 
@@ -39,7 +40,10 @@ class EligibilityService(
       )
     }.toMap()
 
-    return overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
+    val standardRecallsExcluded = overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
+    val hdcCasesExcluded = overrideHdcCases(prisoners, standardRecallsExcluded)
+
+    return hdcCasesExcluded
   }
 
   fun getGenericIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
@@ -218,6 +222,27 @@ class EligibilityService(
             isEligible = false,
           )
         }
+      }
+    }.toMap()
+  }
+
+  private fun overrideHdcCases(
+    prisoners: List<PrisonerSearchPrisoner>,
+    nomisIdsToEligibilityAssessments: Map<String, EligibilityAssessment>,
+  ): Map<String, EligibilityAssessment> {
+    val hdcStatuses = hdcService.getHdcStatus(prisoners)
+
+    return nomisIdsToEligibilityAssessments.map { (nomisId, eligibilityAssessment) ->
+      val bookingId = prisoners.first { it.prisonerNumber == nomisId }.bookingId!!.toLong()
+      if (hdcStatuses.isApprovedForHdc(bookingId)) {
+        return@map nomisId to EligibilityAssessment(
+          genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons + "Approved for HDC",
+          crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
+          prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons,
+          isEligible = false,
+        )
+      } else {
+        return@map nomisId to eligibilityAssessment
       }
     }.toMap()
   }
