@@ -420,7 +420,7 @@ class ComVaryCaseloadServiceTest {
     expectedLicenceStatus: LicenceStatus,
     expectedLicenceType: LicenceType,
     expectedReleaseDate: LocalDate? = null,
-    expectedProbationPractitioner: ProbationPractitioner? = null,
+    expectedProbationPractitioner: ProbationPractitioner = ProbationPractitioner("X1234", "Joe Bloggs", true),
     expectedReviewNeeded: Boolean = false,
   ) {
     with(case) {

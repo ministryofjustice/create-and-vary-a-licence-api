@@ -430,7 +430,8 @@ class DeliusMockServer : WireMockServer(8093) {
                   "provider": { 
                     "code": "probationArea-code-3", 
                     "description": "probationArea-description-3"
-                  }
+                  },
+                  "unallocated": false
                 },
                 {
                   "code": "staff-code-4",
@@ -885,7 +886,7 @@ class DeliusMockServer : WireMockServer(8093) {
         "crn": "X12349",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234F"
+        "nomisId": "A1234AB"
       },
       {
         "crn": "X12350",
