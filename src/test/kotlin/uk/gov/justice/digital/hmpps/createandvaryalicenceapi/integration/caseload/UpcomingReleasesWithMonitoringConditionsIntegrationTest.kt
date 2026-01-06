@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.UpcomingReleasesWithMonitoringConditionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDate
 
 private const val GET_CASES = "/cvl-report/upcoming-releases-with-monitoring"
 
@@ -53,11 +54,13 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
         prisonNumber = "A1234AA",
         crn = "CRN1",
         status = LicenceStatus.SUBMITTED,
+        licenceStartDate = LocalDate.now(),
       ),
       UpcomingReleasesWithMonitoringConditionsResponse(
         prisonNumber = "A1234AB",
         crn = "CRN2",
         status = LicenceStatus.APPROVED,
+        licenceStartDate = LocalDate.now().minusDays(1),
       ),
     )
   }
