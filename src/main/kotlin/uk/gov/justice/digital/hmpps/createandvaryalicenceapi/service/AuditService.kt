@@ -12,9 +12,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
@@ -306,31 +306,31 @@ class AuditService(
 
   fun recordAuditEventProbationTeamUpdated(
     licence: Licence,
-    request: UpdateProbationTeamRequest,
+    event: UpdateProbationTeamEvent,
     staffMember: Staff?,
   ) {
     val summary =
-      "Probation team updated to ${request.probationTeamDescription} at ${request.probationAreaDescription} on licence"
+      "Probation team updated to ${event.probationTeamDescription} at ${event.probationAreaDescription} on licence"
 
     val changes = mapOf(
       "type" to summary,
       "changes" to mapOf(
         "oldAreaCode" to licence.probationAreaCode,
-        "newAreaCode" to request.probationAreaCode,
+        "newAreaCode" to event.probationAreaCode,
         "oldAreaDescription" to licence.probationAreaDescription,
-        "newAreaDescription" to request.probationAreaDescription,
+        "newAreaDescription" to event.probationAreaDescription,
         "oldPduCode" to licence.probationPduCode,
-        "newPduCode" to request.probationPduCode,
+        "newPduCode" to event.probationPduCode,
         "oldPduDescription" to licence.probationPduDescription,
-        "newPduDescription" to request.probationPduDescription,
+        "newPduDescription" to event.probationPduDescription,
         "oldLauCode" to licence.probationLauCode,
-        "newLauCode" to request.probationLauCode,
+        "newLauCode" to event.probationLauCode,
         "oldLauDescription" to licence.probationLauDescription,
-        "newLauDescription" to request.probationLauDescription,
+        "newLauDescription" to event.probationLauDescription,
         "oldTeamCode" to licence.probationTeamCode,
-        "newTeamCode" to request.probationTeamCode,
+        "newTeamCode" to event.probationTeamCode,
         "oldTeamDescription" to licence.probationTeamDescription,
-        "newTeamDescription" to request.probationTeamDescription,
+        "newTeamDescription" to event.probationTeamDescription,
       ),
     )
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))

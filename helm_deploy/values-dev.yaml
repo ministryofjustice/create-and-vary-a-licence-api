@@ -23,7 +23,6 @@ generic-service:
     SELF_LINK: "https://create-and-vary-a-licence-dev.hmpps.service.justice.gov.uk"
     SELF_API_LINK: "https://create-and-vary-a-licence-api-dev.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
-    DOMAIN_EVENT_LISTENER_ENABLED: true
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     TIME_SERVED_PRISONS: "MDI, BAI, BNI"
 
