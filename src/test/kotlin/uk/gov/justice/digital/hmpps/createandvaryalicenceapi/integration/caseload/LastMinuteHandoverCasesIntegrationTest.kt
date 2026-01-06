@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.T
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
-private const val GET_LAST_MINUTE_CASES = "offender/support/report/last-minute-handover-cases"
+private const val GET_LAST_MINUTE_CASES = "/cvl-report/last-minute-handover-cases"
 
 class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
 
