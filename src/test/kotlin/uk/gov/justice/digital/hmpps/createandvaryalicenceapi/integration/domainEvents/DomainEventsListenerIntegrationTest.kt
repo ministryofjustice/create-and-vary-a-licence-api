@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.WorkFlowMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
@@ -35,10 +34,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import java.time.Duration
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["domain.event.listener.enabled=true", "update.offender.details.handler.enabled=true"])
+@TestPropertySource(properties = ["domain.event.listener.disabled=false", "update.offender.details.handler.enabled=true"])
 class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
@@ -335,7 +335,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   ) {
     verify(offenderService).updateProbationTeam(
       crn,
-      UpdateProbationTeamRequest(
+      UpdateProbationTeamEvent(
         probationAreaCode = areaCode,
         probationAreaDescription = areaDescription,
         probationPduCode = boroughCode,

@@ -18,9 +18,9 @@ import org.mockito.kotlin.whenever
 import org.springframework.http.ResponseEntity
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
@@ -49,7 +49,7 @@ class ComAllocatedHandlerTest {
   )
 
   private val updateComRequestCaptor = argumentCaptor<UpdateComRequest>()
-  private val updateProbationTeamRequestCaptor = argumentCaptor<UpdateProbationTeamRequest>()
+  private val updateProbationTeamEventCaptor = argumentCaptor<UpdateProbationTeamEvent>()
   private val crn = "TEST123456"
 
   @BeforeEach
@@ -176,7 +176,7 @@ class ComAllocatedHandlerTest {
     verify(deliusApiClient).assignDeliusRole(offenderManager.username!!)
     verify(staffService).updateComDetails(updateComRequestCaptor.capture())
     verify(offenderService).updateResponsibleCom(crn, com)
-    verify(offenderService).updateProbationTeam(eq(crn), updateProbationTeamRequestCaptor.capture())
+    verify(offenderService).updateProbationTeam(eq(crn), updateProbationTeamEventCaptor.capture())
 
     val capturedRequest = updateComRequestCaptor.firstValue
     assertThat(capturedRequest.staffIdentifier).isEqualTo(offenderManager.staffIdentifier)
@@ -185,7 +185,7 @@ class ComAllocatedHandlerTest {
     assertThat(capturedRequest.firstName).isEqualTo(offenderManager.forename)
     assertThat(capturedRequest.lastName).isEqualTo(offenderManager.surname)
 
-    val capturedTeamRequest = updateProbationTeamRequestCaptor.firstValue
+    val capturedTeamRequest = updateProbationTeamEventCaptor.firstValue
     assertThat(capturedTeamRequest.probationAreaCode).isEqualTo(offenderManager.providerCode)
     assertThat(capturedTeamRequest.probationAreaDescription).isEqualTo(offenderManager.providerDescription)
     assertThat(capturedTeamRequest.probationPduCode).isEqualTo(offenderManager.boroughCode)
