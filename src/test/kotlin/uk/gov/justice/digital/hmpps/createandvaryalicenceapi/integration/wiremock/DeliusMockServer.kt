@@ -430,8 +430,7 @@ class DeliusMockServer : WireMockServer(8093) {
                   "provider": { 
                     "code": "probationArea-code-3", 
                     "description": "probationArea-description-3"
-                  },
-                  "unallocated": false
+                  }
                 },
                 {
                   "code": "staff-code-4",
