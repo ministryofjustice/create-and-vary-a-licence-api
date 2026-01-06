@@ -31,6 +31,7 @@ ranked AS (
     l.noms_id AS nomis_number,
     l.crn,
     l.status_code,
+    l.licence_start_date,
     ROW_NUMBER() OVER (
       PARTITION BY l.noms_id, l.crn
       ORDER BY
@@ -44,7 +45,7 @@ ranked AS (
     ON cl.condition_code = ac.condition_code
   WHERE l.status_code IN ('SUBMITTED', 'APPROVED')
 )
-SELECT nomis_number "prisonNumber", crn, status_code "status" 
+SELECT nomis_number "prisonNumber", crn, status_code "status", licence_start_date "licenceStartDate" 
 FROM ranked
 WHERE rn = 1
 ORDER BY nomis_number
