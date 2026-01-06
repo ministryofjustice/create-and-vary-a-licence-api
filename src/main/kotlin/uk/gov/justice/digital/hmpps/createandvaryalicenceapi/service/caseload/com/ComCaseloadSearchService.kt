@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Foun
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -24,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.f
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import java.time.Clock
@@ -35,7 +33,6 @@ class ComCaseloadSearchService(
   private val licenceRepository: LicenceRepository,
   private val deliusApiClient: DeliusApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val hdcService: HdcService,
   private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
@@ -61,7 +58,6 @@ class ComCaseloadSearchService(
       val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
       createCase(licence, caseloadResult, prisonerRecord, cvlRecord)
     }.filterOutPastReleaseDate()
-      .filterOutHdc(prisonerRecords)
 
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
@@ -124,17 +120,6 @@ class ComCaseloadSearchService(
     prisonOffender == null || cvlRecord == null -> null
     cvlRecord.isEligible -> deliusOffender.toCaseWithLicence(licence)
     else -> null
-  }
-
-  private fun List<FoundComCase>.filterOutHdc(prisoners: Map<String, PrisonerSearchPrisoner>): List<FoundComCase> {
-    if (prisoners.isEmpty()) {
-      return this
-    }
-    val prisonersForHdcCheck =
-      this.filter { PRE_RELEASE_STATUSES.contains(it.licenceStatus) }.mapNotNull { prisoners[it.nomisId] }
-
-    val hdcStatuses = hdcService.getHdcStatus(prisonersForHdcCheck)
-    return this.filter { it.isOnProbation == true || hdcStatuses.canBeSeenByCom(it.kind, it.bookingId!!) }
   }
 
   private fun CaseloadResult.toUnstartedRecord(
