@@ -67,7 +67,8 @@ class CaProbationCaseloadService(
   }
 
   private fun findRelevantLicence(entry: Map.Entry<String?, List<LicenceCaCase>>): LicenceCaCase? = if (entry.value.size > 1) {
-    entry.value.find { l -> l.statusCode != ACTIVE }
+    val nonActiveLicences = entry.value.find { l -> l.statusCode != ACTIVE }
+    nonActiveLicences ?: throw IllegalStateException("Multiple active licences found for NOMIS id: ${entry.key}")
   } else {
     entry.value[0]
   }

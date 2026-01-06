@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -47,8 +48,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -100,21 +108,21 @@ class CaCaseloadServiceTest {
 
   private object PrisonQuery {
     val statusCodes = listOf(
-      LicenceStatus.APPROVED,
+      APPROVED,
       SUBMITTED,
-      LicenceStatus.IN_PROGRESS,
-      LicenceStatus.TIMED_OUT,
-      LicenceStatus.ACTIVE,
+      IN_PROGRESS,
+      TIMED_OUT,
+      ACTIVE,
     )
     val prisonCodes = listOf("BAI")
   }
 
   private object ProbationQuery {
     val statusCodes = listOf(
-      LicenceStatus.ACTIVE,
-      LicenceStatus.VARIATION_APPROVED,
-      LicenceStatus.VARIATION_IN_PROGRESS,
-      LicenceStatus.VARIATION_SUBMITTED,
+      ACTIVE,
+      VARIATION_APPROVED,
+      VARIATION_IN_PROGRESS,
+      VARIATION_SUBMITTED,
     )
     val prisonCodes = listOf("BAI")
   }
@@ -137,7 +145,7 @@ class CaCaseloadServiceTest {
         createLicenceCase(),
         createLicenceCase(
           licenceId = 2,
-          licenceStatus = LicenceStatus.IN_PROGRESS,
+          licenceStatus = IN_PROGRESS,
           nomisId = "A1234AB",
           forename = "Person",
           surname = "Two",
@@ -145,7 +153,7 @@ class CaCaseloadServiceTest {
         ),
         createLicenceCase(
           licenceId = 3,
-          licenceStatus = LicenceStatus.IN_PROGRESS,
+          licenceStatus = IN_PROGRESS,
           nomisId = "A1234AC",
           forename = "Person",
           surname = "Three",
@@ -241,7 +249,7 @@ class CaCaseloadServiceTest {
           nomisId = "A1234AA",
           forename = "Person",
           surname = "Four",
-          licenceStatus = LicenceStatus.NOT_STARTED,
+          licenceStatus = NOT_STARTED,
         )
 
         whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
@@ -276,7 +284,7 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).hasSize(1)
         with(prisonOmuCaseload.first()) {
           assertThat(name).isEqualTo("Person Four")
-          assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+          assertThat(licenceStatus).isEqualTo(TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
           assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
         }
@@ -346,7 +354,7 @@ class CaCaseloadServiceTest {
           nomisId = "A1234AB",
           forename = "Person",
           surname = "Two",
-          licenceStatus = LicenceStatus.IN_PROGRESS,
+          licenceStatus = IN_PROGRESS,
         )
 
         whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
@@ -395,7 +403,7 @@ class CaCaseloadServiceTest {
             surname = "Three",
             nomisId = "AB1234E",
             licenceId = 2,
-            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStatus = ACTIVE,
             conditionalReleaseDate = twoMonthsFromNow,
             actualReleaseDate = twoDaysFromNow,
           ),
@@ -464,7 +472,7 @@ class CaCaseloadServiceTest {
             surname = "Three",
             nomisId = "AB1234E",
             licenceId = 2,
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = IN_PROGRESS,
             licenceStartDate = twoDaysFromNow,
             conditionalReleaseDate = twoMonthsFromNow,
             actualReleaseDate = twoDaysFromNow,
@@ -572,7 +580,7 @@ class CaCaseloadServiceTest {
           ),
           createLicenceCase(
             licenceId = 2,
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = IN_PROGRESS,
             nomisId = "A1234AB",
             forename = "Person",
             surname = "Two",
@@ -768,7 +776,7 @@ class CaCaseloadServiceTest {
           nomisId = "A1234AA",
           forename = "Person",
           surname = "One",
-          licenceStatus = LicenceStatus.IN_PROGRESS,
+          licenceStatus = IN_PROGRESS,
         )
 
         whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, PrisonQuery.prisonCodes)).thenReturn(
@@ -847,7 +855,7 @@ class CaCaseloadServiceTest {
               name = "Person Four",
               prisonerNumber = "A1234AA",
               releaseDate = twoDaysFromNow,
-              licenceStatus = LicenceStatus.NOT_STARTED,
+              licenceStatus = NOT_STARTED,
               probationPractitioner = ProbationPractitioner(
                 staffCode = "X1234",
                 name = "Joe Bloggs",
@@ -874,7 +882,7 @@ class CaCaseloadServiceTest {
           nomisId = "A1234AA",
           forename = "Person",
           surname = "Four",
-          licenceStatus = LicenceStatus.NOT_STARTED,
+          licenceStatus = NOT_STARTED,
         )
 
         whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
@@ -894,7 +902,7 @@ class CaCaseloadServiceTest {
             listOf(
               aPrisonerSearchPrisoner.copy(
                 bookingId = "1234",
-                prisonerNumber = licenceCase.prisonNumber!!,
+                prisonerNumber = licenceCase.prisonNumber,
                 confirmedReleaseDate = twoMonthsFromNow,
                 conditionalReleaseDate = twoDaysFromNow,
               ),
@@ -919,7 +927,7 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).hasSize(1)
         with(prisonOmuCaseload.first()) {
           assertThat(name).isEqualTo("Person Four")
-          assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+          assertThat(licenceStatus).isEqualTo(TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
           assertThat(hasNomisLicence).isTrue()
           assertThat(lastWorkedOnBy).isEqualTo("Firstname Secondname")
@@ -942,7 +950,7 @@ class CaCaseloadServiceTest {
           nomisId = "A1234AA",
           forename = "Person",
           surname = "Four",
-          licenceStatus = LicenceStatus.NOT_STARTED,
+          licenceStatus = NOT_STARTED,
         )
 
         whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
@@ -1008,7 +1016,7 @@ class CaCaseloadServiceTest {
           nomisId = "A1234AA",
           forename = "Person",
           surname = "Four",
-          licenceStatus = LicenceStatus.NOT_STARTED,
+          licenceStatus = NOT_STARTED,
         )
 
         whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
@@ -1053,7 +1061,7 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).hasSize(1)
         with(prisonOmuCaseload.first()) {
           assertThat(name).isEqualTo("Person Four")
-          assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+          assertThat(licenceStatus).isEqualTo(TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
           assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
           assertThat(hasNomisLicence).isFalse()
@@ -1076,7 +1084,7 @@ class CaCaseloadServiceTest {
           nomisId = "A1234AA",
           forename = "Person",
           surname = "Four",
-          licenceStatus = LicenceStatus.NOT_STARTED,
+          licenceStatus = NOT_STARTED,
         )
 
         whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
@@ -1121,7 +1129,7 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).hasSize(1)
         with(prisonOmuCaseload.first()) {
           assertThat(name).isEqualTo("Person Four")
-          assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+          assertThat(licenceStatus).isEqualTo(TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
           assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
           assertThat(hasNomisLicence).isFalse()
@@ -1142,7 +1150,7 @@ class CaCaseloadServiceTest {
             nomisId = "A1234AA",
             forename = "Person",
             surname = "One",
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = VARIATION_APPROVED,
             licenceStartDate = twoDaysFromNow,
             actualReleaseDate = twoDaysFromNow,
           ),
@@ -1151,7 +1159,7 @@ class CaCaseloadServiceTest {
             nomisId = "A1234AB",
             forename = "Person",
             surname = "Two",
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = VARIATION_IN_PROGRESS,
             comUsername = "tcom",
             licenceStartDate = tenDaysFromNow,
             actualReleaseDate = tenDaysFromNow,
@@ -1161,7 +1169,7 @@ class CaCaseloadServiceTest {
             nomisId = "A1234AC",
             forename = "Person",
             surname = "Six",
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = ACTIVE,
             comUsername = "tcom",
             licenceStartDate = twoMonthsFromNow,
             actualReleaseDate = twoMonthsFromNow,
@@ -1171,7 +1179,137 @@ class CaCaseloadServiceTest {
             nomisId = "A1234AD",
             forename = "Person",
             surname = "Five",
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = VARIATION_SUBMITTED,
+            comUsername = "tcom",
+            licenceStartDate = oneDayFromNow,
+            actualReleaseDate = oneDayFromNow,
+          ),
+        ),
+      )
+
+      val probationOmuCaseload = service.getProbationOmuCaseload(setOf("BAI"), "")
+
+      assertThat(probationOmuCaseload).isEqualTo(
+        listOf(
+          caCase().copy(
+            licenceId = 3,
+            name = "Person Six",
+            prisonerNumber = "A1234AC",
+            releaseDate = twoMonthsFromNow,
+            tabType = null,
+            nomisLegalStatus = null,
+            probationPractitioner = probationPractitionerFor(tcomUser03),
+            lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
+            licenceStatus = ACTIVE,
+          ),
+          caCase().copy(
+            licenceId = 2,
+            name = "Person Two",
+            prisonerNumber = "A1234AB",
+            releaseDate = tenDaysFromNow,
+            tabType = null,
+            nomisLegalStatus = null,
+            probationPractitioner = probationPractitionerFor(tcomUser03),
+            lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
+            licenceStatus = VARIATION_IN_PROGRESS,
+          ),
+          caCase().copy(
+            licenceId = 1,
+            name = "Person One",
+            prisonerNumber = "A1234AA",
+            releaseDate = twoDaysFromNow,
+            tabType = null,
+            nomisLegalStatus = null,
+            probationPractitioner = probationPractitionerFor(comUser01),
+            lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
+            licenceStatus = VARIATION_APPROVED,
+          ),
+          caCase().copy(
+            licenceId = 4,
+            prisonerNumber = "A1234AD",
+            name = "Person Five",
+            releaseDate = oneDayFromNow,
+            tabType = null,
+            nomisLegalStatus = null,
+            probationPractitioner = probationPractitionerFor(tcomUser03),
+            lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
+            licenceStatus = VARIATION_SUBMITTED,
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `should throw an exception if the are multiple active licences for an offender`() {
+      val licence1 = createLicenceCase(
+        licenceId = 1,
+        nomisId = "A1234AA",
+        forename = "Person",
+        surname = "One",
+        licenceStatus = ACTIVE,
+        licenceStartDate = twoDaysFromNow,
+        actualReleaseDate = twoDaysFromNow,
+      )
+      val licence2 = licence1.copy(licenceId = 2)
+
+      whenever(licenceCaseRepository.findLicenceCases(any(), any())).thenReturn(
+        listOf(licence1, licence2),
+      )
+
+      val exception = assertThrows<IllegalStateException> {
+        service.getProbationOmuCaseload(setOf("BAI"), "")
+      }
+
+      assertThat(exception.message).isEqualTo("Multiple active licences found for NOMIS id: ${licence1.prisonNumber}")
+    }
+
+    @Test
+    fun `should handle progress and approved variations for the same noms id`() {
+      whenever(licenceCaseRepository.findLicenceCases(any(), any())).thenReturn(
+        listOf(
+          createLicenceCase(
+            licenceId = 1,
+            nomisId = "A1234AA",
+            forename = "Person",
+            surname = "One",
+            licenceStatus = IN_PROGRESS,
+            licenceStartDate = twoDaysFromNow,
+            actualReleaseDate = twoDaysFromNow,
+          ),
+          createLicenceCase(
+            licenceId = 2,
+            nomisId = "A1234AA",
+            forename = "Person",
+            surname = "One",
+            licenceStatus = IN_PROGRESS,
+            comUsername = "tcom",
+            licenceStartDate = tenDaysFromNow,
+            actualReleaseDate = tenDaysFromNow,
+          ),
+          createLicenceCase(
+            licenceId = 3,
+            nomisId = "A1234AC",
+            forename = "Person",
+            surname = "Six",
+            licenceStatus = IN_PROGRESS,
+            comUsername = "tcom",
+            licenceStartDate = twoMonthsFromNow,
+            actualReleaseDate = twoMonthsFromNow,
+          ),
+          createLicenceCase(
+            licenceId = 4,
+            nomisId = "A1234AD",
+            forename = "Person",
+            surname = "Five",
+            licenceStatus = IN_PROGRESS,
             comUsername = "tcom",
             licenceStartDate = oneDayFromNow,
             actualReleaseDate = oneDayFromNow,
@@ -1425,7 +1563,7 @@ class CaCaseloadServiceTest {
         listOf(
           createLicenceCase(
             licenceId = 3,
-            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStatus = ACTIVE,
             nomisId = "A1234AC",
             forename = "Person",
             surname = "Three",
@@ -1465,7 +1603,7 @@ class CaCaseloadServiceTest {
             caCase().copy(
               licenceId = 3,
               prisonerNumber = "A1234AC",
-              licenceStatus = LicenceStatus.ACTIVE,
+              licenceStatus = ACTIVE,
               name = "Person Three",
               nomisLegalStatus = null,
               tabType = null,
@@ -1509,7 +1647,7 @@ class CaCaseloadServiceTest {
         listOf(
           createLicenceCase(
             licenceId = 4,
-            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStatus = ACTIVE,
             nomisId = "A1234AD",
             forename = "Person",
             surname = "Four",
@@ -1528,7 +1666,7 @@ class CaCaseloadServiceTest {
             caCase().copy(
               licenceId = 4,
               prisonerNumber = "A1234AD",
-              licenceStatus = LicenceStatus.ACTIVE,
+              licenceStatus = ACTIVE,
               name = "Person Four",
               nomisLegalStatus = null,
               tabType = null,
@@ -1554,7 +1692,7 @@ class CaCaseloadServiceTest {
         listOf(
           createLicenceCase(
             licenceId = 4,
-            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStatus = ACTIVE,
             nomisId = "A1234AD",
             forename = "Person",
             surname = "Four",
@@ -1573,7 +1711,7 @@ class CaCaseloadServiceTest {
             caCase().copy(
               licenceId = 4,
               prisonerNumber = "A1234AD",
-              licenceStatus = LicenceStatus.ACTIVE,
+              licenceStatus = ACTIVE,
               name = "Person Four",
               nomisLegalStatus = null,
               tabType = null,
@@ -1599,7 +1737,7 @@ class CaCaseloadServiceTest {
         listOf(
           createLicenceCase(
             licenceId = 4,
-            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStatus = ACTIVE,
             nomisId = "A1234AD",
             forename = "Person",
             surname = "Four",
@@ -1635,7 +1773,7 @@ class CaCaseloadServiceTest {
         listOf(
           createLicenceCase(
             licenceId = 3,
-            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStatus = ACTIVE,
             nomisId = "A1234AC",
             forename = "Person",
             surname = "Three",
@@ -1654,7 +1792,7 @@ class CaCaseloadServiceTest {
             caCase().copy(
               licenceId = 3,
               prisonerNumber = "A1234AC",
-              licenceStatus = LicenceStatus.ACTIVE,
+              licenceStatus = ACTIVE,
               name = "Person Three",
               nomisLegalStatus = null,
               tabType = null,
@@ -1680,7 +1818,7 @@ class CaCaseloadServiceTest {
         listOf(
           createLicenceCase(
             licenceId = 3,
-            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStatus = ACTIVE,
             nomisId = "A1234AC",
             forename = "Person",
             surname = "Three",
@@ -1710,7 +1848,7 @@ class CaCaseloadServiceTest {
             caCase().copy(
               licenceId = 3,
               prisonerNumber = "A1234AC",
-              licenceStatus = LicenceStatus.ACTIVE,
+              licenceStatus = ACTIVE,
               name = "Person Three",
               nomisLegalStatus = null,
               tabType = null,
@@ -1730,35 +1868,35 @@ class CaCaseloadServiceTest {
       val licenceCases = listOf(
         createLicenceCase(
           licenceId = 1,
-          licenceStatus = LicenceStatus.ACTIVE,
+          licenceStatus = ACTIVE,
           nomisId = "A1234AC",
           licenceStartDate = LocalDate.now().minusDays(1),
           forename = "Last",
         ),
         createLicenceCase(
           licenceId = 2,
-          licenceStatus = LicenceStatus.ACTIVE,
+          licenceStatus = ACTIVE,
           nomisId = "A1234BC",
           licenceStartDate = LocalDate.now(),
           forename = "Second",
         ),
         createLicenceCase(
           licenceId = 5,
-          licenceStatus = LicenceStatus.ACTIVE,
+          licenceStatus = ACTIVE,
           nomisId = "A1234BD",
           licenceStartDate = LocalDate.now(),
           forename = "Forth",
         ),
         createLicenceCase(
           licenceId = 3,
-          licenceStatus = LicenceStatus.ACTIVE,
+          licenceStatus = ACTIVE,
           nomisId = "A1234CC",
           licenceStartDate = LocalDate.now().plusDays(1),
           forename = "First",
         ),
         createLicenceCase(
           licenceId = 4,
-          licenceStatus = LicenceStatus.ACTIVE,
+          licenceStatus = ACTIVE,
           nomisId = "A1234DC",
           licenceStartDate = LocalDate.now(),
           forename = "Third",
@@ -1790,7 +1928,7 @@ class CaCaseloadServiceTest {
         listOf(
           createLicenceCase(
             licenceId = 4,
-            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStatus = ACTIVE,
             nomisId = "A1234AD",
             forename = "Person",
             surname = "Four",
@@ -1830,7 +1968,7 @@ class CaCaseloadServiceTest {
             caCase().copy(
               licenceId = 4,
               prisonerNumber = "A1234AD",
-              licenceStatus = LicenceStatus.ACTIVE,
+              licenceStatus = ACTIVE,
               name = "Person Four",
               nomisLegalStatus = null,
               tabType = null,
