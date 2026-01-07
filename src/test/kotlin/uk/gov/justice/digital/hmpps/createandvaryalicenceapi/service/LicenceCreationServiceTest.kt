@@ -241,7 +241,7 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with a default CRO if neither Delius or NOMIS provide a valid value`() {
+    fun `Populates licence with a null CRO if neither Delius or NOMIS provide a valid value`() {
       val deliusCroNumber = "234/P"
       val nomisCroNumber = "A/19Q"
       val prisoner = prisonerSearchResult().copy(
@@ -260,7 +260,7 @@ class LicenceCreationServiceTest {
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.cro).isEqualTo("No CRO")
+        assertThat(firstValue.cro).isNull()
       }
     }
 

@@ -433,13 +433,13 @@ object LicenceFactory {
     return croPattern.matcher(cro).matches()
   }
 
-  private fun getCro(deliusRecordCro: String?, nomisRecordCro: String?): String {
+  private fun getCro(deliusRecordCro: String?, nomisRecordCro: String?): String? {
     val deliusCro = deliusRecordCro?.trim()
     val nomisCro = nomisRecordCro?.trim()
     return when {
       (deliusCro != null && isValidCro(deliusCro)) -> deliusCro
       (nomisCro != null && isValidCro(nomisCro)) -> nomisCro
-      else -> "No CRO"
+      else -> null
     }
   }
 
