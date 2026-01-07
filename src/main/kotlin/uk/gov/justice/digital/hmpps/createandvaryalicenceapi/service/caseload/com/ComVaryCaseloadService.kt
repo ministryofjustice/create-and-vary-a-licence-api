@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryStaffCaseload
@@ -69,7 +68,7 @@ class ComVaryCaseloadService(
             kind = licence.kind,
             name = "${licence.forename} ${licence.surname}".trim().convertToTitleCase(),
             releaseDate = licence.licenceStartDate,
-            probationPractitioner = case.toProbationPractitioner() ?: ProbationPractitioner.UNALLOCATED,
+            probationPractitioner = case.toProbationPractitioner(),
             isReviewNeeded = licence.isReviewNeeded(),
           )
       }

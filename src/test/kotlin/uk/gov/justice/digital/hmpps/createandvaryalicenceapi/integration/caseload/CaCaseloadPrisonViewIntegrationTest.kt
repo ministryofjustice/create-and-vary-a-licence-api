@@ -216,7 +216,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
 
     assertThat(caseload).hasSize(1)
     with(caseload[0]) {
-      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.UNALLOCATED)
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.unallocated("staff-code-0"))
     }
   }
 

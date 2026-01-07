@@ -8,7 +8,7 @@ object ManagedOffenderCrnTransformer {
   fun ManagedOffenderCrn.toProbationPractitioner(): ProbationPractitioner {
     if (this.staff == null) return ProbationPractitioner.UNALLOCATED
     return this.staff.let {
-      if (it.unallocated == true) return@let ProbationPractitioner.UNALLOCATED
+      if (it.unallocated == true) return@let ProbationPractitioner.unallocated(it.code)
       ProbationPractitioner(
         staffCode = it.code,
         name = it.name?.fullName(),

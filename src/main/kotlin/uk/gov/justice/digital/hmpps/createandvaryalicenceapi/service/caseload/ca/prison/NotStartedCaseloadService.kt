@@ -127,7 +127,7 @@ class NotStartedCaseloadService(
     val coms = deliusApiClient.getOffenderManagersWithoutUser(prisonNumbers)
     return coms.mapNotNull {
       if (it.unallocated) {
-        it.case.nomisId!! to ProbationPractitioner.UNALLOCATED
+        it.case.nomisId!! to ProbationPractitioner.unallocated(it.code)
       } else {
         it.case.nomisId!! to ProbationPractitioner(
           staffCode = it.code,

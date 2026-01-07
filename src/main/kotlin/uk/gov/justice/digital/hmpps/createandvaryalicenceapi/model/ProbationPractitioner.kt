@@ -22,9 +22,6 @@ data class ProbationPractitioner(
       NOT_ALLOCATED,
       false,
     )
-    fun unallocated(staffCode: String?): ProbationPractitioner {
-      if (staffCode == null) return UNALLOCATED
-      return ProbationPractitioner(staffCode, NOT_ALLOCATED, false)
-    }
+    fun unallocated(staffCode: String?): ProbationPractitioner = ProbationPractitioner(staffCode, NOT_ALLOCATED, false)
   }
 }

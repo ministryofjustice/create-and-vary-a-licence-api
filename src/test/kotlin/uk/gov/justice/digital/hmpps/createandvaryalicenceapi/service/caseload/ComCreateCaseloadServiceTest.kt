@@ -689,7 +689,7 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceType = LicenceType.PSS,
       expectedReleaseDate = tenDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-      expectedProbationPractitioner = ProbationPractitioner.UNALLOCATED,
+      expectedProbationPractitioner = ProbationPractitioner.unallocated("X1235"),
       expectedHardstopWarningDate = tenDaysFromNow,
     )
     verifyCase(
