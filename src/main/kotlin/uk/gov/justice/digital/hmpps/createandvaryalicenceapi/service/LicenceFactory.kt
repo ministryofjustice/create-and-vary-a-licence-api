@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.regex.Pattern
 
 object LicenceFactory {
 
@@ -46,7 +47,7 @@ object LicenceFactory {
     bookingId = nomisRecord.bookingId?.toLong(),
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
-    cro = deliusRecord.croNumber ?: nomisRecord.croNumber,
+    cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
     prisonCode = nomisRecord.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
@@ -96,7 +97,7 @@ object LicenceFactory {
     bookingId = nomisRecord.bookingId?.toLong(),
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
-    cro = deliusRecord.croNumber ?: nomisRecord.croNumber,
+    cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
     prisonCode = nomisRecord.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
@@ -148,7 +149,7 @@ object LicenceFactory {
     bookingId = nomisRecord.bookingId?.toLong(),
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
-    cro = deliusRecord.croNumber ?: nomisRecord.croNumber,
+    cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
     prisonCode = nomisRecord.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
@@ -202,7 +203,7 @@ object LicenceFactory {
     bookingId = nomisRecord.bookingId?.toLong(),
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
-    cro = deliusRecord.croNumber ?: nomisRecord.croNumber,
+    cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
     prisonCode = nomisRecord.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
@@ -338,7 +339,7 @@ object LicenceFactory {
     bookingId = nomisRecord.bookingId?.toLong(),
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
-    cro = deliusRecord.croNumber ?: nomisRecord.croNumber,
+    cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
     prisonCode = nomisRecord.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
@@ -415,6 +416,30 @@ object LicenceFactory {
         dateCreated = LocalDateTime.now(),
         licenceVersion = getVariationVersion(this.licenceVersion!!),
       )
+    }
+  }
+
+  /*
+   * Check if a string contains a valid criminal records office number. See
+   * https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/862971/cjs-data-standards-catalogue-6.pdf
+   */
+  fun isValidCro(cro: String?): Boolean {
+    if (cro.isNullOrBlank()) {
+      return false
+    }
+
+    val croPattern =
+      Pattern.compile("^(([1-9]\\d{0,5}/\\d{2})|(SF(39|[4-8][0-9]|9[0-5])/[1-9]\\d{0,5}))[^IOS0-9]$")
+    return croPattern.matcher(cro).matches()
+  }
+
+  private fun getCro(deliusRecordCro: String?, nomisRecordCro: String?): String? {
+    val deliusCro = deliusRecordCro?.trim()
+    val nomisCro = nomisRecordCro?.trim()
+    return when {
+      (deliusCro != null && isValidCro(deliusCro)) -> deliusCro
+      (nomisCro != null && isValidCro(nomisCro)) -> nomisCro
+      else -> null
     }
   }
 
