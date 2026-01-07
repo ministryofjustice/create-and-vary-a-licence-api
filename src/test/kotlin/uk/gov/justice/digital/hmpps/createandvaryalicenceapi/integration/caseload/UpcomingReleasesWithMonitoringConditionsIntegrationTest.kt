@@ -9,14 +9,13 @@ import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.json.JsonCompareMode.STRICT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.UpcomingReleasesWithMonitoringConditionsResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.nio.charset.StandardCharsets.UTF_8
 
 private const val GET_CASES = "/cvl-report/upcoming-releases-with-monitoring"
 
@@ -42,25 +41,15 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
       .exchange()
 
     // Then
-    val response = result.expectStatus().isOk
+    result.expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
-      .expectBody(typeReference<List<UpcomingReleasesWithMonitoringConditionsResponse>>())
-      .returnResult().responseBody!!
-
-    assertThat(response).hasSize(2)
-    assertThat(response).containsExactly(
-      UpcomingReleasesWithMonitoringConditionsResponse(
-        prisonNumber = "A1234AA",
-        crn = "CRN1",
-        status = LicenceStatus.SUBMITTED,
-      ),
-      UpcomingReleasesWithMonitoringConditionsResponse(
-        prisonNumber = "A1234AB",
-        crn = "CRN2",
-        status = LicenceStatus.APPROVED,
-      ),
-    )
+      .expectBody()
+      .json(serializedContent("upcoming_releases_with_em_conditions"), STRICT)
   }
+
+  private fun serializedContent(name: String) = this.javaClass.getResourceAsStream("/test_data/reports/$name.json")!!.bufferedReader(
+    UTF_8,
+  ).readText()
 
   @Test
   fun `Get forbidden (403) when incorrect roles are supplied`() {
