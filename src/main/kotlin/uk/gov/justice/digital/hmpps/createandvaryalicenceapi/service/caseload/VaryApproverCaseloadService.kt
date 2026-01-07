@@ -90,12 +90,15 @@ class VaryApproverCaseloadService(
 
   private fun getProbationPractitioners(prisonNumbers: List<String>) = deliusApiClient.getOffenderManagersWithoutUser(prisonNumbers)
     .associate {
-      val name = if (it.unallocated) "Not Allocated" else it.name.fullName()
-      it.case.nomisId!!.lowercase() to ProbationPractitioner(
-        staffCode = it.code,
-        name = name,
-        allocated = !it.unallocated,
-      )
+      if (it.unallocated) {
+        it.case.nomisId!!.lowercase() to ProbationPractitioner.unallocated(it.code)
+      } else {
+        it.case.nomisId!!.lowercase() to ProbationPractitioner(
+          staffCode = it.code,
+          name = it.name.fullName(),
+          allocated = true,
+        )
+      }
     }
 
   private fun applySearchFilter(cases: List<VaryApproverCase>, searchTerm: String?): List<VaryApproverCase> {
@@ -108,7 +111,7 @@ class VaryApproverCaseloadService(
     return cases.filter { case ->
       case.crnNumber.lowercase().contains(searchString) ||
         case.name?.lowercase()?.contains(searchString) ?: false ||
-        case.probationPractitioner?.name?.lowercase()?.contains(searchString) ?: false
+        case.probationPractitioner.name?.lowercase()?.contains(searchString) ?: false
     }
   }
 

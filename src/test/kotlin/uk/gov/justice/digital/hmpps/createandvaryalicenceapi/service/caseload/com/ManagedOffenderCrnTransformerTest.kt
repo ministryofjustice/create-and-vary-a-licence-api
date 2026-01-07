@@ -8,18 +8,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 
 class ManagedOffenderCrnTransformerTest {
-
   @Test
-  fun `should return null when ManagedOffenderCrn is null`() {
-    val result = (null as ManagedOffenderCrn?).toProbationPractitioner()
-    assertThat(result).isNull()
-  }
-
-  @Test
-  fun `should return null when staff is null`() {
+  fun `should return unallocated ProbationPractitioner when staff is null`() {
     val offender = ManagedOffenderCrn(staff = null)
     val result = offender.toProbationPractitioner()
-    assertThat(result).isNull()
+    assertThat(result).isNotNull.extracting("allocated").isEqualTo(false)
   }
 
   @Test
