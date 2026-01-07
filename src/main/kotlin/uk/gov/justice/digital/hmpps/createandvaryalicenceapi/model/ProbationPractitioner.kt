@@ -16,15 +16,15 @@ data class ProbationPractitioner(
   val allocated: Boolean,
 ) {
   companion object {
-    const val NOT_ALLOCATED_NAME = "Not Allocated"
+    const val NOT_ALLOCATED = "Not Allocated"
     val UNALLOCATED = ProbationPractitioner(
       null,
-      NOT_ALLOCATED_NAME,
+      NOT_ALLOCATED,
       false,
     )
     fun unallocated(staffCode: String?): ProbationPractitioner {
       if (staffCode == null) return UNALLOCATED
-      return ProbationPractitioner(staffCode, NOT_ALLOCATED_NAME, false)
+      return ProbationPractitioner(staffCode, NOT_ALLOCATED, false)
     }
   }
 }
