@@ -5,12 +5,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 
 object ManagedOffenderCrnTransformer {
-  fun ManagedOffenderCrn?.toProbationPractitioner() = this?.staff
-    ?.takeUnless { it.unallocated == true }
-    ?.let {
+  fun ManagedOffenderCrn.toProbationPractitioner(): ProbationPractitioner {
+    if (this.staff == null) return ProbationPractitioner.UNALLOCATED
+    return this.staff.let {
+      if (it.unallocated == true) return@let ProbationPractitioner.unallocated(it.code)
       ProbationPractitioner(
         staffCode = it.code,
         name = it.name?.fullName(),
+        allocated = true,
       )
     }
+  }
 }

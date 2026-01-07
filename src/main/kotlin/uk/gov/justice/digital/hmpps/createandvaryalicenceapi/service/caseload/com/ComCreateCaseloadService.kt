@@ -200,7 +200,7 @@ class ComCreateCaseloadService(
   }.sortedWith(compareBy<ComCreateCase> { it.releaseDate }.thenBy { it.name })
 
   private data class Case(
-    val probationPractitioner: ProbationPractitioner?,
+    val probationPractitioner: ProbationPractitioner,
     val nomisRecord: PrisonerSearchPrisoner,
     val cvlRecord: CvlRecord,
     val comLicenceCaseDto: ComCreateCaseloadLicenceDto,
