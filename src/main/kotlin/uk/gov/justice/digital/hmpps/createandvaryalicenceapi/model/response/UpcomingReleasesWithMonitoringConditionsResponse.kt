@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
@@ -12,6 +13,7 @@ data class UpcomingReleasesWithMonitoringConditionsResponse(
   val crn: String,
   @field:Schema(description = "Current licence status of the case", example = "IN_PROGRESS")
   val status: LicenceStatus,
-  @field:Schema(description = "Licence start date", example = "2024-07-15")
+  @field:Schema(description = "Licence start date", example = "15/07/2024")
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
   val licenceStartDate: LocalDate,
 )
