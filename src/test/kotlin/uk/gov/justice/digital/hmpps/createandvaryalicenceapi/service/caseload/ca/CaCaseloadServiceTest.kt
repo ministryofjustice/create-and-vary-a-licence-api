@@ -859,6 +859,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = ProbationPractitioner(
                 staffCode = "X1234",
                 name = "Joe Bloggs",
+                allocated = true,
               ),
               lastWorkedOnBy = null,
             ),
@@ -2152,7 +2153,7 @@ class CaCaseloadServiceTest {
       code = "AB00003",
     )
 
-    fun probationPractitionerFor(staff: StaffNameResponse) = ProbationPractitioner(staffCode = staff.code, name = staff.name.fullName())
+    fun probationPractitionerFor(staff: StaffNameResponse) = ProbationPractitioner(staffCode = staff.code, name = staff.name.fullName(), allocated = true)
 
     val aPrisonerSearchPrisoner = PrisonerSearchPrisoner(
       prisonerNumber = "A1234AA",

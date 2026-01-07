@@ -79,6 +79,7 @@ class ComVaryCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X1234",
         name = "Joe Bloggs",
+        allocated = true,
       ),
     )
   }
@@ -122,6 +123,7 @@ class ComVaryCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X1234",
         name = "Joe Bloggs",
+        allocated = true,
       ),
     )
   }
@@ -262,6 +264,7 @@ class ComVaryCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X1234",
         name = "Joe Bloggs",
+        allocated = true,
       ),
       expectedReviewNeeded = true,
     )
@@ -334,6 +337,7 @@ class ComVaryCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
         name = "John Doe",
+        allocated = true,
       ),
     )
     verifyCase(
@@ -346,6 +350,7 @@ class ComVaryCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X1234",
         name = "Joe Bloggs",
+        allocated = true,
       ),
     )
     verifyCase(
@@ -358,6 +363,7 @@ class ComVaryCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
         name = "John Doe",
+        allocated = true,
       ),
     )
   }
@@ -401,6 +407,7 @@ class ComVaryCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X1234",
         name = "Joe Bloggs",
+        allocated = true,
       ),
       expectedReviewNeeded = true,
     )
@@ -413,7 +420,7 @@ class ComVaryCaseloadServiceTest {
     expectedLicenceStatus: LicenceStatus,
     expectedLicenceType: LicenceType,
     expectedReleaseDate: LocalDate? = null,
-    expectedProbationPractitioner: ProbationPractitioner? = null,
+    expectedProbationPractitioner: ProbationPractitioner = ProbationPractitioner("X1234", "Joe Bloggs", true),
     expectedReviewNeeded: Boolean = false,
   ) {
     with(case) {

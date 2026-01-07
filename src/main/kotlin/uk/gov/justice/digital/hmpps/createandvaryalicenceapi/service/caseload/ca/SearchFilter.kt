@@ -11,7 +11,7 @@ object SearchFilter {
     return cases.filter {
       it.name.lowercase().contains(term) ||
         it.prisonerNumber.lowercase().contains(term) ||
-        it.probationPractitioner?.name?.lowercase()?.contains(term) ?: false
+        it.probationPractitioner.name?.lowercase()?.contains(term) ?: false
     }
   }
 }

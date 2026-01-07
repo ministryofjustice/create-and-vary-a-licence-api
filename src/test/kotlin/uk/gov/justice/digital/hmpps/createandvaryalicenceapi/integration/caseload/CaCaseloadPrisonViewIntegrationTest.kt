@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCommunityManager
@@ -215,7 +216,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
 
     assertThat(caseload).hasSize(1)
     with(caseload[0]) {
-      assertThat(probationPractitioner).isNull()
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.unallocated("staff-code-0"))
     }
   }
 

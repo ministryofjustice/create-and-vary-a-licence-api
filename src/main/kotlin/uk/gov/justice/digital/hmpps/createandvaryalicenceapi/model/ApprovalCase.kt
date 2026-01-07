@@ -42,7 +42,7 @@ data class ApprovalCase(
   val approvedOn: LocalDateTime? = null,
 
   @field:Schema(description = "The details for the active supervising probation officer")
-  val probationPractitioner: ProbationPractitioner? = null,
+  val probationPractitioner: ProbationPractitioner,
 
   @field:Schema(description = "Type of this licence")
   val kind: LicenceKind? = null,

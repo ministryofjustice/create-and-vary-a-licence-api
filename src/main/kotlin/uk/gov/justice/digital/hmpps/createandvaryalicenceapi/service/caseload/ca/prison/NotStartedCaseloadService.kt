@@ -106,7 +106,7 @@ class NotStartedCaseloadService(
           licenceCaCase = null,
           clock,
         ),
-        probationPractitioner = probationPractitioners[case.nomisRecord.prisonerNumber],
+        probationPractitioner = probationPractitioners[case.nomisRecord.prisonerNumber] ?: ProbationPractitioner.UNALLOCATED,
         prisonCode = case.nomisRecord.prisonId,
         prisonDescription = case.nomisRecord.prisonName,
         hasNomisLicence = timeServedExternalRecord != null,
@@ -127,11 +127,12 @@ class NotStartedCaseloadService(
     val coms = deliusApiClient.getOffenderManagersWithoutUser(prisonNumbers)
     return coms.mapNotNull {
       if (it.unallocated) {
-        null
+        it.case.nomisId!! to ProbationPractitioner.unallocated(it.code)
       } else {
         it.case.nomisId!! to ProbationPractitioner(
           staffCode = it.code,
           name = it.name.fullName(),
+          allocated = true,
         )
       }
     }.toMap()
