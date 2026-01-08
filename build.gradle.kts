@@ -69,8 +69,8 @@ dependencies {
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
-  testImplementation("org.testcontainers:localstack:1.21.3")
-  testImplementation("org.testcontainers:postgresql:1.21.3")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
+  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
 }
 
 detekt {
