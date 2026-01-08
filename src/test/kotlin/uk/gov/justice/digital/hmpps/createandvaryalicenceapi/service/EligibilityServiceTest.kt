@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import java.time.Clock
 import java.time.Instant
@@ -44,6 +45,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
       assertThat(result.eligibleKind).isEqualTo(CRD)
     }
 
@@ -362,9 +364,10 @@ class EligibilityServiceTest {
       val result = service.getEligibilityAssessment(aPrisonerSearchResult)
 
       assertThat(result.isEligible).isFalse()
-      assertThat(result.genericIneligibilityReasons).containsExactly("Approved for HDC")
-      assertThat(result.crdIneligibilityReasons).isEmpty()
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is approved for HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
       assertThat(result.eligibleKind).isNull()
     }
 
@@ -405,6 +408,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
       assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
@@ -647,9 +651,87 @@ class EligibilityServiceTest {
       val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
 
       assertThat(result.isEligible).isFalse()
-      assertThat(result.genericIneligibilityReasons).containsExactly("Approved for HDC")
-      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
-      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date", "is approved for HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("is approved for HDC")
+      assertThat(result.eligibleKind).isNull()
+    }
+  }
+
+  @Nested
+  inner class HdcCases {
+    private var service = EligibilityService(prisonApiClient, releaseDateService, hdcService, clock, hdcEnabled = true)
+
+    @BeforeEach
+    fun reset() {
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(anHdcPrisonerSearchResult.bookingId!!.toLong())))
+    }
+
+    @Test
+    fun `person is eligible for CVL`() {
+      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult)
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is approved for HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.hdcIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(HDC)
+    }
+
+    @Test
+    fun `CRD is missing - ineligible for CVL`() {
+      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult.copy(conditionalReleaseDate = null))
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date", "is approved for HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `HDCAD is missing - ineligible for CVL`() {
+      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult.copy(homeDetentionCurfewActualDate = null))
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is approved for HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("has no home detention curfew actual date")
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `CRD is under 10 days in the future - ineligible for CVL`() {
+      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult.copy(conditionalReleaseDate = LocalDate.now(clock).plusDays(9)))
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is approved for HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("has CRD fewer than 10 days in the future")
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `Case does not have HDC approval - ineligible for CVL`() {
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+      // Also make the case ineligible for a CRD licence
+      val result = service.getEligibilityAssessment(
+        anHdcPrisonerSearchResult.copy(
+          paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
+          actualParoleDate = LocalDate.now(clock).plusDays(1),
+        ),
+      )
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("is not approved for HDC")
       assertThat(result.eligibleKind).isNull()
     }
   }
@@ -715,6 +797,38 @@ class EligibilityServiceTest {
       conditionalReleaseDateOverrideDate = null,
       sentenceStartDate = LocalDate.parse("2023-09-14"),
       sentenceExpiryDate = LocalDate.now(clock).plusYears(1),
+      topupSupervisionStartDate = null,
+      croNumber = null,
+    )
+
+    val anHdcPrisonerSearchResult = PrisonerSearchPrisoner(
+      prisonerNumber = "A1234AA",
+      bookingId = "54321",
+      status = "ACTIVE IN",
+      mostSeriousOffence = "Robbery",
+      licenceExpiryDate = LocalDate.now(clock).plusYears(1),
+      topupSupervisionExpiryDate = LocalDate.now(clock).plusYears(1),
+      homeDetentionCurfewEligibilityDate = LocalDate.now(clock).minusYears(1),
+      homeDetentionCurfewActualDate = LocalDate.now(clock).plusDays(1),
+      releaseDate = LocalDate.now(clock).plusDays(1),
+      confirmedReleaseDate = LocalDate.now(clock).plusMonths(1),
+      conditionalReleaseDate = LocalDate.now(clock).plusMonths(1),
+      paroleEligibilityDate = null,
+      actualParoleDate = null,
+      postRecallReleaseDate = null,
+      legalStatus = "SENTENCED",
+      indeterminateSentence = false,
+      recall = false,
+      prisonId = "ABC",
+      locationDescription = "HMP Moorland",
+      bookNumber = "12345A",
+      firstName = "Jane",
+      middleNames = null,
+      lastName = "Doe",
+      dateOfBirth = LocalDate.parse("1985-01-01"),
+      conditionalReleaseDateOverrideDate = null,
+      sentenceStartDate = LocalDate.parse("2023-09-14"),
+      sentenceExpiryDate = LocalDate.parse("2024-09-14"),
       topupSupervisionStartDate = null,
       croNumber = null,
     )

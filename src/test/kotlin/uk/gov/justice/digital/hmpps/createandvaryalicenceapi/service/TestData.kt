@@ -178,9 +178,7 @@ object TestData {
     genericIneligibilityReasons = emptyList(),
     crdIneligibilityReasons = emptyList(),
     prrdIneligibilityReasons = emptyList(),
-    isEligible = true,
-    eligibleKind = LicenceKind.CRD,
-    ineligibilityReasons = emptyList(),
+    hdcIneligibilityReasons = listOf("A reason"),
   )
 
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
