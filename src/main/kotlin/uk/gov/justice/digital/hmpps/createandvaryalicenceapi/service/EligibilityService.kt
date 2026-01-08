@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -207,7 +208,7 @@ class EligibilityService(
       val bookingId = nomisIdsToBookingIds[nomisId]!!
       val case = bookingsSentenceAndRecallTypes.firstOrNull { it.bookingId == bookingId }
       when {
-        case?.sentenceTypeRecallTypes?.any { it.recallType.isStandardRecall } == true -> {
+        case.isStandardRecall() -> {
           nomisId to EligibilityAssessment(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
@@ -216,7 +217,7 @@ class EligibilityService(
           )
         }
 
-        case?.sentenceTypeRecallTypes?.any { it.recallType.isFixedTermRecall } == true -> nomisId to eligibilityAssessment
+        case.isFixedTermRecall() -> nomisId to eligibilityAssessment
 
         else -> {
           val ineligibilityMessage =
@@ -252,6 +253,10 @@ class EligibilityService(
       }
     }.toMap()
   }
+
+  private fun BookingSentenceAndRecallTypes?.isStandardRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isStandardRecall } == true
+
+  private fun BookingSentenceAndRecallTypes?.isFixedTermRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isFixedTermRecall } == true
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
