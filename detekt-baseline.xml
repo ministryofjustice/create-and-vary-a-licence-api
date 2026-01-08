@@ -98,6 +98,7 @@
     <ID>MagicNumber:PromptComService.kt$PromptComService.Companion$4</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
+    <ID>NestedBlockDepth:ExclusionZoneService.kt$ExclusionZoneService$fun loadThumbnails( entityLicence: Licence, licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence, )</ID>
     <ID>ReturnCount:AllRepositoryUnproxyAspect.kt$AllRepositoryUnproxyAspect$fun unProxy(returnedObject: Any?): Any?</ID>
     <ID>ReturnCount:ComAllocatedHandler.kt$ComAllocatedHandler$fun isValidOffenderManager(offenderManager: OffenderManager?, crn: String): Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun isEligibleIfOnAnExtendedDeterminateSentence(prisoner: PrisonerSearchPrisoner): Boolean</ID>
@@ -107,6 +108,7 @@
     <ID>ReturnCount:NotifyService.kt$NotifyService$private fun sendEmail( templateId: String, emailAddress: String, values: Map&lt;String, Any&gt;, ): Boolean</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt$ComAllocatedHandler$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ExclusionZoneService.kt$ExclusionZoneService$e: Exception</ID>
     <ID>TooManyFunctions:AppointmentService.kt$AppointmentService</ID>
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
     <ID>TooManyFunctions:CaseloadController.kt$CaseloadController</ID>

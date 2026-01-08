@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -15,7 +16,7 @@ import java.util.UUID
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary as ModelAdditionalConditionUpload
 
-class ExclusionZoneServicePreloadThumbnailsTest {
+class ExclusionZoneServiceLoadThumbnailsTest {
 
   private val licence: Licence = mock()
   private val modelLicence: CrdLicence = mock()
@@ -28,7 +29,7 @@ class ExclusionZoneServicePreloadThumbnailsTest {
   )
 
   @Test
-  fun `given uploads with thumbnails when preloadThumbnails is called then thumbnails are attached to model licence conditions`() {
+  fun `given uploads with thumbnails when loadThumbnails is called then thumbnails are attached to model licence conditions`() {
     // Given
     val upload1 = createEntityUpload(1, "11111111-1111-1111-1111-111111111111")
     val upload2 = createEntityUpload(2, "22222222-2222-2222-2222-222222222222")
@@ -45,7 +46,7 @@ class ExclusionZoneServicePreloadThumbnailsTest {
       .thenReturn(byteArrayOf(4, 5, 6))
 
     // When
-    exclusionZoneService.preloadThumbnails(licence, modelLicence)
+    exclusionZoneService.loadThumbnails(licence, modelLicence)
 
     // Then
     val summary1 = modelLicence.additionalLicenceConditions[0].uploadSummary[0]
@@ -55,30 +56,31 @@ class ExclusionZoneServicePreloadThumbnailsTest {
   }
 
   @Test
-  fun `given a thumbnail download fails when preloadThumbnails is called then model licence summary remains unchanged`() {
+  fun `given a thumbnail download fails when loadThumbnails is called then exception is thrown`() {
     // Given
     val upload = createEntityUpload(3, "33333333-3333-3333-3333-333333333333")
     whenever(licence.additionalConditions).thenReturn(mutableListOf(createEntityCondition(30, mutableListOf(upload))))
     whenever(modelLicence.additionalLicenceConditions).thenReturn(mutableListOf(createModelCondition(upload.id!!)))
-    whenever(documentService.downloadDocument(any())).thenThrow(RuntimeException("download failed"))
+    whenever(documentService.downloadDocument(any())).thenThrow(IllegalStateException("download failed"))
 
     // When
-    exclusionZoneService.preloadThumbnails(licence, modelLicence)
+    val exception = assertThrows<IllegalStateException> {
+      exclusionZoneService.loadThumbnails(licence, modelLicence)
+    }
 
     // Then
-    val summary = modelLicence.additionalLicenceConditions[0].uploadSummary[0]
-    assertThat(summary.thumbnailImage).isNull()
+    assertThat(exception.message).isEqualTo("download failed")
   }
 
   @Test
-  fun `given uploads with no thumbnail UUID when preloadThumbnails is called then uploads are ignored`() {
+  fun `given uploads with no thumbnail UUID when loadThumbnails is called then uploads are ignored`() {
     // Given
     val upload = createEntityUpload(4)
     whenever(licence.additionalConditions).thenReturn(mutableListOf(createEntityCondition(40, mutableListOf(upload))))
     whenever(modelLicence.additionalLicenceConditions).thenReturn(mutableListOf(createModelCondition(upload.id!!)))
 
     // When
-    exclusionZoneService.preloadThumbnails(licence, modelLicence)
+    exclusionZoneService.loadThumbnails(licence, modelLicence)
 
     // Then
     val summary = modelLicence.additionalLicenceConditions[0].uploadSummary[0]
@@ -86,7 +88,7 @@ class ExclusionZoneServicePreloadThumbnailsTest {
   }
 
   @Test
-  fun `given uploads with no matching summary when preloadThumbnails is called then nothing is attached`() {
+  fun `given uploads with no matching summary when loadThumbnails is called then nothing is attached`() {
     // Given
     val upload = createEntityUpload(5, "55555555-5555-5555-5555-555555555555")
     whenever(licence.additionalConditions).thenReturn(mutableListOf(createEntityCondition(50, listOf(upload))))
@@ -95,20 +97,20 @@ class ExclusionZoneServicePreloadThumbnailsTest {
       .thenReturn(byteArrayOf(9, 9, 9))
 
     // When
-    exclusionZoneService.preloadThumbnails(licence, modelLicence)
+    exclusionZoneService.loadThumbnails(licence, modelLicence)
 
     // Then
     assertThat(modelLicence.additionalLicenceConditions).isEmpty()
   }
 
   @Test
-  fun `given a licence with no additional conditions when preloadThumbnails is called then model licence remains unchanged`() {
+  fun `given a licence with no additional conditions when loadThumbnails is called then model licence remains unchanged`() {
     // Given
     whenever(licence.additionalConditions).thenReturn(mutableListOf())
     whenever(modelLicence.additionalLicenceConditions).thenReturn(mutableListOf())
 
     // When
-    exclusionZoneService.preloadThumbnails(licence, modelLicence)
+    exclusionZoneService.loadThumbnails(licence, modelLicence)
 
     // Then
     assertThat(modelLicence.additionalLicenceConditions).isEmpty()

@@ -81,7 +81,7 @@ class ExclusionZoneService(
     return uploadDetail.fullSizeImageDsUuid?.let { uuid -> documentService.downloadDocument(UUID.fromString(uuid)) }
   }
 
-  fun preloadThumbnails(
+  fun loadThumbnails(
     entityLicence: Licence,
     licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence,
   ) {
@@ -93,12 +93,12 @@ class ExclusionZoneService(
     licence.additionalLicenceConditions.forEach { condition ->
       condition.uploadSummary.forEach { summary ->
         uploadThumbNailUuids[summary.id]?.let { uuid ->
-          runCatching {
-            documentService.downloadDocument(uuid).toBase64()
-          }.onSuccess { base64 ->
+          try {
+            val base64 = documentService.downloadDocument(uuid).toBase64()
             summary.thumbnailImage = base64
-          }.onFailure { e ->
+          } catch (e: Exception) {
             log.warn("Failed to download thumbnail for upload Id={}", summary.id, e)
+            throw e
           }
         }
       }

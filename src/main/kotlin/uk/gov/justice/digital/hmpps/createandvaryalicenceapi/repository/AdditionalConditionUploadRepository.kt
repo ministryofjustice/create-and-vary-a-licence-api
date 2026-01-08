@@ -27,7 +27,7 @@ interface AdditionalConditionUploadRepository : JpaRepository<AdditionalConditio
 
   @Query(
     """
-    SELECT CASE WHEN COUNT(DISTINCT acu.id) = 1 THEN TRUE ELSE FALSE END 
+    SELECT COUNT(DISTINCT acu.id) = 1 
         FROM AdditionalConditionUpload acu
         WHERE acu.originalDataDsUuid = :uuid OR acu.fullSizeImageDsUuid = :uuid OR acu.thumbnailImageDsUuid = :uuid
     """,

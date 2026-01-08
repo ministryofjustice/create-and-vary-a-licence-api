@@ -117,7 +117,7 @@ class LicenceService(
       )
 
     val licence = transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
-    exclusionZoneService.preloadThumbnails(entityLicence, licence)
+    exclusionZoneService.loadThumbnails(entityLicence, licence)
     return licence
   }
 
