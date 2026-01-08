@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
@@ -743,7 +743,7 @@ object TestData {
     lastWorkedOnBy = "John Smith",
     isInHardStopPeriod = false,
     tabType = CaViewCasesTab.FUTURE_RELEASES,
-    probationPractitioner = ProbationPractitioner(),
+    probationPractitioner = ProbationPractitioner(allocated = true),
   )
 
   fun approvalCase() = ApprovalCase(
@@ -755,7 +755,7 @@ object TestData {
     urgentApproval = false,
     approvedBy = null,
     approvedOn = null,
-    probationPractitioner = ProbationPractitioner(),
+    probationPractitioner = ProbationPractitioner(allocated = true),
     kind = LicenceKind.CRD,
     prisonCode = "MDI",
     prisonDescription = "Moorland (HMP)",
@@ -768,7 +768,7 @@ object TestData {
     licenceType = AP,
     variationRequestDate = LocalDate.of(2023, 11, 24),
     releaseDate = LocalDate.of(2021, 10, 22),
-    probationPractitioner = ProbationPractitioner(),
+    probationPractitioner = ProbationPractitioner(allocated = true),
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
@@ -888,7 +888,7 @@ object TestData {
     ),
     ModelAdditionalCondition(
       id = 5,
-      code = ELECTRONIC_TAG_COND_CODE,
+      code = ELECTRONIC_TAG_COND_CODE_14A,
       sequence = 5,
       text = "You must wear an electronic monitoring tag for [REASON] purposes.",
       expandedText = "You must wear an electronic monitoring tag for curfew purposes.",

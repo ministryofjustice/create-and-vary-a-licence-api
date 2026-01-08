@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 const val COM_ALLOCATED_EVENT_TYPE = "person.community.manager.allocated"
 const val PRISONER_UPDATED_EVENT_TYPE = "prisoner-offender-search.prisoner.updated"
 
-@ConditionalOnProperty(name = ["domain.event.listener.enabled"], havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = ["domain.event.listener.disabled"], havingValue = "false", matchIfMissing = true)
 @Service
 class DomainEventListener(
   private val comAllocatedHandler: ComAllocatedHandler,

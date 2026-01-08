@@ -13,11 +13,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Comp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
@@ -167,30 +167,30 @@ OffenderService(
   }
 
   @Transactional
-  fun updateProbationTeam(crn: String, request: UpdateProbationTeamRequest) {
-    log.debug("Request : {}", request)
+  fun updateProbationTeam(crn: String, event: UpdateProbationTeamEvent) {
+    log.debug("Request : {}", event)
     val offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
     var probationTeamChanged = false
 
     // Update the in-flight licences for this person on probation
     offenderLicences.forEach {
-      if (it.probationTeamCode != request.probationTeamCode) {
+      if (it.probationTeamCode != event.probationTeamCode) {
         probationTeamChanged = true
       }
       val username = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER
       val staffMember = staffRepository.findByUsernameIgnoreCase(username)
-      auditService.recordAuditEventProbationTeamUpdated(it, request, staffMember)
+      auditService.recordAuditEventProbationTeamUpdated(it, event, staffMember)
 
       it.updateProbationTeam(
-        probationAreaCode = request.probationAreaCode,
-        probationAreaDescription = request.probationAreaDescription,
-        probationPduCode = request.probationPduCode,
-        probationPduDescription = request.probationPduDescription,
-        probationLauCode = request.probationLauCode,
-        probationLauDescription = request.probationLauDescription,
-        probationTeamCode = request.probationTeamCode,
-        probationTeamDescription = request.probationTeamDescription,
+        probationAreaCode = event.probationAreaCode,
+        probationAreaDescription = event.probationAreaDescription,
+        probationPduCode = event.probationPduCode,
+        probationPduDescription = event.probationPduDescription,
+        probationLauCode = event.probationLauCode,
+        probationLauDescription = event.probationLauDescription,
+        probationTeamCode = event.probationTeamCode,
+        probationTeamDescription = event.probationTeamDescription,
       )
     }
 

@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config
 
 import org.slf4j.LoggerFactory
 import org.springframework.test.context.DynamicPropertyRegistry
-import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.postgresql.PostgreSQLContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import java.io.IOException
 import java.net.ServerSocket
@@ -19,16 +19,16 @@ object PostgresContainer {
   private val DB_USERNAME = "cvl"
   private val DB_PASSWORD = "cvl"
 
-  val instance: PostgreSQLContainer<Nothing>? by lazy { startPostgresqlContainer() }
+  val instance: PostgreSQLContainer? by lazy { startPostgresqlContainer() }
 
-  private fun startPostgresqlContainer(): PostgreSQLContainer<Nothing>? {
+  private fun startPostgresqlContainer(): PostgreSQLContainer? {
     if (isPostgresRunning()) {
       return null
     }
 
     val logConsumer = Slf4jLogConsumer(log).withPrefix("postgresql")
 
-    return PostgreSQLContainer<Nothing>("postgres:17.5").apply {
+    return PostgreSQLContainer("postgres:17.5").apply {
       withEnv("HOSTNAME_EXTERNAL", "localhost")
       withDatabaseName(DB_NAME)
       withUsername(DB_USERNAME)
@@ -56,7 +56,7 @@ object PostgresContainer {
     true
   }
 
-  fun setPostgresContainerProperties(instance: PostgreSQLContainer<Nothing>?, registry: DynamicPropertyRegistry) {
+  fun setPostgresContainerProperties(instance: PostgreSQLContainer?, registry: DynamicPropertyRegistry) {
     val url = instance?.let { instance.jdbcUrl } ?: DB_DEFAULT_URL
     IntegrationTestBase.log.info("Using TestContainers?: ${instance != null}, DB url: $url")
     registry.add("spring.datasource.url") { url }

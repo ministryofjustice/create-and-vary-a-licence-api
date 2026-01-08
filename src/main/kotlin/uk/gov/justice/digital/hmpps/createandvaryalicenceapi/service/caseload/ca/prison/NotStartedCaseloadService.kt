@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.TimeServedExternalSummaryRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
@@ -26,7 +25,6 @@ private const val FOUR_WEEKS = 4L
 
 @Service
 class NotStartedCaseloadService(
-  private val hdcService: HdcService,
   private val clock: Clock,
   private val deliusApiClient: DeliusApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
@@ -46,7 +44,7 @@ class NotStartedCaseloadService(
     }
 
     val casesWithoutLicences = buildManagedCaseDto(prisonersWithoutLicences)
-    val eligibleCases = filterOffendersEligibleForLicence(casesWithoutLicences)
+    val eligibleCases = casesWithoutLicences.filter { it.cvlRecord.isEligible }
 
     return createNotStartedLicenceForCase(eligibleCases)
   }
@@ -74,16 +72,6 @@ class NotStartedCaseloadService(
         cvlRecord = requireNotNull(cvlRecords[it.prisonerNumber]) { it.prisonerNumber },
       )
     }
-  }
-
-  private fun filterOffendersEligibleForLicence(offenders: List<ManagedCaseDto>): List<ManagedCaseDto> {
-    val eligibleOffenders = offenders.filter { it.cvlRecord.isEligible }
-
-    if (eligibleOffenders.isEmpty()) return eligibleOffenders
-
-    val hdcStatuses = hdcService.getHdcStatus(eligibleOffenders.map { it.nomisRecord })
-
-    return eligibleOffenders.filter { hdcStatuses.canUnstartedCaseBeSeenByCa(it.nomisRecord.bookingId?.toLong()!!) }
   }
 
   private fun createNotStartedLicenceForCase(
@@ -118,7 +106,7 @@ class NotStartedCaseloadService(
           licenceCaCase = null,
           clock,
         ),
-        probationPractitioner = probationPractitioners[case.nomisRecord.prisonerNumber],
+        probationPractitioner = probationPractitioners[case.nomisRecord.prisonerNumber] ?: ProbationPractitioner.UNALLOCATED,
         prisonCode = case.nomisRecord.prisonId,
         prisonDescription = case.nomisRecord.prisonName,
         hasNomisLicence = timeServedExternalRecord != null,
@@ -139,11 +127,12 @@ class NotStartedCaseloadService(
     val coms = deliusApiClient.getOffenderManagersWithoutUser(prisonNumbers)
     return coms.mapNotNull {
       if (it.unallocated) {
-        null
+        it.case.nomisId!! to ProbationPractitioner.unallocated(it.code)
       } else {
         it.case.nomisId!! to ProbationPractitioner(
           staffCode = it.code,
           name = it.name.fullName(),
+          allocated = true,
         )
       }
     }.toMap()

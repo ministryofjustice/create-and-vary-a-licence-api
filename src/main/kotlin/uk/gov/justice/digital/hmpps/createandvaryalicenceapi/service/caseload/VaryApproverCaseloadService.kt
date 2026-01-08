@@ -70,7 +70,7 @@ class VaryApproverCaseloadService(
     return licences.mapNotNull { licence ->
       val nomisRecord = nomisRecords[licence.prisonNumber]
       val deliusRecord = deliusRecords[licence.prisonNumber]
-      val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()]
+      val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()]!!
       if (nomisRecord == null || deliusRecord == null) {
         null
       } else {
@@ -89,12 +89,16 @@ class VaryApproverCaseloadService(
   }
 
   private fun getProbationPractitioners(prisonNumbers: List<String>) = deliusApiClient.getOffenderManagersWithoutUser(prisonNumbers)
-    .filter { !it.unallocated }
     .associate {
-      it.case.nomisId!!.lowercase() to ProbationPractitioner(
-        staffCode = it.code,
-        name = it.name.fullName(),
-      )
+      if (it.unallocated) {
+        it.case.nomisId!!.lowercase() to ProbationPractitioner.unallocated(it.code)
+      } else {
+        it.case.nomisId!!.lowercase() to ProbationPractitioner(
+          staffCode = it.code,
+          name = it.name.fullName(),
+          allocated = true,
+        )
+      }
     }
 
   private fun applySearchFilter(cases: List<VaryApproverCase>, searchTerm: String?): List<VaryApproverCase> {
@@ -107,7 +111,7 @@ class VaryApproverCaseloadService(
     return cases.filter { case ->
       case.crnNumber.lowercase().contains(searchString) ||
         case.name?.lowercase()?.contains(searchString) ?: false ||
-        case.probationPractitioner?.name?.lowercase()?.contains(searchString) ?: false
+        case.probationPractitioner.name?.lowercase()?.contains(searchString) ?: false
     }
   }
 

@@ -1,10 +1,9 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -13,7 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import java.time.Clock
 import java.time.LocalDate
-import kotlin.comparisons.nullsLast
 
 // Staged builder interfaces to force order of operations
 private interface DeliusStage {
@@ -29,11 +27,7 @@ private interface EligibleCandidatesStage {
 }
 
 private interface PreSubmissionStage {
-  fun withPreSubmissionState(): HdcFilterStage
-}
-
-private interface HdcFilterStage {
-  fun filterOutHdcEligible(): LicenceStartStage
+  fun withPreSubmissionState(): LicenceStartStage
 }
 
 private interface LicenceStartStage {
@@ -46,7 +40,6 @@ private interface BuildStage {
 
 class LastMinuteReportBuilder(
   private val licenceRepository: LicenceRepository,
-  private val hdcService: HdcService,
   private val deliusApiClient: DeliusApiClient,
   private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
@@ -54,7 +47,6 @@ class LastMinuteReportBuilder(
   DeliusStage,
   EligibleCandidatesStage,
   PreSubmissionStage,
-  HdcFilterStage,
   LicenceStartStage,
   BuildStage {
 
@@ -90,12 +82,6 @@ class LastMinuteReportBuilder(
     inProgressEligiblePrisoners = inProgress
     eligiblePrisoners = eligible
     candidates = candidates.filterKeys { it in eligible }
-  }
-
-  override fun filterOutHdcEligible() = apply {
-    candidates = candidates.filterValues {
-      it.bookingId?.let { id -> !hdcService.getHdcStatus(listOf(it)).isApprovedForHdc(id.toLong()) } ?: true
-    }
   }
 
   override fun enrichWithDeliusData() = apply {

@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Additi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
@@ -33,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.DayOfWeek
 import java.time.LocalDateTime
@@ -924,7 +924,7 @@ class AuditServiceTest {
     fun `records an audit event when the the probation team on a licence is updated`() {
       val user = prisonUser()
 
-      val updateTeamRequest = UpdateProbationTeamRequest(
+      val updateTeamRequest = UpdateProbationTeamEvent(
         probationAreaCode = "N02",
         probationPduCode = "PDU2",
         probationLauCode = "LAU2",
