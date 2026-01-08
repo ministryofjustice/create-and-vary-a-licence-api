@@ -162,7 +162,7 @@ class ApproverCaseloadServiceTest {
         assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
         with(probationPractitioner) {
           assertThat(staffCode).isEqualTo("A01B02C")
-          assertThat(name).isEqualTo("Not Allocated")
+          assertThat(name).isEqualTo("Not allocated")
           assertThat(allocated).isEqualTo(false)
         }
         assertThat(kind).isEqualTo(LicenceKind.CRD)
