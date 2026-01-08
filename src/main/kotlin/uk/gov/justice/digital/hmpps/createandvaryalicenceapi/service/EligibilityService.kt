@@ -131,8 +131,11 @@ class EligibilityService(
 
   private fun isApSledRelease(prisoner: PrisonerSearchPrisoner): Boolean = when {
     prisoner.postRecallReleaseDate == null -> false
+
     prisoner.licenceExpiryDate == null -> false
+
     prisoner.topupSupervisionExpiryDate != null && prisoner.topupSupervisionExpiryDate.isAfter(prisoner.licenceExpiryDate) -> false
+
     else -> {
       val releaseDate = releaseDateService.calculatePrrdLicenceStartDate(prisoner)
       releaseDateService.isReleaseAtLed(releaseDate, prisoner.licenceExpiryDate)
@@ -202,9 +205,9 @@ class EligibilityService(
     val bookingsSentenceAndRecallTypes = prisonApiClient.getSentenceAndRecallTypes(nomisIdsToBookingIds.values.toList())
     return recallCases.map { (nomisId, eligibilityAssessment) ->
       val bookingId = nomisIdsToBookingIds[nomisId]!!
-      val case = bookingsSentenceAndRecallTypes.first { it.bookingId == bookingId }
+      val case = bookingsSentenceAndRecallTypes.firstOrNull { it.bookingId == bookingId }
       when {
-        case.sentenceTypeRecallTypes.any { it.recallType.isStandardRecall } -> {
+        case?.sentenceTypeRecallTypes?.any { it.recallType.isStandardRecall } == true -> {
           nomisId to EligibilityAssessment(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
@@ -213,12 +216,15 @@ class EligibilityService(
           )
         }
 
-        case.sentenceTypeRecallTypes.any { it.recallType.isFixedTermRecall } -> nomisId to eligibilityAssessment
+        case?.sentenceTypeRecallTypes?.any { it.recallType.isFixedTermRecall } == true -> nomisId to eligibilityAssessment
+
         else -> {
+          val ineligibilityMessage =
+            if (case == null) "does not have any active sentences" else "is on an unidentified non-fixed term recall"
           nomisId to EligibilityAssessment(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
-            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on an unidentified non-fixed term recall",
+            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + ineligibilityMessage,
             isEligible = false,
           )
         }

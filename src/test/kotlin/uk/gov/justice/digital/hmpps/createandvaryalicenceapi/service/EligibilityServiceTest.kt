@@ -630,6 +630,21 @@ class EligibilityServiceTest {
     }
 
     @Test
+    fun `Case with no active sentences is ineligible`() {
+      whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
+        emptyList(),
+      )
+
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("does not have any active sentences")
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
     fun `Person who would be on an AP licence being released at SLED - not eligible for CVL`() {
       whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(true)
       val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
