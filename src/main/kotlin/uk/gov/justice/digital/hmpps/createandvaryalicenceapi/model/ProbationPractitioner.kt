@@ -16,7 +16,7 @@ data class ProbationPractitioner(
   val allocated: Boolean,
 ) {
   companion object {
-    const val NOT_ALLOCATED = "Not Allocated"
+    const val NOT_ALLOCATED = "Not allocated"
     val UNALLOCATED = ProbationPractitioner(
       null,
       NOT_ALLOCATED,
