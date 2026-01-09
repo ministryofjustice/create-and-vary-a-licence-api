@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -13,7 +12,11 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
@@ -32,7 +35,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as PublicLicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicLicenceSummary as ModelPublicLicenceSummary
 
 class PublicLicenceServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -65,39 +67,31 @@ class PublicLicenceServiceTest {
       )
 
       val licenceSummaries = service.getAllLicencesByCrn("A12345")
-      val licenceSummary = licenceSummaries.first()
 
-      assertThat(licenceSummaries.size).isEqualTo(1)
+      assertThat(licenceSummaries).hasSize(1)
 
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
+      with(licenceSummaries.first()) {
+        assertThat(id).isEqualTo(1L)
+        assertThat(licenceType).isEqualTo(PublicLicenceType.AP)
+        assertThat(policyVersion).isEqualTo(PolicyVersion.V1_0)
+        assertThat(version).isEqualTo("1.4")
+        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(prisonNumber).isEqualTo("A1234BC")
+        assertThat(bookingId).isEqualTo(987654L)
+        assertThat(crn).isEqualTo("A12345")
+        assertThat(approvedByUsername).isEqualTo("testapprover")
+        assertThat(approvedDateTime).isEqualTo(LocalDateTime.parse("2023-10-11T13:00"))
+        assertThat(createdByUsername).isEqualTo("testcom")
+        assertThat(createdDateTime).isEqualTo(LocalDateTime.parse("2023-10-11T11:00"))
+        assertThat(updatedByUsername).isEqualTo("testupdater")
+        assertThat(updatedDateTime).isEqualTo(LocalDateTime.parse("2023-10-11T12:00"))
+        assertThat(isInPssPeriod).isFalse()
+      }
 
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          "testapprover",
-          LocalDateTime.parse("2023-10-11T13:00"),
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          "testupdater",
-          LocalDateTime.parse("2023-10-11T12:00"),
-          false,
-        ),
+      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(
+        aLicenceEntity.crn!!,
+        LicenceStatus.IN_FLIGHT_LICENCES,
       )
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
 
     @Test
@@ -109,39 +103,32 @@ class PublicLicenceServiceTest {
       )
 
       val licenceSummaries = service.getAllLicencesByCrn("A12345")
-      val licenceSummary = licenceSummaries.first()
 
-      assertThat(licenceSummaries.size).isEqualTo(1)
+      assertThat(licenceSummaries).hasSize(1)
 
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
+      with(licenceSummaries.first()) {
+        assertThat(id).isEqualTo(1L)
+        assertThat(approvedByUsername).isNull()
+        assertThat(approvedDateTime).isNull()
+      }
+    }
 
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          null,
-          null,
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          "testupdater",
-          LocalDateTime.parse("2023-10-11T12:00"),
-          false,
+    @Test
+    fun `service handles producing licence summaries with missing created dates`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+        listOf(
+          aLicenceEntity.copy(dateCreated = null),
         ),
       )
 
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
+      val licenceSummaries = service.getAllLicencesByCrn("A12345")
+
+      assertThat(licenceSummaries).hasSize(1)
+
+      with(licenceSummaries.first()) {
+        assertThat(id).isEqualTo(1)
+        assertThat(createdDateTime).isNull()
+      }
     }
 
     @Test
@@ -153,39 +140,14 @@ class PublicLicenceServiceTest {
       )
 
       val licenceSummaries = service.getAllLicencesByCrn("A12345")
-      val licenceSummary = licenceSummaries.first()
 
-      assertThat(licenceSummaries.size).isEqualTo(1)
+      assertThat(licenceSummaries).hasSize(1)
 
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
-
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          "testapprover",
-          LocalDateTime.parse("2023-10-11T13:00"),
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          null,
-          null,
-          false,
-        ),
-      )
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
+      with(licenceSummaries.first()) {
+        assertThat(id).isEqualTo(1L)
+        assertThat(updatedByUsername).isNull()
+        assertThat(updatedDateTime).isNull()
+      }
     }
 
     @Test
@@ -202,8 +164,6 @@ class PublicLicenceServiceTest {
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("licence: 1 has no COM/creator")
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
   }
 
@@ -218,127 +178,31 @@ class PublicLicenceServiceTest {
       )
 
       val licenceSummaries = service.getAllLicencesByPrisonNumber("A1234BC")
-      val licenceSummary = licenceSummaries.first()
 
-      assertThat(licenceSummaries.size).isEqualTo(1)
+      assertThat(licenceSummaries).hasSize(1)
 
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
+      with(licenceSummaries.first()) {
+        assertThat(id).isEqualTo(1L)
+        assertThat(licenceType).isEqualTo(PublicLicenceType.AP)
+        assertThat(policyVersion).isEqualTo(PolicyVersion.V1_0)
+        assertThat(version).isEqualTo("1.4")
+        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(prisonNumber).isEqualTo("A1234BC")
+        assertThat(bookingId).isEqualTo(987654L)
+        assertThat(crn).isEqualTo("A12345")
+        assertThat(approvedByUsername).isEqualTo("testapprover")
+        assertThat(approvedDateTime).isEqualTo(LocalDateTime.parse("2023-10-11T13:00"))
+        assertThat(createdByUsername).isEqualTo("testcom")
+        assertThat(createdDateTime).isEqualTo(LocalDateTime.parse("2023-10-11T11:00"))
+        assertThat(updatedByUsername).isEqualTo("testupdater")
+        assertThat(updatedDateTime).isEqualTo(LocalDateTime.parse("2023-10-11T12:00"))
+        assertThat(isInPssPeriod).isFalse()
+      }
 
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          "testapprover",
-          LocalDateTime.parse("2023-10-11T13:00"),
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          "testupdater",
-          LocalDateTime.parse("2023-10-11T12:00"),
-          false,
-        ),
+      verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(
+        aLicenceEntity.nomsId!!,
+        LicenceStatus.IN_FLIGHT_LICENCES,
       )
-
-      verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
-    }
-
-    @Test
-    fun `service returns a list of licence summaries by prison number where approved username and approved date are not present`() {
-      whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(approvedByUsername = null, approvedDate = null),
-        ),
-      )
-
-      val licenceSummaries = service.getAllLicencesByPrisonNumber("A1234BC")
-      val licenceSummary = licenceSummaries.first()
-
-      assertThat(licenceSummaries.size).isEqualTo(1)
-
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
-
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          null,
-          null,
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          "testupdater",
-          LocalDateTime.parse("2023-10-11T12:00"),
-          false,
-        ),
-      )
-
-      verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
-    }
-
-    @Test
-    fun `service returns a list of licence summaries by prison number where updated username and updated date are not present`() {
-      whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(updatedByUsername = null, dateLastUpdated = null),
-        ),
-      )
-
-      val licenceSummaries = service.getAllLicencesByPrisonNumber("A12345")
-      val licenceSummary = licenceSummaries.first()
-
-      assertThat(licenceSummaries.size).isEqualTo(1)
-
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
-
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          "testapprover",
-          LocalDateTime.parse("2023-10-11T13:00"),
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          null,
-          null,
-          false,
-        ),
-      )
-
-      verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
     }
 
     @Test
@@ -355,8 +219,6 @@ class PublicLicenceServiceTest {
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Null field retrieved: version for licence 1")
-
-      verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
     }
   }
 
@@ -384,94 +246,6 @@ class PublicLicenceServiceTest {
     }
 
     @Test
-    fun `service returns a list of licence summaries by crn where approved username and approved date are not present`() {
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(approvedByUsername = null, approvedDate = null),
-        ),
-      )
-
-      val licenceSummaries = service.getAllLicencesByCrn("A12345")
-      val licenceSummary = licenceSummaries.first()
-
-      assertThat(licenceSummaries.size).isEqualTo(1)
-
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
-
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          null,
-          null,
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          "testupdater",
-          LocalDateTime.parse("2023-10-11T12:00"),
-          false,
-        ),
-      )
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
-    }
-
-    @Test
-    fun `service returns a list of licence summaries by crn where updated username and updated date are not present`() {
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(updatedByUsername = null, dateLastUpdated = null),
-        ),
-      )
-
-      val licenceSummaries = service.getAllLicencesByCrn("A12345")
-      val licenceSummary = licenceSummaries.first()
-
-      assertThat(licenceSummaries.size).isEqualTo(1)
-
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
-
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          "testapprover",
-          LocalDateTime.parse("2023-10-11T13:00"),
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          null,
-          null,
-          false,
-        ),
-      )
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
-    }
-
-    @Test
     fun `service throws an error for null fields when querying for a list of licence summaries by crn`() {
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
         listOf(
@@ -493,19 +267,19 @@ class PublicLicenceServiceTest {
   private companion object {
 
     val someStandardConditions = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition(
+      StandardCondition(
         id = 1,
         code = "goodBehaviour",
         sequence = 1,
         text = "Be of good behaviour",
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition(
+      StandardCondition(
         id = 2,
         code = "notBreakLaw",
         sequence = 1,
         text = "Do not break any law",
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition(
+      StandardCondition(
         id = 3,
         code = "attendMeetings",
         sequence = 1,
@@ -514,13 +288,13 @@ class PublicLicenceServiceTest {
     )
 
     val someAssociationData = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+      AdditionalConditionData(
         id = 1,
         field = "field1",
         value = "value1",
         sequence = 1,
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+      AdditionalConditionData(
         id = 2,
         field = "numberOfCurfews",
         value = "value2",
@@ -529,7 +303,7 @@ class PublicLicenceServiceTest {
     )
 
     val someAdditionalConditions = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition(
+      AdditionalCondition(
         id = 1,
         code = "associateWith",
         sequence = 1,
@@ -542,12 +316,12 @@ class PublicLicenceServiceTest {
     )
 
     val someBespokeConditions = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition(
+      BespokeCondition(
         id = 1,
         sequence = 1,
         text = "Bespoke one text",
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition(
+      BespokeCondition(
         id = 2,
         sequence = 2,
         text = "Bespoke two text",

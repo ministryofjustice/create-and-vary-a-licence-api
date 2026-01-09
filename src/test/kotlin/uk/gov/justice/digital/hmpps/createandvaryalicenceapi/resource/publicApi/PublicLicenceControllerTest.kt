@@ -49,7 +49,7 @@ import java.time.LocalDateTime
 @AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = [PublicLicenceController::class])
 @WebAppConfiguration
-class PublicLicenceControllerIntegrationTest {
+class PublicLicenceControllerTest {
 
   @MockitoBean
   private lateinit var publicLicenceService: PublicLicenceService
