@@ -18,7 +18,7 @@ class EligibilityService(
   private val releaseDateService: ReleaseDateService,
   private val hdcService: HdcService,
   private val clock: Clock,
-  @param:Value("\${hdc.enabled}") private val hdcEnabled: Boolean = false,
+  @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
 ) {
 
   fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner): EligibilityAssessment {
