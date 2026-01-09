@@ -40,8 +40,6 @@ interface LicenceRepository :
     cutoffDate: LocalDate = LocalDate.now().plusDays(14),
   ): List<Licence>
 
-  fun findAllByCrnInAndStatusCodeIn(crn: List<String>, status: List<LicenceStatus>): List<Licence>
-
   @Query(
     """
     SELECT l.bookingId
@@ -135,13 +133,14 @@ interface LicenceRepository :
     """
     SELECT l
         FROM Licence l
-        WHERE l.kind != (
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+        WHERE l.kind NOT IN (
+            'HDC',
+            'TIME_SERVED'
         )
         AND l.statusCode  IN (
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS,
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED,
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+            'IN_PROGRESS',
+            'SUBMITTED',
+            'TIMED_OUT'
         )
         AND l.licenceStartDate < CURRENT_DATE
     """,
