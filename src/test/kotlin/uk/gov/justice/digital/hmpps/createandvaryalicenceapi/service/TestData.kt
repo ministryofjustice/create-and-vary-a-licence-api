@@ -597,6 +597,10 @@ object TestData {
     sentenceStartDate = sentenceStartDate,
     sentenceExpiryDate = LocalDate.of(2021, 10, 22),
     postRecallReleaseDate = postRecallReleaseDate,
+    homeDetentionCurfewEligibilityDate = null,
+    homeDetentionCurfewActualDate = null,
+    paroleEligibilityDate = null,
+    actualParoleDate = null,
   )
 
   fun createPrisonerSearchResult(

@@ -11,6 +11,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSentenceAndRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
@@ -391,7 +392,7 @@ class EligibilityServiceTest {
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
           BookingSentenceAndRecallTypes(
-            bookingId = 54321,
+            bookingId = 123456,
             sentenceTypeRecallTypes = listOf(aSentenceAndRecallType()),
           ),
         ),
@@ -583,7 +584,7 @@ class EligibilityServiceTest {
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
           BookingSentenceAndRecallTypes(
-            bookingId = 54321,
+            bookingId = 123456,
             sentenceTypeRecallTypes = listOf(
               aSentenceAndRecallType(),
               aSentenceAndRecallType(
@@ -611,7 +612,7 @@ class EligibilityServiceTest {
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
           BookingSentenceAndRecallTypes(
-            bookingId = 54321,
+            bookingId = 123456,
             sentenceTypeRecallTypes = listOf(
               aSentenceAndRecallType(
                 recallType = aRecallType(
@@ -754,98 +755,39 @@ class EligibilityServiceTest {
   private companion object {
     val clock: Clock = Clock.fixed(Instant.parse("2023-11-03T00:00:00Z"), ZoneId.systemDefault())
 
-    val aPrisonerSearchResult = PrisonerSearchPrisoner(
-      prisonerNumber = "A1234AA",
-      bookingId = "54321",
-      status = "ACTIVE IN",
-      mostSeriousOffence = "Robbery",
-      licenceExpiryDate = LocalDate.now(clock).plusYears(1),
-      topupSupervisionExpiryDate = LocalDate.now(clock).plusYears(1),
-      homeDetentionCurfewEligibilityDate = null,
-      releaseDate = LocalDate.now(clock).plusDays(1),
-      confirmedReleaseDate = LocalDate.now(clock).plusDays(1),
+    val aPrisonerSearchResult = prisonerSearchResult(
       conditionalReleaseDate = LocalDate.now(clock).plusDays(1),
-      paroleEligibilityDate = null,
-      actualParoleDate = null,
-      postRecallReleaseDate = null,
-      legalStatus = "SENTENCED",
-      indeterminateSentence = false,
-      recall = false,
-      prisonId = "ABC",
-      locationDescription = "HMP Moorland",
-      bookNumber = "12345A",
-      firstName = "Jane",
-      middleNames = null,
-      lastName = "Doe",
-      dateOfBirth = LocalDate.parse("1985-01-01"),
-      conditionalReleaseDateOverrideDate = null,
       sentenceStartDate = LocalDate.parse("2023-09-14"),
-      sentenceExpiryDate = LocalDate.parse("2024-09-14"),
-      topupSupervisionStartDate = null,
-      croNumber = null,
-    )
-
-    val aRecallPrisonerSearchResult = PrisonerSearchPrisoner(
-      prisonerNumber = "A1234AA",
-      bookingId = "54321",
-      status = "ACTIVE IN",
-      mostSeriousOffence = "Robbery",
-      licenceExpiryDate = LocalDate.now(clock).plusYears(1),
+      confirmedReleaseDate = LocalDate.now(clock).plusDays(1),
+    ).copy(
+      topupSupervisionStartDate = LocalDate.now(clock).plusYears(1),
       topupSupervisionExpiryDate = LocalDate.now(clock).plusYears(1),
-      homeDetentionCurfewEligibilityDate = null,
       releaseDate = LocalDate.now(clock).plusDays(1),
-      confirmedReleaseDate = null,
-      conditionalReleaseDate = null,
-      paroleEligibilityDate = null,
-      actualParoleDate = null,
-      postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
-      legalStatus = "SENTENCED",
-      indeterminateSentence = false,
-      recall = false,
-      prisonId = "ABC",
-      locationDescription = "HMP Moorland",
-      bookNumber = "12345A",
-      firstName = "Jane",
-      middleNames = null,
-      lastName = "Doe",
-      dateOfBirth = LocalDate.parse("1985-01-01"),
-      conditionalReleaseDateOverrideDate = null,
-      sentenceStartDate = LocalDate.parse("2023-09-14"),
-      sentenceExpiryDate = LocalDate.now(clock).plusYears(1),
-      topupSupervisionStartDate = null,
-      croNumber = null,
+      sentenceExpiryDate = LocalDate.parse("2024-09-14"),
     )
 
-    val anHdcPrisonerSearchResult = PrisonerSearchPrisoner(
-      prisonerNumber = "A1234AA",
-      bookingId = "54321",
-      status = "ACTIVE IN",
-      mostSeriousOffence = "Robbery",
-      licenceExpiryDate = LocalDate.now(clock).plusYears(1),
+    val aRecallPrisonerSearchResult = prisonerSearchResult(
+      conditionalReleaseDate = null,
+      sentenceStartDate = LocalDate.parse("2023-09-14"),
+      confirmedReleaseDate = null,
+      postRecallReleaseDate = LocalDate.now(clock).plusDays(1),
+    ).copy(
+      topupSupervisionStartDate = null,
+      releaseDate = LocalDate.now(clock).plusDays(1),
+      sentenceExpiryDate = LocalDate.parse("2024-09-14"),
+    )
+
+    val anHdcPrisonerSearchResult = prisonerSearchResult(
+      conditionalReleaseDate = LocalDate.now(clock).plusMonths(1),
+      sentenceStartDate = LocalDate.parse("2023-09-14"),
+      confirmedReleaseDate = LocalDate.now(clock).plusMonths(1),
+    ).copy(
+      topupSupervisionStartDate = LocalDate.now(clock).plusYears(1),
       topupSupervisionExpiryDate = LocalDate.now(clock).plusYears(1),
+      releaseDate = LocalDate.now(clock).plusDays(1),
+      sentenceExpiryDate = LocalDate.parse("2024-09-14"),
       homeDetentionCurfewEligibilityDate = LocalDate.now(clock).minusYears(1),
       homeDetentionCurfewActualDate = LocalDate.now(clock).plusDays(1),
-      releaseDate = LocalDate.now(clock).plusDays(1),
-      confirmedReleaseDate = LocalDate.now(clock).plusMonths(1),
-      conditionalReleaseDate = LocalDate.now(clock).plusMonths(1),
-      paroleEligibilityDate = null,
-      actualParoleDate = null,
-      postRecallReleaseDate = null,
-      legalStatus = "SENTENCED",
-      indeterminateSentence = false,
-      recall = false,
-      prisonId = "ABC",
-      locationDescription = "HMP Moorland",
-      bookNumber = "12345A",
-      firstName = "Jane",
-      middleNames = null,
-      lastName = "Doe",
-      dateOfBirth = LocalDate.parse("1985-01-01"),
-      conditionalReleaseDateOverrideDate = null,
-      sentenceStartDate = LocalDate.parse("2023-09-14"),
-      sentenceExpiryDate = LocalDate.parse("2024-09-14"),
-      topupSupervisionStartDate = null,
-      croNumber = null,
     )
   }
 }
