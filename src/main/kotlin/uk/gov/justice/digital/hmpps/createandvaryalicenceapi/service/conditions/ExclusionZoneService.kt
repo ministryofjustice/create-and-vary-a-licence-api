@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toBase64
 import java.util.UUID
 import javax.imageio.ImageIO
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 
 private const val IMAGE_TYPE = "image/png"
 
@@ -82,8 +83,8 @@ class ExclusionZoneService(
   }
 
   fun loadThumbnails(
-    entityLicence: Licence,
-    licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence,
+    entityLicence: EntityLicence,
+    licence: Licence,
   ) {
     val uploadThumbNailUuids = entityLicence.additionalConditions
       .flatMap { it.additionalConditionUpload }
@@ -118,8 +119,7 @@ class ExclusionZoneService(
 
   fun deleteDocuments(documentUuids: List<UUID>) {
     log.info("Deleting documents for uuids in ({})", documentUuids)
-    documentUuids.also { log.info("Found {} documents to delete...", it.size) }
-      .forEach { documentService.deleteDocument(it) }
+    documentUuids.forEach { documentService.deleteDocument(it) }
   }
 
   @Transactional
@@ -130,12 +130,12 @@ class ExclusionZoneService(
   private fun uploadExtractedExclusionZoneParts(
     originalFile: MultipartFile,
     pdfExtract: ExclusionZonePdfExtract,
-    licence: Licence,
+    licenceEntity: EntityLicence,
     additionalCondition: AdditionalCondition,
   ): Triple<UUID?, UUID?, UUID?> {
     val metadataFor = { kind: String ->
       mapOf(
-        "licenceId" to licence.id.toString(),
+        "licenceId" to licenceEntity.id.toString(),
         "additionalConditionId" to additionalCondition.id.toString(),
         "kind" to kind,
       )
