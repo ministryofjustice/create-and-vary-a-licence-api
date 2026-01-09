@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -55,7 +56,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/probation")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Create a PRRD licence`() {
     // Given
     val nomisPostRecallReleaseDate = LocalDate.now().plusDays(1)
@@ -138,7 +140,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/probation")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Create a CRD licence`() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -217,7 +220,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/probation")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
@@ -292,7 +296,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/probation")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Unauthorized (401) for creating CRD Licence when no token is supplied`() {
     webTestClient.post()
       .uri("/licence/create")
@@ -319,7 +324,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/probation")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Get forbidden (403) for creating CRD Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
       .uri("/licence/create")
@@ -354,7 +360,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/prison")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
@@ -439,7 +446,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/prison")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
@@ -524,7 +532,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/prison")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   @Sql(
     "classpath:test_data/seed-time-served-external-records-id-1.sql",
     "classpath:test_data/seed-prison-case-administrator.sql",
@@ -645,7 +654,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/prison")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
     "classpath:test_data/seed-timed-out-licence.sql",
@@ -744,7 +754,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/prison")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Unauthorized (401) for creating Hard Stop Licence when no token is supplied`() {
     webTestClient.post()
       .uri("/licence/create")
@@ -771,7 +782,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Suppress("Deprecated as we use /licence/prison")
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Get forbidden (403) for creating Hard Stop Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
       .uri("/licence/create")
