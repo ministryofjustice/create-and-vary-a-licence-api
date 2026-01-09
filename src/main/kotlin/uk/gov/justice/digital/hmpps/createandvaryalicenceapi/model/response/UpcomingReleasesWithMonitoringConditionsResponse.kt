@@ -15,5 +15,5 @@ data class UpcomingReleasesWithMonitoringConditionsResponse(
   val status: LicenceStatus,
   @field:Schema(description = "Licence start date", example = "15/07/2024")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
-  val licenceStartDate: LocalDate,
+  val licenceStartDate: LocalDate?,
 )

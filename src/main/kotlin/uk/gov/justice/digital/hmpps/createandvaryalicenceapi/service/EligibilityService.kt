@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -146,8 +147,11 @@ class EligibilityService(
 
   private fun isApSledRelease(prisoner: PrisonerSearchPrisoner): Boolean = when {
     prisoner.postRecallReleaseDate == null -> false
+
     prisoner.licenceExpiryDate == null -> false
+
     prisoner.topupSupervisionExpiryDate != null && prisoner.topupSupervisionExpiryDate.isAfter(prisoner.licenceExpiryDate) -> false
+
     else -> {
       val releaseDate = releaseDateService.calculatePrrdLicenceStartDate(prisoner)
       releaseDateService.isReleaseAtLed(releaseDate, prisoner.licenceExpiryDate)
@@ -224,9 +228,9 @@ class EligibilityService(
     val bookingsSentenceAndRecallTypes = prisonApiClient.getSentenceAndRecallTypes(nomisIdsToBookingIds.values.toList())
     return recallCases.map { (nomisId, eligibilityAssessment) ->
       val bookingId = nomisIdsToBookingIds[nomisId]!!
-      val case = bookingsSentenceAndRecallTypes.first { it.bookingId == bookingId }
+      val case = bookingsSentenceAndRecallTypes.firstOrNull { it.bookingId == bookingId }
       when {
-        case.sentenceTypeRecallTypes.any { it.recallType.isStandardRecall } -> {
+        case.isStandardRecall() -> {
           nomisId to EligibilityAssessment(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
@@ -235,18 +239,25 @@ class EligibilityService(
           )
         }
 
-        case.sentenceTypeRecallTypes.any { it.recallType.isFixedTermRecall } -> nomisId to eligibilityAssessment
+        case.isFixedTermRecall() -> nomisId to eligibilityAssessment
+
         else -> {
+          val ineligibilityMessage =
+            if (case == null) "does not have any active sentences" else "is on an unidentified non-fixed term recall"
           nomisId to EligibilityAssessment(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
-            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on an unidentified non-fixed term recall",
+            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + ineligibilityMessage,
             hdcIneligibilityReasons = eligibilityAssessment.hdcIneligibilityReasons,
           )
         }
       }
     }.toMap()
   }
+
+  private fun BookingSentenceAndRecallTypes?.isStandardRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isStandardRecall } == true
+
+  private fun BookingSentenceAndRecallTypes?.isFixedTermRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isFixedTermRecall } == true
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
