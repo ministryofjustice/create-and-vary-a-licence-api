@@ -14,7 +14,7 @@ class UpcomingReleasesWithMonitoringConditionsReportService(
       crn = it.crn,
       prisonNumber = it.prisonNumber,
       status = LicenceStatus.valueOf(it.status),
-      licenceStartDate = it.licenceStartDate.toLocalDate(),
+      licenceStartDate = it.licenceStartDate?.toLocalDate(),
     )
   }
 }
