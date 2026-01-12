@@ -69,7 +69,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(createdByFullName).isEqualTo(crdLicence.createdByFullName)
       assertThat(licenceVersion).isEqualTo(crdLicence.licenceVersion)
       assertThat(isToBeTaggedForProgramme).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.isToBeTaggedForProgramme)
-      assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider.programmeName)
+      assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.programmeName)
     }
   }
 
@@ -97,8 +97,6 @@ class SubjectAccessRequestResponseBuilderTest {
                   imageSize = 2134,
                   uploadedTime = LocalDateTime.now(),
                   description = "Document 1",
-                  thumbnailImage = "asasa",
-                  uploadDetailId = 2L,
                 ),
                 AdditionalConditionUploadSummary(
                   id = 2L,
@@ -109,8 +107,6 @@ class SubjectAccessRequestResponseBuilderTest {
                   imageSize = 2135,
                   uploadedTime = LocalDateTime.now(),
                   description = "Document 2",
-                  thumbnailImage = "asasa",
-                  uploadDetailId = 3L,
                 ),
               ),
             ),
@@ -132,8 +128,6 @@ class SubjectAccessRequestResponseBuilderTest {
                   imageSize = 2137,
                   uploadedTime = LocalDateTime.now(),
                   description = "Document 3",
-                  thumbnailImage = "asasa",
-                  uploadDetailId = 3L,
                 ),
               ),
             ),

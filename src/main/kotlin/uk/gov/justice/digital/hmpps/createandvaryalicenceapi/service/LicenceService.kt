@@ -39,7 +39,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicencePermissionsResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -90,7 +89,6 @@ class LicenceService(
   private val staffRepository: StaffRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val licencePolicyService: LicencePolicyService,
-  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val omuService: OmuService,
@@ -109,9 +107,6 @@ class LicenceService(
   @Transactional(readOnly = true)
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
-
-    exclusionZoneService.preloadThumbnailsFor(entityLicence)
-
     val isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(entityLicence)
     val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
 
@@ -121,7 +116,9 @@ class LicenceService(
         licencePolicyService.getAllAdditionalConditions(),
       )
 
-    return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
+    val licence = transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
+    exclusionZoneService.loadThumbnails(entityLicence, licence)
+    return licence
   }
 
   fun transform(
@@ -900,8 +897,12 @@ class LicenceService(
       ),
     )
     log.info("Deleting documents for Licence id={}", licenceEntity.id)
-    exclusionZoneService.deleteDocumentsFor(licenceEntity.additionalConditions)
+
+    // get deletableDocumentUuids before data is changed on the DB
+    val deletableDocumentUuids = exclusionZoneService.getDeletableDocumentUuids(licenceEntity.additionalConditions)
     licenceRepository.delete(licenceEntity)
+    // Delete Documents after all above work is done, just encase exception is thrown before now!
+    exclusionZoneService.deleteDocuments(deletableDocumentUuids)
   }
 
   @Transactional
@@ -967,33 +968,24 @@ class LicenceService(
           id = null,
           licence = licenceCopy,
           additionalConditionData = mutableListOf(),
-          additionalConditionUploadSummary = mutableListOf(),
+          additionalConditionUpload = mutableListOf(),
         )
 
         val data = condition.additionalConditionData.map {
           it.copy(id = null, additionalCondition = copiedCondition)
         }
-        val summary = condition.additionalConditionUploadSummary.map {
+        val summary = condition.additionalConditionUpload.map {
           it.copy(id = null, additionalCondition = copiedCondition)
         }
 
         copiedCondition.additionalConditionData.addAll(data)
-        copiedCondition.additionalConditionUploadSummary.addAll(summary)
+        copiedCondition.additionalConditionUpload.addAll(summary)
         copiedCondition
       }
 
     // This needs to be saved here before the below code uses the condition.id
     licenceCopy.additionalConditions.addAll(copiedAdditionalConditions)
     licenceRepository.saveAndFlush(licenceCopy)
-
-    copiedAdditionalConditions.forEach { condition ->
-      condition.additionalConditionUploadSummary.forEach {
-        var uploadDetail = additionalConditionUploadDetailRepository.getReferenceById(it.uploadDetailId)
-        uploadDetail = uploadDetail.copy(id = null, licenceId = licenceCopy.id, additionalConditionId = condition.id!!)
-        val savedUploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
-        it.uploadDetailId = savedUploadDetail.id!!
-      }
-    }
 
     val licenceEventMessage = when (licenceCopy.statusCode) {
       VARIATION_IN_PROGRESS -> "A variation was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"
