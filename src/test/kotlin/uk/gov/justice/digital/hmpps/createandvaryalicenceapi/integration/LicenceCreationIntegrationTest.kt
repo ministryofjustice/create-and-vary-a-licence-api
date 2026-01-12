@@ -22,8 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreatePrisonLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateProbationLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.TIME_SERVED
@@ -114,8 +112,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val createLicenceResponse = webTestClient.post()
-      .uri("/licence/probation")
-      .bodyValue(CreateProbationLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -193,8 +190,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/probation")
-      .bodyValue(CreateProbationLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -270,8 +266,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetOffenderManager()
 
     val result = webTestClient.post()
-      .uri("/licence/probation")
-      .bodyValue(CreateProbationLicenceRequest(nomsId = "A1234AA"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -313,8 +308,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Unauthorized (401) for creating probation Licence when no token is supplied`() {
     webTestClient.post()
-      .uri("/licence/probation")
-      .bodyValue(CreateProbationLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
@@ -345,8 +339,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Get forbidden (403) for creating Probation Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
-      .uri("/licence/probation")
-      .bodyValue(CreateProbationLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()
@@ -419,8 +412,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/prison")
-      .bodyValue(CreatePrisonLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -505,8 +497,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(testRepository.getAuditEventCount()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/prison")
-      .bodyValue(CreatePrisonLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -615,8 +606,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     // When
     val reponse = webTestClient.post()
-      .uri("/licence/prison")
-      .bodyValue(CreatePrisonLicenceRequest(nomsId = "A1234AA"))
+      .uri("/licence/prison/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -721,8 +711,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/prison")
-      .bodyValue(CreatePrisonLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -771,8 +760,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Unauthorized (401) for creating prison(Hard Stop) Licence when no token is supplied`() {
     webTestClient.post()
-      .uri("/licence/prison")
-      .bodyValue(CreatePrisonLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
@@ -803,8 +791,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Get forbidden (403) for creating prison(Hard Stop) Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
-      .uri("/licence/prison")
-      .bodyValue(CreatePrisonLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()

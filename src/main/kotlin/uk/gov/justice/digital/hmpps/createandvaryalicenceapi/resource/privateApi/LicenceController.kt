@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -30,8 +31,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreatePrisonLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateProbationLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
@@ -119,7 +118,7 @@ class LicenceController(
   }
 
   @Tag(name = Tags.LICENCES)
-  @PostMapping(value = ["/prison"])
+  @PostMapping(value = ["/prison/nomisid/{nomsId}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
@@ -169,13 +168,10 @@ class LicenceController(
       ),
     ],
   )
-  fun createPrisonLicence(
-    @RequestBody @Valid
-    request: CreatePrisonLicenceRequest,
-  ): CreateLicenceResponse = licenceCreationService.createHardStopLicence(request.nomsId)
+  fun createPrisonLicence(@Parameter(required = true) @PathVariable nomsId: String): CreateLicenceResponse = licenceCreationService.createHardStopLicence(nomsId)
 
   @Tag(name = Tags.LICENCES)
-  @PostMapping(value = ["/probation"])
+  @PostMapping(value = ["/probation/nomisid/{nomsId}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
@@ -225,10 +221,7 @@ class LicenceController(
       ),
     ],
   )
-  fun createProbationLicence(
-    @RequestBody @Valid
-    request: CreateProbationLicenceRequest,
-  ): CreateLicenceResponse = licenceCreationService.createLicence(request.nomsId)
+  fun createProbationLicence(@Parameter(required = true) @PathVariable nomsId: String): CreateLicenceResponse = licenceCreationService.createLicence(nomsId)
 
   @Tag(name = Tags.LICENCES)
   @GetMapping(value = ["/id/{licenceId}"])
