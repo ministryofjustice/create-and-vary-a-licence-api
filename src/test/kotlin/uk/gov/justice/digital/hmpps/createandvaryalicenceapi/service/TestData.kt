@@ -191,7 +191,7 @@ object TestData {
     expandedConditionText = HARD_STOP_CONDITION.text,
     conditionVersion = licence.version!!,
     additionalConditionData = mutableListOf(),
-    additionalConditionUploadSummary = mutableListOf(),
+    additionalConditionUpload = mutableListOf(),
     conditionCategory = HARD_STOP_CONDITION.categoryShort!!,
   )
 
@@ -851,7 +851,6 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 1,
           fileSize = 1,
-          uploadDetailId = 1,
         ),
       ),
     ),
@@ -869,7 +868,6 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 2,
           fileSize = 1,
-          uploadDetailId = 2,
         ),
       ),
     ),
@@ -887,7 +885,6 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 3,
           fileSize = 1,
-          uploadDetailId = 3,
         ),
       ),
     ),

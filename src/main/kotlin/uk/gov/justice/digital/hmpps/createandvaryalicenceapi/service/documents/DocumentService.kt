@@ -31,7 +31,6 @@ class DocumentService(
 
   fun deleteDocument(uuid: UUID) {
     log.info("Deleting document: uuid={}", uuid)
-
     apiClient.deleteDocument(uuid)
   }
 

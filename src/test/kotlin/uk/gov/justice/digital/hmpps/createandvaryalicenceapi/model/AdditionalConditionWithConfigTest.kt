@@ -305,7 +305,7 @@ class AdditionalConditionWithConfigTest {
       conditionSequence = 4,
       conditionText = "text",
       additionalConditionData = mutableListOf(someAdditionalConditionData),
-      additionalConditionUploadSummary = mutableListOf(),
+      additionalConditionUpload = mutableListOf(),
       conditionType = "AP",
     )
 

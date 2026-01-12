@@ -40,15 +40,14 @@ data class AdditionalConditionUploadSummary(
   )
   val description: String? = null,
 
+) {
+
   @field:Schema(
     description = "The thumbnail for the  exclusion zone map as a base64-encoded JPEG image",
     example = "Base64 string",
   )
-  val thumbnailImage: String? = null,
+  var thumbnailImage: String? = null
 
-  @field:Schema(description = "The id which references the original file data and full size image", example = "9999")
-  val uploadDetailId: Long,
-) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
