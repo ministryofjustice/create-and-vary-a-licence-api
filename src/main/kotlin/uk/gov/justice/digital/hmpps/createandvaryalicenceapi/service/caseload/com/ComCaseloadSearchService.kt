@@ -4,6 +4,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.FoundComCase
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient.Companion.CASELOAD_PAGE_SIZE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
@@ -156,6 +158,16 @@ class ComCaseloadSearchService(
     }
   }
 
+  private fun getProbationPractitioner(staff: StaffDetail): ProbationPractitioner = if (staff.unallocated == true) {
+    ProbationPractitioner.unallocated(staff.code)
+  } else {
+    ProbationPractitioner(
+      staffCode = staff.code,
+      name = staff.name!!.fullName(),
+      allocated = true,
+    )
+  }
+
   fun CaseloadResult.transformToCaseWithLicence(
     licence: Licence,
     hardStopDate: LocalDate?,
@@ -164,6 +176,7 @@ class ComCaseloadSearchService(
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   ): FoundComCase {
     val com = if (staff.unallocated == true) null else staff
+    val probationPractitioner = getProbationPractitioner(staff)
 
     return FoundComCase(
       kind = licence.kind,
@@ -173,6 +186,7 @@ class ComCaseloadSearchService(
       nomisId = licence.nomsId,
       comName = com?.name?.fullName()?.convertToTitleCase(),
       comStaffCode = com?.code,
+      probationPractitioner = probationPractitioner,
       teamName = team.description,
       releaseDate = licence.licenceStartDate,
       licenceId = licence.id,
