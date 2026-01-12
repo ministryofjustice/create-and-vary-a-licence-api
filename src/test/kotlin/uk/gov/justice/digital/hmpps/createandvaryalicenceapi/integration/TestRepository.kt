@@ -9,8 +9,7 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -50,16 +49,12 @@ interface TestBespokeConditionRepository : JpaRepository<BespokeCondition, Long>
 @Repository
 interface TestAdditionalConditionRepository : JpaRepository<AdditionalCondition, Long> {
   fun findByLicenceId(licenceId: Long): List<AdditionalCondition>
+  fun findAllByLicenceIdIn(licenceIds: List<Long>): List<AdditionalCondition>
 }
 
 @Repository
-interface TestAdditionalConditionUploadDetailRepository : JpaRepository<AdditionalConditionUploadDetail, Long> {
-  fun findByAdditionalConditionId(additionalConditionIdeId: Long): List<AdditionalConditionUploadDetail>
-}
-
-@Repository
-interface TestAdditionalConditionUploadSummaryRepository : JpaRepository<AdditionalConditionUploadSummary, Long> {
-  fun findByAdditionalConditionId(additionalConditionIdeId: Long): List<AdditionalConditionUploadSummary>
+interface TestAdditionalConditionUploadRepository : JpaRepository<AdditionalConditionUpload, Long> {
+  fun findByAdditionalConditionId(additionalConditionIdeId: Long): List<AdditionalConditionUpload>
 }
 
 @Repository
@@ -88,8 +83,7 @@ class TestRepository(
   private val standardConditionRepository: StandardConditionRepository,
   private val testTimeServedExternalRecordRepository: TestTimeServedExternalRecordRepository,
   private val testTimeServedProbationConfirmContactRepository: TestTimeServedProbationConfirmContactRepository,
-  private val testAdditionalConditionUploadDetailRepository: TestAdditionalConditionUploadDetailRepository,
-  private val testAdditionalConditionUploadSummaryRepository: TestAdditionalConditionUploadSummaryRepository,
+  private val testAdditionalConditionUploadRepository: TestAdditionalConditionUploadRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -159,8 +153,14 @@ class TestRepository(
 
   fun getStandardConditionCount(): Long = standardConditionRepository.count()
 
-  fun getAdditionalConditions(licenceId: Long, assertNotEmpty: Boolean = true): List<AdditionalCondition> {
+  fun getAdditionalCondition(licenceId: Long, assertNotEmpty: Boolean = true): List<AdditionalCondition> {
     val list = additionalConditionRepository.findByLicenceId(licenceId)
+    if (assertNotEmpty) assertThat(list).isNotEmpty
+    return list
+  }
+
+  fun getAdditionalConditions(licenceIds: List<Long>, assertNotEmpty: Boolean = true): List<AdditionalCondition> {
+    val list = additionalConditionRepository.findAllByLicenceIdIn(licenceIds)
     if (assertNotEmpty) assertThat(list).isNotEmpty
     return list
   }
@@ -171,17 +171,11 @@ class TestRepository(
     return list
   }
 
-  fun findUploadDetail(conditionId: Long): List<AdditionalConditionUploadDetail> = testAdditionalConditionUploadDetailRepository.findByAdditionalConditionId(conditionId)
+  fun findUploadSummary(conditionId: Long): List<AdditionalConditionUpload> = testAdditionalConditionUploadRepository.findByAdditionalConditionId(conditionId)
 
-  fun findAllUploadDetail(): List<AdditionalConditionUploadDetail> = testAdditionalConditionUploadDetailRepository.findAll()
+  fun findAllUploadSummary(): List<AdditionalConditionUpload> = testAdditionalConditionUploadRepository.findAll()
 
-  fun findUploadSummary(conditionId: Long): List<AdditionalConditionUploadSummary> = testAdditionalConditionUploadSummaryRepository.findByAdditionalConditionId(conditionId)
-
-  fun findAllUploadSummary(): List<AdditionalConditionUploadSummary> = testAdditionalConditionUploadSummaryRepository.findAll()
-
-  fun findUploadDetailById(id: Long): AdditionalConditionUploadDetail? = testAdditionalConditionUploadDetailRepository.findById(id).orElse(null)
-
-  fun findUploadSummaryById(id: Long): AdditionalConditionUploadSummary? = testAdditionalConditionUploadSummaryRepository.findById(id).orElse(null)
+  fun findUploadSummaryById(id: Long): AdditionalConditionUpload? = testAdditionalConditionUploadRepository.findById(id).orElse(null)
 
   fun findTimeServedExternalRecordByNomsIdAndBookingId(
     nomsId: String,

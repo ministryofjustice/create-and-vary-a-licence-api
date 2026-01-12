@@ -157,7 +157,8 @@ class LicenceConditionService(
     val newConditions = existingConditions.getAddedConditions(submittedConditions)
 
     val removedConditions = existingConditions.getRemovedConditions(submittedConditions, request)
-    exclusionZoneService.deleteDocumentsFor(removedConditions)
+    // get deletableDocumentUuids before data is changed on the DB
+    val deletableDocumentUuids = exclusionZoneService.getDeletableDocumentUuids(licenceEntity.additionalConditions)
 
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
 
@@ -183,6 +184,8 @@ class LicenceConditionService(
       removedConditions,
       staffMember,
     )
+    // Delete Documents after all above work is done, just encase exception is thrown before now!
+    exclusionZoneService.deleteDocuments(deletableDocumentUuids)
   }
 
   private fun List<EntityAdditionalCondition>.getUpdatedConditions(
@@ -328,7 +331,8 @@ class LicenceConditionService(
     val removedAdditionalConditions =
       licenceEntity.additionalConditions.filter { additionalConditionIds.contains(it.id) }
 
-    exclusionZoneService.deleteDocumentsFor(removedAdditionalConditions)
+    // get deletableDocumentUuids before data is changed on the DB
+    val deletableDocumentUuids = exclusionZoneService.getDeletableDocumentUuids(removedAdditionalConditions)
 
     // return all conditions except condition with submitted conditionIds
     val revisedStandardConditions =
@@ -362,6 +366,9 @@ class LicenceConditionService(
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
     auditService.recordAuditEventDeleteStandardConditions(licenceEntity, removedStandardConditions, staffMember)
     auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, removedBespokeConditions, staffMember)
+
+    // Delete Documents after all above work is done, just encase exception is thrown before now!
+    exclusionZoneService.deleteDocuments(deletableDocumentUuids)
   }
 
   private fun getCurrentUserName(): String = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER
