@@ -1,27 +1,30 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.io.RandomAccessReadBuffer
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf.UploadPdfExtract
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf.UploadPdfExtractBuilder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toBase64
 import java.util.UUID
 import javax.imageio.ImageIO
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 
 private const val IMAGE_TYPE = "image/png"
 
 @Service
-class ExclusionZoneService(
+class UploadFileConditionsService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadRepository: AdditionalConditionUploadRepository,
@@ -33,9 +36,9 @@ class ExclusionZoneService(
   }
 
   @Transactional
-  fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
+  fun uploadFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
     log.info(
-      "uploadExclusionZoneFile - Licence id={}, AdditionalCondition id={}, File(Name={}, OriginalFileName={}, Type={}, Size={})",
+      "uploadFile - Licence id={}, AdditionalCondition id={}, File(Name={}, OriginalFileName={}, Type={}, Size={})",
       licenceId,
       conditionId,
       file.name,
@@ -49,12 +52,10 @@ class ExclusionZoneService(
     // get deletableDocumentUuids before data is changed on the DB
     val deletableDocumentUuids = getDeletableDocumentUuids(listOf(additionalCondition))
 
-    val pdfExtract = ExclusionZonePdfExtract
-      .runCatching { fromMultipartFile(file) }
-      .getOrElse { throw ValidationException(it) }
+    val multipleUploadPdfExtract = fromMultipartFile(file)
 
     val (originalDataDsUuid, fullSizeImageDsUuid, thumbnailImageDsUuid) =
-      uploadExtractedExclusionZoneParts(file, pdfExtract, licenceEntity, additionalCondition)
+      uploadDocuments(file, multipleUploadPdfExtract, licenceEntity, additionalCondition)
 
     val uploadSummary = AdditionalConditionUpload(
       additionalCondition = additionalCondition,
@@ -62,8 +63,8 @@ class ExclusionZoneService(
       fileType = file.contentType,
       fileSize = file.size.toInt(),
       imageType = IMAGE_TYPE,
-      imageSize = pdfExtract.fullSizeImage.size,
-      description = pdfExtract.description,
+      imageSize = multipleUploadPdfExtract.fullSizeImage.size,
+      description = multipleUploadPdfExtract.description,
       thumbnailImageDsUuid = thumbnailImageDsUuid?.toString(),
       originalDataDsUuid = originalDataDsUuid?.toString(),
       fullSizeImageDsUuid = fullSizeImageDsUuid?.toString(),
@@ -76,15 +77,21 @@ class ExclusionZoneService(
     deleteDocuments(deletableDocumentUuids)
   }
 
-  fun getExclusionZoneImage(licenceId: Long, conditionId: Long): ByteArray? {
+  fun fromMultipartFile(file: MultipartFile): UploadPdfExtract = runCatching {
+    Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
+      UploadPdfExtractBuilder(pdfDoc).build()
+    }
+  }.getOrElse { throw ValidationException(it) }
+
+  fun getImage(licenceId: Long, conditionId: Long): ByteArray? {
     licence(licenceId)
     val uploadDetail = additionalCondition(conditionId).additionalConditionUpload.first()
     return uploadDetail.fullSizeImageDsUuid?.let { uuid -> documentService.downloadDocument(UUID.fromString(uuid)) }
   }
 
-  fun loadThumbnails(
-    entityLicence: EntityLicence,
-    licence: Licence,
+  fun getThumbnailForImages(
+    entityLicence: Licence,
+    licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence,
   ) {
     val uploadThumbNailUuids = entityLicence.additionalConditions
       .flatMap { it.additionalConditionUpload }
@@ -127,10 +134,10 @@ class ExclusionZoneService(
     deleteDocuments(getDeletableDocumentUuids(additionalConditions))
   }
 
-  private fun uploadExtractedExclusionZoneParts(
+  private fun uploadDocuments(
     originalFile: MultipartFile,
-    pdfExtract: ExclusionZonePdfExtract,
-    licenceEntity: EntityLicence,
+    pdfExtract: UploadPdfExtract,
+    licenceEntity: Licence,
     additionalCondition: AdditionalCondition,
   ): Triple<UUID?, UUID?, UUID?> {
     val metadataFor = { kind: String ->

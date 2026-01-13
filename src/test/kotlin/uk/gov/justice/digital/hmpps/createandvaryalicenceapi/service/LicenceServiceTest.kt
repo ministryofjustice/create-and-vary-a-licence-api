@@ -75,7 +75,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -113,7 +113,7 @@ class LicenceServiceTest {
   private val domainEventsService = mock<DomainEventsService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val eligibilityService = mock<EligibilityService>()
-  private val exclusionZoneService = mock<ExclusionZoneService>()
+  private val uploadFileConditionsService = mock<UploadFileConditionsService>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val telemetryService = mock<TelemetryService>()
   private val auditService = mock<AuditService>()
@@ -132,7 +132,7 @@ class LicenceServiceTest {
       domainEventsService,
       prisonerSearchApiClient,
       eligibilityService,
-      exclusionZoneService,
+      uploadFileConditionsService,
       deliusApiClient,
       telemetryService,
       auditService,
@@ -162,7 +162,7 @@ class LicenceServiceTest {
       domainEventsService,
       prisonerSearchApiClient,
       eligibilityService,
-      exclusionZoneService,
+      uploadFileConditionsService,
     )
   }
 
@@ -2336,7 +2336,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).delete(aLicenceEntity)
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
-    verify(exclusionZoneService, times(1)).deleteDocuments(any())
+    verify(uploadFileConditionsService, times(1)).deleteDocuments(any())
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -3539,7 +3539,7 @@ class LicenceServiceTest {
           domainEventsService,
           prisonerSearchApiClient,
           eligibilityService,
-          exclusionZoneService,
+          uploadFileConditionsService,
           deliusApiClient,
           telemetryService,
           auditService,

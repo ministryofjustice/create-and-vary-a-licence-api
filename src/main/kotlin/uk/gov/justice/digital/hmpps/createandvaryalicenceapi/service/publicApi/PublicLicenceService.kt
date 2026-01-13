@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToPublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 class PublicLicenceService(
   private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
-  private val exclusionZoneService: ExclusionZoneService,
+  private val uploadFileConditionsService: UploadFileConditionsService,
 ) {
 
   fun getLicenceById(id: Long): Licence = licenceService.getLicenceById(id).transformToPublicLicence()
@@ -34,5 +34,5 @@ class PublicLicenceService(
   }
 
   @Transactional
-  fun getImageUpload(licenceId: Long, conditionId: Long) = exclusionZoneService.getExclusionZoneImage(licenceId, conditionId)
+  fun getImageUpload(licenceId: Long, conditionId: Long) = uploadFileConditionsService.getImage(licenceId, conditionId)
 }

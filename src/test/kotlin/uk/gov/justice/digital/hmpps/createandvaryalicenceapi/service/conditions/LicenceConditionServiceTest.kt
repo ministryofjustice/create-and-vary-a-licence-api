@@ -45,6 +45,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import java.util.Optional
@@ -59,7 +60,7 @@ class LicenceConditionServiceTest {
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
   private val electronicMonitoringProgrammeService = mock<ElectronicMonitoringProgrammeService>()
-  private val exclusionZoneService = mock<ExclusionZoneService>()
+  private val uploadFileConditionsService = mock<UploadFileConditionsService>()
 
   private val service = LicenceConditionService(
     licenceRepository,
@@ -70,7 +71,7 @@ class LicenceConditionServiceTest {
     auditService,
     staffRepository,
     electronicMonitoringProgrammeService,
-    exclusionZoneService,
+    uploadFileConditionsService,
   )
 
   @BeforeEach
@@ -89,7 +90,7 @@ class LicenceConditionServiceTest {
       additionalConditionRepository,
       bespokeConditionRepository,
       staffRepository,
-      exclusionZoneService,
+      uploadFileConditionsService,
     )
   }
 
@@ -177,7 +178,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
-      verify(exclusionZoneService, times(1)).deleteDocuments(any())
+      verify(uploadFileConditionsService, times(1)).deleteDocuments(any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -218,7 +219,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-      verify(exclusionZoneService, times(1)).deleteDocuments(any())
+      verify(uploadFileConditionsService, times(1)).deleteDocuments(any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -341,7 +342,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).findById(1L)
       verify(licenceRepository, times(0)).saveAndFlush(any())
-      verifyNoInteractions(exclusionZoneService)
+      verifyNoInteractions(uploadFileConditionsService)
       verifyNoInteractions(staffRepository)
     }
 
@@ -393,7 +394,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any(), any())
-      verify(exclusionZoneService, times(1)).deleteDocuments(any())
+      verify(uploadFileConditionsService, times(1)).deleteDocuments(any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1).copy(

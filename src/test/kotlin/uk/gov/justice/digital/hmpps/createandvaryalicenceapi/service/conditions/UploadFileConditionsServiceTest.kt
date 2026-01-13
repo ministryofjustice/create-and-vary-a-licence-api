@@ -22,16 +22,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.*
 
-class ExclusionZoneServiceTest {
+class UploadFileConditionsServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val additionalConditionUploadRepository = mock<AdditionalConditionUploadRepository>()
   private val documentService = mock<DocumentService>()
 
-  private val service = ExclusionZoneService(
+  private val service = UploadFileConditionsService(
     licenceRepository,
     additionalConditionRepository,
     additionalConditionUploadRepository,
@@ -69,7 +70,7 @@ class ExclusionZoneServiceTest {
     )
 
     // When
-    service.uploadExclusionZoneFile(1L, 1L, multiPartFile)
+    service.uploadFile(1L, 1L, multiPartFile)
 
     // Then
     verify(licenceRepository, times(1)).findById(1L)
@@ -87,7 +88,7 @@ class ExclusionZoneServiceTest {
     whenever(documentService.downloadDocument(UUID.fromString(anAdditionalConditionEntityWithUpload.additionalConditionUpload.first().fullSizeImageDsUuid)))
       .thenReturn(documentServiceFile)
 
-    val image = service.getExclusionZoneImage(1L, 1L)
+    val image = service.getImage(1L, 1L)
 
     assertThat(image).isEqualTo(documentServiceFile)
 

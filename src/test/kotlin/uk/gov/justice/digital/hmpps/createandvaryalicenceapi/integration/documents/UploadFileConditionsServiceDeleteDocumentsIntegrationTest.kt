@@ -13,13 +13,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.Integra
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.UUID
 
-class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase() {
+class UploadFileConditionsServiceDeleteDocumentsIntegrationTest : IntegrationTestBase() {
 
-  lateinit var exclusionZoneService: ExclusionZoneService
+  lateinit var uploadFileConditionsService: UploadFileConditionsService
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -34,7 +34,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
 
   @BeforeEach
   fun setup() {
-    exclusionZoneService = ExclusionZoneService(
+    uploadFileConditionsService = UploadFileConditionsService(
       licenceRepository,
       additionalConditionRepository,
       additionalConditionUploadRepository,
@@ -50,7 +50,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
   fun `deletes all documents attached to the given licence that are not attached to another copy of the licence`() {
     val additionalConditions = testRepository.getAdditionalCondition(2)
 
-    exclusionZoneService.deleteDocumentsForConditions(additionalConditions)
+    uploadFileConditionsService.deleteDocumentsForConditions(additionalConditions)
 
     mapOf(
       "37eb7e31-a133-4259-96bc-93369b917eb8" to never(), // 2 references to this doc
@@ -74,7 +74,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
     val additionalConditions = testRepository.getAdditionalConditions(listOf(1, 2, 3))
 
     // When
-    val result = exclusionZoneService.getDeletableDocumentUuids(additionalConditions)
+    val result = uploadFileConditionsService.getDeletableDocumentUuids(additionalConditions)
 
     // Then
     assertThat(result).containsExactlyInAnyOrder(
@@ -100,7 +100,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
     val additionalConditions = testRepository.getAdditionalConditions(listOf(1, 2, 3))
 
     // When
-    val result = exclusionZoneService.getDeletableDocumentUuids(additionalConditions)
+    val result = uploadFileConditionsService.getDeletableDocumentUuids(additionalConditions)
 
     // Then
     assertThat(result).isEmpty()
@@ -116,7 +116,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
     val additionalConditions = testRepository.getAdditionalConditions(listOf(1, 2, 3))
 
     // When
-    val result = exclusionZoneService.getDeletableDocumentUuids(additionalConditions)
+    val result = uploadFileConditionsService.getDeletableDocumentUuids(additionalConditions)
 
     // Then
     assertThat(result).hasSize(3)
@@ -133,7 +133,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
     val documentUUIDs = listOf(documentUUID)
 
     // When
-    exclusionZoneService.deleteDocuments(documentUUIDs)
+    uploadFileConditionsService.deleteDocuments(documentUUIDs)
 
     // Then
     verify(documentService).deleteDocument(documentUUID)

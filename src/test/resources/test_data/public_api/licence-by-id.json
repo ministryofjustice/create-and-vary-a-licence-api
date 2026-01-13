@@ -73,6 +73,14 @@
           "restrictions": [
             "CURFEW"
           ]
+        },
+        {
+          "category": "FreedomOfMovement",
+          "type": "MULTIPLE_UPLOADS",
+          "id": 6,
+          "code": "005d70e4-a247-4f82-b8b3-6d294a0f5051",
+          "text": "Do not enter the area defined in the attached map.",
+          "hasImageUpload": true
         }
       ],
       "bespoke": []
