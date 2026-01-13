@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.T
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
@@ -28,7 +29,7 @@ import java.time.LocalDate
 import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload as EntityAdditionalConditionUpload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider as EntityElectronicMonitoringProvider
@@ -783,7 +784,7 @@ fun transform(
   text = entity.conditionText,
   expandedText = entity.expandedConditionText,
   data = entity.additionalConditionData.transformToModelAdditionalData(),
-  uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
+  uploadSummary = entity.additionalConditionUpload.transformToModelAdditionalConditionUploadSummary(),
   readyToSubmit = readyToSubmit,
   requiresInput = requiresInput,
 )
@@ -808,9 +809,9 @@ fun transform(entity: EntityBespokeCondition): ModelBespokeCondition = ModelBesp
 )
 
 // Transform a list of entity additional condition uploads to model additional condition uploads
-fun List<EntityAdditionalConditionUploadSummary>.transformToModelAdditionalConditionUploadSummary(): List<ModelAdditionalConditionUploadSummary> = map(::transform)
+fun List<EntityAdditionalConditionUpload>.transformToModelAdditionalConditionUploadSummary(): List<ModelAdditionalConditionUploadSummary> = map(::transform)
 
-fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalConditionUploadSummary = ModelAdditionalConditionUploadSummary(
+fun transform(entity: EntityAdditionalConditionUpload): ModelAdditionalConditionUploadSummary = ModelAdditionalConditionUploadSummary(
   id = entity.id!!,
   filename = entity.filename,
   fileType = entity.fileType,
@@ -819,8 +820,6 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
   imageType = entity.imageType,
   imageSize = entity.imageSize,
   description = entity.description,
-  thumbnailImage = entity.preloadedThumbnailImage?.toBase64(),
-  uploadDetailId = entity.uploadDetailId,
 )
 
 // Transform a list of entity hdc curfew times to model hdc curfew times
@@ -877,7 +876,15 @@ fun CaseloadResult.transformToUnstartedRecord(
   releaseDateLabel: String,
 ): ModelFoundProbationRecord {
   val com = if (staff.unallocated == true) null else staff
-
+  val probationPractitioner = if (staff.unallocated == true) {
+    ProbationPractitioner.unallocated(staff.code)
+  } else {
+    ProbationPractitioner(
+      staffCode = staff.code,
+      name = staff.name!!.fullName(),
+      allocated = true,
+    )
+  }
   return ModelFoundProbationRecord(
     kind = kind,
     bookingId = bookingId,
@@ -886,6 +893,7 @@ fun CaseloadResult.transformToUnstartedRecord(
     nomisId = nomisId,
     comName = com?.name?.fullName()?.convertToTitleCase(),
     comStaffCode = com?.code,
+    probationPractitioner = probationPractitioner,
     teamName = team.description,
     releaseDate = releaseDate,
     licenceId = null,
