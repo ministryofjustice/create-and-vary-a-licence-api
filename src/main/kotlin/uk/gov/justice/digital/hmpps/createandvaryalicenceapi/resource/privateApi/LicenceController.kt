@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -56,6 +57,7 @@ class LicenceController(
   private val licenceCreationService: LicenceCreationService,
 ) {
 
+  @Deprecated("Use /licence/prison or /licence/probation instead")
   @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/create"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -114,6 +116,112 @@ class LicenceController(
     HARD_STOP, TIME_SERVED -> licenceCreationService.createHardStopLicence(request.nomsId)
     else -> licenceCreationService.createLicence(request.nomsId)
   }
+
+  @Tag(name = Tags.LICENCES)
+  @PostMapping(value = ["/prison/nomisid/{nomsId}"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @ResponseBody
+  @Operation(
+    summary = "Create a prison licence",
+    description = "Creates a prison licence with the default status IN_PROGRESS and populates with the details provided." +
+      " Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Prison licence created",
+        content = [
+          Content(mediaType = "application/json", schema = Schema(implementation = CreateLicenceResponse::class)),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "409",
+        description = "Conflict, resource already exists",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = EntityAlreadyExistsResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun createPrisonLicence(@Parameter(required = true) @PathVariable nomsId: String): CreateLicenceResponse = licenceCreationService.createHardStopLicence(nomsId)
+
+  @Tag(name = Tags.LICENCES)
+  @PostMapping(value = ["/probation/nomisid/{nomsId}"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @ResponseBody
+  @Operation(
+    summary = "Create a probation licence",
+    description = "Creates a probation licence with the default status IN_PROGRESS and populates with the details provided." +
+      " Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Probation licence created",
+        content = [
+          Content(mediaType = "application/json", schema = Schema(implementation = CreateLicenceResponse::class)),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "409",
+        description = "Conflict, resource already exists",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = EntityAlreadyExistsResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun createProbationLicence(@Parameter(required = true) @PathVariable nomsId: String): CreateLicenceResponse = licenceCreationService.createLicence(nomsId)
 
   @Tag(name = Tags.LICENCES)
   @GetMapping(value = ["/id/{licenceId}"])
