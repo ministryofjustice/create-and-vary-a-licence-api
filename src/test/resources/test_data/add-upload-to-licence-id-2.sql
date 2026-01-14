@@ -1,5 +1,4 @@
 insert into additional_condition_upload (
-	licence_id,
 	additional_condition_id,
 	filename,
 	file_type,
@@ -11,8 +10,7 @@ insert into additional_condition_upload (
 	original_data_ds_uuid,
 	full_size_image_ds_uuid
 )
-values (2,
-		1,
+values (1,
 		'Test-file.pdf',
 		'application/pdf',
 		'image/png',
