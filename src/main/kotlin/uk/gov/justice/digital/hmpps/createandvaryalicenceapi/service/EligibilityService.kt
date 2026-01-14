@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -14,6 +15,7 @@ import java.time.LocalDate
 class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
   private val releaseDateService: ReleaseDateService,
+  private val hdcService: HdcService,
   private val clock: Clock,
 ) {
 
@@ -39,7 +41,10 @@ class EligibilityService(
       )
     }.toMap()
 
-    return overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
+    val standardRecallsExcluded = overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
+    val hdcCasesExcluded = overrideHdcCases(prisoners, standardRecallsExcluded)
+
+    return hdcCasesExcluded
   }
 
   fun getGenericIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
@@ -127,8 +132,11 @@ class EligibilityService(
 
   private fun isApSledRelease(prisoner: PrisonerSearchPrisoner): Boolean = when {
     prisoner.postRecallReleaseDate == null -> false
+
     prisoner.licenceExpiryDate == null -> false
+
     prisoner.topupSupervisionExpiryDate != null && prisoner.topupSupervisionExpiryDate.isAfter(prisoner.licenceExpiryDate) -> false
+
     else -> {
       val releaseDate = releaseDateService.calculatePrrdLicenceStartDate(prisoner)
       releaseDateService.isReleaseAtLed(releaseDate, prisoner.licenceExpiryDate)
@@ -198,9 +206,9 @@ class EligibilityService(
     val bookingsSentenceAndRecallTypes = prisonApiClient.getSentenceAndRecallTypes(nomisIdsToBookingIds.values.toList())
     return recallCases.map { (nomisId, eligibilityAssessment) ->
       val bookingId = nomisIdsToBookingIds[nomisId]!!
-      val case = bookingsSentenceAndRecallTypes.first { it.bookingId == bookingId }
+      val case = bookingsSentenceAndRecallTypes.firstOrNull { it.bookingId == bookingId }
       when {
-        case.sentenceTypeRecallTypes.any { it.recallType.isStandardRecall } -> {
+        case.isStandardRecall() -> {
           nomisId to EligibilityAssessment(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
@@ -209,18 +217,46 @@ class EligibilityService(
           )
         }
 
-        case.sentenceTypeRecallTypes.any { it.recallType.isFixedTermRecall } -> nomisId to eligibilityAssessment
+        case.isFixedTermRecall() -> nomisId to eligibilityAssessment
+
         else -> {
+          val ineligibilityMessage =
+            if (case == null) "does not have any active sentences" else "is on an unidentified non-fixed term recall"
           nomisId to EligibilityAssessment(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
-            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on an unidentified non-fixed term recall",
+            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + ineligibilityMessage,
             isEligible = false,
           )
         }
       }
     }.toMap()
   }
+
+  private fun overrideHdcCases(
+    prisoners: List<PrisonerSearchPrisoner>,
+    nomisIdsToEligibilityAssessments: Map<String, EligibilityAssessment>,
+  ): Map<String, EligibilityAssessment> {
+    val hdcStatuses = hdcService.getHdcStatus(prisoners)
+
+    return nomisIdsToEligibilityAssessments.map { (nomisId, eligibilityAssessment) ->
+      val bookingId = prisoners.first { it.prisonerNumber == nomisId }.bookingId!!.toLong()
+      if (hdcStatuses.isApprovedForHdc(bookingId)) {
+        return@map nomisId to EligibilityAssessment(
+          genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons + "Approved for HDC",
+          crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
+          prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons,
+          isEligible = false,
+        )
+      } else {
+        return@map nomisId to eligibilityAssessment
+      }
+    }.toMap()
+  }
+
+  private fun BookingSentenceAndRecallTypes?.isStandardRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isStandardRecall } == true
+
+  private fun BookingSentenceAndRecallTypes?.isFixedTermRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isFixedTermRecall } == true
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

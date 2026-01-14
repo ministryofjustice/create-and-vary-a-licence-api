@@ -12,15 +12,20 @@ insert into licence(id,
                     status_code,
                     licence_version,
                     version_of_id,
-					post_recall_release_date)
-values (1, 'CRD', '1.0', 'U328968', 'Person', 'One', 1, 1, 1, current_date, 'AP', 'APPROVED', '1.0', null,null),
-       (2, 'CRD', '1.0', 'H598679', 'Person', 'Two', 5, 5, 5, current_date, 'AP', 'SUBMITTED', '1.0', null,null),
-       (3, 'CRD', '1.0', 'Z265290', 'Person', 'Three', 3, 3, 3, current_date, 'AP', 'APPROVED', '1.0', null,null),
-       (4, 'CRD', '1.0', 'W127522', 'Person', 'Four', 2, 2, 2, current_date, 'AP', 'APPROVED', '1.0', null, null),
-       (5, 'CRD', '1.0', 'I511234', 'Person', 'Five', 4, 4, 4, current_date, 'AP', 'APPROVED', '1.0', null, null),
-       (6, 'CRD', '1.0', 'Z265290', 'Person', 'Three', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.1', 3, null),
-       (7, 'HDC', '1.0', 'A123456', 'Person', 'Six', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.0', null, null),
-       (8, 'PRRD', '1.0', 'A123457', 'Person', 'Seven', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.0', null, '2022-09-08');
+                    post_recall_release_date)
+values (1, 'CRD', '1.0', 'U328968', 'Person', 'One', 1, 1, 1, current_date, 'AP', 'APPROVED', '1.0', null, null),
+       (2, 'CRD', '1.0', 'H598679', 'Person', 'Two', 5, 5, 5, current_date, 'AP', 'APPROVED', '1.0', null, null),
+       (3, 'CRD', '1.0', 'H598679', 'Person', 'Two', 5, 5, 5, current_date, 'AP', 'SUBMITTED', '1.0', 2, null),
+       (4, 'CRD', '1.0', 'Z265290', 'Person', 'Three', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.0', null, null),
+       (5, 'CRD', '1.0', 'W127522', 'Person', 'Four', 2, 2, 2, current_date, 'AP', 'APPROVED', '1.0', null, null),
+       (6, 'CRD', '1.0', 'I511234', 'Person', 'Five', 4, 4, 4, current_date, 'AP', 'APPROVED', '1.0', null, null),
+       (7, 'CRD', '1.0', 'Z265290', 'Person', 'Three', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.1', 4, null),
+       (8, 'HDC', '1.0', 'A123456', 'Person', 'Six', 3, 3, 3, current_date, 'AP', 'APPROVED', '1.0', null, null),
+       (9, 'HDC', '1.0', 'A123456', 'Person', 'Six', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.0', 8, null),
+       (10, 'PRRD', '1.0', 'A123457', 'Person', 'Seven', 3, 3, 3, current_date, 'AP', 'APPROVED', '1.0', null,
+        '2022-09-08'),
+       (11, 'PRRD', '1.0', 'A123457', 'Person', 'Seven', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.0', 10,
+        '2022-09-08');
 
 
 insert into audit_event(id,
@@ -38,5 +43,5 @@ values (1, 2, '2022-09-08 10:24:22.000', 'CVL_OMU', 'Omu User', 'USER_EVENT', 'L
         'ID 3 type AP status APPROVED version 2.0', null),
        (3, 7, '2024-11-16 09:49:19.000', 'CVL_OMU', 'Omu User', 'USER_EVENT', 'Licence approved for Person Six',
         'ID 7 type AP status APPROVED version 2.0', null),
-	   (4, 8, '2024-11-16 09:49:19.000', 'CVL_OMU', 'Omu User', 'USER_EVENT', 'Licence approved for Person Seven',
-		'ID 7 type AP status APPROVED version 2.0', null);
+       (4, 8, '2024-11-16 09:49:19.000', 'CVL_OMU', 'Omu User', 'USER_EVENT', 'Licence approved for Person Seven',
+        'ID 7 type AP status APPROVED version 2.0', null);

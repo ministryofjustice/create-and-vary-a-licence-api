@@ -4,13 +4,13 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.FoundComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -20,11 +20,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient.Companion.CASELOAD_PAGE_SIZE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import java.time.Clock
@@ -35,7 +35,6 @@ class ComCaseloadSearchService(
   private val licenceRepository: LicenceRepository,
   private val deliusApiClient: DeliusApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val hdcService: HdcService,
   private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
@@ -61,7 +60,6 @@ class ComCaseloadSearchService(
       val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
       createCase(licence, caseloadResult, prisonerRecord, cvlRecord)
     }.filterOutPastReleaseDate()
-      .filterOutHdc(prisonerRecords)
 
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
@@ -126,17 +124,6 @@ class ComCaseloadSearchService(
     else -> null
   }
 
-  private fun List<FoundComCase>.filterOutHdc(prisoners: Map<String, PrisonerSearchPrisoner>): List<FoundComCase> {
-    if (prisoners.isEmpty()) {
-      return this
-    }
-    val prisonersForHdcCheck =
-      this.filter { PRE_RELEASE_STATUSES.contains(it.licenceStatus) }.mapNotNull { prisoners[it.nomisId] }
-
-    val hdcStatuses = hdcService.getHdcStatus(prisonersForHdcCheck)
-    return this.filter { it.isOnProbation == true || hdcStatuses.canBeSeenByCom(it.kind, it.bookingId!!) }
-  }
-
   private fun CaseloadResult.toUnstartedRecord(
     prisonOffender: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
@@ -171,6 +158,16 @@ class ComCaseloadSearchService(
     }
   }
 
+  private fun getProbationPractitioner(staff: StaffDetail): ProbationPractitioner = if (staff.unallocated == true) {
+    ProbationPractitioner.unallocated(staff.code)
+  } else {
+    ProbationPractitioner(
+      staffCode = staff.code,
+      name = staff.name!!.fullName(),
+      allocated = true,
+    )
+  }
+
   fun CaseloadResult.transformToCaseWithLicence(
     licence: Licence,
     hardStopDate: LocalDate?,
@@ -179,6 +176,7 @@ class ComCaseloadSearchService(
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   ): FoundComCase {
     val com = if (staff.unallocated == true) null else staff
+    val probationPractitioner = getProbationPractitioner(staff)
 
     return FoundComCase(
       kind = licence.kind,
@@ -188,6 +186,7 @@ class ComCaseloadSearchService(
       nomisId = licence.nomsId,
       comName = com?.name?.fullName()?.convertToTitleCase(),
       comStaffCode = com?.code,
+      probationPractitioner = probationPractitioner,
       teamName = team.description,
       releaseDate = licence.licenceStartDate,
       licenceId = licence.id,

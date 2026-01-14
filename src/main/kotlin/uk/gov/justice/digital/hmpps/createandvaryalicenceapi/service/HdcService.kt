@@ -127,22 +127,6 @@ class HdcService(
 
     fun canBeActivated(kind: LicenceKind, bookingId: Long) = isValidByKind(kind, bookingId)
 
-    /**
-     * For COM:
-     * If licence hasn't been started base on whether licence is approved.
-     * TODO: will need to fix when we start to show prospective HDC cases in caselist
-     * If licence has been started then show when (approved and HDC) or (!approved and !hdc)
-     */
-    fun canBeSeenByCom(kind: LicenceKind?, bookingId: Long) = isValidByKind(kind, bookingId)
-
-    /**
-     * For CA:
-     * Always show started cases regardless of HDC status.
-     * TODO: will need to fix when we start to show prospective HDC cases in caselist
-     * If licence hasn't been started, only show !approved licences.
-     */
-    fun canUnstartedCaseBeSeenByCa(bookingId: Long) = !isApprovedForHdc(bookingId)
-
     fun isApprovedForHdc(bookingId: Long) = approvedIds.contains(bookingId)
 
     private fun isValidByKind(kind: LicenceKind?, bookingId: Long): Boolean {

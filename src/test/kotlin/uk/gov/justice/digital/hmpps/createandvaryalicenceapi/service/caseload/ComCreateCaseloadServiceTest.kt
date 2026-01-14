@@ -19,8 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -41,7 +39,6 @@ class ComCreateCaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
-  private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
@@ -50,7 +47,6 @@ class ComCreateCaseloadServiceTest {
     prisonerSearchApiClient,
     deliusApiClient,
     licenceCaseRepository,
-    hdcService,
     cvlRecordService,
     telemetryService,
   )
@@ -61,11 +57,11 @@ class ComCreateCaseloadServiceTest {
   private val twoDaysFromNow = LocalDate.now().plusDays(2)
   private val yesterday = LocalDate.now().minusDays(1)
   private val deliusStaffIdentifier = 213L
+  private val staffDetail = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))
 
   @BeforeEach
   fun reset() {
-    reset(deliusApiClient, licenceCaseRepository, hdcService, eligibilityService)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    reset(deliusApiClient, licenceCaseRepository, eligibilityService)
   }
 
   @Test
@@ -104,9 +100,9 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `it filters invalid data due to mismatch between delius and nomis`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12346", nomisId = "AB1234D"),
-      ManagedOffenderCrn(crn = "X12347"),
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+      ManagedOffenderCrn(crn = "X12346", nomisId = "AB1234D", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12347", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
@@ -156,9 +152,9 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `telemetry is captured for staff`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12346", nomisId = "AB1234D"),
-      ManagedOffenderCrn(crn = "X12347"),
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+      ManagedOffenderCrn(crn = "X12346", nomisId = "AB1234D", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12347", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
@@ -267,15 +263,15 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `it filters offenders who are ineligible for a licence`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
-      ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234F"),
-      ManagedOffenderCrn(crn = "X12350", nomisId = "AB1234G"),
-      ManagedOffenderCrn(crn = "X12351", nomisId = "AB1234L"),
-      ManagedOffenderCrn(crn = "X12352", nomisId = "AB1234M"),
-      ManagedOffenderCrn(crn = "X12353", nomisId = "AB1234N"),
-      ManagedOffenderCrn(crn = "X12354", nomisId = "AB1234P"),
-      ManagedOffenderCrn(crn = "X12355", nomisId = "AB1234Q"),
-      ManagedOffenderCrn(crn = "X12356", nomisId = "AB1234R"),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234F", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12350", nomisId = "AB1234G", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12351", nomisId = "AB1234L", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12352", nomisId = "AB1234M", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12353", nomisId = "AB1234N", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12354", nomisId = "AB1234P", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12355", nomisId = "AB1234Q", staff = staffDetail),
+      ManagedOffenderCrn(crn = "X12356", nomisId = "AB1234R", staff = staffDetail),
     )
 
     whenever(
@@ -370,12 +366,12 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234F",
-          kind = LicenceKind.CRD,
+          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(
           nomsId = "AB1234G",
-          kind = LicenceKind.CRD,
+          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(nomsId = "AB1234H", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
@@ -386,7 +382,7 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234M", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234N",
-          kind = LicenceKind.CRD,
+          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(nomsId = "AB1234P", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
@@ -539,7 +535,7 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceStatus = LicenceStatus.SUBMITTED,
       expectedLicenceType = LicenceType.AP_PSS,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", allocated = true),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS,
 
     )
@@ -682,7 +678,7 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs", allocated = true),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
     )
     verifyCase(
@@ -693,7 +689,7 @@ class ComCreateCaseloadServiceTest {
       expectedLicenceType = LicenceType.PSS,
       expectedReleaseDate = tenDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
-      expectedProbationPractitioner = null,
+      expectedProbationPractitioner = ProbationPractitioner.unallocated("X1235"),
       expectedHardstopWarningDate = tenDaysFromNow,
     )
     verifyCase(
@@ -706,6 +702,7 @@ class ComCreateCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X1234",
         name = "Joe Bloggs",
+        allocated = true,
       ),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS,
     )
@@ -776,6 +773,7 @@ class ComCreateCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X12352",
         name = "Joe Bloggs",
+        allocated = true,
       ),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
     )
@@ -790,6 +788,7 @@ class ComCreateCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
         name = "John Doe",
+        allocated = true,
       ),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
     )
@@ -863,51 +862,6 @@ class ComCreateCaseloadServiceTest {
   }
 
   @Test
-  fun `it filters out HDC approved licences on team create caseload`() {
-    val selectedTeam = "team C"
-
-    val managedOffenders = listOf(
-      ManagedOffenderCrn(
-        crn = "X12348",
-        nomisId = "AB1234E",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
-      ),
-      ManagedOffenderCrn(
-        crn = "X12349",
-        nomisId = "AB1234F",
-        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
-      ),
-    )
-
-    whenever(
-      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
-    ).thenReturn(managedOffenders)
-
-    val caseloadItems = listOf(
-      prisonerSearchResult().copy(
-        bookingId = "1",
-        prisonerNumber = "AB1234E",
-        conditionalReleaseDate = tenDaysFromNow,
-        releaseDate = tenDaysFromNow,
-        postRecallReleaseDate = tenDaysFromNow,
-        recall = true,
-      ),
-    )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-      listOf(
-        aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
-      ),
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(caseloadItems)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(caseloadItems[0].bookingId?.toLong()!!)))
-
-    val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
-
-    verify(deliusApiClient).getManagedOffendersByTeam("team C")
-    assertThat(caseload).isEmpty()
-  }
-
-  @Test
   fun `it filters out NOT_STARTED PRRD licences`() {
     whenever(
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
@@ -942,7 +896,7 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `it selects a licence edit over the approved licence`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
@@ -1004,7 +958,7 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `it selects a hard stop licence over timed out licence`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
@@ -1067,7 +1021,7 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `it sets LicenceCreationType to PRISON_WILL_CREATE_THIS_LICENCE if the hard stop licence has not been started`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
@@ -1121,7 +1075,7 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `it sets LicenceCreationType to PRISON_WILL_CREATE_THIS_LICENCE if no licence has been started in the hard stop period`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
@@ -1220,7 +1174,7 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `it sets LicenceCreationType to LICENCE_CREATED_BY_PRISON if the hard stop licence has been submitted`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
@@ -1320,7 +1274,7 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `it sets LicenceCreationType to LICENCE_CHANGES_NOT_APPROVED_IN_TIME if an edit times out`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
     )
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
@@ -1388,7 +1342,7 @@ class ComCreateCaseloadServiceTest {
     expectedLicenceType: LicenceType,
     expectedLicenceCreationType: LicenceCreationType,
     expectedReleaseDate: LocalDate? = null,
-    expectedProbationPractitioner: ProbationPractitioner? = null,
+    expectedProbationPractitioner: ProbationPractitioner = ProbationPractitioner("X1234", "Joe Bloggs", true),
     expectedReviewNeeded: Boolean = false,
     expectedLicenceKind: LicenceKind = LicenceKind.CRD,
     expectedHardstopWarningDate: LocalDate? = null,
@@ -1447,6 +1401,6 @@ class ComCreateCaseloadServiceTest {
   private fun aManagedOffenderCrn(nomisId: String? = "ABC123"): ManagedOffenderCrn = ManagedOffenderCrn(
     crn = "X12348",
     nomisId,
-    staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
+    staff = staffDetail,
   )
 }

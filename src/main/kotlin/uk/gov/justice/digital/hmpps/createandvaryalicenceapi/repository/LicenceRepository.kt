@@ -40,8 +40,6 @@ interface LicenceRepository :
     cutoffDate: LocalDate = LocalDate.now().plusDays(14),
   ): List<Licence>
 
-  fun findAllByCrnInAndStatusCodeIn(crn: List<String>, status: List<LicenceStatus>): List<Licence>
-
   @Query(
     """
     SELECT l.bookingId
@@ -85,10 +83,8 @@ interface LicenceRepository :
         WHERE l.kind IN ('CRD', 'HDC', 'PRRD')
         AND l.licence_start_date = CURRENT_DATE
         AND l.status_code = 'SUBMITTED'
-        AND (
-            EXISTS (SELECT 1 FROM audit_event ae WHERE l.id = ae.licence_id AND ae.detail LIKE '%APPROVED%')
-            OR l.version_of_id IS NOT NULL
-        ) ORDER BY l.id
+        AND l.version_of_id IS NOT NULL
+        ORDER BY l.id
     """,
     nativeQuery = true,
   )
@@ -137,13 +133,14 @@ interface LicenceRepository :
     """
     SELECT l
         FROM Licence l
-        WHERE l.kind != (
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+        WHERE l.kind NOT IN (
+            'HDC',
+            'TIME_SERVED'
         )
         AND l.statusCode  IN (
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS,
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED,
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+            'IN_PROGRESS',
+            'SUBMITTED',
+            'TIMED_OUT'
         )
         AND l.licenceStartDate < CURRENT_DATE
     """,

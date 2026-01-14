@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -17,7 +16,6 @@ import java.time.LocalDate
 class LastMinuteHandoverCaseService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val licenceRepository: LicenceRepository,
-  private val hdcService: HdcService,
   private val deliusApiClient: DeliusApiClient,
   @param:Value("\${hmpps.cases.last-minute.prisons}")
   private val lastMinutePrisonCodes: Set<String>,
@@ -32,7 +30,6 @@ class LastMinuteHandoverCaseService(
 
     val builder = LastMinuteReportBuilder(
       licenceRepository,
-      hdcService,
       deliusApiClient,
       cvlRecordService,
       clock,
@@ -43,7 +40,6 @@ class LastMinuteHandoverCaseService(
       .enrichWithCvlRecords()
       .withEligibleCandidates()
       .withPreSubmissionState()
-      .filterOutHdcEligible()
       .filterByLicenceStartDates()
       .build()
   }

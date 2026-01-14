@@ -8,6 +8,7 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -26,7 +27,13 @@ import java.time.ZoneId
 class EligibilityServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private var service = EligibilityService(prisonApiClient, releaseDateService, clock)
+  private val hdcService = mock<HdcService>()
+  private var service = EligibilityService(prisonApiClient, releaseDateService, hdcService, clock)
+
+  @BeforeEach
+  fun reset() {
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+  }
 
   @Nested
   inner class CrdCases {
@@ -62,7 +69,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("is eligible for parole")
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -75,7 +82,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("has died")
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -88,7 +95,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("is on indeterminate sentence")
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -114,7 +121,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -130,7 +137,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -146,7 +153,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -162,7 +169,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -178,7 +185,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -194,7 +201,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("is eligible for parole")
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -220,7 +227,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("is not active in prison")
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -233,7 +240,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("CRD in the past")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -272,7 +279,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is a recall case")
       assertThat(result.prrdIneligibilityReasons).containsExactly("is on a standard recall")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -288,7 +295,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date", "is a recall case")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -304,7 +311,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -320,7 +327,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -346,7 +353,19 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("is breach of top up supervision case")
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `Person with HDC approval - not eligible for CVL`() {
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(aPrisonerSearchResult.bookingId!!.toLong())))
+      val result = service.getEligibilityAssessment(aPrisonerSearchResult)
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("Approved for HDC")
+      assertThat(result.crdIneligibilityReasons).isEmpty()
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -364,7 +383,7 @@ class EligibilityServiceTest {
   inner class PrrdCases {
     @BeforeEach
     fun setup() {
-      service = EligibilityService(prisonApiClient, releaseDateService, clock)
+      service = EligibilityService(prisonApiClient, releaseDateService, hdcService, clock)
 
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
@@ -401,7 +420,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -416,7 +435,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).containsExactly("post recall release date is in the past")
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -446,7 +465,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("is eligible for parole")
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -461,7 +480,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("has died")
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -476,7 +495,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("is on indeterminate sentence")
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -521,7 +540,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("is not active in prison")
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -536,7 +555,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).containsExactly("is breach of top up supervision case")
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(null)
+      assertThat(result.eligibleKind).isNull()
     }
 
     @Test
@@ -611,6 +630,21 @@ class EligibilityServiceTest {
     }
 
     @Test
+    fun `Case with no active sentences is ineligible`() {
+      whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
+        emptyList(),
+      )
+
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("does not have any active sentences")
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
     fun `Person who would be on an AP licence being released at SLED - not eligible for CVL`() {
       whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(true)
       val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
@@ -619,6 +653,18 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).containsExactly("is AP-only being released at SLED")
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `Person with HDC approval - not eligible for CVL`() {
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(aRecallPrisonerSearchResult.bookingId!!.toLong())))
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("Approved for HDC")
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
       assertThat(result.eligibleKind).isNull()
     }
   }

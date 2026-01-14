@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
@@ -112,6 +113,7 @@ class CaseloadControllerTest {
 
     val approvalCase = ApprovalCase(
       licenceId = 1L,
+      probationPractitioner = ProbationPractitioner(allocated = true),
     )
 
     whenever(approverCaseloadService.getApprovalNeeded(request)).thenReturn(listOf(approvalCase))
@@ -144,6 +146,7 @@ class CaseloadControllerTest {
 
     val approvalCase = ApprovalCase(
       licenceId = 1L,
+      probationPractitioner = ProbationPractitioner(allocated = true),
     )
 
     whenever(approverCaseloadService.getRecentlyApproved(request)).thenReturn(listOf(approvalCase))
@@ -296,6 +299,7 @@ class CaseloadControllerTest {
           nomisId = "NOMS1",
           comName = "Staff Surname",
           comStaffCode = "A01B02C",
+          probationPractitioner = ProbationPractitioner("A01B02C", "Staff Surname", true),
           teamName = "Test Team",
           releaseDate = LocalDate.of(2021, 10, 22),
           licenceId = 1L,

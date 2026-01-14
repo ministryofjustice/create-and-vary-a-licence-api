@@ -55,7 +55,7 @@ class ApproverCaseloadService(
     val probationPractitioners = getProbationPractitioners(deliusRecords)
 
     return deliusRecords.mapNotNull { record ->
-      val probationPractitioner = probationPractitioners[record.case.nomisId?.lowercase()]
+      val probationPractitioner = probationPractitioners[record.case.nomisId?.lowercase()] ?: ProbationPractitioner.UNALLOCATED
       val licence = licenceApproverCases.findLicenceToApprove(record.case.nomisId!!)
       when {
         licence == null -> null
@@ -79,12 +79,16 @@ class ApproverCaseloadService(
   }
 
   private fun getProbationPractitioners(coms: List<CommunityManagerWithoutUser>) = coms
-    .filter { !it.unallocated }
     .associate {
-      it.case.nomisId!!.lowercase() to ProbationPractitioner(
-        staffCode = it.code,
-        name = it.name.fullName(),
-      )
+      if (it.unallocated) {
+        it.case.nomisId!!.lowercase() to ProbationPractitioner.unallocated(it.code)
+      } else {
+        it.case.nomisId!!.lowercase() to ProbationPractitioner(
+          staffCode = it.code,
+          name = it.name.fullName(),
+          allocated = true,
+        )
+      }
     }
 
   private fun List<LicenceApproverCase>.findLicenceToApprove(prisonNumber: String): LicenceApproverCase? {
@@ -100,7 +104,7 @@ class ApproverCaseloadService(
     return cases.filter {
       it.name?.lowercase()?.contains(term) ?: false ||
         it.prisonerNumber?.lowercase()?.contains(term) ?: false ||
-        it.probationPractitioner?.name?.lowercase()?.contains(term) ?: false
+        it.probationPractitioner.name?.lowercase()?.contains(term) ?: false
     }
   }
 }

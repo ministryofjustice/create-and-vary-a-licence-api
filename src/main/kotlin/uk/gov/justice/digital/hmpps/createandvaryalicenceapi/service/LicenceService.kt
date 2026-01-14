@@ -39,7 +39,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicencePermissionsResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -78,7 +77,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
-import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -90,7 +88,6 @@ class LicenceService(
   private val staffRepository: StaffRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val licencePolicyService: LicencePolicyService,
-  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val omuService: OmuService,
@@ -110,70 +107,65 @@ class LicenceService(
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
 
-    exclusionZoneService.preloadThumbnailsFor(entityLicence)
-
-    val isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(entityLicence)
-    val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
-
     val conditionsSubmissionStatus =
       getLicenceConditionPolicyData(
         entityLicence.additionalConditions,
         licencePolicyService.getAllAdditionalConditions(),
       )
 
-    return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
+    val licence = transform(entityLicence, conditionsSubmissionStatus)
+    exclusionZoneService.loadThumbnails(entityLicence, licence)
+    return licence
   }
 
   fun transform(
     licence: EntityLicence,
-    earliestReleaseDate: LocalDate?,
-    isEligibleForEarlyRelease: Boolean,
     conditionPolicyData: Map<String, ConditionPolicyData>,
   ): Licence = when (licence) {
     is PrrdLicence -> toPrrd(
       licence = licence,
-      earliestReleaseDate = earliestReleaseDate,
-      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
+      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind),
-      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
+      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate, licence.kind),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
     )
 
     is CrdLicence -> toCrd(
       licence = licence,
-      earliestReleaseDate = earliestReleaseDate,
-      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
+      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind),
-      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
+      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate, licence.kind),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
     )
 
     is VariationLicence -> toVariation(
       licence = licence,
-      earliestReleaseDate = earliestReleaseDate,
-      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
+      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
       conditionPolicyData = conditionPolicyData,
     )
 
     is HardStopLicence -> toHardstop(
       licence = licence,
-      earliestReleaseDate = earliestReleaseDate,
-      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
+      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind),
-      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
+      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate, licence.kind),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
     )
 
     is TimeServedLicence -> toTimeServed(
       licence = licence,
-      earliestReleaseDate = earliestReleaseDate,
-      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
+      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate, licence.kind),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
@@ -183,19 +175,19 @@ class LicenceService(
 
     is HdcLicence -> toHdc(
       licence = licence,
-      earliestReleaseDate = earliestReleaseDate,
-      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
+      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind),
-      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
+      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate, licence.kind),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
     )
 
     is HdcVariationLicence -> toHdcVariation(
       licence = licence,
-      earliestReleaseDate = earliestReleaseDate,
-      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
+      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
       conditionPolicyData = conditionPolicyData,
     )
 
@@ -900,8 +892,12 @@ class LicenceService(
       ),
     )
     log.info("Deleting documents for Licence id={}", licenceEntity.id)
-    exclusionZoneService.deleteDocumentsFor(licenceEntity.additionalConditions)
+
+    // get deletableDocumentUuids before data is changed on the DB
+    val deletableDocumentUuids = exclusionZoneService.getDeletableDocumentUuids(licenceEntity.additionalConditions)
     licenceRepository.delete(licenceEntity)
+    // Delete Documents after all above work is done, just encase exception is thrown before now!
+    exclusionZoneService.deleteDocuments(deletableDocumentUuids)
   }
 
   @Transactional
@@ -967,33 +963,24 @@ class LicenceService(
           id = null,
           licence = licenceCopy,
           additionalConditionData = mutableListOf(),
-          additionalConditionUploadSummary = mutableListOf(),
+          additionalConditionUpload = mutableListOf(),
         )
 
         val data = condition.additionalConditionData.map {
           it.copy(id = null, additionalCondition = copiedCondition)
         }
-        val summary = condition.additionalConditionUploadSummary.map {
+        val summary = condition.additionalConditionUpload.map {
           it.copy(id = null, additionalCondition = copiedCondition)
         }
 
         copiedCondition.additionalConditionData.addAll(data)
-        copiedCondition.additionalConditionUploadSummary.addAll(summary)
+        copiedCondition.additionalConditionUpload.addAll(summary)
         copiedCondition
       }
 
     // This needs to be saved here before the below code uses the condition.id
     licenceCopy.additionalConditions.addAll(copiedAdditionalConditions)
     licenceRepository.saveAndFlush(licenceCopy)
-
-    copiedAdditionalConditions.forEach { condition ->
-      condition.additionalConditionUploadSummary.forEach {
-        var uploadDetail = additionalConditionUploadDetailRepository.getReferenceById(it.uploadDetailId)
-        uploadDetail = uploadDetail.copy(id = null, licenceId = licenceCopy.id, additionalConditionId = condition.id!!)
-        val savedUploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
-        it.uploadDetailId = savedUploadDetail.id!!
-      }
-    }
 
     val licenceEventMessage = when (licenceCopy.statusCode) {
       VARIATION_IN_PROGRESS -> "A variation was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"

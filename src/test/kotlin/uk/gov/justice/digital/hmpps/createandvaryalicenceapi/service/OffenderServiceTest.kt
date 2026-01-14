@@ -21,7 +21,6 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -31,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -192,7 +192,7 @@ class OffenderServiceTest {
 
     service.updateProbationTeam(
       "exampleCrn",
-      UpdateProbationTeamRequest(
+      UpdateProbationTeamEvent(
         probationAreaCode = "N01",
         probationAreaDescription = "N01 Region",
         probationPduCode = "PDU1",
@@ -441,7 +441,7 @@ class OffenderServiceTest {
   val licenceWithOriginalCom = createCrdLicence().copy(responsibleCom = originalCom)
   val licenceWithNewCom = createCrdLicence().copy(responsibleCom = newCom)
 
-  val newProbationRegionDetails = UpdateProbationTeamRequest(
+  val newProbationRegionDetails = UpdateProbationTeamEvent(
     probationAreaCode = "N02",
     probationAreaDescription = "N02 Region",
     probationPduCode = "PDU2",

@@ -48,6 +48,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import java.util.Optional
+import java.util.UUID
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 
 class LicenceConditionServiceTest {
@@ -177,7 +178,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
-      verify(exclusionZoneService, times(1)).deleteDocumentsFor(listOf(additionalCondition(2)))
+      verify(exclusionZoneService, times(1)).deleteDocuments(any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -218,9 +219,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-      verify(exclusionZoneService, times(1)).deleteDocumentsFor(
-        listOf(additionalCondition(2), additionalCondition(3)),
-      )
+      verify(exclusionZoneService, times(1)).deleteDocuments(any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -376,6 +375,8 @@ class LicenceConditionServiceTest {
           ),
         )
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+      val deletedUUIDS = listOf(UUID.randomUUID())
+      whenever(exclusionZoneService.getDeletableDocumentUuids(listOf(expectedToBeRemoved))).thenReturn(deletedUUIDS)
 
       val request = AdditionalConditionsRequest(
         additionalConditions = listOf(
@@ -395,7 +396,8 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any(), any())
-      verify(exclusionZoneService, times(1)).deleteDocumentsFor(listOf(expectedToBeRemoved))
+      verify(exclusionZoneService, times(1)).getDeletableDocumentUuids(listOf(expectedToBeRemoved))
+      verify(exclusionZoneService, times(1)).deleteDocuments(deletedUUIDS)
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1).copy(

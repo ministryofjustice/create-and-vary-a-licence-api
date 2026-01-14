@@ -885,7 +885,7 @@ class DeliusMockServer : WireMockServer(8093) {
         "crn": "X12349",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234F"
+        "nomisId": "A1234AB"
       },
       {
         "crn": "X12350",

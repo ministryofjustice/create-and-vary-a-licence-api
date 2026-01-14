@@ -193,7 +193,7 @@ object TestData {
     expandedConditionText = HARD_STOP_CONDITION.text,
     conditionVersion = licence.version!!,
     additionalConditionData = mutableListOf(),
-    additionalConditionUploadSummary = mutableListOf(),
+    additionalConditionUpload = mutableListOf(),
     conditionCategory = HARD_STOP_CONDITION.categoryShort!!,
   )
 
@@ -743,7 +743,7 @@ object TestData {
     lastWorkedOnBy = "John Smith",
     isInHardStopPeriod = false,
     tabType = CaViewCasesTab.FUTURE_RELEASES,
-    probationPractitioner = ProbationPractitioner(),
+    probationPractitioner = ProbationPractitioner(allocated = true),
   )
 
   fun approvalCase() = ApprovalCase(
@@ -755,7 +755,7 @@ object TestData {
     urgentApproval = false,
     approvedBy = null,
     approvedOn = null,
-    probationPractitioner = ProbationPractitioner(),
+    probationPractitioner = ProbationPractitioner(allocated = true),
     kind = LicenceKind.CRD,
     prisonCode = "MDI",
     prisonDescription = "Moorland (HMP)",
@@ -768,7 +768,7 @@ object TestData {
     licenceType = AP,
     variationRequestDate = LocalDate.of(2023, 11, 24),
     releaseDate = LocalDate.of(2021, 10, 22),
-    probationPractitioner = ProbationPractitioner(),
+    probationPractitioner = ProbationPractitioner(allocated = true),
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
@@ -849,7 +849,6 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 1,
           fileSize = 1,
-          uploadDetailId = 1,
         ),
       ),
     ),
@@ -867,7 +866,6 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 2,
           fileSize = 1,
-          uploadDetailId = 2,
         ),
       ),
     ),
@@ -885,7 +883,6 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 3,
           fileSize = 1,
-          uploadDetailId = 3,
         ),
       ),
     ),

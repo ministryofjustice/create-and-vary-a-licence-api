@@ -4,4 +4,5 @@ data class UpcomingReleasesWithMonitoringConditions(
   val prisonNumber: String,
   val crn: String,
   val status: String,
+  val licenceStartDate: java.sql.Date?,
 )

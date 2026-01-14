@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.2.0"
-  id("org.owasp.dependencycheck") version "12.1.6"
-  kotlin("plugin.spring") version "2.2.21"
-  kotlin("plugin.jpa") version "2.2.21"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.3.0"
+  id("org.owasp.dependencycheck") version "12.2.0"
+  kotlin("plugin.spring") version "2.3.0"
+  kotlin("plugin.jpa") version "2.3.0"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
@@ -25,7 +25,20 @@ dependencies {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
     }
   }
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.8.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.8.2")
+
+  // CVE-2025-67735 - it does not fix all occurrences
+  implementation(enforcedPlatform("io.netty:netty-bom:4.2.8.Final"))
+  implementation("io.netty:netty-buffer")
+  implementation("io.netty:netty-codec-http")
+  implementation("io.netty:netty-handler")
+  implementation("io.netty:netty-transport")
+  // END of CVE-2025-67735 - Remove when fixed
+
+  // Fix for CVE-2025-48924
+  implementation("org.apache.commons:commons-lang3:3.18.0")
+
+  implementation("org.apache.logging.log4j:log4j-api:2.25.0")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -34,10 +47,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-cache")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:5.2.1-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
-  implementation("org.apache.pdfbox:pdfbox:3.0.5")
+  implementation("org.apache.pdfbox:pdfbox:3.0.6")
   implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
 
   // Database dependencies
@@ -45,17 +58,17 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.7.8")
 
   implementation("com.google.code.gson:gson:2.13.2")
-  implementation("io.arrow-kt:arrow-core:2.1.2")
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.11.0")
+  implementation("io.arrow-kt:arrow-core:2.2.1.1")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.14.1")
 
   // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.11")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.6.3")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
 
   // Digital prison reporting
-  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:7.10.5")
+  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:9.8.7")
 
   // Test dependencies
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
@@ -65,12 +78,12 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-impl:0.13.0")
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.13.0")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.1")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.34")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.37")
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
-  testImplementation("org.testcontainers:localstack:1.21.3")
-  testImplementation("org.testcontainers:postgresql:1.21.3")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
+  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
 }
 
 detekt {
@@ -86,7 +99,10 @@ java {
 }
 
 configurations {
-  testImplementation { exclude(group = "org.junit.vintage") }
+  testImplementation {
+    exclude(group = "org.junit.vintage")
+    exclude(group = "org.mozilla:rhino")
+  }
 
   matching { it.name == "detekt" }.all {
     resolutionStrategy.eachDependency {
