@@ -122,7 +122,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
     assertThat(result).hasSize(3)
   }
 
-  // @Test
+  @Test
   @Sql(
     "classpath:test_data/seed-a-few-licences.sql",
     "classpath:test_data/seed-uploads-for-copied-licences.sql",
