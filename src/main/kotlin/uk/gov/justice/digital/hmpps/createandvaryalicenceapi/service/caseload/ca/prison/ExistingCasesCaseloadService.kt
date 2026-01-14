@@ -59,7 +59,8 @@ class ExistingCasesCaseloadService(
       val licencesForOffender = licenceCaCases.filter { l -> l.prisonNumber == nomisRecord.prisonerNumber }
       if (licencesForOffender.isEmpty()) return@map null
       val licence = LatestLicenceFinder.findLatestLicenceCases(licencesForOffender)
-      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence?.licenceStartDate)
+      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence?.licenceStartDate, licence?.kind)
+      println(nomisRecord.firstName + " " + nomisRecord.lastName + " " + licence?.licenceStartDate)
       val releaseDate = licence?.licenceStartDate
       CaCase(
         kind = licence?.kind,

@@ -284,7 +284,7 @@ class PromptComListBuilderTest {
     fun notInHardStop() {
       val promptCase = promptCase() to "user@test.com" to LocalDate.of(2022, 1, 2)
 
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false)
 
       val result = promptComListBuilder.excludeInHardStop(listOf(promptCase))
 
@@ -295,7 +295,7 @@ class PromptComListBuilderTest {
     fun inHardStopPeriod() {
       val promptCase = promptCase() to "user@test.com" to LocalDate.of(2022, 1, 2)
 
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true)
 
       val result = promptComListBuilder.excludeInHardStop(listOf(promptCase))
 

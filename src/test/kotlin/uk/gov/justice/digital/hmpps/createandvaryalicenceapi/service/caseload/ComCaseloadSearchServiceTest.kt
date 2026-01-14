@@ -794,9 +794,9 @@ class ComCaseloadSearchServiceTest {
 
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
-    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true)
+    whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 2, 12))
+    whenever(releaseDateService.getHardStopWarningDate(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 3, 14))
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)

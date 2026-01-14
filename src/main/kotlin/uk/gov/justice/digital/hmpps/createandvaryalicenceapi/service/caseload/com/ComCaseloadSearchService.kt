@@ -157,9 +157,9 @@ class ComCaseloadSearchService(
     licence: Licence,
   ) = this.transformToCaseWithLicence(
     licence = licence,
-    hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
-    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
-    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
+    hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate, licence.kind),
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
   )
 

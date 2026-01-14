@@ -40,9 +40,9 @@ class CvlRecordService(
         eligibleKind = eligibility.eligibleKind,
         ineligibilityReasons = eligibility.ineligibilityReasons,
         hardStopKind = hardStopKind,
-        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate),
-        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate),
-        hardStopDate = releaseDateService.getHardStopDate(licenceStartDate),
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate, hardStopKind),
+        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate, hardStopKind),
+        hardStopDate = releaseDateService.getHardStopDate(licenceStartDate, hardStopKind),
         isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(
           prisoner.toSentenceDateHolder(
             licenceStartDate,
