@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -27,11 +28,16 @@ data class FoundComCase(
   @field:Schema(description = "The prison nomis number for the offender", example = "A1234AA")
   val nomisId: String? = "",
 
+  @Deprecated("Use probationPractitioner name instead")
   @field:Schema(description = "The forename and surname of the COM")
   val comName: String? = "",
 
+  @Deprecated("Use probationPractitioner staffCode instead")
   @field:Schema(description = "The COM's staff code")
   val comStaffCode: String? = "",
+
+  @field:Schema(description = "The details for the active supervising probation officer")
+  val probationPractitioner: ProbationPractitioner,
 
   @field:Schema(description = "The description of the COM's team")
   val teamName: String? = "",

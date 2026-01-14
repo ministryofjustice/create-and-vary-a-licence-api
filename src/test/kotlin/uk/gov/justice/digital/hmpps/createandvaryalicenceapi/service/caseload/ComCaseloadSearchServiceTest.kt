@@ -16,6 +16,7 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -100,7 +101,7 @@ class ComCaseloadSearchServiceTest {
 
     assertThat(result.results.first()).extracting {
       tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
         it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
     }.isEqualTo(
@@ -110,6 +111,7 @@ class ComCaseloadSearchServiceTest {
         "A1234AA",
         "Staff Surname",
         "A01B02C",
+        ProbationPractitioner("A01B02C", "Staff Surname", true),
         "Test Team",
         LocalDate.parse("2021-10-22"),
         1L,
@@ -166,8 +168,8 @@ class ComCaseloadSearchServiceTest {
     )
 
     assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.results.first()).extracting { tuple(it.name, it.comName, it.teamName) }.isEqualTo(
-      tuple("Test Surname", "Staff Surname", "Test Team"),
+    assertThat(result.results.first()).extracting { tuple(it.name, it.comName, it.probationPractitioner, it.teamName) }.isEqualTo(
+      tuple("Test Surname", "Staff Surname", ProbationPractitioner("A01B02C", "Staff Surname", true), "Test Team"),
     )
   }
 
@@ -202,7 +204,7 @@ class ComCaseloadSearchServiceTest {
 
     assertThat(result.results.first()).extracting {
       tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
         it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
     }.isEqualTo(
@@ -212,6 +214,7 @@ class ComCaseloadSearchServiceTest {
         "A1234AA",
         "Staff Surname",
         "A01B02C",
+        ProbationPractitioner("A01B02C", "Staff Surname", true),
         "Test Team",
         LocalDate.parse("2021-10-22"),
         2L,
@@ -250,7 +253,7 @@ class ComCaseloadSearchServiceTest {
 
     assertThat(result.results.first()).extracting {
       tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
         it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
     }.isEqualTo(
@@ -260,6 +263,7 @@ class ComCaseloadSearchServiceTest {
         "A1234AA",
         "Staff Surname",
         "A01B02C",
+        ProbationPractitioner("A01B02C", "Staff Surname", true),
         "Test Team",
         LocalDate.parse("2021-10-22"),
         2L,
@@ -288,7 +292,7 @@ class ComCaseloadSearchServiceTest {
 
     assertThat(result.results.first()).extracting {
       tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
         it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
     }.isEqualTo(
@@ -298,6 +302,7 @@ class ComCaseloadSearchServiceTest {
         "A1234AA",
         "Staff Surname",
         "A01B02C",
+        ProbationPractitioner("A01B02C", "Staff Surname", true),
         "Test Team",
         LocalDate.parse("2023-09-14"),
         null,
@@ -593,7 +598,7 @@ class ComCaseloadSearchServiceTest {
 
     assertThat(result.results.first()).extracting {
       tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
         it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
     }.isEqualTo(
@@ -603,6 +608,7 @@ class ComCaseloadSearchServiceTest {
         "A1234AA",
         "Staff Surname",
         "A01B02C",
+        ProbationPractitioner("A01B02C", "Staff Surname", true),
         "Test Team",
         LocalDate.parse("2023-09-14"),
         null,
