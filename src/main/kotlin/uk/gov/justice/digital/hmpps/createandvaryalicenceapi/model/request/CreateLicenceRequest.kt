@@ -14,7 +14,6 @@ enum class LicenceType {
   TIME_SERVED,
 }
 
-@Deprecated("Use CreatePrisonLicenceRequest or CreateProbationLicenceRequest instead")
 @Schema(description = "Request object for creating a new licence")
 data class CreateLicenceRequest(
   @field:Schema(description = "The prison nomis identifier for this offender", example = "A1234AA")
