@@ -119,7 +119,7 @@ class ExclusionZoneService(
 
   fun deleteDocuments(documentUuids: List<UUID>) {
     log.info("Deleting documents for uuids in ({})", documentUuids)
-//    documentUuids.forEach { documentService.deleteDocument(it) }
+    documentUuids.forEach { documentService.deleteDocument(it) }
   }
 
   @Transactional
