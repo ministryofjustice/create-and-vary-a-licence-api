@@ -112,7 +112,6 @@
     <ID>TooManyFunctions:AppointmentService.kt$AppointmentService</ID>
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
     <ID>TooManyFunctions:CaseloadController.kt$CaseloadController</ID>
-    <ID>TooManyFunctions:ComCaseloadSearchService.kt$ComCaseloadSearchService</ID>
     <ID>TooManyFunctions:ComCreateCaseloadService.kt$ComCreateCaseloadService</ID>
     <ID>TooManyFunctions:ControllerAdvice.kt$ControllerAdvice</ID>
     <ID>TooManyFunctions:DeliusApiClient.kt$DeliusApiClient</ID>
