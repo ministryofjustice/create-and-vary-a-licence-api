@@ -159,7 +159,7 @@ class LicenceConditionService(
 
     val removedConditions = existingConditions.getRemovedConditions(submittedConditions, request)
     // get deletableDocumentUuids before data is changed on the DB
-    val deletableDocumentUuids = uploadFileConditionsService.getDeletableDocumentUuids(licenceEntity.additionalConditions)
+    val deletableDocumentUuids = uploadFileConditionsService.getDeletableDocumentUuids(removedConditions)
 
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
 
