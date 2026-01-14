@@ -42,6 +42,7 @@ generic-service:
     HMPPS_SQS_USE_WEB_TOKEN: true
     FEATURE_TOGGLE_TIMESERVED_ENABLED: true
     TIME_SERVED_PRISONS: "BNI"
+    TIMESERVED_MAX_DAYS_CRD_BEFORE_TODAY: 14
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:

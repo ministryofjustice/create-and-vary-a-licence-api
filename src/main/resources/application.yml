@@ -182,3 +182,10 @@ hmpps:
       prisons: CFI,SWI,PBI,PFI,SUI,RNI,FEI
   sar:
     additionalAccessRole: CVL_ADMIN
+
+timeserved:
+  max:
+    days:
+      crd:
+        before:
+          today: ${TIMESERVED_MAX_DAYS_CRD_BEFORE_TODAY}
