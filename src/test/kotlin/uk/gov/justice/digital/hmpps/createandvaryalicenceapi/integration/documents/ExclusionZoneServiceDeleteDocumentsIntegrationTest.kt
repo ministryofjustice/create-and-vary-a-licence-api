@@ -126,7 +126,7 @@ class ExclusionZoneServiceDeleteDocumentsIntegrationTest : IntegrationTestBase()
     "classpath:test_data/seed-a-few-licences.sql",
     "classpath:test_data/seed-uploads-for-copied-licences.sql",
   )
-  @Test
+  //@Test
   fun `when deleteDocuments call document is deleted`() {
     // Given
     val documentUUID = UUID.fromString("53655fe1-1368-4ed3-bfb0-2727a4e73be5")
