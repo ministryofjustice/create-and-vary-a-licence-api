@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -53,6 +54,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Create a PRRD licence`() {
     // Given
     val nomisPostRecallReleaseDate = LocalDate.now().plusDays(1)
@@ -94,6 +97,48 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Create a probation(PRRD) licence`() {
+    // Given
+    val nomisPostRecallReleaseDate = LocalDate.now().plusDays(1)
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = nomisPostRecallReleaseDate)
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager(regionCode = "REGION1")
+
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(0)
+
+    val createLicenceResponse = webTestClient.post()
+      .uri("/licence/probation/nomisid/NOMSID")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateLicenceResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(createLicenceResponse?.licenceId).isGreaterThan(0L)
+    val licences = testRepository.findAllLicence()
+    assertThat(licences.count()).isEqualTo(1)
+
+    val licence = licences.first()
+    assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
+    assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
+    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(additionalConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Create a CRD licence`() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -133,6 +178,46 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Create a probation(CRD) licence`() {
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(0)
+
+    val result = webTestClient.post()
+      .uri("/licence/probation/nomisid/NOMSID")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateLicenceResponse::class.java)
+      .returnResult().responseBody
+
+    log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
+
+    assertThat(result?.licenceId).isGreaterThan(0L)
+
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(1)
+    val licence = licences.first() as CrdLicence
+    assertThat(licence.getCom().username).isEqualTo("AAA")
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+
+    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(additionalConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
@@ -170,6 +255,44 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/seed-prison-case-administrator.sql",
+  )
+  fun `Cannot create two inflight probation licences`() {
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    val result = webTestClient.post()
+      .uri("/licence/probation/nomisid/NOMSID")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateLicenceResponse::class.java)
+      .returnResult().responseBody!!
+
+    val secondAttempt = webTestClient.post()
+      .uri("/licence/create")
+      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = CRD))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(EntityAlreadyExistsResponse::class.java)
+      .returnResult().responseBody!!
+
+    assertThat(result.licenceId).isEqualTo(secondAttempt.existingResourceId)
+    assertThat(testRepository.countLicence()).isEqualTo(1)
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Unauthorized (401) for creating CRD Licence when no token is supplied`() {
     webTestClient.post()
       .uri("/licence/create")
@@ -183,6 +306,20 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Unauthorized (401) for creating probation Licence when no token is supplied`() {
+    webTestClient.post()
+      .uri("/licence/probation/nomisid/NOMSID")
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Get forbidden (403) for creating CRD Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
       .uri("/licence/create")
@@ -200,6 +337,24 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Get forbidden (403) for creating Probation Licence when incorrect roles are supplied`() {
+    val result = webTestClient.post()
+      .uri("/licence/probation/nomisid/NOMSID")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+      .expectBody(ErrorResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.userMessage).contains("Access Denied")
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
@@ -245,6 +400,49 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
   )
+  fun `Create a prison(Hard Stop) licence`() {
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDate = LocalDate.now().plusDays(10))
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(0)
+
+    val result = webTestClient.post()
+      .uri("/licence/prison/nomisid/NOMSID")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateLicenceResponse::class.java)
+      .returnResult().responseBody!!
+
+    log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
+
+    assertThat(result.licenceId).isGreaterThan(0L)
+
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(1)
+    val licence = licences.first() as HardStopLicence
+    assertThat(licence.kind).isEqualTo(LicenceKind.HARD_STOP)
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licence.getCom().username).isEqualTo("AAA")
+    assertThat(licence.createdBy!!.id).isEqualTo(9L)
+    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
+  @Sql(
+    "classpath:test_data/seed-prison-case-administrator.sql",
+  )
   fun `Create a Timeserved licence`() {
     prisonApiMockServer.stubGetPrison(prisonId = "MDI")
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -284,6 +482,49 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/seed-prison-case-administrator.sql",
+  )
+  fun `Create a prison(Timeserved) licence`() {
+    prisonApiMockServer.stubGetPrison(prisonId = "MDI")
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(prisonId = "MDI")
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(0)
+    assertThat(testRepository.getAuditEventCount()).isEqualTo(0)
+
+    val result = webTestClient.post()
+      .uri("/licence/prison/nomisid/NOMSID")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateLicenceResponse::class.java)
+      .returnResult().responseBody!!
+
+    log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
+
+    assertThat(result.licenceId).isGreaterThan(0L)
+
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(1)
+    val licence = licences.first() as TimeServedLicence
+    assertThat(licence.kind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
+    assertThat(licence.createdBy!!.id).isEqualTo(9L)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getAuditEventCount()).isEqualTo(1)
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   @Sql(
     "classpath:test_data/seed-time-served-external-records-id-1.sql",
     "classpath:test_data/seed-prison-case-administrator.sql",
@@ -345,6 +586,67 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
+    "classpath:test_data/seed-time-served-external-records-id-1.sql",
+    "classpath:test_data/seed-prison-case-administrator.sql",
+  )
+  fun `Create a prison(time served) licence after the user initially selects they wish to create the licence in NOMIS`() {
+    prisonApiMockServer.stubGetPrison(prisonId = "MDI")
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(prisonId = "MDI")
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(0)
+    assertThat(testRepository.getAuditEventCount()).isEqualTo(0)
+
+    // Verify the record exists before deletion
+    val currentReason = testRepository.findTimeServedExternalRecordByNomsIdAndBookingId("A1234AA", 123)
+    assertThat(currentReason?.reason).isEqualTo("Time served licence created for conditional release")
+
+    // When
+    val reponse = webTestClient.post()
+      .uri("/licence/prison/nomisid/A1234AA")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    reponse.expectStatus().isOk
+    reponse.expectHeader().contentType(MediaType.APPLICATION_JSON)
+    val licenceDto = reponse.expectBody(CreateLicenceResponse::class.java).returnResult().responseBody!!
+    assertThat(licenceDto.licenceId).isGreaterThan(0L)
+
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(1)
+    val licence = licences.first() as TimeServedLicence
+    assertThat(licence.kind).isEqualTo(LicenceKind.TIME_SERVED)
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
+    assertThat(licence.createdBy!!.id).isEqualTo(9L)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getAuditEventCount()).isEqualTo(2)
+
+    // Verify the record is deleted
+    val deleted = testRepository.findTimeServedExternalRecordByNomsIdAndBookingId("A1234AA", 123, false)
+    assertThat(deleted).isNull()
+
+    // Verify audit event exists
+    val auditEvent = testRepository.findAllAuditEventsByLicenceIdNull().first()
+    assertThat(auditEvent).isNotNull
+    assertThat(auditEvent.summary).isEqualTo("Deleted NOMIS licence reason")
+    assertThat(auditEvent.changes).containsEntry(
+      "reason (deleted)",
+      "Time served licence created for conditional release",
+    )
+    assertThat(auditEvent.username).isEqualTo("pca")
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
+  @Sql(
     "classpath:test_data/seed-prison-case-administrator.sql",
     "classpath:test_data/seed-timed-out-licence.sql",
   )
@@ -393,6 +695,56 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/seed-prison-case-administrator.sql",
+    "classpath:test_data/seed-timed-out-licence.sql",
+  )
+  fun `Create a prison(Hard Stop) licence which is replacing timed out licence`() {
+    prisonApiMockServer.stubGetPrison()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDate = LocalDate.now().plusDays(1))
+    prisonApiMockServer.stubGetCourtOutcomes()
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    assertThat(testRepository.countLicence()).isEqualTo(1)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(0)
+
+    val result = webTestClient.post()
+      .uri("/licence/prison/nomisid/NOMSID")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateLicenceResponse::class.java)
+      .returnResult().responseBody!!
+
+    log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
+
+    assertThat(result.licenceId).isGreaterThan(0L)
+
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(2)
+    val crdLicence = licences.find { it.kind == LicenceKind.CRD } as CrdLicence
+    val hardStopLicence = licences.find { it.kind == LicenceKind.HARD_STOP } as HardStopLicence
+
+    assertThat(hardStopLicence.getCom().username).isEqualTo("AAA")
+    assertThat(hardStopLicence.createdBy!!.id).isEqualTo(9L)
+    assertThat(hardStopLicence.substituteOfId).isEqualTo(crdLicence.id)
+    assertThat(hardStopLicence.kind).isEqualTo(LicenceKind.HARD_STOP)
+    assertThat(hardStopLicence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(hardStopLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+
+    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(additionalConditionRepository.count()).isEqualTo(1)
+
+    assertThat(auditEventRepository.count()).isEqualTo(1)
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Unauthorized (401) for creating Hard Stop Licence when no token is supplied`() {
     webTestClient.post()
       .uri("/licence/create")
@@ -406,10 +758,40 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Unauthorized (401) for creating prison(Hard Stop) Licence when no token is supplied`() {
+    webTestClient.post()
+      .uri("/licence/prison/nomisid/NOMSID")
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+  }
+
+  @Test
+  @Tag("deprecated")
+  @Suppress("DEPRECATION")
   fun `Get forbidden (403) for creating Hard Stop Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
       .uri("/licence/create")
       .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+      .expectBody(ErrorResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.userMessage).contains("Access Denied")
+    assertThat(testRepository.countLicence()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+  }
+
+  @Test
+  fun `Get forbidden (403) for creating prison(Hard Stop) Licence when incorrect roles are supplied`() {
+    val result = webTestClient.post()
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()
