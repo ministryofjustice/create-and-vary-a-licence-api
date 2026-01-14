@@ -73,20 +73,14 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
     // Check that the upload summary values are present shows against this additional condition
     val uploadSummary = conditions.first()
-    assertThat(uploadSummary.uploadDetailId).isGreaterThan(0)
     assertThat(uploadSummary.filename).isEqualTo(fileResource.filename)
     assertThat(uploadSummary.fileType).isEqualTo("application/pdf")
     assertThat(uploadSummary.imageType).isEqualTo("image/png")
     assertThat(uploadSummary.imageSize).isEqualTo(uploadFile.fullSizeImage.size)
     assertThat(uploadSummary.thumbnailImageDsUuid).isEqualTo(thumbnailUuid.toString())
+    assertThat(uploadSummary.fullSizeImageDsUuid).isEqualTo(fullSizeUuid.toString())
+    assertThat(uploadSummary.originalDataDsUuid).isEqualTo(pdfUuid.toString())
     assertThat(uploadSummary.description?.trim()).isEqualTo("Description")
-
-    // Check that the upload detail values are also stored and referenced by the ID column in the summary
-    val uploadDetail = testRepository.findUploadDetailById(uploadSummary.uploadDetailId)
-    assertThat(uploadDetail).isNotNull
-    assertThat(uploadDetail!!.licenceId).isEqualTo(2)
-    assertThat(uploadDetail.fullSizeImageDsUuid).isEqualTo(fullSizeUuid.toString())
-    assertThat(uploadDetail.originalDataDsUuid).isEqualTo(pdfUuid.toString())
   }
 
   @Test
@@ -106,7 +100,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .header("Content-Type", "application/pdf")
 
     assertThat(testRepository.findUploadSummaryById(1)).isNotNull
-    assertThat(testRepository.findUploadDetailById(1)).isNotNull
 
     // When
     val result = webTestClient.post()
@@ -127,16 +120,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
     assertThat(testRepository.findUploadSummaryById(1)).isNull()
     assertThat(testRepository.findAllUploadSummary()).hasSize(3)
-
-    val detail = testRepository.findUploadDetail(1)
-    assertThat(detail).isNotEmpty
-    assertThat(detail).hasSize(1)
-    assertThat(detail[0].id).isEqualTo(4)
-
-    assertThat(testRepository.findUploadDetailById(1)).isNull()
-    assertThat(testRepository.findAllUploadDetail()).hasSize(3)
-
-    testRepository.findUploadDetailById(1)
   }
 
   @Test
@@ -208,7 +191,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
     documentApiMockServer.verifyDelete("20ca047a-0ae6-4c09-8b97-e3f211feb733")
 
-    assertThat(testRepository.findUploadDetail(2)).isEmpty()
     assertThat(testRepository.findUploadSummary(2)).isEmpty()
   }
 

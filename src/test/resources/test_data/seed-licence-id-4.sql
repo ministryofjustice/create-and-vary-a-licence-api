@@ -247,19 +247,19 @@ insert into additional_condition (id, licence_id, condition_version, condition_c
 values (12, 3, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
 		'AP');
 
-INSERT INTO additional_condition_upload_detail (id, licence_id, additional_condition_id, full_size_image_ds_uuid,
-                                                original_data_ds_uuid )
-VALUES (
-		   1,3,12,
-		   '37eb7e31-a133-4259-96bc-93369b917eb8',
-		   '1595ef41-36e0-4fa8-a98b-bce5c5c98220'
-	   );
-
-INSERT INTO additional_condition_upload_summary (id, additional_condition_id, thumbnail_image_ds_uuid, upload_detail_id,
+INSERT INTO additional_condition_upload (id,
+                                                 additional_condition_id,
+												 full_size_image_ds_uuid,
+												 original_data_ds_uuid,
+                                                 thumbnail_image_ds_uuid,
                                                  file_size, file_type)
 VALUES (
-		   1,12,'92939445-4159-4214-aa75-d07568a3e136',
-		   1,1,'image/png'
+		1,12,
+		'37eb7e31-a133-4259-96bc-93369b917eb8',
+		'1595ef41-36e0-4fa8-a98b-bce5c5c98220',
+        '92939445-4159-4214-aa75-d07568a3e136',
+		1,
+        'image/png'
 	   );
 
 -- Create the data for the exclusion zone condition
