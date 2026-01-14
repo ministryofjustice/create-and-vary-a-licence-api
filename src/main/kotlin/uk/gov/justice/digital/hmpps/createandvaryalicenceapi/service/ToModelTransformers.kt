@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.T
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
@@ -876,15 +875,7 @@ fun CaseloadResult.transformToUnstartedRecord(
   releaseDateLabel: String,
 ): ModelFoundProbationRecord {
   val com = if (staff.unallocated == true) null else staff
-  val probationPractitioner = if (staff.unallocated == true) {
-    ProbationPractitioner.unallocated(staff.code)
-  } else {
-    ProbationPractitioner(
-      staffCode = staff.code,
-      name = staff.name!!.fullName(),
-      allocated = true,
-    )
-  }
+
   return ModelFoundProbationRecord(
     kind = kind,
     bookingId = bookingId,
@@ -893,7 +884,6 @@ fun CaseloadResult.transformToUnstartedRecord(
     nomisId = nomisId,
     comName = com?.name?.fullName()?.convertToTitleCase(),
     comStaffCode = com?.code,
-    probationPractitioner = probationPractitioner,
     teamName = team.description,
     releaseDate = releaseDate,
     licenceId = null,
