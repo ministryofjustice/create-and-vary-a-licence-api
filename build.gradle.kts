@@ -27,12 +27,13 @@ dependencies {
   }
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.8.2")
 
-  // CVE-2025-67735 - it does not fix all occurrences..
+  // CVE-2025-67735 - it does not fix all occurrences
   implementation(enforcedPlatform("io.netty:netty-bom:4.2.8.Final"))
   implementation("io.netty:netty-buffer")
   implementation("io.netty:netty-codec-http")
   implementation("io.netty:netty-handler")
   implementation("io.netty:netty-transport")
+  // END of CVE-2025-67735 - Remove when fixed
 
   // Fix for CVE-2025-48924
   implementation("org.apache.commons:commons-lang3:3.18.0")
@@ -78,7 +79,6 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.13.0")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.1")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.37")
-  testImplementation("org.mozilla:rhino:1.8.1")
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
@@ -99,7 +99,10 @@ java {
 }
 
 configurations {
-  testImplementation { exclude(group = "org.junit.vintage") }
+  testImplementation {
+    exclude(group = "org.junit.vintage")
+    exclude(group = "org.mozilla:rhino")
+  }
 
   matching { it.name == "detekt" }.all {
     resolutionStrategy.eachDependency {
