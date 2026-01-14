@@ -173,7 +173,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     assertThat(result.responseBody).isEqualTo(byteArrayOf(9, 9, 9))
   }
 
-  //@Test
+  // @Test
   @Sql(
     "classpath:test_data/seed-a-few-licences.sql",
     "classpath:test_data/seed-uploads-for-copied-licences.sql",
