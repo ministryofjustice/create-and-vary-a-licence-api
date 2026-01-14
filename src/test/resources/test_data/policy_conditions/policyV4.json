@@ -1313,12 +1313,25 @@
         "code": "005d70e4-a247-4f82-b8b3-6d294a0f5051",
         "category": "Freedom of movement",
         "text": "RESTRICTION ZONES PLACEHOLDER",
-        "tpl": null,
-        "requiresInput": false,
-        "inputs": null,
+        "tpl": "RESTRICTION ZONES PLACEHOLDER",
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "fileUpload",
+            "label": "Select a PDF map of the area this person must not leave",
+            "name": "outOfBoundFilename",
+            "listType": null,
+            "options": null,
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null
+          }
+        ],
         "categoryShort": null,
         "subtext": null,
-        "type": null,
+        "type": "OutOfBoundsRegionPolicyV3",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false
       },

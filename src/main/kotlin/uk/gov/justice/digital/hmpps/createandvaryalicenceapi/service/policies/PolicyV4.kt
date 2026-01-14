@@ -783,8 +783,17 @@ val POLICY_V4_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "005d70e4-a247-4f82-b8b3-6d294a0f5051",
-        requiresInput = false,
+        inputs = listOf(
+          Input(
+            label = "Select a PDF map of the area this person must not leave",
+            name = "outOfBoundFilename",
+            type = FILE_UPLOAD,
+          ),
+        ),
+        requiresInput = true,
         text = "RESTRICTION ZONES PLACEHOLDER",
+        tpl = "RESTRICTION ZONES PLACEHOLDER",
+        type = "OutOfBoundsRegionPolicyV3",
       ),
       AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
