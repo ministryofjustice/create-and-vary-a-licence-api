@@ -77,6 +77,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
+import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -106,6 +107,8 @@ class LicenceService(
   @Transactional(readOnly = true)
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
+    val isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(entityLicence)
+    val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
 
     val conditionsSubmissionStatus =
       getLicenceConditionPolicyData(
@@ -113,19 +116,21 @@ class LicenceService(
         licencePolicyService.getAllAdditionalConditions(),
       )
 
-    val licence = transform(entityLicence, conditionsSubmissionStatus)
-    uploadFileConditionsService.getThumbnailForImages(entityLicence, licence)
+    val licence = transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
+    uploadFileConditionsService.loadThumbnails(entityLicence, licence)
     return licence
   }
 
   fun transform(
     licence: EntityLicence,
+    earliestReleaseDate: LocalDate?,
+    isEligibleForEarlyRelease: Boolean,
     conditionPolicyData: Map<String, ConditionPolicyData>,
   ): Licence = when (licence) {
     is PrrdLicence -> toPrrd(
       licence = licence,
-      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
-      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
@@ -135,8 +140,8 @@ class LicenceService(
 
     is CrdLicence -> toCrd(
       licence = licence,
-      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
-      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
@@ -146,15 +151,15 @@ class LicenceService(
 
     is VariationLicence -> toVariation(
       licence = licence,
-      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
-      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
       conditionPolicyData = conditionPolicyData,
     )
 
     is HardStopLicence -> toHardstop(
       licence = licence,
-      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
-      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
@@ -164,8 +169,8 @@ class LicenceService(
 
     is TimeServedLicence -> toTimeServed(
       licence = licence,
-      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
-      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
@@ -175,8 +180,8 @@ class LicenceService(
 
     is HdcLicence -> toHdc(
       licence = licence,
-      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
-      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
       hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
@@ -186,8 +191,8 @@ class LicenceService(
 
     is HdcVariationLicence -> toHdcVariation(
       licence = licence,
-      earliestReleaseDate = releaseDateService.getEarliestReleaseDate(licence),
-      isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(licence),
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
       conditionPolicyData = conditionPolicyData,
     )
 
