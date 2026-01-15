@@ -157,8 +157,11 @@ dpr:
   lib:
     definition:
       locations: dpr_reports/Active_Licences.json, dpr_reports/Install_At_Source.json
-    system:
-      role: ROLE_CVL_ADMIN
+    caseloads:
+      host: ${hmpps.manageusers.api.url}
+      path: /users/me/caseloads
+    user:
+      role: ROLE_NOMIS_BATCHLOAD
 
 address:
   search:
