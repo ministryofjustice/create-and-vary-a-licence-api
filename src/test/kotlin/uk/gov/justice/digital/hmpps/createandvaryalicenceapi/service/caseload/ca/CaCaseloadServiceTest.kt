@@ -264,6 +264,8 @@ class CaCaseloadServiceTest {
           ),
         )
 
+        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
+
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
@@ -898,6 +900,8 @@ class CaCaseloadServiceTest {
           ),
         )
 
+        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
+
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
@@ -1032,6 +1036,8 @@ class CaCaseloadServiceTest {
           ),
         )
 
+        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
+
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
@@ -1099,6 +1105,8 @@ class CaCaseloadServiceTest {
             ),
           ),
         )
+
+        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(

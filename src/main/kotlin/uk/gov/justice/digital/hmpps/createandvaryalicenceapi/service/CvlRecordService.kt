@@ -5,6 +5,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
@@ -56,11 +58,13 @@ class CvlRecordService(
     }
   }
 
+  fun isTimedOut(cvlRecord: CvlRecord) = cvlRecord.isInHardStopPeriod || cvlRecord.hardStopKind == TIME_SERVED
+
   private fun getLicenceType(nomisRecord: PrisonerSearchPrisoner, licenceStartDate: LocalDate?, kind: LicenceKind?) = when {
     nomisRecord.licenceExpiryDate == null && nomisRecord.topupSupervisionExpiryDate == null -> AP
     nomisRecord.licenceExpiryDate == null -> PSS
     nomisRecord.topupSupervisionExpiryDate == null || nomisRecord.topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
-    kind == LicenceKind.PRRD -> getRecallLicenceType(nomisRecord, licenceStartDate)
+    kind == PRRD -> getRecallLicenceType(nomisRecord, licenceStartDate)
     else -> AP_PSS
   }
 

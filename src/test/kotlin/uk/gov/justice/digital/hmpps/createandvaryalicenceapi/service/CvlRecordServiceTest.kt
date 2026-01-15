@@ -248,6 +248,69 @@ class CvlRecordServiceTest {
     )
   }
 
+  @Nested
+  inner class IsTimedOutTest {
+    @Test
+    fun `returns true when cvlRecord is in hard stop period`() {
+      val cvlRecord = CvlRecord(
+        nomisId = "A1234AA",
+        licenceStartDate = LocalDate.now(),
+        isEligible = true,
+        eligibleKind = LicenceKind.CRD,
+        ineligibilityReasons = emptyList(),
+        isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        isEligibleForEarlyRelease = false,
+        hardStopWarningDate = null,
+        hardStopDate = LocalDate.now(),
+        isInHardStopPeriod = true,
+        hardStopKind = LicenceKind.HARD_STOP,
+        licenceType = AP,
+      )
+
+      assertThat(service.isTimedOut(cvlRecord)).isTrue()
+    }
+
+    @Test
+    fun `returns true when hardStopKind is TIME_SERVED`() {
+      val cvlRecord = CvlRecord(
+        nomisId = "A1234AA",
+        licenceStartDate = LocalDate.now(),
+        isEligible = true,
+        eligibleKind = LicenceKind.CRD,
+        ineligibilityReasons = emptyList(),
+        isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        isEligibleForEarlyRelease = false,
+        hardStopWarningDate = null,
+        hardStopDate = null,
+        isInHardStopPeriod = false,
+        hardStopKind = LicenceKind.TIME_SERVED,
+        licenceType = AP,
+      )
+
+      assertThat(service.isTimedOut(cvlRecord)).isTrue()
+    }
+
+    @Test
+    fun `returns false when not in hard stop period and hardStopKind is not TIME_SERVED`() {
+      val cvlRecord = CvlRecord(
+        nomisId = "A1234AA",
+        licenceStartDate = LocalDate.now(),
+        isEligible = true,
+        eligibleKind = LicenceKind.CRD,
+        ineligibilityReasons = emptyList(),
+        isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        isEligibleForEarlyRelease = false,
+        hardStopWarningDate = null,
+        hardStopDate = null,
+        isInHardStopPeriod = false,
+        hardStopKind = LicenceKind.HARD_STOP,
+        licenceType = AP,
+      )
+
+      assertThat(service.isTimedOut(cvlRecord)).isFalse()
+    }
+  }
+
   private val aPrisonerSearchPrisoner = prisonerSearchResult()
   private val prrdEligibilityAssessment = anEligibilityAssessment().copy(
     crdIneligibilityReasons = listOf("Some reason"),
