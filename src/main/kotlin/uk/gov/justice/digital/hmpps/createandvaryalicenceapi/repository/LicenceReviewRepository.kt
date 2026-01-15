@@ -15,6 +15,7 @@ interface LicenceReviewRepository : JpaRepository<Licence, Long> {
     WHERE l.kind in ('HARD_STOP', 'TIME_SERVED')
       AND l.reviewDate IS NULL
       AND l.licenceActivatedDate BETWEEN :start AND :end
+      ORDER BY l.id
     """,
   )
   fun getLicencesNeedingReview(start: LocalDateTime, end: LocalDateTime): List<Licence>
