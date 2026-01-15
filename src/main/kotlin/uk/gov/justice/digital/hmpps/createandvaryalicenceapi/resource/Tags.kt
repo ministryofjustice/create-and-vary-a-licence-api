@@ -10,7 +10,7 @@ class Tags {
     const val COM = "Community Offender Manager"
     const val STAFF = "Staff"
     const val EVENTS = "Events"
-    const val CONDITION_SUPPORTING_DOCUMENTS = "condition supporting documents"
+    const val CONDITION_SUPPORTING_DOCUMENTS = "Condition Supporting Documents"
     const val HDC = "HDC"
     const val JOBS = "Jobs"
     const val LICENCES = "Licences"

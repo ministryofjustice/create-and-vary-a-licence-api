@@ -117,7 +117,7 @@ class LicenceService(
       )
 
     val licence = transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
-    uploadFileConditionsService.loadThumbnails(entityLicence, licence)
+    uploadFileConditionsService.getThumbnailForImages(entityLicence, licence)
     return licence
   }
 

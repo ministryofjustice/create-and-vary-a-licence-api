@@ -181,11 +181,11 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectHeader().contentType(MediaType.IMAGE_JPEG)
-      .expectBody().returnResult()
 
     // Then
-    assertThat(result.responseBody).isEqualTo(byteArrayOf(9, 9, 9))
+    result.expectHeader().contentType(MediaType.IMAGE_JPEG)
+    result.expectStatus().isOk
+    assertThat(result.expectBody().returnResult().responseBody).isEqualTo(byteArrayOf(9, 9, 9))
   }
 
   @Test

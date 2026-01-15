@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toBase64
 import java.util.UUID
 import javax.imageio.ImageIO
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceModel
 
 private const val IMAGE_TYPE = "image/png"
 
@@ -91,7 +92,7 @@ class UploadFileConditionsService(
 
   fun getThumbnailForImages(
     entityLicence: Licence,
-    licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence,
+    licence: LicenceModel,
   ) {
     val uploadThumbNailUuids = entityLicence.additionalConditions
       .flatMap { it.additionalConditionUpload }
