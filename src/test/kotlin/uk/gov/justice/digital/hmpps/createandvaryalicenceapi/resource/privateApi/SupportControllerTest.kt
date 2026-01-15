@@ -58,7 +58,6 @@ class SupportControllerTest {
         genericIneligibilityReasons = listOf("A Reason"),
         crdIneligibilityReasons = emptyList(),
         prrdIneligibilityReasons = emptyList(),
-        isEligible = false,
       ),
     )
 
