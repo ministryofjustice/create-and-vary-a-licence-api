@@ -26,7 +26,7 @@ generic-service:
     SELF_API_LINK: "https://create-and-vary-a-licence-api-test1.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
-    PROGRESSION_MODEL_POLICY_START_DATE: 2026-09-01
+    PROGRESSION_MODEL_POLICY_START_DATE: 2026-01-14
     TIME_SERVED_PRISONS: "MDI, BAI, BNI"
 
   namespace_secrets:
