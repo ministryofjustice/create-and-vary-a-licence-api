@@ -178,9 +178,14 @@ object TestData {
     genericIneligibilityReasons = emptyList(),
     crdIneligibilityReasons = emptyList(),
     prrdIneligibilityReasons = emptyList(),
-    isEligible = true,
-    eligibleKind = LicenceKind.CRD,
-    ineligibilityReasons = emptyList(),
+    hdcIneligibilityReasons = listOf("An HDC reason"),
+  )
+
+  fun anIneligibleEligibilityAssessment() = EligibilityAssessment(
+    genericIneligibilityReasons = listOf("A CRD reason", "A PRRD reason"),
+    crdIneligibilityReasons = listOf("A CRD reason"),
+    prrdIneligibilityReasons = listOf("A PRRD reason"),
+    hdcIneligibilityReasons = listOf("An HDC reason"),
   )
 
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
@@ -599,6 +604,10 @@ object TestData {
     sentenceStartDate = sentenceStartDate,
     sentenceExpiryDate = LocalDate.of(2021, 10, 22),
     postRecallReleaseDate = postRecallReleaseDate,
+    homeDetentionCurfewEligibilityDate = null,
+    homeDetentionCurfewActualDate = null,
+    paroleEligibilityDate = null,
+    actualParoleDate = null,
   )
 
   fun createPrisonerSearchResult(

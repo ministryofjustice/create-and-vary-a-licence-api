@@ -11,6 +11,7 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anIneligibleEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -43,7 +44,7 @@ class CvlRecordServiceTest {
       mapOf(
         aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment(),
         "A1234AB" to prrdEligibilityAssessment,
-        "A1234AC" to ineligibleEligibilityAssessment,
+        "A1234AC" to anIneligibleEligibilityAssessment(),
       ),
     )
     whenever(
@@ -114,7 +115,7 @@ class CvlRecordServiceTest {
         licenceStartDate = null,
         isEligible = false,
         eligibleKind = null,
-        ineligibilityReasons = ineligibleEligibilityAssessment.ineligibilityReasons,
+        ineligibilityReasons = anIneligibleEligibilityAssessment().ineligibilityReasons,
         hardStopKind = LicenceKind.HARD_STOP,
         hardStopDate = LocalDate.of(2023, 10, 12),
         hardStopWarningDate = LocalDate.of(2023, 10, 11),
@@ -241,11 +242,6 @@ class CvlRecordServiceTest {
       val cvlRecord = service.getCvlRecord(nomisRecord)
       assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.PSS)
     }
-
-    private val prrdEligibilityAssessment = anEligibilityAssessment().copy(
-      crdIneligibilityReasons = listOf("Some reason"),
-      eligibleKind = LicenceKind.PRRD,
-    )
   }
 
   @Nested
@@ -314,11 +310,6 @@ class CvlRecordServiceTest {
   private val aPrisonerSearchPrisoner = prisonerSearchResult()
   private val prrdEligibilityAssessment = anEligibilityAssessment().copy(
     crdIneligibilityReasons = listOf("Some reason"),
-    eligibleKind = LicenceKind.PRRD,
-  )
-  private val ineligibleEligibilityAssessment = anEligibilityAssessment().copy(
-    genericIneligibilityReasons = listOf("Some reason"),
-    isEligible = false,
-    eligibleKind = null,
+    hdcIneligibilityReasons = listOf("Some reason"),
   )
 }
