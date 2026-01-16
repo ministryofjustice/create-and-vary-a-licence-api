@@ -92,4 +92,16 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
       .bodyToMono(typeReference<List<BookingSentenceAndRecallTypes>>())
       .block()
   }
+
+  fun getPrisonerSentenceAndOffences(bookingId: Long): List<OffenderSentenceAndOffences> {
+    val sentencesAndOffences = prisonerApiWebClient
+      .get()
+      .uri("api/offender-sentences/booking/$bookingId/sentences-and-offences")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<OffenderSentenceAndOffences>>())
+      .block()
+    return sentencesAndOffences
+      ?: error("Unexpected null response from Prison API while getting sentences and offences for bookingId $bookingId")
+  }
 }
