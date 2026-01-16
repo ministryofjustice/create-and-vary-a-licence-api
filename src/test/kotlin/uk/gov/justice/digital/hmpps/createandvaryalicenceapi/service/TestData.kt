@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EV
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenderSentenceAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -1113,4 +1114,11 @@ object TestData {
     firstName = "X",
     lastName = "Y",
   )
+
+  fun offenderSentencesAndOffences(bookingId: Long): List<OffenderSentenceAndOffences> {
+    val sentenceAndOffences1 =
+      OffenderSentenceAndOffences(bookingId = bookingId, sentenceDate = LocalDate.of(2025, 8, 20))
+    val sentenceAndOffences2 = sentenceAndOffences1.copy(sentenceDate = LocalDate.of(2024, 8, 25))
+    return listOf(sentenceAndOffences1, sentenceAndOffences2)
+  }
 }
