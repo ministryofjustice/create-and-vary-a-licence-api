@@ -48,8 +48,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.getLicenceConditionPolicyData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -96,7 +96,7 @@ class LicenceService(
   private val domainEventsService: DomainEventsService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val eligibilityService: EligibilityService,
-  private val exclusionZoneService: ExclusionZoneService,
+  private val uploadFileConditionsService: UploadFileConditionsService,
   private val deliusApiClient: DeliusApiClient,
   private val telemetryService: TelemetryService,
   private val auditService: AuditService,
@@ -117,7 +117,7 @@ class LicenceService(
       )
 
     val licence = transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
-    exclusionZoneService.loadThumbnails(entityLicence, licence)
+    uploadFileConditionsService.getThumbnailForImages(entityLicence, licence)
     return licence
   }
 
@@ -899,10 +899,10 @@ class LicenceService(
     log.info("Deleting documents for Licence id={}", licenceEntity.id)
 
     // get deletableDocumentUuids before data is changed on the DB
-    val deletableDocumentUuids = exclusionZoneService.getDeletableDocumentUuids(licenceEntity.additionalConditions)
+    val deletableDocumentUuids = uploadFileConditionsService.getDeletableDocumentUuids(licenceEntity.additionalConditions)
     licenceRepository.delete(licenceEntity)
     // Delete Documents after all above work is done, just encase exception is thrown before now!
-    exclusionZoneService.deleteDocuments(deletableDocumentUuids)
+    uploadFileConditionsService.deleteDocuments(deletableDocumentUuids)
   }
 
   @Transactional

@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublicLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceAdditional
@@ -39,12 +39,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 class PublicLicenceServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceService = mock<LicenceService>()
-  private val exclusionZoneService = mock<ExclusionZoneService>()
+  private val uploadFileConditionsService = mock<UploadFileConditionsService>()
 
   private val service = PublicLicenceService(
     licenceRepository,
     licenceService,
-    exclusionZoneService,
+    uploadFileConditionsService,
   )
 
   @BeforeEach
@@ -52,7 +52,7 @@ class PublicLicenceServiceTest {
     reset(
       licenceRepository,
       licenceService,
-      exclusionZoneService,
+      uploadFileConditionsService,
     )
   }
 
@@ -226,7 +226,7 @@ class PublicLicenceServiceTest {
   inner class `Get exclusion zone image by condition ID` {
     @Test
     fun `service returns an exclusion zone image by condition ID`() {
-      whenever(exclusionZoneService.getExclusionZoneImage(1L, 2L)).thenReturn(byteArrayOf(1, 2, 3))
+      whenever(uploadFileConditionsService.getImage(1L, 2L)).thenReturn(byteArrayOf(1, 2, 3))
 
       val image = service.getImageUpload(1L, 2L)
 

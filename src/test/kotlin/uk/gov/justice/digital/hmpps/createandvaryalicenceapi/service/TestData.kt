@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
@@ -911,6 +912,23 @@ object TestData {
       ),
       readyToSubmit = true,
       requiresInput = true,
+    ),
+    ModelAdditionalCondition(
+      id = 6,
+      category = "FreedomOfMovement",
+      code = MULTIPLE_UPLOAD_COND_CODE,
+      sequence = 6,
+      text = "Do not enter the area defined in the attached map.",
+      expandedText = "Do not enter the area defined in the attached map.",
+      data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(
+          id = 2,
+          fileSize = 1,
+        ),
+      ),
     ),
   )
 
