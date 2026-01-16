@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -1075,129 +1073,6 @@ class ReleaseDateServiceTest {
   }
 
   @Nested
-  inner class `Get hard stop kind` {
-    val thisClock = createClock("2024-04-22T00:00:00Z")
-    val today = LocalDate.now(thisClock)
-    val cutOff = getCutOffDateForLicenceTimeOut(thisClock)
-    val prisonCode = "MDI"
-
-    @Test
-    fun `returns HARD_STOP when is in Hard Stop Period`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today.minusDays(1),
-        confirmedReleaseDate = today.minusDays(1),
-        conditionalReleaseDate = today.minusDays(1),
-        conditionalReleaseDateOverrideDate = today.minusDays(1),
-      )
-
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
-      assertEquals(LicenceKind.HARD_STOP, result)
-    }
-
-    @Test
-    fun `returns null when all dates are null`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = null,
-        confirmedReleaseDate = null,
-        conditionalReleaseDate = null,
-        conditionalReleaseDateOverrideDate = null,
-      )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(null), prisonCode, thisClock)
-      assertNull(result)
-    }
-
-    @Test
-    fun `returns TIME_SERVED when all dates are today and override date is null`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today,
-        confirmedReleaseDate = today,
-        conditionalReleaseDate = today,
-        conditionalReleaseDateOverrideDate = null,
-      )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
-      assertEquals(LicenceKind.TIME_SERVED, result)
-    }
-
-    @Test
-    fun `returns HARD_STOP when sentenceStartDate is not today`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today.minusDays(1),
-        confirmedReleaseDate = today,
-        conditionalReleaseDate = today,
-        conditionalReleaseDateOverrideDate = null,
-      )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
-      assertEquals(LicenceKind.HARD_STOP, result)
-    }
-
-    @Test
-    fun `returns HARD_STOP when confirmedReleaseDate is not today`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today,
-        confirmedReleaseDate = today.minusDays(1),
-        conditionalReleaseDate = today,
-        conditionalReleaseDateOverrideDate = null,
-      )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
-      assertEquals(LicenceKind.HARD_STOP, result)
-    }
-
-    @Test
-    fun `returns HARD_STOP when neither conditionalReleaseDateOverrideDate nor conditionalReleaseDate is today`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today,
-        confirmedReleaseDate = today,
-        conditionalReleaseDate = today.minusDays(1),
-        conditionalReleaseDateOverrideDate = today.minusDays(1),
-      )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
-      assertEquals(LicenceKind.HARD_STOP, result)
-    }
-
-    @Test
-    fun `returns HARD_STOP when all dates are today and override date is today except conditional release date and isTimeServedEnabled falg is disabled`() {
-      val service =
-        ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, isTimeServedEnabled = false)
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today,
-        confirmedReleaseDate = today,
-        conditionalReleaseDate = today.minusDays(1),
-        conditionalReleaseDateOverrideDate = today,
-      )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
-      assertEquals(LicenceKind.HARD_STOP, result)
-    }
-
-    @Test
-    fun `returns HARD_STOP when all dates are today and isTimeServedEnabled flag is enabled but prison is not in the enabled list`() {
-      val service =
-        ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, isTimeServedEnabled = true, timeServedEnabledPrisons = listOf("LEI", "BXI"))
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today,
-        confirmedReleaseDate = today,
-        conditionalReleaseDate = today,
-        conditionalReleaseDateOverrideDate = today,
-      )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
-      assertEquals(LicenceKind.HARD_STOP, result)
-    }
-
-    @Test
-    fun `returns HARD_STOP when all dates are today and isTimeServedEnabled falg enabled but timeServedEnabledPrisons is null`() {
-      val service =
-        ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, isTimeServedEnabled = true, timeServedEnabledPrisons = null)
-      val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today,
-        confirmedReleaseDate = today,
-        conditionalReleaseDate = today,
-        conditionalReleaseDateOverrideDate = today,
-      )
-      val result = service.getHardStopKind(nomisRecord.toSentenceDateHolder(cutOff), prisonCode, thisClock)
-      assertEquals(LicenceKind.HARD_STOP, result)
-    }
-  }
-
-  @Nested
   inner class `isReleaseAtLed` {
 
     @Test
@@ -1241,6 +1116,146 @@ class ReleaseDateServiceTest {
     }
   }
 
+  @Nested
+  inner class `isTimeServedTest` {
+    @Test
+    fun `returns false when feature flag is disabled`() {
+      val service = ReleaseDateService(
+        clock,
+        workingDaysService,
+        iS91DeterminationService,
+        isTimeServedEnabled = false,
+        timeServedEnabledPrisons = listOf(prisonCode),
+      )
+
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), prisonCode, clock)).isFalse()
+    }
+
+    @Test
+    fun `returns false when prison is not in enabled list`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), "LEI", clock)).isFalse()
+    }
+
+    @Test
+    fun `returns false when prison code is null`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), null, clock)).isFalse()
+    }
+
+    @Test
+    fun `returns false when enabled prisons list is null`() {
+      val service = ReleaseDateService(
+        clock,
+        workingDaysService,
+        iS91DeterminationService,
+        isTimeServedEnabled = true,
+        timeServedEnabledPrisons = null,
+      )
+
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), prisonCode, clock)).isFalse()
+    }
+
+    @Test
+    fun `returns false when sentence start date is not today`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today.minusDays(1),
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), prisonCode, clock)).isFalse()
+    }
+
+    @Test
+    fun `returns false when actual release date is not today`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today.minusDays(1),
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), prisonCode, clock)).isFalse()
+    }
+
+    @Test
+    fun `returns false when conditional release date is not today`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today.minusDays(1),
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), prisonCode, clock)).isFalse()
+    }
+
+    @Test
+    fun `returns false when sentence start date is null`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = null,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), prisonCode, clock)).isFalse()
+    }
+
+    @Test
+    fun `returns false when actual release date is null`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = null,
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), prisonCode, clock)).isFalse()
+    }
+
+    @Test
+    fun `returns false when conditional release date is null`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = null,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), prisonCode, clock)).isFalse()
+    }
+
+    @Test
+    fun `returns true when all conditions are met`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        confirmedReleaseDate = today,
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord.toSentenceDateHolder(null), prisonCode, clock)).isTrue()
+    }
+  }
+
   private companion object {
     val bankHolidays = listOf(
       LocalDate.parse("2018-01-01"),
@@ -1260,5 +1275,7 @@ class ReleaseDateServiceTest {
     private fun createClock(timestamp: String) = Clock.fixed(Instant.parse(timestamp), ZoneId.systemDefault())
 
     val clock: Clock = createClock("2023-11-10T00:00:00Z")
+    val today: LocalDate = LocalDate.now(clock)
+    val prisonCode = "MDI"
   }
 }

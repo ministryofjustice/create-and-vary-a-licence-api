@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
@@ -118,10 +117,8 @@ class ReleaseDateService(
     return releaseDate == licenceExpiryDate
   }
 
-  private fun isTimeServed(
-    sentenceStartDate: LocalDate?,
-    confirmedReleaseDate: LocalDate?,
-    conditionalReleaseDate: LocalDate?,
+  fun isTimeServed(
+    sentenceDateHolder: SentenceDateHolder,
     prisonCode: String?,
     overrideClock: Clock? = null,
   ): Boolean {
@@ -130,38 +127,10 @@ class ReleaseDateService(
 
     return isTimeServedEnabled &&
       timeServedEnabledPrisons?.contains(prisonCode) == true &&
-      sentenceStartDate == today &&
-      confirmedReleaseDate == today &&
-      conditionalReleaseDate == today
+      sentenceDateHolder.sentenceStartDate == today &&
+      sentenceDateHolder.actualReleaseDate == today &&
+      sentenceDateHolder.conditionalReleaseDate == today
   }
-
-  private fun determineHardStopKind(
-    licenceStartDate: LocalDate?,
-    sentenceStartDate: LocalDate?,
-    confirmedReleaseDate: LocalDate?,
-    conditionalReleaseDate: LocalDate?,
-    prisonCode: String?,
-    overrideClock: Clock? = null,
-  ): LicenceKind? {
-    if (licenceStartDate == null || !isInHardStopPeriod(licenceStartDate, null, overrideClock)) {
-      return null
-    }
-
-    return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate, prisonCode, overrideClock)) {
-      TIME_SERVED
-    } else {
-      HARD_STOP
-    }
-  }
-
-  fun getHardStopKind(sentenceDateHolder: SentenceDateHolder, prisonCode: String?, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
-    sentenceDateHolder.licenceStartDate,
-    sentenceDateHolder.sentenceStartDate,
-    sentenceDateHolder.actualReleaseDate,
-    sentenceDateHolder.conditionalReleaseDate,
-    prisonCode,
-    overrideClock,
-  )
 
   private fun calculateCrdLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
