@@ -21,33 +21,28 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 
-@Deprecated(
-  message = "Use UploadFileConditionController instead",
-)
+const val UPLOAD_FILE_CONDITION_ENDPOINT = "/licence/{licenceId}/condition/{conditionId}/supporting-document"
+
 @Tag(name = Tags.CONDITION_SUPPORTING_DOCUMENTS)
 @RestController
-@RequestMapping("/exclusion-zone", produces = [MediaType.APPLICATION_JSON_VALUE])
-class ExclusionZoneController(private val exclusionZoneService: UploadFileConditionsService) {
+@RequestMapping(UPLOAD_FILE_CONDITION_ENDPOINT, produces = [MediaType.APPLICATION_JSON_VALUE])
+class UploadFileConditionController(private val uploadFileConditionsService: UploadFileConditionsService) {
 
-  @Deprecated(
-    message = "Use $UPLOAD_FILE_CONDITION_ENDPOINT instead",
-  )
   @PostMapping(
-    value = ["/id/{licenceId}/condition/id/{conditionId}/file-upload"],
     consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Upload a multipart/form-data request containing a PDF exclusion zone file.",
-    description = "Uploads a PDF file containing an exclusion zone map and description. Requires ROLE_CVL_ADMIN.",
+    summary = "Upload a multipart/form-data request containing a PDF file.",
+    description = "Uploads a condition file and description. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The exclusion zone file was uploaded",
+        description = "The condition file was uploaded",
       ),
       ApiResponse(
         responseCode = "400",
@@ -66,24 +61,20 @@ class ExclusionZoneController(private val exclusionZoneService: UploadFileCondit
       ),
     ],
   )
-  fun uploadExclusionZoneFile(
+  fun uploadFile(
     @PathVariable(value = "licenceId") licenceId: Long,
     @PathVariable(value = "conditionId") conditionId: Long,
     @RequestPart("file") file: MultipartFile,
-  ) = exclusionZoneService.uploadFile(licenceId, conditionId, file)
+  ) = uploadFileConditionsService.uploadFile(licenceId, conditionId, file)
 
-  @Deprecated(
-    message = "Use $UPLOAD_FILE_CONDITION_ENDPOINT instead",
-  )
   @GetMapping(
-    value = ["/id/{licenceId}/condition/id/{conditionId}/full-size-image"],
     produces = [MediaType.IMAGE_JPEG_VALUE],
   )
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
-    summary = "Get the exclusion zone map image for a specified licence and condition",
-    description = "Get the exclusion zone map image. Requires ROLE_CVL_ADMIN.",
+    summary = "Get the condition image for a specified licence and condition",
+    description = "Get the condition image. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
@@ -110,8 +101,8 @@ class ExclusionZoneController(private val exclusionZoneService: UploadFileCondit
       ),
     ],
   )
-  fun getExclusionZoneImage(
+  fun getImage(
     @PathVariable(name = "licenceId") licenceId: Long,
     @PathVariable(name = "conditionId") conditionId: Long,
-  ): ByteArray? = exclusionZoneService.getImage(licenceId, conditionId)
+  ): ByteArray? = uploadFileConditionsService.getImage(licenceId, conditionId)
 }

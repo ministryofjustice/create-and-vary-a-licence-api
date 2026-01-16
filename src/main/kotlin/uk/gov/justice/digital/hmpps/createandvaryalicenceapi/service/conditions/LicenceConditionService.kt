@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transform
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityAdditional
@@ -40,7 +41,7 @@ class LicenceConditionService(
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
   private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService,
-  private val exclusionZoneService: ExclusionZoneService,
+  private val uploadFileConditionsService: UploadFileConditionsService,
 ) {
 
   @Transactional
@@ -158,7 +159,7 @@ class LicenceConditionService(
 
     val removedConditions = existingConditions.getRemovedConditions(submittedConditions, request)
     // get deletableDocumentUuids before data is changed on the DB
-    val deletableDocumentUuids = exclusionZoneService.getDeletableDocumentUuids(removedConditions)
+    val deletableDocumentUuids = uploadFileConditionsService.getDeletableDocumentUuids(removedConditions)
 
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
 
@@ -185,7 +186,7 @@ class LicenceConditionService(
       staffMember,
     )
     // Delete Documents after all above work is done, just encase exception is thrown before now!
-    exclusionZoneService.deleteDocuments(deletableDocumentUuids)
+    uploadFileConditionsService.deleteDocuments(deletableDocumentUuids)
   }
 
   private fun List<EntityAdditionalCondition>.getUpdatedConditions(
@@ -332,7 +333,7 @@ class LicenceConditionService(
       licenceEntity.additionalConditions.filter { additionalConditionIds.contains(it.id) }
 
     // get deletableDocumentUuids before data is changed on the DB
-    val deletableDocumentUuids = exclusionZoneService.getDeletableDocumentUuids(removedAdditionalConditions)
+    val deletableDocumentUuids = uploadFileConditionsService.getDeletableDocumentUuids(removedAdditionalConditions)
 
     // return all conditions except condition with submitted conditionIds
     val revisedStandardConditions =
@@ -368,7 +369,7 @@ class LicenceConditionService(
     auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, removedBespokeConditions, staffMember)
 
     // Delete Documents after all above work is done, just encase exception is thrown before now!
-    exclusionZoneService.deleteDocuments(deletableDocumentUuids)
+    uploadFileConditionsService.deleteDocuments(deletableDocumentUuids)
   }
 
   private fun getCurrentUserName(): String = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER

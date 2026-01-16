@@ -11,11 +11,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleUploadAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
@@ -83,6 +85,7 @@ fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditio
   when (it.code) {
     ELECTRONIC_TAG_COND_CODE_14A -> transformElectronicMonitoring(it)
     EXCLUSION_ZONE_COND_CODE -> transformMultipleExclusionZonesCondition(it)
+    MULTIPLE_UPLOAD_COND_CODE -> transformMultipleUploadsCondition(it)
     EVENT_EXCLUSION_COND_CODE -> transformSingleExclusionZoneCondition(it)
     else -> standardAdditionalCondition(it)
   }
@@ -103,6 +106,15 @@ fun transformElectronicMonitoring(model: AdditionalCondition) = ElectronicMonito
 fun transformMultipleExclusionZonesCondition(model: AdditionalCondition) = MultipleExclusionZoneAdditionalCondition(
   category = model.category.orEmpty(),
   type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
+  id = model.id ?: 0,
+  code = model.code.orEmpty(),
+  text = model.expandedText.orEmpty(),
+  hasImageUpload = model.uploadSummary.isNotEmpty(),
+)
+
+fun transformMultipleUploadsCondition(model: AdditionalCondition) = MultipleUploadAdditionalCondition(
+  category = model.category.orEmpty(),
+  type = ConditionTypes.MULTIPLE_UPLOADS,
   id = model.id ?: 0,
   code = model.code.orEmpty(),
   text = model.expandedText.orEmpty(),
