@@ -105,6 +105,7 @@ class ReleaseDateService(
       it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
         PRRD -> calculatePrrdLicenceStartDate(it)
         CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
+        LicenceKind.HDC -> it.homeDetentionCurfewActualDate
         else -> null
       }
     }
