@@ -98,7 +98,6 @@ class EligibilityService(
   }
 
   // CRD-specific eligibility rules
-  <<<<<<< CVSL-3631-time-served-eligibilty-updates
   private fun hasCrdTodayOrInTheFutureOrIsTimeServed(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
     (
       dateIsTodayOrFuture(prisoner.conditionalReleaseDate) ||
@@ -168,7 +167,10 @@ class EligibilityService(
   // HDC-specific eligibility rules
   private fun hasHomeDetentionCurfewActualDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.homeDetentionCurfewActualDate != null
 
-  private fun isTenOrMoreDaysToCrd(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null || prisoner.conditionalReleaseDate.isOnOrAfter(LocalDate.now(clock).plusDays(MINIMUM_HDC_WINDOW_DAYS))
+  private fun isTenOrMoreDaysToCrd(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
+    prisoner.conditionalReleaseDate.isOnOrAfter(
+      LocalDate.now(clock).plusDays(MINIMUM_HDC_WINDOW_DAYS),
+    )
 
   // Shared eligibility rules
   private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate != null

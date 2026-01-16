@@ -31,7 +31,11 @@ class ReleaseDateService(
   @param:Value("\${feature.toggle.timeServed.prisons}")
   private val timeServedEnabledPrisons: List<String>? = emptyList(),
 ) {
-  fun isInHardStopPeriod(licenceStartDate: LocalDate?, kind: LicenceKind? = null, overrideClock: Clock? = null): Boolean {
+  fun isInHardStopPeriod(
+    licenceStartDate: LocalDate?,
+    kind: LicenceKind? = null,
+    overrideClock: Clock? = null,
+  ): Boolean {
     val now = overrideClock ?: clock
     val hardStopDate = getHardStopDate(licenceStartDate, kind)
     val today = LocalDate.now(now)
@@ -146,7 +150,7 @@ class ReleaseDateService(
       return null
     }
 
-    return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate, prisonCode, overrideClock)) {
+    return if (isTimeServed(sentenceStartDate, conditionalReleaseDate, prisonCode)) {
       TIME_SERVED
     } else {
       HARD_STOP
