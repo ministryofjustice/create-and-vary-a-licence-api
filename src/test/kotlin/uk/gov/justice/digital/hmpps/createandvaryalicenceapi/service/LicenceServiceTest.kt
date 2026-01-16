@@ -76,7 +76,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -114,7 +114,7 @@ class LicenceServiceTest {
   private val domainEventsService = mock<DomainEventsService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val eligibilityService = mock<EligibilityService>()
-  private val exclusionZoneService = mock<ExclusionZoneService>()
+  private val uploadFileConditionsService = mock<UploadFileConditionsService>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val telemetryService = mock<TelemetryService>()
   private val auditService = mock<AuditService>()
@@ -133,7 +133,7 @@ class LicenceServiceTest {
       domainEventsService,
       prisonerSearchApiClient,
       eligibilityService,
-      exclusionZoneService,
+      uploadFileConditionsService,
       deliusApiClient,
       telemetryService,
       auditService,
@@ -163,7 +163,7 @@ class LicenceServiceTest {
       domainEventsService,
       prisonerSearchApiClient,
       eligibilityService,
-      exclusionZoneService,
+      uploadFileConditionsService,
     )
   }
 
@@ -218,10 +218,10 @@ class LicenceServiceTest {
     whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
       AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
     )
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2022, 1, 3))
-    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2022, 1, 1))
+    whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 1, 3))
+    whenever(releaseDateService.getHardStopWarningDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 1, 1))
 
     val licence = service.getLicenceById(1L) as CrdLicenceModel
 
@@ -337,8 +337,8 @@ class LicenceServiceTest {
     val expectedHardStopDate = LocalDate.of(2023, 1, 12)
     val expectedHardStopWarningDate = LocalDate.of(2023, 1, 10)
 
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(expectedHardStopDate)
-    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(expectedHardStopWarningDate)
+    whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(expectedHardStopDate)
+    whenever(releaseDateService.getHardStopWarningDate(any(), anyOrNull())).thenReturn(expectedHardStopWarningDate)
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
       listOf(
         aLicenceEntity,
@@ -2335,7 +2335,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).delete(aLicenceEntity)
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
-    verify(exclusionZoneService, times(1)).deleteDocuments(any())
+    verify(uploadFileConditionsService, times(1)).deleteDocuments(any())
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -3538,7 +3538,7 @@ class LicenceServiceTest {
           domainEventsService,
           prisonerSearchApiClient,
           eligibilityService,
-          exclusionZoneService,
+          uploadFileConditionsService,
           deliusApiClient,
           telemetryService,
           auditService,

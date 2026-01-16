@@ -6,7 +6,13 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 object ConditionTypes {
   const val ELECTRONIC_MONITORING = "ELECTRONIC_MONITORING"
+
+  @Deprecated(
+    message = "Use MULTIPLE_UPLOADS instead",
+    replaceWith = ReplaceWith("ConditionTypes.MULTIPLE_UPLOADS"),
+  )
   const val MULTIPLE_EXCLUSION_ZONE = "MULTIPLE_EXCLUSION_ZONE"
+  const val MULTIPLE_UPLOADS = "MULTIPLE_UPLOADS"
   const val SINGLE_UPLOAD = "SINGLE_UPLOAD"
   const val STANDARD = "STANDARD"
 }
@@ -23,6 +29,10 @@ object ConditionTypes {
     DiscriminatorMapping(
       value = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
       schema = MultipleExclusionZoneAdditionalCondition::class,
+    ),
+    DiscriminatorMapping(
+      value = ConditionTypes.MULTIPLE_UPLOADS,
+      schema = MultipleUploadAdditionalCondition::class,
     ),
     DiscriminatorMapping(
       value = ConditionTypes.SINGLE_UPLOAD,
