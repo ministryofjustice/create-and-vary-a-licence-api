@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
@@ -178,9 +179,14 @@ object TestData {
     genericIneligibilityReasons = emptyList(),
     crdIneligibilityReasons = emptyList(),
     prrdIneligibilityReasons = emptyList(),
-    isEligible = true,
-    eligibleKind = LicenceKind.CRD,
-    ineligibilityReasons = emptyList(),
+    hdcIneligibilityReasons = listOf("An HDC reason"),
+  )
+
+  fun anIneligibleEligibilityAssessment() = EligibilityAssessment(
+    genericIneligibilityReasons = listOf("A CRD reason", "A PRRD reason"),
+    crdIneligibilityReasons = listOf("A CRD reason"),
+    prrdIneligibilityReasons = listOf("A PRRD reason"),
+    hdcIneligibilityReasons = listOf("An HDC reason"),
   )
 
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
@@ -599,6 +605,10 @@ object TestData {
     sentenceStartDate = sentenceStartDate,
     sentenceExpiryDate = LocalDate.of(2021, 10, 22),
     postRecallReleaseDate = postRecallReleaseDate,
+    homeDetentionCurfewEligibilityDate = null,
+    homeDetentionCurfewActualDate = null,
+    paroleEligibilityDate = null,
+    actualParoleDate = null,
   )
 
   fun createPrisonerSearchResult(
@@ -902,6 +912,23 @@ object TestData {
       ),
       readyToSubmit = true,
       requiresInput = true,
+    ),
+    ModelAdditionalCondition(
+      id = 6,
+      category = "FreedomOfMovement",
+      code = MULTIPLE_UPLOAD_COND_CODE,
+      sequence = 6,
+      text = "Do not enter the area defined in the attached map.",
+      expandedText = "Do not enter the area defined in the attached map.",
+      data = someModelAssociationData(),
+      readyToSubmit = true,
+      requiresInput = true,
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(
+          id = 2,
+          fileSize = 1,
+        ),
+      ),
     ),
   )
 

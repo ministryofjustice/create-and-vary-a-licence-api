@@ -43,6 +43,7 @@ generic-service:
     FEATURE_TOGGLE_TIMESERVED_ENABLED: true
     TIME_SERVED_PRISONS: "BNI"
     TIMESERVED_MAX_DAYS_CRD_BEFORE_TODAY: 14
+    HDC_ENABLED: false
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:

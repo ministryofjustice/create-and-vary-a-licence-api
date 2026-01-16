@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.io.RandomAccessReadBuffer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -11,11 +13,14 @@ import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZonePdfExtract
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.UPLOAD_FILE_CONDITION_ENDPOINT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf.UploadPdfExtract
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf.UploadPdfExtractBuilder
 import java.time.Duration
 
 class ExclusionZoneIntegrationTest : IntegrationTestBase() {
@@ -41,8 +46,10 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .header("Content-Disposition", "form-data; name=file; filename=" + fileResource.filename)
       .header("Content-Type", "application/pdf")
 
+    val uri = getUploadUri()
+
     webTestClient.post()
-      .uri("/exclusion-zone/id/2/condition/id/1/file-upload")
+      .uri(uri)
       .contentType(MediaType.MULTIPART_FORM_DATA)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -54,8 +61,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     val conditions = testRepository.findUploadSummary(1)
     assertThat(conditions).hasSize(1)
 
-    val uploadFile =
-      ExclusionZonePdfExtract.fromMultipartFile(MockMultipartFile("file", fileResource.contentAsByteArray))
+    val uploadFile = fromMultipartFile(MockMultipartFile("file", fileResource.contentAsByteArray))
 
     // Check that file contents are sent to the document api
     val fullSizeUuid = documentApiMockServer.verifyUploadedDocument(
@@ -101,9 +107,11 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
     assertThat(testRepository.findUploadSummaryById(1)).isNotNull
 
+    val uri = getUploadUri()
+
     // When
     val result = webTestClient.post()
-      .uri("/exclusion-zone/id/2/condition/id/1/file-upload")
+      .uri(uri)
       .contentType(MediaType.MULTIPART_FORM_DATA)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -127,6 +135,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-2.sql",
   )
   fun `exclusion zone upload is role-protected`() {
+    // Given
     val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
     val bodyBuilder = MultipartBodyBuilder()
 
@@ -135,14 +144,19 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .header("Content-Disposition", "form-data; name=file; filename=" + fileResource.filename)
       .header("Content-Type", "application/pdf")
 
-    webTestClient.post()
-      .uri("/exclusion-zone/id/2/condition/id/1/file-upload")
+    val uri = getUploadUri()
+
+    // When
+    val result = webTestClient.post()
+      .uri(uri)
       .contentType(MediaType.MULTIPART_FORM_DATA)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
       .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
       .exchange()
-      .expectStatus().isForbidden
+
+    // Then
+    result.expectStatus().isForbidden
 
     documentApiMockServer.verifyUploadedDocument(didHappenXTimes = 0)
   }
@@ -159,21 +173,22 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       document = byteArrayOf(9, 9, 9),
     )
 
-    // When I request the Image
+    val uri = getUploadUri()
+
+    // When
     val result = webTestClient.get()
-      .uri("/exclusion-zone/id/2/condition/id/1/full-size-image")
+      .uri(uri)
       .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.IMAGE_JPEG)
-      .expectBody().returnResult()
 
-    // Then I get back the image that was previously uploaded to the document service
-    assertThat(result.responseBody).isEqualTo(byteArrayOf(9, 9, 9))
+    // Then
+    result.expectHeader().contentType(MediaType.IMAGE_JPEG)
+    result.expectStatus().isOk
+    assertThat(result.expectBody().returnResult().responseBody).isEqualTo(byteArrayOf(9, 9, 9))
   }
 
-  // @Test
+  @Test
   @Sql(
     "classpath:test_data/seed-a-few-licences.sql",
     "classpath:test_data/seed-uploads-for-copied-licences.sql",
@@ -200,8 +215,10 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
   fun `get full-sized image for exclusion zone is role-protected`() {
+    val uri = getUploadUri()
+
     val result = webTestClient.get()
-      .uri("/exclusion-zone/id/2/condition/id/1/full-size-image")
+      .uri(uri)
       .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
       .exchange()
@@ -210,6 +227,13 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     val body = result.expectBody(ErrorResponse::class.java).returnResult()
     assertThat(body.responseBody?.status).isEqualTo(HttpStatus.FORBIDDEN.value())
   }
+
+  private fun getUploadUri(
+    licenceId: Int = 2,
+    conditionId: Int = 1,
+  ): String = UPLOAD_FILE_CONDITION_ENDPOINT
+    .replace("{licenceId}", licenceId.toString())
+    .replace("{conditionId}", conditionId.toString())
 
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
@@ -227,6 +251,12 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       govUkApiMockServer.stop()
       documentApiMockServer.stop()
+    }
+  }
+
+  fun fromMultipartFile(file: MultipartFile): UploadPdfExtract {
+    Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
+      return UploadPdfExtractBuilder(pdfDoc).build()
     }
   }
 }

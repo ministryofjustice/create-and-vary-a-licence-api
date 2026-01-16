@@ -207,13 +207,12 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody!!
 
       assertThat(caseload.inPrisonResults).hasSize(4)
-
       with(caseload.inPrisonResults[1]) {
         assertThat(name).isEqualTo("Test5 Person5")
         assertThat(prisonerNumber).isEqualTo("A1234AG")
         assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
         assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
-        assertThat(isInHardStopPeriod).isTrue()
+        assertThat(isInHardStopPeriod).isFalse()
         assertThat(lastWorkedOnBy).isEqualTo("Test Client")
         assertThat(hasNomisLicence).isTrue()
       }

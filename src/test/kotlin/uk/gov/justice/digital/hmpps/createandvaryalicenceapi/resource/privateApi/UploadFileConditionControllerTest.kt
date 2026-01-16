@@ -25,27 +25,27 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
-@WebMvcTest(controllers = [ExclusionZoneController::class])
+@WebMvcTest(controllers = [UploadFileConditionController::class])
 @AutoConfigureMockMvc(addFilters = false)
-@ContextConfiguration(classes = [ExclusionZoneController::class])
+@ContextConfiguration(classes = [UploadFileConditionController::class])
 @WebAppConfiguration
-class ExclusionZoneControllerTest {
+class UploadFileConditionControllerTest {
   @MockitoBean
-  private lateinit var exclusionZoneService: ExclusionZoneService
+  private lateinit var uploadFileConditionsService: UploadFileConditionsService
 
   @Autowired
   private lateinit var mvc: MockMvc
 
   @BeforeEach
   fun reset() {
-    reset(exclusionZoneService)
+    reset(uploadFileConditionsService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(ExclusionZoneController(exclusionZoneService))
+      .standaloneSetup(UploadFileConditionController(uploadFileConditionsService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -65,11 +65,11 @@ class ExclusionZoneControllerTest {
 
     mvc
       .perform(
-        MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload),
+        MockMvcRequestBuilders.multipart(getUploadUri(4, 1)).file(fileToUpload),
       )
       .andExpect(MockMvcResultMatchers.status().isOk)
 
-    verify(exclusionZoneService, times(1)).uploadExclusionZoneFile(4, 1, fileToUpload)
+    verify(uploadFileConditionsService, times(1)).uploadFile(4, 1, fileToUpload)
   }
 
   @Test
@@ -85,25 +85,32 @@ class ExclusionZoneControllerTest {
     )
     AssertionsForClassTypes.assertThat(fileToUpload).isNotNull
 
-    whenever(exclusionZoneService.uploadExclusionZoneFile(4L, 1L, fileToUpload))
+    whenever(uploadFileConditionsService.uploadFile(4L, 1L, fileToUpload))
       .thenThrow(ValidationException("Exclusion zone - failed to extract the expected image map"))
 
     mvc
       .perform(
-        MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload),
+        MockMvcRequestBuilders.multipart(getUploadUri(4, 1)).file(fileToUpload),
       )
       .andExpect(MockMvcResultMatchers.status().is4xxClientError)
 
-    verify(exclusionZoneService, times(1)).uploadExclusionZoneFile(4, 1, fileToUpload)
+    verify(uploadFileConditionsService, times(1)).uploadFile(4, 1, fileToUpload)
   }
 
   @Test
   fun `get a full-size image for an exclusion zone`() {
     mvc.perform(
-      MockMvcRequestBuilders.get("/exclusion-zone/id/4/condition/id/1/full-size-image"),
+      MockMvcRequestBuilders.get(getUploadUri(4, 1)),
     )
       .andExpect(MockMvcResultMatchers.status().isOk)
 
-    verify(exclusionZoneService, times(1)).getExclusionZoneImage(4, 1)
+    verify(uploadFileConditionsService, times(1)).getImage(4, 1)
   }
+
+  private fun getUploadUri(
+    licenceId: Int = 2,
+    conditionId: Int = 1,
+  ): String = UPLOAD_FILE_CONDITION_ENDPOINT
+    .replace("{licenceId}", licenceId.toString())
+    .replace("{conditionId}", conditionId.toString())
 }

@@ -10,11 +10,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleUploadAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someModelAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -70,6 +72,14 @@ class LicenceDetailTransformerTest {
         code = ELECTRONIC_TAG_COND_CODE_14A,
         text = "You must wear an electronic monitoring tag for curfew purposes.",
         restrictions = listOf(ElectronicMonitoringType.CURFEW),
+      ),
+      MultipleUploadAdditionalCondition(
+        category = "FreedomOfMovement",
+        type = ConditionTypes.MULTIPLE_UPLOADS,
+        id = 6,
+        code = MULTIPLE_UPLOAD_COND_CODE,
+        text = "Do not enter the area defined in the attached map.",
+        hasImageUpload = true,
       ),
     )
   }

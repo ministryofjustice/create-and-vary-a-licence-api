@@ -3,9 +3,15 @@ name: CodeQL analysis
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   analyze:
+    # This is disabled for now, as it's not working properly yet with this version of CodeQL.'
+    # see https://mojdt.slack.com/archives/C69NWE339/p1767612401461359
+    # in feb we should have an updated version of CodeQL that can work with the later versions of Kotlin 23+
+    if: false
     name: CodeQL analyse
     permissions:
       contents: read

@@ -1,38 +1,20 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf
 
-import org.apache.pdfbox.Loader
-import org.apache.pdfbox.io.RandomAccessReadBuffer
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
 import org.slf4j.LoggerFactory
-import org.springframework.web.multipart.MultipartFile
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
+class UploadPdfExtractBuilder(private var pdfDoc: PDDocument) {
 
-data class ExclusionZonePdfExtract(
-  var description: String,
-  var fullSizeImage: ByteArray,
-  var thumbnailImage: ByteArray,
-) {
-  companion object {
-    fun fromMultipartFile(file: MultipartFile): ExclusionZonePdfExtract {
-      Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
-        return ExclusionZonePdfExtractBuilder(pdfDoc).build()
-      }
-    }
-  }
-}
-
-class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
-
-  fun build(): ExclusionZonePdfExtract {
+  fun build(): UploadPdfExtract {
     val fullSizeImage = fullSizeImage()
     val thumbnailImage = thumbnailImage(fullSizeImage)
 
-    return ExclusionZonePdfExtract(description(), fullSizeImage, thumbnailImage)
+    return UploadPdfExtract(description(), fullSizeImage, thumbnailImage)
   }
 
   private fun description(): String = runCatching {
@@ -41,7 +23,7 @@ class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
       startPage = 2
       getText(pdfDoc)
     }
-  }.getOrElse { throw ExclusionZonePdfExtractionException("Unable to extract description", it) }
+  }.getOrElse { throw UploadPdfExtractionException("Unable to extract description", it) }
 
   private fun fullSizeImage(): ByteArray = runCatching {
     with(PDFRenderer(pdfDoc)) {
@@ -60,7 +42,7 @@ class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
         bytes
       }
     }
-  }.getOrElse { throw ExclusionZonePdfExtractionException("Unable to extract full size image details", it) }
+  }.getOrElse { throw UploadPdfExtractionException("Unable to extract full size image details", it) }
 
   private fun thumbnailImage(fullSizeImage: ByteArray): ByteArray = runCatching {
     val inputStream = fullSizeImage.inputStream()
@@ -73,7 +55,7 @@ class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
       ImageIO.write(outputImage, "jpg", this)
       toByteArray()
     }
-  }.getOrElse { throw ExclusionZonePdfExtractionException("Unable to extract thumbnail image details", it) }
+  }.getOrElse { throw UploadPdfExtractionException("Unable to extract thumbnail image details", it) }
 
   companion object {
     val log = LoggerFactory.getLogger(this::class.java)
@@ -84,5 +66,3 @@ class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
     const val THUMBNAIL_HEIGHT = 200
   }
 }
-
-class ExclusionZonePdfExtractionException(message: String, throwable: Throwable) : RuntimeException(message, throwable)

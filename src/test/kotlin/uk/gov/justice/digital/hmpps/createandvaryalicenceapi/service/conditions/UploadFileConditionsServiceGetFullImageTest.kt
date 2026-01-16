@@ -9,11 +9,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.Optional
 import java.util.UUID
 
-class ExclusionZoneServiceGetFullImageTest {
+class UploadFileConditionsServiceGetFullImageTest {
 
   private val licenceRepository: LicenceRepository = mock()
   private val additionalConditionRepository: AdditionalConditionRepository = mock()
@@ -32,14 +33,14 @@ class ExclusionZoneServiceGetFullImageTest {
   fun `when there is no document service uuid recorded then we cannot return an image`() {
     givenUploadDetailHas(fullSizeImageUUID = null)
 
-    val exclusionZoneService = ExclusionZoneService(
+    val uploadFileConditionsService = UploadFileConditionsService(
       licenceRepository,
       additionalConditionRepository,
       additionalConditionUploadRepository,
       documentService,
     )
 
-    assertThat(exclusionZoneService.getExclusionZoneImage(licenceId, additionalConditionId))
+    assertThat(uploadFileConditionsService.getImage(licenceId, additionalConditionId))
       .isNull()
   }
 
@@ -47,14 +48,14 @@ class ExclusionZoneServiceGetFullImageTest {
   fun `when there is a document service uuid recorded then we attempt to return it from the remote service`() {
     givenUploadDetailHas(fullSizeImageUUID = uuid)
 
-    val exclusionZoneService = ExclusionZoneService(
+    val uploadFileConditionsService = UploadFileConditionsService(
       licenceRepository,
       additionalConditionRepository,
       additionalConditionUploadRepository,
       documentService,
     )
 
-    assertThat(exclusionZoneService.getExclusionZoneImage(licenceId, additionalConditionId))
+    assertThat(uploadFileConditionsService.getImage(licenceId, additionalConditionId))
       .isEqualTo(fileStoredRemotely)
   }
 
