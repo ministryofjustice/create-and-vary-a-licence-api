@@ -151,6 +151,9 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     crn: String,
   ) = publicLicenceService.getAllLicencesByCrn(crn)
 
+  @Deprecated(
+    message = "Use /public/licence/{licenceId}/condition/{conditionId}/supporting-document instead",
+  )
   @GetMapping(
     value = ["/licences/{licenceId}/conditions/{conditionId}/image-upload"],
     produces = [MediaType.IMAGE_JPEG_VALUE],
@@ -188,6 +191,57 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     ],
   )
   fun getImageUpload(
+    @PathVariable(name = "licenceId")
+    @Parameter(
+      name = "licenceId",
+      description = "This is the identifier for a licence",
+    )
+    licenceId: Long,
+    @PathVariable(name = "conditionId")
+    @Parameter(
+      name = "conditionId",
+      description = "This is the internal identifier for a condition",
+    )
+    conditionId: Long,
+  ): ByteArray? = publicLicenceService.getImageUpload(licenceId, conditionId)
+
+  @GetMapping(
+    value = ["/licence/{licenceId}/condition/{conditionId}/supporting-document"],
+    produces = [MediaType.IMAGE_JPEG_VALUE],
+  )
+  @ResponseBody
+  @Operation(
+    summary = "Get an associated image upload for a specific licence and condition",
+    description = "Returns an associated image upload for a specified licence and condition. " +
+      "Requires ROLE_VIEW_LICENCES.",
+    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES"), SecurityRequirement(name = "SAR_DATA_ACCESS")],
+  )
+  @PreAuthorize("hasAnyRole('VIEW_LICENCES', 'SAR_DATA_ACCESS')")
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Image returned",
+        content = [Content(mediaType = "image/jpeg")],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "No image was found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getImage(
     @PathVariable(name = "licenceId")
     @Parameter(
       name = "licenceId",

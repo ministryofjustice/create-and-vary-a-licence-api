@@ -69,7 +69,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(createdByFullName).isEqualTo(crdLicence.createdByFullName)
       assertThat(licenceVersion).isEqualTo(crdLicence.licenceVersion)
       assertThat(isToBeTaggedForProgramme).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.isToBeTaggedForProgramme)
-      assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.programmeName)
+      assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider.programmeName)
     }
   }
 
@@ -142,7 +142,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(attachmentNumber).isEqualTo(0)
       assertThat(name).isEqualTo("Document 1")
       assertThat(contentType).isEqualTo("image/png")
-      assertThat(url).isEqualTo("https://some-host/public/licences/1/conditions/10/image-upload")
+      assertThat(url).isEqualTo("https://some-host/public/licence/1/condition/10/supporting-document")
       assertThat(filename).isEqualTo("file1.pdf")
       assertThat(filesize).isEqualTo(2134)
 
@@ -157,7 +157,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(attachmentNumber).isEqualTo(1)
       assertThat(name).isEqualTo("Document 2")
       assertThat(contentType).isEqualTo("image/jpeg")
-      assertThat(url).isEqualTo("https://some-host/public/licences/1/conditions/10/image-upload")
+      assertThat(url).isEqualTo("https://some-host/public/licence/1/condition/10/supporting-document")
       assertThat(filename).isEqualTo("file2.pdf")
       assertThat(filesize).isEqualTo(2135)
 
@@ -171,7 +171,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(attachmentNumber).isEqualTo(2)
       assertThat(name).isEqualTo("Document 3")
       assertThat(contentType).isEqualTo("image/png")
-      assertThat(url).isEqualTo("https://some-host/public/licences/1/conditions/11/image-upload")
+      assertThat(url).isEqualTo("https://some-host/public/licence/1/condition/11/supporting-document")
       assertThat(filename).isEqualTo("file3.pdf")
       assertThat(filesize).isEqualTo(2137)
 
