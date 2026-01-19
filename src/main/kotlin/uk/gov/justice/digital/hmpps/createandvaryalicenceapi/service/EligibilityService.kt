@@ -81,6 +81,8 @@ class EligibilityService(
   }
 
   // CRD-specific eligibility rules
+  private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate != null
+
   private fun hasCrdTodayOrInTheFutureOrIsTimeServed(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
     (
       dateIsTodayOrFuture(prisoner.conditionalReleaseDate) ||
