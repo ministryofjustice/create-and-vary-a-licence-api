@@ -64,7 +64,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anIneligibleEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -1470,8 +1469,9 @@ class LicenceServiceTest {
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
+    val eligibilityAssessment = anEligibilityAssessment().copy(isEligible = false)
     whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anIneligibleEligibilityAssessment(),
+      eligibilityAssessment,
     )
 
     val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
@@ -2251,8 +2251,9 @@ class LicenceServiceTest {
   fun `attempting to edit a licence that is ineligible for CVL results in validation exception`() {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
+    val eligibilityAssessment = anEligibilityAssessment().copy(isEligible = false)
     whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anIneligibleEligibilityAssessment(),
+      eligibilityAssessment,
     )
 
     val approvedLicence = aLicenceEntity.copy(
