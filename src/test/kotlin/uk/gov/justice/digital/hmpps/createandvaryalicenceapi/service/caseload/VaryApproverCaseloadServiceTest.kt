@@ -7,6 +7,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceVaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
@@ -151,6 +152,47 @@ class VaryApproverCaseloadServiceTest {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
+    }
+    verify(licenceCaseRepository).findSubmittedVariationsByPduCodes(pdus)
+  }
+
+  @Test
+  fun `should mark probation practitioner as UNALLOCATED when no offender manager returned`() {
+    // Given
+    val pdus = listOf("N55PDV")
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val probationCases = listOf(aProbationCase())
+
+    whenever(licenceCaseRepository.findSubmittedVariationsByPduCodes(pdus)).thenReturn(licenceSummaries)
+    whenever(
+      deliusApiClient.getProbationCases(
+        licenceSummaries.map { it.prisonNumber!! },
+      ),
+    ).thenReturn(probationCases)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
+      listOf(
+        prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
+      ),
+    )
+    // Return no offender managers so the practitioner map will be empty and default to UNALLOCATED
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
+      emptyList(),
+    )
+
+    // When
+    val caseload =
+      service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationPduCodes = pdus))
+
+    // Then
+    assertThat(caseload).hasSize(1)
+    with(caseload.first()) {
+      assertThat(licenceId).isEqualTo(1)
+      assertThat(name).isEqualTo("A Prisoner")
+      assertThat(crnNumber).isEqualTo("X12348")
+      assertThat(licenceType).isEqualTo(PSS)
+      assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
+      assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.UNALLOCATED)
     }
     verify(licenceCaseRepository).findSubmittedVariationsByPduCodes(pdus)
   }
