@@ -132,7 +132,7 @@ class ComCaseloadSearchService(
     releaseDate = cvlRecord.licenceStartDate,
     bookingId = prisonOffender.bookingId?.toLong(),
     licenceType = cvlRecord.licenceType,
-    licenceStatus = if (cvlRecordService.isTimedOut(cvlRecord)) TIMED_OUT else NOT_STARTED,
+    licenceStatus = if (cvlRecord.isInHardStopPeriod) TIMED_OUT else NOT_STARTED,
     hardStopDate = cvlRecord.hardStopDate,
     hardStopWarningDate = cvlRecord.hardStopWarningDate,
     isInHardStopPeriod = cvlRecord.isInHardStopPeriod,
@@ -144,9 +144,9 @@ class ComCaseloadSearchService(
     licence: Licence,
   ) = this.transformToCaseWithLicence(
     licence = licence,
-    hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate, licence.kind),
-    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
-    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind),
+    hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate),
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
   )
 

@@ -17,7 +17,6 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
@@ -291,7 +290,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = null,
       )
 
-      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, licence.kind, now)).isFalse
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isFalse
     }
 
     @Test
@@ -302,7 +301,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = LocalDate.now(now),
       )
 
-      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, licence.kind, now)).isTrue
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isTrue
     }
 
     @Test
@@ -313,7 +312,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = LocalDate.now(now).minusDays(1),
       )
 
-      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, licence.kind, now)).isFalse
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isFalse
     }
 
     @Test
@@ -325,16 +324,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = cutOff,
       )
 
-      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, licence.kind, now)).isTrue
-    }
-
-    @Test
-    fun `returns false if it is a time served licence`() {
-      val now = createClock("2018-03-12T00:00:00Z")
-
-      val licence = createTimeServedLicence()
-
-      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, licence.kind, now)).isFalse
+      assertThat(service.isInHardStopPeriod(licence.licenceStartDate, now)).isTrue
     }
   }
 
@@ -391,7 +381,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = null,
       )
 
-      val hardStopDate = service.getHardStopDate(licence.licenceStartDate, licence.kind)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isNull()
     }
 
@@ -404,7 +394,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = thursday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence.licenceStartDate, licence.kind)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(tuesday)
     }
 
@@ -418,7 +408,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = saturday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence.licenceStartDate, licence.kind)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(wednesday)
     }
 
@@ -432,7 +422,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = sunday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence.licenceStartDate, licence.kind)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(wednesday)
     }
 
@@ -447,16 +437,8 @@ class ReleaseDateServiceTest {
         licenceStartDate = easterMonday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence.licenceStartDate, licence.kind)
+      val hardStopDate = service.getHardStopDate(licence.licenceStartDate)
       assertThat(hardStopDate).isEqualTo(tuesdayBefore)
-    }
-
-    @Test
-    fun `should return null if it is a time served licence`() {
-      val licence = createTimeServedLicence()
-
-      val hardStopDate = service.getHardStopDate(licence.licenceStartDate, licence.kind)
-      assertThat(hardStopDate).isNull()
     }
   }
 
@@ -467,9 +449,8 @@ class ReleaseDateServiceTest {
     fun `should return 2 days before hard stop date if set`() {
       val friday = LocalDate.parse("2024-05-17")
       val monday = LocalDate.parse("2024-05-13")
-      val licence = createCrdLicence()
 
-      val hardStopDate = service.getHardStopWarningDate(friday, licence.kind)
+      val hardStopDate = service.getHardStopWarningDate(friday)
       assertThat(hardStopDate).isEqualTo(monday)
     }
 
@@ -477,20 +458,9 @@ class ReleaseDateServiceTest {
     fun `should return ignore non-working days`() {
       val wednesday = LocalDate.parse("2024-05-15")
       val thursday = LocalDate.parse("2024-05-09")
-      val licence = createCrdLicence()
 
-      val hardStopDate = service.getHardStopWarningDate(wednesday, licence.kind)
+      val hardStopDate = service.getHardStopWarningDate(wednesday)
       assertThat(hardStopDate).isEqualTo(thursday)
-    }
-
-    @Test
-    fun `should return null for a time served licence`() {
-      val friday = LocalDate.parse("2024-05-17")
-      val monday = LocalDate.parse("2024-05-13")
-      val licence = createTimeServedLicence()
-
-      val hardStopDate = service.getHardStopWarningDate(friday, licence.kind)
-      assertThat(hardStopDate).isNull()
     }
   }
 
