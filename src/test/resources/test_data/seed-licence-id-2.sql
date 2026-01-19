@@ -68,13 +68,15 @@ values (2, 'std-3', 3, 'Attend meetings', 'AP');
 
 -- Create the exclusion zone additional condition
 insert into additional_condition (licence_id, condition_version, condition_category, condition_code, condition_sequence,
-                                  condition_text, condition_type)
-values (2, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1,
-        'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
+                                  condition_text, expanded_condition_text, condition_type)
+values (2,  '3.0', 'Freedom of movement', '0f9a20f4-35c7-4c77-8af8-f200f153fa11', 1,
+        'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'c1t','AP'),
+	   (2,  '4.0', 'restricted area', '005d70e4-a247-4f82-b8b3-6d294a0f5051', 1,
+		'Not to enter exclusion zone [RESTRICTED AREA]', 'c2t', 'AP');
 
 -- Create the data for the exclusion zone condition
 insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
-values ((select max(id) from additional_condition), 1, 'outOfBoundArea', 'Town centre');
+values (1, 1, 'outOfBoundArea', 'Town centre'),
+	   (1, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf'),
+	   (2, 1, 'outOfBoundFileRestrictedArea', 'Test_map_2021-12-06_112550.pdf');
 
-insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
-values ((select max(id) from additional_condition), 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
