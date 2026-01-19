@@ -67,9 +67,9 @@ class CvlRecordServiceTest {
       ),
     )
     whenever(releaseDateService.getHardStopKind(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(LicenceKind.HARD_STOP)
-    whenever(releaseDateService.getHardStopDate(anyOrNull())).thenReturn(LocalDate.of(2023, 10, 12))
-    whenever(releaseDateService.getHardStopWarningDate(anyOrNull())).thenReturn(LocalDate.of(2023, 10, 11))
-    whenever(releaseDateService.isInHardStopPeriod(anyOrNull(), anyOrNull())).thenReturn(true)
+    whenever(releaseDateService.getHardStopDate(anyOrNull(), anyOrNull())).thenReturn(LocalDate.of(2023, 10, 12))
+    whenever(releaseDateService.getHardStopWarningDate(anyOrNull(), anyOrNull())).thenReturn(LocalDate.of(2023, 10, 11))
+    whenever(releaseDateService.isInHardStopPeriod(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.isEligibleForEarlyRelease(anyOrNull<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(anyOrNull())).thenReturn(true)
 
@@ -246,6 +246,69 @@ class CvlRecordServiceTest {
       crdIneligibilityReasons = listOf("Some reason"),
       eligibleKind = LicenceKind.PRRD,
     )
+  }
+
+  @Nested
+  inner class IsTimedOutTest {
+    @Test
+    fun `returns true when cvlRecord is in hard stop period`() {
+      val cvlRecord = CvlRecord(
+        nomisId = "A1234AA",
+        licenceStartDate = LocalDate.now(),
+        isEligible = true,
+        eligibleKind = LicenceKind.CRD,
+        ineligibilityReasons = emptyList(),
+        isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        isEligibleForEarlyRelease = false,
+        hardStopWarningDate = null,
+        hardStopDate = LocalDate.now(),
+        isInHardStopPeriod = true,
+        hardStopKind = LicenceKind.HARD_STOP,
+        licenceType = AP,
+      )
+
+      assertThat(service.isTimedOut(cvlRecord)).isTrue()
+    }
+
+    @Test
+    fun `returns true when hardStopKind is TIME_SERVED`() {
+      val cvlRecord = CvlRecord(
+        nomisId = "A1234AA",
+        licenceStartDate = LocalDate.now(),
+        isEligible = true,
+        eligibleKind = LicenceKind.CRD,
+        ineligibilityReasons = emptyList(),
+        isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        isEligibleForEarlyRelease = false,
+        hardStopWarningDate = null,
+        hardStopDate = null,
+        isInHardStopPeriod = false,
+        hardStopKind = LicenceKind.TIME_SERVED,
+        licenceType = AP,
+      )
+
+      assertThat(service.isTimedOut(cvlRecord)).isTrue()
+    }
+
+    @Test
+    fun `returns false when not in hard stop period and hardStopKind is not TIME_SERVED`() {
+      val cvlRecord = CvlRecord(
+        nomisId = "A1234AA",
+        licenceStartDate = LocalDate.now(),
+        isEligible = true,
+        eligibleKind = LicenceKind.CRD,
+        ineligibilityReasons = emptyList(),
+        isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        isEligibleForEarlyRelease = false,
+        hardStopWarningDate = null,
+        hardStopDate = null,
+        isInHardStopPeriod = false,
+        hardStopKind = LicenceKind.HARD_STOP,
+        licenceType = AP,
+      )
+
+      assertThat(service.isTimedOut(cvlRecord)).isFalse()
+    }
   }
 
   private val aPrisonerSearchPrisoner = prisonerSearchResult()
