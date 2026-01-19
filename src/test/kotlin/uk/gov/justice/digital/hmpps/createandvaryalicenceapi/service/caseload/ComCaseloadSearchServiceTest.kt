@@ -634,7 +634,6 @@ class ComCaseloadSearchServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
     whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
@@ -676,9 +675,9 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
 
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true)
-    whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 2, 12))
-    whenever(releaseDateService.getHardStopWarningDate(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 3, 14))
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
+    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
@@ -951,34 +950,6 @@ class ComCaseloadSearchServiceTest {
     assertThat(result.results.size).isEqualTo(1)
     assertThat(result.inPrisonCount).isEqualTo(0)
     assertThat(result.onProbationCount).isEqualTo(1)
-  }
-
-  @Test
-  fun `search for offenders in prison without a licence sets status to TIMED_OUT when cvl record is timed out`() {
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-      listOf(
-        aCvlRecord(
-          kind = LicenceKind.CRD,
-          licenceStartDate = LocalDate.of(2023, 9, 14),
-          isInHardStopPeriod = true,
-          hardStopDate = LocalDate.of(2023, 9, 10),
-        ),
-      ),
-    )
-    whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
-
-    val result = service.searchForOffenderOnProbationUserCaseload(request)
-
-    assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.inPrisonCount).isEqualTo(1)
-    assertThat(result.onProbationCount).isEqualTo(0)
-
-    with(result.results.first()) {
-      assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
-      assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 9, 10))
-    }
   }
 
   private companion object {

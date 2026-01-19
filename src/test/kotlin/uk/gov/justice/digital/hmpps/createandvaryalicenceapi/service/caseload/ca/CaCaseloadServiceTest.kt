@@ -234,7 +234,7 @@ class CaCaseloadServiceTest {
     inner class `in the hard stop period` {
       @Test
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
-        whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true)
+        whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
         whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
           listOf(
             aPrisonerSearchPrisoner,
@@ -263,8 +263,6 @@ class CaCaseloadServiceTest {
             ),
           ),
         )
-
-        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -708,7 +706,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should filter ineligible cases`() {
-        whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false)
+        whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false)
         whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
           listOf(
             aPrisonerSearchPrisoner,
@@ -900,8 +898,6 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
-
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
@@ -1036,8 +1032,6 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
-
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
@@ -1105,8 +1099,6 @@ class CaCaseloadServiceTest {
             ),
           ),
         )
-
-        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
