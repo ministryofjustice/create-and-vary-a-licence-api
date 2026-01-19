@@ -1105,7 +1105,6 @@ class ComCreateCaseloadServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -1332,50 +1331,6 @@ class ComCreateCaseloadServiceTest {
       LicenceType.AP_PSS,
       LicenceCreationType.LICENCE_CHANGES_NOT_APPROVED_IN_TIME,
       expectedReleaseDate = twoDaysFromNow,
-    )
-  }
-
-  @Test
-  fun `search for offenders with no licence sets status to TIMED_OUT when cvl record is timed out`() {
-    val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
-    )
-
-    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
-      listOf(
-        prisonerSearchResult().copy(
-          prisonerNumber = "AB1234E",
-          conditionalReleaseDate = tenDaysFromNow,
-          bookingId = "1",
-        ),
-      ),
-    )
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(emptyList())
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-      listOf(
-        aCvlRecord(
-          nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
-          licenceStartDate = tenDaysFromNow,
-          isInHardStopPeriod = true,
-          hardStopDate = LocalDate.of(2023, 9, 10),
-        ),
-      ),
-    )
-    whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
-
-    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
-
-    assertThat(caseload).hasSize(1)
-    verifyCase(
-      caseload.first(),
-      "X12348",
-      "AB1234E",
-      LicenceStatus.TIMED_OUT,
-      LicenceType.AP,
-      LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
-      expectedReleaseDate = tenDaysFromNow,
     )
   }
 

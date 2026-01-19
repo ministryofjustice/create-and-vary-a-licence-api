@@ -820,7 +820,7 @@ class UpdateSentenceDateServiceTest {
   fun `should log when an in progress PRRD licence has it's PRRD removed`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(anInProgressPrrdLicence))
     whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(anInProgressPrrdLicence)
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -855,7 +855,7 @@ class UpdateSentenceDateServiceTest {
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(prrdWithoutPrrd))
     whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(prrdWithoutPrrd)
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -891,7 +891,7 @@ class UpdateSentenceDateServiceTest {
     fun `should time out CRD licence if the licence is now in hard stop period but previously was not`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
       whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
         aPrisonApiPrisoner().copy(
           sentenceDetail = SentenceDetail(
@@ -916,7 +916,7 @@ class UpdateSentenceDateServiceTest {
     fun `should time out PRRD licence if the licence is now in hard stop period but previously was not`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(anInProgressPrrdLicence))
       whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(anInProgressPrrdLicence)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
         aPrisonApiPrisoner().copy(
           sentenceDetail = SentenceDetail(
@@ -943,7 +943,7 @@ class UpdateSentenceDateServiceTest {
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
       whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
         aPrisonApiPrisoner().copy(
           sentenceDetail = SentenceDetail(
@@ -968,7 +968,7 @@ class UpdateSentenceDateServiceTest {
       val licence = createHardStopLicence()
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
       whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
         aPrisonApiPrisoner().copy(
           sentenceDetail = SentenceDetail(
@@ -1011,7 +1011,7 @@ class UpdateSentenceDateServiceTest {
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
       whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(noLongerInHardStopLicence)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true, false)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true, false)
       whenever(
         licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
           inHardStopLicence.bookingId!!,
@@ -1048,33 +1048,33 @@ class UpdateSentenceDateServiceTest {
 
       verify(licenceService, times(0)).timeout(any(), any())
     }
+  }
 
-    @Test
-    fun `should not time out if the licence is in hard stop period but is a HDC licence`() {
-      val licence = createHdcLicence()
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-      whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
-      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
-      whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
-        aPrisonApiPrisoner().copy(
-          sentenceDetail = SentenceDetail(
-            conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-            confirmedReleaseDate = LocalDate.parse("2023-09-11"),
-            sentenceStartDate = LocalDate.parse("2021-09-11"),
-            sentenceExpiryDate = LocalDate.parse("2024-09-11"),
-            licenceExpiryDate = LocalDate.parse("2024-09-11"),
-            topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-            topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-          ),
+  @Test
+  fun `should not time out if the licence is in hard stop period but is a HDC licence`() {
+    val licence = createHdcLicence()
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
         ),
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
+      ),
+    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
 
-      service.updateSentenceDates(1L)
+    service.updateSentenceDates(1L)
 
-      verify(licenceService, times(0)).timeout(any(), any())
-    }
+    verify(licenceService, times(0)).timeout(any(), any())
   }
 
   @Test

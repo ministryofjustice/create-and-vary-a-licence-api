@@ -8,9 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
 import java.time.DayOfWeek
@@ -30,9 +28,9 @@ class ReleaseDateService(
   @param:Value("\${feature.toggle.timeServed.prisons}")
   private val timeServedEnabledPrisons: List<String>? = emptyList(),
 ) {
-  fun isInHardStopPeriod(licenceStartDate: LocalDate?, kind: LicenceKind? = null, overrideClock: Clock? = null): Boolean {
+  fun isInHardStopPeriod(licenceStartDate: LocalDate?, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
-    val hardStopDate = getHardStopDate(licenceStartDate, kind)
+    val hardStopDate = getHardStopDate(licenceStartDate)
     val today = LocalDate.now(now)
     if (hardStopDate == null || licenceStartDate == null) {
       return false
@@ -85,8 +83,8 @@ class ReleaseDateService(
     return workingDaysService.isNonWorkingDay(releaseDate)
   }
 
-  fun getHardStopDate(licenceStartDate: LocalDate?, kind: LicenceKind? = null): LocalDate? = when {
-    licenceStartDate == null || kind == TIME_SERVED -> null
+  fun getHardStopDate(licenceStartDate: LocalDate?): LocalDate? = when {
+    licenceStartDate == null -> null
     else -> calculateHardStopDate(licenceStartDate)
   }
 
@@ -143,14 +141,14 @@ class ReleaseDateService(
     prisonCode: String?,
     overrideClock: Clock? = null,
   ): LicenceKind? {
-    if (licenceStartDate == null || !isInHardStopPeriod(licenceStartDate, null, overrideClock)) {
+    if (licenceStartDate == null || !isInHardStopPeriod(licenceStartDate, overrideClock)) {
       return null
     }
 
     return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate, prisonCode, overrideClock)) {
-      TIME_SERVED
+      LicenceKind.TIME_SERVED
     } else {
-      HARD_STOP
+      LicenceKind.HARD_STOP
     }
   }
 
@@ -181,8 +179,8 @@ class ReleaseDateService(
     return 2.workingDaysBefore(adjustedLsd)
   }
 
-  fun getHardStopWarningDate(licenceStartDate: LocalDate?, kind: LicenceKind? = null): LocalDate? {
-    val hardStopDate = getHardStopDate(licenceStartDate, kind) ?: return null
+  fun getHardStopWarningDate(licenceStartDate: LocalDate?): LocalDate? {
+    val hardStopDate = getHardStopDate(licenceStartDate) ?: return null
     return 2.workingDaysBefore(hardStopDate)
   }
 

@@ -47,7 +47,7 @@ class CaProbationCaseloadService(
     val usernameToProbationPractitioner = mapCasesToProbationPractitioner(licences)
     return groupedLicences.map {
       val licence = findRelevantLicence(it)
-      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence?.licenceStartDate, licence?.kind)
+      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence?.licenceStartDate)
       CaCase(
         kind = licence?.kind,
         licenceId = licence?.licenceId,

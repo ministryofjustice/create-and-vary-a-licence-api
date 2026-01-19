@@ -32,7 +32,7 @@ class TimeOutLicencesService(
       return
     }
     val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut().filter {
-      releaseDateService.isInHardStopPeriod(it.licenceStartDate, it.kind, clock)
+      releaseDateService.isInHardStopPeriod(it.licenceStartDate)
     }
     if (licencesToTimeOut.isEmpty()) {
       log.info("Job to runTimeOutLicencesService has no licences to time out")
