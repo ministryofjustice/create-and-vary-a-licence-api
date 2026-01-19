@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -21,8 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Licen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.reifySentenceDates
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
@@ -30,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import java.time.LocalDate
 
 @Service
 class UpdateSentenceDateService(
@@ -50,6 +50,9 @@ class UpdateSentenceDateService(
     val prisoner = prisonApiClient.getPrisonerDetail(currentLicence.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
     val cvlRecord = cvlRecordService.getCvlRecord(prisonerSearchPrisoner)
+
+    val currentLicenceKind = currentLicence.kind
+    val currentLicenceStartDate = currentLicence.licenceStartDate
 
     // If the licence is now ineligible then the LSD will be calculated to be null. This will cause the case to move to the
     // attention needed tab in the prison caseload and so the prison will correct the dates to make the case eligible again
@@ -72,7 +75,6 @@ class UpdateSentenceDateService(
       dateChanges.filter { !it.type.hdcOnly || updatedLicence is HdcLicence },
     )
 
-    val previousSentenceDates = currentLicence.reifySentenceDates()
     val user = staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication.name)
     updatedLicence.updateLicenceDates(
       status = updatedLicence.calculateStatusCode(sentenceDates),
@@ -90,7 +92,7 @@ class UpdateSentenceDateService(
       homeDetentionCurfewEndDate = sentenceDates.homeDetentionCurfewEndDate,
     )
 
-    val hardstopChangeType = getHardstopChangeType(previousSentenceDates, updatedLicence)
+    val hardstopChangeType = getHardstopChangeType(currentLicenceStartDate, currentLicenceKind, updatedLicence)
 
     if (hardstopChangeType == NOW_IN_HARDSTOP) {
       licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
@@ -195,10 +197,10 @@ class UpdateSentenceDateService(
     }
   }
 
-  private fun getHardstopChangeType(previous: SentenceDateHolder, new: Licence): HardstopChangeType {
-    val previouslyInHardstop = releaseDateService.isInHardStopPeriod(previous.licenceStartDate)
-    val nowInHardstop = releaseDateService.isInHardStopPeriod(new.licenceStartDate)
-    val isPotentialHardStopInProgress = new is SupportsHardStop && new.statusCode == IN_PROGRESS
+  private fun getHardstopChangeType(currentLicenceStartDate: LocalDate?, currentLicenceKind: LicenceKind, updatedLicence: Licence): HardstopChangeType {
+    val previouslyInHardstop = releaseDateService.isInHardStopPeriod(currentLicenceStartDate, currentLicenceKind)
+    val nowInHardstop = releaseDateService.isInHardStopPeriod(updatedLicence.licenceStartDate, updatedLicence.kind)
+    val isPotentialHardStopInProgress = updatedLicence is SupportsHardStop && updatedLicence.statusCode == IN_PROGRESS
     return when {
       isPotentialHardStopInProgress && !previouslyInHardstop && nowInHardstop -> NOW_IN_HARDSTOP
       previouslyInHardstop && !nowInHardstop -> NO_LONGER_IN_HARDSTOP
