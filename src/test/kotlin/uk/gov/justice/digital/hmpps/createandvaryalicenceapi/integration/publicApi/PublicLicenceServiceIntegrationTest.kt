@@ -122,7 +122,6 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     }
   }
 
-  @Deprecated(message = "The controller for this is deprecated")
   @Nested
   inner class `Get exclusion zone image by condition ID` {
 
@@ -167,62 +166,6 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     fun `Get exclusion zone image by condition ID is role-protected`() {
       // Given
       val request = buildGetRequest(uri = legacyUri, role = "ROLE_CVL_VERY_WRONG")
-
-      // When
-      val response = request.exchange()
-
-      // Then
-      val result = response
-        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
-        .expectBody(ErrorResponse::class.java)
-        .returnResult().responseBody
-
-      assertThat(result?.userMessage).contains("Access Denied")
-    }
-  }
-
-  @Nested
-  inner class `Get supported document by condition ID` {
-
-    @ParameterizedTest
-    @CsvSource("ROLE_VIEW_LICENCES", "ROLE_SAR_DATA_ACCESS")
-    @Sql(
-      "classpath:test_data/seed-licence-id-2.sql",
-      "classpath:test_data/add-upload-to-licence-id-2.sql",
-    )
-    fun `Get supporting document for condition ID`(role: String) {
-      // Given
-      val uuid = "44f8163c-6c97-4ff2-932b-ae24feb0c112"
-      val expectedContent = byteArrayOf(9, 9, 9)
-
-      additionalConditionUploadDetailRepository.save(
-        additionalConditionUploadDetailRepository.findById(1).orElseThrow()
-          .copy(fullSizeImageDsUuid = uuid),
-      )
-      documentApiMockServer.stubDownloadDocumentFile(withUUID = uuid, document = expectedContent)
-      val request = buildGetRequest(role = role)
-
-      // When
-      val response = request.exchange()
-
-      // Then
-      val result = response
-        .expectStatus().isOk
-        .expectHeader().contentType(MediaType.IMAGE_JPEG)
-        .expectBody()
-        .returnResult()
-
-      assertThat(result.responseBody).isEqualTo(expectedContent)
-    }
-
-    @Test
-    @Sql(
-      "classpath:test_data/seed-licence-id-2.sql",
-      "classpath:test_data/add-upload-to-licence-id-2.sql",
-    )
-    fun `Get supporting document by condition ID is role-protected`() {
-      // Given
-      val request = buildGetRequest(role = "ROLE_CVL_VERY_WRONG")
 
       // When
       val response = request.exchange()

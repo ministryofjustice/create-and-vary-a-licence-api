@@ -134,7 +134,7 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     attachmentNumber = attachmentNumber,
     name = entity.description ?: UNAVAILABLE,
     contentType = entity.imageType ?: UNAVAILABLE,
-    url = "$baseUrl/public/licence/$licenceId/condition/$conditionId/supporting-document",
+    url = "$baseUrl/public/licences/$licenceId/conditions/$conditionId/image-upload",
     filename = entity.filename ?: UNAVAILABLE,
     filesize = entity.imageSize ?: UNAVAILABLE_SIZE,
   )
