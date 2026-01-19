@@ -172,8 +172,6 @@ address:
 
 feature:
   toggle:
-    hdc:
-      enabled: ${HDC_ENABLED}
     timeServed:
       enabled: ${FEATURE_TOGGLE_TIMESERVED_ENABLED}
       prisons: ${TIME_SERVED_PRISONS}

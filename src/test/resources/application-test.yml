@@ -80,8 +80,6 @@ hmpps:
 
 feature:
   toggle:
-    hdc:
-      enabled: false
     timeServed:
       enabled: true
       prisons: "MDI, GHI"
@@ -94,6 +92,9 @@ os:
 
 notify:
   enabled: false
+
+policyv3:
+  enabled: true
 
 oauth:
   client:
