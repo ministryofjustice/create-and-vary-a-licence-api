@@ -174,7 +174,6 @@ class VaryApproverCaseloadServiceTest {
         prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!),
       ),
     )
-    // Return no offender managers so the practitioner map will be empty and default to UNALLOCATED
     whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
       emptyList(),
     )
