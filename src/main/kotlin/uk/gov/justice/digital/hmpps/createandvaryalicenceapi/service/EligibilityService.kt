@@ -62,7 +62,7 @@ class EligibilityService(
   fun getCrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
     val eligibilityCriteria = listOf(
       hasConditionalReleaseDate(prisoner) to "has no conditional release date",
-      hasCrdTodayOrInTheFuture(prisoner) to "CRD in the past",
+      hasCrdTodayOrInTheFutureOrIsTimeServed(prisoner) to "CRD in the past and not eligible for time served",
       isEligibleIfOnAnExtendedDeterminateSentence(prisoner) to "is on non-eligible EDS",
       !isRecallCase(prisoner) to "is a recall case",
     )
@@ -83,7 +83,13 @@ class EligibilityService(
   // CRD-specific eligibility rules
   private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate != null
 
-  private fun hasCrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null || dateIsTodayOrFuture(prisoner.conditionalReleaseDate)
+  private fun hasCrdTodayOrInTheFutureOrIsTimeServed(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
+    (
+      dateIsTodayOrFuture(prisoner.conditionalReleaseDate) ||
+        releaseDateService.isTimeServed(
+          prisoner,
+        )
+      )
 
   private fun isRecallCase(prisoner: PrisonerSearchPrisoner): Boolean {
     // If a CRD but no PRRD it should NOT be treated as a recall
@@ -91,9 +97,9 @@ class EligibilityService(
       return false
     }
 
-    if (prisoner.conditionalReleaseDate != null && prisoner.postRecallReleaseDate != null) {
+    if (prisoner.conditionalReleaseDate != null) {
       // If the PRRD > CRD - it should be treated as a recall otherwise it is not treated as a recall
-      return prisoner.postRecallReleaseDate.isAfter(prisoner.conditionalReleaseDate)
+      return prisoner.postRecallReleaseDate!!.isAfter(prisoner.conditionalReleaseDate)
     }
 
     // Trust the Nomis recall flag as a fallback position - the above rules should always override
