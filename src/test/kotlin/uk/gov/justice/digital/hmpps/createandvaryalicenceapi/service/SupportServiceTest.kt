@@ -55,8 +55,6 @@ class SupportServiceTest {
         genericIneligibilityReasons = listOf("A reason", "Approved for HDC"),
         crdIneligibilityReasons = emptyList(),
         prrdIneligibilityReasons = emptyList(),
-        isEligible = false,
-        eligibleKind = null,
       ),
     )
 
