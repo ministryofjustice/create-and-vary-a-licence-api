@@ -38,7 +38,9 @@ dependencies {
   // Fix for CVE-2025-48924
   implementation("org.apache.commons:commons-lang3:3.18.0")
 
-  implementation("org.apache.logging.log4j:log4j-api:2.25.0")
+  // Fix for CVE-2025-68161 -  () - maven/org.apache.logging.log4j/log4j-api@2.25.0
+  implementation(enforcedPlatform("org.apache.logging.log4j:log4j-bom:2.25.1"))
+  implementation("org.apache.logging.log4j:log4j-api")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
