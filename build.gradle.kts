@@ -41,6 +41,7 @@ dependencies {
   // Fix for CVE-2025-68161 -  () - maven/org.apache.logging.log4j/log4j-api@2.25.0
   implementation(enforcedPlatform("org.apache.logging.log4j:log4j-bom:2.25.1"))
   implementation("org.apache.logging.log4j:log4j-api")
+  // End of CVE-2025-68161 remove when not needed.
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
