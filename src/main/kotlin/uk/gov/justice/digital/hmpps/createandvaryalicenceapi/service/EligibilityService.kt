@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -8,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Book
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
 import java.time.Clock
 import java.time.LocalDate
 
@@ -17,6 +19,7 @@ class EligibilityService(
   private val releaseDateService: ReleaseDateService,
   private val hdcService: HdcService,
   private val clock: Clock,
+  @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
 ) {
 
   fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner): EligibilityAssessment {
@@ -25,26 +28,25 @@ class EligibilityService(
   }
 
   fun getEligibilityAssessments(prisoners: List<PrisonerSearchPrisoner>): Map<String, EligibilityAssessment> {
+    val hdcStatuses = hdcService.getHdcStatus(prisoners)
     val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
+      val isHdcApproved = hdcStatuses.isApprovedForHdc(prisoner.bookingId!!.toLong())
       val genericIneligibilityReasons = getGenericIneligibilityReasons(prisoner)
-      val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner)
-      val prrdIneligibilityReasons = getPrrdIneligibilityReasons(prisoner)
-
-      val isEligible =
-        genericIneligibilityReasons.isEmpty() && (crdIneligibilityReasons.isEmpty() || prrdIneligibilityReasons.isEmpty())
+      val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner, isHdcApproved)
+      val prrdIneligibilityReasons = getPrrdIneligibilityReasons(prisoner, isHdcApproved)
+      val hdcIneligibilityReasons = getHdcIneligibilityReasons(prisoner, isHdcApproved)
 
       return@map prisoner.prisonerNumber to EligibilityAssessment(
         genericIneligibilityReasons,
         crdIneligibilityReasons,
         prrdIneligibilityReasons,
-        isEligible,
+        hdcIneligibilityReasons,
       )
     }.toMap()
 
     val standardRecallsExcluded = overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
-    val hdcCasesExcluded = overrideHdcCases(prisoners, standardRecallsExcluded)
 
-    return hdcCasesExcluded
+    return standardRecallsExcluded
   }
 
   fun getGenericIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
@@ -59,29 +61,43 @@ class EligibilityService(
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
   }
 
-  fun getCrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
+  fun getCrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isHdcApproved: Boolean): List<String> {
     val eligibilityCriteria = listOf(
       hasConditionalReleaseDate(prisoner) to "has no conditional release date",
       hasCrdTodayOrInTheFutureOrIsTimeServed(prisoner) to "CRD in the past and not eligible for time served",
       isEligibleIfOnAnExtendedDeterminateSentence(prisoner) to "is on non-eligible EDS",
       !isRecallCase(prisoner) to "is a recall case",
+      !isHdcApproved to "is approved for HDC",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
   }
 
-  fun getPrrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
+  fun getPrrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isHdcApproved: Boolean): List<String> {
     val eligibilityCriteria = listOf(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
       !isApSledRelease(prisoner) to "is AP-only being released at SLED",
+      !isHdcApproved to "is approved for HDC",
+    )
+
+    return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
+  }
+
+  fun getHdcIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isHdcApproved: Boolean): List<String> {
+    if (!hdcEnabled) return listOf("HDC licences not currently supported in CVL")
+
+    val eligibilityCriteria = listOf(
+      hasConditionalReleaseDate(prisoner) to "has no conditional release date",
+      hasHomeDetentionCurfewActualDate(prisoner) to "has no home detention curfew actual date",
+      isTenOrMoreDaysToCrd(prisoner) to "has CRD fewer than 10 days in the future",
+      isHdcApproved to "is not approved for HDC",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
   }
 
   // CRD-specific eligibility rules
-  private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate != null
 
   private fun hasCrdTodayOrInTheFutureOrIsTimeServed(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
     (
@@ -149,7 +165,17 @@ class EligibilityService(
     }
   }
 
+  // HDC-specific eligibility rules
+  private fun hasHomeDetentionCurfewActualDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.homeDetentionCurfewActualDate != null
+
+  private fun isTenOrMoreDaysToCrd(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
+    prisoner.conditionalReleaseDate.isOnOrAfter(
+      LocalDate.now(clock).plusDays(MINIMUM_HDC_WINDOW_DAYS),
+    )
+
   // Shared eligibility rules
+  private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate != null
+
   private fun isPersonParoleEligible(prisoner: PrisonerSearchPrisoner): Boolean {
     if (prisoner.paroleEligibilityDate != null) {
       if (prisoner.paroleEligibilityDate.isAfter(LocalDate.now(clock))) {
@@ -219,7 +245,7 @@ class EligibilityService(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
             prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on a standard recall",
-            isEligible = false,
+            hdcIneligibilityReasons = eligibilityAssessment.hdcIneligibilityReasons,
           )
         }
 
@@ -232,30 +258,9 @@ class EligibilityService(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
             prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + ineligibilityMessage,
-            isEligible = false,
+            hdcIneligibilityReasons = eligibilityAssessment.hdcIneligibilityReasons,
           )
         }
-      }
-    }.toMap()
-  }
-
-  private fun overrideHdcCases(
-    prisoners: List<PrisonerSearchPrisoner>,
-    nomisIdsToEligibilityAssessments: Map<String, EligibilityAssessment>,
-  ): Map<String, EligibilityAssessment> {
-    val hdcStatuses = hdcService.getHdcStatus(prisoners)
-
-    return nomisIdsToEligibilityAssessments.map { (nomisId, eligibilityAssessment) ->
-      val bookingId = prisoners.first { it.prisonerNumber == nomisId }.bookingId!!.toLong()
-      if (hdcStatuses.isApprovedForHdc(bookingId)) {
-        return@map nomisId to EligibilityAssessment(
-          genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons + "Approved for HDC",
-          crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
-          prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons,
-          isEligible = false,
-        )
-      } else {
-        return@map nomisId to eligibilityAssessment
       }
     }.toMap()
   }
@@ -266,5 +271,6 @@ class EligibilityService(
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
+    private const val MINIMUM_HDC_WINDOW_DAYS = 10L
   }
 }
