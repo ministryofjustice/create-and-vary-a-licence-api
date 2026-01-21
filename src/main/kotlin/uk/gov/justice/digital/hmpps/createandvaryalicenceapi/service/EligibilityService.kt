@@ -99,14 +99,13 @@ class EligibilityService(
 
   // CRD-specific eligibility rules
 
-  private fun hasCrdTodayOrInTheFutureOrIsTimeServed(prisoner: PrisonerSearchPrisoner): Boolean =
-    prisoner.conditionalReleaseDate == null ||
-      (
-        dateIsTodayOrFuture(prisoner.conditionalReleaseDate) ||
-          releaseDateService.isTimeServed(
-            prisoner,
-          )
+  private fun hasCrdTodayOrInTheFutureOrIsTimeServed(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
+    (
+      dateIsTodayOrFuture(prisoner.conditionalReleaseDate) ||
+        releaseDateService.isTimeServed(
+          prisoner,
         )
+      )
 
   private fun isRecallCase(prisoner: PrisonerSearchPrisoner): Boolean {
     // If a CRD but no PRRD it should NOT be treated as a recall
@@ -149,11 +148,9 @@ class EligibilityService(
   }
 
   // PRRD-specific eligibility rules
-  private fun hasPostRecallReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean =
-    prisoner.postRecallReleaseDate != null
+  private fun hasPostRecallReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate != null
 
-  private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean =
-    prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
+  private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
 
   private fun isApSledRelease(prisoner: PrisonerSearchPrisoner): Boolean = when {
     prisoner.postRecallReleaseDate == null -> false
@@ -169,17 +166,15 @@ class EligibilityService(
   }
 
   // HDC-specific eligibility rules
-  private fun hasHomeDetentionCurfewActualDate(prisoner: PrisonerSearchPrisoner): Boolean =
-    prisoner.homeDetentionCurfewActualDate != null
+  private fun hasHomeDetentionCurfewActualDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.homeDetentionCurfewActualDate != null
 
-  private fun isTenOrMoreDaysToCrd(prisoner: PrisonerSearchPrisoner): Boolean =
-    prisoner.conditionalReleaseDate == null || prisoner.conditionalReleaseDate.isOnOrAfter(
+  private fun isTenOrMoreDaysToCrd(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
+    prisoner.conditionalReleaseDate.isOnOrAfter(
       LocalDate.now(clock).plusDays(MINIMUM_HDC_WINDOW_DAYS),
     )
 
   // Shared eligibility rules
-  private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean =
-    prisoner.conditionalReleaseDate != null
+  private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate != null
 
   private fun isPersonParoleEligible(prisoner: PrisonerSearchPrisoner): Boolean {
     if (prisoner.paroleEligibilityDate != null) {
@@ -203,8 +198,7 @@ class EligibilityService(
     it.startsWith("ACTIVE") || it == "INACTIVE TRN"
   } ?: false
 
-  private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean =
-    prisoner.imprisonmentStatus == "BOTUS"
+  private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.imprisonmentStatus == "BOTUS"
 
   private fun dateIsTodayOrFuture(date: LocalDate?): Boolean {
     if (date == null) return false
@@ -271,11 +265,9 @@ class EligibilityService(
     }.toMap()
   }
 
-  private fun BookingSentenceAndRecallTypes?.isStandardRecall(): Boolean =
-    this?.sentenceTypeRecallTypes?.any { it.recallType.isStandardRecall } == true
+  private fun BookingSentenceAndRecallTypes?.isStandardRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isStandardRecall } == true
 
-  private fun BookingSentenceAndRecallTypes?.isFixedTermRecall(): Boolean =
-    this?.sentenceTypeRecallTypes?.any { it.recallType.isFixedTermRecall } == true
+  private fun BookingSentenceAndRecallTypes?.isFixedTermRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isFixedTermRecall } == true
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
