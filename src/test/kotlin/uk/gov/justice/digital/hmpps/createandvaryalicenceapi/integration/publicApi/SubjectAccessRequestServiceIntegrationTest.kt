@@ -128,6 +128,14 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
           filename = "Test-file.pdf",
           filesize = 23456,
         ),
+        Attachment(
+          attachmentNumber = 1,
+          name = "Description",
+          contentType = "image/png",
+          url = "http://localhost:8089/public/licences/2/conditions/2/image-upload",
+          filename = "Test-file-2.pdf",
+          filesize = 23456,
+        ),
       ),
     )
   }

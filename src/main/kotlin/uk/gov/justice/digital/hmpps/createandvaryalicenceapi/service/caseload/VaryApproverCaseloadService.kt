@@ -70,7 +70,7 @@ class VaryApproverCaseloadService(
     return licences.mapNotNull { licence ->
       val nomisRecord = nomisRecords[licence.prisonNumber]
       val deliusRecord = deliusRecords[licence.prisonNumber]
-      val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()]!!
+      val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()] ?: ProbationPractitioner.UNALLOCATED
       if (nomisRecord == null || deliusRecord == null) {
         null
       } else {
