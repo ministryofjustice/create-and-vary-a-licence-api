@@ -1861,7 +1861,7 @@ class LicenceCreationServiceTest {
       argumentCaptor<HdcLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
         verify(telemetryService).recordLicenceCreatedEvent(capture())
-        with(firstValue){
+        with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.HDC)
           assertThat(eligibleKind).isEqualTo(LicenceKind.HDC)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
