@@ -260,11 +260,10 @@ class CaCaseloadServiceTest {
               hardStopKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
+              isTimedOut = true,
             ),
           ),
         )
-
-        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -323,6 +322,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(tcomUser03),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
           ),
         )
@@ -338,6 +338,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(comUser01),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
           ),
         )
@@ -375,6 +376,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(comUser01),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
             caCase().copy(
               licenceId = licenceCase2.licenceId,
@@ -385,6 +387,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(comUser01),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
           ),
         )
@@ -896,11 +899,10 @@ class CaCaseloadServiceTest {
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               hardStopKind = LicenceKind.TIME_SERVED,
+              isTimedOut = true,
             ),
           ),
         )
-
-        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -1032,11 +1034,10 @@ class CaCaseloadServiceTest {
               hardStopKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
+              isTimedOut = true,
             ),
           ),
         )
-
-        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -1102,11 +1103,10 @@ class CaCaseloadServiceTest {
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               hardStopKind = LicenceKind.TIME_SERVED,
+              isTimedOut = true,
             ),
           ),
         )
-
-        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -1302,6 +1302,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(comUser01),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
           ),
           onProbationResults = emptyList(),
@@ -1328,6 +1329,8 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(comUser01),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
+
             ),
           ),
           onProbationResults = emptyList(),
@@ -1384,6 +1387,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(comUser01),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
           ),
           onProbationResults = emptyList(),
@@ -1494,6 +1498,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(comUser01),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
             caCase().copy(
               licenceId = 2,
@@ -1504,6 +1509,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(tcomUser03),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
           ),
           onProbationResults = listOf(
@@ -1749,6 +1755,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(comUser01),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
           ),
           onProbationResults = listOf(
@@ -1859,6 +1866,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(comUser01),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
             caCase().copy(
               licenceId = 2,
@@ -1869,6 +1877,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = probationPractitionerFor(tcomUser03),
               prisonCode = "BAI",
               prisonDescription = "Moorland (HMP)",
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             ),
           ),
           onProbationResults = listOf(
@@ -1969,7 +1978,7 @@ class CaCaseloadServiceTest {
               nomisLegalStatus = "SENTENCED",
               releaseDate = LocalDate.of(2021, 10, 22),
               releaseDateLabel = "Confirmed release date",
-              tabType = CaViewCasesTab.FUTURE_RELEASES,
+              tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(tcomUser03),
               prisonCode = "BAI",

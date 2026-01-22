@@ -1102,10 +1102,10 @@ class ComCreateCaseloadServiceTest {
           licenceStartDate = twoDaysFromNow,
           isInHardStopPeriod = true,
           licenceType = LicenceType.AP_PSS,
+          isTimedOut = true,
         ),
       ),
     )
-    whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -1360,10 +1360,10 @@ class ComCreateCaseloadServiceTest {
           licenceStartDate = tenDaysFromNow,
           isInHardStopPeriod = true,
           hardStopDate = LocalDate.of(2023, 9, 10),
+          isTimedOut = true,
         ),
       ),
     )
-    whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 

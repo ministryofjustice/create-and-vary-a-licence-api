@@ -82,7 +82,7 @@ class NotStartedCaseloadService(
 
     return cases.map { case ->
       var licenceStatus = NOT_STARTED
-      if (cvlRecordService.isTimedOut(case.cvlRecord)) {
+      if (case.cvlRecord.isTimedOut) {
         licenceStatus = TIMED_OUT
       }
       val timeServedExternalRecord = timeServedExternalRecordsFlags[case.nomisRecord.bookingId?.toLong()]
