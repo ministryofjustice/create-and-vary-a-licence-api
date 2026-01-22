@@ -69,7 +69,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(createdByFullName).isEqualTo(crdLicence.createdByFullName)
       assertThat(licenceVersion).isEqualTo(crdLicence.licenceVersion)
       assertThat(isToBeTaggedForProgramme).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.isToBeTaggedForProgramme)
-      assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.programmeName)
+      assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider.programmeName)
     }
   }
 

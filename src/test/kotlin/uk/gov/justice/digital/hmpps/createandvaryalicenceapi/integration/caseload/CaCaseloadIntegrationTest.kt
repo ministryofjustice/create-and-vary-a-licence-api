@@ -161,15 +161,15 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<PrisonCaseAdminSearchResult>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.inPrisonResults).hasSize(4)
+      assertThat(caseload.inPrisonResults).hasSize(5)
       assertThat(caseload.onProbationResults).hasSize(2)
-      assertThat(caseload.attentionNeededResults).hasSize(1)
+      assertThat(caseload.attentionNeededResults).hasSize(0)
 
       with(caseload.inPrisonResults.first()) {
         assertThat(name).isEqualTo("Person Two")
         assertThat(prisonerNumber).isEqualTo("A1234AB")
         assertThat(licenceStatus).isEqualTo(LicenceStatus.SUBMITTED)
-        assertThat(tabType).isEqualTo(CaViewCasesTab.FUTURE_RELEASES)
+        assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
         assertThat(isInHardStopPeriod).isFalse()
       }
 
@@ -206,8 +206,8 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<PrisonCaseAdminSearchResult>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.inPrisonResults).hasSize(4)
-      with(caseload.inPrisonResults[1]) {
+      assertThat(caseload.inPrisonResults).hasSize(5)
+      with(caseload.inPrisonResults[2]) {
         assertThat(name).isEqualTo("Test5 Person5")
         assertThat(prisonerNumber).isEqualTo("A1234AG")
         assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)

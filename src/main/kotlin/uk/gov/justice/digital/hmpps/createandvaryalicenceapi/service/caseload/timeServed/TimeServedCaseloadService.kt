@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.timeServed
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.Clock
@@ -11,6 +12,7 @@ private const val CASELOAD_WINDOW = 5L
 @Service
 class TimeServedCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
+  private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
 ) {
   fun getCases(prisonCode: String): TimeServedCaseload {
@@ -65,8 +67,5 @@ class TimeServedCaseloadService(
       )
 
   // Prisons may not release on CRD but the next working day so we should ignore ARD and include cases with CRD in the past
-  fun PrisonerSearchPrisoner.isTimeServedCaseByIgnoringArdRule() = //
-    (
-      sentenceStartDate == (conditionalReleaseDateOverrideDate ?: conditionalReleaseDate)
-      )
+  fun PrisonerSearchPrisoner.isTimeServedCaseByIgnoringArdRule() = releaseDateService.isTimeServed(this)
 }
