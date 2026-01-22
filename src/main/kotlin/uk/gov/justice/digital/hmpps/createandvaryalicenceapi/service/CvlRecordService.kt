@@ -36,7 +36,7 @@ class CvlRecordService(
       val licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber]
       val hardStopKind = when {
         releaseDateService.isTimeServed(prisoner) -> TIME_SERVED
-        releaseDateService.isInHardStopPeriod(licenceStartDate, HARD_STOP) -> HARD_STOP
+        releaseDateService.isInHardStopPeriod(licenceStartDate) -> HARD_STOP
         else -> null
       }
       val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate, hardStopKind)
