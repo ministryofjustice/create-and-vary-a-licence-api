@@ -67,6 +67,7 @@ class CvlRecordServiceTest {
         "A1234AC" to null,
       ),
     )
+    whenever(releaseDateService.isTimeServed(anyOrNull())).thenReturn(false)
     whenever(releaseDateService.getHardStopDate(anyOrNull(), anyOrNull())).thenReturn(LocalDate.of(2023, 10, 12))
     whenever(releaseDateService.getHardStopWarningDate(anyOrNull(), anyOrNull())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(true)
