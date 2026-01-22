@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
@@ -140,36 +139,6 @@ class ReleaseDateService(
     timeServedEnabledPrisons?.contains(prisonCode) == true &&
     sentenceStartDate == conditionalReleaseDate &&
     conditionalReleaseDate?.isAfter(LocalDate.now(clock).minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved)) ?: false
-
-  private fun determineHardStopKind(
-    licenceStartDate: LocalDate?,
-    sentenceStartDate: LocalDate?,
-    conditionalReleaseDate: LocalDate?,
-    prisonCode: String?,
-    overrideClock: Clock? = null,
-  ): LicenceKind? {
-    if (licenceStartDate == null || !isInHardStopPeriod(licenceStartDate, null, overrideClock)) {
-      return null
-    }
-
-    return if (isTimeServed(sentenceStartDate, conditionalReleaseDate, prisonCode)) {
-      TIME_SERVED
-    } else {
-      HARD_STOP
-    }
-  }
-
-  fun getHardStopKind(
-    sentenceDateHolder: SentenceDateHolder,
-    prisonCode: String?,
-    overrideClock: Clock? = null,
-  ): LicenceKind? = determineHardStopKind(
-    sentenceDateHolder.licenceStartDate,
-    sentenceDateHolder.sentenceStartDate,
-    sentenceDateHolder.conditionalReleaseDate,
-    prisonCode,
-    overrideClock,
-  )
 
   private fun calculateCrdLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
