@@ -53,7 +53,7 @@ class PrisonServiceTest {
 
     val actualDate = service.getPrisonerLatestSentenceStartDate(bookingId)
 
-    assertThat(actualDate).isEqualTo(LocalDate.of(2024, 8, 25))
+    assertThat(actualDate).isEqualTo(LocalDate.of(2025, 8, 25))
     verify(prisonApiClient).getPrisonerSentenceAndOffences(bookingId)
   }
 }

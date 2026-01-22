@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents
 
 import com.fasterxml.jackson.core.JacksonException
 import com.fasterxml.jackson.databind.ObjectMapper
