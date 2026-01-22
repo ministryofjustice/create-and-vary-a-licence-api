@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
 import java.time.DayOfWeek
@@ -113,7 +114,7 @@ class ReleaseDateService(
       it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
         PRRD -> calculatePrrdLicenceStartDate(it)
         CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
-        LicenceKind.HDC -> it.homeDetentionCurfewActualDate
+        HDC -> it.homeDetentionCurfewActualDate
         else -> null
       }
     }
