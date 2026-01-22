@@ -106,6 +106,19 @@ class LicenceCreationService(
         licenceStartDate = cvlRecord.licenceStartDate,
       )
 
+      LicenceKind.HDC -> LicenceFactory.createHdc(
+        licenceType = cvlRecord.licenceType,
+        nomsId = nomisRecord.prisonerNumber,
+        version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
+        nomisRecord = nomisRecord,
+        prisonInformation = prisonInformation,
+        team = offenderManager.team,
+        deliusRecord = deliusRecord,
+        responsibleCom = responsibleCom,
+        creator = createdBy,
+        licenceStartDate = cvlRecord.licenceStartDate,
+      )
+
       else -> throw ValidationException("Generic licence creation route not suitable for $prisonNumber - eligibleKind was ${cvlRecord.eligibleKind}.")
     }
 
