@@ -786,14 +786,14 @@ val POLICY_V4_0 = LicencePolicy(
         inputs = listOf(
           Input(
             label = "Select a PDF map of the area this person must not leave",
-            name = "outOfBoundFilename",
+            name = "inBoundFilename",
             type = FILE_UPLOAD,
           ),
         ),
         requiresInput = true,
         text = "RESTRICTION ZONES PLACEHOLDER",
         tpl = "RESTRICTION ZONES PLACEHOLDER",
-        type = "OutOfBoundsRegionPolicyV3",
+        type = "InBoundsRegion",
       ),
       AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
