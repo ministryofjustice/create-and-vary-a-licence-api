@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.prison
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
@@ -31,6 +32,7 @@ class NotStartedCaseloadService(
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
   private val licenceRepository: TimeServedExternalRecordsRepository,
+  @param:Value("\${timeserved.max.days.crd.before.today:14}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 14,
 ) {
   fun findNotStartedCases(
     licences: List<LicenceCaCase>,
@@ -57,7 +59,7 @@ class NotStartedCaseloadService(
     val today = LocalDate.now(now)
     val todayPlusFourWeeks = LocalDate.now(now).plusWeeks(FOUR_WEEKS)
     return prisonerSearchApiClient.searchPrisonersByReleaseDate(
-      today,
+      today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
       todayPlusFourWeeks,
       prisonCaseload,
       page = 0,
@@ -106,7 +108,8 @@ class NotStartedCaseloadService(
           licenceCaCase = null,
           clock,
         ),
-        probationPractitioner = probationPractitioners[case.nomisRecord.prisonerNumber] ?: ProbationPractitioner.UNALLOCATED,
+        probationPractitioner = probationPractitioners[case.nomisRecord.prisonerNumber]
+          ?: ProbationPractitioner.UNALLOCATED,
         prisonCode = case.nomisRecord.prisonId,
         prisonDescription = case.nomisRecord.prisonName,
         hasNomisLicence = timeServedExternalRecord != null,
