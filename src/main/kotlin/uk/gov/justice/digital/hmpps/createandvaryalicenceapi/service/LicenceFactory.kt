@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -325,7 +324,7 @@ object LicenceFactory {
     version: String,
     nomisRecord: PrisonerSearchPrisoner,
     prisonInformation: Prison,
-    currentResponsibleOfficerDetails: CommunityManager,
+    team: TeamDetail,
     deliusRecord: ProbationCase,
     creator: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
@@ -358,14 +357,14 @@ object LicenceFactory {
     topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
     topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,
     postRecallReleaseDate = nomisRecord.postRecallReleaseDate,
-    probationAreaCode = currentResponsibleOfficerDetails.team.provider.code,
-    probationAreaDescription = currentResponsibleOfficerDetails.team.provider.description,
-    probationPduCode = currentResponsibleOfficerDetails.team.borough.code,
-    probationPduDescription = currentResponsibleOfficerDetails.team.borough.description,
-    probationLauCode = currentResponsibleOfficerDetails.team.district.code,
-    probationLauDescription = currentResponsibleOfficerDetails.team.district.description,
-    probationTeamCode = currentResponsibleOfficerDetails.team.code,
-    probationTeamDescription = currentResponsibleOfficerDetails.team.description,
+    probationAreaCode = team.provider.code,
+    probationAreaDescription = team.provider.description,
+    probationPduCode = team.borough.code,
+    probationPduDescription = team.borough.description,
+    probationLauCode = team.district.code,
+    probationLauDescription = team.district.description,
+    probationTeamCode = team.code,
+    probationTeamDescription = team.description,
     dateCreated = LocalDateTime.now(),
     responsibleCom = responsibleCom,
     createdBy = creator,
