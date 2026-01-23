@@ -1319,7 +1319,7 @@
           {
             "type": "fileUpload",
             "label": "Select a PDF map of the area this person must not leave",
-            "name": "outOfBoundFilename",
+            "name": "inBoundFilename",
             "listType": null,
             "options": null,
             "case": null,
@@ -1331,7 +1331,7 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "OutOfBoundsRegionPolicyV3",
+        "type": "InBoundsRegion",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false
       },
