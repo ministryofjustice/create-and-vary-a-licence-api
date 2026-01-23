@@ -1,0 +1,105 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents
+
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import java.time.LocalDate
+import java.time.LocalDateTime
+
+class SentenceDatesChangedHandlerTest {
+  private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val licenceService = mock<LicenceService>()
+  private val prisonService = mock<PrisonService>()
+  private val updateSentenceDateService = mock<UpdateSentenceDateService>()
+
+  private val sentenceDatesChangedHandler =
+    SentenceDatesChangedHandler(objectMapper, licenceService, prisonService, updateSentenceDateService)
+
+  private val bookingId = 73892L
+  private val message: String = objectMapper.writeValueAsString(
+    SentenceDatesChangedEvent(
+      eventDatetime = LocalDateTime.now(),
+      bookingId = bookingId,
+      sentenceCalculationId = 1L,
+    ),
+  )
+  val prisoner = prisonerSearchResult()
+  val nomisId = prisoner.prisonerNumber
+  val licence = aLicenceSummary(nomsId = nomisId)
+  val prisonApiPrisoner = aPrisonApiPrisoner()
+
+  @BeforeEach
+  fun setup() {
+    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
+    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
+  }
+
+  @Test
+  fun `should deactivate an active licence if an offender has been resentenced`() {
+    whenever(prisonService.getPrisonerLatestSentenceStartDate(bookingId)).thenReturn(
+      licence.licenceStartDate?.plusDays(
+        1,
+      ),
+    )
+
+    // Octopus Flux
+    // Sorry! Our smart tariffs are only available to Octopus Energy customers. Please make the switch before signing up here.
+    whenever(
+      licenceService.findLicencesMatchingCriteria(
+        LicenceQueryObject(
+          nomsIds = listOf(nomisId),
+          statusCodes = listOf(
+            ACTIVE,
+          ),
+        ),
+      ),
+    ).thenReturn(listOf(licence))
+
+    sentenceDatesChangedHandler.handleEvent(message)
+
+    verify(licenceService).deactivateLicenceAndVariations(
+      licence.licenceId,
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RESENTENCED),
+    )
+    verify(licenceService, never()).deactivateLicenceAndVariations(
+      licence.licenceId,
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
+    )
+  }
+
+  @Test
+  fun `should deactivate the active licence and any variations if an offender has been recalled`() {
+    val prisonApiPrisonerFuturePrrd = prisonApiPrisoner.copy(
+      sentenceDetail = prisonApiPrisoner.sentenceDetail.copy(
+        postRecallReleaseDate = LocalDate.now().plusDays(1),
+      ),
+    )
+    whenever(
+      licenceService.findLicencesMatchingCriteria(
+        LicenceQueryObject(
+          nomsIds = listOf(nomisId),
+          statusCodes = listOf(
+            ACTIVE,
+          ),
+        ),
+      ),
+    ).thenReturn(listOf(licence))
+
+    sentenceDatesChangedHandler.handleEvent(message)
+  }
+}

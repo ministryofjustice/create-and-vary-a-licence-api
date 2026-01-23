@@ -49,7 +49,7 @@ class SentenceDatesChangedHandler(
     }
   }
 
-  fun deactivateLicencesIfPrisonerResentenced(licence: LicenceSummary, bookingId: Long) {
+  private fun deactivateLicencesIfPrisonerResentenced(licence: LicenceSummary, bookingId: Long) {
     val ssd = prisonService.getPrisonerLatestSentenceStartDate(bookingId)
     val lsd = licence.licenceStartDate
 
@@ -61,7 +61,7 @@ class SentenceDatesChangedHandler(
     }
   }
 
-  fun deactivateLicencesIfFuturePrrd(licence: LicenceSummary) {
+  private fun deactivateLicencesIfFuturePrrd(licence: LicenceSummary) {
     val prisoner = prisonService.getPrisonerDetail(licence.nomisId)
 
     val prrd = prisoner.sentenceDetail.postRecallReleaseOverrideDate ?: prisoner.sentenceDetail.postRecallReleaseDate
@@ -78,7 +78,7 @@ class SentenceDatesChangedHandler(
     }
   }
 
-  fun updateSentenceDates(nomisId: String) {
+  private fun updateSentenceDates(nomisId: String) {
     val licences = licenceService.findLicencesMatchingCriteria(
       LicenceQueryObject(
         nomsIds = listOf(nomisId),
@@ -94,7 +94,7 @@ class SentenceDatesChangedHandler(
     licences.forEach { licence -> updateSentenceDateService.updateSentenceDates(licence.licenceId) }
   }
 
-  fun getActiveLicence(nomisId: String): LicenceSummary? = licenceService.findLicencesMatchingCriteria(
+  private fun getActiveLicence(nomisId: String): LicenceSummary? = licenceService.findLicencesMatchingCriteria(
     LicenceQueryObject(
       nomsIds = listOf(nomisId),
       statusCodes = listOf(
