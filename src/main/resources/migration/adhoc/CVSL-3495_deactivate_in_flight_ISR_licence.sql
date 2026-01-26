@@ -17,7 +17,6 @@ BEGIN;
 		SET status_code = 'INACTIVE',
 			date_last_updated = CURRENT_TIMESTAMP
 			WHERE l.status_code IN ('IN_PROGRESS', 'SUBMITTED', 'APPROVED')
-			  AND l.actual_release_date > :progression_model_live_date
-			  AND l."version" = '4.0';
+			  AND l.licence_start_date > :progression_model_live_date;
 
 COMMIT;
