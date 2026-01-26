@@ -1,0 +1,76 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.address
+
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.okJson
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
+import org.springframework.data.domain.PageRequest
+import org.springframework.http.MediaType
+import org.springframework.web.reactive.function.client.WebClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.OsPlacesApiClient
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
+class OsPlacesApiClientTest {
+
+  @Test
+  fun `should url encode search query when calling os places`() {
+    // Given
+    val searchQuery = "Glan-y-mor"
+    val encodedQuery = URLEncoder.encode(searchQuery, StandardCharsets.UTF_8)
+
+    createWireMock(encodedQuery)
+
+    val webClient = WebClient.builder()
+      .baseUrl(wireMock.baseUrl())
+      .build()
+
+    val client = OsPlacesApiClient(
+      osPlacesApiWebClient = webClient,
+      apiKey = API_KEY,
+    )
+
+    val pageable = PageRequest.of(0, 10)
+
+    // When
+    client.searchForAddressesByText(pageable, searchQuery)
+
+    // Then
+    wireMock.verify(
+      getRequestedFor(urlPathEqualTo("/find"))
+        .withQueryParam("query", equalTo(encodedQuery)),
+    )
+  }
+
+  private fun createWireMock(encodedQuery: String?) {
+    wireMock.stubFor(
+      get(urlPathEqualTo("/find"))
+        .withQueryParam("query", equalTo(encodedQuery))
+        .withQueryParam("key", equalTo(API_KEY))
+        .willReturn(
+          okJson(
+            """
+              {
+                "results": []
+              }
+            """.trimIndent(),
+          ).withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE),
+        ),
+    )
+  }
+
+  companion object {
+    private const val API_KEY = "test-api-key"
+
+    @JvmField
+    @RegisterExtension
+    val wireMock: WireMockExtension = WireMockExtension.newInstance()
+      .options(wireMockConfig().dynamicPort())
+      .build()
+  }
+}
