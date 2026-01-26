@@ -26,7 +26,6 @@ class OsPlacesApiClient(
       .onStatus({ it.is4xxClientError }) { response ->
         response.bodyToMono(String::class.java)
           .flatMap { body ->
-            // you can log, wrap, or throw a custom exception with the body
             Mono.error(RuntimeException("400 from OS Places: $body"))
           }
       }
