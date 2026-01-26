@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -66,7 +67,7 @@ class ComCreateCaseloadService(
       cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
     val cases = createComCases(eligibleCases, cvlRecords)
-    val filteredCases = filterFutureReleases(cases)
+    val filteredCases = filterFutureOrTimeservedReleases(cases)
 
     return transformToCreateCaseload(filteredCases)
   }
@@ -172,10 +173,10 @@ class ComCreateCaseloadService(
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
   }
 
-  private fun filterFutureReleases(
+  private fun filterFutureOrTimeservedReleases(
     cases: List<Case>,
   ): List<Case> = cases.filter {
-    it.comLicenceCaseDto.releaseDate.isTodayOrInTheFuture()
+    it.comLicenceCaseDto.releaseDate.isTodayOrInTheFuture() || it.cvlRecord.hardStopKind == LicenceKind.TIME_SERVED
   }
 
   private fun transformToCreateCaseload(cases: List<Case>): List<ComCreateCase> = cases.map {
