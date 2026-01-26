@@ -8,7 +8,7 @@
 		WHEN The new Version 4 policy is applicable
 		THEN Deactivate the licence
 
-	The progression_model_live_date (TBC) needs to be before this is run format on data param YYYY-MM-DD
+	The progression_model_live_date (TBC) needs to be set before this is run format on data param YYYY-MM-DD
 */
 
 BEGIN;
