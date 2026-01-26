@@ -18,7 +18,6 @@ BEGIN;
 			date_last_updated = CURRENT_TIMESTAMP
 			WHERE l.status_code IN ('IN_PROGRESS', 'SUBMITTED', 'APPROVED')
 			  AND l.licence_start_date > :tranche_1_go_live_date
-			  AND now() > :tranche_1_go_live_date
 			  AND l."version" != '4.0';
 
 COMMIT;
