@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.S
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
@@ -53,7 +54,8 @@ class ComCaseloadSearchService(
 
     val deliusRecordsToLicences = teamCaseloadResult.map { it to getLicence(it.crn) }
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsToLicences)
-    val cvlRecordsByPrisonNumber = cvlRecordService.getCvlRecords(prisonerRecords.values.toList()).associateBy { it.nomisId }
+    val cvlRecordsByPrisonNumber =
+      cvlRecordService.getCvlRecords(prisonerRecords.values.toList()).associateBy { it.nomisId }
 
     val searchResults = deliusRecordsToLicences.mapNotNull { (caseloadResult, licence) ->
       val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
@@ -109,6 +111,7 @@ class ComCaseloadSearchService(
     prisonOffender == null || cvlRecord == null -> null
 
     !cvlRecord.isEligible -> null
+
     else -> deliusOffender.toUnstartedRecord(prisonOffender, cvlRecord)
   }
 
@@ -154,7 +157,7 @@ class ComCaseloadSearchService(
     if (it.isOnProbation == true) {
       true
     } else {
-      it.releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) == true
+      it.releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) ?: false || it.kind == LicenceKind.TIME_SERVED
     }
   }
 
