@@ -233,14 +233,14 @@ class EligibilityServiceTest {
     }
 
     @Test
-    fun `Person has a conditional release date (CRD) in the past not equal to sentence start date - not eligible for CVL `() {
+    fun `Person has a conditional release date (CRD) in the past - not eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(conditionalReleaseDate = LocalDate.now(clock).minusDays(1)),
       )
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("CRD in the past and not eligible for time served")
+      assertThat(result.crdIneligibilityReasons).containsExactly("CRD in the past")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
       assertThat(result.eligibleKind).isNull()
     }
@@ -379,39 +379,6 @@ class EligibilityServiceTest {
       assertThat(result.size).isEqualTo(2)
       assertThat(result["A1234AA"]!!.isEligible).isTrue()
       assertThat(result["A1234AB"]!!.isEligible).isTrue()
-    }
-
-    @Test
-    fun `conditional release date and sentence start date of yesterday so eligible for a time served licence`() {
-      val result = service.getEligibilityAssessment(
-        aPrisonerSearchResult.copy(
-          conditionalReleaseDate = LocalDate.now(clock),
-          sentenceStartDate = LocalDate.now(clock),
-        ),
-      )
-
-      assertThat(result.isEligible).isTrue()
-      assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).isEmpty()
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isEqualTo(CRD)
-    }
-
-    @Test
-    fun `conditional release date and sentence start date too far in the past no not eligible for a time served licence`() {
-      val ssd = LocalDate.now(clock).minusDays(20)
-      val result = service.getEligibilityAssessment(
-        aPrisonerSearchResult.copy(
-          conditionalReleaseDate = ssd,
-          sentenceStartDate = ssd,
-        ),
-      )
-
-      assertThat(result.isEligible).isFalse()
-      assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("CRD in the past and not eligible for time served")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.eligibleKind).isNull()
     }
   }
 

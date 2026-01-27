@@ -26,17 +26,12 @@ class ReleaseDateService(
   private val iS91DeterminationService: IS91DeterminationService,
   @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
-  @param:Value("\${timeserved.max.days.crd.before.today:14}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 14,
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
   private val isTimeServedEnabled: Boolean = false,
   @param:Value("\${feature.toggle.timeServed.prisons}")
   private val timeServedEnabledPrisons: List<String>? = emptyList(),
 ) {
-  fun isInHardStopPeriod(
-    licenceStartDate: LocalDate?,
-    kind: LicenceKind? = null,
-    overrideClock: Clock? = null,
-  ): Boolean {
+  fun isInHardStopPeriod(licenceStartDate: LocalDate?, kind: LicenceKind? = null, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
     val hardStopDate = getHardStopDate(licenceStartDate, kind)
     val today = LocalDate.now(now)
@@ -56,7 +51,6 @@ class ReleaseDateService(
     val releaseDate = sentenceDateHolder.licenceStartDate ?: return null
     return when {
       releaseDate == sentenceDateHolder.homeDetentionCurfewActualDate -> releaseDate
-
       isEligibleForEarlyRelease(releaseDate) -> getEarliestDateBefore(
         maxNumberOfWorkingDaysAllowedForEarlyRelease,
         releaseDate,
@@ -126,24 +120,27 @@ class ReleaseDateService(
     return releaseDate == licenceExpiryDate
   }
 
-  fun isTimeServed(prisoner: PrisonerSearchPrisoner): Boolean = isTimeServed(
-    prisoner.sentenceStartDate,
-    prisoner.conditionalReleaseDate,
-    prisoner.prisonId,
-  )
-
   private fun isTimeServed(
     sentenceStartDate: LocalDate?,
+    confirmedReleaseDate: LocalDate?,
     conditionalReleaseDate: LocalDate?,
     prisonCode: String?,
-  ): Boolean = isTimeServedEnabled &&
-    timeServedEnabledPrisons?.contains(prisonCode) == true &&
-    sentenceStartDate == conditionalReleaseDate &&
-    conditionalReleaseDate?.isAfter(LocalDate.now(clock).minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved)) ?: false
+    overrideClock: Clock? = null,
+  ): Boolean {
+    val clockToUse = overrideClock ?: clock
+    val today = LocalDate.now(clockToUse)
+
+    return isTimeServedEnabled &&
+      timeServedEnabledPrisons?.contains(prisonCode) == true &&
+      sentenceStartDate == today &&
+      confirmedReleaseDate == today &&
+      conditionalReleaseDate == today
+  }
 
   private fun determineHardStopKind(
     licenceStartDate: LocalDate?,
     sentenceStartDate: LocalDate?,
+    confirmedReleaseDate: LocalDate?,
     conditionalReleaseDate: LocalDate?,
     prisonCode: String?,
     overrideClock: Clock? = null,
@@ -152,20 +149,17 @@ class ReleaseDateService(
       return null
     }
 
-    return if (isTimeServed(sentenceStartDate, conditionalReleaseDate, prisonCode)) {
+    return if (isTimeServed(sentenceStartDate, confirmedReleaseDate, conditionalReleaseDate, prisonCode, overrideClock)) {
       TIME_SERVED
     } else {
       HARD_STOP
     }
   }
 
-  fun getHardStopKind(
-    sentenceDateHolder: SentenceDateHolder,
-    prisonCode: String?,
-    overrideClock: Clock? = null,
-  ): LicenceKind? = determineHardStopKind(
+  fun getHardStopKind(sentenceDateHolder: SentenceDateHolder, prisonCode: String?, overrideClock: Clock? = null): LicenceKind? = determineHardStopKind(
     sentenceDateHolder.licenceStartDate,
     sentenceDateHolder.sentenceStartDate,
+    sentenceDateHolder.actualReleaseDate,
     sentenceDateHolder.conditionalReleaseDate,
     prisonCode,
     overrideClock,
