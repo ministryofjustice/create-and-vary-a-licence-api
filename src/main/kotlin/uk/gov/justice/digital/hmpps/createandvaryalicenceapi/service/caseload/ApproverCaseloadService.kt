@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.LocalDate
 
@@ -55,10 +56,12 @@ class ApproverCaseloadService(
     val probationPractitioners = getProbationPractitioners(deliusRecords)
 
     return deliusRecords.mapNotNull { record ->
-      val probationPractitioner = probationPractitioners[record.case.nomisId?.lowercase()] ?: ProbationPractitioner.UNALLOCATED
+      val probationPractitioner =
+        probationPractitioners[record.case.nomisId?.lowercase()] ?: ProbationPractitioner.UNALLOCATED
       val licence = licenceApproverCases.findLicenceToApprove(record.case.nomisId!!)
       when {
         licence == null -> null
+
         else ->
           ApprovalCase(
             probationPractitioner = probationPractitioner,
@@ -67,7 +70,7 @@ class ApproverCaseloadService(
             prisonerNumber = licence.prisonNumber,
             submittedByFullName = licence.submittedByFullName,
             releaseDate = licence.licenceStartDate,
-            urgentApproval = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
+            urgentApproval = licence.isUrgentApproval(),
             approvedBy = licence.approvedByName,
             approvedOn = licence.approvedDate,
             kind = licence.kind,
@@ -77,6 +80,8 @@ class ApproverCaseloadService(
       }
     }
   }
+
+  private fun LicenceApproverCase.isUrgentApproval() = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this.licenceStartDate) || this.kind == LicenceKind.TIME_SERVED
 
   private fun getProbationPractitioners(coms: List<CommunityManagerWithoutUser>) = coms
     .associate {

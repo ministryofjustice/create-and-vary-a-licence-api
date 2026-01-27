@@ -312,6 +312,43 @@ class ApproverCaseloadServiceTest {
       verify(deliusApiClient, times(1)).getOffenderManagersWithoutUser(emptyList())
       assertThat(caseload).isEmpty()
     }
+
+    @Test
+    fun `It sets the urgent approval flag for a time served licence`() {
+      val nomisIds = listOf("A1234AA")
+
+      whenever(prisonApproverService.getLicenceCasesReadyForApproval(aListOfPrisonCodes)).thenReturn(
+        listOf(
+          aLicenceApproverCase(kind = LicenceKind.TIME_SERVED),
+        ),
+      )
+      whenever(deliusApiClient.getOffenderManagersWithoutUser(nomisIds)).thenReturn(
+        listOf(aCommunityManager()),
+      )
+
+      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+
+      assertThat(approvalCases).hasSize(1)
+
+      with(approvalCases[0]) {
+        assertThat(licenceId).isEqualTo(1L)
+        assertThat(name).isEqualTo("Person One")
+        assertThat(prisonerNumber).isEqualTo("A1234AA")
+        assertThat(submittedByFullName).isEqualTo("X Y")
+        assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
+        assertThat(urgentApproval).isTrue()
+        assertThat(approvedBy).isEqualTo("jim smith")
+        assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
+        with(probationPractitioner) {
+          assertThat(staffCode).isEqualTo("AB012C")
+          assertThat(name).isEqualTo("Test Test")
+          assertThat(allocated).isEqualTo(true)
+        }
+        assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
+        assertThat(prisonCode).isEqualTo("MDI")
+        assertThat(prisonDescription).isEqualTo("Moorland (HMP)")
+      }
+    }
   }
 
   @Nested
