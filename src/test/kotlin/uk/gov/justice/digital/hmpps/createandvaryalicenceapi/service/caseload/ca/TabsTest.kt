@@ -52,7 +52,7 @@ class TabsTest {
     )
 
     // Then
-    assertThat(result).isEqualTo(ATTENTION_NEEDED)
+    assertThat(result).isEqualTo(RELEASES_IN_NEXT_TWO_WORKING_DAYS)
   }
 
   @Test
@@ -117,6 +117,25 @@ class TabsTest {
     val result = determineCaViewCasesTab(
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(1),
+      licenceCaCase = licenceCase,
+      now = clock,
+    )
+
+    // Then
+    assertThat(result).isEqualTo(RELEASES_IN_NEXT_TWO_WORKING_DAYS)
+  }
+
+  @Test
+  fun `returns RELEASES_IN_NEXT_TWO_WORKING_DAYS when licence LSD is in the past`() {
+    // Given
+    val licenceCase = createLicenceCase(
+      licenceStatus = APPROVED,
+    )
+
+    // When
+    val result = determineCaViewCasesTab(
+      isDueToBeReleasedInTheNextTwoWorkingDays = true,
+      licenceStartDate = fixedNow.minusDays(1),
       licenceCaCase = licenceCase,
       now = clock,
     )
