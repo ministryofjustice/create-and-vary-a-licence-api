@@ -27,7 +27,7 @@ generic-service:
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-01-14
-    TIME_SERVED_PRISONS: "MDI, BAI, BNI, WCI, EXI, WDI, IWI"
+    TIME_SERVED_PRISONS: "MDI, BAI, BNI, WCI, EXI, WDI, IWI, EWI"
     HDC_ENABLED: true
 
   namespace_secrets:
