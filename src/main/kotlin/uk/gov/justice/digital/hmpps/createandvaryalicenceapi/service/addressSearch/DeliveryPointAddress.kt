@@ -33,7 +33,7 @@ data class DeliveryPointAddress(
   val postTown: String,
 
   @field:JsonProperty("LOCAL_CUSTODIAN_CODE_DESCRIPTION")
-  val county: String,
+  val county: String?,
 
   @field:JsonProperty("POSTCODE")
   val postcode: String,
