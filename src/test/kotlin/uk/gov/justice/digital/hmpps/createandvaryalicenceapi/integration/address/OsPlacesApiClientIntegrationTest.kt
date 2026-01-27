@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSear
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-class OsPlacesApiClientTest {
+class OsPlacesApiClientIntegrationTest {
 
   @Test
   fun `should url encode search query when calling os places`() {
@@ -81,13 +81,26 @@ class OsPlacesApiClientTest {
     encodedQuery: String?,
     localCustodianCodeDescription: String? = "Pembrokeshire",
   ) {
-    val resultEntry = mutableMapOf<String, Any>()
+    // Given
+    val dpa = mutableMapOf<String, Any>(
+      "UPRN" to "1234567890",
+      "ADDRESS" to "1 Glan-y-mor",
+      "POST_TOWN" to "Tenby",
+      "POSTCODE" to "SA70 7AA",
+      "COUNTRY_CODE_DESCRIPTION" to "Wales",
+      "X_COORDINATE" to 123456.78,
+      "Y_COORDINATE" to 987654.32,
+      "LAST_UPDATE_DATE" to "01/01/2024",
+    )
+
     localCustodianCodeDescription?.let {
-      resultEntry["LOCAL_CUSTODIAN_CODE_DESCRIPTION"] = it
+      dpa["LOCAL_CUSTODIAN_CODE_DESCRIPTION"] = it
     }
 
     val response = mapOf(
-      "results" to listOf(resultEntry),
+      "results" to listOf(
+        mapOf("DPA" to dpa),
+      ),
     )
 
     val json = jacksonObjectMapper().writeValueAsString(response)
