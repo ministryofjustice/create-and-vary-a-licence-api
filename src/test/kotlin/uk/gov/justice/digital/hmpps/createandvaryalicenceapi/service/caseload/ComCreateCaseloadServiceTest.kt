@@ -56,6 +56,8 @@ class ComCreateCaseloadServiceTest {
   private val nineDaysFromNow = LocalDate.now().plusDays(9)
   private val twoDaysFromNow = LocalDate.now().plusDays(2)
   private val yesterday = LocalDate.now().minusDays(1)
+  private val twoDaysAgo = LocalDate.now().minusDays(2)
+  private val fiveDaysAgo = LocalDate.now().minusDays(5)
   private val deliusStaffIdentifier = 213L
   private val staffDetail = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))
 
@@ -120,7 +122,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ),
       ),
@@ -129,7 +130,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ),
       ),
@@ -172,7 +172,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ),
       ),
@@ -181,7 +180,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ),
       ),
@@ -244,8 +242,8 @@ class ComCreateCaseloadServiceTest {
 
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
-        aCvlRecord(nomsId = "AB1234F", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234F", licenceStartDate = tenDaysFromNow),
       ),
     )
 
@@ -363,7 +361,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
+        aCvlRecord(nomsId = "AB1234E", licenceStartDate = nineDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234F",
           kind = null,
@@ -374,20 +372,20 @@ class ComCreateCaseloadServiceTest {
           kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
-        aCvlRecord(nomsId = "AB1234H", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
-        aCvlRecord(nomsId = "AB1234I", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
-        aCvlRecord(nomsId = "AB1234J", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
-        aCvlRecord(nomsId = "AB1234K", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
-        aCvlRecord(nomsId = "AB1234L", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
-        aCvlRecord(nomsId = "AB1234M", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234H", licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234I", licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234J", licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234K", licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234L", licenceStartDate = nineDaysFromNow),
+        aCvlRecord(nomsId = "AB1234M", licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234N",
           kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
-        aCvlRecord(nomsId = "AB1234P", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
-        aCvlRecord(nomsId = "AB1234Q", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
-        aCvlRecord(nomsId = "AB1234R", kind = LicenceKind.CRD, licenceStartDate = nineDaysFromNow),
+        aCvlRecord(nomsId = "AB1234P", licenceStartDate = nineDaysFromNow),
+        aCvlRecord(nomsId = "AB1234Q", licenceStartDate = nineDaysFromNow),
+        aCvlRecord(nomsId = "AB1234R", licenceStartDate = nineDaysFromNow),
       ),
     )
 
@@ -450,9 +448,8 @@ class ComCreateCaseloadServiceTest {
     )
   }
 
-  // isn't working properly
   @Test
-  fun `it filters out cases passed LSD`() {
+  fun `it filters out cases with a CRD in the past unless they are eligible for time served`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
@@ -462,6 +459,11 @@ class ComCreateCaseloadServiceTest {
       ManagedOffenderCrn(
         crn = "X12349",
         nomisId = "AB1234F",
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
+      ),
+      ManagedOffenderCrn(
+        crn = "X12350",
+        nomisId = "AB1234G",
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
@@ -475,8 +477,8 @@ class ComCreateCaseloadServiceTest {
         prisonerSearchResult().copy(
           bookingId = "1",
           prisonerNumber = "AB1234E",
-          conditionalReleaseDate = LocalDate.now().minusDays(2),
-          releaseDate = LocalDate.now().minusDays(2),
+          conditionalReleaseDate = twoDaysAgo,
+          releaseDate = twoDaysAgo,
           licenceExpiryDate = LocalDate.of(
             2022,
             Month.DECEMBER,
@@ -494,6 +496,11 @@ class ComCreateCaseloadServiceTest {
             26,
           ),
         ),
+        prisonerSearchResult().copy(
+          bookingId = "3",
+          prisonerNumber = "AB1234G",
+          conditionalReleaseDate = fiveDaysAgo,
+        ),
       ),
     )
 
@@ -506,7 +513,7 @@ class ComCreateCaseloadServiceTest {
           typeCode = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.SUBMITTED,
           comUsername = "johndoe",
-          licenceStartDate = LocalDate.now().minusDays(2),
+          licenceStartDate = twoDaysAgo,
         ),
         createLicenceComCase(
           crn = "X12349",
@@ -521,15 +528,31 @@ class ComCreateCaseloadServiceTest {
     )
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = LocalDate.now().minusDays(2)),
-        aCvlRecord(nomsId = "AB1234F", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234E", licenceStartDate = twoDaysAgo),
+        aCvlRecord(nomsId = "AB1234F", licenceStartDate = tenDaysFromNow),
+        aCvlRecord(
+          nomsId = "AB1234G",
+          hardStopKind = LicenceKind.TIME_SERVED,
+          licenceStartDate = fiveDaysAgo,
+        ),
       ),
     )
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
-    assertThat(caseload).hasSize(1)
+    assertThat(caseload).hasSize(2)
     verifyCase(
       case = caseload[0],
+      expectedCrn = "X12350",
+      expectedPrisonerNumber = "AB1234G",
+      expectedLicenceStatus = LicenceStatus.TIMED_OUT,
+      expectedLicenceType = LicenceType.AP,
+      expectedReleaseDate = fiveDaysAgo,
+      expectedLicenceKind = LicenceKind.TIME_SERVED,
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", allocated = true),
+      expectedLicenceCreationType = LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
+    )
+    verifyCase(
+      case = caseload[1],
       expectedCrn = "X12349",
       expectedPrisonerNumber = "AB1234F",
       expectedLicenceStatus = LicenceStatus.SUBMITTED,
@@ -537,7 +560,6 @@ class ComCreateCaseloadServiceTest {
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", allocated = true),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS,
-
     )
   }
 
@@ -631,24 +653,20 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234F",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(
           nomsId = "AB1234G",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(
           nomsId = "AB1234H",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
           hardStopWarningDate = tenDaysFromNow,
           licenceType = LicenceType.PSS,
         ),
         aCvlRecord(
           nomsId = "AB1234I",
-          kind = LicenceKind.CRD,
           licenceStartDate = elevenDaysFromNow,
           licenceType = LicenceType.AP_PSS,
         ),
@@ -749,10 +767,9 @@ class ComCreateCaseloadServiceTest {
 
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234F",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
           licenceType = LicenceType.PSS,
         ),
@@ -882,7 +899,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
       ),
@@ -935,7 +951,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
         ),
       ),
@@ -997,7 +1012,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = twoDaysFromNow,
         ),
       ),
@@ -1051,7 +1065,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = twoDaysFromNow,
         ),
       ),
@@ -1098,7 +1111,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = twoDaysFromNow,
           isInHardStopPeriod = true,
           licenceType = LicenceType.AP_PSS,
@@ -1205,7 +1217,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = twoDaysFromNow,
         ),
       ),
@@ -1259,7 +1270,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = twoDaysFromNow,
         ),
       ),
@@ -1315,7 +1325,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = twoDaysFromNow,
         ),
       ),
@@ -1356,7 +1365,6 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = "AB1234E",
-          kind = LicenceKind.CRD,
           licenceStartDate = tenDaysFromNow,
           isInHardStopPeriod = true,
           hardStopDate = LocalDate.of(2023, 9, 10),
@@ -1410,7 +1418,7 @@ class ComCreateCaseloadServiceTest {
     crn: String,
     nomisId: String,
     typeCode: LicenceType,
-    licenceStatus: LicenceStatus,
+    licenceStatus: LicenceStatus = LicenceStatus.NOT_STARTED,
     kind: LicenceKind = LicenceKind.CRD,
     prisonCode: String = "MDI",
     comUsername: String? = null,
