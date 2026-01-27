@@ -184,7 +184,6 @@ class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_
             "CLASSIFICATION_CODE": "AL03",
             "CLASSIFICATION_CODE_DESCRIPTION": "Detached",
             "LOCAL_CUSTODIAN_CODE": 3140,
-            "LOCAL_CUSTODIAN_CODE_DESCRIPTION": "FAKESHIRE",
             "COUNTRY_CODE": "W",
             "COUNTRY_CODE_DESCRIPTION": "This record is within Wales",
             "POSTAL_ADDRESS_CODE": "D",
