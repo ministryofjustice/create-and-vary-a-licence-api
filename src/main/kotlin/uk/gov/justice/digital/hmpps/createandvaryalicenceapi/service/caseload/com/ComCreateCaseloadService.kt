@@ -150,7 +150,7 @@ class ComCreateCaseloadService(
   ): ComCreateCaseloadLicenceDto {
     val kind = cvlRecord.hardStopKind ?: cvlRecord.eligibleKind!!
     val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
-    val licenceStatus = if (cvlRecordService.isTimedOut(cvlRecord)) {
+    val licenceStatus = if (cvlRecord.isTimedOut) {
       TIMED_OUT
     } else {
       NOT_STARTED
