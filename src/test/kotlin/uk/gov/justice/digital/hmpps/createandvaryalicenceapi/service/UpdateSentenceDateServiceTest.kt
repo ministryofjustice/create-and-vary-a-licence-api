@@ -1109,6 +1109,7 @@ class UpdateSentenceDateServiceTest {
         isEligibleForEarlyRelease = false,
         isInHardStopPeriod = false,
         licenceType = LicenceType.PSS,
+        isTimedOut = false,
       ),
     )
 
@@ -1199,6 +1200,7 @@ class UpdateSentenceDateServiceTest {
         isEligibleForEarlyRelease = false,
         isInHardStopPeriod = false,
         licenceType = LicenceType.AP_PSS,
+        isTimedOut = false,
       ),
     )
 
