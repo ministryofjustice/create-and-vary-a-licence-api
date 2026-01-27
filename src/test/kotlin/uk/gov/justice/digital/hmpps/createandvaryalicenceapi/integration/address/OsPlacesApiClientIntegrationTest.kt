@@ -81,7 +81,6 @@ class OsPlacesApiClientIntegrationTest {
     encodedQuery: String?,
     localCustodianCodeDescription: String? = "Pembrokeshire",
   ) {
-    // Given
     val dpa = mutableMapOf<String, Any>(
       "UPRN" to "1234567890",
       "ADDRESS" to "1 Glan-y-mor",
