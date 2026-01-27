@@ -132,7 +132,7 @@ class ComCaseloadSearchService(
     releaseDate = cvlRecord.licenceStartDate,
     bookingId = prisonOffender.bookingId?.toLong(),
     licenceType = cvlRecord.licenceType,
-    licenceStatus = if (cvlRecord.isTimedOut) TIMED_OUT else NOT_STARTED,
+    licenceStatus = if (cvlRecordService.isTimedOut(cvlRecord)) TIMED_OUT else NOT_STARTED,
     hardStopDate = cvlRecord.hardStopDate,
     hardStopWarningDate = cvlRecord.hardStopWarningDate,
     isInHardStopPeriod = cvlRecord.isInHardStopPeriod,

@@ -631,10 +631,10 @@ class ComCaseloadSearchServiceTest {
           hardStopDate = LocalDate.of(2023, 2, 12),
           hardStopWarningDate = LocalDate.of(2023, 3, 10),
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
-          isTimedOut = true,
         ),
       ),
     )
+    whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
     whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
       mapOf(
@@ -964,10 +964,10 @@ class ComCaseloadSearchServiceTest {
           licenceStartDate = LocalDate.of(2023, 9, 14),
           isInHardStopPeriod = true,
           hardStopDate = LocalDate.of(2023, 9, 10),
-          isTimedOut = true,
         ),
       ),
     )
+    whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
