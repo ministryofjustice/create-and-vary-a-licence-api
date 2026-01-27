@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
@@ -33,7 +34,11 @@ class CvlRecordService(
     return prisoners.map { prisoner ->
       val eligibility = nomisIdsToEligibility[prisoner.prisonerNumber]!!
       val licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber]
-      val hardStopKind = releaseDateService.getHardStopKind(prisoner.toSentenceDateHolder(licenceStartDate), prisoner.prisonId)
+      val hardStopKind = when {
+        releaseDateService.isTimeServed(prisoner) -> TIME_SERVED
+        releaseDateService.isInHardStopPeriod(licenceStartDate) -> HARD_STOP
+        else -> null
+      }
       val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate, hardStopKind)
 
       CvlRecord(
