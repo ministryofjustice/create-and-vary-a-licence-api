@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.address
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
@@ -47,19 +48,57 @@ class OsPlacesApiClientTest {
     )
   }
 
-  private fun createWireMock(encodedQuery: String?) {
+  @Test
+  fun `should handle missing LOCAL_CUSTODIAN_CODE_DESCRIPTION in os places response`() {
+    // Given
+    val searchQuery = "Glan-y-mor"
+    val encodedQuery = URLEncoder.encode(searchQuery, StandardCharsets.UTF_8)
+
+    createWireMock(encodedQuery, localCustodianCodeDescription = null)
+
+    val webClient = WebClient.builder()
+      .baseUrl(wireMock.baseUrl())
+      .build()
+
+    val client = OsPlacesApiClient(
+      osPlacesApiWebClient = webClient,
+      apiKey = API_KEY,
+    )
+
+    val pageable = PageRequest.of(0, 10)
+
+    // When
+    client.searchForAddressesByText(pageable, searchQuery)
+
+    // Then
+    wireMock.verify(
+      getRequestedFor(urlPathEqualTo("/find"))
+        .withQueryParam("query", equalTo(encodedQuery)),
+    )
+  }
+
+  private fun createWireMock(
+    encodedQuery: String?,
+    localCustodianCodeDescription: String? = "Pembrokeshire",
+  ) {
+    val resultEntry = mutableMapOf<String, Any>()
+    localCustodianCodeDescription?.let {
+      resultEntry["LOCAL_CUSTODIAN_CODE_DESCRIPTION"] = it
+    }
+
+    val response = mapOf(
+      "results" to listOf(resultEntry),
+    )
+
+    val json = jacksonObjectMapper().writeValueAsString(response)
+
     wireMock.stubFor(
       get(urlPathEqualTo("/find"))
         .withQueryParam("query", equalTo(encodedQuery))
         .withQueryParam("key", equalTo(API_KEY))
         .willReturn(
-          okJson(
-            """
-              {
-                "results": []
-              }
-            """.trimIndent(),
-          ).withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE),
+          okJson(json)
+            .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE),
         ),
     )
   }
