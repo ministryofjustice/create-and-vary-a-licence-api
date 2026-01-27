@@ -67,7 +67,7 @@ class CvlRecordServiceTest {
         "A1234AC" to null,
       ),
     )
-    whenever(releaseDateService.isTimeServed(anyOrNull())).thenReturn(false)
+    whenever(releaseDateService.getHardStopKind(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(LicenceKind.HARD_STOP)
     whenever(releaseDateService.getHardStopDate(anyOrNull(), anyOrNull())).thenReturn(LocalDate.of(2023, 10, 12))
     whenever(releaseDateService.getHardStopWarningDate(anyOrNull(), anyOrNull())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(true)
@@ -262,7 +262,7 @@ class CvlRecordServiceTest {
 
     @Test
     fun `should be true when prisoner is time served`() {
-      whenever(releaseDateService.isTimeServed(anyOrNull())).thenReturn(true)
+      whenever(releaseDateService.getHardStopKind(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(LicenceKind.TIME_SERVED)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false)
 
       val cvlRecord = service.getCvlRecord(aPrisonerSearchPrisoner)
@@ -272,7 +272,7 @@ class CvlRecordServiceTest {
 
     @Test
     fun `should be true when in hard stop period`() {
-      whenever(releaseDateService.isTimeServed(anyOrNull())).thenReturn(false)
+      whenever(releaseDateService.getHardStopKind(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(LicenceKind.HARD_STOP)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true)
 
       val cvlRecord = service.getCvlRecord(aPrisonerSearchPrisoner)
@@ -282,55 +282,12 @@ class CvlRecordServiceTest {
 
     @Test
     fun `should be false when not time served and not in hard stop period`() {
-      whenever(releaseDateService.isTimeServed(anyOrNull())).thenReturn(false)
+      whenever(releaseDateService.getHardStopKind(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(LicenceKind.HARD_STOP)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false)
 
       val cvlRecord = service.getCvlRecord(aPrisonerSearchPrisoner)
 
       assertThat(cvlRecord.isTimedOut).isFalse()
-    }
-  }
-
-  @Nested
-  inner class HardStopKindTest {
-    @BeforeEach
-    fun setup() {
-      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
-        mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()),
-      )
-      whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
-        mapOf(aPrisonerSearchPrisoner.prisonerNumber to LocalDate.of(2021, 10, 22)),
-      )
-    }
-
-    @Test
-    fun `should return TIME_SERVED when prisoner is time served`() {
-      whenever(releaseDateService.isTimeServed(any())).thenReturn(true)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false)
-
-      val cvlRecord = service.getCvlRecord(aPrisonerSearchPrisoner)
-
-      assertThat(cvlRecord.hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
-    }
-
-    @Test
-    fun `should return HARD_STOP when in hard stop period`() {
-      whenever(releaseDateService.isTimeServed(any())).thenReturn(false)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true)
-
-      val cvlRecord = service.getCvlRecord(aPrisonerSearchPrisoner)
-
-      assertThat(cvlRecord.hardStopKind).isEqualTo(LicenceKind.HARD_STOP)
-    }
-
-    @Test
-    fun `should return null when not time served and not in hard stop period`() {
-      whenever(releaseDateService.isTimeServed(any())).thenReturn(false)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false)
-
-      val cvlRecord = service.getCvlRecord(aPrisonerSearchPrisoner)
-
-      assertThat(cvlRecord.hardStopKind).isNull()
     }
   }
 
