@@ -29,7 +29,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCaseloadSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -169,10 +168,9 @@ class ComCaseloadSearchServiceTest {
     )
 
     assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.results.first()).extracting { tuple(it.name, it.comName, it.probationPractitioner, it.teamName) }
-      .isEqualTo(
-        tuple("Test Surname", "Staff Surname", ProbationPractitioner("A01B02C", "Staff Surname", true), "Test Team"),
-      )
+    assertThat(result.results.first()).extracting { tuple(it.name, it.comName, it.probationPractitioner, it.teamName) }.isEqualTo(
+      tuple("Test Surname", "Staff Surname", ProbationPractitioner("A01B02C", "Staff Surname", true), "Test Team"),
+    )
   }
 
   @Test
@@ -923,44 +921,18 @@ class ComCaseloadSearchServiceTest {
   }
 
   @Test
-  fun `Licences with a past licence start date are filtered if they are not eligible for time served`() {
+  fun `Licences with a past licence start date are filtered out`() {
     val licence = aLicenceEntity.copy(
       licenceStartDate = LocalDate.now(clock).minusDays(1),
     )
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-      listOf(
-        aCvlRecord(kind = LicenceKind.CRD),
-      ),
-    )
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
     assertThat(result.results.size).isEqualTo(0)
     assertThat(result.inPrisonCount).isEqualTo(0)
-    assertThat(result.onProbationCount).isEqualTo(0)
-  }
-
-  @Test
-  fun `Time served licences with a past licence start date are not filtered`() {
-    val timeServedLicence = createTimeServedLicence().copy(
-      statusCode = LicenceStatus.IN_PROGRESS,
-      licenceStartDate = LocalDate.now(clock).minusDays(5),
-    )
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(timeServedLicence))
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-      listOf(
-        aCvlRecord(kind = LicenceKind.TIME_SERVED),
-      ),
-    )
-
-    val result = service.searchForOffenderOnProbationUserCaseload(request)
-
-    assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.inPrisonCount).isEqualTo(1)
     assertThat(result.onProbationCount).isEqualTo(0)
   }
 
