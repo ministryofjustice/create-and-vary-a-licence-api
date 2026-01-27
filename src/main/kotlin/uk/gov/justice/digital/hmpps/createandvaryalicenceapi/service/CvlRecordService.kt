@@ -34,7 +34,6 @@ class CvlRecordService(
       val eligibility = nomisIdsToEligibility[prisoner.prisonerNumber]!!
       val licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber]
       val hardStopKind = releaseDateService.getHardStopKind(prisoner.toSentenceDateHolder(licenceStartDate), prisoner.prisonId)
-      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate, hardStopKind)
 
       CvlRecord(
         nomisId = prisoner.prisonerNumber,
@@ -43,7 +42,7 @@ class CvlRecordService(
         eligibleKind = eligibility.eligibleKind,
         ineligibilityReasons = eligibility.ineligibilityReasons,
         hardStopKind = hardStopKind,
-        isInHardStopPeriod = isInHardStopPeriod,
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate, hardStopKind),
         hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate, hardStopKind),
         hardStopDate = releaseDateService.getHardStopDate(licenceStartDate, hardStopKind),
         isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(
@@ -55,10 +54,11 @@ class CvlRecordService(
           licenceStartDate,
         ),
         licenceType = getLicenceType(prisoner, licenceStartDate, eligibility.eligibleKind),
-        isTimedOut = isInHardStopPeriod || hardStopKind == TIME_SERVED,
       )
     }
   }
+
+  fun isTimedOut(cvlRecord: CvlRecord) = cvlRecord.isInHardStopPeriod || cvlRecord.hardStopKind == TIME_SERVED
 
   private fun getLicenceType(nomisRecord: PrisonerSearchPrisoner, licenceStartDate: LocalDate?, kind: LicenceKind?) = when {
     nomisRecord.licenceExpiryDate == null && nomisRecord.topupSupervisionExpiryDate == null -> AP

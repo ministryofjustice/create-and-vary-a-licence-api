@@ -260,10 +260,11 @@ class CaCaseloadServiceTest {
               hardStopKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              isTimedOut = true,
             ),
           ),
         )
+
+        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -899,10 +900,11 @@ class CaCaseloadServiceTest {
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               hardStopKind = LicenceKind.TIME_SERVED,
-              isTimedOut = true,
             ),
           ),
         )
+
+        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -1034,10 +1036,11 @@ class CaCaseloadServiceTest {
               hardStopKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              isTimedOut = true,
             ),
           ),
         )
+
+        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -1103,10 +1106,11 @@ class CaCaseloadServiceTest {
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               hardStopKind = LicenceKind.TIME_SERVED,
-              isTimedOut = true,
             ),
           ),
         )
+
+        whenever(cvlRecordService.isTimedOut(any())).thenReturn(true)
 
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(

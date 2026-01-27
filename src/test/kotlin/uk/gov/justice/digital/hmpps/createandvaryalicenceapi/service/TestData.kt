@@ -160,7 +160,6 @@ object TestData {
     isInHardStopPeriod: Boolean = false,
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
     licenceType: LicenceType = AP,
-    isTimedOut: Boolean = false,
   ) = CvlRecord(
     nomisId = nomsId,
     licenceStartDate = licenceStartDate,
@@ -174,7 +173,6 @@ object TestData {
     hardStopDate = hardStopDate,
     hardStopWarningDate = hardStopWarningDate,
     licenceType = licenceType,
-    isTimedOut = isTimedOut,
   )
 
   fun anEligibilityAssessment() = EligibilityAssessment(
