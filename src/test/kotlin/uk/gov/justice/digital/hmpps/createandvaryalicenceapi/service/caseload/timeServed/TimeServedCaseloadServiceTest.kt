@@ -10,6 +10,7 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import java.time.Clock
 import java.time.Instant
@@ -19,11 +20,12 @@ import java.time.ZoneId.systemDefault
 class TimeServedCaseloadServiceTest {
 
   private val prisonerSearchApiClient: PrisonerSearchApiClient = mock()
+  private val releaseDateService: ReleaseDateService = mock()
   private val fixedClock: Clock = Clock.fixed(
     Instant.parse("2025-09-23T15:00:00Z"),
     systemDefault(),
   )
-  private val service = TimeServedCaseloadService(prisonerSearchApiClient, fixedClock)
+  private val service = TimeServedCaseloadService(prisonerSearchApiClient, releaseDateService, fixedClock)
 
   @BeforeEach
   fun setup() {
@@ -37,7 +39,6 @@ class TimeServedCaseloadServiceTest {
       sentenceStartDate = today,
       confirmedReleaseDate = today,
       conditionalReleaseDate = today,
-      conditionalReleaseDateOverrideDate = null,
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
@@ -106,7 +107,6 @@ class TimeServedCaseloadServiceTest {
       sentenceStartDate = today,
       confirmedReleaseDate = today,
       conditionalReleaseDate = today,
-      conditionalReleaseDateOverrideDate = null,
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
@@ -129,7 +129,6 @@ class TimeServedCaseloadServiceTest {
       sentenceStartDate = today.minusDays(1),
       confirmedReleaseDate = today,
       conditionalReleaseDate = today,
-      conditionalReleaseDateOverrideDate = null,
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
@@ -154,11 +153,11 @@ class TimeServedCaseloadServiceTest {
       sentenceStartDate = today,
       confirmedReleaseDate = today.plusDays(1),
       conditionalReleaseDate = today,
-      conditionalReleaseDateOverrideDate = null,
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
+    whenever(releaseDateService.isTimeServed(prisoner)).thenReturn(true)
 
     val result = service.getCases("MDI")
 
@@ -175,13 +174,13 @@ class TimeServedCaseloadServiceTest {
     val today = LocalDate.now(fixedClock)
     val prisoner = prisonerSearchResult(
       sentenceStartDate = today,
-      confirmedReleaseDate = today.plusDays(1),
-      conditionalReleaseDate = today.minusDays(1),
+      conditionalReleaseDate = today,
       conditionalReleaseDateOverrideDate = today,
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
+    whenever(releaseDateService.isTimeServed(prisoner)).thenReturn(true)
 
     val result = service.getCases("MDI")
 
@@ -200,7 +199,6 @@ class TimeServedCaseloadServiceTest {
       sentenceStartDate = today.minusDays(1),
       confirmedReleaseDate = today,
       conditionalReleaseDate = today,
-      conditionalReleaseDateOverrideDate = null,
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
