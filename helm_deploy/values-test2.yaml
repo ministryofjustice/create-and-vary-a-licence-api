@@ -26,7 +26,7 @@ generic-service:
     SELF_API_LINK: "https://create-and-vary-a-licence-api-test2.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
-    TIME_SERVED_PRISONS: "MDI, BAI, BNI, LEI"
+    TIME_SERVED_PRISONS: "MDI, BAI, BNI, LEI, WCI, EXI, WDI, IWI, EWI"
     HDC_ENABLED: false
 
   namespace_secrets:
