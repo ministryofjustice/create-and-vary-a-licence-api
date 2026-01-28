@@ -6,6 +6,9 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Component
 class OsPlacesApiClient(
@@ -13,13 +16,22 @@ class OsPlacesApiClient(
   @param:Value("\${os.places.api.key}") private val apiKey: String,
 ) {
   fun searchForAddressesByText(pageable: PageRequest, searchQuery: String): List<DeliveryPointAddress> {
+    val escapedSearchQuery = URLEncoder.encode(searchQuery, StandardCharsets.UTF_8)
+
     val searchResult = osPlacesApiWebClient
       .get()
-      .uri("/find?query=$searchQuery&key=$apiKey&offset=${pageable.offset}&maxresults=${pageable.pageSize}&lr=EN")
+      .uri("/find?query=$escapedSearchQuery&key=$apiKey&offset=${pageable.offset}&maxresults=${pageable.pageSize}&lr=EN")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
+      .onStatus({ it.is4xxClientError }) { response ->
+        response.bodyToMono(String::class.java)
+          .flatMap { body ->
+            Mono.error(RuntimeException("400 from OS Places: $body"))
+          }
+      }
       .bodyToMono(OsPlacesApiResponse::class.java)
       .block()
+
     return searchResult?.results?.map { it.dpa } ?: emptyList()
   }
 

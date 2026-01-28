@@ -27,7 +27,7 @@ class OsPlacesMapperToAddressSearchResponseMapper {
       firstLine = firstLine,
       secondLine = secondLine,
       townOrCity = deliveryPointAddress.postTown,
-      county = deliveryPointAddress.county,
+      county = deliveryPointAddress.county ?: "",
       postcode = deliveryPointAddress.postcode,
       country = getCountry(deliveryPointAddress),
     )
