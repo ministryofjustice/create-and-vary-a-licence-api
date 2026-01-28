@@ -41,7 +41,7 @@ generic-service:
     HMPPS_GOVUK_API_URL: "https://www.gov.uk"
     HMPPS_SQS_USE_WEB_TOKEN: true
     FEATURE_TOGGLE_TIMESERVED_ENABLED: true
-    TIME_SERVED_PRISONS: "BNI, WCI, EXI, WDI, IWI, EWI"
+    TIME_SERVED_PRISONS: "BNI"
     HDC_ENABLED: false
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
