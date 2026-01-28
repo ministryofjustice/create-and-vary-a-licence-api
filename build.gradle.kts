@@ -87,6 +87,9 @@ dependencies {
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
+
+  // Thymeleaf for JSON test templates
+  testImplementation("org.thymeleaf:thymeleaf:3.1.2.RELEASE")
 }
 
 detekt {
