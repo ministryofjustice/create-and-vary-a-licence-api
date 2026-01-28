@@ -3,12 +3,16 @@
     "prisonNumber": "A1234AA",
     "crn": "CRN1",
     "status": "SUBMITTED",
-    "licenceStartDate": "06/01/2026"
+    "licenceStartDate": "06/01/2026",
+    "emConditionCodes" : "14d, 5h",
+    "fullName": "Person One"
   },
   {
     "prisonNumber": "A1234AB",
     "crn": "CRN2",
     "status": "APPROVED",
-    "licenceStartDate": null
+    "licenceStartDate": null,
+    "emConditionCodes": "14b",
+    "fullName": "Person Two"
   }
 ]

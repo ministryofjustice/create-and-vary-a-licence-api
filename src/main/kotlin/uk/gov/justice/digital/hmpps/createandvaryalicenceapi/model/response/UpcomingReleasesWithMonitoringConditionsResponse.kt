@@ -16,4 +16,8 @@ data class UpcomingReleasesWithMonitoringConditionsResponse(
   @field:Schema(description = "Licence start date", example = "15/07/2024")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val licenceStartDate: LocalDate?,
+  @field:Schema(description = "em condition codes", example = "14a, 14b, 14c, 5a")
+  val emConditionCodes: String?,
+  @field:Schema(description = "full name of prisoner", example = "Forename Surname")
+  val fullName: String?,
 )

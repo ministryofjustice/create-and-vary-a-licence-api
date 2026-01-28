@@ -62,11 +62,11 @@ values ('CRD',
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
 
-insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
+insert into additional_condition (id,licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (1, 1, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2ed4', 1,
-        'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
-        'AP');
+values (1,1, '3.0', 'Electronic monitoring', 'd36a3b77-30ba-40ce-8953-83e761d3b487', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]','AP'),
+	(2,1, '3.0', 'Exclusion zone', 'd36a3b77-30ba-40ce-8953-83e761d3b487', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP'),
+	(3,1, '3.0', 'Electronic monitoring', '3932e5c9-4d21-4251-a747-ce6dc52dc9c0', 3, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (1, 1, 1, 'Electronic monitoring', 'Town centre');
@@ -118,7 +118,7 @@ values ('CRD',
         'MDI',
         'Moorland (HMP)',
         'Person',
-        'One',
+        'Two',
         '2020-10-25',
         '2022-02-12',
         '2022-02-25',
@@ -141,12 +141,12 @@ values (2, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (2, 2, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2ed4', 1,
+values (4, 2, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2ed4', 1,
         'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (2, 2, 1, 'Electronic monitoring', 'Town centre');
+values (2, 4, 1, 'Electronic monitoring', 'Town centre');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (2, true, 'Test Programme');
@@ -195,7 +195,7 @@ values ('CRD',
         'MDI',
         'Moorland (HMP)',
         'Person',
-        'One',
+        'Three',
         '2020-10-25',
         '2022-02-12',
         '2022-02-25',
@@ -218,12 +218,12 @@ values (3, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (3, 3, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2ed4', 1,
+values (5, 3, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2ed4', 1,
         'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (3, 3, 1, 'Electronic monitoring', 'Town centre');
+values (3, 5, 1, 'Electronic monitoring', 'Town centre');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (3, true, 'Test Programme');
@@ -273,7 +273,7 @@ values ('CRD',
         'MDI',
         'Moorland (HMP)',
         'Person',
-        'One',
+        'Four',
         '2020-10-25',
         '2022-02-12',
         '2022-02-25',
@@ -296,6 +296,6 @@ values (4, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (4, 4, '3.0', 'Exclusion zone', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1,
+values (6, 4, '3.0', 'Exclusion zone', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1,
         'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
