@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.address
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.test.json.JsonCompareMode
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OsPlacesMockServer
 import java.nio.charset.StandardCharsets
 
 private const val SEARCH_STRING = "Glan-y-mor"
-private const val POSTCODE = "FA11KE"
 private const val REFERENCE = "2345678"
 private const val SEARCH_FOR_ADDRESSES_URL = "/address/search/by/text/$SEARCH_STRING"
 private const val GET_ADDRESS_BY_REFERENCE_URL = "/address/search/by/reference/$REFERENCE"

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.timeServed
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -14,12 +15,13 @@ class TimeServedCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
+  @param:Value("\${timeserved.max.days.crd.before.today:14}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 14,
 ) {
   fun getCases(prisonCode: String): TimeServedCaseload {
     val today = LocalDate.now(clock)
 
     val cases = prisonerSearchApiClient.searchPrisonersByReleaseDate(
-      today,
+      today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
       today.plusDays(CASELOAD_WINDOW),
       setOf(prisonCode),
     )

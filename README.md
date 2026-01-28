@@ -4,22 +4,30 @@
 [![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://create-and-vary-a-licence-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html)
 [![Event docs](https://img.shields.io/badge/Event_docs-view-85EA2D.svg)](https://studio.asyncapi.com/?url=https://raw.githubusercontent.com/ministryofjustice/create-and-vary-a-licence-api/main/async-api.yml)
 
-
-
 # create-and-vary-a-licence-api
 
 This service provides access to data stored in the licences database via API endpoints.
 The main client is the create-and-vary-a-licence (UI) service.
-It is built as  docker image and deployed to the MOJ Cloud Platform.
+It is built as docker image and deployed to the MOJ Cloud Platform.
 
 ## Building the project
 
 Tools required:
 
-* JDK v18+
+* SDKMAN
 * Kotlin
 * docker
 * docker-compose
+
+### Install SDKMAN
+
+Install SDKMAN from  https://sdkman.io/ and run the following
+
+```shell
+sdk env
+```
+
+This will install the required JDK.
 
 ### Install gradle
 
@@ -29,7 +37,7 @@ Tools required:
 
 ## Running the service
 
-There is a script to help, which sets local profiles, port and DB connection properties to the 
+There is a script to help, which sets local profiles, port and DB connection properties to the
 values required.
 
 ```shell
@@ -37,6 +45,7 @@ values required.
 ```
 
 To run start up the application without pulling / restarting local containers:
+
 ```shell
 ./run-local.sh --skip-docker
 ```
@@ -48,17 +57,23 @@ If you want to run the spring application in side your IDE,
 follow the following steps:
 
 * Run in terminal
+
 ```Shell
 ./set-vars-to-env-file.sh
 ```
+
 * Then run in terminal
+
 ```Shell
 docker compose up
 ```
+
 * Add the following to your IJ IDE Run/Debug configurations "Environment variables"
+
 ```
 /Users/<<YOUR-USER-DIR>>/env-config/after.env
 ```
+
 <em>The IDE behaves a bit odd here, try and selected the folder and file do not type it in!</em>
 
 ## Running the unit tests
@@ -69,7 +84,7 @@ Unit tests mock all external dependencies and can be run with no dependent conta
 
 ## Running the integration tests
 
-Integration tests use Wiremock to stub any API calls required, and use a local H2 database 
+Integration tests use Wiremock to stub any API calls required, and use a local H2 database
 that is seeded with data specific to each test suite.
 
 `./gradlew integrationTest`
@@ -79,6 +94,7 @@ that is seeded with data specific to each test suite.
 To install the pre-commit hooks run `./gradlew installLocalGitHook`
 
 This will install hooks for:
+
 * ktlint linter
 * Detekt static code analysis
 
@@ -90,7 +106,7 @@ To locate any linting issues
 
 To apply some fixes following linting
 
-`./gradlew ktlintformat` 
+`./gradlew ktlintformat`
 
 ### Static Code Analysis
 
@@ -119,11 +135,9 @@ Pull latest dependencies according to the `build.gradle.kts` file
 
 `./gradlew dependencyUpdates`
 
-
 ## OWASP vulnerability scanning
 
 `./gradlew dependencyCheckAnalyze`
-
 
 ## Kotlin JPA specification
 
@@ -132,14 +146,13 @@ in fluent style Kotlin and make it much more readable when creating the JPA Spec
 by criteria.
 
 As this dependency is not available in the Maven central repository yet, and JCenter has closed its
-services now, we have imported the single-file directly and kept the licence notification in the comments. 
+services now, we have imported the single-file directly and kept the licence notification in the comments.
 We can wait to see whether the dependency will soon become available in Maven central and import it from there.
 
 ## Connecting to licences-db
 
-The licences-db container is the database that is used by the API. Once this is available, a final extra task would be 
+The licences-db container is the database that is used by the API. Once this is available, a final extra task would be
 to manage the database locally using a SQL database manager application software of your choice (DBeaver, DataGrip etc).
-
 
 For the purposes of this, we will be using DBeaver. Using Homebrew, install the community version of DBeaver
 
@@ -147,7 +160,8 @@ For the purposes of this, we will be using DBeaver. Using Homebrew, install the 
 brew install --cask dbeaver-community
 ```
 
-Once installed, open up DBeaver and connect to a database using the Database Navigator and the plug type icon to connect to a database.
+Once installed, open up DBeaver and connect to a database using the Database Navigator and the plug type icon to connect
+to a database.
 
 ![database-connection.png](images%2Fdatabase-connection.png)
 
@@ -159,6 +173,7 @@ Some of the parameters should already be populated but you need to amend the fol
 
 ![postgres-configuration.png](images%2Fpostgres-configuration.png)
 
-Once set up, you should see the following tree structure which will allow you to access the various tables in the CVL database locally.
+Once set up, you should see the following tree structure which will allow you to access the various tables in the CVL
+database locally.
 
 ![posttgres-example.png](images%2Fposttgres-example.png)
