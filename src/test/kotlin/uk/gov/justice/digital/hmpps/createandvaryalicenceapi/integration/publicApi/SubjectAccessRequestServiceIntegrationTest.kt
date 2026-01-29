@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
 import uk.gov.justice.hmpps.kotlin.sar.Attachment
 import java.time.LocalDateTime
 
@@ -51,25 +50,10 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
     assertThat(content.licences).hasSize(2)
     with(content.licences[0]) {
-      assertThat(id).isEqualTo(1L)
       assertThat(prisonNumber).isEqualTo("A1234AA")
-      assertThat(bookingId).isEqualTo(12345L)
-      assertThat(createdByUsername).isEqualTo("test-client")
     }
     with(content.licences[1]) {
-      assertThat(id).isEqualTo(2L)
       assertThat(prisonNumber).isEqualTo("A1234AA")
-      assertThat(bookingId).isEqualTo(123456L)
-      assertThat(createdByUsername).isEqualTo("test-client")
-    }
-
-    assertThat(content.auditEvents).hasSize(5)
-    with(content.auditEvents[0]) {
-      assertThat(licenceId).isEqualTo(1L)
-      assertThat(username).isEqualTo("USER")
-      assertThat(eventType).isEqualTo(SarAuditEventType.USER_EVENT)
-      assertThat(summary).isEqualTo("Summary1")
-      assertThat(detail).isEqualTo("Detail1")
     }
 
     assertThat(content.timeServedExternalRecords).hasSize(2)
@@ -114,7 +98,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
     assertThat(summary.attachmentNumber).isEqualTo(0)
     assertThat(summary.filename).isEqualTo("Test-file.pdf")
     assertThat(summary.imageType).isEqualTo("image/png")
-    assertThat(summary.fileSize).isEqualTo(23456)
     assertThat(summary.description).isEqualTo("Description")
 
     assertThat(result.attachments).isEqualTo(

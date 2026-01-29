@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
@@ -11,8 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
@@ -41,13 +38,11 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
 
     sarLicences.add(
       SarLicence(
-        id = licence.id,
         kind = licence.kind,
         typeCode = SarLicenceType.from(licence.typeCode),
         statusCode = SarLicenceStatus.from(licence.statusCode!!),
         prisonNumber = licence.nomsId,
         dateLastUpdated = licence.dateLastUpdated,
-        bookingId = licence.bookingId,
         appointmentPerson = licence.appointmentPerson,
         appointmentTime = licence.appointmentTime,
         appointmentTimeType = SarAppointmentTimeType.from(licence.appointmentTimeType),
@@ -56,13 +51,10 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
         appointmentTelephoneNumber = licence.appointmentTelephoneNumber,
         appointmentAlternativeTelephoneNumber = licence.appointmentAlternativeTelephoneNumber,
         approvedDate = licence.approvedDate,
-        approvedByUsername = licence.approvedByUsername,
         submittedDate = licence.submittedDate,
         approvedByName = licence.approvedByName,
         supersededDate = licence.supersededDate,
         dateCreated = licence.dateCreated,
-        createdByUsername = licence.createdByUsername,
-        updatedByUsername = licence.updatedByUsername,
         standardLicenceConditions = licence.standardLicenceConditions?.map(::transformToSarStandardConditions),
         standardPssConditions = licence.standardPssConditions?.map(::transformToSarStandardConditions),
         additionalLicenceConditions = licence.additionalLicenceConditions.map {
@@ -87,10 +79,9 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     return this
   }
 
-  fun build(auditEvents: List<AuditEvent>) = HmppsSubjectAccessRequestContent(
+  fun build() = HmppsSubjectAccessRequestContent(
     Content(
       licences = sarLicences,
-      auditEvents = auditEvents.map { toSarAuditEvent(it) }.sortedBy { it.eventTime },
       timeServedExternalRecords = externalRecords,
     ),
     attachments = attachmentDetail,
@@ -123,7 +114,6 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
       attachmentNumber = attachmentNumber,
       filename = entity.filename ?: UNAVAILABLE,
       imageType = entity.imageType ?: UNAVAILABLE,
-      fileSize = entity.imageSize ?: UNAVAILABLE_SIZE,
       uploadedTime = entity.uploadedTime,
       description = entity.description,
     )
@@ -146,16 +136,6 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
   private fun transformToSarStandardConditions(entity: StandardCondition): SarStandardCondition = SarStandardCondition(
     code = entity.code,
     text = entity.text,
-  )
-
-  private fun toSarAuditEvent(entity: AuditEvent) = SarAuditEvent(
-    licenceId = entity.licenceId,
-    eventTime = entity.eventTime,
-    username = entity.username,
-    fullName = entity.fullName,
-    eventType = SarAuditEventType.from(entity.eventType),
-    summary = entity.summary,
-    detail = entity.detail,
   )
 
   fun addTimeServedExternalRecord(record: TimeServedExternalRecord): SubjectAccessRequestResponseBuilder {

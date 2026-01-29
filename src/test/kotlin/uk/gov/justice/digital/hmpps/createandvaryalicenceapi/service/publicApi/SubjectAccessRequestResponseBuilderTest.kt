@@ -31,36 +31,30 @@ class SubjectAccessRequestResponseBuilderTest {
 
     val result = SubjectAccessRequestResponseBuilder("https://some-host")
       .addLicence(crdLicenceWithEm)
-      .build(emptyList())
+      .build()
 
     val content = result.content as Content
     val attachments = result.attachments
 
     assertThat(content.licences).hasSize(1)
-    assertThat(content.auditEvents).isEmpty()
     assertThat(attachments).isEmpty()
 
     with(content.licences.first()) {
-      assertThat(id).isEqualTo(crdLicence.id)
       assertThat(kind).isEqualTo(crdLicence.kind)
       assertThat(typeCode).isEqualTo(SarLicenceType.AP)
       assertThat(statusCode).isEqualTo(SarLicenceStatus.valueOf(crdLicence.statusCode!!.name))
       assertThat(prisonNumber).isEqualTo(crdLicence.nomsId)
-      assertThat(bookingId).isEqualTo(crdLicence.bookingId)
       assertThat(appointmentPerson).isEqualTo(crdLicence.appointmentPerson)
       assertThat(appointmentTime).isEqualTo(crdLicence.appointmentTime)
       assertThat(appointmentTimeType).isEqualTo(SarAppointmentTimeType.valueOf(crdLicence.appointmentTimeType!!.name))
       assertThat(appointmentAddress).isEqualTo(crdLicence.appointmentAddress)
       assertThat(appointmentContact).isEqualTo(crdLicence.appointmentContact)
       assertThat(approvedDate).isEqualTo(crdLicence.approvedDate)
-      assertThat(approvedByUsername).isEqualTo(crdLicence.approvedByUsername)
       assertThat(submittedDate).isEqualTo(crdLicence.submittedDate)
       assertThat(approvedByName).isEqualTo(crdLicence.approvedByName)
       assertThat(supersededDate).isEqualTo(crdLicence.supersededDate)
       assertThat(dateCreated).isEqualTo(crdLicence.dateCreated)
-      assertThat(createdByUsername).isEqualTo(crdLicence.createdByUsername)
       assertThat(dateLastUpdated).isEqualTo(crdLicence.dateLastUpdated)
-      assertThat(updatedByUsername).isEqualTo(crdLicence.updatedByUsername)
       assertThat(standardLicenceConditions).hasSize(3)
       assertThat(standardPssConditions).isEmpty()
       assertThat(additionalLicenceConditions).isEmpty()
@@ -134,7 +128,7 @@ class SubjectAccessRequestResponseBuilderTest {
           ),
         ),
       )
-      .build(emptyList())
+      .build()
 
     val content = result.content as Content
 
@@ -149,7 +143,6 @@ class SubjectAccessRequestResponseBuilderTest {
       val summary = content.licences.findAttachmentSummary(attachmentNumber)
       assertThat(summary.filename).isEqualTo(filename)
       assertThat(summary.imageType).isEqualTo(contentType)
-      assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
     }
 
@@ -164,7 +157,6 @@ class SubjectAccessRequestResponseBuilderTest {
       val summary = content.licences.findAttachmentSummary(attachmentNumber)
       assertThat(summary.filename).isEqualTo(filename)
       assertThat(summary.imageType).isEqualTo(contentType)
-      assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
     }
     with(result.attachments!![2]) {
@@ -173,12 +165,10 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(contentType).isEqualTo("image/png")
       assertThat(url).isEqualTo("https://some-host/public/licences/1/conditions/11/image-upload")
       assertThat(filename).isEqualTo("file3.pdf")
-      assertThat(filesize).isEqualTo(2137)
 
       val summary = content.licences.findAttachmentSummary(attachmentNumber)
       assertThat(summary.filename).isEqualTo(filename)
       assertThat(summary.imageType).isEqualTo(contentType)
-      assertThat(summary.fileSize).isEqualTo(filesize)
       assertThat(summary.description).isEqualTo(name)
     }
 
