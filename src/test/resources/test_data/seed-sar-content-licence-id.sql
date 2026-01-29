@@ -155,3 +155,33 @@ values (1, 1, 'CREATED', 'Test User', 'Test', 'User', 'Licence created1', null),
        (5, 2, 'SUBMITTED', 'Test User', 'Test', 'User', 'Licence submitted3', null);
 
 
+INSERT INTO time_served_external_records (noms_id,
+                                          booking_id,
+                                          reason,
+                                          prison_code,
+                                          updated_by_ca_id,
+                                          date_created,
+                                          date_last_updated)
+VALUES ('A1234AA',
+        '123',
+        'Time served licence created in NOMIS',
+        'MDI',
+        1,
+        '2024-06-01 10:00:00',
+        '2024-06-01 11:00:00'),
+       ('A1234AG',
+        '1234',
+        'Time served served licence created in NOMIS',
+        'MDI',
+        1,
+        '2024-06-01 10:00:00',
+        '2024-06-01 11:00:00'),
+       ('A1234AA',
+        '1235',
+        'Some other time served licence created in NOMIS',
+        'MDI',
+        1,
+        '2024-06-02 10:00:00',
+        '2024-06-02 11:00:00')
+;
+

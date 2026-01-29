@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.publicApi
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -18,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
 import uk.gov.justice.hmpps.kotlin.sar.Attachment
+import java.time.LocalDateTime
 
 class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
@@ -47,47 +47,46 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
     assertThat(resultList?.size).isEqualTo(1)
 
-    val result = resultList?.first()
+    val content = resultList.first().content
 
-    assertThat(result?.content?.licences).extracting(
-      "id",
-      "prisonNumber",
-      "bookingId",
-      "createdByUsername",
-    )
-      .containsAll(
-        listOf(
-          tuple(
-            1L,
-            "A1234AA",
-            12345L,
-            "test-client",
-          ),
-          tuple(
-            2L,
-            "A1234AA",
-            123456L,
-            "test-client",
-          ),
-        ),
-      )
+    assertThat(content.licences).hasSize(2)
+    with(content.licences[0]) {
+      assertThat(id).isEqualTo(1L)
+      assertThat(prisonNumber).isEqualTo("A1234AA")
+      assertThat(bookingId).isEqualTo(12345L)
+      assertThat(createdByUsername).isEqualTo("test-client")
+    }
+    with(content.licences[1]) {
+      assertThat(id).isEqualTo(2L)
+      assertThat(prisonNumber).isEqualTo("A1234AA")
+      assertThat(bookingId).isEqualTo(123456L)
+      assertThat(createdByUsername).isEqualTo("test-client")
+    }
 
-    assertThat(result?.content?.auditEvents?.first()).extracting(
-      "licenceId",
-      "username",
-      "eventType",
-      "summary",
-      "detail",
-    )
-      .isEqualTo(
-        listOf(
-          1L,
-          "USER",
-          SarAuditEventType.USER_EVENT,
-          "Summary1",
-          "Detail1",
-        ),
-      )
+    assertThat(content.auditEvents).hasSize(5)
+    with(content.auditEvents[0]) {
+      assertThat(licenceId).isEqualTo(1L)
+      assertThat(username).isEqualTo("USER")
+      assertThat(eventType).isEqualTo(SarAuditEventType.USER_EVENT)
+      assertThat(summary).isEqualTo("Summary1")
+      assertThat(detail).isEqualTo("Detail1")
+    }
+
+    assertThat(content.timeServedExternalRecords).hasSize(2)
+    with(content.timeServedExternalRecords[0]) {
+      assertThat(prisonNumber).isEqualTo("A1234AA")
+      assertThat(reason).isEqualTo("Time served licence created in NOMIS")
+      assertThat(prisonCode).isEqualTo("MDI")
+      assertThat(dateCreated).isEqualTo(LocalDateTime.of(2024, 6, 1, 10, 0))
+      assertThat(dateLastUpdated).isEqualTo(LocalDateTime.of(2024, 6, 1, 11, 0))
+    }
+    with(content.timeServedExternalRecords[1]) {
+      assertThat(prisonNumber).isEqualTo("A1234AA")
+      assertThat(reason).isEqualTo("Some other time served licence created in NOMIS")
+      assertThat(prisonCode).isEqualTo("MDI")
+      assertThat(dateCreated).isEqualTo(LocalDateTime.of(2024, 6, 2, 10, 0))
+      assertThat(dateLastUpdated).isEqualTo(LocalDateTime.of(2024, 6, 2, 11, 0))
+    }
   }
 
   @ParameterizedTest

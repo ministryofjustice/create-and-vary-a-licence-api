@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
-@Schema(description = "Describes a licence within this service1")
+@Schema(description = "Describes a licence within this service")
 data class SarLicence(
 
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")

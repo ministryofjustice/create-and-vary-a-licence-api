@@ -12,6 +12,8 @@ interface TimeServedExternalRecordsRepository : JpaRepository<TimeServedExternal
 
   fun findByNomsIdAndBookingId(nomsId: String, bookingId: Long): TimeServedExternalRecord?
 
+  fun findAllByNomsId(nomsId: String): List<TimeServedExternalRecord>
+
   @Query(
     """
     SELECT t.bookingId, t.updatedByCa.firstName, t.updatedByCa.lastName FROM TimeServedExternalRecord t
