@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -75,7 +76,8 @@ class UpdateSentenceDateService(
       dateChanges.filter { !it.type.hdcOnly || updatedLicence is HdcLicence },
     )
 
-    val user = staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication.name)
+    val user =
+      staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER)
     updatedLicence.updateLicenceDates(
       status = updatedLicence.calculateStatusCode(sentenceDates),
       staffMember = user,
@@ -197,7 +199,11 @@ class UpdateSentenceDateService(
     }
   }
 
-  private fun getHardstopChangeType(currentLicenceStartDate: LocalDate?, currentLicenceKind: LicenceKind, updatedLicence: Licence): HardstopChangeType {
+  private fun getHardstopChangeType(
+    currentLicenceStartDate: LocalDate?,
+    currentLicenceKind: LicenceKind,
+    updatedLicence: Licence,
+  ): HardstopChangeType {
     val previouslyInHardstop = releaseDateService.isInHardStopPeriod(currentLicenceStartDate, currentLicenceKind)
     val nowInHardstop = releaseDateService.isInHardStopPeriod(updatedLicence.licenceStartDate, updatedLicence.kind)
     val isPotentialHardStopInProgress = updatedLicence is SupportsHardStop && updatedLicence.statusCode == IN_PROGRESS
