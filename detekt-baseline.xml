@@ -132,6 +132,7 @@
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:WebClientConfiguration.kt$WebClientConfiguration</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
+    <ID>UnusedPrivateProperty:SubjectAccessRequestService.kt$SubjectAccessRequestService$private val auditEventRepository: AuditEventRepository</ID>
     <ID>UseCheckOrError:CaProbationCaseloadService.kt$CaProbationCaseloadService$throw IllegalStateException("Multiple active licences found for NOMIS id: ${entry.key}")</ID>
     <ID>UtilityClassWithPublicConstructor:AppointmentMapper.kt$AppointmentMapper</ID>
   </CurrentIssues>

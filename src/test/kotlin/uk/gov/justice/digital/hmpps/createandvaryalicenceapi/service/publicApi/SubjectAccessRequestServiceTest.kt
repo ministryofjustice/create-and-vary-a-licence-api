@@ -30,7 +30,6 @@ class SubjectAccessRequestServiceTest {
   private val service = SubjectAccessRequestService(
     licenceService,
     licenceRepository,
-    auditEventRepository,
     "https://somehost",
   )
 
@@ -57,7 +56,7 @@ class SubjectAccessRequestServiceTest {
 
     assertThat(sarContent).isExactlyInstanceOf(HmppsSubjectAccessRequestContent::class.java)
 
-    val expectedSarResponse = SubjectAccessRequestResponseBuilder("").addLicence(modelLicence).build(emptyList())
+    val expectedSarResponse = SubjectAccessRequestResponseBuilder("").addLicence(modelLicence).build()
     assertThat(sarContent).isEqualTo(expectedSarResponse)
 
     verify(licenceRepository, times(1)).findAllByNomsId("A12345")

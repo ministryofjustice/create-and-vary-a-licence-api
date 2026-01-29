@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.publicApi
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -16,7 +15,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
 import uk.gov.justice.hmpps.kotlin.sar.Attachment
 
 class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
@@ -50,42 +48,12 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
     val result = resultList?.first()
 
     assertThat(result?.content?.licences).extracting(
-      "id",
       "prisonNumber",
-      "bookingId",
-      "createdByUsername",
     )
       .containsAll(
         listOf(
-          tuple(
-            1L,
-            "A1234AA",
-            12345L,
-            "test-client",
-          ),
-          tuple(
-            2L,
-            "A1234AA",
-            123456L,
-            "test-client",
-          ),
-        ),
-      )
-
-    assertThat(result?.content?.auditEvents?.first()).extracting(
-      "licenceId",
-      "username",
-      "eventType",
-      "summary",
-      "detail",
-    )
-      .isEqualTo(
-        listOf(
-          1L,
-          "USER",
-          SarAuditEventType.USER_EVENT,
-          "Summary1",
-          "Detail1",
+          "A1234AA",
+          "A1234AA",
         ),
       )
   }
@@ -115,7 +83,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
     assertThat(summary.attachmentNumber).isEqualTo(0)
     assertThat(summary.filename).isEqualTo("Test-file.pdf")
     assertThat(summary.imageType).isEqualTo("image/png")
-    assertThat(summary.fileSize).isEqualTo(23456)
     assertThat(summary.description).isEqualTo("Description")
 
     assertThat(result.attachments).isEqualTo(

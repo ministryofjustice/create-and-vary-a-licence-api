@@ -6,7 +6,4 @@ import io.swagger.v3.oas.annotations.media.Schema
 data class Content(
   @field:Schema(description = "The list of licence events")
   val licences: List<SarLicence>,
-
-  @field:Schema(description = "The list of audit events")
-  val auditEvents: List<SarAuditEvent>,
 )
