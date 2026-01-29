@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSear
 @RestController
 @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
 @Tag(name = Tags.ANCILLARY)
-class AddressSearchResource(private val addressSearchService: AddressSearchService) {
+class AddressSearchController(private val addressSearchService: AddressSearchService) {
 
   @Deprecated("Use POST /address/search/by/text/ with request body instead")
   @GetMapping("/address/search/by/text/{searchQuery}")

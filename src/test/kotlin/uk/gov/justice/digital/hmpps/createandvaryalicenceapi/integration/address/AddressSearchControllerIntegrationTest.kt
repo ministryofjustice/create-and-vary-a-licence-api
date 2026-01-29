@@ -19,7 +19,7 @@ private const val SEARCH_FOR_ADDRESSES_POST_URL = "/address/search/by/text/"
 private const val GET_ADDRESS_BY_REFERENCE_URL = "/address/search/by/reference/$REFERENCE"
 private const val OS_API_KEY = "os-places-api-key"
 
-class AddressSearchResourceIntegrationTest : IntegrationTestBase() {
+class AddressSearchControllerIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val osPlacesMockServer = OsPlacesMockServer(OS_API_KEY)
@@ -142,7 +142,7 @@ class AddressSearchResourceIntegrationTest : IntegrationTestBase() {
         .expectBody()
         .jsonPath("$.developerMessage").value<String> {
           assert(it.contains("Search query length must be more than 0 and no more than 100")) {
-            "Expected userMessage to contain validation error, but was: $it"
+            "Expected developerMessage to contain validation error, but was: $it"
           }
         }
     }
@@ -160,7 +160,7 @@ class AddressSearchResourceIntegrationTest : IntegrationTestBase() {
         .expectBody()
         .jsonPath("$.developerMessage").value<String> {
           assert(it.contains("Search query length must be more than 0 and no more than 100")) {
-            "Expected userMessage to contain validation error, but was: $it"
+            "Expected developerMessage to contain validation error, but was: $it"
           }
         }
     }
