@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceSubmitName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceVaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
 @Repository
@@ -145,15 +145,15 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
     FROM Licence l
         LEFT JOIN l.responsibleCom com
         LEFT JOIN l.updatedBy updatedBy
-        WHERE l.prisonCode IN :prisonCodes
-        AND l.statusCode IN ('ACTIVE','APPROVED') 
-        AND l.licenceStartDate > :releasedAfterDate
+        WHERE l.prisonCode IN :prisonCodes 
+        AND (l.statusCode = 'ACTIVE' and l.licenceActivatedDate > :dateAfter)
+        OR (l.statusCode = 'APPROVED' and l.approvedDate > :dateAfter)
     ORDER BY l.approvedDate DESC
     """,
   )
   fun findRecentlyApprovedLicenceCasesAfter(
     prisonCodes: List<String>,
-    releasedAfterDate: LocalDate,
+    dateAfter: LocalDateTime,
   ): List<LicenceApproverCase>
 
   @Query(
