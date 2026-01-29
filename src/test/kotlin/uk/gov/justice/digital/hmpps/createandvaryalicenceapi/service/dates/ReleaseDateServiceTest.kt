@@ -483,7 +483,6 @@ class ReleaseDateServiceTest {
     @Test
     fun `should return null for a time served licence`() {
       val friday = LocalDate.parse("2024-05-17")
-      val monday = LocalDate.parse("2024-05-13")
       val licence = createTimeServedLicence()
 
       val hardStopDate = service.getHardStopWarningDate(friday, licence.kind)
@@ -1224,10 +1223,10 @@ class ReleaseDateServiceTest {
     }
 
     @Test
-    fun `returns false when all conditions are met with a past date on the cutoff of 14 days`() {
+    fun `returns false when all conditions are met with a past date on the cutoff of 28 days`() {
       val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today.minusDays(14),
-        conditionalReleaseDate = today.minusDays(14),
+        sentenceStartDate = today.minusDays(28),
+        conditionalReleaseDate = today.minusDays(28),
         prisonId = prisonCode,
       )
 
@@ -1237,8 +1236,8 @@ class ReleaseDateServiceTest {
     @Test
     fun `returns false when all conditions are met with a past date past the cutoff of 14 days`() {
       val nomisRecord = prisonerSearchResult().copy(
-        sentenceStartDate = today.minusDays(15),
-        conditionalReleaseDate = today.minusDays(15),
+        sentenceStartDate = today.minusDays(29),
+        conditionalReleaseDate = today.minusDays(29),
         prisonId = prisonCode,
       )
 

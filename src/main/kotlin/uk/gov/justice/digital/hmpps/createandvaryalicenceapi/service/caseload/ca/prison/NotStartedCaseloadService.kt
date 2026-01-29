@@ -32,7 +32,7 @@ class NotStartedCaseloadService(
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
   private val licenceRepository: TimeServedExternalRecordsRepository,
-  @param:Value("\${timeserved.max.days.crd.before.today:14}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 14,
+  @param:Value("\${timeserved.max.days.crd.before.today:28}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 28,
 ) {
   fun findNotStartedCases(
     licences: List<LicenceCaCase>,

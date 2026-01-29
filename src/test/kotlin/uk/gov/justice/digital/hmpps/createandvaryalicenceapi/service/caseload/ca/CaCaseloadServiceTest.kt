@@ -456,7 +456,7 @@ class CaCaseloadServiceTest {
     fun `should query for cases being released within 4 weeks`() {
       service.getPrisonOmuCaseload(setOf("BAI"), "Five")
       verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(
-        LocalDate.now(clock).minusDays(13),
+        LocalDate.now(clock).minusDays(27),
         LocalDate.now(clock).plusWeeks(4),
         setOf("BAI"),
         0,
