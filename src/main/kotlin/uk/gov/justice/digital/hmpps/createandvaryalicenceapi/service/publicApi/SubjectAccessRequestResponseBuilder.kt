@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceType
@@ -29,6 +31,7 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
   private val attachmentIdSeq = AtomicInteger()
   private val sarLicences: MutableList<SarLicence> = mutableListOf()
   private val attachmentDetail: MutableList<Attachment> = mutableListOf()
+  private val externalRecords: MutableList<SarExternalRecord> = mutableListOf()
 
   fun addLicence(licence: Licence): SubjectAccessRequestResponseBuilder {
     val supportsElectronicMonitoring = licence is SupportsElectronicMonitoring
@@ -88,6 +91,7 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     Content(
       licences = sarLicences,
       auditEvents = auditEvents.map { toSarAuditEvent(it) }.sortedBy { it.eventTime },
+      timeServedExternalRecords = externalRecords,
     ),
     attachments = attachmentDetail,
   )
@@ -153,4 +157,19 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     summary = entity.summary,
     detail = entity.detail,
   )
+
+  fun addTimeServedExternalRecord(record: TimeServedExternalRecord): SubjectAccessRequestResponseBuilder {
+    with(record) {
+      externalRecords.add(
+        SarExternalRecord(
+          prisonNumber = nomsId,
+          reason = reason,
+          prisonCode = prisonCode,
+          dateCreated = dateCreated,
+          dateLastUpdated = dateLastUpdated,
+        ),
+      )
+    }
+    return this
+  }
 }
