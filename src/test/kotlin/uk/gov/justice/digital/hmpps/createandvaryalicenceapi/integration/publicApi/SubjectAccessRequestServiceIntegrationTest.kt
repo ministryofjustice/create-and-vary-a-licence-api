@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.Integra
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.hmpps.kotlin.sar.Attachment
+import java.time.LocalDateTime
 
 class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
@@ -45,17 +46,31 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
     assertThat(resultList?.size).isEqualTo(1)
 
-    val result = resultList?.first()
+    val content = resultList.first().content
 
-    assertThat(result?.content?.licences).extracting(
-      "prisonNumber",
-    )
-      .containsAll(
-        listOf(
-          "A1234AA",
-          "A1234AA",
-        ),
-      )
+    assertThat(content.licences).hasSize(2)
+    with(content.licences[0]) {
+      assertThat(prisonNumber).isEqualTo("A1234AA")
+    }
+    with(content.licences[1]) {
+      assertThat(prisonNumber).isEqualTo("A1234AA")
+    }
+
+    assertThat(content.timeServedExternalRecords).hasSize(2)
+    with(content.timeServedExternalRecords[0]) {
+      assertThat(prisonNumber).isEqualTo("A1234AA")
+      assertThat(reason).isEqualTo("Time served licence created in NOMIS")
+      assertThat(prisonCode).isEqualTo("MDI")
+      assertThat(dateCreated).isEqualTo(LocalDateTime.of(2024, 6, 1, 10, 0))
+      assertThat(dateLastUpdated).isEqualTo(LocalDateTime.of(2024, 6, 1, 11, 0))
+    }
+    with(content.timeServedExternalRecords[1]) {
+      assertThat(prisonNumber).isEqualTo("A1234AA")
+      assertThat(reason).isEqualTo("Some other time served licence created in NOMIS")
+      assertThat(prisonCode).isEqualTo("MDI")
+      assertThat(dateCreated).isEqualTo(LocalDateTime.of(2024, 6, 2, 10, 0))
+      assertThat(dateLastUpdated).isEqualTo(LocalDateTime.of(2024, 6, 2, 11, 0))
+    }
   }
 
   @ParameterizedTest
