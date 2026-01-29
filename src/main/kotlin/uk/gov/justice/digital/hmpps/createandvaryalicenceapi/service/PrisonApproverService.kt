@@ -58,8 +58,8 @@ class PrisonApproverService(
 
   private fun getRecentlyApprovedLicenceCases(
     prisonCodes: List<String>,
-    activatedAfterDate: LocalDateTime,
-  ): List<LicenceApproverCase> = licenceCaseRepository.findRecentlyApprovedLicenceCasesAfter(prisonCodes, activatedAfterDate)
+    approvedSince: LocalDateTime,
+  ): List<LicenceApproverCase> = licenceCaseRepository.findRecentlyApprovedLicenceCasesAfter(prisonCodes, approvedSince)
 
   private fun enrichWithSubmitterNames(cases: List<LicenceApproverCase>): List<LicenceApproverCase> {
     if (cases.isNotEmpty()) {
