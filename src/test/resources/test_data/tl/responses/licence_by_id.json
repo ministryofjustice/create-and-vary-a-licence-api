@@ -1,0 +1,14 @@
+{
+  "id": [[${licenceId}]],
+  "responsibleComFullName": [[${responsibleComFullName}]],
+  "electronicMonitoringProviderStatus": [[${electronicMonitoringProviderStatus}]],
+
+  "standardLicenceConditions": [
+    { "code": "goodBehaviour" },
+    { "code": "notBreakLaw" }
+  ],
+
+  "standardPssConditions": [
+    { "code": "attendMeetings" }
+  ]
+}
