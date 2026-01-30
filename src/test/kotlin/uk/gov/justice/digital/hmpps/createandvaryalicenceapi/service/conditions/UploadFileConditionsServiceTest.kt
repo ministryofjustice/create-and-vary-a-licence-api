@@ -83,7 +83,7 @@ class UploadFileConditionsServiceTest {
   fun `service returns a full-sized exclusion zone image`() {
     val documentServiceFile = ClassPathResource("test_map.jpg").inputStream.readAllBytes()
 
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(additionalConditions = listOf(anAdditionalConditionEntityWithUpload))))
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
     whenever(documentService.downloadDocument(UUID.fromString(anAdditionalConditionEntityWithUpload.additionalConditionUpload.first().fullSizeImageDsUuid)))
       .thenReturn(documentServiceFile)

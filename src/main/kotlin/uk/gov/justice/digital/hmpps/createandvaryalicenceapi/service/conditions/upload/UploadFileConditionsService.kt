@@ -85,7 +85,10 @@ class UploadFileConditionsService(
   }.getOrElse { throw ValidationException(it) }
 
   fun getImage(licenceId: Long, conditionId: Long): ByteArray? {
-    licence(licenceId)
+    val licence = licence(licenceId)
+    if (!licence.additionalConditions.any { it.id == conditionId }) {
+      throw EntityNotFoundException("Unable to find condition $conditionId on licence $licenceId")
+    }
     val uploadDetail = additionalCondition(conditionId).additionalConditionUpload.first()
     return uploadDetail.fullSizeImageDsUuid?.let { uuid -> documentService.downloadDocument(UUID.fromString(uuid)) }
   }
