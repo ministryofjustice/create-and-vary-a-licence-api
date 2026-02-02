@@ -2,12 +2,10 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>AvoidReferentialEquality:PolicyFunctions.kt$it.code === condition.code</ID>
     <ID>ConstructorParameterNaming:TimeServedProbationConfirmContactRequest.kt$TimeServedProbationConfirmContactRequest$@JsonProperty("contactStatus") @field:NotNull(message = "Confirm if you have contacted the probation team") private val _contactStatus: ContactStatus? = null</ID>
     <ID>CyclomaticComplexMethod:LicenceService.kt$LicenceService$private fun updateLicenceStatus(licenceEntity: EntityLicence, request: StatusUpdateRequest)</ID>
     <ID>DoubleMutabilityForCollection:HdcCase.kt$HdcCase$var curfewTimes: MutableList&lt;HdcCurfewTimes&gt;</ID>
     <ID>ForbiddenVoid:DeliusApiClient.kt$DeliusApiClient$Void</ID>
-    <ID>HasPlatformType:ExclusionZonePdfExtract.kt$ExclusionZonePdfExtractBuilder.Companion$val log = LoggerFactory.getLogger(this::class.java)</ID>
     <ID>HasPlatformType:ResponseUtils.kt$ResponseUtils$fun &lt;T&gt; Mono&lt;T&gt;.coerce404ToEmptyOrThrow()</ID>
     <ID>HasPlatformType:ResponseUtils.kt$ResponseUtils$fun &lt;T&gt; Mono&lt;T&gt;.propagateAny404(message: () -&gt; String)</ID>
     <ID>HasPlatformType:ResponseUtils.kt$ResponseUtils$fun WebClient.ResponseSpec.rethrowAnyHttpErrorWithContext(message: (response: ClientResponse, body: String?) -&gt; String)</ID>
@@ -58,16 +56,16 @@
     <ID>LongParameterList:Licence.kt$Licence$( status: LicenceStatus? = null, conditionalReleaseDate: LocalDate?, actualReleaseDate: LocalDate?, sentenceStartDate: LocalDate?, sentenceEndDate: LocalDate?, licenceStartDate: LocalDate?, licenceExpiryDate: LocalDate?, topupSupervisionStartDate: LocalDate?, topupSupervisionExpiryDate: LocalDate?, postRecallReleaseDate: LocalDate?, homeDetentionCurfewActualDate: LocalDate?, homeDetentionCurfewEndDate: LocalDate?, staffMember: Staff?, )</ID>
     <ID>LongParameterList:Licence.kt$Licence$( statusCode: LicenceStatus, staffMember: Staff?, approvedByUsername: String?, approvedByName: String?, approvedDate: LocalDateTime?, supersededDate: LocalDateTime?, submittedDate: LocalDateTime?, licenceActivatedDate: LocalDateTime?, )</ID>
     <ID>LongParameterList:LicenceApproverCase.kt$LicenceApproverCase$( override val licenceStartDate: LocalDate?, override val kind: LicenceKind, override val licenceId: Long, override val versionOfId: Long?, override val statusCode: LicenceStatus, override val prisonNumber: String?, override val surname: String?, override val forename: String?, override val updatedByFirstName: String?, override val updatedByLastName: String?, override val comUsername: String?, override val conditionalReleaseDate: LocalDate?, override val actualReleaseDate: LocalDate?, override val postRecallReleaseDate: LocalDate?, override val sentenceStartDate: LocalDate?, val approvedByName: String?, val approvedDate: LocalDateTime?, val prisonCode: String?, val prisonDescription: String?, var variationOfId: Long?, )</ID>
-    <ID>LongParameterList:LicenceConditionService.kt$LicenceConditionService$( private val licenceRepository: LicenceRepository, private val additionalConditionRepository: AdditionalConditionRepository, private val bespokeConditionRepository: BespokeConditionRepository, private val conditionFormatter: ConditionFormatter, private val licencePolicyService: LicencePolicyService, private val auditService: AuditService, private val staffRepository: StaffRepository, private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService, private val exclusionZoneService: ExclusionZoneService, )</ID>
+    <ID>LongParameterList:LicenceConditionService.kt$LicenceConditionService$( private val licenceRepository: LicenceRepository, private val additionalConditionRepository: AdditionalConditionRepository, private val bespokeConditionRepository: BespokeConditionRepository, private val conditionFormatter: ConditionFormatter, private val licencePolicyService: LicencePolicyService, private val auditService: AuditService, private val staffRepository: StaffRepository, private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService, private val uploadFileConditionsService: UploadFileConditionsService, )</ID>
     <ID>LongParameterList:LicenceCreationService.kt$LicenceCreationService$( private val licenceRepository: LicenceRepository, private val crdLicenceRepository: CrdLicenceRepository, private val staffRepository: StaffRepository, private val standardConditionRepository: StandardConditionRepository, private val additionalConditionRepository: AdditionalConditionRepository, private val licenceEventRepository: LicenceEventRepository, private val licencePolicyService: LicencePolicyService, private val auditEventRepository: AuditEventRepository, private val prisonerSearchApiClient: PrisonerSearchApiClient, private val prisonApiClient: PrisonApiClient, private val deliusApiClient: DeliusApiClient, private val cvlRecordService: CvlRecordService, @param:Value("\${feature.toggle.timeServed.enabled:false}") private val isTimeServedLogicEnabled: Boolean = false, private val telemetryService: TelemetryService, private val timeServedExternalRecordService: TimeServedExternalRecordService, )</ID>
     <ID>LongParameterList:LicenceFactory.kt$LicenceFactory$( licenceType: LicenceType, eligibleKind: LicenceKind?, nomsId: String, version: String, nomisRecord: PrisonerSearchPrisoner, prisonInformation: Prison, team: TeamDetail?, deliusRecord: ProbationCase, responsibleCom: CommunityOffenderManager?, creator: PrisonUser, licenceStartDate: LocalDate?, )</ID>
-    <ID>LongParameterList:LicenceFactory.kt$LicenceFactory$( licenceType: LicenceType, nomsId: String, version: String, nomisRecord: PrisonerSearchPrisoner, prisonInformation: Prison, currentResponsibleOfficerDetails: CommunityManager, deliusRecord: ProbationCase, creator: CommunityOffenderManager, responsibleCom: CommunityOffenderManager, licenceStartDate: LocalDate?, )</ID>
     <ID>LongParameterList:LicenceFactory.kt$LicenceFactory$( licenceType: LicenceType, nomsId: String, version: String, nomisRecord: PrisonerSearchPrisoner, prisonInformation: Prison, team: TeamDetail, deliusRecord: ProbationCase, creator: CommunityOffenderManager, responsibleCom: CommunityOffenderManager, licenceStartDate: LocalDate?, )</ID>
     <ID>LongParameterList:LicenceFactory.kt$LicenceFactory$( licenceType: LicenceType, nomsId: String, version: String, nomisRecord: PrisonerSearchPrisoner, prisonInformation: Prison, team: TeamDetail, deliusRecord: ProbationCase, creator: PrisonUser, responsibleCom: CommunityOffenderManager, timedOutLicence: CrdLicence?, licenceStartDate: LocalDate?, eligibleKind: LicenceKind?, )</ID>
     <ID>LongParameterList:LicenceKind.kt$LicenceKind$( val clazz: Class&lt;out Licence&gt;, val initialStatus: () -&gt; LicenceStatus, val creationEventType: () -&gt; LicenceEventType, val copyEventType: () -&gt; LicenceEventType, val submittedEventType: () -&gt; LicenceEventType, val activatedDomainEventType: () -&gt; LicenceDomainEventType, val inactivatedDomainEventType: () -&gt; LicenceDomainEventType, )</ID>
     <ID>LongParameterList:LicenceOverrideService.kt$LicenceOverrideService$( private val licenceRepository: LicenceRepository, private val auditEventRepository: AuditEventRepository, private val licenceEventRepository: LicenceEventRepository, private val domainEventsService: DomainEventsService, private val staffRepository: StaffRepository, private val licenceService: LicenceService, private val releaseDateService: ReleaseDateService, private val prisonerSearchApiClient: PrisonerSearchApiClient, )</ID>
-    <ID>LongParameterList:LicenceService.kt$LicenceService$( private val licenceRepository: LicenceRepository, private val crdLicenceRepository: CrdLicenceRepository, private val staffRepository: StaffRepository, private val licenceEventRepository: LicenceEventRepository, private val licencePolicyService: LicencePolicyService, private val auditEventRepository: AuditEventRepository, private val notifyService: NotifyService, private val omuService: OmuService, private val releaseDateService: ReleaseDateService, private val domainEventsService: DomainEventsService, private val prisonerSearchApiClient: PrisonerSearchApiClient, private val eligibilityService: EligibilityService, private val exclusionZoneService: ExclusionZoneService, private val deliusApiClient: DeliusApiClient, private val telemetryService: TelemetryService, private val auditService: AuditService, @param:Value("\${feature.toggle.timeServed.enabled:false}") private val isTimeServedLogicEnabled: Boolean = false, )</ID>
+    <ID>LongParameterList:LicenceService.kt$LicenceService$( private val licenceRepository: LicenceRepository, private val crdLicenceRepository: CrdLicenceRepository, private val staffRepository: StaffRepository, private val licenceEventRepository: LicenceEventRepository, private val licencePolicyService: LicencePolicyService, private val auditEventRepository: AuditEventRepository, private val notifyService: NotifyService, private val omuService: OmuService, private val releaseDateService: ReleaseDateService, private val domainEventsService: DomainEventsService, private val prisonerSearchApiClient: PrisonerSearchApiClient, private val eligibilityService: EligibilityService, private val uploadFileConditionsService: UploadFileConditionsService, private val deliusApiClient: DeliusApiClient, private val telemetryService: TelemetryService, private val auditService: AuditService, @param:Value("\${feature.toggle.timeServed.enabled:false}") private val isTimeServedLogicEnabled: Boolean = false, )</ID>
     <ID>LongParameterList:LicenceVaryApproverCase.kt$LicenceVaryApproverCase$( val licenceId: Long, val crn: String, val licenceStartDate: LocalDate?, val prisonNumber: String?, val comUsername: String?, var typeCode: LicenceType?, var dateCreated: LocalDateTime?, )</ID>
+    <ID>LongParameterList:NotStartedCaseloadService.kt$NotStartedCaseloadService$( private val clock: Clock, private val deliusApiClient: DeliusApiClient, private val prisonerSearchApiClient: PrisonerSearchApiClient, private val releaseDateLabelFactory: ReleaseDateLabelFactory, private val cvlRecordService: CvlRecordService, private val licenceRepository: TimeServedExternalRecordsRepository, @param:Value("\${timeserved.max.days.crd.before.today:28}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 28, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( @param:Value("\${notify.enabled}") private val enabled: Boolean, @param:Value("\${self.link}") private val selfLink: String, @param:Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String, @param:Value("\${notify.templates.omuReApproval}") private val licenceRequiresOmuReApprovalTemplateId: String, @param:Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String, @param:Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String, @param:Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String, @param:Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String, @param:Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String, @param:Value("\${notify.templates.hardStopLicenceApproved}") private val hardStopLicenceApprovedTemplateId: String, @param:Value("\${notify.templates.reviewableLicenceApproved}") private val reviewableLicenceApprovedTemplateId: String, @param:Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String, @param:Value("\${notify.templates.hardStopLicenceReviewOverdue}") private val hardStopLicenceReviewOverdueTemplateId: String, @param:Value("\${notify.templates.licenceReviewOverdue}") private val licenceReviewOverdueTemplateId: String, @param:Value("\${notify.templates.initialComAllocation}") private val initialComAllocationTemplateId: String, @param:Value("\${internalEmailAddress}") private val internalEmailAddress: String, private val client: NotificationClient, private val releaseDateService: ReleaseDateService, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( creatorEmail: String, creatorName: String, comEmail: String, comName: String, popName: String, licenceId: String, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( emailAddress: String?, comName: String, firstName: String, lastName: String, crn: String?, crd: LocalDate?, licenceId: String, )</ID>
@@ -82,8 +80,7 @@
     <ID>LongParameterList:PrisonUser.kt$PrisonUser$( id: Long? = this.id, username: String = this.username, email: String? = this.email, firstName: String? = this.firstName, lastName: String? = this.lastName, lastUpdatedTimestamp: LocalDateTime? = this.lastUpdatedTimestamp, )</ID>
     <ID>LongParameterList:PrrdLicence.kt$PrrdLicence$( id: Long? = null, typeCode: LicenceType, version: String? = null, statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS, nomsId: String? = null, bookingNo: String? = null, bookingId: Long? = null, crn: String? = null, pnc: String? = null, cro: String? = null, prisonCode: String? = null, prisonDescription: String? = null, prisonTelephone: String? = null, forename: String? = null, middleNames: String? = null, surname: String? = null, dateOfBirth: LocalDate? = null, conditionalReleaseDate: LocalDate? = null, actualReleaseDate: LocalDate? = null, sentenceStartDate: LocalDate? = null, sentenceEndDate: LocalDate? = null, licenceStartDate: LocalDate? = null, licenceExpiryDate: LocalDate? = null, licenceActivatedDate: LocalDateTime? = null, topupSupervisionStartDate: LocalDate? = null, topupSupervisionExpiryDate: LocalDate? = null, postRecallReleaseDate: LocalDate, probationAreaCode: String? = null, probationAreaDescription: String? = null, probationPduCode: String? = null, probationPduDescription: String? = null, probationLauCode: String? = null, probationLauDescription: String? = null, probationTeamCode: String? = null, probationTeamDescription: String? = null, appointment: Appointment? = null, approvedDate: LocalDateTime? = null, approvedByUsername: String? = null, approvedByName: String? = null, supersededDate: LocalDateTime? = null, submittedDate: LocalDateTime? = null, dateCreated: LocalDateTime? = null, dateLastUpdated: LocalDateTime? = null, updatedByUsername: String? = null, licenceVersion: String? = "1.0", standardConditions: List&lt;StandardCondition&gt; = emptyList(), additionalConditions: List&lt;AdditionalCondition&gt; = emptyList(), bespokeConditions: List&lt;BespokeCondition&gt; = emptyList(), updatedBy: Staff? = null, @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY) @JoinColumn(name = "submitted_by_com_id", nullable = true) var submittedBy: CommunityOffenderManager? = null, @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY) @JoinColumn(name = "created_by_com_id", nullable = false) var createdBy: CommunityOffenderManager? = null, @OneToOne( mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true, orphanRemoval = true, ) var electronicMonitoringProvider: ElectronicMonitoringProvider? = null, override var versionOfId: Long? = null, responsibleCom: CommunityOffenderManager, )</ID>
     <ID>LongParameterList:PrrdLicence.kt$PrrdLicence$( id: Long? = this.id, typeCode: LicenceType = this.typeCode, version: String? = this.version, statusCode: LicenceStatus = this.statusCode, nomsId: String? = this.nomsId, bookingNo: String? = this.bookingNo, bookingId: Long? = this.bookingId, crn: String? = this.crn, pnc: String? = this.pnc, cro: String? = this.cro, prisonCode: String? = this.prisonCode, prisonDescription: String? = this.prisonDescription, prisonTelephone: String? = this.prisonTelephone, forename: String? = this.forename, middleNames: String? = this.middleNames, surname: String? = this.surname, dateOfBirth: LocalDate? = this.dateOfBirth, conditionalReleaseDate: LocalDate? = this.conditionalReleaseDate, actualReleaseDate: LocalDate? = this.actualReleaseDate, sentenceStartDate: LocalDate? = this.sentenceStartDate, sentenceEndDate: LocalDate? = this.sentenceEndDate, licenceStartDate: LocalDate? = this.licenceStartDate, licenceExpiryDate: LocalDate? = this.licenceExpiryDate, licenceActivatedDate: LocalDateTime? = this.licenceActivatedDate, topupSupervisionStartDate: LocalDate? = this.topupSupervisionStartDate, topupSupervisionExpiryDate: LocalDate? = this.topupSupervisionExpiryDate, postRecallReleaseDate: LocalDate = this.postRecallReleaseDate!!, probationAreaCode: String? = this.probationAreaCode, probationAreaDescription: String? = this.probationAreaDescription, probationPduCode: String? = this.probationPduCode, probationPduDescription: String? = this.probationPduDescription, probationLauCode: String? = this.probationLauCode, probationLauDescription: String? = this.probationLauDescription, probationTeamCode: String? = this.probationTeamCode, probationTeamDescription: String? = this.probationTeamDescription, appointment: Appointment? = AppointmentMapper.copy(this.appointment), approvedDate: LocalDateTime? = this.approvedDate, approvedByUsername: String? = this.approvedByUsername, approvedByName: String? = this.approvedByName, supersededDate: LocalDateTime? = this.supersededDate, submittedDate: LocalDateTime? = this.submittedDate, dateCreated: LocalDateTime? = this.dateCreated, dateLastUpdated: LocalDateTime? = this.dateLastUpdated, updatedByUsername: String? = this.updatedByUsername, standardConditions: List&lt;StandardCondition&gt; = this.standardConditions, additionalConditions: List&lt;AdditionalCondition&gt; = this.additionalConditions, bespokeConditions: List&lt;BespokeCondition&gt; = this.bespokeConditions, responsibleCom: CommunityOffenderManager = this.getCom(), submittedBy: CommunityOffenderManager? = this.submittedBy, createdBy: CommunityOffenderManager? = this.createdBy, versionOfId: Long? = this.versionOfId, licenceVersion: String? = this.licenceVersion, updatedBy: Staff? = this.updatedBy, electronicMonitoringProvider: ElectronicMonitoringProvider? = this.electronicMonitoringProvider, )</ID>
-    <ID>LongParameterList:ReleaseDateService.kt$ReleaseDateService$( licenceStartDate: LocalDate?, sentenceStartDate: LocalDate?, confirmedReleaseDate: LocalDate?, conditionalReleaseDate: LocalDate?, prisonCode: String?, overrideClock: Clock? = null, )</ID>
-    <ID>LongParameterList:ReleaseDateService.kt$ReleaseDateService$( private val clock: Clock, private val workingDaysService: WorkingDaysService, private val iS91DeterminationService: IS91DeterminationService, @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3, @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5, @param:Value("\${feature.toggle.timeServed.enabled:false}") private val isTimeServedEnabled: Boolean = false, @param:Value("\${feature.toggle.timeServed.prisons}") private val timeServedEnabledPrisons: List&lt;String&gt;? = emptyList(), )</ID>
+    <ID>LongParameterList:ReleaseDateService.kt$ReleaseDateService$( private val clock: Clock, private val workingDaysService: WorkingDaysService, private val iS91DeterminationService: IS91DeterminationService, @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3, @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5, @param:Value("\${timeserved.max.days.crd.before.today:28}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 28, @param:Value("\${feature.toggle.timeServed.enabled:false}") private val isTimeServedEnabled: Boolean = false, @param:Value("\${feature.toggle.timeServed.prisons}") private val timeServedEnabledPrisons: List&lt;String&gt;? = emptyList(), )</ID>
     <ID>LongParameterList:Staff.kt$Staff$( @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @field:Positive open val id: Long? = null, @param:NotNull @Enumerated(EnumType.STRING) @Column(name = "kind", insertable = false, updatable = false) var kind: StaffKind, @Column(unique = true) override var username: String, var email: String?, override var firstName: String?, override var lastName: String?, var lastUpdatedTimestamp: LocalDateTime? = null, @OneToMany( cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true, ) @JoinTable( name = "STAFF_SAVED_APPOINTMENT_ADDRESS", joinColumns = [JoinColumn(name = "staff_id")], inverseJoinColumns = [JoinColumn(name = "address_id")], uniqueConstraints = [UniqueConstraint(columnNames = ["staff_id", "address_id"])], ) var savedAppointmentAddresses: MutableSet&lt;Address&gt; = mutableSetOf(), )</ID>
     <ID>LongParameterList:TimeServedExternalRecord.kt$TimeServedExternalRecord$( @Column(name = "noms_id", length = 7, nullable = false) val nomsId: String, @Column(name = "booking_id", nullable = false) val bookingId: Long, @Column(name = "reason", nullable = false) var reason: String, @Column(name = "prison_code", length = 3) var prisonCode: String, @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "updated_by_ca_id", nullable = false) var updatedByCa: Staff, @Column(name = "date_created", nullable = false, updatable = false) val dateCreated: LocalDateTime = LocalDateTime.now(), @Column(name = "date_last_updated", nullable = false) var dateLastUpdated: LocalDateTime = LocalDateTime.now(), )</ID>
     <ID>LongParameterList:TimeServedLicence.kt$TimeServedLicence$( id: Long? = null, eligibleKind: LicenceKind?, typeCode: LicenceType, version: String? = null, statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS, nomsId: String? = null, bookingNo: String? = null, bookingId: Long? = null, crn: String? = null, pnc: String? = null, cro: String? = null, prisonCode: String? = null, prisonDescription: String? = null, prisonTelephone: String? = null, forename: String? = null, middleNames: String? = null, surname: String? = null, dateOfBirth: LocalDate? = null, conditionalReleaseDate: LocalDate? = null, actualReleaseDate: LocalDate? = null, sentenceStartDate: LocalDate? = null, sentenceEndDate: LocalDate? = null, licenceStartDate: LocalDate? = null, licenceExpiryDate: LocalDate? = null, licenceActivatedDate: LocalDateTime? = null, topupSupervisionStartDate: LocalDate? = null, topupSupervisionExpiryDate: LocalDate? = null, postRecallReleaseDate: LocalDate? = null, probationAreaCode: String? = null, probationAreaDescription: String? = null, probationPduCode: String? = null, probationPduDescription: String? = null, probationLauCode: String? = null, probationLauDescription: String? = null, probationTeamCode: String? = null, probationTeamDescription: String? = null, appointment: Appointment? = null, approvedDate: LocalDateTime? = null, approvedByUsername: String? = null, approvedByName: String? = null, supersededDate: LocalDateTime? = null, submittedDate: LocalDateTime? = null, dateCreated: LocalDateTime? = null, dateLastUpdated: LocalDateTime? = null, updatedByUsername: String? = null, licenceVersion: String? = "1.0", standardConditions: List&lt;StandardCondition&gt; = emptyList(), additionalConditions: List&lt;AdditionalCondition&gt; = emptyList(), bespokeConditions: List&lt;BespokeCondition&gt; = emptyList(), updatedBy: Staff? = null, override var reviewDate: LocalDateTime? = null, var substituteOfId: Long? = null, @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY) @JoinColumn(name = "created_by_ca_id", nullable = false) var createdBy: PrisonUser? = null, @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY) @JoinColumn(name = "submitted_by_ca_id", nullable = true) var submittedBy: PrisonUser? = null, responsibleCom: CommunityOffenderManager?, )</ID>
@@ -104,14 +101,11 @@
     <ID>MagicNumber:LicenceRepository.kt$LicenceRepository$14</ID>
     <ID>MagicNumber:PromptComService.kt$PromptComService.Companion$4</ID>
     <ID>MapGetWithNotNullAssertionOperator:AdditionalConditionWithConfig.kt$getLicenceConditionPolicyData(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!</ID>
-    <ID>MapGetWithNotNullAssertionOperator:ComCreateCaseloadService.kt$ComCreateCaseloadService$cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!</ID>
     <ID>MapGetWithNotNullAssertionOperator:CvlRecordService.kt$CvlRecordService$nomisIdsToEligibility[prisoner.prisonerNumber]!!</ID>
-    <ID>MapGetWithNotNullAssertionOperator:EligibilityService.kt$EligibilityService$nomisIdsToBookingIds[nomisId]!!</ID>
     <ID>MapGetWithNotNullAssertionOperator:ToModelTransformers.kt$conditionPolicyData[it.conditionCode]!!</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
-    <ID>NestedBlockDepth:ExclusionZoneService.kt$ExclusionZoneService$fun loadThumbnails( entityLicence: EntityLicence, licence: Licence, )</ID>
-    <ID>NoNameShadowing:FormattingHelpers.kt${ it.groupValues[1].trim() }</ID>
+    <ID>NestedBlockDepth:UploadFileConditionsService.kt$UploadFileConditionsService$fun getThumbnailForImages( entityLicence: Licence, licence: LicenceModel, )</ID>
     <ID>NoNameShadowing:PromptComListBuilder.kt$PromptComListBuilder$cases</ID>
     <ID>ReturnCount:AllRepositoryUnproxyAspect.kt$AllRepositoryUnproxyAspect$fun unProxy(returnedObject: Any?): Any?</ID>
     <ID>ReturnCount:ComAllocatedHandler.kt$ComAllocatedHandler$fun isValidOffenderManager(offenderManager: OffenderManager?, crn: String): Boolean</ID>
@@ -122,10 +116,11 @@
     <ID>ReturnCount:NotifyService.kt$NotifyService$private fun sendEmail( templateId: String, emailAddress: String, values: Map&lt;String, Any&gt;, ): Boolean</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt$ComAllocatedHandler$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:ExclusionZoneService.kt$ExclusionZoneService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:UploadFileConditionsService.kt$UploadFileConditionsService$e: Exception</ID>
     <ID>TooManyFunctions:AppointmentService.kt$AppointmentService</ID>
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
     <ID>TooManyFunctions:CaseloadController.kt$CaseloadController</ID>
+    <ID>TooManyFunctions:ComCaseloadSearchService.kt$ComCaseloadSearchService</ID>
     <ID>TooManyFunctions:ComCreateCaseloadService.kt$ComCreateCaseloadService</ID>
     <ID>TooManyFunctions:ControllerAdvice.kt$ControllerAdvice</ID>
     <ID>TooManyFunctions:DeliusApiClient.kt$DeliusApiClient</ID>
@@ -147,33 +142,35 @@
     <ID>TooManyFunctions:WebClientConfiguration.kt$WebClientConfiguration</ID>
     <ID>UnnecessaryAbstractClass:AbstractIdEntity.kt$AbstractIdEntity$AbstractIdEntity</ID>
     <ID>UnnecessaryAbstractClass:Staff.kt$Staff$Staff</ID>
-    <ID>UnnecessaryFilter:NotifyService.kt$NotifyService$filter { it.initialPromptCases.isNotEmpty() }</ID>
+    <ID>UnnecessarySafeCall:ExistingCasesCaseloadService.kt$ExistingCasesCaseloadService$licence?.kind</ID>
+    <ID>UnnecessarySafeCall:ExistingCasesCaseloadService.kt$ExistingCasesCaseloadService$licence?.licenceId</ID>
+    <ID>UnnecessarySafeCall:ExistingCasesCaseloadService.kt$ExistingCasesCaseloadService$licence?.licenceStartDate</ID>
+    <ID>UnnecessarySafeCall:ExistingCasesCaseloadService.kt$ExistingCasesCaseloadService$licence?.prisonNumber</ID>
+    <ID>UnnecessarySafeCall:ExistingCasesCaseloadService.kt$ExistingCasesCaseloadService$licence?.versionOfId</ID>
+    <ID>UnreachableCode:ComAllocatedHandler.kt$ComAllocatedHandler$if (isValidOffenderManager(offenderManager, crn)) { processComAllocation(offenderManager!!) }</ID>
+    <ID>UnreachableCode:ComAllocatedHandler.kt$ComAllocatedHandler$val crn = event.personReference.crn()</ID>
+    <ID>UnreachableCode:ComAllocatedHandler.kt$ComAllocatedHandler$val offenderManager = getOffenderManager(crn, event)</ID>
+    <ID>UnreachableCode:LicenceCreationService.kt$LicenceCreationService$return staffRepository.saveAndFlush( CommunityOffenderManager( staffIdentifier = staffId, staffCode = com.code, username = com.username?.uppercase() ?: missing(staffId, "username"), email = com.email, firstName = com.name.forename, lastName = com.name.surname, ), )</ID>
+    <ID>UnreachableCode:StaffService.kt$StaffService$staff.savedAppointmentAddresses.remove(addressToDelete)</ID>
+    <ID>UnreachableCode:StaffService.kt$StaffService$val addressToDelete = staff.savedAppointmentAddresses.firstOrNull { it.reference == reference } ?: throw EntityNotFoundException("Address with reference $reference not found for staff ${staff.fullName}")</ID>
+    <ID>UnreachableCode:ToModelTransformers.kt$ModelPublicLicenceSummary( id = this.id, kind = this.kind, licenceType = this.typeCode.mapToPublicLicenceType(), policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: this.valueNotPresent("policyVersion"), version = this.licenceVersion ?: this.valueNotPresent("version"), statusCode = this.statusCode, prisonNumber = this.nomsId ?: this.valueNotPresent("prisonNumber"), bookingId = this.bookingId ?: this.valueNotPresent("bookingId"), crn = this.crn ?: this.valueNotPresent("crn"), approvedByUsername = this.approvedByUsername, approvedDateTime = this.approvedDate, createdByUsername = this.getCreator().username, createdDateTime = this.dateCreated, updatedByUsername = this.updatedByUsername, updatedDateTime = this.dateLastUpdated, isInPssPeriod = this.isInPssPeriod(), )</ID>
     <ID>UnsafeCallOnNullableType:AdditionalConditionWithConfig.kt$getLicenceConditionPolicyData(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!</ID>
     <ID>UnsafeCallOnNullableType:AppointmentService.kt$AppointmentService$licence.appointment!!</ID>
     <ID>UnsafeCallOnNullableType:AppointmentService.kt$AppointmentService$licence.appointment!!.address!!</ID>
-    <ID>UnsafeCallOnNullableType:ApproverCaseloadService.kt$ApproverCaseloadService$it.case.nomisId!!</ID>
-    <ID>UnsafeCallOnNullableType:ApproverCaseloadService.kt$ApproverCaseloadService$record.case.nomisId!!</ID>
     <ID>UnsafeCallOnNullableType:AuditService.kt$AuditService$auditRequest.licenceId!!</ID>
     <ID>UnsafeCallOnNullableType:AuditService.kt$AuditService$auditRequest.username!!</ID>
-    <ID>UnsafeCallOnNullableType:CaProbationCaseloadService.kt$CaProbationCaseloadService$it.username!!</ID>
     <ID>UnsafeCallOnNullableType:CaProbationCaseloadService.kt$CaProbationCaseloadService$licence?.prisonNumber!!</ID>
     <ID>UnsafeCallOnNullableType:ComAllocatedHandler.kt$ComAllocatedHandler$deliusApiClient.getStaffByCode(workLoadAllocationResponse.staffCode)!!</ID>
     <ID>UnsafeCallOnNullableType:ComAllocatedHandler.kt$ComAllocatedHandler$offenderManager!!</ID>
     <ID>UnsafeCallOnNullableType:ComAllocatedHandler.kt$ComAllocatedHandler$offenderManager.username!!</ID>
     <ID>UnsafeCallOnNullableType:ComAllocatedHandler.kt$ComAllocatedHandler$workLoadApiClient.getStaffDetails(personUuid)!!</ID>
     <ID>UnsafeCallOnNullableType:ComCaseloadSearchService.kt$ComCaseloadSearchService$cvlRecord.eligibleKind!!</ID>
+    <ID>UnsafeCallOnNullableType:ComCaseloadSearchService.kt$ComCaseloadSearchService$staff.name!!</ID>
     <ID>UnsafeCallOnNullableType:ComCreateCaseloadService.kt$ComCreateCaseloadService$case.prisonNumber!!</ID>
     <ID>UnsafeCallOnNullableType:ComCreateCaseloadService.kt$ComCreateCaseloadService$cvlRecord.eligibleKind!!</ID>
-    <ID>UnsafeCallOnNullableType:ComCreateCaseloadService.kt$ComCreateCaseloadService$cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!</ID>
-    <ID>UnsafeCallOnNullableType:ComCreateCaseloadService.kt$ComCreateCaseloadService$deliusRecord.crn!!</ID>
     <ID>UnsafeCallOnNullableType:CrdLicence.kt$CrdLicence$responsibleCom!!</ID>
     <ID>UnsafeCallOnNullableType:CvlRecordService.kt$CvlRecordService$nomisIdsToEligibility[prisoner.prisonerNumber]!!</ID>
-    <ID>UnsafeCallOnNullableType:EligibilityService.kt$EligibilityService$nomisIdsToBookingIds[nomisId]!!</ID>
-    <ID>UnsafeCallOnNullableType:EligibilityService.kt$EligibilityService$prisoner.bookingId!!</ID>
-    <ID>UnsafeCallOnNullableType:EligibilityService.kt$EligibilityService$prisoners.first { it.prisonerNumber == nomisId }.bookingId!!</ID>
-    <ID>UnsafeCallOnNullableType:ExclusionZoneService.kt$ExclusionZoneService$it.id!!</ID>
-    <ID>UnsafeCallOnNullableType:ExclusionZoneService.kt$ExclusionZoneService$it.thumbnailImageDsUuid!!</ID>
-    <ID>UnsafeCallOnNullableType:ExistingCasesCaseloadService.kt$ExistingCasesCaseloadService$it.username!!</ID>
+    <ID>UnsafeCallOnNullableType:EligibilityService.kt$EligibilityService$prisoner.postRecallReleaseDate!!</ID>
     <ID>UnsafeCallOnNullableType:ExistingCasesCaseloadService.kt$ExistingCasesCaseloadService$licence?.prisonNumber!!</ID>
     <ID>UnsafeCallOnNullableType:HMPPSDomainEvent.kt$PersonReference$identifiers.find { it.type == "CRN" }?.value!!</ID>
     <ID>UnsafeCallOnNullableType:HardStopLicence.kt$HardStopLicence$this.responsibleCom!!</ID>
@@ -182,22 +179,13 @@
     <ID>UnsafeCallOnNullableType:HdcService.kt$HdcService$licence.curfewAddress!!</ID>
     <ID>UnsafeCallOnNullableType:HdcService.kt$HdcService$nomisRecord.bookingId!!</ID>
     <ID>UnsafeCallOnNullableType:HdcVariationLicence.kt$HdcVariationLicence$this.responsibleCom!!</ID>
-    <ID>UnsafeCallOnNullableType:Input.kt$data.first().dataValue!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceActivationService.kt$LicenceActivationService$it.bookingId!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceActivationService.kt$LicenceActivationService$potentialLicences[it.bookingId?.toLong()]!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceActivationService.kt$LicenceWithPrisoner$licence.bookingId!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceConditionService.kt$LicenceConditionService$it.id!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceConditionService.kt$LicenceConditionService$licenceEntity.version!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceCreationService.kt$LicenceCreationService$nomisRecord.bookingId!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceCreationService.kt$LicenceCreationService$nomisRecord.prisonId!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceDetailTransformer.kt$this.statusCode!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceFactory.kt$LicenceFactory$nomisRecord.postRecallReleaseDate!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceFactory.kt$LicenceFactory$this.licenceVersion!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceOverrideService.kt$LicenceOverrideService$licence.nomsId!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceOverrideService.kt$LicenceOverrideService$licence?.crn!!</ID>
     <ID>UnsafeCallOnNullableType:LicencePolicyService.kt$LicencePolicyService$licence.version!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceReviewOverdueService.kt$LicenceReviewOverdueService$it.forename!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceReviewOverdueService.kt$LicenceReviewOverdueService$it.surname!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$licence.nomsId!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$licence.variationOfId!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$licenceEntity.crn!!</ID>
@@ -205,39 +193,28 @@
     <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$licenceEntity.nomsId!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$licenceEntity.prisonDescription!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$licenceEntity.surname!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$this.forename!!</ID>
-    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$this.surname!!</ID>
-    <ID>UnsafeCallOnNullableType:LsdRecalculationService.kt$LsdRecalculationService$licences.find { licence -&gt; prisoner.prisonerNumber == licence.nomsId }!!</ID>
-    <ID>UnsafeCallOnNullableType:NotStartedCaseloadService.kt$NotStartedCaseloadService$it.case.nomisId!!</ID>
     <ID>UnsafeCallOnNullableType:NotifyService.kt$NotifyService$crn!!</ID>
     <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$currentLicence.variationOfId!!</ID>
-    <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$inProgressLicence.crn!!</ID>
-    <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$inProgressLicence.responsibleCom!!</ID>
-    <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$licence.crn!!</ID>
-    <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$licence.responsibleCom!!</ID>
-    <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$newCom.email!!</ID>
-    <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$releaseDate!!</ID>
     <ID>UnsafeCallOnNullableType:PrisonApproverService.kt$PrisonApproverService$currentLicence.variationOfId!!</ID>
-    <ID>UnsafeCallOnNullableType:PromptComListBuilder.kt$PromptComListBuilder$it.case.nomisId!!</ID>
     <ID>UnsafeCallOnNullableType:PrrdLicence.kt$PrrdLicence$this.postRecallReleaseDate!!</ID>
     <ID>UnsafeCallOnNullableType:PrrdLicence.kt$PrrdLicence$this.responsibleCom!!</ID>
-    <ID>UnsafeCallOnNullableType:RelevantLicenceFinder.kt$RelevantLicenceFinder$licences.find { it.kind == kind }!!</ID>
-    <ID>UnsafeCallOnNullableType:RelevantLicenceFinder.kt$RelevantLicenceFinder$licences.find { it.licenceStatus == TIMED_OUT }!!</ID>
-    <ID>UnsafeCallOnNullableType:RelevantLicenceFinder.kt$RelevantLicenceFinder$licences.find { licence -&gt; licence.licenceStatus !== APPROVED }!!</ID>
-    <ID>UnsafeCallOnNullableType:RemoveExpiredConditionsService.kt$RemoveExpiredConditionsService$it.id!!</ID>
     <ID>UnsafeCallOnNullableType:SubjectAccessRequestResponseBuilder.kt$SubjectAccessRequestResponseBuilder$licence.statusCode!!</ID>
     <ID>UnsafeCallOnNullableType:TimeServedProbationConfirmContactRequest.kt$TimeServedProbationConfirmContactRequest$_contactStatus!!</ID>
     <ID>UnsafeCallOnNullableType:ToEntityTransformers.kt$licence.version!!</ID>
     <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$conditionPolicyData[it.conditionCode]!!</ID>
     <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$entity.id!!</ID>
     <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$licence.nomsId!!</ID>
+    <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$staff.name!!</ID>
     <ID>UnsafeCallOnNullableType:UpdateSentenceDateService.kt$UpdateSentenceDateService$currentLicence.nomsId!!</ID>
     <ID>UnsafeCallOnNullableType:UpdateSentenceDateService.kt$UpdateSentenceDateService$licence.responsibleCom!!</ID>
     <ID>UnsafeCallOnNullableType:UpdateSentenceDateService.kt$UpdateSentenceDateService$updatedLicence.bookingId!!</ID>
-    <ID>UnsafeCallOnNullableType:VaryApproverCaseloadService.kt$VaryApproverCaseloadService$it.case.nomisId!!</ID>
-    <ID>UnsafeCallOnNullableType:VaryApproverCaseloadService.kt$VaryApproverCaseloadService$it.prisonNumber!!</ID>
-    <ID>UnsafeCallOnNullableType:VaryApproverCaseloadService.kt$VaryApproverCaseloadService$probationPractitioners[licence.prisonNumber?.lowercase()]!!</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
+    <ID>UnusedPrivateMember:ToModelTransformers.kt$private fun transform(entity: AdditionalConditionAp): ModelPublicAdditionalCondition</ID>
+    <ID>UnusedPrivateMember:ToModelTransformers.kt$private fun transform(entity: AdditionalConditionPss): ModelPublicAdditionalCondition</ID>
+    <ID>UnusedPrivateMember:ToModelTransformers.kt$private fun transform(entity: EntityAuditEvent): ModelAuditEvent</ID>
+    <ID>UnusedPrivateMember:ToModelTransformers.kt$private fun transform(entity: EntityHdcCurfewTimes): ModelHdcCurfewTimes</ID>
+    <ID>UnusedPrivateMember:ToModelTransformers.kt$private fun transform(entity: StandardConditionAp): ModelPublicStandardCondition</ID>
+    <ID>UnusedPrivateMember:ToModelTransformers.kt$private fun transform(entity: StandardConditionPss): ModelPublicStandardCondition</ID>
     <ID>UseCheckOrError:CaProbationCaseloadService.kt$CaProbationCaseloadService$throw IllegalStateException("Multiple active licences found for NOMIS id: ${entry.key}")</ID>
     <ID>UseOrEmpty:AppointmentService.kt$AppointmentService$licence.appointment?.addressText ?: ""</ID>
     <ID>UseOrEmpty:AppointmentService.kt$AppointmentService$licenceEntity.appointment?.addressText ?: ""</ID>
@@ -250,17 +227,9 @@
     <ID>UseOrEmpty:AppointmentService.kt$AppointmentService$previousPerson ?: ""</ID>
     <ID>UseOrEmpty:AuditService.kt$AuditService$existingCom?.email ?: ""</ID>
     <ID>UseOrEmpty:AuditService.kt$AuditService$existingCom?.username ?: ""</ID>
-    <ID>UseOrEmpty:Batching.kt$Batching$gatherer.gather(batch) ?: emptyList()</ID>
-    <ID>UseOrEmpty:ComCreateCaseloadService.kt$ComCreateCaseloadService$licencesByCrn[deliusRecord.crn!!] ?: emptyList()</ID>
-    <ID>UseOrEmpty:CommunicationMethodListConverter.kt$CommunicationMethodListConverter$dbData ?.split(",") ?.map { CommunicationMethod.valueOf(it) } ?: emptyList()</ID>
     <ID>UseOrEmpty:ConditionFormatter.kt$ConditionFormatter$condition.tpl ?: ""</ID>
-    <ID>UseOrEmpty:FormattingHelpers.kt$this?.let { "\\{(.*?)}".toRegex().findAll(this) .map { it.groupValues[1].trim() } .toList() } ?: emptyList()</ID>
-    <ID>UseOrEmpty:Input.kt$Input$options?.mapNotNull { it.conditional?.inputs?.map { c -&gt; c.name } }?.flatten() ?: emptyList()</ID>
     <ID>UseOrEmpty:LicenceFactory.kt$LicenceFactory$nomisRecord.middleNames?.convertToTitleCase() ?: ""</ID>
-    <ID>UseOrEmpty:LicencePolicy.kt$HasInputs$it.options ?: emptyList()</ID>
-    <ID>UseOrEmpty:LicencePolicy.kt$HasInputs$this.getConditionInputs() ?: emptyList()</ID>
     <ID>UseOrEmpty:LicenceService.kt$LicenceService$reason ?: ""</ID>
-    <ID>UseOrEmpty:LicenceSubmitName.kt$LicenceSubmitName$firstName?.let { "$it $lastName" } ?: ""</ID>
     <ID>UseOrEmpty:NotifyService.kt$NotifyService$crd?.format(dateFormat) ?: ""</ID>
     <ID>UseOrEmpty:NotifyService.kt$NotifyService$crn ?: ""</ID>
     <ID>UseOrEmpty:OffenderManagerMapper.kt$OffenderManagerMapper$team?.borough?.code ?: ""</ID>
@@ -270,18 +239,9 @@
     <ID>UseOrEmpty:OffenderManagerMapper.kt$OffenderManagerMapper$team?.district?.description ?: ""</ID>
     <ID>UseOrEmpty:OffenderManagerMapper.kt$OffenderManagerMapper$team?.provider?.code ?: ""</ID>
     <ID>UseOrEmpty:OffenderManagerMapper.kt$OffenderManagerMapper$team?.provider?.description ?: ""</ID>
-    <ID>UseOrEmpty:OffenderService.kt$OffenderService$it.forename ?: ""</ID>
-    <ID>UseOrEmpty:OffenderService.kt$OffenderService$it.middleNames ?: ""</ID>
-    <ID>UseOrEmpty:OffenderService.kt$OffenderService$it.surname ?: ""</ID>
-    <ID>UseOrEmpty:OsPlacesApiClient.kt$OsPlacesApiClient$searchResult?.results?.map { it.dpa } ?: emptyList()</ID>
-    <ID>UseOrEmpty:OsPlacesMapperToAddressSearchResponseMapper.kt$OsPlacesMapperToAddressSearchResponseMapper$KNOWN_COUNTRIES.firstOrNull { desc.contains(it, ignoreCase = true) } ?: ""</ID>
-    <ID>UseOrEmpty:PolicyFunctions.kt$current.inputs ?: emptyList()</ID>
-    <ID>UseOrEmpty:PolicyFunctions.kt$previous.inputs ?: emptyList()</ID>
-    <ID>UseOrEmpty:Replacements.kt$current.changeHints.find { it.previousCode == condition.code }?.replacements ?: emptyList()</ID>
-    <ID>UseOrEmpty:Replacements.kt$previous?.allAdditionalConditions()?.associateBy { it.code } ?: emptyMap()</ID>
+    <ID>UseOrEmpty:OsPlacesMapperToAddressSearchResponseMapper.kt$OsPlacesMapperToAddressSearchResponseMapper$deliveryPointAddress.county ?: ""</ID>
     <ID>UseOrEmpty:Staff.kt$Staff$firstName ?: ""</ID>
     <ID>UseOrEmpty:Staff.kt$Staff$lastName ?: ""</ID>
-    <ID>UseRequireNotNull:LicenceCreationService.kt$LicenceCreationService$require(offenderManager != null) { "Offender manager for ${deliusRecord.crn} not found" }</ID>
     <ID>UtilityClassWithPublicConstructor:AppointmentMapper.kt$AppointmentMapper</ID>
   </CurrentIssues>
 </SmellBaseline>

@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -17,7 +16,6 @@ class SubjectAccessRequestService(
   private val licenceService: LicenceService,
   private val licenceRepository: LicenceRepository,
   private val externalRecordsRepository: TimeServedExternalRecordsRepository,
-  private val auditEventRepository: AuditEventRepository,
   @param:Value("\${self.api.link}") private val baseUrl: String,
 ) : HmppsPrisonSubjectAccessRequestService {
 
@@ -42,8 +40,6 @@ class SubjectAccessRequestService(
       licenceBuilder.addTimeServedExternalRecord(it)
     }
 
-    val auditEvents = auditEventRepository.findAllByLicenceIdIn(licenceIds)
-
-    return licenceBuilder.build(auditEvents)
+    return licenceBuilder.build()
   }
 }

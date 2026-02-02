@@ -7,9 +7,6 @@ data class Content(
   @field:Schema(description = "The list of licence events")
   val licences: List<SarLicence>,
 
-  @field:Schema(description = "The list of audit events")
-  val auditEvents: List<SarAuditEvent>,
-
   @field:Schema(description = "The list of time served licences that were created outside of CVL")
   val timeServedExternalRecords: List<SarExternalRecord>,
 )
