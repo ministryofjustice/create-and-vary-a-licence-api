@@ -7,9 +7,6 @@ import java.time.LocalDateTime
 @Schema(description = "Describes a licence within this service")
 data class SarLicence(
 
-  @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")
-  val id: Long = -1,
-
   @field:Schema(description = "Kind of licence", example = "CRD")
   val kind: String,
 
@@ -21,9 +18,6 @@ data class SarLicence(
 
   @field:Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
   val prisonNumber: String?,
-
-  @field:Schema(description = "The prison internal booking ID for the person on this licence", example = "989898")
-  val bookingId: Long?,
 
   @field:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   val appointmentPerson: String?,
@@ -68,12 +62,6 @@ data class SarLicence(
   val approvedDate: LocalDateTime?,
 
   @field:Schema(
-    description = "The username who approved the licence on behalf of the prison governor",
-    example = "X33221",
-  )
-  val approvedByUsername: String?,
-
-  @field:Schema(
     description = "The date and time that this licence was submitted for approval",
     example = "24/08/2022 11:30:33",
   )
@@ -97,15 +85,9 @@ data class SarLicence(
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val dateCreated: LocalDateTime?,
 
-  @field:Schema(description = "The username which created this licence", example = "X12333")
-  val createdByUsername: String?,
-
   @field:Schema(description = "The date and time that this licence was last updated", example = "24/08/2022 09:30:33")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val dateLastUpdated: LocalDateTime?,
-
-  @field:Schema(description = "The username of the person who last updated this licence", example = "X34433")
-  val updatedByUsername: String?,
 
   @field:Schema(description = "The list of standard licence conditions on this licence")
   val standardLicenceConditions: List<SarStandardCondition>?,
