@@ -84,6 +84,7 @@ class UploadFileConditionsService(
     }
   }.getOrElse { throw ValidationException(it) }
 
+  @Transactional
   fun getImage(licenceId: Long, conditionId: Long): ByteArray? {
     val licence = licence(licenceId)
     if (!licence.additionalConditions.any { it.id == conditionId }) {
