@@ -25,12 +25,32 @@ object Tabs {
     isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
     licenceStartDate: LocalDate?,
     licenceCaCase: LicenceCaCase?,
+    timeServedCase: Boolean,
     now: Clock,
   ) = when {
-    isAttentionNeeded(licenceCaCase?.statusCode ?: NOT_STARTED, licenceStartDate) -> ATTENTION_NEEDED
-    isDueToBeReleasedInTheNextTwoWorkingDays || licenceStartDate?.isBefore(LocalDate.now(now)) ?: false -> RELEASES_IN_NEXT_TWO_WORKING_DAYS
+    isAttentionNeeded(
+      licenceCaCase?.statusCode ?: NOT_STARTED,
+      licenceStartDate,
+      timeServedCase,
+      now,
+    ) -> ATTENTION_NEEDED
+
+    isDueToBeReleasedInTheNextTwoWorkingDays || timeServedCase -> RELEASES_IN_NEXT_TWO_WORKING_DAYS
+
     else -> FUTURE_RELEASES
   }
 
-  private fun isAttentionNeeded(status: LicenceStatus, licenceStartDate: LocalDate?): Boolean = inflightStatuses.contains(status) && licenceStartDate == null
+  private fun isAttentionNeeded(
+    status: LicenceStatus,
+    licenceStartDate: LocalDate?,
+    timeServedCase: Boolean,
+    now: Clock,
+  ): Boolean {
+    val today = LocalDate.now(now)
+
+    val missingStartDate = inflightStatuses.contains(status) && licenceStartDate == null
+    val startDateInPast = status == APPROVED && licenceStartDate?.isBefore(today) == true && !timeServedCase
+
+    return missingStartDate || startDateInPast
+  }
 }
