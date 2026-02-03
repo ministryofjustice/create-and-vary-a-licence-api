@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
@@ -9,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.Optional
@@ -45,6 +48,30 @@ class UploadFileConditionsServiceGetFullImageTest {
   }
 
   @Test
+  fun `when the condition ID does not exist on the licence then throw an EntityNotFoundException`() {
+    givenUploadDetailHas(fullSizeImageUUID = null)
+
+    whenever(licenceRepository.findById(licenceId)).thenReturn(
+      Optional.of(
+        createCrdLicence().copy(
+          additionalConditions = emptyList(),
+        ),
+      ),
+    )
+
+    val uploadFileConditionsService = UploadFileConditionsService(
+      licenceRepository,
+      additionalConditionRepository,
+      additionalConditionUploadRepository,
+      documentService,
+    )
+
+    val error = assertThrows<EntityNotFoundException> { uploadFileConditionsService.getImage(licenceId, additionalConditionId) }
+
+    assertThat(error.message).isEqualTo("Unable to find condition 2 on licence 1")
+  }
+
+  @Test
   fun `when there is a document service uuid recorded then we attempt to return it from the remote service`() {
     givenUploadDetailHas(fullSizeImageUUID = uuid)
 
@@ -60,10 +87,18 @@ class UploadFileConditionsServiceGetFullImageTest {
   }
 
   private fun givenUploadDetailHas(fullSizeImageUUID: UUID?) {
-    whenever(licenceRepository.findById(licenceId)).thenReturn(Optional.of(mock()))
+    val additionalCondition = additionalCondition(fullSizeImageUUID)
+
+    whenever(licenceRepository.findById(licenceId)).thenReturn(
+      Optional.of(
+        createCrdLicence().copy(
+          additionalConditions = listOf(additionalCondition),
+        ),
+      ),
+    )
 
     whenever(additionalConditionRepository.findById(additionalConditionId)).thenReturn(
-      Optional.of(additionalCondition(fullSizeImageUUID)),
+      Optional.of(additionalCondition),
     )
 
     whenever(additionalConditionUploadRepository.findById(additionalConditionUploadDetailId)).thenReturn(

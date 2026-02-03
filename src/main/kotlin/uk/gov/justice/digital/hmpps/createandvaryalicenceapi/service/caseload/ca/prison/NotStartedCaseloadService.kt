@@ -106,6 +106,7 @@ class NotStartedCaseloadService(
           case.cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
           case.cvlRecord.licenceStartDate,
           licenceCaCase = null,
+          timeServedCase = case.cvlRecord.hardStopKind == TIME_SERVED,
           clock,
         ),
         probationPractitioner = probationPractitioners[case.nomisRecord.prisonerNumber]

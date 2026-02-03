@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.Clock
 
@@ -78,9 +79,11 @@ class ExistingCasesCaseloadService(
           releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
           releaseDate,
           licence,
+          timeServedCase = licence.kind == LicenceKind.TIME_SERVED,
           clock,
         ),
-        probationPractitioner = usernameToProbationPractitioner[licence.comUsername?.lowercase()] ?: ProbationPractitioner.UNALLOCATED,
+        probationPractitioner = usernameToProbationPractitioner[licence.comUsername?.lowercase()]
+          ?: ProbationPractitioner.UNALLOCATED,
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
       )
