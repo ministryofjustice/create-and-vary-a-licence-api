@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.SearchQueryRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.UserAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.coerce404ToEmptyOrThrow
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
@@ -18,6 +19,7 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     private const val STAFF_EMAIL_BATCH = 500
     private const val STAFF_USERNAME_BATCH = 500
     private const val PROBATION_CASE_BATCH_SIZE = 500
+    private const val CHECK_ACCESS_BATCH_SIZE = 500
     const val CASELOAD_PAGE_SIZE = 2000
   }
 
@@ -171,4 +173,16 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .retrieve()
     .toBodilessEntity()
     .block() ?: error("Unexpected response while assigning delius role for user: $username")
+
+
+  fun getCheckUserAccess(username: String, crns: List<String>, batchSize: Int = CHECK_ACCESS_BATCH_SIZE): List<UserAccessResponse> = batchRequests(batchSize, crns) { batch ->
+    deliusApiWebClient
+      .post()
+      .uri("/users/$username/access")
+      .bodyValue(batch)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<UserAccessResponse>>())
+      .block()
+  }
 }
