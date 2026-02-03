@@ -13,7 +13,6 @@
       "id": "cvl",
       "name": "cvl"
     }
-
   ],
   "dataset": [
     {
@@ -64,25 +63,6 @@
   ],
   "policy": [
     {
-      "id": "caseload",
-      "type": "row-level",
-      "action": [
-        "prison_code in (${caseloads})"
-      ],
-      "rule": [
-        {
-          "effect": "permit",
-          "condition": [
-            {
-              "exists": [
-                "${caseload}"
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "access",
       "type": "access",
       "rule": [
@@ -92,7 +72,8 @@
             {
               "match": [
                 "${role}",
-                "ROLE_NOMIS_BATCHLOAD"
+                "ROLE_NOMIS_BATCHLOAD",
+                "ROLE_CVL_REPORTS"
               ]
             }
           ]
