@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response
 
 data class UserAccessResponse(
-  val access: List<CaseAccessResponse>
+  val access: List<CaseAccessResponse>,
 )
 
 data class CaseAccessResponse(

@@ -174,7 +174,6 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .toBodilessEntity()
     .block() ?: error("Unexpected response while assigning delius role for user: $username")
 
-
   fun getCheckUserAccess(username: String, crns: List<String>, batchSize: Int = CHECK_ACCESS_BATCH_SIZE): List<UserAccessResponse> = batchRequests(batchSize, crns) { batch ->
     deliusApiWebClient
       .post()
