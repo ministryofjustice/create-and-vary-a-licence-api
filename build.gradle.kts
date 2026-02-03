@@ -71,7 +71,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
 
   // Digital prison reporting
-  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:7.10.5")
+  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:9.11.20")
 
   // Test dependencies
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
