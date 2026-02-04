@@ -85,6 +85,8 @@ feature:
     timeServed:
       enabled: true
       prisons: "MDI, GHI"
+    lao:
+      enabled: false
 
 os:
   places:
