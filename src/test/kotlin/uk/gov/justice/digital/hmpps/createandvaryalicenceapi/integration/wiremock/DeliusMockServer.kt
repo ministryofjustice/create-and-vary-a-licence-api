@@ -1059,4 +1059,24 @@ class DeliusMockServer : WireMockServer(8093) {
         ),
     )
   }
+
+  fun stubGetCheckUserAccess() {
+    stubFor(
+      post(urlPathMatching("/users/.+/access"))
+        .willReturn(
+          aResponse().withHeader("Content-Type", "application/json")
+            .withBody(
+              """{
+                "access": [
+                  {
+                    "crn": "CRN1",
+                    "userExcluded": false,
+                    "userRestricted": false
+                  }
+                ]
+              }""",
+            ).withStatus(200),
+        ),
+    )
+  }
 }
