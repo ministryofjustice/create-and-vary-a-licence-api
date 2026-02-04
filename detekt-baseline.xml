@@ -4,7 +4,6 @@
   <CurrentIssues>
     <ID>ConstructorParameterNaming:TimeServedProbationConfirmContactRequest.kt$TimeServedProbationConfirmContactRequest$@JsonProperty("contactStatus") @field:NotNull(message = "Confirm if you have contacted the probation team") private val _contactStatus: ContactStatus? = null</ID>
     <ID>CyclomaticComplexMethod:LicenceService.kt$LicenceService$private fun updateLicenceStatus(licenceEntity: EntityLicence, request: StatusUpdateRequest)</ID>
-    <ID>ForbiddenComment:UpdateSentenceDateService.kt$UpdateSentenceDateService$/* * TODO: remove this code when CVSL-3677 is implemented. That will deactivate the licence at a later time if necessary */</ID>
     <ID>LargeClass:CaseloadController.kt$CaseloadController</ID>
     <ID>LargeClass:LicenceController.kt$LicenceController</ID>
     <ID>LargeClass:LicenceService.kt$LicenceService</ID>

@@ -1057,7 +1057,7 @@ class UpdateSentenceDateServiceTest {
     }
 
     @Test
-    fun `should save an new potential hardstop case if a licence was in hard stop period but is no longer and hardstop job is enabled`() {
+    fun `should save a new potential hardstop case if a licence was in hard stop period but is no longer and hardstop job is enabled`() {
       val jobEnabledService = UpdateSentenceDateService(
         licenceRepository,
         auditService,
