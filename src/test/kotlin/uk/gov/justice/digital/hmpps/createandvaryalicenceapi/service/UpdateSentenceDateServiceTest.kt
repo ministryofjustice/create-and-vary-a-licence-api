@@ -11,6 +11,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -22,8 +23,11 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.PotentialHardstopCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
@@ -58,6 +62,7 @@ class UpdateSentenceDateServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val licenceService = mock<LicenceService>()
   private val cvlRecordService = mock<CvlRecordService>()
+  private val potentialHardstopCaseRepository = mock<PotentialHardstopCaseRepository>()
 
   val aCrdLicenceEntity = createCrdLicence()
   val anInProgressPrrdLicence = createPrrdLicence()
@@ -82,6 +87,7 @@ class UpdateSentenceDateServiceTest {
     releaseDateService,
     licenceService,
     cvlRecordService,
+    potentialHardstopCaseRepository,
   )
 
   @BeforeEach
@@ -990,7 +996,7 @@ class UpdateSentenceDateServiceTest {
     }
 
     @Test
-    fun `should inactivate a licence if the licence was in hard stop period but is no longer in hard stop period`() {
+    fun `should inactivate a licence if the licence was in hard stop period but is no longer in hard stop period and hardstop job is disabled`() {
       val inHardStopLicence = aCrdLicenceEntity.copy(
         statusCode = TIMED_OUT,
         conditionalReleaseDate = LocalDate.now(),
@@ -1047,6 +1053,83 @@ class UpdateSentenceDateServiceTest {
       )
 
       verify(licenceService, times(0)).timeout(any(), any())
+      verifyNoInteractions(potentialHardstopCaseRepository)
+    }
+
+    @Test
+    fun `should save an new potential hardstop case if a licence was in hard stop period but is no longer and hardstop job is enabled`() {
+      val jobEnabledService = UpdateSentenceDateService(
+        licenceRepository,
+        auditService,
+        notifyService,
+        prisonApiClient,
+        hdcService,
+        staffRepository,
+        releaseDateService,
+        licenceService,
+        cvlRecordService,
+        potentialHardstopCaseRepository,
+        hardstopJobEnabled = true,
+      )
+      val inHardStopLicence = aCrdLicenceEntity.copy(
+        statusCode = TIMED_OUT,
+        conditionalReleaseDate = LocalDate.now(),
+        actualReleaseDate = LocalDate.now(),
+        sentenceStartDate = LocalDate.now().minusYears(2),
+        sentenceEndDate = LocalDate.now().plusYears(1),
+        licenceStartDate = LocalDate.now(),
+        licenceExpiryDate = LocalDate.now().plusYears(1),
+        topupSupervisionStartDate = LocalDate.now().plusYears(1),
+        topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+      )
+
+      val noLongerInHardStopLicence = inHardStopLicence.copy(
+        conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+        actualReleaseDate = LocalDate.now().plusWeeks(1),
+        licenceStartDate = LocalDate.now().plusWeeks(1),
+      )
+
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
+      whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(noLongerInHardStopLicence)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true, false)
+      whenever(
+        licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
+          inHardStopLicence.bookingId!!,
+          listOf(
+            IN_PROGRESS,
+            SUBMITTED,
+            APPROVED,
+            TIMED_OUT,
+          ),
+          listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
+        ),
+      ).thenReturn(listOf(noLongerInHardStopLicence))
+      whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+        aPrisonApiPrisoner().copy(
+          sentenceDetail = SentenceDetail(
+            conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+            confirmedReleaseDate = LocalDate.now().plusWeeks(1),
+            sentenceStartDate = LocalDate.now().minusYears(2),
+            sentenceExpiryDate = LocalDate.now().plusYears(1),
+            licenceExpiryDate = LocalDate.now().plusYears(1),
+            topupSupervisionStartDate = LocalDate.now().plusYears(1),
+            topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+          ),
+        ),
+      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+
+      jobEnabledService.updateSentenceDates(1L)
+
+      verify(licenceService, never()).inactivateLicences(any(), any(), any())
+      verify(licenceService, times(0)).timeout(any(), any())
+
+      argumentCaptor<PotentialHardstopCase>().apply {
+        verify(potentialHardstopCaseRepository).saveAndFlush(capture())
+        val savedPotentialHardstopCase = this.firstValue
+        assertThat(savedPotentialHardstopCase.status).isEqualTo(PotentialHardstopCaseStatus.PENDING)
+        assertThat(savedPotentialHardstopCase.licence.nomsId).isEqualTo(inHardStopLicence.nomsId)
+      }
     }
 
     @Test
@@ -1074,6 +1157,7 @@ class UpdateSentenceDateServiceTest {
       service.updateSentenceDates(1L)
 
       verify(licenceService, times(0)).timeout(any(), any())
+      verifyNoInteractions(potentialHardstopCaseRepository)
     }
   }
 

@@ -2,14 +2,17 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.PotentialHardstopCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.HardstopChangeType.NOW_IN_HARDSTOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.HardstopChangeType.NO_CHANGE
@@ -42,6 +45,8 @@ class UpdateSentenceDateService(
   private val releaseDateService: ReleaseDateService,
   private val licenceService: LicenceService,
   private val cvlRecordService: CvlRecordService,
+  private val potentialHardstopCaseRepository: PotentialHardstopCaseRepository,
+  @param:Value("\${hardstop.deactivation.job.enabled:false}") private val hardstopJobEnabled: Boolean = false,
 ) {
 
   @Transactional
@@ -109,7 +114,12 @@ class UpdateSentenceDateService(
         listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
         listOf(CRD, HARD_STOP),
       )
-      licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
+
+      if (hardstopJobEnabled) {
+        licences.forEach { potentialHardstopCaseRepository.saveAndFlush(PotentialHardstopCase(licence = it)) }
+      } else {
+        licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
+      }
     }
 
     if (dateChanges.isMaterial) {
@@ -197,7 +207,11 @@ class UpdateSentenceDateService(
     }
   }
 
-  private fun getHardstopChangeType(currentLicenceStartDate: LocalDate?, currentLicenceKind: LicenceKind, updatedLicence: Licence): HardstopChangeType {
+  private fun getHardstopChangeType(
+    currentLicenceStartDate: LocalDate?,
+    currentLicenceKind: LicenceKind,
+    updatedLicence: Licence,
+  ): HardstopChangeType {
     val previouslyInHardstop = releaseDateService.isInHardStopPeriod(currentLicenceStartDate, currentLicenceKind)
     val nowInHardstop = releaseDateService.isInHardStopPeriod(updatedLicence.licenceStartDate, updatedLicence.kind)
     val isPotentialHardStopInProgress = updatedLicence is SupportsHardStop && updatedLicence.statusCode == IN_PROGRESS
