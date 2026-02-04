@@ -10,6 +10,9 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
@@ -21,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordSe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -28,6 +32,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.UserAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -63,6 +69,13 @@ class ComCreateCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
+    val authentication = org.mockito.kotlin.mock<Authentication>()
+    val securityContext = org.mockito.kotlin.mock<SecurityContext>()
+
+    whenever(authentication.name).thenReturn(aCom().username)
+    whenever(securityContext.authentication).thenReturn(authentication)
+    SecurityContextHolder.setContext(securityContext)
+
     reset(deliusApiClient, licenceCaseRepository, eligibilityService)
   }
 
@@ -1387,6 +1400,183 @@ class ComCreateCaseloadServiceTest {
     )
   }
 
+  @Test
+  fun `Exclude cases where no case access check details exist`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = tenDaysFromNow, bookingId = "1")),
+    )
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+      listOf(aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow)),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(eq(aCom().username), any(), any())).thenReturn(emptyList())
+
+    val service = ComCreateCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      cvlRecordService,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).isEmpty()
+  }
+
+  @Test
+  fun `Exclude cases where user is excluded`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = tenDaysFromNow, bookingId = "1")),
+    )
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+      listOf(aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow)),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(eq(aCom().username), any(), any())).thenReturn(
+      listOf(
+        aUserAccessResponse(
+          "A123456",
+          excluded = true,
+          restricted = false,
+        ),
+      ),
+    )
+
+    val service = ComCreateCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      cvlRecordService,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).isEmpty()
+  }
+
+  @Test
+  fun `Exclude cases where user is restricted`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = tenDaysFromNow, bookingId = "1")),
+    )
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+      listOf(aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow)),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(eq(aCom().username), any(), any())).thenReturn(
+      listOf(
+        aUserAccessResponse(
+          "A123456",
+          excluded = false,
+          restricted = true,
+        ),
+      ),
+    )
+
+    val service = ComCreateCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      cvlRecordService,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).isEmpty()
+  }
+
+  @Test
+  fun `Include cases where user has access`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = tenDaysFromNow, bookingId = "1")),
+    )
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+      listOf(aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow)),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(eq(aCom().username), any(), any())).thenReturn(
+      listOf(
+        aUserAccessResponse(
+          "X12348",
+          excluded = false,
+          restricted = false,
+        ),
+      ),
+    )
+
+    val service = ComCreateCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      cvlRecordService,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    verifyCase(
+      caseload.first(),
+      "X12348",
+      "AB1234E",
+      LicenceStatus.NOT_STARTED,
+      LicenceType.AP,
+      LicenceCreationType.LICENCE_NOT_STARTED,
+      expectedReleaseDate = tenDaysFromNow,
+    )
+  }
+
+  @Test
+  fun `LAO filtering disabled returns all cases`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = tenDaysFromNow, bookingId = "1")),
+    )
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+      listOf(aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow)),
+    )
+    val service = ComCreateCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      cvlRecordService,
+      telemetryService,
+      laoEnabled = false,
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
+  }
+
   private fun verifyCase(
     case: ComCreateCase,
     expectedCrn: String,
@@ -1456,4 +1646,16 @@ class ComCreateCaseloadServiceTest {
     nomisId,
     staff = staffDetail,
   )
+
+  private fun aUserAccessResponse(crn: String, excluded: Boolean, restricted: Boolean): UserAccessResponse = UserAccessResponse(
+    access = listOf(
+      CaseAccessResponse(
+        crn = crn,
+        userExcluded = excluded,
+        userRestricted = restricted,
+      ),
+    ),
+  )
+
+  private fun aCom() = communityOffenderManager()
 }
