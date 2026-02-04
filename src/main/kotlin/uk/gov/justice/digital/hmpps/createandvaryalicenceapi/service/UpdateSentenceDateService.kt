@@ -66,6 +66,15 @@ class UpdateSentenceDateService(
     }
 
     val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, cvlRecord.eligibleKind)
+    if (licenceStartDate == null) {
+      log.info("NULL LSD calculated for nomis id: ${prisonerSearchPrisoner.prisonerNumber}")
+      log.info("prisoner CRD: ${prisonerSearchPrisoner.conditionalReleaseDate}")
+      log.info("prisoner ARD: ${prisonerSearchPrisoner.confirmedReleaseDate}")
+      log.info("prisoner PRRD: ${prisonerSearchPrisoner.postRecallReleaseDate}")
+      log.info("prisoner SSD: ${prisonerSearchPrisoner.sentenceStartDate}")
+      log.info("cvlRecord: $cvlRecord")
+    }
+
     val sentenceDates = prisoner.sentenceDetail.toSentenceDates()
     val dateChanges = currentLicence.getDateChanges(sentenceDates, licenceStartDate)
 
@@ -197,7 +206,11 @@ class UpdateSentenceDateService(
     }
   }
 
-  private fun getHardstopChangeType(currentLicenceStartDate: LocalDate?, currentLicenceKind: LicenceKind, updatedLicence: Licence): HardstopChangeType {
+  private fun getHardstopChangeType(
+    currentLicenceStartDate: LocalDate?,
+    currentLicenceKind: LicenceKind,
+    updatedLicence: Licence,
+  ): HardstopChangeType {
     val previouslyInHardstop = releaseDateService.isInHardStopPeriod(currentLicenceStartDate, currentLicenceKind)
     val nowInHardstop = releaseDateService.isInHardStopPeriod(updatedLicence.licenceStartDate, updatedLicence.kind)
     val isPotentialHardStopInProgress = updatedLicence is SupportsHardStop && updatedLicence.statusCode == IN_PROGRESS
