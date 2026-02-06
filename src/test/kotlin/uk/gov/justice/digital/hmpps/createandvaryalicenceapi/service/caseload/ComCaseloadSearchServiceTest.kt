@@ -12,6 +12,7 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -1023,8 +1024,68 @@ class ComCaseloadSearchServiceTest {
     }
   }
 
+  @Test
+  fun `filter out non-time-served licences with past release dates`() {
+    service = ComCaseloadSearchService(
+      licenceRepository,
+      deliusApiClient,
+      prisonerSearchApiClient,
+      releaseDateService,
+      clock,
+      releaseDateLabelFactory,
+      cvlRecordService,
+      false,
+    )
+
+    val licence = aLicenceEntity.copy(
+      licenceStartDate = LocalDate.now(clock).minusDays(2),
+      statusCode = LicenceStatus.IN_PROGRESS,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+
+    val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+    assertThat(result.results).isEmpty()
+    assertThat(result.inPrisonCount).isEqualTo(0)
+    assertThat(result.onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `filter out unstarted licences with past release dates`() {
+    service = ComCaseloadSearchService(
+      licenceRepository,
+      deliusApiClient,
+      prisonerSearchApiClient,
+      releaseDateService,
+      clock,
+      releaseDateLabelFactory,
+      cvlRecordService,
+      false,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+      listOf(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceStartDate = LocalDate.now(clock).minusDays(2),
+        ),
+      ),
+    )
+
+    val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+    assertThat(result.results).isEmpty()
+    assertThat(result.inPrisonCount).isEqualTo(0)
+    assertThat(result.onProbationCount).isEqualTo(0)
+  }
+
   @Nested
-  inner class `Lao offender search` {
+  inner class `LAO offender search` {
     @BeforeEach
     fun setup() {
       service = ComCaseloadSearchService(
@@ -1044,6 +1105,26 @@ class ComCaseloadSearchServiceTest {
           eq(listOf(aPrisonerSearchResult)),
         ),
       ).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    }
+
+    @Test
+    fun `does not check Delius user access when laoEnabled is false`() {
+      service = ComCaseloadSearchService(
+        licenceRepository,
+        deliusApiClient,
+        prisonerSearchApiClient,
+        releaseDateService,
+        clock,
+        releaseDateLabelFactory,
+        cvlRecordService,
+        false,
+      )
+
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+
+      service.searchForOffenderOnProbationUserCaseload(request)
+
+      verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
     }
 
     @Test
@@ -1218,6 +1299,65 @@ class ComCaseloadSearchServiceTest {
           true,
         ),
       )
+    }
+
+    @Test
+    fun `filter out LAO restricted cases with past release dates for non-time-served licences`() {
+      val licence = aLicenceEntity.copy(
+        licenceStartDate = LocalDate.now(clock).minusDays(2),
+        statusCode = LicenceStatus.IN_PROGRESS,
+      )
+
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aUserAccessResponse("A123456", excluded = false, restricted = true)),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).isEmpty()
+      assertThat(result.inPrisonCount).isEqualTo(0)
+      assertThat(result.onProbationCount).isEqualTo(0)
+    }
+
+    @Test
+    fun `shows LAO restricted cases with past release dates for time-served licences`() {
+      val timeServedLicence = createTimeServedLicence().copy(
+        statusCode = LicenceStatus.IN_PROGRESS,
+        licenceStartDate = LocalDate.now(clock).minusDays(2),
+      )
+
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(timeServedLicence))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.TIME_SERVED)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aUserAccessResponse("A123456", excluded = false, restricted = true)),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results.size).isEqualTo(1)
+      assertThat(result.results.first().isLao).isTrue()
+    }
+
+    @Test
+    fun `filter out LAO excluded cases with past release dates for non-time-served licences`() {
+      val licence = aLicenceEntity.copy(
+        licenceStartDate = LocalDate.now(clock).minusDays(2),
+        statusCode = LicenceStatus.IN_PROGRESS,
+      )
+
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aUserAccessResponse("A123456", excluded = true, restricted = false)),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).isEmpty()
+      assertThat(result.inPrisonCount).isEqualTo(0)
+      assertThat(result.onProbationCount).isEqualTo(0)
     }
   }
 
