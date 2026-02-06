@@ -221,7 +221,7 @@ class ComCreateCaseloadService(
       val caseAccess = caseAccessList[case.comLicenceCaseDto.crn]
       when {
         caseAccess == null -> {
-          log.info("No case access record found for CRN ${case.comLicenceCaseDto.crn}")
+          log.warn("No case access record found for CRN ${case.comLicenceCaseDto.crn}")
           false
         }
         caseAccess.userExcluded -> {

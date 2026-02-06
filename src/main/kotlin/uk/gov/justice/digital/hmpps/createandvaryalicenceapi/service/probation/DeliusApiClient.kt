@@ -182,6 +182,6 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<UserAccessResponse>>())
-      .block()
+      .block() ?: error("Unexpected null response from Delius check user access for user: $username")
   }
 }

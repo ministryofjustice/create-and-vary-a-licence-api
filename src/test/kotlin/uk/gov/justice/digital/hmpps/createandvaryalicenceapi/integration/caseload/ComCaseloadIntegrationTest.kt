@@ -79,6 +79,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetCheckUserAccess()
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
@@ -131,6 +132,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         )
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetCheckUserAccess()
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
@@ -213,6 +215,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       // Given
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
+      deliusMockServer.stubGetCheckUserAccess()
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)

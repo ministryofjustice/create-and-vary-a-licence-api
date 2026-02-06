@@ -86,7 +86,7 @@ feature:
       enabled: true
       prisons: "MDI, GHI"
     lao:
-      enabled: false
+      enabled: true
 
 os:
   places:
