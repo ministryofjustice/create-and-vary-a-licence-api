@@ -72,14 +72,18 @@ class ComCaseloadSearchService(
         val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
         val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
         val caseAccessRecord = caseAccessRecords[caseloadResult.crn]
+        val releaseDate = determineReleaseDate(cvlRecord, licence)
         createCase(licence, caseloadResult, prisonerRecord, cvlRecord, caseAccessRecord)
-      }.filterOutPastReleaseDate()
+          .takeUnless { hasPastReleaseDateAndNotEligible(releaseDate, licence) }
+      }
     } else {
       deliusRecordsToLicences.mapNotNull { (caseloadResult, licence) ->
         val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
         val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
+        val releaseDate = determineReleaseDate(cvlRecord, licence)
         createCase(licence, caseloadResult, prisonerRecord, cvlRecord)
-      }.filterOutPastReleaseDate()
+          .takeUnless { hasPastReleaseDateAndNotEligible(releaseDate, licence) }
+      }
     }
 
     val onProbationCount = searchResults.count { it.isOnProbation == true }
@@ -181,15 +185,6 @@ class ComCaseloadSearchService(
     isRestricted = caseAccessRecord?.userRestricted ?: false,
   )
 
-  private fun List<FoundComCase>.filterOutPastReleaseDate(): List<FoundComCase> = this.filter {
-    if (it.isLao == true) return@filter true
-    if (it.isOnProbation == true) {
-      true
-    } else {
-      it.releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) ?: false || it.kind == LicenceKind.TIME_SERVED
-    }
-  }
-
   private fun getProbationPractitioner(staff: StaffDetail): ProbationPractitioner = if (staff.unallocated == true) {
     ProbationPractitioner.unallocated(staff.code)
   } else {
@@ -258,5 +253,24 @@ class ComCaseloadSearchService(
     } else {
       minor1.compareTo(minor2)
     }
+  }
+
+  private fun determineReleaseDate(cvlRecord: CvlRecord?, licence: Licence?): LocalDate? = when {
+    licence != null -> licence.licenceStartDate
+    cvlRecord?.isEligible == true -> cvlRecord.licenceStartDate
+    else -> null
+  }
+
+  private fun hasPastReleaseDateAndNotEligible(releaseDate: LocalDate?, licence: Licence?): Boolean {
+    if (licence?.statusCode?.isOnProbation() == true) {
+      return false
+    }
+    if (releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) == true) {
+      return false
+    }
+    if (licence?.kind == LicenceKind.TIME_SERVED) {
+      return false
+    }
+    return true
   }
 }
