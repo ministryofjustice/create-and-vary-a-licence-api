@@ -1432,7 +1432,7 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `Exclude cases where user is excluded`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+      ManagedOffenderCrn(crn = "A123456", nomisId = "AB1234E", staff = staffDetail),
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
@@ -1469,7 +1469,7 @@ class ComCreateCaseloadServiceTest {
   @Test
   fun `Exclude cases where user is restricted`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+      ManagedOffenderCrn(crn = "A123456", nomisId = "AB1234E", staff = staffDetail),
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)

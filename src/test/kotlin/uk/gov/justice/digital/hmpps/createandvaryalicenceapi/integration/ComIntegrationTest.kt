@@ -28,6 +28,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   )
   fun `Given a staff member and the teams they are in, search for offenders within their teams`() {
     deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
@@ -77,6 +78,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams where the offender does not already have a licence`() {
     deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -129,6 +131,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a staff member has searched for an offender that has served there time and has no licence then the case is time served`() {
     // Given
     deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
       prisonId = "MDI",
       sentenceStartDate = LocalDate.now(),
@@ -164,6 +167,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a COM user has searched for an offender with a not started time served case which is unallocated to a probation practitioner`() {
     // Given
     deliusMockServer.stubGetTeamManagedUnallocatedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
       prisonId = "MDI",
@@ -201,6 +205,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a staff member has searched for an offender that has served there time and has a licence then the case is time served`() {
     // Given
     deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
       prisonId = "MDI",
@@ -237,6 +242,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a COM user has searched for an offender with a started time served case which is unallocated to a probation practitioner`() {
     // Given
     deliusMockServer.stubGetTeamManagedUnallocatedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
       prisonId = "MDI",
@@ -289,6 +295,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from prisoner search`() {
     prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
 
     val resultList = webTestClient.post()
@@ -308,6 +315,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Given an offender not on probation and their licences is ACTIVE AND CRD and ARD in future When search for offender Then offender should be part of the search results `() {
     deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -359,6 +367,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Given an offender is on probation and their licences is ACTIVE AND CRD and ARD in past When search for offender Then offender should be part of the search results `() {
     deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -380,6 +389,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Given an offender is not in jail and licence is INACTIVE When search for offender Then offender should not be part of the search results `() {
     deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -395,6 +405,156 @@ class ComIntegrationTest : IntegrationTestBase() {
       .expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody?.results
     assertThat(resultObject).filteredOn("nomisId", "A1234AE").isEmpty()
+  }
+
+  @Test
+  fun `Given an offender is a LAO without a licence, When searching for an offender Then offender should be part of the search results `() {
+    val accessResponse = """[
+      {
+        "access": [
+          {
+            "crn": "CRN1",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          },
+          {
+            "crn": "CRN2",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+    ]
+    """.trimIndent()
+    deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess(accessResponse)
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
+
+    val resultObject = webTestClient.post()
+      .uri("/caseload/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(ComSearchResponse::class.java)
+      .returnResult().responseBody
+
+    val resultsList = resultObject?.results
+    val offender = resultsList?.first()
+    val inPrisonCount = resultObject?.inPrisonCount
+    val onProbationCount = resultObject?.onProbationCount
+
+    assertThat(resultsList?.size).isEqualTo(2)
+    assertThat(offender)
+      .extracting {
+        tuple(
+          it?.name,
+          it?.crn,
+          it?.probationPractitioner?.name,
+          it?.probationPractitioner?.staffCode,
+          it?.releaseDate,
+          it?.isOnProbation,
+          it?.isLao,
+        )
+      }
+      .isEqualTo(
+        tuple(
+          "Access restricted on NDelius",
+          "CRN1",
+          "Restricted",
+          "Restricted",
+          null,
+          false,
+          true,
+        ),
+      )
+
+    assertThat(inPrisonCount).isEqualTo(2)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `Given an offender is a LAO with a licence, When searching for an offender Then offender should be part of the search results `() {
+    val accessResponse = """[
+      {
+        "access": [
+          {
+            "crn": "CRN1",
+            "userExcluded": false,
+            "userRestricted": true,
+            "restrictionMessage": "Access restricted on NDelius"
+          },
+          {
+            "crn": "CRN2",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+    ]
+    """.trimIndent()
+    deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess(accessResponse)
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+      prisonId = "MDI",
+      sentenceStartDate = LocalDate.now(),
+      confirmedReleaseDate = LocalDate.now(),
+      conditionalReleaseDate = LocalDate.now(),
+    )
+    prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
+
+    val resultObject = webTestClient.post()
+      .uri("/caseload/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(ComSearchResponse::class.java)
+      .returnResult().responseBody
+
+    val resultsList = resultObject?.results
+    val offender = resultsList?.first()
+    val inPrisonCount = resultObject?.inPrisonCount
+    val onProbationCount = resultObject?.onProbationCount
+
+    assertThat(resultsList?.size).isEqualTo(2)
+    assertThat(offender)
+      .extracting {
+        tuple(
+          it?.name,
+          it?.crn,
+          it?.probationPractitioner?.name,
+          it?.probationPractitioner?.staffCode,
+          it?.releaseDate,
+          it?.isOnProbation,
+          it?.isLao,
+        )
+      }
+      .isEqualTo(
+        tuple(
+          "Access restricted on NDelius",
+          "CRN1",
+          "Restricted",
+          "Restricted",
+          null,
+          false,
+          true,
+        ),
+      )
+
+    assertThat(inPrisonCount).isEqualTo(2)
+    assertThat(onProbationCount).isEqualTo(0)
   }
 
   private companion object {

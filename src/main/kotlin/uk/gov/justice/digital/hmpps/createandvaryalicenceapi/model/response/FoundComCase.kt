@@ -87,4 +87,6 @@ data class FoundComCase(
   @field:Schema(description = "Is a review of this licence is required", example = "true")
   val isReviewNeeded: Boolean? = null,
 
+  @field:Schema(description = "Is the offender a limited access offender (LAO)?", example = "true")
+  val isLao: Boolean? = null,
 )
