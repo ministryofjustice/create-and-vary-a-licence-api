@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets
 
 private const val SEARCH_STRING = "Glan-y-mor"
 private const val REFERENCE = "2345678"
-private const val SEARCH_FOR_ADDRESSES_URL = "/address/search/by/text/$SEARCH_STRING"
 private const val SEARCH_FOR_ADDRESSES_POST_URL = "/address/search/by/text/"
 private const val GET_ADDRESS_BY_REFERENCE_URL = "/address/search/by/reference/$REFERENCE"
 private const val OS_API_KEY = "os-places-api-key"
@@ -66,29 +65,6 @@ class AddressSearchControllerIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isForbidden
-    }
-  }
-
-  @Nested
-  inner class SearchForAddressSearch : BaseAddressSearchTest(SEARCH_FOR_ADDRESSES_URL) {
-
-    @ParameterizedTest(name = "should return addresses with given search text for role {0}")
-    @ValueSource(strings = ["ROLE_CVL_ADMIN"])
-    fun `should return addresses results with given search text`(role: String) {
-      // Given
-      osPlacesMockServer.stubSearchForAddresses(SEARCH_STRING)
-
-      // When
-      val result = webTestClient.get()
-        .uri(SEARCH_FOR_ADDRESSES_URL)
-        .headers(setAuthorisation(roles = listOf(role)))
-        .exchange()
-
-      // Then
-
-      result.expectStatus()
-        .isOk
-        .expectBody().json(serializedContent("address-by-search-text"), JsonCompareMode.STRICT)
     }
   }
 
@@ -192,7 +168,7 @@ class AddressSearchControllerIntegrationTest : IntegrationTestBase() {
   }
 
   @Nested
-  inner class GetAddressForReference : BaseAddressSearchTest(SEARCH_FOR_ADDRESSES_URL) {
+  inner class GetAddressForReference : BaseAddressSearchTest(GET_ADDRESS_BY_REFERENCE_URL) {
 
     @ParameterizedTest(name = "should get an address for given Reference for role {0}")
     @ValueSource(strings = ["ROLE_CVL_ADMIN"])
