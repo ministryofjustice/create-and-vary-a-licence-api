@@ -9,12 +9,19 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TimeServedExternalRecordsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.hmpps.kotlin.sar.HmppsSubjectAccessRequestContent
@@ -25,12 +32,13 @@ class SubjectAccessRequestServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
+  private val externalRecordsRepository = mock<TimeServedExternalRecordsRepository>()
   private val licenceService = mock<LicenceService>()
 
   private val service = SubjectAccessRequestService(
     licenceService,
     licenceRepository,
-    auditEventRepository,
+    externalRecordsRepository,
     "https://somehost",
   )
 
@@ -51,13 +59,19 @@ class SubjectAccessRequestServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(externalRecordsRepository.findAllByNomsId("A12345")).thenReturn(
+      listOf(
+        timeServedExternalRecord,
+      ),
+    )
     whenever(licenceService.getLicenceById(1L)).thenReturn(modelLicence)
 
     val sarContent = service.getPrisonContentFor("A12345", null, null)
 
     assertThat(sarContent).isExactlyInstanceOf(HmppsSubjectAccessRequestContent::class.java)
 
-    val expectedSarResponse = SubjectAccessRequestResponseBuilder("").addLicence(modelLicence).build(emptyList())
+    val expectedSarResponse = SubjectAccessRequestResponseBuilder("").addLicence(modelLicence)
+      .addTimeServedExternalRecord(timeServedExternalRecord).build()
     assertThat(sarContent).isEqualTo(expectedSarResponse)
 
     verify(licenceRepository, times(1)).findAllByNomsId("A12345")
@@ -67,19 +81,19 @@ class SubjectAccessRequestServiceTest {
   private companion object {
 
     val someStandardConditions = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition(
+      StandardCondition(
         id = 1,
         code = "goodBehaviour",
         sequence = 1,
         text = "Be of good behaviour",
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition(
+      StandardCondition(
         id = 2,
         code = "notBreakLaw",
         sequence = 1,
         text = "Do not break any law",
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition(
+      StandardCondition(
         id = 3,
         code = "attendMeetings",
         sequence = 1,
@@ -88,13 +102,13 @@ class SubjectAccessRequestServiceTest {
     )
 
     val someAssociationData = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+      AdditionalConditionData(
         id = 1,
         field = "field1",
         value = "value1",
         sequence = 1,
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+      AdditionalConditionData(
         id = 2,
         field = "numberOfCurfews",
         value = "value2",
@@ -103,7 +117,7 @@ class SubjectAccessRequestServiceTest {
     )
 
     val someAdditionalConditions = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition(
+      AdditionalCondition(
         id = 1,
         code = "associateWith",
         sequence = 1,
@@ -116,12 +130,12 @@ class SubjectAccessRequestServiceTest {
     )
 
     val someBespokeConditions = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition(
+      BespokeCondition(
         id = 1,
         sequence = 1,
         text = "Bespoke one text",
       ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition(
+      BespokeCondition(
         id = 2,
         sequence = 2,
         text = "Bespoke two text",
@@ -205,6 +219,16 @@ class SubjectAccessRequestServiceTest {
       dateLastUpdated = LocalDateTime.of(2023, 10, 11, 12, 0, 0),
       updatedByUsername = "testupdater",
       createdBy = aCom,
+    )
+
+    val timeServedExternalRecord = TimeServedExternalRecord(
+      nomsId = "A12345",
+      bookingId = 987654,
+      prisonCode = "MDI",
+      reason = "Some reason",
+      updatedByCa = prisonUser(),
+      dateCreated = LocalDateTime.of(2023, 10, 11, 10, 0, 0),
+      dateLastUpdated = LocalDateTime.of(2023, 10, 11, 11, 0, 0),
     )
   }
 }

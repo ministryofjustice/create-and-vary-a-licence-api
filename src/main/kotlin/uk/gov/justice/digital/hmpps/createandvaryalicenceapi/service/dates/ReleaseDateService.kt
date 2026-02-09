@@ -25,7 +25,7 @@ class ReleaseDateService(
   private val iS91DeterminationService: IS91DeterminationService,
   @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
-  @param:Value("\${timeserved.max.days.crd.before.today:14}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 14,
+  @param:Value("\${timeserved.max.days.crd.before.today:28}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 28,
   @param:Value("\${feature.toggle.timeServed.enabled:false}")
   private val isTimeServedEnabled: Boolean = false,
   @param:Value("\${feature.toggle.timeServed.prisons}")
