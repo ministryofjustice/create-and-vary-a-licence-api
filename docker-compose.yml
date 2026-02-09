@@ -16,6 +16,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   localstack-api:
     image: localstack/localstack:3.0.2
@@ -44,3 +46,6 @@ services:
 
 networks:
   hmpps:
+
+volumes:
+  pgdata:
