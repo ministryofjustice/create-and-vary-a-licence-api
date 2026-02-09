@@ -37,6 +37,7 @@ export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets
 export FEATURE_TOGGLE_TIMESERVED_ENABLED=false
 export TIME_SERVED_PRISONS="MDI, BAI, BNI"
 export HDC_ENABLED=false
+export LAO_ENABLED=false
 
 # --- Write to .env file ---
 fileDir=~/env-config/
@@ -66,6 +67,7 @@ cat > "$fileToAddVars" <<EOF
   FEATURE_TOGGLE_TIMESERVED_ENABLED=${FEATURE_TOGGLE_TIMESERVED_ENABLED}
   TIME_SERVED_PRISONS=${TIME_SERVED_PRISONS}
   HDC_ENABLED=${HDC_ENABLED}
+  LAO_ENABLED=${LAO_ENABLED}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"

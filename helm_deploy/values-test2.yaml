@@ -28,6 +28,7 @@ generic-service:
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     TIME_SERVED_PRISONS: "MDI, BAI, BNI, LEI, WCI, EXI, WDI, IWI, EWI"
     HDC_ENABLED: false
+    LAO_ENABLED: false
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
