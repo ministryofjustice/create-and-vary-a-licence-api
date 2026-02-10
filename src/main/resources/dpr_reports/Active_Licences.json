@@ -89,6 +89,8 @@
       "version": "1.0.0",
       "render": "HTML",
       "dataset": "$ref:licence-dataset",
+      "loadType": "sync",
+      "classification": "sync",
       "feature": [
         {
           "type": "print"
