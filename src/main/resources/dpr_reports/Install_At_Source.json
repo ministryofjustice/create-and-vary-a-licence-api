@@ -104,6 +104,8 @@
           "type": "print"
         }
       ],
+      "loadType": "sync",
+      "classification": "sync",
       "specification": {
         "template": "list",
         "field": [
