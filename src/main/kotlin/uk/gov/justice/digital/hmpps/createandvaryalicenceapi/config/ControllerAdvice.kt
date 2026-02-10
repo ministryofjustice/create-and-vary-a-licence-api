@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.method.annotation.HandlerMethodValidationException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
 
@@ -170,6 +171,20 @@ class ControllerAdvice {
           userMessage = "Validation failure: ${e.message}",
           developerMessage = e.message,
           existingResourceId = e.existingResourceId,
+        ),
+      )
+  }
+
+  @ExceptionHandler(InvalidStateException::class)
+  fun handleInvalidStateException(e: Exception): ResponseEntity<ErrorResponse?> {
+    log.error("InvalidStateException: ${e.message}")
+    return ResponseEntity
+      .status(HttpStatus.UNPROCESSABLE_ENTITY)
+      .body(
+        ErrorResponse(
+          status = HttpStatus.UNPROCESSABLE_ENTITY,
+          userMessage = "Unexpected error: ${e.message}",
+          developerMessage = e.message,
         ),
       )
   }
