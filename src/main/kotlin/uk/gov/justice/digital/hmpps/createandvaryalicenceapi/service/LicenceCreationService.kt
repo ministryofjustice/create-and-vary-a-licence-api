@@ -139,7 +139,7 @@ class LicenceCreationService(
 
     val username = SecurityContextHolder.getContext().authentication.name
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
-    val deliusRecord = deliusApiClient.getProbationCase("invalid")
+    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
       ?: throw InvalidStateException("Could not find a probation case in Delius for nomis id $prisonNumber")
 
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
