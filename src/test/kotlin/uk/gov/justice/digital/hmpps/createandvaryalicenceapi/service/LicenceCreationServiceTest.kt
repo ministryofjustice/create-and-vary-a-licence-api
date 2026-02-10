@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
@@ -1809,6 +1810,23 @@ class LicenceCreationServiceTest {
       }
 
       verify(staffRepository, times(0)).findByStaffIdentifier(any())
+    }
+
+    @Test
+    fun `An InvalidStateException is thrown if a Delius record cannot be found for the provided nomis id`() {
+      val prisoner = prisonerSearchResult()
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(null)
+
+      val exception = assertThrows<InvalidStateException> {
+        service.createHardStopLicence(PRISON_NUMBER)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(InvalidStateException::class.java)
+        .withFailMessage("Could not find a probation case in Delius for nomis id $PRISON_NUMBER")
     }
   }
 
