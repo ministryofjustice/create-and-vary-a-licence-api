@@ -31,6 +31,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EV
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
@@ -787,6 +789,14 @@ object TestData {
     approvalStatus = "REJECTED",
     bookingId = 1,
     passed = true,
+  )
+
+  fun currentPrisonerHdcStatus(
+    bookingId: Long = 1,
+    currentHdcStatus: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+  ) = CurrentPrisonerHdcStatus(
+    bookingId = bookingId,
+    currentHdcStatus = currentHdcStatus,
   )
 
   private fun someModelStandardConditions() = listOf(

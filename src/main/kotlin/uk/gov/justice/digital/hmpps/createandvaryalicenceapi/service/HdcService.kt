@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.HdcStatusHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -26,6 +28,7 @@ class HdcService(
   private val licenceRepository: LicenceRepository,
   private val staffRepository: StaffRepository,
   private val auditService: AuditService,
+  @param:Value("\${feature.toggle.hdc.useCurrentStatus}") private val useCurrentHdcStatus: Boolean = false,
 ) {
 
   fun getHdcStatus(records: List<PrisonerSearchPrisoner>) = getHdcStatus(records, { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
@@ -36,8 +39,12 @@ class HdcService(
     hdcedGetter: (T) -> LocalDate?,
   ): HdcStatuses {
     val bookingsWithHdc = records.filter { hdcedGetter(it) != null }.mapNotNull { bookingIdGetter(it) }
-    val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
-    return HdcStatuses(hdcStatuses.filter { it.isApproved() }.mapNotNull { it.bookingId }.toSet())
+    val hdcStatuses: List<HdcStatusHolder> = if (useCurrentHdcStatus) {
+      prisonApiClient.getCurrentHdcStatuses(bookingsWithHdc)
+    } else {
+      prisonApiClient.getHdcStatuses(bookingsWithHdc)
+    }
+    return HdcStatuses(hdcStatuses.filter { it.isHdcRelease() }.mapNotNull { it.bookingId }.toSet())
   }
 
   fun isApprovedForHdc(bookingId: Long, hdced: LocalDate?) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
@@ -127,6 +134,7 @@ class HdcService(
 
     fun canBeActivated(kind: LicenceKind, bookingId: Long) = isValidByKind(kind, bookingId)
 
+    // If useCurrentHdcStatus is true, this is a misnomer and is better described as "Is a potential HDC release"
     fun isApprovedForHdc(bookingId: Long) = approvedIds.contains(bookingId)
 
     private fun isValidByKind(kind: LicenceKind?, bookingId: Long): Boolean {

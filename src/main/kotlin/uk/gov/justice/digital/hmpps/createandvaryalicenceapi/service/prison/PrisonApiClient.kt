@@ -41,6 +41,17 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
       .block()
   }
 
+  fun getCurrentHdcStatuses(bookingIds: List<Long>, batchSize: Int = HDC_BATCH_SIZE) = batchRequests(batchSize, bookingIds) { batch ->
+    prisonerApiWebClient
+      .post()
+      .uri("/licence/hdc/current-hdc-statuses")
+      .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(batch)
+      .retrieve()
+      .bodyToMono(typeReference<List<CurrentPrisonerHdcStatus>>())
+      .block()
+  }
+
   fun getCourtEventOutcomes(
     bookingIds: List<Long>,
     outcomeReasonCodes: List<String>,
