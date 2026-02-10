@@ -40,7 +40,7 @@ class HdcService(
   ): HdcStatuses {
     val bookingsWithHdc = records.filter { hdcedGetter(it) != null }.mapNotNull { bookingIdGetter(it) }
     val hdcStatuses: List<HdcStatusHolder> = if (useCurrentHdcStatus) {
-      prisonApiClient.getCurrentHdcStatuses(bookingsWithHdc)
+      hdcApiClient.getCurrentHdcStatuses(bookingsWithHdc)
     } else {
       prisonApiClient.getHdcStatuses(bookingsWithHdc)
     }
@@ -134,8 +134,7 @@ class HdcService(
 
     fun canBeActivated(kind: LicenceKind, bookingId: Long) = isValidByKind(kind, bookingId)
 
-    // If useCurrentHdcStatus is true, this is a misnomer and is better described as "Is a potential HDC release"
-    fun isApprovedForHdc(bookingId: Long) = approvedIds.contains(bookingId)
+    fun isExpectedHdcRelease(bookingId: Long) = approvedIds.contains(bookingId)
 
     private fun isValidByKind(kind: LicenceKind?, bookingId: Long): Boolean {
       val approvedForHdc = approvedIds.contains(bookingId)

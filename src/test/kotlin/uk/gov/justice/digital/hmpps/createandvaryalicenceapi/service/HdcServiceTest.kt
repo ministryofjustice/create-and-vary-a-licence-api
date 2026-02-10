@@ -296,8 +296,8 @@ class HdcServiceTest {
 
     @Test
     fun isApproved() {
-      assertThat(statuses.isApprovedForHdc(1L)).isTrue
-      assertThat(statuses.isApprovedForHdc(2L)).isFalse
+      assertThat(statuses.isExpectedHdcRelease(1L)).isTrue
+      assertThat(statuses.isExpectedHdcRelease(2L)).isFalse
     }
   }
 
@@ -473,7 +473,7 @@ class HdcServiceTest {
 
     @Test
     fun `getHdcStatuses sets approvedIds to those that are potential HDC releases`() {
-      whenever(prisonApiClient.getCurrentHdcStatuses(listOf(1L, 3L, 4L, 5L))).thenReturn(
+      whenever(hdcApiClient.getCurrentHdcStatuses(listOf(1L, 3L, 4L, 5L))).thenReturn(
         listOf(
           currentPrisonerHdcStatus(bookingId = 1L, currentHdcStatus = HdcStatus.APPROVED),
           // Didn't request 2L as missing HDCED
