@@ -215,7 +215,7 @@ class ComCreateCaseloadService(
 
     val crns = cases.mapNotNull { it.comLicenceCaseDto.crn }
 
-    val caseAccessList = deliusApiClient.getCheckUserAccess(username, crns).flatMap { it.access }.associateBy { it.crn }
+    val caseAccessList = deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
 
     return cases.filter { case ->
       val caseAccess = caseAccessList[case.comLicenceCaseDto.crn]

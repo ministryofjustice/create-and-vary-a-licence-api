@@ -33,7 +33,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.UserAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -1444,7 +1443,7 @@ class ComCreateCaseloadServiceTest {
     )
     whenever(deliusApiClient.getCheckUserAccess(eq(aCom().username), any(), any())).thenReturn(
       listOf(
-        aUserAccessResponse(
+        aCaseAccessResponse(
           "A123456",
           excluded = true,
           restricted = false,
@@ -1481,7 +1480,7 @@ class ComCreateCaseloadServiceTest {
     )
     whenever(deliusApiClient.getCheckUserAccess(eq(aCom().username), any(), any())).thenReturn(
       listOf(
-        aUserAccessResponse(
+        aCaseAccessResponse(
           "A123456",
           excluded = false,
           restricted = true,
@@ -1518,7 +1517,7 @@ class ComCreateCaseloadServiceTest {
     )
     whenever(deliusApiClient.getCheckUserAccess(eq(aCom().username), any(), any())).thenReturn(
       listOf(
-        aUserAccessResponse(
+        aCaseAccessResponse(
           "X12348",
           excluded = false,
           restricted = false,
@@ -1647,14 +1646,10 @@ class ComCreateCaseloadServiceTest {
     staff = staffDetail,
   )
 
-  private fun aUserAccessResponse(crn: String, excluded: Boolean, restricted: Boolean): UserAccessResponse = UserAccessResponse(
-    access = listOf(
-      CaseAccessResponse(
-        crn = crn,
-        userExcluded = excluded,
-        userRestricted = restricted,
-      ),
-    ),
+  private fun aCaseAccessResponse(crn: String, excluded: Boolean, restricted: Boolean) = CaseAccessResponse(
+    crn = crn,
+    userExcluded = excluded,
+    userRestricted = restricted,
   )
 
   private fun aCom() = communityOffenderManager()

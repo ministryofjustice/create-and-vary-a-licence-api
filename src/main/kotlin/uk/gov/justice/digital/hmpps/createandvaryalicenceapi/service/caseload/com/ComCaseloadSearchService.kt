@@ -66,8 +66,7 @@ class ComCaseloadSearchService(
     val searchResults = if (laoEnabled) {
       val username = SecurityContextHolder.getContext().authentication.name
       val crns = deliusRecordsToLicences.map { (caseloadResult, _) -> caseloadResult.crn }
-      val caseAccessRecords = deliusApiClient.getCheckUserAccess(username, crns).flatMap { it.access }.associateBy { it.crn }
-
+      val caseAccessRecords = deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
       deliusRecordsToLicences.mapNotNull { (caseloadResult, licence) ->
         val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
         val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
@@ -241,6 +240,7 @@ class ComCaseloadSearchService(
       isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
       releaseDateLabel = releaseDateLabelFactory.fromLicence(licence),
       isReviewNeeded = licence is ReviewablePostRelease && licence.isReviewNeeded(),
+      isLao = false,
     )
   }
 

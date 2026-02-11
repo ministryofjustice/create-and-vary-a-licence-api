@@ -409,7 +409,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given an offender is a LAO without a licence, When searching for an offender Then offender should be part of the search results `() {
-    val accessResponse = """[
+    val accessResponse = """
       {
         "access": [
           {
@@ -425,7 +425,6 @@ class ComIntegrationTest : IntegrationTestBase() {
           }
         ]
       }
-    ]
     """.trimIndent()
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess(accessResponse)
@@ -483,7 +482,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Given an offender is a LAO with a licence, When searching for an offender Then offender should be part of the search results `() {
-    val accessResponse = """[
+    val accessResponse = """
       {
         "access": [
           {
@@ -499,7 +498,6 @@ class ComIntegrationTest : IntegrationTestBase() {
           }
         ]
       }
-    ]
     """.trimIndent()
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess(accessResponse)

@@ -42,7 +42,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.UserAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -1132,7 +1131,7 @@ class ComCaseloadSearchServiceTest {
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((emptyList()))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(
-          aUserAccessResponse(
+          aCaseAccessResponse(
             crn = "A123456",
             restricted = true,
             excluded = false,
@@ -1176,7 +1175,7 @@ class ComCaseloadSearchServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(
-          aUserAccessResponse(
+          aCaseAccessResponse(
             crn = "A123456",
             restricted = true,
             excluded = false,
@@ -1220,7 +1219,7 @@ class ComCaseloadSearchServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(
-          aUserAccessResponse(
+          aCaseAccessResponse(
             crn = "A123456",
             restricted = false,
             excluded = true,
@@ -1263,7 +1262,7 @@ class ComCaseloadSearchServiceTest {
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(
-          aUserAccessResponse(
+          aCaseAccessResponse(
             crn = "A123456",
             restricted = false,
             excluded = true,
@@ -1311,7 +1310,7 @@ class ComCaseloadSearchServiceTest {
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
-        listOf(aUserAccessResponse("A123456", excluded = false, restricted = true)),
+        listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),
       )
 
       val result = service.searchForOffenderOnProbationUserCaseload(request)
@@ -1331,7 +1330,7 @@ class ComCaseloadSearchServiceTest {
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(timeServedLicence))
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.TIME_SERVED)))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
-        listOf(aUserAccessResponse("A123456", excluded = false, restricted = true)),
+        listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),
       )
 
       val result = service.searchForOffenderOnProbationUserCaseload(request)
@@ -1350,7 +1349,7 @@ class ComCaseloadSearchServiceTest {
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
-        listOf(aUserAccessResponse("A123456", excluded = true, restricted = false)),
+        listOf(aCaseAccessResponse("A123456", excluded = true, restricted = false)),
       )
 
       val result = service.searchForOffenderOnProbationUserCaseload(request)
@@ -1369,15 +1368,11 @@ class ComCaseloadSearchServiceTest {
     val clock: Clock = Clock.fixed(Instant.parse("2021-01-01T00:00:00Z"), ZoneId.systemDefault())
   }
 
-  private fun aUserAccessResponse(crn: String, excluded: Boolean, restricted: Boolean, exclusionMessage: String? = null, restrictedMessage: String? = null): UserAccessResponse = UserAccessResponse(
-    access = listOf(
-      CaseAccessResponse(
-        crn = crn,
-        userExcluded = excluded,
-        userRestricted = restricted,
-        exclusionMessage = exclusionMessage,
-        restrictionMessage = restrictedMessage,
-      ),
-    ),
+  private fun aCaseAccessResponse(crn: String, excluded: Boolean, restricted: Boolean, exclusionMessage: String? = null, restrictedMessage: String? = null) = CaseAccessResponse(
+    crn = crn,
+    userExcluded = excluded,
+    userRestricted = restricted,
+    exclusionMessage = exclusionMessage,
+    restrictionMessage = restrictedMessage,
   )
 }

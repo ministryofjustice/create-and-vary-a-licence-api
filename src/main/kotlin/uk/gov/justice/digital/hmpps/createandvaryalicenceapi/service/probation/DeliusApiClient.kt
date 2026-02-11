@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.SearchQueryRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.UserAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.coerce404ToEmptyOrThrow
@@ -174,14 +175,15 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .toBodilessEntity()
     .block() ?: error("Unexpected response while assigning delius role for user: $username")
 
-  fun getCheckUserAccess(username: String, crns: List<String>, batchSize: Int = CHECK_ACCESS_BATCH_SIZE): List<UserAccessResponse> = batchRequests(batchSize, crns) { batch ->
-    deliusApiWebClient
+  fun getCheckUserAccess(username: String, crns: List<String>, batchSize: Int = CHECK_ACCESS_BATCH_SIZE): List<CaseAccessResponse> = batchRequests(batchSize, crns) { batch ->
+    val response = deliusApiWebClient
       .post()
       .uri("/users/$username/access")
       .bodyValue(batch)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono(typeReference<List<UserAccessResponse>>())
+      .bodyToMono(typeReference<UserAccessResponse>())
       .block() ?: error("Unexpected null response from Delius check user access for user: $username")
+    response.access
   }
 }

@@ -1062,7 +1062,7 @@ class DeliusMockServer : WireMockServer(8093) {
 
   fun stubGetCheckUserAccess(response: String? = null) {
     // language=json
-    val accessJson = response ?: """[
+    val accessJson = response ?: """
       {
         "access": [
           {
@@ -1117,7 +1117,6 @@ class DeliusMockServer : WireMockServer(8093) {
           }
         ]
       }
-    ]
     """.trimIndent()
     stubFor(
       post(urlPathMatching("/users/.+/access"))
