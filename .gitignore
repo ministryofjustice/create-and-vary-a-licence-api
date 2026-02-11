@@ -72,3 +72,7 @@ ecr.repo
 
 #Helm
 **/Chart.lock
+
+# smoke tests
+cvl-smoke-test-secrets
+node_modules/
