@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import jakarta.validation.constraints.Size
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,54 +25,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSear
 @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
 @Tag(name = Tags.ANCILLARY)
 class AddressSearchController(private val addressSearchService: AddressSearchService) {
-
-  @Deprecated("Use POST /address/search/by/text/ with request body instead")
-  @GetMapping("/address/search/by/text/{searchQuery}")
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Searches for addresses that match the given search text",
-    description = "Searches for addresses that match the given search text",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returns addresses matching the given search text",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = AddressSearchResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun searchForAddresses(
-    @Size(min = 1, max = 100, message = "Search query must be more than 0 and no more than 100")
-    @PathVariable(name = "searchQuery")
-    searchQuery: String,
-  ): List<AddressSearchResponse> = addressSearchService.searchForAddressesByText(searchQuery)
 
   @PostMapping("/address/search/by/text/")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
