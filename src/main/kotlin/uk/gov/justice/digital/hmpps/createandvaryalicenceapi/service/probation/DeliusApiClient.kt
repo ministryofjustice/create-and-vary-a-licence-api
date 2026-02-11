@@ -181,8 +181,8 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     username: String,
     crns: List<String>,
     batchSize: Int = CHECK_ACCESS_BATCH_SIZE,
-  ): List<UserAccessResponse> = batchRequests(batchSize, crns) { batch ->
-    val response = deliusApiWebClientdeliusApiWebClient
+  ): List<CaseAccessResponse> = batchRequests(batchSize, crns) { batch ->
+    val response = deliusApiWebClient
       .post()
       .uri("/users/$username/access")
       .bodyValue(batch)
