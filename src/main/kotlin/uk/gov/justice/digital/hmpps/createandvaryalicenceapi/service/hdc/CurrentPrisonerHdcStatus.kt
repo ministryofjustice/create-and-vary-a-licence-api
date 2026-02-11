@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc
 
 data class CurrentPrisonerHdcStatus(
   override val bookingId: Long,

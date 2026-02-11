@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.currentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 
 class CurrentPrisonerHdcStatusTest {
   @Test

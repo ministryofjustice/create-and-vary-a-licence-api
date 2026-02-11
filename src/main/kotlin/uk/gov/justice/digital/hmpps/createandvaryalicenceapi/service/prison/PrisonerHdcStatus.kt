@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatusHolder
+
 data class PrisonerHdcStatus(
   val approvalStatus: String? = null,
   val approvalStatusDate: String? = null,

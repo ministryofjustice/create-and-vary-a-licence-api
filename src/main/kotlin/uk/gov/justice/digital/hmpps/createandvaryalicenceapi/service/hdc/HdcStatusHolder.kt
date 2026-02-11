@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc
 
 interface HdcStatusHolder {
   val bookingId: Long?

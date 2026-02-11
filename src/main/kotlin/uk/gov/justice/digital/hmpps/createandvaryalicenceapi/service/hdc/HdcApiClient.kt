@@ -5,7 +5,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.propagateAny404
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
