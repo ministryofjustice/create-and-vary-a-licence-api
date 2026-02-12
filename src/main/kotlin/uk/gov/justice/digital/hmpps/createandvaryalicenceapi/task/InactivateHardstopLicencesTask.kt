@@ -14,7 +14,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import java.time.LocalDateTime
 
 /**
- * Scheduled task to ensure cache is refreshed at regular intervals.
+ * Scheduled task to check if hard stop licences that have been moved out of hard stop are
+ * still not in the hard stop period a number of hours later, if not, then deactivate them.
  */
 @Component
 class InactivateHardstopLicencesTask(
