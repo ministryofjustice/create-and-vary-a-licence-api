@@ -365,8 +365,8 @@ class EligibilityServiceTest {
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("is approved for HDC")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.crdIneligibilityReasons).containsExactly("is expected to be released on HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is expected to be released on HDC")
       assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
       assertThat(result.eligibleKind).isNull()
     }
@@ -700,8 +700,8 @@ class EligibilityServiceTest {
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date", "is approved for HDC")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("is approved for HDC")
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date", "is expected to be released on HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("is expected to be released on HDC")
       assertThat(result.eligibleKind).isNull()
     }
   }
@@ -721,8 +721,8 @@ class EligibilityServiceTest {
 
       assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("is approved for HDC")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.crdIneligibilityReasons).containsExactly("is expected to be released on HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is expected to be released on HDC")
       assertThat(result.hdcIneligibilityReasons).isEmpty()
       assertThat(result.eligibleKind).isEqualTo(HDC)
     }
@@ -733,8 +733,8 @@ class EligibilityServiceTest {
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date", "is approved for HDC")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date", "is expected to be released on HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is expected to be released on HDC")
       assertThat(result.hdcIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.eligibleKind).isNull()
     }
@@ -745,8 +745,8 @@ class EligibilityServiceTest {
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("is approved for HDC")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.crdIneligibilityReasons).containsExactly("is expected to be released on HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is expected to be released on HDC")
       assertThat(result.hdcIneligibilityReasons).containsExactly("has no home detention curfew actual date")
       assertThat(result.eligibleKind).isNull()
     }
@@ -757,8 +757,8 @@ class EligibilityServiceTest {
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("is approved for HDC")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is approved for HDC")
+      assertThat(result.crdIneligibilityReasons).containsExactly("is expected to be released on HDC")
+      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date", "is expected to be released on HDC")
       assertThat(result.hdcIneligibilityReasons).containsExactly("has CRD fewer than 10 days in the future")
       assertThat(result.eligibleKind).isNull()
     }
@@ -779,7 +779,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.hdcIneligibilityReasons).containsExactly("is not approved for HDC")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("is not expected to be released on HDC")
       assertThat(result.eligibleKind).isNull()
     }
   }
