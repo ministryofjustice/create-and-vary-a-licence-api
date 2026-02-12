@@ -12,19 +12,18 @@ import java.time.LocalDateTime
 
 enum class PotentialHardstopCaseStatus {
   PENDING,
-  PROCESSING,
   PROCESSED,
 }
 
 @Entity
-@Table(name = "potential_hardstop_cases")
+@Table(name = "potential_hardstop_case")
 class PotentialHardstopCase(
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REFRESH])
   @JoinColumn(name = "licence_id", nullable = false)
   val licence: Licence,
 
   @Enumerated(EnumType.STRING)
-  val status: PotentialHardstopCaseStatus = PotentialHardstopCaseStatus.PENDING,
+  var status: PotentialHardstopCaseStatus = PotentialHardstopCaseStatus.PENDING,
 
   var dateCreated: LocalDateTime = LocalDateTime.now(),
 
