@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
@@ -45,20 +46,19 @@ class SentenceDatesChangedHandlerTest {
 
   @BeforeEach
   fun setup() {
-    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
-    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
+    reset(licenceService, prisonService, updateSentenceDateService)
   }
 
   @Test
   fun `should deactivate an active licence if an offender has been resentenced`() {
+    // whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
+    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
     whenever(prisonService.getPrisonerLatestSentenceStartDate(bookingId)).thenReturn(
       licence.licenceStartDate?.plusDays(
         1,
       ),
     )
 
-    // Octopus Flux
-    // Sorry! Our smart tariffs are only available to Octopus Energy customers. Please make the switch before signing up here.
     whenever(
       licenceService.findLicencesMatchingCriteria(
         LicenceQueryObject(
@@ -84,6 +84,7 @@ class SentenceDatesChangedHandlerTest {
 
   @Test
   fun `should deactivate the active licence and any variations if an offender has been recalled`() {
+    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
     val prisonApiPrisonerFuturePrrd = prisonApiPrisoner.copy(
       sentenceDetail = prisonApiPrisoner.sentenceDetail.copy(
         postRecallReleaseDate = LocalDate.now().plusDays(1),
@@ -100,6 +101,37 @@ class SentenceDatesChangedHandlerTest {
       ),
     ).thenReturn(listOf(licence))
 
+    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisonerFuturePrrd)
+
     sentenceDatesChangedHandler.handleEvent(message)
+
+    verify(licenceService).deactivateLicenceAndVariations(
+      licence.licenceId,
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
+    )
   }
+
+  // @Test
+  // fun `should update the sentence dates on any non active licence`() {
+  //   whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
+  //   val prisonApiPrisonerFuturePrrd = prisonApiPrisoner.copy(
+  //     sentenceDetail = prisonApiPrisoner.sentenceDetail.copy(
+  //       postRecallReleaseDate = LocalDate.now().plusDays(1),
+  //     ),
+  //   )
+  //   whenever(
+  //     licenceService.findLicencesMatchingCriteria(
+  //       LicenceQueryObject(
+  //         nomsIds = listOf(nomisId),
+  //         statusCodes = listOf(
+  //           ACTIVE,
+  //         ),
+  //       ),
+  //     ),
+  //   ).thenReturn(listOf(licence))
+  //
+  //   whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisonerFuturePrrd)
+  //
+  //   sentenceDatesChangedHandler.handleEvent(message)
+  // }
 }
