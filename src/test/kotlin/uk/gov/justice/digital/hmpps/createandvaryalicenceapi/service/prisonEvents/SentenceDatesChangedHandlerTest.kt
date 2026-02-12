@@ -51,7 +51,7 @@ class SentenceDatesChangedHandlerTest {
 
   @Test
   fun `should deactivate an active licence if an offender has been resentenced`() {
-    // whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
+    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
     whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
     whenever(prisonService.getPrisonerLatestSentenceStartDate(bookingId)).thenReturn(
       licence.licenceStartDate?.plusDays(
