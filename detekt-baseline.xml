@@ -101,7 +101,7 @@
     <ID>NestedBlockDepth:UploadFileConditionsService.kt$UploadFileConditionsService$fun getThumbnailForImages( entityLicence: Licence, licence: LicenceModel, )</ID>
     <ID>ReturnCount:AllRepositoryUnproxyAspect.kt$AllRepositoryUnproxyAspect$fun unProxy(returnedObject: Any?): Any?</ID>
     <ID>ReturnCount:ComAllocatedHandler.kt$ComAllocatedHandler$fun isValidOffenderManager(offenderManager: OffenderManager?, crn: String): Boolean</ID>
-    <ID>ReturnCount:ComCaseloadSearchService.kt$ComCaseloadSearchService$private fun hasPastReleaseDateAndNotEligible(releaseDate: LocalDate?, licence: Licence?): Boolean</ID>
+    <ID>ReturnCount:ComCaseloadSearchService.kt$ComCaseloadSearchService$private fun isExcludedFromComCreateCaseload(releaseDate: LocalDate?, licence: Licence?): Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun isEligibleIfOnAnExtendedDeterminateSentence(prisoner: PrisonerSearchPrisoner): Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun isRecallCase(prisoner: PrisonerSearchPrisoner): Boolean</ID>
     <ID>ReturnCount:LicenceService.kt$LicenceService$@Transactional fun updateLicenceKind(licence: EntityLicence, updatedKind: LicenceKind): EntityLicence</ID>
@@ -134,6 +134,7 @@
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:WebClientConfiguration.kt$WebClientConfiguration</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
+    <ID>UnusedPrivateProperty:ComCreateCaseloadService.kt$ComCreateCaseloadService$@param:Value("\${feature.toggle.lao.enabled}") private val laoEnabled: Boolean = false</ID>
     <ID>UseCheckOrError:CaProbationCaseloadService.kt$CaProbationCaseloadService$throw IllegalStateException("Multiple active licences found for NOMIS id: ${entry.key}")</ID>
     <ID>UtilityClassWithPublicConstructor:AppointmentMapper.kt$AppointmentMapper</ID>
   </CurrentIssues>

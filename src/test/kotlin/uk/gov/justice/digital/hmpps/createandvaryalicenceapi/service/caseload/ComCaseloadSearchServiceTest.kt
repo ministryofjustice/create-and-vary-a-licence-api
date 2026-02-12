@@ -1358,6 +1358,37 @@ class ComCaseloadSearchServiceTest {
       assertThat(result.inPrisonCount).isEqualTo(0)
       assertThat(result.onProbationCount).isEqualTo(0)
     }
+
+    @Test
+    fun `uses unrestricted case access object when laoEnabled is false so is not a LAO`() {
+      service = ComCaseloadSearchService(
+        licenceRepository,
+        deliusApiClient,
+        prisonerSearchApiClient,
+        releaseDateService,
+        clock,
+        releaseDateLabelFactory,
+        cvlRecordService,
+        false,
+      )
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).hasSize(1)
+      assertThat(result.results.first().isLao).isFalse()
+    }
+
+    @Test
+    fun `uses unrestricted case access object when case access record is missing so is not a LAO`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(emptyList())
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).hasSize(1)
+      assertThat(result.results.first().isLao).isFalse()
+    }
   }
 
   private companion object {

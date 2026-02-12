@@ -878,15 +878,7 @@ fun CaseloadResult.transformToUnstartedRecord(
   isRestricted: Boolean,
 ): ModelFoundProbationRecord {
   if (isExcluded || isRestricted) {
-    return ModelFoundProbationRecord(
-      kind = kind,
-      name = "Access restricted on NDelius",
-      crn = crn,
-      comName = "Restricted",
-      probationPractitioner = ProbationPractitioner.laoProbationPractitioner(),
-      isOnProbation = false,
-      isLao = true,
-    )
+    return ModelFoundProbationRecord.restrictedCase(kind, crn, false)
   }
   val com = if (staff.unallocated == true) null else staff
   val probationPractitioner = if (staff.unallocated == true) {

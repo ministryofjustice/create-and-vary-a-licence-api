@@ -438,40 +438,30 @@ class ComIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ComSearchResponse::class.java)
+
+    resultObject.expectStatus().isOk
+    resultObject.expectHeader().contentType(MediaType.APPLICATION_JSON)
+
+    val searchResult = resultObject.expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody
 
-    val resultsList = resultObject?.results
-    val offender = resultsList?.first()
-    val inPrisonCount = resultObject?.inPrisonCount
-    val onProbationCount = resultObject?.onProbationCount
+    assertThat(searchResult).isNotNull
 
-    assertThat(resultsList?.size).isEqualTo(2)
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it?.name,
-          it?.crn,
-          it?.probationPractitioner?.name,
-          it?.probationPractitioner?.staffCode,
-          it?.releaseDate,
-          it?.isOnProbation,
-          it?.isLao,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Access restricted on NDelius",
-          "CRN1",
-          "Restricted",
-          "Restricted",
-          null,
-          false,
-          true,
-        ),
-      )
+    val resultsList = searchResult!!.results
+    val inPrisonCount = searchResult.inPrisonCount
+    val onProbationCount = searchResult.onProbationCount
+
+    assertThat(resultsList.size).isEqualTo(2)
+
+    with(resultsList.first()) {
+      assertThat(name).isEqualTo("Access restricted on NDelius")
+      assertThat(crn).isEqualTo("CRN1")
+      assertThat(probationPractitioner.name).isEqualTo("Restricted")
+      assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+      assertThat(releaseDate).isNull()
+      assertThat(isOnProbation).isFalse()
+      assertThat(isLao).isTrue()
+    }
 
     assertThat(inPrisonCount).isEqualTo(2)
     assertThat(onProbationCount).isEqualTo(0)
@@ -516,40 +506,30 @@ class ComIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ComSearchResponse::class.java)
+
+    resultObject.expectStatus().isOk
+    resultObject.expectHeader().contentType(MediaType.APPLICATION_JSON)
+
+    val searchResult = resultObject.expectBody(ComSearchResponse::class.java)
       .returnResult().responseBody
 
-    val resultsList = resultObject?.results
-    val offender = resultsList?.first()
-    val inPrisonCount = resultObject?.inPrisonCount
-    val onProbationCount = resultObject?.onProbationCount
+    assertThat(searchResult).isNotNull
 
-    assertThat(resultsList?.size).isEqualTo(2)
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it?.name,
-          it?.crn,
-          it?.probationPractitioner?.name,
-          it?.probationPractitioner?.staffCode,
-          it?.releaseDate,
-          it?.isOnProbation,
-          it?.isLao,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Access restricted on NDelius",
-          "CRN1",
-          "Restricted",
-          "Restricted",
-          null,
-          false,
-          true,
-        ),
-      )
+    val resultsList = searchResult!!.results
+    val inPrisonCount = searchResult.inPrisonCount
+    val onProbationCount = searchResult.onProbationCount
+
+    assertThat(resultsList.size).isEqualTo(2)
+
+    with(resultsList.first()) {
+      assertThat(name).isEqualTo("Access restricted on NDelius")
+      assertThat(crn).isEqualTo("CRN1")
+      assertThat(probationPractitioner.name).isEqualTo("Restricted")
+      assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+      assertThat(releaseDate).isNull()
+      assertThat(isOnProbation).isFalse()
+      assertThat(isLao).isTrue()
+    }
 
     assertThat(inPrisonCount).isEqualTo(2)
     assertThat(onProbationCount).isEqualTo(0)
