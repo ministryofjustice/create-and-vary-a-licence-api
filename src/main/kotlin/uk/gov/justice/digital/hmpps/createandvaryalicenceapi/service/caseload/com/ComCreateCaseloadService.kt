@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
@@ -41,7 +39,6 @@ class ComCreateCaseloadService(
 ) {
   companion object {
     private val COM_CREATE_LICENCE_STATUSES = listOf(ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT)
-    private val log = LoggerFactory.getLogger(this::class.java)
   }
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCreateCase> {
@@ -73,12 +70,7 @@ class ComCreateCaseloadService(
       cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
     val cases = createComCases(eligibleCases, cvlRecords)
-    val casesFilteredByReleaseDateOrTimeServed = filterFutureOrTimeservedReleases(cases)
-
-    val filteredCases = when {
-      laoEnabled -> filterForLaoCases(cases)
-      else -> casesFilteredByReleaseDateOrTimeServed
-    }
+    val filteredCases = filterFutureOrTimeservedReleases(cases)
 
     return transformToCreateCaseload(filteredCases)
   }
@@ -209,33 +201,6 @@ class ComCreateCaseloadService(
       )
     }
   }.sortedWith(compareBy<ComCreateCase> { it.releaseDate }.thenBy { it.name })
-
-  private fun filterForLaoCases(cases: List<Case>): List<Case> {
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val crns = cases.mapNotNull { it.comLicenceCaseDto.crn }
-
-    val caseAccessList = deliusApiClient.getCheckUserAccess(username, crns).flatMap { it.access }.associateBy { it.crn }
-
-    return cases.filter { case ->
-      val caseAccess = caseAccessList[case.comLicenceCaseDto.crn]
-      when {
-        caseAccess == null -> {
-          log.info("No case access record found for CRN ${case.comLicenceCaseDto.crn}")
-          false
-        }
-        caseAccess.userExcluded -> {
-          log.info("User $username is excluded from accessing CRN ${case.comLicenceCaseDto.crn}")
-          false
-        }
-        caseAccess.userRestricted -> {
-          log.info("User $username is restricted from accessing CRN ${case.comLicenceCaseDto.crn}")
-          false
-        }
-        else -> true
-      }
-    }
-  }
 
   private data class Case(
     val probationPractitioner: ProbationPractitioner,

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
@@ -11,30 +12,36 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.caseloadResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCaseloadSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -58,7 +65,7 @@ class ComCaseloadSearchServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val releaseDateLabelFactory = ReleaseDateLabelFactory(workingDaysService)
 
-  private val service = ComCaseloadSearchService(
+  private var service = ComCaseloadSearchService(
     licenceRepository,
     deliusApiClient,
     prisonerSearchApiClient,
@@ -70,6 +77,13 @@ class ComCaseloadSearchServiceTest {
 
   @BeforeEach
   fun reset() {
+    val authentication = mock<Authentication>()
+    val securityContext = mock<SecurityContext>()
+
+    whenever(authentication.name).thenReturn(aCom.username)
+    whenever(securityContext.authentication).thenReturn(authentication)
+    SecurityContextHolder.setContext(securityContext)
+
     reset(
       licenceRepository,
       deliusApiClient,
@@ -1009,10 +1023,387 @@ class ComCaseloadSearchServiceTest {
     }
   }
 
+  @Test
+  fun `filter out non-time-served licences with past release dates`() {
+    service = ComCaseloadSearchService(
+      licenceRepository,
+      deliusApiClient,
+      prisonerSearchApiClient,
+      releaseDateService,
+      clock,
+      releaseDateLabelFactory,
+      cvlRecordService,
+      false,
+    )
+
+    val licence = aLicenceEntity.copy(
+      licenceStartDate = LocalDate.now(clock).minusDays(2),
+      statusCode = LicenceStatus.IN_PROGRESS,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+
+    val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+    assertThat(result.results).isEmpty()
+    assertThat(result.inPrisonCount).isEqualTo(0)
+    assertThat(result.onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `filter out unstarted licences with past release dates`() {
+    service = ComCaseloadSearchService(
+      licenceRepository,
+      deliusApiClient,
+      prisonerSearchApiClient,
+      releaseDateService,
+      clock,
+      releaseDateLabelFactory,
+      cvlRecordService,
+      false,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+      listOf(
+        aCvlRecord(
+          kind = LicenceKind.CRD,
+          licenceStartDate = LocalDate.now(clock).minusDays(2),
+        ),
+      ),
+    )
+
+    val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+    assertThat(result.results).isEmpty()
+    assertThat(result.inPrisonCount).isEqualTo(0)
+    assertThat(result.onProbationCount).isEqualTo(0)
+  }
+
+  @Nested
+  inner class `LAO offender search` {
+    @BeforeEach
+    fun setup() {
+      service = ComCaseloadSearchService(
+        licenceRepository,
+        deliusApiClient,
+        prisonerSearchApiClient,
+        releaseDateService,
+        clock,
+        releaseDateLabelFactory,
+        cvlRecordService,
+        true,
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(
+        cvlRecordService.getCvlRecords(
+          eq(listOf(aPrisonerSearchResult)),
+        ),
+      ).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    }
+
+    @Test
+    fun `does not check Delius user access when laoEnabled is false`() {
+      service = ComCaseloadSearchService(
+        licenceRepository,
+        deliusApiClient,
+        prisonerSearchApiClient,
+        releaseDateService,
+        clock,
+        releaseDateLabelFactory,
+        cvlRecordService,
+        false,
+      )
+
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+
+      service.searchForOffenderOnProbationUserCaseload(request)
+
+      verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
+    }
+
+    @Test
+    fun `search for LAO offender who is restricted without a licence`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((emptyList()))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(
+            crn = "A123456",
+            restricted = true,
+            excluded = false,
+            restrictedMessage = "This is a restriction message",
+          ),
+        ),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results.size).isEqualTo(1)
+      assertThat(result.inPrisonCount).isEqualTo(1)
+      assertThat(result.onProbationCount).isEqualTo(0)
+
+      assertThat(result.results.first()).extracting {
+        tuple(
+          it.name,
+          it.crn,
+          it.probationPractitioner.name,
+          it.probationPractitioner.staffCode,
+          it.releaseDate,
+          it.isOnProbation,
+          it.isLao,
+        )
+      }.isEqualTo(
+        tuple(
+          "Access restricted on NDelius",
+          "A123456",
+          "Restricted",
+          "Restricted",
+          null,
+          false,
+          true,
+        ),
+      )
+    }
+
+    @Test
+    fun `search for LAO offender who is restricted with a licence`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(
+            crn = "A123456",
+            restricted = true,
+            excluded = false,
+            restrictedMessage = "This is a restriction message",
+          ),
+        ),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results.size).isEqualTo(1)
+      assertThat(result.inPrisonCount).isEqualTo(1)
+      assertThat(result.onProbationCount).isEqualTo(0)
+
+      assertThat(result.results.first()).extracting {
+        tuple(
+          it.name,
+          it.crn,
+          it.probationPractitioner.name,
+          it.probationPractitioner.staffCode,
+          it.releaseDate,
+          it.isOnProbation,
+          it.isLao,
+        )
+      }.isEqualTo(
+        tuple(
+          "Access restricted on NDelius",
+          "A123456",
+          "Restricted",
+          "Restricted",
+          null,
+          false,
+          true,
+        ),
+      )
+    }
+
+    @Test
+    fun `search for LAO offender who is excluded without a licence`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((emptyList()))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(
+            crn = "A123456",
+            restricted = false,
+            excluded = true,
+            exclusionMessage = "This is an exclusion message",
+          ),
+        ),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results.size).isEqualTo(1)
+      assertThat(result.inPrisonCount).isEqualTo(1)
+      assertThat(result.onProbationCount).isEqualTo(0)
+
+      assertThat(result.results.first()).extracting {
+        tuple(
+          it.name,
+          it.crn,
+          it.probationPractitioner.name,
+          it.probationPractitioner.staffCode,
+          it.releaseDate,
+          it.isOnProbation,
+          it.isLao,
+        )
+      }.isEqualTo(
+        tuple(
+          "Access restricted on NDelius",
+          "A123456",
+          "Restricted",
+          "Restricted",
+          null,
+          false,
+          true,
+        ),
+      )
+    }
+
+    @Test
+    fun `search for LAO offender who is excluded with a licence`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(
+            crn = "A123456",
+            restricted = false,
+            excluded = true,
+            exclusionMessage = "This is a restriction message",
+          ),
+        ),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results.size).isEqualTo(1)
+      assertThat(result.inPrisonCount).isEqualTo(1)
+      assertThat(result.onProbationCount).isEqualTo(0)
+
+      assertThat(result.results.first()).extracting {
+        tuple(
+          it.name,
+          it.crn,
+          it.probationPractitioner.name,
+          it.probationPractitioner.staffCode,
+          it.releaseDate,
+          it.isOnProbation,
+          it.isLao,
+        )
+      }.isEqualTo(
+        tuple(
+          "Access restricted on NDelius",
+          "A123456",
+          "Restricted",
+          "Restricted",
+          null,
+          false,
+          true,
+        ),
+      )
+    }
+
+    @Test
+    fun `filter out LAO restricted cases with past release dates for non-time-served licences`() {
+      val licence = aLicenceEntity.copy(
+        licenceStartDate = LocalDate.now(clock).minusDays(2),
+        statusCode = LicenceStatus.IN_PROGRESS,
+      )
+
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).isEmpty()
+      assertThat(result.inPrisonCount).isEqualTo(0)
+      assertThat(result.onProbationCount).isEqualTo(0)
+    }
+
+    @Test
+    fun `shows LAO restricted cases with past release dates for time-served licences`() {
+      val timeServedLicence = createTimeServedLicence().copy(
+        statusCode = LicenceStatus.IN_PROGRESS,
+        licenceStartDate = LocalDate.now(clock).minusDays(2),
+      )
+
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(timeServedLicence))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.TIME_SERVED)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results.size).isEqualTo(1)
+      assertThat(result.results.first().isLao).isTrue()
+    }
+
+    @Test
+    fun `filter out LAO excluded cases with past release dates for non-time-served licences`() {
+      val licence = aLicenceEntity.copy(
+        licenceStartDate = LocalDate.now(clock).minusDays(2),
+        statusCode = LicenceStatus.IN_PROGRESS,
+      )
+
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aCaseAccessResponse("A123456", excluded = true, restricted = false)),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).isEmpty()
+      assertThat(result.inPrisonCount).isEqualTo(0)
+      assertThat(result.onProbationCount).isEqualTo(0)
+    }
+
+    @Test
+    fun `uses unrestricted case access object when laoEnabled is false so is not a LAO`() {
+      service = ComCaseloadSearchService(
+        licenceRepository,
+        deliusApiClient,
+        prisonerSearchApiClient,
+        releaseDateService,
+        clock,
+        releaseDateLabelFactory,
+        cvlRecordService,
+        false,
+      )
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).hasSize(1)
+      assertThat(result.results.first().isLao).isFalse()
+    }
+
+    @Test
+    fun `uses unrestricted case access object when case access record is missing so is not a LAO`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(emptyList())
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).hasSize(1)
+      assertThat(result.results.first().isLao).isFalse()
+    }
+  }
+
   private companion object {
     val aLicenceEntity = createCrdLicence()
-    val aPrisonerSearchResult = TestData.prisonerSearchResult()
+    val aPrisonerSearchResult = prisonerSearchResult()
+    val aCom = communityOffenderManager()
     val request = ProbationUserSearchRequest("Test", 2000)
     val clock: Clock = Clock.fixed(Instant.parse("2021-01-01T00:00:00Z"), ZoneId.systemDefault())
   }
+
+  private fun aCaseAccessResponse(crn: String, excluded: Boolean, restricted: Boolean, exclusionMessage: String? = null, restrictedMessage: String? = null) = CaseAccessResponse(
+    crn = crn,
+    userExcluded = excluded,
+    userRestricted = restricted,
+    exclusionMessage = exclusionMessage,
+    restrictionMessage = restrictedMessage,
+  )
 }

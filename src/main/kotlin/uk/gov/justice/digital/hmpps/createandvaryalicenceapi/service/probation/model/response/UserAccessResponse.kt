@@ -10,4 +10,12 @@ data class CaseAccessResponse(
   val userRestricted: Boolean,
   val exclusionMessage: String? = null,
   val restrictionMessage: String? = null,
-)
+) {
+  companion object {
+    val unrestricted = CaseAccessResponse(
+      crn = "",
+      userExcluded = false,
+      userRestricted = false,
+    )
+  }
+}
