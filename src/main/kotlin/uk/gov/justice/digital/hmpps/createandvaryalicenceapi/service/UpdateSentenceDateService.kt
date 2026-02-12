@@ -235,6 +235,8 @@ class UpdateSentenceDateService(
     private val log = LoggerFactory.getLogger(this::class.java)
     const val LICENCE_DEACTIVATION_HARD_STOP =
       "Licence automatically inactivated as licence is no longer in hard stop period"
+    const val LICENCE_DEACTIVATION_HARD_STOP_TASK =
+      "Licence automatically inactivated as licence is still in hard stop period"
   }
 
   private enum class HardstopChangeType {
