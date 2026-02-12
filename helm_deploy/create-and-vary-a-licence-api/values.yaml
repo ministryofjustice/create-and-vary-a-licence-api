@@ -44,6 +44,7 @@ generic-service:
     TIME_SERVED_PRISONS: "BNI"
     HDC_ENABLED: false
     LAO_ENABLED: false
+    USE_CURRENT_HDC_STATUS: false
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:

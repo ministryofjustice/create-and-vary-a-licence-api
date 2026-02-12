@@ -171,6 +171,7 @@ feature:
   toggle:
     hdc:
       enabled: ${HDC_ENABLED}
+      useCurrentStatus: ${USE_CURRENT_HDC_STATUS}
     timeServed:
       enabled: ${FEATURE_TOGGLE_TIMESERVED_ENABLED}
       prisons: ${TIME_SERVED_PRISONS}

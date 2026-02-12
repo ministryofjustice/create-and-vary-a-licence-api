@@ -26,11 +26,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.currentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
@@ -294,8 +296,8 @@ class HdcServiceTest {
 
     @Test
     fun isApproved() {
-      assertThat(statuses.isApprovedForHdc(1L)).isTrue
-      assertThat(statuses.isApprovedForHdc(2L)).isFalse
+      assertThat(statuses.isExpectedHdcRelease(1L)).isTrue
+      assertThat(statuses.isExpectedHdcRelease(2L)).isFalse
     }
   }
 
@@ -454,6 +456,45 @@ class HdcServiceTest {
           tuple(SATURDAY, LocalTime.of(21, 0), SUNDAY, LocalTime.of(9, 0)),
           tuple(SUNDAY, LocalTime.of(21, 0), MONDAY, LocalTime.of(9, 0)),
         )
+    }
+  }
+
+  @Nested
+  inner class `using Current HDC Status endpoint` {
+    private val service =
+      HdcService(
+        hdcApiClient,
+        prisonApiClient,
+        licenceRepository,
+        staffRepository,
+        auditService,
+        useCurrentHdcStatus = true,
+      )
+
+    @Test
+    fun `getHdcStatuses sets approvedIds to those that are potential HDC releases`() {
+      whenever(hdcApiClient.getCurrentHdcStatuses(listOf(1L, 3L, 4L, 5L))).thenReturn(
+        listOf(
+          currentPrisonerHdcStatus(bookingId = 1L, currentHdcStatus = HdcStatus.APPROVED),
+          // Didn't request 2L as missing HDCED
+          // Missing data for 3L
+          currentPrisonerHdcStatus(bookingId = 4L, currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE),
+          currentPrisonerHdcStatus(bookingId = 5L, currentHdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
+        ),
+      )
+
+      val details = listOf(
+        mapOf("bookingId" to 1L, "hdced" to LocalDate.now()),
+        mapOf("bookingId" to 2L, "hdced" to null),
+        mapOf("bookingId" to 3L, "hdced" to LocalDate.now()),
+        mapOf("bookingId" to 4L, "hdced" to LocalDate.now()),
+        mapOf("bookingId" to 5L, "hdced" to LocalDate.now()),
+      )
+
+      val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
+
+      assertThat(result).isNotNull
+      assertThat(result.approvedIds).containsExactly(1L, 5L)
     }
   }
 
