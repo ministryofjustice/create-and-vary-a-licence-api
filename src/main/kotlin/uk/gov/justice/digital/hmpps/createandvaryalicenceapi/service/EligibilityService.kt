@@ -30,11 +30,11 @@ class EligibilityService(
   fun getEligibilityAssessments(prisoners: List<PrisonerSearchPrisoner>): Map<String, EligibilityAssessment> {
     val hdcStatuses = hdcService.getHdcStatus(prisoners)
     val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
-      val isHdcApproved = hdcStatuses.isApprovedForHdc(prisoner.bookingId!!.toLong())
+      val isExpectedHdcRelease = hdcStatuses.isExpectedHdcRelease(prisoner.bookingId!!.toLong())
       val genericIneligibilityReasons = getGenericIneligibilityReasons(prisoner)
-      val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner, isHdcApproved)
-      val prrdIneligibilityReasons = getPrrdIneligibilityReasons(prisoner, isHdcApproved)
-      val hdcIneligibilityReasons = getHdcIneligibilityReasons(prisoner, isHdcApproved)
+      val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner, isExpectedHdcRelease)
+      val prrdIneligibilityReasons = getPrrdIneligibilityReasons(prisoner, isExpectedHdcRelease)
+      val hdcIneligibilityReasons = getHdcIneligibilityReasons(prisoner, isExpectedHdcRelease)
 
       return@map prisoner.prisonerNumber to EligibilityAssessment(
         genericIneligibilityReasons,
@@ -61,37 +61,37 @@ class EligibilityService(
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
   }
 
-  fun getCrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isHdcApproved: Boolean): List<String> {
+  fun getCrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isExpectedHdcRelease: Boolean): List<String> {
     val eligibilityCriteria = listOf(
       hasConditionalReleaseDate(prisoner) to "has no conditional release date",
       hasCrdTodayOrInTheFutureOrIsTimeServed(prisoner) to "CRD in the past and not eligible for time served",
       isEligibleIfOnAnExtendedDeterminateSentence(prisoner) to "is on non-eligible EDS",
       !isRecallCase(prisoner) to "is a recall case",
-      !isHdcApproved to "is approved for HDC",
+      !isExpectedHdcRelease to "is expected to be released on HDC",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
   }
 
-  fun getPrrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isHdcApproved: Boolean): List<String> {
+  fun getPrrdIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isExpectedHdcRelease: Boolean): List<String> {
     val eligibilityCriteria = listOf(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
       !isApSledRelease(prisoner) to "is AP-only being released at SLED",
-      !isHdcApproved to "is approved for HDC",
+      !isExpectedHdcRelease to "is expected to be released on HDC",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
   }
 
-  fun getHdcIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isHdcApproved: Boolean): List<String> {
+  fun getHdcIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isExpectedHdcRelease: Boolean): List<String> {
     if (!hdcEnabled) return listOf("HDC licences not currently supported in CVL")
 
     val eligibilityCriteria = listOf(
       hasConditionalReleaseDate(prisoner) to "has no conditional release date",
       hasHomeDetentionCurfewActualDate(prisoner) to "has no home detention curfew actual date",
       isTenOrMoreDaysToCrd(prisoner) to "has CRD fewer than 10 days in the future",
-      isHdcApproved to "is not approved for HDC",
+      isExpectedHdcRelease to "is not expected to be released on HDC",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
