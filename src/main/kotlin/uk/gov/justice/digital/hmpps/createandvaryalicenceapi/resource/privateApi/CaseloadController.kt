@@ -42,6 +42,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
 
 @Tag(
@@ -755,4 +756,71 @@ class CaseloadController(
     @Valid @RequestBody
     body: ProbationUserSearchRequest,
   ) = comCaseloadSearchService.searchForOffenderOnProbationUserCaseload(body)
+
+  @RestController
+  @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
+  @Tag(name = Tags.COM)
+  class PermissionsController(private val comCreateCaseloadService: ComCreateCaseloadService) {
+
+    @GetMapping("/probation-staff/{crn}/permissions")
+    @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+    @Operation(
+      summary = "Returns the access arrangements for a probation staff member based on the CRN provided.",
+      description = "Returns the access arrangements for a probation staff member based on the CRN provided.",
+      security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    )
+    @ApiResponses(
+      value = [
+        ApiResponse(
+          responseCode = "200",
+          description = "Returns the access arrangements for a probation staff member for a given CRN",
+          content = [
+            Content(
+              mediaType = "application/json",
+              schema = Schema(implementation = CaseAccessDetails::class),
+            ),
+          ],
+        ),
+        ApiResponse(
+          responseCode = "401",
+          description = "Unauthorised, requires a valid Oauth2 token",
+          content = [
+            Content(
+              mediaType = "application/json",
+              schema = Schema(implementation = ErrorResponse::class),
+            ),
+          ],
+        ),
+        ApiResponse(
+          responseCode = "403",
+          description = "Forbidden, requires an appropriate role",
+          content = [
+            Content(
+              mediaType = "application/json",
+              schema = Schema(implementation = ErrorResponse::class),
+            ),
+          ],
+        ),
+        ApiResponse(
+          responseCode = "404",
+          description = "No Case Access restrictions found for that CRN/staff member",
+          content = [
+            Content(
+              mediaType = "application/json",
+              schema = Schema(implementation = ErrorResponse::class),
+            ),
+          ],
+        ),
+      ],
+    )
+    fun getDetailsForExcludedOrRestrictedCase(
+      @PathVariable("crn")
+      @Parameter(
+        name = "crn",
+        description = "The case reference number (CRN) for the person on the licence",
+        example = "A123456",
+      )
+      crn: String,
+    ) = comCreateCaseloadService.getDetailsForExcludedOrRestrictedCase(crn)
+  }
 }
