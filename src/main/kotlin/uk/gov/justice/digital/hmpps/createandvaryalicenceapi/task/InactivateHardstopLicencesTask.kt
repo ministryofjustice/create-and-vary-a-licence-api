@@ -12,6 +12,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.Companion.LICENCE_DEACTIVATION_HARD_STOP_TASK
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.DurationUnit
 
 /**
  * Scheduled task to check if hard stop licences that have been moved out of hard stop are
@@ -26,7 +28,7 @@ class InactivateHardstopLicencesTask(
   companion object {
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
     const val TEN_MINUTES_MS = 10 * 60 * 1000L
-    const val CASE_CREATED_BEFORE_HOURS = 8L
+    val CASE_CREATED_BEFORE = 8.hours
   }
 
   @Scheduled(fixedDelayString = "1h", initialDelayString = "\${random.long($TEN_MINUTES_MS)}")
@@ -34,7 +36,7 @@ class InactivateHardstopLicencesTask(
   fun runTask() {
     log.info("Checking for hard stop licences to be inactivated.")
 
-    val dateCreatedBefore = LocalDateTime.now().minusHours(CASE_CREATED_BEFORE_HOURS)
+    val dateCreatedBefore = LocalDateTime.now().minusHours(CASE_CREATED_BEFORE.toLong(DurationUnit.MILLISECONDS))
     val hardstopCases =
       potentialHardstopCaseRepository.findAllByStatusAndDateCreatedBefore(
         PotentialHardstopCaseStatus.PENDING,
