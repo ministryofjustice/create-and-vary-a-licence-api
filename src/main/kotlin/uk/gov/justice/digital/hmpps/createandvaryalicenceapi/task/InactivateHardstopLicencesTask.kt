@@ -57,7 +57,7 @@ class InactivateHardstopLicencesTask(
   }
 
   private fun inactivateLicencesNotInHardstop(hardstopCases: List<PotentialHardstopCase>) {
-    log.info("Inactivating hard stop licences checking ${hardstopCases.size} cases")
+    log.info("Inactivate hard stop licences task, checking ${hardstopCases.size} cases")
     hardstopCases.forEach { deactivateLicenceIfNotInHardStop(it) }
   }
 
@@ -67,6 +67,8 @@ class InactivateHardstopLicencesTask(
     if (!inHardStop) {
       log.info("inactivating licence: ${licence.id} as it's still not in the hard stop period")
       licenceService.inactivateLicences(listOf(licence), LICENCE_DEACTIVATION_HARD_STOP_TASK)
+    } else {
+      log.info("not inactivating ${licence.id} as it's back in the hard stop period")
     }
 
     potentialHardStopCase.status = PotentialHardstopCaseStatus.PROCESSED
