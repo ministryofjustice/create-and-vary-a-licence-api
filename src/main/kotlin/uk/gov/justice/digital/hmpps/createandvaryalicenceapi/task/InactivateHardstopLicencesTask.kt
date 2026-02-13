@@ -65,7 +65,7 @@ class InactivateHardstopLicencesTask(
     val licence = potentialHardStopCase.licence
     val inHardStop = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind)
     if (!inHardStop) {
-      log.info("inactivating licence: ${licence.id} as it's no longer in the hard stop period")
+      log.info("inactivating licence: ${licence.id} as it's still not in the hard stop period")
       licenceService.inactivateLicences(listOf(licence), LICENCE_DEACTIVATION_HARD_STOP_TASK)
     }
 
