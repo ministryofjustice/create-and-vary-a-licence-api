@@ -192,4 +192,15 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
       .block() ?: error("Unexpected null response from Delius check user access for user: $username")
     response.access
   }
+
+  fun getCheckUserAccessForCRN(
+    username: String,
+    crn: String,
+  ): CaseAccessResponse = deliusApiWebClient
+    .get()
+    .uri("/users/$username/access/$crn")
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono(typeReference<CaseAccessResponse>())
+    .block() ?: error("Unexpected null response while checking user access for user: $username and CRN: $crn")
 }
