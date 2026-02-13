@@ -34,7 +34,7 @@ class SentenceDatesChangedHandler(
       objectMapper.readValue(message, SentenceDatesChangedEvent::class.java)
     } catch (e: JacksonException) {
       log.error("Failed to parse sentence dates change event message", e)
-      return
+      throw e
     }
     val bookingId = event.bookingId
     val nomisId = event.offenderIdDisplay ?: prisonService.searchPrisonersByBookingIds(listOf(bookingId))
