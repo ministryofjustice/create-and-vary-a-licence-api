@@ -1104,6 +1104,10 @@ class ComCaseloadSearchServiceTest {
           eq(listOf(aPrisonerSearchResult)),
         ),
       ).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
+        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+
+      request = ProbationUserSearchRequest("A123456", 2000)
     }
 
     @Test
@@ -1146,27 +1150,15 @@ class ComCaseloadSearchServiceTest {
       assertThat(result.inPrisonCount).isEqualTo(1)
       assertThat(result.onProbationCount).isEqualTo(0)
 
-      assertThat(result.results.first()).extracting {
-        tuple(
-          it.name,
-          it.crn,
-          it.probationPractitioner.name,
-          it.probationPractitioner.staffCode,
-          it.releaseDate,
-          it.isOnProbation,
-          it.isLao,
-        )
-      }.isEqualTo(
-        tuple(
-          "Access restricted on NDelius",
-          "A123456",
-          "Restricted",
-          "Restricted",
-          null,
-          false,
-          true,
-        ),
-      )
+      with(result.results.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crn).isEqualTo("A123456")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDate).isNull()
+        assertThat(isOnProbation).isFalse()
+        assertThat(isLao).isTrue()
+      }
     }
 
     @Test
@@ -1190,27 +1182,15 @@ class ComCaseloadSearchServiceTest {
       assertThat(result.inPrisonCount).isEqualTo(1)
       assertThat(result.onProbationCount).isEqualTo(0)
 
-      assertThat(result.results.first()).extracting {
-        tuple(
-          it.name,
-          it.crn,
-          it.probationPractitioner.name,
-          it.probationPractitioner.staffCode,
-          it.releaseDate,
-          it.isOnProbation,
-          it.isLao,
-        )
-      }.isEqualTo(
-        tuple(
-          "Access restricted on NDelius",
-          "A123456",
-          "Restricted",
-          "Restricted",
-          null,
-          false,
-          true,
-        ),
-      )
+      with(result.results.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crn).isEqualTo("A123456")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDate).isNull()
+        assertThat(isOnProbation).isFalse()
+        assertThat(isLao).isTrue()
+      }
     }
 
     @Test
@@ -1234,27 +1214,15 @@ class ComCaseloadSearchServiceTest {
       assertThat(result.inPrisonCount).isEqualTo(1)
       assertThat(result.onProbationCount).isEqualTo(0)
 
-      assertThat(result.results.first()).extracting {
-        tuple(
-          it.name,
-          it.crn,
-          it.probationPractitioner.name,
-          it.probationPractitioner.staffCode,
-          it.releaseDate,
-          it.isOnProbation,
-          it.isLao,
-        )
-      }.isEqualTo(
-        tuple(
-          "Access restricted on NDelius",
-          "A123456",
-          "Restricted",
-          "Restricted",
-          null,
-          false,
-          true,
-        ),
-      )
+      with(result.results.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crn).isEqualTo("A123456")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDate).isNull()
+        assertThat(isOnProbation).isFalse()
+        assertThat(isLao).isTrue()
+      }
     }
 
     @Test
@@ -1277,27 +1245,15 @@ class ComCaseloadSearchServiceTest {
       assertThat(result.inPrisonCount).isEqualTo(1)
       assertThat(result.onProbationCount).isEqualTo(0)
 
-      assertThat(result.results.first()).extracting {
-        tuple(
-          it.name,
-          it.crn,
-          it.probationPractitioner.name,
-          it.probationPractitioner.staffCode,
-          it.releaseDate,
-          it.isOnProbation,
-          it.isLao,
-        )
-      }.isEqualTo(
-        tuple(
-          "Access restricted on NDelius",
-          "A123456",
-          "Restricted",
-          "Restricted",
-          null,
-          false,
-          true,
-        ),
-      )
+      with(result.results.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crn).isEqualTo("A123456")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDate).isNull()
+        assertThat(isOnProbation).isFalse()
+        assertThat(isLao).isTrue()
+      }
     }
 
     @Test
@@ -1389,13 +1345,70 @@ class ComCaseloadSearchServiceTest {
       assertThat(result.results).hasSize(1)
       assertThat(result.results.first().isLao).isFalse()
     }
+
+    @Test
+    fun `when searching by CRN, include LAO restricted cases`() {
+      service = ComCaseloadSearchService(
+        licenceRepository,
+        deliusApiClient,
+        prisonerSearchApiClient,
+        releaseDateService,
+        clock,
+        releaseDateLabelFactory,
+        cvlRecordService,
+        true,
+      )
+
+      request = request.copy(query = "A123456")
+
+      whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
+        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity.copy(crn = "A123456")))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).hasSize(1)
+      assertThat(result.results.first().isLao).isTrue()
+      assertThat(result.results.first().name).isEqualTo("Access restricted on NDelius")
+    }
+
+    @Test
+    fun `when a search term other than CRN is used and access is restricted, no record should be returned`() {
+      request = ProbationUserSearchRequest("Test", 2000)
+
+      whenever(deliusApiClient.getTeamManagedOffenders(2000, "Test"))
+        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((emptyList()))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(
+            crn = "A123456",
+            restricted = true,
+            excluded = false,
+            restrictedMessage = "This is a restriction message",
+          ),
+        ),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results.size).isEqualTo(0)
+      assertThat(result.inPrisonCount).isEqualTo(0)
+      assertThat(result.onProbationCount).isEqualTo(0)
+    }
   }
 
   private companion object {
     val aLicenceEntity = createCrdLicence()
     val aPrisonerSearchResult = prisonerSearchResult()
     val aCom = communityOffenderManager()
-    val request = ProbationUserSearchRequest("Test", 2000)
+    var request = ProbationUserSearchRequest("Test", 2000)
     val clock: Clock = Clock.fixed(Instant.parse("2021-01-01T00:00:00Z"), ZoneId.systemDefault())
   }
 

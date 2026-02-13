@@ -409,6 +409,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given an offender is a LAO without a licence, When searching for an offender Then offender should be part of the search results `() {
+    aProbationUserSearchRequest = aProbationUserSearchRequest.copy(query = "A123456")
     val accessResponse = """
       {
         "access": [
@@ -472,6 +473,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Given an offender is a LAO with a licence, When searching for an offender Then offender should be part of the search results `() {
+    aProbationUserSearchRequest = aProbationUserSearchRequest.copy(query = "A123456")
     val accessResponse = """
       {
         "access": [
@@ -535,13 +537,61 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(onProbationCount).isEqualTo(0)
   }
 
+  @Test
+  fun `Given an offender is a LAO without a licence, When searching for an offender without their CRN, The offender should not be part of the search results `() {
+    aProbationUserSearchRequest = aProbationUserSearchRequest.copy(query = "Surname")
+    val accessResponse = """
+      {
+        "access": [
+          {
+            "crn": "CRN1",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          },
+          {
+            "crn": "CRN2",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+    """.trimIndent()
+    deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess(accessResponse)
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
+
+    val resultObject = webTestClient.post()
+      .uri("/caseload/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    resultObject.expectStatus().isOk
+    resultObject.expectHeader().contentType(MediaType.APPLICATION_JSON)
+
+    val searchResult = resultObject.expectBody(ComSearchResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(searchResult).isNotNull
+
+    val resultsList = searchResult!!.results
+
+    assertThat(resultsList.size).isEqualTo(1)
+
+    assertThat(resultsList).filteredOn("crn", "CRN1").isEmpty()
+  }
+
   private companion object {
     val deliusMockServer = DeliusMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
     val govUkMockServer = GovUkMockServer()
 
-    val aProbationUserSearchRequest = ProbationUserSearchRequest(
+    var aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",
       1L,
       listOf(

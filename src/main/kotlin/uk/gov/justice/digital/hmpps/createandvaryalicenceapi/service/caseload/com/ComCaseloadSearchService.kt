@@ -29,7 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse.Companion.unrestricted
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
@@ -65,9 +65,7 @@ class ComCaseloadSearchService(
       cvlRecordService.getCvlRecords(prisonerRecords.values.toList()).associateBy { it.nomisId }
 
     val caseAccessRecords = if (laoEnabled) {
-      val username = SecurityContextHolder.getContext().authentication.name
-      val crns = deliusRecordsToLicences.map { (caseloadResult, _) -> caseloadResult.crn }
-      deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
+      getCaseAccessRecords(deliusRecordsToLicences)
     } else {
       emptyMap()
     }
@@ -77,8 +75,8 @@ class ComCaseloadSearchService(
       val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
       val caseAccessRecord = caseAccessRecords[caseloadResult.crn] ?: unrestricted
       val releaseDate = determineReleaseDate(cvlRecord, licence)
-      createCase(licence, caseloadResult, prisonerRecord, cvlRecord, caseAccessRecord)
-        .takeUnless { isExcludedFromComCreateCaseload(releaseDate, licence) }
+      val case = createCase(licence, caseloadResult, prisonerRecord, cvlRecord, caseAccessRecord)
+      shouldExcludeCase(body.query, cvlRecord, caseAccessRecord, licence, case, releaseDate)
     }
 
     val onProbationCount = searchResults.count { it.isOnProbation == true }
@@ -243,22 +241,47 @@ class ComCaseloadSearchService(
     }
   }
 
+  private fun getCaseAccessRecords(deliusRecordsToLicences: List<Pair<CaseloadResult, Licence?>>): Map<String, CaseAccessResponse> {
+    val username = SecurityContextHolder.getContext().authentication.name
+    val crns = deliusRecordsToLicences.map { (caseloadResult, _) -> caseloadResult.crn }
+    return deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
+  }
+
   private fun determineReleaseDate(cvlRecord: CvlRecord?, licence: Licence?): LocalDate? = when {
     licence != null -> licence.licenceStartDate
     cvlRecord?.isEligible == true -> cvlRecord.licenceStartDate
     else -> null
   }
 
-  private fun isExcludedFromComCreateCaseload(releaseDate: LocalDate?, licence: Licence?): Boolean {
-    if (licence?.statusCode?.isOnProbation() == true) {
-      return false
-    }
-    if (releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) == true) {
-      return false
-    }
-    if (licence?.kind == LicenceKind.TIME_SERVED) {
-      return false
-    }
-    return true
+  private fun isExcludedFromComCreateCaseload(releaseDate: LocalDate?, licence: Licence?, cvlRecord: CvlRecord?): Boolean = when {
+    licence?.statusCode?.isOnProbation() == true -> false
+    releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) == true -> false
+    cvlRecord?.hardStopKind == TIME_SERVED -> false
+    licence?.kind == TIME_SERVED -> false
+    else -> true
+  }
+
+  private fun CaseAccessResponse.isExcludedFromViewingRestrictedCase(searchTerm: String): Boolean = !searchTerm.matches(CRN_REGEX) && (userExcluded || userRestricted)
+
+  private fun shouldExcludeCase(
+    searchTerm: String,
+    cvlRecord: CvlRecord?,
+    caseAccessRecord: CaseAccessResponse,
+    licence: Licence?,
+    case: FoundComCase?,
+    releaseDate: LocalDate?,
+  ): FoundComCase? = when {
+    // Exclude restricted or excluded cases where the search term is not the CRN
+    caseAccessRecord.isExcludedFromViewingRestrictedCase(searchTerm) -> null
+
+    // Exclude based on other rules
+    isExcludedFromComCreateCaseload(releaseDate, licence, cvlRecord) -> null
+
+    // Include the case if no exclusions above apply
+    else -> case
+  }
+
+  companion object {
+    val CRN_REGEX = "^[A-Za-z ]\\d{6}$".toRegex()
   }
 }
