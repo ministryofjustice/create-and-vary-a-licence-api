@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.task
 
+import jakarta.persistence.LockTimeoutException
 import jakarta.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -36,12 +37,16 @@ class InactivateHardstopLicencesTask(
   fun runTask() {
     log.info("Checking for hard stop licences to be inactivated.")
 
-    val dateCreatedBefore = LocalDateTime.now().minusHours(CASE_CREATED_BEFORE.toLong(DurationUnit.MILLISECONDS))
-    val hardstopCases =
+    val dateCreatedBefore = LocalDateTime.now().minusHours(CASE_CREATED_BEFORE.toLong(DurationUnit.HOURS))
+    val hardstopCases = try {
       potentialHardstopCaseRepository.findAllByStatusAndDateCreatedBefore(
         PotentialHardstopCaseStatus.PENDING,
         dateCreatedBefore,
       )
+    } catch (e: LockTimeoutException) {
+      log.warn("Lock timeout when checking for potential hard stop licences to be inactivated: ${e.message}")
+      return
+    }
 
     if (hardstopCases.isEmpty()) {
       log.info("No potential hard stop licences found to be inactivated.")
@@ -52,6 +57,7 @@ class InactivateHardstopLicencesTask(
   }
 
   private fun inactivateLicencesNotInHardstop(hardstopCases: List<PotentialHardstopCase>) {
+    log.info("Inactivating hard stop licences checking ${hardstopCases.size} cases")
     hardstopCases.forEach { deactivateLicenceIfNotInHardStop(it) }
   }
 

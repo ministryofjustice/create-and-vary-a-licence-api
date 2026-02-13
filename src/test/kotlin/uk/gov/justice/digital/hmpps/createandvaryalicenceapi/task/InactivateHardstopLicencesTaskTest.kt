@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.task
 
+import jakarta.persistence.LockTimeoutException
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
@@ -60,5 +62,24 @@ class InactivateHardstopLicencesTaskTest {
 
     verify(potentialHardstopCaseRepository).save(potentialHardstopCase1)
     verify(potentialHardstopCaseRepository).save(potentialHardstopCase2)
+  }
+
+  @Test
+  fun `should not inactivate licences if lock exception is thrown`() {
+    whenever(
+      potentialHardstopCaseRepository.findAllByStatusAndDateCreatedBefore(
+        eq(PotentialHardstopCaseStatus.PENDING),
+        any(),
+      ),
+    ).thenThrow(LockTimeoutException("timed out!"))
+
+    inactivateHardstopLicencesTask.runTask()
+
+    verify(potentialHardstopCaseRepository).findAllByStatusAndDateCreatedBefore(
+      eq(PotentialHardstopCaseStatus.PENDING),
+      any(),
+    )
+    verify(potentialHardstopCaseRepository, times(0)).save(any())
+    verifyNoInteractions(licenceService)
   }
 }
