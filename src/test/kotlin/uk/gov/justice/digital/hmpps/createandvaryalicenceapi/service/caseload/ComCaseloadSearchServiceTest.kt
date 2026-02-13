@@ -1402,6 +1402,46 @@ class ComCaseloadSearchServiceTest {
       assertThat(result.inPrisonCount).isEqualTo(0)
       assertThat(result.onProbationCount).isEqualTo(0)
     }
+
+    @Test
+    fun `when searching by CRN, LAO restricted cases are not included in the results if they are excluded for some other reason such as with past release dates`() {
+      service = ComCaseloadSearchService(
+        licenceRepository,
+        deliusApiClient,
+        prisonerSearchApiClient,
+        releaseDateService,
+        clock,
+        releaseDateLabelFactory,
+        cvlRecordService,
+        true,
+      )
+
+      request = request.copy(query = "A123456")
+
+      val pastReleaseDate = LocalDate.now(clock).minusDays(2)
+      val licenceWithPastDate = aLicenceEntity.copy(
+        crn = "A123456",
+        licenceStartDate = pastReleaseDate,
+        statusCode = LicenceStatus.IN_PROGRESS,
+      )
+
+      whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
+        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licenceWithPastDate))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+        listOf(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = pastReleaseDate)),
+      )
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).isEmpty()
+      assertThat(result.inPrisonCount).isEqualTo(0)
+      assertThat(result.onProbationCount).isEqualTo(0)
+    }
   }
 
   private companion object {

@@ -253,7 +253,7 @@ class ComCaseloadSearchService(
     else -> null
   }
 
-  private fun isExcludedFromComCreateCaseload(releaseDate: LocalDate?, licence: Licence?, cvlRecord: CvlRecord?): Boolean = when {
+  private fun isExcludedFromComCreateVaryCaseloads(releaseDate: LocalDate?, licence: Licence?, cvlRecord: CvlRecord?): Boolean = when {
     licence?.statusCode?.isOnProbation() == true -> false
     releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) == true -> false
     cvlRecord?.hardStopKind == TIME_SERVED -> false
@@ -275,13 +275,13 @@ class ComCaseloadSearchService(
     caseAccessRecord.isExcludedFromViewingRestrictedCase(searchTerm) -> null
 
     // Exclude based on other rules
-    isExcludedFromComCreateCaseload(releaseDate, licence, cvlRecord) -> null
+    isExcludedFromComCreateVaryCaseloads(releaseDate, licence, cvlRecord) -> null
 
     // Include the case if no exclusions above apply
     else -> case
   }
 
   companion object {
-    val CRN_REGEX = "^[A-Za-z ]\\d{6}$".toRegex()
+    val CRN_REGEX = "^[A-Za-z]\\d{6}$".toRegex()
   }
 }
