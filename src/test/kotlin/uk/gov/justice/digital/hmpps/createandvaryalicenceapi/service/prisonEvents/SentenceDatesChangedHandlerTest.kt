@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.pr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -41,7 +42,7 @@ class SentenceDatesChangedHandlerTest {
   )
   val prisoner = prisonerSearchResult()
   val nomisId = prisoner.prisonerNumber
-  val licence = aLicenceSummary(nomsId = nomisId)
+  val activeLicence = aLicenceSummary(nomsId = nomisId, status = ACTIVE)
   val prisonApiPrisoner = aPrisonApiPrisoner()
 
   @BeforeEach
@@ -54,7 +55,7 @@ class SentenceDatesChangedHandlerTest {
     whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
     whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
     whenever(prisonService.getPrisonerLatestSentenceStartDate(bookingId)).thenReturn(
-      licence.licenceStartDate?.plusDays(
+      activeLicence.licenceStartDate?.plusDays(
         1,
       ),
     )
@@ -68,16 +69,16 @@ class SentenceDatesChangedHandlerTest {
           ),
         ),
       ),
-    ).thenReturn(listOf(licence))
+    ).thenReturn(listOf(activeLicence))
 
     sentenceDatesChangedHandler.handleEvent(message)
 
     verify(licenceService).deactivateLicenceAndVariations(
-      licence.licenceId,
+      activeLicence.licenceId,
       DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RESENTENCED),
     )
     verify(licenceService, never()).deactivateLicenceAndVariations(
-      licence.licenceId,
+      activeLicence.licenceId,
       DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
     )
   }
@@ -99,39 +100,56 @@ class SentenceDatesChangedHandlerTest {
           ),
         ),
       ),
-    ).thenReturn(listOf(licence))
+    ).thenReturn(listOf(activeLicence))
 
     whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisonerFuturePrrd)
 
     sentenceDatesChangedHandler.handleEvent(message)
 
     verify(licenceService).deactivateLicenceAndVariations(
-      licence.licenceId,
+      activeLicence.licenceId,
       DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
     )
   }
 
-  // @Test
-  // fun `should update the sentence dates on any non active licence`() {
-  //   whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
-  //   val prisonApiPrisonerFuturePrrd = prisonApiPrisoner.copy(
-  //     sentenceDetail = prisonApiPrisoner.sentenceDetail.copy(
-  //       postRecallReleaseDate = LocalDate.now().plusDays(1),
-  //     ),
-  //   )
-  //   whenever(
-  //     licenceService.findLicencesMatchingCriteria(
-  //       LicenceQueryObject(
-  //         nomsIds = listOf(nomisId),
-  //         statusCodes = listOf(
-  //           ACTIVE,
-  //         ),
-  //       ),
-  //     ),
-  //   ).thenReturn(listOf(licence))
-  //
-  //   whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisonerFuturePrrd)
-  //
-  //   sentenceDatesChangedHandler.handleEvent(message)
-  // }
+  @Test
+  fun `should update the sentence dates on any non active licence`() {
+    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
+    val prisonApiPrisonerFuturePrrd = prisonApiPrisoner.copy(
+      sentenceDetail = prisonApiPrisoner.sentenceDetail.copy(
+        postRecallReleaseDate = LocalDate.now().plusDays(1),
+      ),
+    )
+    whenever(
+      licenceService.findLicencesMatchingCriteria(
+        LicenceQueryObject(
+          nomsIds = listOf(nomisId),
+          statusCodes = listOf(
+            ACTIVE,
+          ),
+        ),
+      ),
+    ).thenReturn(emptyList())
+    val inProgressLicence = aLicenceSummary(status = LicenceStatus.IN_PROGRESS, nomsId = nomisId)
+    whenever(
+      licenceService.findLicencesMatchingCriteria(
+        LicenceQueryObject(
+          nomsIds = listOf(nomisId),
+          statusCodes = listOf(
+            LicenceStatus.IN_PROGRESS,
+            LicenceStatus.SUBMITTED,
+            LicenceStatus.REJECTED,
+            LicenceStatus.APPROVED,
+            LicenceStatus.TIMED_OUT,
+          ),
+        ),
+      ),
+    ).thenReturn(listOf(inProgressLicence))
+
+    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisonerFuturePrrd)
+
+    sentenceDatesChangedHandler.handleEvent(message)
+
+    verify(updateSentenceDateService).updateSentenceDates(inProgressLicence.licenceId)
+  }
 }
