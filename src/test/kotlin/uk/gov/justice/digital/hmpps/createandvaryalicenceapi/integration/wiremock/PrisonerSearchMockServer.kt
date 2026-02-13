@@ -22,7 +22,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
   private val objectMapper = ObjectMapper().registerModule(JavaTimeModule())
     .registerKotlinModule()
 
-  fun stubSearchPrisonersByBookingIds() {
+  fun stubSearchPrisonersByBookingIds(nomisId: String = "G7285UT") {
     stubFor(
       post(urlEqualTo("/api/prisoner-search/booking-ids"))
         .willReturn(
@@ -32,7 +32,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           ).withBody(
             """[
                 {
-                  "prisonerNumber": "G7285UT",
+                  "prisonerNumber": "$nomisId",
                   "bookingId": "456",
                   "status": "INACTIVE",
                   "legalStatus": "SENTENCED",
