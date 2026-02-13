@@ -11,9 +11,10 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
@@ -25,12 +26,19 @@ import java.time.LocalDateTime
 
 class SentenceDatesChangedHandlerTest {
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val licenceRepository = mock<LicenceRepository>()
   private val licenceService = mock<LicenceService>()
   private val prisonService = mock<PrisonService>()
   private val updateSentenceDateService = mock<UpdateSentenceDateService>()
 
   private val sentenceDatesChangedHandler =
-    SentenceDatesChangedHandler(objectMapper, licenceService, prisonService, updateSentenceDateService)
+    SentenceDatesChangedHandler(
+      objectMapper,
+      licenceRepository,
+      licenceService,
+      prisonService,
+      updateSentenceDateService,
+    )
 
   private val bookingId = 73892L
   private val message: String = objectMapper.writeValueAsString(
@@ -42,7 +50,7 @@ class SentenceDatesChangedHandlerTest {
   )
   val prisoner = prisonerSearchResult()
   val nomisId = prisoner.prisonerNumber
-  val activeLicence = aLicenceSummary(nomsId = nomisId, status = ACTIVE)
+  val activeLicence = createCrdLicence().copy(statusCode = ACTIVE)
   val prisonApiPrisoner = aPrisonApiPrisoner()
 
   @BeforeEach
@@ -61,12 +69,10 @@ class SentenceDatesChangedHandlerTest {
     )
 
     whenever(
-      licenceService.findLicencesMatchingCriteria(
-        LicenceQueryObject(
-          nomsIds = listOf(nomisId),
-          statusCodes = listOf(
-            ACTIVE,
-          ),
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(
+        nomisId,
+        listOf(
+          ACTIVE,
         ),
       ),
     ).thenReturn(listOf(activeLicence))
@@ -74,11 +80,11 @@ class SentenceDatesChangedHandlerTest {
     sentenceDatesChangedHandler.handleEvent(message)
 
     verify(licenceService).deactivateLicenceAndVariations(
-      activeLicence.licenceId,
+      activeLicence.id,
       DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RESENTENCED),
     )
     verify(licenceService, never()).deactivateLicenceAndVariations(
-      activeLicence.licenceId,
+      activeLicence.id,
       DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
     )
   }
@@ -92,12 +98,10 @@ class SentenceDatesChangedHandlerTest {
       ),
     )
     whenever(
-      licenceService.findLicencesMatchingCriteria(
-        LicenceQueryObject(
-          nomsIds = listOf(nomisId),
-          statusCodes = listOf(
-            ACTIVE,
-          ),
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(
+        prisoner.prisonerNumber,
+        listOf(
+          ACTIVE,
         ),
       ),
     ).thenReturn(listOf(activeLicence))
@@ -107,7 +111,7 @@ class SentenceDatesChangedHandlerTest {
     sentenceDatesChangedHandler.handleEvent(message)
 
     verify(licenceService).deactivateLicenceAndVariations(
-      activeLicence.licenceId,
+      activeLicence.id,
       DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
     )
   }
@@ -130,18 +134,16 @@ class SentenceDatesChangedHandlerTest {
         ),
       ),
     ).thenReturn(emptyList())
-    val inProgressLicence = aLicenceSummary(status = LicenceStatus.IN_PROGRESS, nomsId = nomisId)
+    val inProgressLicence = createCrdLicence()
     whenever(
-      licenceService.findLicencesMatchingCriteria(
-        LicenceQueryObject(
-          nomsIds = listOf(nomisId),
-          statusCodes = listOf(
-            LicenceStatus.IN_PROGRESS,
-            LicenceStatus.SUBMITTED,
-            LicenceStatus.REJECTED,
-            LicenceStatus.APPROVED,
-            LicenceStatus.TIMED_OUT,
-          ),
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(
+        nomisId,
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.REJECTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.TIMED_OUT,
         ),
       ),
     ).thenReturn(listOf(inProgressLicence))
@@ -150,6 +152,6 @@ class SentenceDatesChangedHandlerTest {
 
     sentenceDatesChangedHandler.handleEvent(message)
 
-    verify(updateSentenceDateService).updateSentenceDates(inProgressLicence.licenceId)
+    verify(updateSentenceDateService).updateSentenceDates(inProgressLicence.id)
   }
 }

@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
@@ -19,6 +19,7 @@ import java.time.LocalDate
 @Service
 class SentenceDatesChangedHandler(
   private val objectMapper: ObjectMapper,
+  private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
   private val prisonService: PrisonService,
   private val updateSentenceDateService: UpdateSentenceDateService,
@@ -49,20 +50,20 @@ class SentenceDatesChangedHandler(
     }
   }
 
-  private fun deactivateLicencesIfPrisonerResentenced(licence: LicenceSummary, bookingId: Long) {
+  private fun deactivateLicencesIfPrisonerResentenced(licence: Licence, bookingId: Long) {
     val ssd = prisonService.getPrisonerLatestSentenceStartDate(bookingId)
     val lsd = licence.licenceStartDate
 
     if (ssd != null && lsd != null && ssd.isAfter(lsd)) {
       licenceService.deactivateLicenceAndVariations(
-        licence.licenceId,
+        licence.id,
         DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RESENTENCED),
       )
     }
   }
 
-  private fun deactivateLicencesIfFuturePrrd(licence: LicenceSummary) {
-    val prisoner = prisonService.getPrisonerDetail(licence.nomisId)
+  private fun deactivateLicencesIfFuturePrrd(licence: Licence) {
+    val prisoner = prisonService.getPrisonerDetail(licence.nomsId!!)
 
     val prrd = prisoner.sentenceDetail.postRecallReleaseOverrideDate ?: prisoner.sentenceDetail.postRecallReleaseDate
     if (prrd != null) {
@@ -71,7 +72,7 @@ class SentenceDatesChangedHandler(
       }
       if (prrd.isAfter(LocalDate.now())) {
         licenceService.deactivateLicenceAndVariations(
-          licence.licenceId,
+          licence.id,
           DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
         )
       }
@@ -79,27 +80,23 @@ class SentenceDatesChangedHandler(
   }
 
   private fun updateSentenceDates(nomisId: String) {
-    val licences = licenceService.findLicencesMatchingCriteria(
-      LicenceQueryObject(
-        nomsIds = listOf(nomisId),
-        statusCodes = listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.REJECTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.TIMED_OUT,
-        ),
+    val licences = licenceRepository.findAllByNomsIdAndStatusCodeIn(
+      nomisId,
+      listOf(
+        LicenceStatus.IN_PROGRESS,
+        LicenceStatus.SUBMITTED,
+        LicenceStatus.REJECTED,
+        LicenceStatus.APPROVED,
+        LicenceStatus.TIMED_OUT,
       ),
     )
-    licences.forEach { licence -> updateSentenceDateService.updateSentenceDates(licence.licenceId) }
+    licences.forEach { licence -> updateSentenceDateService.updateSentenceDates(licence.id) }
   }
 
-  private fun getActiveLicence(nomisId: String): LicenceSummary? = licenceService.findLicencesMatchingCriteria(
-    LicenceQueryObject(
-      nomsIds = listOf(nomisId),
-      statusCodes = listOf(
-        ACTIVE,
-      ),
+  private fun getActiveLicence(nomisId: String): Licence? = licenceRepository.findAllByNomsIdAndStatusCodeIn(
+    nomisId,
+    listOf(
+      ACTIVE,
     ),
   ).firstOrNull()
 }
