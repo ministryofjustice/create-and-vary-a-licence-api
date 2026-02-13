@@ -874,7 +874,12 @@ fun CaseloadResult.transformToUnstartedRecord(
   isInHardStopPeriod: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   releaseDateLabel: String,
+  isExcluded: Boolean,
+  isRestricted: Boolean,
 ): ModelFoundProbationRecord {
+  if (isExcluded || isRestricted) {
+    return ModelFoundProbationRecord.restrictedCase(kind, crn, false)
+  }
   val com = if (staff.unallocated == true) null else staff
   val probationPractitioner = if (staff.unallocated == true) {
     ProbationPractitioner.unallocated(staff.code)
@@ -906,6 +911,7 @@ fun CaseloadResult.transformToUnstartedRecord(
     isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
     releaseDateLabel = releaseDateLabel,
     isReviewNeeded = false,
+    isLao = false,
   )
 }
 

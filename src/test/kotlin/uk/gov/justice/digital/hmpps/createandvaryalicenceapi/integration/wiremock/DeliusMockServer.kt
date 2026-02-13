@@ -1060,22 +1060,70 @@ class DeliusMockServer : WireMockServer(8093) {
     )
   }
 
-  fun stubGetCheckUserAccess() {
+  fun stubGetCheckUserAccess(response: String? = null) {
+    // language=json
+    val accessJson = response ?: """
+      {
+        "access": [
+          {
+            "crn": "X12348",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12349",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12350",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12351",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12352",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12353",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12354",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12355",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "CRN1",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "CRN2",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+    """.trimIndent()
     stubFor(
       post(urlPathMatching("/users/.+/access"))
         .willReturn(
           aResponse().withHeader("Content-Type", "application/json")
-            .withBody(
-              """{
-                "access": [
-                  {
-                    "crn": "CRN1",
-                    "userExcluded": false,
-                    "userRestricted": false
-                  }
-                ]
-              }""",
-            ).withStatus(200),
+            .withBody(accessJson)
+            .withStatus(200),
         ),
     )
   }
