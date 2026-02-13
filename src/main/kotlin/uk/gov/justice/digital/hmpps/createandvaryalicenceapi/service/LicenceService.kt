@@ -545,7 +545,7 @@ class LicenceService(
     if (licences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(licences)
 
-      licences.map { licence ->
+      licences.forEach { licence ->
         auditEventRepository.saveAndFlush(
           AuditEvent(
             licenceId = licence.id,
@@ -591,7 +591,7 @@ class LicenceService(
     if (licences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(licences)
 
-      licences.map { licence ->
+      licences.forEach { licence ->
         auditEventRepository.saveAndFlush(
           AuditEvent(
             licenceId = licence.id,
@@ -899,7 +899,8 @@ class LicenceService(
     log.info("Deleting documents for Licence id={}", licenceEntity.id)
 
     // get deletableDocumentUuids before data is changed on the DB
-    val deletableDocumentUuids = uploadFileConditionsService.getDeletableDocumentUuids(licenceEntity.additionalConditions)
+    val deletableDocumentUuids =
+      uploadFileConditionsService.getDeletableDocumentUuids(licenceEntity.additionalConditions)
     licenceRepository.delete(licenceEntity)
     // Delete Documents after all above work is done, just encase exception is thrown before now!
     uploadFileConditionsService.deleteDocuments(deletableDocumentUuids)
