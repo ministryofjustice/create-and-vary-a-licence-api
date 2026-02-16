@@ -279,25 +279,9 @@ class LicenceServiceTest {
   @Test
   fun `find licences matching criteria - multiple parameters`() {
     val licenceQueryObject = LicenceQueryObject(
-      prisonCodes = listOf("MDI"),
       statusCodes = listOf(LicenceStatus.APPROVED),
       nomsIds = listOf("A1234AA"),
     )
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
-      listOf(
-        aLicenceEntity,
-      ),
-    )
-
-    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
-
-    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
-    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>(), eq(Sort.unsorted()))
-  }
-
-  @Test
-  fun `find licences matching criteria - list of PDUs`() {
-    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
       listOf(
         aLicenceEntity,
@@ -381,7 +365,6 @@ class LicenceServiceTest {
   @Test
   fun `find licences matching criteria - updated by full name populated`() {
     val licenceQueryObject = LicenceQueryObject(
-      prisonCodes = listOf("MDI"),
       statusCodes = listOf(LicenceStatus.APPROVED),
       nomsIds = listOf("A1234AA"),
     )
@@ -407,7 +390,7 @@ class LicenceServiceTest {
 
   @Test
   fun `review needed - when review date not set on ACTIVE licence`() {
-    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
+    val licenceQueryObject = LicenceQueryObject(nomsIds = listOf("A", "B"))
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
       listOf(
         createHardStopLicence().copy(statusCode = LicenceStatus.ACTIVE, reviewDate = null),
@@ -421,7 +404,7 @@ class LicenceServiceTest {
 
   @Test
   fun `review not needed - when review date set`() {
-    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
+    val licenceQueryObject = LicenceQueryObject(nomsIds = listOf("A", "B"))
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
       listOf(
         createHardStopLicence().copy(reviewDate = LocalDateTime.now()),
@@ -435,7 +418,7 @@ class LicenceServiceTest {
 
   @Test
   fun `review not needed - when review date not set on non-ACTIVE licence`() {
-    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
+    val licenceQueryObject = LicenceQueryObject(nomsIds = listOf("A", "B"))
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
       listOf(
         createHardStopLicence().copy(reviewDate = null),
@@ -449,7 +432,7 @@ class LicenceServiceTest {
 
   @Test
   fun `review not needed - for CRD licences`() {
-    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
+    val licenceQueryObject = LicenceQueryObject(nomsIds = listOf("A", "B"))
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
       listOf(
         aLicenceEntity,
