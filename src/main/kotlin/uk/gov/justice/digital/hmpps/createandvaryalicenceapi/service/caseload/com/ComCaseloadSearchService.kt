@@ -247,16 +247,10 @@ class ComCaseloadSearchService(
   }
 
   private fun FoundComCase.isExcludedFromCaseloads(searchTerm: String) = when {
-    isExcludedFromViewingRestrictedCase(searchTerm) -> true
+    crn?.contains(searchTerm, ignoreCase = true) == false && isLao == true -> true
     isOnProbation == true -> false
     releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) == true -> false
     kind == TIME_SERVED -> false
     else -> true
-  }
-
-  private fun FoundComCase.isExcludedFromViewingRestrictedCase(searchTerm: String): Boolean = !CRN_REGEX.containsMatchIn(searchTerm) && isLao == true
-
-  companion object {
-    val CRN_REGEX = "^[A-Za-z]\\d{1,6}$".toRegex()
   }
 }

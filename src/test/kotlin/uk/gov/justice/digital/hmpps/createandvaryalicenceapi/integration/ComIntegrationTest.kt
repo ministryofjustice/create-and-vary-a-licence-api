@@ -409,12 +409,15 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given an offender is a LAO without a licence, When searching for an offender Then offender should be part of the search results `() {
-    aProbationUserSearchRequest = aProbationUserSearchRequest.copy(query = "A123456")
+    val aProbationUserSearchRequest = ProbationUserSearchRequest(
+      "A123456",
+      1L,
+    )
     val accessResponse = """
       {
         "access": [
           {
-            "crn": "CRN1",
+            "crn": "A123456",
             "userExcluded": true,
             "userRestricted": false,
             "exclusionMessage": "Access restricted on NDelius"
@@ -427,7 +430,85 @@ class ComIntegrationTest : IntegrationTestBase() {
         ]
       }
     """.trimIndent()
-    deliusMockServer.stubGetTeamManagedCases()
+
+    val managedCasesResponse = """{
+      "content": [
+        {
+          "crn": "A123456",
+          "nomisId": "A1234AA",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1", 
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        },
+        {
+          "crn": "CRN2",
+          "nomisId": "A1234AD",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1",
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        }
+      ],
+      "page": {
+        "number": 0,
+        "size": 100,
+        "totalPages": 1,
+        "totalElements": 2
+      }
+    }
+    """.trimIndent()
+    deliusMockServer.stubGetTeamManagedCases(managedCasesResponse)
     deliusMockServer.stubGetCheckUserAccess(accessResponse)
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
@@ -456,7 +537,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     with(resultsList.first()) {
       assertThat(name).isEqualTo("Access restricted on NDelius")
-      assertThat(crn).isEqualTo("CRN1")
+      assertThat(crn).isEqualTo("A123456")
       assertThat(probationPractitioner.name).isEqualTo("Restricted")
       assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
       assertThat(releaseDate).isEqualTo(LocalDate.now())
@@ -473,12 +554,15 @@ class ComIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Given an offender is a LAO with a licence, When searching for an offender Then offender should be part of the search results `() {
-    aProbationUserSearchRequest = aProbationUserSearchRequest.copy(query = "A123456")
+    val aProbationUserSearchRequest = ProbationUserSearchRequest(
+      "A123456",
+      1L,
+    )
     val accessResponse = """
       {
         "access": [
           {
-            "crn": "CRN1",
+            "crn": "A123456",
             "userExcluded": false,
             "userRestricted": true,
             "restrictionMessage": "Access restricted on NDelius"
@@ -491,7 +575,85 @@ class ComIntegrationTest : IntegrationTestBase() {
         ]
       }
     """.trimIndent()
-    deliusMockServer.stubGetTeamManagedCases()
+
+    val managedCasesResponse = """{
+      "content": [
+        {
+          "crn": "A123456",
+          "nomisId": "A1234AA",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1", 
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        },
+        {
+          "crn": "CRN2",
+          "nomisId": "A1234AD",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1",
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        }
+      ],
+      "page": {
+        "number": 0,
+        "size": 100,
+        "totalPages": 1,
+        "totalElements": 2
+      }
+    }
+    """.trimIndent()
+    deliusMockServer.stubGetTeamManagedCases(managedCasesResponse)
     deliusMockServer.stubGetCheckUserAccess(accessResponse)
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
       prisonId = "MDI",
@@ -525,7 +687,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     with(resultsList.first()) {
       assertThat(name).isEqualTo("Access restricted on NDelius")
-      assertThat(crn).isEqualTo("CRN1")
+      assertThat(crn).isEqualTo("A123456")
       assertThat(probationPractitioner.name).isEqualTo("Restricted")
       assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
       assertThat(releaseDate).isEqualTo(LocalDate.now())
@@ -539,7 +701,6 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given an offender is a LAO without a licence, When searching for an offender without their CRN, The offender should not be part of the search results `() {
-    aProbationUserSearchRequest = aProbationUserSearchRequest.copy(query = "Surname")
     val accessResponse = """
       {
         "access": [
@@ -591,7 +752,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     val prisonApiMockServer = PrisonApiMockServer()
     val govUkMockServer = GovUkMockServer()
 
-    var aProbationUserSearchRequest = ProbationUserSearchRequest(
+    val aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",
       1L,
       listOf(

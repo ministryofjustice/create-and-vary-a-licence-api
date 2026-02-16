@@ -1453,10 +1453,31 @@ class ComCaseloadSearchServiceTest {
     }
 
     @Test
-    fun `when searching by partial CRN pattern, LAO cases are included`() {
+    fun `when searching by partial CRN pattern including a leading letter, LAO cases are included`() {
       request = ProbationUserSearchRequest("A123", 2000)
 
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123"))
+        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+        .thenReturn(emptyList())
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+        .thenReturn(listOf(aPrisonerSearchResult))
+      whenever(cvlRecordService.getCvlRecords(any()))
+        .thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any()))
+        .thenReturn(listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)))
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).hasSize(1)
+      assertThat(result.results.first().isLao).isTrue()
+    }
+
+    @Test
+    fun `when searching by partial CRN pattern with just matching digits, LAO cases are included again`() {
+      request = ProbationUserSearchRequest("23456", 2000)
+
+      whenever(deliusApiClient.getTeamManagedOffenders(2000, "23456"))
         .thenReturn(CaseloadResponse(listOf(caseloadResult())))
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
         .thenReturn(emptyList())
