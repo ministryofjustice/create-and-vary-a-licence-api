@@ -229,13 +229,11 @@ class LicenceControllerTest {
     val pduList = listOf("A", "B", "C")
 
     val licenceQueryObject = LicenceQueryObject(
-      pdus = pduList,
       statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
       sortBy = "id",
     )
     val request = MatchLicencesRequest(
       status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
-      pdu = pduList,
     )
 
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary()))

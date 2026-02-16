@@ -527,6 +527,7 @@ class LicenceService(
     }
   }
 
+  @Deprecated("Use specific queries instead")
   @Transactional(readOnly = true)
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {
     try {
