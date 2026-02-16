@@ -1155,7 +1155,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(crn).isEqualTo("A123456")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(releaseDate).isNull()
+        assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(isOnProbation).isFalse()
         assertThat(isLao).isTrue()
       }
@@ -1187,7 +1187,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(crn).isEqualTo("A123456")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(releaseDate).isNull()
+        assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(isOnProbation).isFalse()
         assertThat(isLao).isTrue()
       }
@@ -1219,7 +1219,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(crn).isEqualTo("A123456")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(releaseDate).isNull()
+        assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(isOnProbation).isFalse()
         assertThat(isLao).isTrue()
       }
@@ -1250,7 +1250,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(crn).isEqualTo("A123456")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(releaseDate).isNull()
+        assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(isOnProbation).isFalse()
         assertThat(isLao).isTrue()
       }
@@ -1359,8 +1359,6 @@ class ComCaseloadSearchServiceTest {
         true,
       )
 
-      request = request.copy(query = "A123456")
-
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
         .thenReturn(CaseloadResponse(listOf(caseloadResult())))
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity.copy(crn = "A123456")))
@@ -1375,6 +1373,57 @@ class ComCaseloadSearchServiceTest {
       assertThat(result.results).hasSize(1)
       assertThat(result.results.first().isLao).isTrue()
       assertThat(result.results.first().name).isEqualTo("Access restricted on NDelius")
+    }
+
+    @Test
+    fun `when searching by CRN, include LAO excluded cases`() {
+      whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
+        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+        .thenReturn(listOf(aLicenceEntity.copy(crn = "A123456")))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+        .thenReturn(listOf(aPrisonerSearchResult))
+      whenever(cvlRecordService.getCvlRecords(any()))
+        .thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any()))
+        .thenReturn(listOf(aCaseAccessResponse("A123456", excluded = true, restricted = false)))
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).hasSize(1)
+      assertThat(result.results.first().isLao).isTrue()
+    }
+
+    @Test
+    fun `when searching for a LAO offender who is restricted but on probation, include LAO case`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE))))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(
+            crn = "A123456",
+            restricted = true,
+            excluded = false,
+            restrictedMessage = "This is a restriction message",
+          ),
+        ),
+      )
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results.size).isEqualTo(1)
+      assertThat(result.inPrisonCount).isEqualTo(0)
+      assertThat(result.onProbationCount).isEqualTo(1)
+
+      with(result.results.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crn).isEqualTo("A123456")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
+        assertThat(isOnProbation).isTrue()
+        assertThat(isLao).isTrue()
+      }
     }
 
     @Test
@@ -1404,6 +1453,27 @@ class ComCaseloadSearchServiceTest {
     }
 
     @Test
+    fun `when searching by partial CRN pattern, LAO cases are included`() {
+      request = ProbationUserSearchRequest("A123", 2000)
+
+      whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123"))
+        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+        .thenReturn(emptyList())
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+        .thenReturn(listOf(aPrisonerSearchResult))
+      whenever(cvlRecordService.getCvlRecords(any()))
+        .thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any()))
+        .thenReturn(listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)))
+
+      val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+      assertThat(result.results).hasSize(1)
+      assertThat(result.results.first().isLao).isTrue()
+    }
+
+    @Test
     fun `when searching by CRN, LAO restricted cases are not included in the results if they are excluded for some other reason such as with past release dates`() {
       service = ComCaseloadSearchService(
         licenceRepository,
@@ -1415,8 +1485,6 @@ class ComCaseloadSearchServiceTest {
         cvlRecordService,
         true,
       )
-
-      request = request.copy(query = "A123456")
 
       val pastReleaseDate = LocalDate.now(clock).minusDays(2)
       val licenceWithPastDate = aLicenceEntity.copy(

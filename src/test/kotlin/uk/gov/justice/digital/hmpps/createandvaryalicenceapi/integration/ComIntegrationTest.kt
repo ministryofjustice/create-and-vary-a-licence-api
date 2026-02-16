@@ -459,7 +459,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       assertThat(crn).isEqualTo("CRN1")
       assertThat(probationPractitioner.name).isEqualTo("Restricted")
       assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-      assertThat(releaseDate).isNull()
+      assertThat(releaseDate).isEqualTo(LocalDate.now())
       assertThat(isOnProbation).isFalse()
       assertThat(isLao).isTrue()
     }
@@ -528,7 +528,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       assertThat(crn).isEqualTo("CRN1")
       assertThat(probationPractitioner.name).isEqualTo("Restricted")
       assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-      assertThat(releaseDate).isNull()
+      assertThat(releaseDate).isEqualTo(LocalDate.now())
       assertThat(isOnProbation).isFalse()
       assertThat(isLao).isTrue()
     }
