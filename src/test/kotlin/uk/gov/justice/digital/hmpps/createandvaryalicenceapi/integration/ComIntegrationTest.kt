@@ -409,6 +409,298 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given an offender is a LAO without a licence, When searching for an offender Then offender should be part of the search results `() {
+    val aProbationUserSearchRequest = ProbationUserSearchRequest(
+      "A123456",
+      1L,
+    )
+    val accessResponse = """
+      {
+        "access": [
+          {
+            "crn": "A123456",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          },
+          {
+            "crn": "CRN2",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+    """.trimIndent()
+
+    val managedCasesResponse = """{
+      "content": [
+        {
+          "crn": "A123456",
+          "nomisId": "A1234AA",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1", 
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        },
+        {
+          "crn": "CRN2",
+          "nomisId": "A1234AD",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1",
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        }
+      ],
+      "page": {
+        "number": 0,
+        "size": 100,
+        "totalPages": 1,
+        "totalElements": 2
+      }
+    }
+    """.trimIndent()
+    deliusMockServer.stubGetTeamManagedCases(managedCasesResponse)
+    deliusMockServer.stubGetCheckUserAccess(accessResponse)
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
+
+    val resultObject = webTestClient.post()
+      .uri("/caseload/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    resultObject.expectStatus().isOk
+    resultObject.expectHeader().contentType(MediaType.APPLICATION_JSON)
+
+    val searchResult = resultObject.expectBody(ComSearchResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(searchResult).isNotNull
+
+    val resultsList = searchResult!!.results
+    val inPrisonCount = searchResult.inPrisonCount
+    val onProbationCount = searchResult.onProbationCount
+
+    assertThat(resultsList.size).isEqualTo(2)
+
+    with(resultsList.first()) {
+      assertThat(name).isEqualTo("Access restricted on NDelius")
+      assertThat(crn).isEqualTo("A123456")
+      assertThat(probationPractitioner.name).isEqualTo("Restricted")
+      assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+      assertThat(releaseDate).isEqualTo(LocalDate.now())
+      assertThat(isOnProbation).isFalse()
+      assertThat(isLao).isTrue()
+    }
+
+    assertThat(inPrisonCount).isEqualTo(2)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `Given an offender is a LAO with a licence, When searching for an offender Then offender should be part of the search results `() {
+    val aProbationUserSearchRequest = ProbationUserSearchRequest(
+      "A123456",
+      1L,
+    )
+    val accessResponse = """
+      {
+        "access": [
+          {
+            "crn": "A123456",
+            "userExcluded": false,
+            "userRestricted": true,
+            "restrictionMessage": "Access restricted on NDelius"
+          },
+          {
+            "crn": "CRN2",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+    """.trimIndent()
+
+    val managedCasesResponse = """{
+      "content": [
+        {
+          "crn": "A123456",
+          "nomisId": "A1234AA",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1", 
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        },
+        {
+          "crn": "CRN2",
+          "nomisId": "A1234AD",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1",
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        }
+      ],
+      "page": {
+        "number": 0,
+        "size": 100,
+        "totalPages": 1,
+        "totalElements": 2
+      }
+    }
+    """.trimIndent()
+    deliusMockServer.stubGetTeamManagedCases(managedCasesResponse)
+    deliusMockServer.stubGetCheckUserAccess(accessResponse)
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+      prisonId = "MDI",
+      sentenceStartDate = LocalDate.now(),
+      confirmedReleaseDate = LocalDate.now(),
+      conditionalReleaseDate = LocalDate.now(),
+    )
+    prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
+
+    val resultObject = webTestClient.post()
+      .uri("/caseload/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    resultObject.expectStatus().isOk
+    resultObject.expectHeader().contentType(MediaType.APPLICATION_JSON)
+
+    val searchResult = resultObject.expectBody(ComSearchResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(searchResult).isNotNull
+
+    val resultsList = searchResult!!.results
+    val inPrisonCount = searchResult.inPrisonCount
+    val onProbationCount = searchResult.onProbationCount
+
+    assertThat(resultsList.size).isEqualTo(2)
+
+    with(resultsList.first()) {
+      assertThat(name).isEqualTo("Access restricted on NDelius")
+      assertThat(crn).isEqualTo("A123456")
+      assertThat(probationPractitioner.name).isEqualTo("Restricted")
+      assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+      assertThat(releaseDate).isEqualTo(LocalDate.now())
+      assertThat(isOnProbation).isFalse()
+      assertThat(isLao).isTrue()
+    }
+
+    assertThat(inPrisonCount).isEqualTo(2)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `Given an offender is a LAO without a licence, When searching for an offender without their CRN, The offender should not be part of the search results `() {
     val accessResponse = """
       {
         "access": [
@@ -448,91 +740,10 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(searchResult).isNotNull
 
     val resultsList = searchResult!!.results
-    val inPrisonCount = searchResult.inPrisonCount
-    val onProbationCount = searchResult.onProbationCount
 
-    assertThat(resultsList.size).isEqualTo(2)
+    assertThat(resultsList.size).isEqualTo(1)
 
-    with(resultsList.first()) {
-      assertThat(name).isEqualTo("Access restricted on NDelius")
-      assertThat(crn).isEqualTo("CRN1")
-      assertThat(probationPractitioner.name).isEqualTo("Restricted")
-      assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-      assertThat(releaseDate).isNull()
-      assertThat(isOnProbation).isFalse()
-      assertThat(isLao).isTrue()
-    }
-
-    assertThat(inPrisonCount).isEqualTo(2)
-    assertThat(onProbationCount).isEqualTo(0)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `Given an offender is a LAO with a licence, When searching for an offender Then offender should be part of the search results `() {
-    val accessResponse = """
-      {
-        "access": [
-          {
-            "crn": "CRN1",
-            "userExcluded": false,
-            "userRestricted": true,
-            "restrictionMessage": "Access restricted on NDelius"
-          },
-          {
-            "crn": "CRN2",
-            "userExcluded": false,
-            "userRestricted": false
-          }
-        ]
-      }
-    """.trimIndent()
-    deliusMockServer.stubGetTeamManagedCases()
-    deliusMockServer.stubGetCheckUserAccess(accessResponse)
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
-      prisonId = "MDI",
-      sentenceStartDate = LocalDate.now(),
-      confirmedReleaseDate = LocalDate.now(),
-      conditionalReleaseDate = LocalDate.now(),
-    )
-    prisonApiMockServer.stubGetHdcLatest(123L)
-    prisonApiMockServer.stubGetCourtOutcomes()
-
-    val resultObject = webTestClient.post()
-      .uri("/caseload/com/case-search")
-      .bodyValue(aProbationUserSearchRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-
-    resultObject.expectStatus().isOk
-    resultObject.expectHeader().contentType(MediaType.APPLICATION_JSON)
-
-    val searchResult = resultObject.expectBody(ComSearchResponse::class.java)
-      .returnResult().responseBody
-
-    assertThat(searchResult).isNotNull
-
-    val resultsList = searchResult!!.results
-    val inPrisonCount = searchResult.inPrisonCount
-    val onProbationCount = searchResult.onProbationCount
-
-    assertThat(resultsList.size).isEqualTo(2)
-
-    with(resultsList.first()) {
-      assertThat(name).isEqualTo("Access restricted on NDelius")
-      assertThat(crn).isEqualTo("CRN1")
-      assertThat(probationPractitioner.name).isEqualTo("Restricted")
-      assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-      assertThat(releaseDate).isNull()
-      assertThat(isOnProbation).isFalse()
-      assertThat(isLao).isTrue()
-    }
-
-    assertThat(inPrisonCount).isEqualTo(2)
-    assertThat(onProbationCount).isEqualTo(0)
+    assertThat(resultsList).filteredOn("crn", "CRN1").isEmpty()
   }
 
   private companion object {
