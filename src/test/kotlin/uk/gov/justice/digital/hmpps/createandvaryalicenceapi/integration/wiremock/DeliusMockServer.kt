@@ -1128,4 +1128,27 @@ class DeliusMockServer : WireMockServer(8093) {
         ),
     )
   }
+
+  fun stubGetCaseAccessDetails(
+    userExcluded: Boolean = false,
+    userRestricted: Boolean = false,
+    exclusionMessage: String? = null,
+    restrictionMessage: String? = null,
+  ) {
+    stubFor(
+      get(urlPathMatching("/users/.+/access/CRN1"))
+        .willReturn(
+          aResponse().withHeader("Content-Type", "application/json")
+            .withBody(
+              """{
+                "crn": "CRN1",
+                "userExcluded": $userExcluded,
+                "userRestricted": $userRestricted,
+                "exclusionMessage": "$exclusionMessage",
+                "restrictionMessage": "$restrictionMessage"
+              }""",
+            ).withStatus(200),
+        ),
+    )
+  }
 }
