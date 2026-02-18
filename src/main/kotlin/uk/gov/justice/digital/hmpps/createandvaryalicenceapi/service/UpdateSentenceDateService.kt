@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
@@ -89,7 +90,8 @@ class UpdateSentenceDateService(
       dateChanges.filter { !it.type.hdcOnly || updatedLicence is HdcLicence },
     )
 
-    val user = staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication.name)
+    val user =
+      staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER)
     updatedLicence.updateLicenceDates(
       status = updatedLicence.calculateStatusCode(sentenceDates),
       staffMember = user,
