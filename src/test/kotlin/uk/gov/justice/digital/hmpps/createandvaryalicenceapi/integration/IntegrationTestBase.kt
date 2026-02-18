@@ -93,6 +93,14 @@ abstract class IntegrationTestBase {
   protected val domainEventsSqsClient by lazy { domainEventsQueue.sqsClient }
   protected val domainEventsQueueUrl by lazy { domainEventsQueue.queueUrl }
 
+  protected val prisonEventsTopic by lazy {
+    hmppsQueueService.findByTopicId("prisonevents")
+      ?: throw MissingQueueException("HmppsTopic prisonevents not found")
+  }
+
+  protected val prisonEventsTopicSnsClient by lazy { prisonEventsTopic.snsClient }
+  protected val prisonEventsTopicArn by lazy { prisonEventsTopic.arn }
+
   @Autowired
   lateinit var webTestClient: WebTestClient
 
@@ -121,7 +129,9 @@ abstract class IntegrationTestBase {
   @BeforeEach
   fun `Clear queues`() {
     domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
-    await untilCallTo { domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueue.queueUrl).get() } matches { it == 0 }
+    await untilCallTo {
+      domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueue.queueUrl).get()
+    } matches { it == 0 }
     reset(telemetryClient)
   }
 
