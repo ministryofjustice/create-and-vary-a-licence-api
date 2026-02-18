@@ -325,7 +325,6 @@ class LicenceController(
     LicenceQueryObject(
       statusCodes = body.status,
       nomsIds = body.nomsId,
-      pdus = body.pdu,
       sortBy = sortBy,
       sortOrder = sortOrder,
     ),

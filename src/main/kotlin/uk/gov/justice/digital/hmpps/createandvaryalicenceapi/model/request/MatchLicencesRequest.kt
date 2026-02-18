@@ -12,6 +12,4 @@ data class MatchLicencesRequest(
   @field:Schema(description = "A list of NOMIS ID's", example = "['B76546GH', 'Y76499GY']")
   val nomsId: List<String>? = null,
 
-  @field:Schema(description = "A list of probation delivery unit codes", example = "['N55', 'P66']")
-  val pdu: List<String>? = null,
 )

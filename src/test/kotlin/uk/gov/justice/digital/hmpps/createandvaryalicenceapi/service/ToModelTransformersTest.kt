@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPrac
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.FoundComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider as EntityElectronicMonitoringProvider
 
 class ToModelTransformersTest {
@@ -58,6 +59,7 @@ class ToModelTransformersTest {
       kind = LicenceKind.CRD,
       crn = "X12345",
       isOnProbation = true,
+      releaseDate = LocalDate.now().plusDays(1),
     )
 
     assertThat(restrictedCase.name).isEqualTo("Access restricted on NDelius")
@@ -72,6 +74,7 @@ class ToModelTransformersTest {
       kind = LicenceKind.VARIATION,
       crn = null,
       isOnProbation = false,
+      releaseDate = LocalDate.now().plusDays(1),
     )
 
     assertThat(restrictedCase.name).isEqualTo("Access restricted on NDelius")
