@@ -13,6 +13,7 @@ enum class LicenceCreationType {
   LICENCE_CREATED_BY_PRISON,
   LICENCE_NOT_STARTED,
   LICENCE_IN_PROGRESS,
+  LICENCE_CREATION_RESTRICTED,
 }
 
 @Schema(description = "Describes an COM case")
@@ -58,4 +59,7 @@ data class ComCreateCase(
 
   @field:Schema(description = "How this licence will need to be created", example = "PRISON_WILL_CREATE_THIS_LICENCE")
   val licenceCreationType: LicenceCreationType? = null,
+
+  @field:Schema(description = "Is the offender a limited access offender (LAO)?", example = "true")
+  val isLao: Boolean,
 )

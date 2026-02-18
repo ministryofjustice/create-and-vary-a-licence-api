@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -39,6 +40,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
+import kotlin.collections.get
 
 class ComCreateCaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
@@ -48,7 +50,7 @@ class ComCreateCaseloadServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
 
-  private val service = ComCreateCaseloadService(
+  private var service = ComCreateCaseloadService(
     prisonerSearchApiClient,
     deliusApiClient,
     licenceCaseRepository,
@@ -1398,6 +1400,256 @@ class ComCreateCaseloadServiceTest {
       expectedReleaseDate = tenDaysFromNow,
     )
   }
+
+  @Nested
+  inner class `LAO cases in caseload` {
+    @BeforeEach
+    fun setup() {
+      service = ComCreateCaseloadService(
+        prisonerSearchApiClient,
+        deliusApiClient,
+        licenceCaseRepository,
+        cvlRecordService,
+        telemetryService,
+        true,
+      )
+      val managedOffenders = listOf(
+        ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+      )
+      whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+        listOf(
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = tenDaysFromNow,
+            bookingId = "1",
+          ),
+        ),
+      )
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+        listOf(aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow)),
+      )
+    }
+
+    @Test
+    fun `does not check Delius user access when laoEnabled is false`() {
+      service = ComCreateCaseloadService(
+        prisonerSearchApiClient,
+        deliusApiClient,
+        licenceCaseRepository,
+        cvlRecordService,
+        telemetryService,
+        false,
+      )
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aCaseAccessResponse(crn = "X12348", excluded = true, restricted = false)),
+      )
+
+      val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+      assertThat(caseload).hasSize(1)
+      verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
+    }
+
+    @Test
+    fun `LAO cases are returned as restricted in the caseload`() {
+      val selectedTeam = "team c"
+
+      val managedOffenders = listOf(
+        ManagedOffenderCrn(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
+        ),
+        ManagedOffenderCrn(
+          crn = "X12349",
+          nomisId = "AB1234F",
+          staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
+        ),
+      )
+
+      whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+        listOf(
+          prisonerSearchResult().copy(
+            bookingId = "1",
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = tenDaysFromNow,
+          ),
+          prisonerSearchResult().copy(
+            bookingId = "2",
+            prisonerNumber = "AB1234F",
+            conditionalReleaseDate = tenDaysFromNow,
+          ),
+        ),
+      )
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+        listOf(
+          aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow),
+          aCvlRecord(nomsId = "AB1234F", licenceStartDate = tenDaysFromNow),
+        ),
+      )
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(crn = "X12348", excluded = true, restricted = false),
+          aCaseAccessResponse(crn = "X12349", excluded = false, restricted = false),
+        ),
+      )
+
+      val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf(selectedTeam))
+
+      assertThat(caseload).hasSize(2)
+      with(caseload.last()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
+        assertThat(releaseDate).isEqualTo(tenDaysFromNow)
+        assertThat(isLao).isTrue()
+      }
+    }
+
+    @Test
+    fun `it marks cases in the create caseload as LAO when user is excluded`() {
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aCaseAccessResponse(crn = "X12348", excluded = true, restricted = false)),
+      )
+
+      val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+      assertThat(caseload).hasSize(1)
+
+      with(caseload.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
+        assertThat(releaseDate).isEqualTo(tenDaysFromNow)
+        assertThat(isLao).isTrue()
+      }
+    }
+
+    @Test
+    fun `it marks cases in the create caseload as LAO when user is restricted`() {
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aCaseAccessResponse(crn = "X12348", excluded = false, restricted = true)),
+      )
+
+      val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+      assertThat(caseload).hasSize(1)
+      with(caseload.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
+        assertThat(releaseDate).isEqualTo(tenDaysFromNow)
+        assertThat(isLao).isTrue()
+      }
+    }
+
+    @Test
+    fun `it filters out LAO restricted cases with past release dates for non-time-served licences`() {
+      val managedOffenders = listOf(
+        ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+        ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234F", staff = staffDetail),
+      )
+
+      whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+        listOf(
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = twoDaysAgo,
+            bookingId = "1",
+          ),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234F",
+            conditionalReleaseDate = tenDaysFromNow,
+            bookingId = "2",
+          ),
+        ),
+      )
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+        listOf(
+          aCvlRecord(nomsId = "AB1234E", licenceStartDate = twoDaysAgo),
+          aCvlRecord(nomsId = "AB1234F", licenceStartDate = tenDaysFromNow),
+        ),
+      )
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(crn = "X12348", excluded = true, restricted = false),
+          aCaseAccessResponse(crn = "X12349", excluded = true, restricted = false),
+        ),
+      )
+
+      val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+      assertThat(caseload).hasSize(1)
+      with(caseload.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12349")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
+        assertThat(releaseDate).isEqualTo(tenDaysFromNow)
+        assertThat(isLao).isTrue()
+      }
+    }
+
+    @Test
+    fun `it shows LAO restricted cases with past release dates for time served licences`() {
+      val managedOffenders = listOf(
+        ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
+        ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234F", staff = staffDetail),
+      )
+
+      whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+        listOf(
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = twoDaysAgo,
+            bookingId = "1",
+          ),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234F",
+            conditionalReleaseDate = twoDaysAgo,
+            bookingId = "2",
+          ),
+        ),
+      )
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+        listOf(
+          aCvlRecord(nomsId = "AB1234E", licenceStartDate = twoDaysAgo, hardStopDate = yesterday, hardStopWarningDate = twoDaysAgo, hardStopKind = LicenceKind.TIME_SERVED),
+          aCvlRecord(nomsId = "AB1234F", licenceStartDate = twoDaysAgo, hardStopDate = yesterday, hardStopWarningDate = twoDaysAgo, hardStopKind = LicenceKind.TIME_SERVED),
+        ),
+      )
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(crn = "X12348", excluded = true, restricted = false),
+          aCaseAccessResponse(crn = "X12349", excluded = false, restricted = true),
+        ),
+      )
+
+      val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+      assertThat(caseload).hasSize(2)
+      assertThat(caseload.map { it.crnNumber }).containsExactlyInAnyOrder("X12348", "X12349")
+      caseload.forEach { case ->
+        assertThat(case.isLao).isTrue()
+        assertThat(case.kind).isEqualTo(LicenceKind.TIME_SERVED)
+        assertThat(case.releaseDate).isEqualTo(twoDaysAgo)
+        assertThat(case.name).isEqualTo("Access restricted on NDelius")
+        assertThat(case.probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(case.licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
+      }
+    }
+  }
+
   private fun verifyCase(
     case: ComCreateCase,
     expectedCrn: String,
