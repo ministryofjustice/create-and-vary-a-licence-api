@@ -30,6 +30,7 @@ generic-service:
     TIME_SERVED_PRISONS: "MDI, BAI, BNI, WCI, EXI, WDI, IWI, EWI"
     HDC_ENABLED: true
     LAO_ENABLED: true
+    HARDSTOP_DEACTIVATION_JOB_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
