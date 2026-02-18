@@ -917,90 +917,91 @@ class DeliusMockServer : WireMockServer(8093) {
     )
   }
 
-  fun stubGetTeamManagedCases() {
+  fun stubGetTeamManagedCases(response: String? = null) {
+    // language=json
+    val offendersJson = response ?: """{
+      "content": [
+        {
+          "crn": "CRN1",
+          "nomisId": "A1234AA",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1", 
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        },
+        {
+          "crn": "CRN2",
+          "nomisId": "A1234AD",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1",
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        }
+      ],
+      "page": {
+        "number": 0,
+        "size": 100,
+        "totalPages": 1,
+        "totalElements": 2
+      }
+    }
+    """.trimIndent()
     stubFor(
       post(urlPathMatching("/staff/byid/.+/caseload/team-managed-offenders"))
         .willReturn(
           aResponse().withHeader("Content-Type", "application/json")
-            .withBody(
-              // language=json
-              """{
-                "content": [
-                  {
-                    "crn": "CRN1",
-                    "nomisId": "A1234AA",
-                    "name": {
-                      "surname": "Surname",
-                      "forename": "Test",
-                      "middleName": ""
-                    },
-                    "staff": {
-                      "code": "A01B02C",
-                      "name": {
-                        "surname": "Surname",
-                        "forename": "Staff"
-                      }
-                    },
-                    "team": {
-                      "code": "A01B02",
-                      "description": "Test Team",
-                      "borough": {
-                        "code": "A01B02",
-                        "description": "description"
-                      },
-                      "district": {
-                        "code": "A01B02",
-                        "description": "description"
-                      },
-                      "provider": { 
-                        "code": "probationArea-code-1", 
-                        "description": "probationArea-description-1"
-                      }
-                    },
-                    "allocationDate": "2023-05-24"
-                  },
-                  {
-                    "crn": "CRN2",
-                    "nomisId": "A1234AD",
-                    "name": {
-                      "surname": "Surname",
-                      "forename": "Test",
-                      "middleName": ""
-                    },
-                    "staff": {
-                      "code": "A01B02C",
-                      "name": {
-                        "surname": "Surname",
-                        "forename": "Staff"
-                      }
-                    },
-                    "team": {
-                      "code": "A01B02",
-                      "description": "Test Team",
-                      "borough": {
-                        "code": "A01B02",
-                        "description": "description"
-                      },
-                      "district": {
-                        "code": "A01B02",
-                        "description": "description"
-                      },
-                      "provider": { 
-                        "code": "probationArea-code-1",
-                        "description": "probationArea-description-1"
-                      }
-                    },
-                    "allocationDate": "2023-05-24"
-                  }
-                ],
-                "page": {
-                  "number": 0,
-                  "size": 100,
-                  "totalPages": 1,
-                  "totalElements": 2
-                }
-              }""",
-            ).withStatus(200),
+            .withBody(offendersJson)
+            .withStatus(200),
         ),
     )
   }

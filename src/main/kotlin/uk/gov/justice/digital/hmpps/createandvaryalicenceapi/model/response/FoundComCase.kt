@@ -91,8 +91,9 @@ data class FoundComCase(
   val isLao: Boolean? = null,
 ) {
   companion object {
-    fun restrictedCase(kind: LicenceKind, crn: String?, isOnProbation: Boolean): FoundComCase = FoundComCase(
+    fun restrictedCase(kind: LicenceKind, crn: String?, releaseDate: LocalDate?, isOnProbation: Boolean): FoundComCase = FoundComCase(
       kind = kind,
+      releaseDate = releaseDate,
       name = "Access restricted on NDelius",
       crn = crn,
       comName = "Restricted",
