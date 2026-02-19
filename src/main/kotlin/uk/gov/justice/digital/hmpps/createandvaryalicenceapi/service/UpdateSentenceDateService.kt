@@ -120,15 +120,15 @@ class UpdateSentenceDateService(
     }
 
     if (hardstopChangeType == NO_LONGER_IN_HARDSTOP) {
-      val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
-        updatedLicence.bookingId!!,
-        listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
-        listOf(CRD, HARD_STOP),
-      )
-
       if (hardstopJobEnabled) {
-        licences.forEach { potentialHardstopCaseRepository.saveAndFlush(PotentialHardstopCase(licence = it)) }
+        potentialHardstopCaseRepository.saveAndFlush(PotentialHardstopCase(licence = updatedLicence))
       } else {
+        val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
+          updatedLicence.bookingId!!,
+          listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
+          listOf(CRD, HARD_STOP),
+        )
+
         licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
       }
     }
