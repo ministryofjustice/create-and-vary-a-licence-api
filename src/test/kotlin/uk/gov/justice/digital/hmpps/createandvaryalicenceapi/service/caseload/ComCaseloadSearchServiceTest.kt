@@ -1155,6 +1155,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(crn).isEqualTo("A123456")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(teamName).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(isOnProbation).isFalse()
         assertThat(isLao).isTrue()
@@ -1188,6 +1189,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
+        assertThat(teamName).isEqualTo("Restricted")
         assertThat(isOnProbation).isFalse()
         assertThat(isLao).isTrue()
       }
@@ -1220,6 +1222,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
+        assertThat(teamName).isEqualTo("Restricted")
         assertThat(isOnProbation).isFalse()
         assertThat(isLao).isTrue()
       }
@@ -1251,6 +1254,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
+        assertThat(teamName).isEqualTo("Restricted")
         assertThat(isOnProbation).isFalse()
         assertThat(isLao).isTrue()
       }
@@ -1421,6 +1425,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
+        assertThat(teamName).isEqualTo("Restricted")
         assertThat(isOnProbation).isTrue()
         assertThat(isLao).isTrue()
       }

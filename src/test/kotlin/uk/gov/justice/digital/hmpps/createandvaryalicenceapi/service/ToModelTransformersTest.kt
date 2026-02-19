@@ -65,6 +65,7 @@ class ToModelTransformersTest {
     assertThat(restrictedCase.name).isEqualTo("Access restricted on NDelius")
     assertThat(restrictedCase.comName).isEqualTo("Restricted")
     assertThat(restrictedCase.probationPractitioner).isEqualTo(laoProbationPractitioner())
+    assertThat(restrictedCase.teamName).isEqualTo("Restricted")
     assertThat(restrictedCase.isLao).isTrue()
   }
 

@@ -97,6 +97,7 @@ data class FoundComCase(
       name = "Access restricted on NDelius",
       crn = crn,
       comName = "Restricted",
+      teamName = "Restricted",
       probationPractitioner = ProbationPractitioner.laoProbationPractitioner(),
       isOnProbation = isOnProbation,
       isLao = true,
