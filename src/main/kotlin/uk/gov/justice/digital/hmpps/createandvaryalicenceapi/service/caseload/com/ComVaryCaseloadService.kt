@@ -1,7 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryStaffCaseload
@@ -11,6 +14,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse.Companion.unrestricted
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
@@ -22,6 +27,7 @@ class ComVaryCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceCaseRepository: LicenceCaseRepository,
   private val telemetryService: TelemetryService,
+  @param:Value("\${feature.toggle.lao.enabled}") private val laoEnabled: Boolean = false,
 ) {
   companion object {
     private val COM_VARY_LICENCE_STATUSES =
@@ -53,11 +59,26 @@ class ComVaryCaseloadService(
 
   fun mapCaseToVaryLicence(cases: List<ManagedOffenderCrn>): List<ComVaryCase> {
     val licences = findExistingActiveAndVariationLicences(cases.mapNotNull { it.crn })
+
+    val crns = cases.mapNotNull { it.crn }.distinct()
+    val caseAccessRecords = if (laoEnabled) {
+      getCaseAccessRecords(crns)
+    } else {
+      emptyMap()
+    }
     return cases.mapNotNull { case ->
       val caseLicences = licences.filter { licence -> case.crn == licence.crn }
       val licence = findVaryLicenceToDisplay(caseLicences)
+      val caseAccessRecord = caseAccessRecords[licence?.crn] ?: unrestricted
+      val isLao = caseAccessRecord.userExcluded || caseAccessRecord.userRestricted
+      val probationPractitioner = if (isLao) {
+        ProbationPractitioner.laoProbationPractitioner()
+      } else {
+        case.toProbationPractitioner()
+      }
       when {
         licence == null -> null
+        isLao -> ComVaryCase.restrictedCase(licence, probationPractitioner)
         else ->
           ComVaryCase(
             licenceId = licence.licenceId,
@@ -68,8 +89,9 @@ class ComVaryCaseloadService(
             kind = licence.kind,
             name = "${licence.forename} ${licence.surname}".trim().convertToTitleCase(),
             releaseDate = licence.licenceStartDate,
-            probationPractitioner = case.toProbationPractitioner(),
+            probationPractitioner = probationPractitioner,
             isReviewNeeded = licence.isReviewNeeded(),
+            isLao = false,
           )
       }
     }.sortedWith(compareBy<ComVaryCase> { it.releaseDate }.thenBy { it.name })
@@ -85,5 +107,10 @@ class ComVaryCaseloadService(
     licences.isEmpty() -> null
     licences.size > 1 -> licences.find { licence -> licence.statusCode != ACTIVE && !licence.isReviewNeeded() }
     else -> licences.first()
+  }
+
+  private fun getCaseAccessRecords(crns: List<String>): Map<String, CaseAccessResponse> {
+    val username = SecurityContextHolder.getContext().authentication.name
+    return deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
   }
 }

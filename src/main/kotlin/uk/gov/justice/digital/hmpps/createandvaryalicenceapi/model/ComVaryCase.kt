@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -47,4 +48,23 @@ data class ComVaryCase(
 
   @field:Schema(description = "Type of this licence", example = LicenceKinds.CRD)
   val kind: LicenceKind,
-)
+
+  @field:Schema(description = "Is the offender a limited access offender (LAO)?", example = "true")
+  val isLao: Boolean,
+) {
+  companion object {
+    fun restrictedCase(licence: LicenceComCase, probationPractitioner: ProbationPractitioner) = ComVaryCase(
+      licenceId = null,
+      licenceType = licence.typeCode,
+      licenceStatus = null,
+      crnNumber = licence.crn,
+      prisonerNumber = null,
+      kind = licence.kind,
+      name = "Access restricted on NDelius",
+      releaseDate = licence.licenceStartDate,
+      probationPractitioner = probationPractitioner,
+      isReviewNeeded = licence.isReviewNeeded(),
+      isLao = true,
+    )
+  }
+}

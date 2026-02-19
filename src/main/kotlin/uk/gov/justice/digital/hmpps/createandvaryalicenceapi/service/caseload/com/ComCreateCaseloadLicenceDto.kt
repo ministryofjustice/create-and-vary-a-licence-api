@@ -34,7 +34,7 @@ data class ComCreateCaseloadLicenceDto(
       versionOf = null,
       releaseDate = releaseDate,
       isReviewNeeded = false,
-      licenceCreationType = LicenceCreationType.LICENCE_CREATION_RESTRICTED,
+      licenceCreationType = null,
       isLao = true,
     )
   }
