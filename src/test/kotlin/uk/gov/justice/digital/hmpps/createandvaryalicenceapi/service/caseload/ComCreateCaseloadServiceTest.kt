@@ -1504,7 +1504,6 @@ class ComCreateCaseloadServiceTest {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
         assertThat(releaseDate).isEqualTo(tenDaysFromNow)
         assertThat(isLao).isTrue()
       }
@@ -1525,7 +1524,6 @@ class ComCreateCaseloadServiceTest {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
         assertThat(releaseDate).isEqualTo(tenDaysFromNow)
         assertThat(isLao).isTrue()
       }
@@ -1545,7 +1543,6 @@ class ComCreateCaseloadServiceTest {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
         assertThat(releaseDate).isEqualTo(tenDaysFromNow)
         assertThat(isLao).isTrue()
       }
@@ -1594,7 +1591,6 @@ class ComCreateCaseloadServiceTest {
         assertThat(crnNumber).isEqualTo("X12349")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
         assertThat(releaseDate).isEqualTo(tenDaysFromNow)
         assertThat(isLao).isTrue()
       }
@@ -1645,7 +1641,6 @@ class ComCreateCaseloadServiceTest {
         assertThat(case.releaseDate).isEqualTo(twoDaysAgo)
         assertThat(case.name).isEqualTo("Access restricted on NDelius")
         assertThat(case.probationPractitioner.name).isEqualTo("Restricted")
-        assertThat(case.licenceCreationType).isEqualTo(LicenceCreationType.LICENCE_CREATION_RESTRICTED)
       }
     }
   }

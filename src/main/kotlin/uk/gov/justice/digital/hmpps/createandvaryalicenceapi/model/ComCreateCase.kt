@@ -13,7 +13,6 @@ enum class LicenceCreationType {
   LICENCE_CREATED_BY_PRISON,
   LICENCE_NOT_STARTED,
   LICENCE_IN_PROGRESS,
-  LICENCE_CREATION_RESTRICTED,
 }
 
 @Schema(description = "Describes an COM case")
