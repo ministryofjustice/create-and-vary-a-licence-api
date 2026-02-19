@@ -127,7 +127,7 @@ class UpdateSentenceDateService(
       )
 
       if (hardstopJobEnabled) {
-        licences.forEach { potentialHardstopCaseRepository.saveAndFlush(PotentialHardstopCase(licence = it)) }
+        potentialHardstopCaseRepository.saveAndFlush(PotentialHardstopCase(licence = updatedLicence))
       } else {
         licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
       }

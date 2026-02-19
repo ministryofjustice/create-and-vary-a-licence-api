@@ -73,6 +73,7 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
       ),
     )
 
+    // Put the licence into hard stop
     val result = webTestClient.put()
       .uri("/licence/id/2/sentence-dates")
       .accept(MediaType.APPLICATION_JSON)
@@ -97,6 +98,7 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
       ),
     )
 
+    // move out of hard stop
     webTestClient.put()
       .uri("/licence/id/2/sentence-dates")
       .accept(MediaType.APPLICATION_JSON)
@@ -115,6 +117,56 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
     val potentialHardstopCase = potentialHardstopCaseRepository.findById(1L).getOrNull()
     assertThat(potentialHardstopCase).isNotNull()
     assertThat(potentialHardstopCase?.status).isEqualTo(PotentialHardstopCaseStatus.PENDING)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-timedout-and-inprogress-hardstop-licences.sql",
+  )
+  fun `If we move a timed out licence and in in progress hard stop licence out of hard stop we should only create one hard stop case for each licence`() {
+    prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+
+    mockPrisonerSearchResponse(
+      SentenceDetail(
+        conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+        confirmedReleaseDate = LocalDate.now().plusWeeks(1),
+        sentenceStartDate = LocalDate.now().minusYears(2),
+        sentenceExpiryDate = LocalDate.now().plusYears(1),
+        licenceExpiryDate = LocalDate.now().plusYears(1),
+        topupSupervisionStartDate = LocalDate.now().plusYears(1),
+        topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+      ),
+    )
+
+    // move the timed out licence out of the hard stop period
+    webTestClient.put()
+      .uri("/licence/id/2/sentence-dates")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    // move the in-progress licence out of the hard stop period
+    webTestClient.put()
+      .uri("/licence/id/3/sentence-dates")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    assertThat(auditEventRepository.count()).isEqualTo(2)
+    assertThat(licenceEventRepository.count()).isEqualTo(0)
+    val timedOutLicence = licenceRepository.findById(2L).getOrNull()
+    assertThat(timedOutLicence?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
+
+    val inProgressLicence = licenceRepository.findById(3L).getOrNull()
+    assertThat(inProgressLicence?.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+
+    assertThat(potentialHardstopCaseRepository.count()).isEqualTo(2)
+    assertThat(potentialHardstopCaseRepository.findAll())
+      .extracting("status")
+      .contains(PotentialHardstopCaseStatus.PENDING, PotentialHardstopCaseStatus.PENDING)
   }
 
   private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {
