@@ -36,7 +36,7 @@ class PermissionsControllerIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isForbidden
         .expectStatus().isEqualTo(FORBIDDEN.value())
-        .expectBody(ErrorResponse::class.java)
+        .expectBody<ErrorResponse>()
         .returnResult().responseBody
 
       assertThat(result?.userMessage).contains("Access Denied")
