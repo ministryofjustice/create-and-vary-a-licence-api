@@ -68,9 +68,27 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
     )
     @Test
     fun `Successfully retrieve vary approver caseload`() {
+      val accessResponse = """
+      {
+        "access": [
+           {
+            "crn": "X12349",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12350",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          }
+        ]
+      }
+      """.trimIndent()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       deliusMockServer.stubGetProbationCases()
       deliusMockServer.stubGetManagersWithoutUserDetails()
+      deliusMockServer.stubGetCheckUserAccess(accessResponse)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("vary-approver-case-load-prisoners").replace(
@@ -90,8 +108,17 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<VaryApproverCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(1)
+      assertThat(caseload).hasSize(2)
+
       with(caseload.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12350")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(isLao).isTrue()
+      }
+
+      with(caseload[1]) {
         assertThat(crnNumber).isEqualTo("X12349")
         assertThat(name).isEqualTo("Test2 Person2")
       }
@@ -134,10 +161,27 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
     )
     @Test
     fun `Successfully search for vary approver case`() {
+      val accessResponse = """
+      {
+        "access": [
+           {
+            "crn": "X12349",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12350",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+      """.trimIndent()
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       deliusMockServer.stubGetProbationCases()
-      deliusMockServer.stubGetManagers()
+      deliusMockServer.stubGetManagersWithoutUserDetails()
+      deliusMockServer.stubGetCheckUserAccess(accessResponse)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("vary-approver-case-load-prisoners").replace(
@@ -159,7 +203,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody!!
 
       assertThat(result.pduCasesResponse).hasSize(0)
-      assertThat(result.regionCasesResponse).hasSize(1)
+      assertThat(result.regionCasesResponse).hasSize(2)
 
       with(result.regionCasesResponse.first()) {
         assertThat(crnNumber).isEqualTo("X12349")

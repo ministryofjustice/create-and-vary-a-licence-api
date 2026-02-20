@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceVaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
@@ -51,4 +52,20 @@ data class VaryApproverCase(
 
   @field:Schema(description = "The details for the active supervising probation officer", requiredMode = NOT_REQUIRED)
   val probationPractitioner: ProbationPractitioner,
-)
+
+  @field:Schema(description = "Is the offender a limited access offender (LAO)?", example = "true")
+  val isLao: Boolean,
+) {
+  companion object {
+    fun restrictedCase(licence: LicenceVaryApproverCase) = VaryApproverCase(
+      licenceId = null,
+      name = "Access restricted on NDelius",
+      crnNumber = licence.crn,
+      licenceType = null,
+      variationRequestDate = null,
+      releaseDate = null,
+      probationPractitioner = ProbationPractitioner.laoProbationPractitioner(),
+      isLao = true,
+    )
+  }
+}

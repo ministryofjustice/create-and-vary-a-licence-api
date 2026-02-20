@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
@@ -10,6 +12,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse.Companion.unrestricted
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
 
 @Service
@@ -17,6 +21,7 @@ class VaryApproverCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val deliusApiClient: DeliusApiClient,
   private val licenceCaseRepository: LicenceCaseRepository,
+  @param:Value("\${feature.toggle.lao.enabled}") private val laoEnabled: Boolean = false,
 ) {
 
   fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
@@ -66,15 +71,24 @@ class VaryApproverCaseloadService(
     val nomisRecords =
       prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers).associateBy { it.prisonerNumber }
     val probationPractitioners = getProbationPractitioners(prisonNumbers)
+    val crns = deliusRecords.values.map { it.crn }.distinct()
+    val caseAccessRecords = if (laoEnabled) {
+      getCaseAccessRecords(crns)
+    } else {
+      emptyMap()
+    }
 
     return licences.mapNotNull { licence ->
       val nomisRecord = nomisRecords[licence.prisonNumber]
       val deliusRecord = deliusRecords[licence.prisonNumber]
+      val caseAccessRecord = caseAccessRecords[deliusRecord?.crn] ?: unrestricted
+      val isLao = caseAccessRecord.userExcluded || caseAccessRecord.userRestricted
       val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()] ?: ProbationPractitioner.UNALLOCATED
-      if (nomisRecord == null || deliusRecord == null) {
-        null
-      } else {
-        VaryApproverCase(
+
+      when {
+        nomisRecord == null || deliusRecord == null -> null
+        isLao -> VaryApproverCase.restrictedCase(licence)
+        else -> VaryApproverCase(
           licenceId = licence.licenceId,
           name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim()
             .convertToTitleCase(),
@@ -83,6 +97,7 @@ class VaryApproverCaseloadService(
           variationRequestDate = licence.dateCreated?.toLocalDate(),
           releaseDate = licence.licenceStartDate,
           probationPractitioner = probationPractitioner,
+          isLao = false,
         )
       }
     }
@@ -116,4 +131,9 @@ class VaryApproverCaseloadService(
   }
 
   private fun applySort(cases: List<VaryApproverCase>): List<VaryApproverCase> = cases.sortedBy { it.releaseDate }
+
+  private fun getCaseAccessRecords(crns: List<String>): Map<String, CaseAccessResponse> {
+    val username = SecurityContextHolder.getContext().authentication.name
+    return deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
+  }
 }

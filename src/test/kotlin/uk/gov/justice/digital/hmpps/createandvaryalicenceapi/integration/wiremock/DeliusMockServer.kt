@@ -322,6 +322,29 @@ class DeliusMockServer : WireMockServer(8093) {
                     "code": "probationArea-code-3", 
                     "description": "probationArea-description-3"
                   }
+                },                
+                {
+                  "code": "staff-code-4",
+                  "case": {
+                    "crn": "X12350",
+                    "nomisId": "A1234AC"
+                  },
+                  "name": {
+                    "forename": "Test4",
+                    "surname": "Test4"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-4",
+                    "description": "staff-description-4",
+                    "borough": { "code": "borough-code-4", "description": "borough-description-4" },
+                    "district": { "code": "district-code-4", "description": "district-description-4" },
+                    "provider": { "code": "probationArea-code-4", "description": "probationArea-description-4" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-4", 
+                    "description": "probationArea-description-4"
+                  }
                 }]
               """.trimMargin(),
             ).withStatus(200),
@@ -453,6 +476,30 @@ class DeliusMockServer : WireMockServer(8093) {
                   "provider": { 
                     "code": "probationArea-code-4", 
                     "description": "probationArea-description-4"
+                  },
+                  "unallocated": false
+                },
+                {
+                  "code": "staff-code-5",
+                  "case": {
+                    "crn": "X12350",
+                    "nomisId": "A1234AC"
+                  },
+                  "name": {
+                    "forename": "Test5",
+                    "surname": "Test5"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-5",
+                    "description": "staff-description-5",
+                    "borough": { "code": "borough-code-5", "description": "borough-description-5" },
+                    "district": { "code": "district-code-5", "description": "district-description-5" },
+                    "provider": { "code": "probationArea-code-5", "description": "probationArea-description-5" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-5", 
+                    "description": "probationArea-description-5"
                   },
                   "unallocated": false
                 }]
@@ -879,7 +926,7 @@ class DeliusMockServer : WireMockServer(8093) {
         "crn": "X12348",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234E"
+        "nomisId": "A1234AA"
       },
       {
         "crn": "X12349",
@@ -891,19 +938,19 @@ class DeliusMockServer : WireMockServer(8093) {
         "crn": "X12350",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234G"
+        "nomisId": "A1234AC"
       },
       {
         "crn": "X12351",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234H"
+        "nomisId": "A1234AD"
       },
       {
         "crn": "X12352",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234I"
+        "nomisId": "A1234AE"
       }
     ]
     """.trimIndent()
