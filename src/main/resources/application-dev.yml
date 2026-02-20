@@ -25,7 +25,7 @@ hmpps:
       url: "https://prison-register-dev.hmpps.service.justice.gov.uk"
   delius:
     api:
-      url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
+      url: "http://localhost:5000"
   workload:
     api:
       url: "https://hmpps-workload-dev.hmpps.service.justice.gov.uk"
