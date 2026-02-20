@@ -49,6 +49,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
@@ -1151,4 +1152,18 @@ object TestData {
     val sentenceAndOffences2 = sentenceAndOffences1.copy(sentenceDate = LocalDate.of(2025, 8, 25))
     return listOf(sentenceAndOffences1, sentenceAndOffences2)
   }
+
+  fun aCaseAccessResponse(
+    crn: String,
+    excluded: Boolean,
+    restricted: Boolean,
+    exclusionMessage: String? = null,
+    restrictedMessage: String? = null,
+  ) = CaseAccessResponse(
+    crn = crn,
+    userExcluded = excluded,
+    userRestricted = restricted,
+    exclusionMessage = exclusionMessage,
+    restrictionMessage = restrictedMessage,
+  )
 }
