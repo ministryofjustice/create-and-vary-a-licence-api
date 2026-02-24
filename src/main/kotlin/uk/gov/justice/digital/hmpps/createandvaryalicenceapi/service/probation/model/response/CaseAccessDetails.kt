@@ -4,10 +4,17 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "Details about case access restrictions for a probation staff member")
 data class CaseAccessDetails(
+  @field:Schema(description = "The CRN of the case", example = "X320741", required = true)
+  val crn: String,
+
   @field:Schema(description = "The type of access restriction", example = "RESTRICTED", required = true)
   val type: CaseAccessRestrictionType,
 
-  @field:Schema(description = "Additional details that have been entered in NDelius", example = "User is restricted from viewing this case", required = false)
+  @field:Schema(
+    description = "Additional details that have been entered in NDelius",
+    example = "User is restricted from viewing this case",
+    required = false,
+  )
   val message: String? = null,
 )
 
