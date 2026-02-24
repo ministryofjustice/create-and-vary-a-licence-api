@@ -29,7 +29,7 @@ generic-service:
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-01-14
     TIME_SERVED_PRISONS: "MDI, BAI, BNI, WCI, EXI, WDI, IWI, EWI"
     HDC_ENABLED: true
-    LAO_ENABLED: false
+    LAO_ENABLED: true
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
 
   namespace_secrets:
