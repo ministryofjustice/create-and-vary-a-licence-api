@@ -1,12 +1,17 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceVaryApproverCase
@@ -18,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 import java.time.LocalDate
@@ -28,11 +34,23 @@ class VaryApproverCaseloadServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
 
-  private val service = VaryApproverCaseloadService(
+  private var service = VaryApproverCaseloadService(
     prisonerSearchApiClient,
     deliusApiClient,
     licenceCaseRepository,
   )
+
+  @BeforeEach
+  fun reset() {
+    val authentication = org.mockito.kotlin.mock<Authentication>()
+    val securityContext = org.mockito.kotlin.mock<SecurityContext>()
+
+    whenever(authentication.name).thenReturn("Test Username")
+    whenever(securityContext.authentication).thenReturn(authentication)
+    SecurityContextHolder.setContext(securityContext)
+
+    reset(deliusApiClient, licenceCaseRepository)
+  }
 
   @Test
   fun `should build the vary approver caseload for a probation region`() {
@@ -410,6 +428,104 @@ class VaryApproverCaseloadServiceTest {
     // Then
     assertThat(searchResults.pduCasesResponse).isEmpty()
     assertThat(searchResults.regionCasesResponse).isEmpty()
+  }
+
+  @Test
+  fun `does not check Delius user access when laoEnabled is false`() {
+    val probationAreaCode = "N01"
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val probationCases = listOf(aProbationCase())
+
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(deliusApiClient.getProbationCases(licenceSummaries.map { it.prisonNumber!! })).thenReturn(probationCases)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
+    )
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
+      listOf(aCommunityManagerWithoutUser()),
+    )
+
+    val caseload = service.getVaryApproverCaseload(
+      VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode),
+    )
+
+    // Then
+    assertThat(caseload).hasSize(1)
+    with(caseload.first()) {
+      assertThat(isLao).isFalse()
+      assertThat(name).isNotEqualTo("Restricted")
+    }
+    verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
+  }
+
+  @Test
+  fun `LAO cases are returned as restricted in the caseload when they are excluded`() {
+    service = VaryApproverCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      laoEnabled = true,
+    )
+
+    val probationAreaCode = "N01"
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val probationCases = listOf(aProbationCase())
+
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(deliusApiClient.getProbationCases(licenceSummaries.map { it.prisonNumber!! })).thenReturn(probationCases)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
+    )
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
+      listOf(aCommunityManagerWithoutUser()),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+      listOf(CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false)),
+    )
+
+    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+
+    assertThat(caseload).hasSize(1)
+    with(caseload.first()) {
+      assertThat(isLao).isTrue()
+      assertThat(name).isEqualTo("Access restricted on NDelius")
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.laoProbationPractitioner())
+    }
+  }
+
+  @Test
+  fun `LAO cases are returned as restricted in the caseload when they are restricted`() {
+    service = VaryApproverCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      laoEnabled = true,
+    )
+
+    val probationAreaCode = "N01"
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val probationCases = listOf(aProbationCase())
+
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(deliusApiClient.getProbationCases(licenceSummaries.map { it.prisonNumber!! })).thenReturn(probationCases)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
+    )
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
+      listOf(aCommunityManagerWithoutUser()),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+      listOf(CaseAccessResponse(crn = "X12348", userExcluded = false, userRestricted = true)),
+    )
+
+    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+
+    assertThat(caseload).hasSize(1)
+    with(caseload.first()) {
+      assertThat(isLao).isTrue()
+      assertThat(name).isEqualTo("Access restricted on NDelius")
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.laoProbationPractitioner())
+    }
   }
 
   fun aLicenceVaryApproverCase(
