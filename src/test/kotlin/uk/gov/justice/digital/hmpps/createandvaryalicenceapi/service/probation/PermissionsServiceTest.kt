@@ -13,7 +13,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CaseAccessRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CheckCaseAccessRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -30,7 +30,7 @@ class PermissionsServiceTest {
     restricted = false,
     excluded = false,
   )
-  private val caseAccessDetails = CaseAccessDetails(CaseAccessRestrictionType.NONE)
+  private val caseAccessDetails = CaseAccessDetails(crn = CRN, CaseAccessRestrictionType.NONE)
 
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceRepository = mock<LicenceRepository>()
@@ -50,7 +50,7 @@ class PermissionsServiceTest {
 
   @Test
   fun `should check case access when a CRN is provided`() {
-    val response = permissionsService.checkCaseAccess(CaseAccessRequest(crn = CRN))
+    val response = permissionsService.checkCaseAccess(CheckCaseAccessRequest(crn = CRN))
 
     assertThat(response).isEqualTo(caseAccessDetails)
     verify(deliusApiClient).getCheckUserAccessForCRN(USER_NAME, CRN)
@@ -63,7 +63,7 @@ class PermissionsServiceTest {
     val nomisId = "AB1234E"
     whenever(deliusApiClient.getProbationCase(nomisId)).thenReturn(ProbationCase(nomisId = nomisId, crn = CRN))
 
-    val response = permissionsService.checkCaseAccess(CaseAccessRequest(nomisId = nomisId))
+    val response = permissionsService.checkCaseAccess(CheckCaseAccessRequest(nomisId = nomisId))
 
     assertThat(response).isEqualTo(caseAccessDetails)
     verify(deliusApiClient).getProbationCase(nomisId)
@@ -80,7 +80,7 @@ class PermissionsServiceTest {
         .findById(licenceId),
     ).thenReturn(Optional.of(createCrdLicence().copy(crn = CRN)))
 
-    val response = permissionsService.checkCaseAccess(CaseAccessRequest(licenceId = licenceId))
+    val response = permissionsService.checkCaseAccess(CheckCaseAccessRequest(licenceId = licenceId))
 
     assertThat(response).isEqualTo(caseAccessDetails)
     verify(deliusApiClient).getCheckUserAccessForCRN(USER_NAME, CRN)
@@ -91,7 +91,7 @@ class PermissionsServiceTest {
   @Test
   fun `should throw a validation exception for a bad request`() {
     val exception = assertThrows<ValidationException> {
-      permissionsService.checkCaseAccess(CaseAccessRequest())
+      permissionsService.checkCaseAccess(CheckCaseAccessRequest())
     }
     assertThat(exception.message).isEqualTo("crn, nomisId or licenceId must be provided")
   }

@@ -13,7 +13,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CaseAccessRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CheckCaseAccessRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessRestrictionType.EXCLUDED
@@ -84,7 +84,7 @@ class PermissionsControllerIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<CaseAccessDetails>())
         .returnResult().responseBody!!
 
-      assertThat(caseAccessDetails).isEqualTo(CaseAccessDetails(RESTRICTED, "This access has been restricted"))
+      assertThat(caseAccessDetails).isEqualTo(CaseAccessDetails("CRN1", RESTRICTED, "This access has been restricted"))
     }
 
     @Test
@@ -103,7 +103,7 @@ class PermissionsControllerIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<CaseAccessDetails>())
         .returnResult().responseBody!!
 
-      assertThat(caseAccessDetails).isEqualTo(CaseAccessDetails(EXCLUDED, "This access has been excluded"))
+      assertThat(caseAccessDetails).isEqualTo(CaseAccessDetails("CRN1", EXCLUDED, "This access has been excluded"))
     }
 
     @Test
@@ -126,6 +126,7 @@ class PermissionsControllerIntegrationTest : IntegrationTestBase() {
 
       assertThat(caseAccessDetails).isEqualTo(
         CaseAccessDetails(
+          "CRN1",
           RESTRICTED,
           "This access has been restricted, this message must be displayed",
         ),
@@ -140,7 +141,7 @@ class PermissionsControllerIntegrationTest : IntegrationTestBase() {
       val result = webTestClient.post()
         .uri(CHECK_CASE_ACCESS)
         .accept(APPLICATION_JSON)
-        .bodyValue(CaseAccessRequest(crn = "CRN1"))
+        .bodyValue(CheckCaseAccessRequest(crn = "CRN1"))
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
         .exchange()
         .expectStatus().isForbidden
@@ -166,7 +167,7 @@ class PermissionsControllerIntegrationTest : IntegrationTestBase() {
         .uri(CHECK_CASE_ACCESS)
         .accept(APPLICATION_JSON)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .bodyValue(CaseAccessRequest())
+        .bodyValue(CheckCaseAccessRequest())
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.BAD_REQUEST.value())
     }
@@ -178,7 +179,7 @@ class PermissionsControllerIntegrationTest : IntegrationTestBase() {
       val caseAccessDetails = webTestClient.post()
         .uri(CHECK_CASE_ACCESS)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .bodyValue(CaseAccessRequest(crn = "CRN1"))
+        .bodyValue(CheckCaseAccessRequest(crn = "CRN1"))
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)

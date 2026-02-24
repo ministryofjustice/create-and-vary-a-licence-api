@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CaseAccessRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CheckCaseAccessRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.PermissionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessDetails
@@ -140,8 +140,8 @@ class PermissionsController(private val permissionsService: PermissionsService) 
       ),
     ],
   )
-  fun checkCaseAccess(
+  fun checkComCaseAccess(
     @Valid @RequestBody
-    caseAccessRequest: CaseAccessRequest,
-  ) = permissionsService.checkCaseAccess(caseAccessRequest)
+    checkCaseAccessRequest: CheckCaseAccessRequest,
+  ) = permissionsService.checkCaseAccess(checkCaseAccessRequest)
 }

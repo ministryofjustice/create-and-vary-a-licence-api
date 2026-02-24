@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "Request object for updating / creating OMU email contact")
-data class CaseAccessRequest(
+data class CheckCaseAccessRequest(
   @field:Schema(description = "The case reference number", example = "X12444")
   val crn: String? = null,
 
