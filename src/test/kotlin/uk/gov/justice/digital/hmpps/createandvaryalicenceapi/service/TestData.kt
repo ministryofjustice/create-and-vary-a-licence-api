@@ -785,6 +785,7 @@ object TestData {
     variationRequestDate = LocalDate.of(2023, 11, 24),
     releaseDate = LocalDate.of(2021, 10, 22),
     probationPractitioner = ProbationPractitioner(allocated = true),
+    isLao = false,
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(

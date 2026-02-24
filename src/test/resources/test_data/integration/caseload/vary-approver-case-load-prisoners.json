@@ -29,5 +29,22 @@
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
+  },
+  {
+    "prisonerNumber": "A1234AC",
+    "firstName": "Test1",
+    "lastName": "User3",
+    "dateOfBirth": "1985-01-01",
+    "status": "ACTIVE IN",
+    "recall": false,
+    "licenceExpiryDate": "2022-12-26",
+    "conditionalReleaseDate": "2024-08-02",
+    "licenceType": "PSS",
+    "indeterminateSentence": false,
+    "hardStopDate": null,
+    "hardStopWarningDate": null,
+    "isInHardStopPeriod": false,
+    "isEligibleForEarlyRelease": false,
+    "isDueToBeReleasedInTheNextTwoWorkingDays": false
   }
 ]
