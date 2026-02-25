@@ -528,6 +528,129 @@ class VaryApproverCaseloadServiceTest {
     }
   }
 
+  @Test
+  fun `when searching by CRN, include LAO excluded cases`() {
+    service = VaryApproverCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      laoEnabled = true,
+    )
+
+    val probationAreaCode = "N01"
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val probationCases = listOf(aProbationCase())
+
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(deliusApiClient.getProbationCases(licenceSummaries.map { it.prisonNumber!! })).thenReturn(probationCases)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
+    )
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
+      listOf(aCommunityManagerWithoutUser()),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+      listOf(CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false)),
+    )
+
+    val caseload = service.getVaryApproverCaseload(
+      VaryApproverCaseloadSearchRequest(
+        probationAreaCode = probationAreaCode,
+        searchTerm = "X12348",
+      ),
+    )
+
+    assertThat(caseload).hasSize(1)
+    assertThat(caseload.first().isLao).isTrue()
+    with(caseload.first()) {
+      assertThat(name).isEqualTo("Access restricted on NDelius")
+      assertThat(crnNumber).isEqualTo("X12348")
+      assertThat(probationPractitioner.name).isEqualTo("Restricted")
+      assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+      assertThat(releaseDate).isNull()
+      assertThat(isLao).isTrue()
+    }
+  }
+
+  @Test
+  fun `when a search term other than CRN is used and access is restricted, no record should be returned`() {
+    service = VaryApproverCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      laoEnabled = true,
+    )
+
+    val probationAreaCode = "N01"
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val probationCases = listOf(aProbationCase())
+
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(deliusApiClient.getProbationCases(licenceSummaries.map { it.prisonNumber!! })).thenReturn(probationCases)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
+    )
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
+      listOf(aCommunityManagerWithoutUser()),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+      listOf(CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false)),
+    )
+
+    val caseload = service.getVaryApproverCaseload(
+      VaryApproverCaseloadSearchRequest(
+        probationAreaCode = probationAreaCode,
+        searchTerm = "Prisoner",
+      ),
+    )
+
+    assertThat(caseload).isEmpty()
+  }
+
+  @Test
+  fun `when searching by partial CRN, LAO cases are included`() {
+    service = VaryApproverCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      laoEnabled = true,
+    )
+
+    val probationAreaCode = "N01"
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val probationCases = listOf(aProbationCase())
+
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(deliusApiClient.getProbationCases(licenceSummaries.map { it.prisonNumber!! })).thenReturn(probationCases)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
+      listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
+    )
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
+      listOf(aCommunityManagerWithoutUser()),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+      listOf(CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false)),
+    )
+
+    val caseload = service.getVaryApproverCaseload(
+      VaryApproverCaseloadSearchRequest(
+        probationAreaCode = probationAreaCode,
+        searchTerm = "X123",
+      ),
+    )
+
+    assertThat(caseload).hasSize(1)
+    assertThat(caseload.first().isLao).isTrue()
+    with(caseload.first()) {
+      assertThat(name).isEqualTo("Access restricted on NDelius")
+      assertThat(crnNumber).isEqualTo("X12348")
+      assertThat(probationPractitioner.name).isEqualTo("Restricted")
+      assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+      assertThat(releaseDate).isNull()
+      assertThat(isLao).isTrue()
+    }
+  }
+
   fun aLicenceVaryApproverCase(
     id: Long = 1,
     type: LicenceType = LicenceType.AP_PSS,

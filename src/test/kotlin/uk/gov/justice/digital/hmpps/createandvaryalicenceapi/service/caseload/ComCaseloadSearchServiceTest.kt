@@ -1458,7 +1458,7 @@ class ComCaseloadSearchServiceTest {
     }
 
     @Test
-    fun `when searching by partial CRN pattern including a leading letter, LAO cases are included`() {
+    fun `when searching by partial CRN, LAO cases are included`() {
       request = ProbationUserSearchRequest("A123", 2000)
 
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123"))
@@ -1479,7 +1479,7 @@ class ComCaseloadSearchServiceTest {
     }
 
     @Test
-    fun `when searching by partial CRN pattern with just matching digits, LAO cases are included again`() {
+    fun `when searching by partial CRN pattern with just digits, LAO cases are included again`() {
       request = ProbationUserSearchRequest("23456", 2000)
 
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "23456"))
