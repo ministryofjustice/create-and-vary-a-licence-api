@@ -160,7 +160,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-variation-submitted-licence.sql",
     )
     @Test
-    fun `Successfully search for vary approver casee`() {
+    fun `Successfully search for vary approver case`() {
       val accessResponse = """
       {
         "access": [
