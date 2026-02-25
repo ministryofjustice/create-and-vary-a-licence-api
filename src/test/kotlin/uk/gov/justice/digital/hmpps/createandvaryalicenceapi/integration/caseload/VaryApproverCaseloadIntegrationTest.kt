@@ -128,7 +128,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
   @Nested
   inner class VaryApproverCaseloadSearch {
     private val caseSearchRequest =
-      VaryApproverCaseloadSearchRequest(probationPduCodes = null, probationAreaCode = "N55", searchTerm = "Test")
+      VaryApproverCaseloadSearchRequest(probationPduCodes = null, probationAreaCode = "N55", searchTerm = "X123")
 
     @Test
     fun `Get forbidden (403) when incorrect roles are supplied`() {
@@ -160,7 +160,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-variation-submitted-licence.sql",
     )
     @Test
-    fun `Successfully search for vary approver case`() {
+    fun `Successfully search for vary approver casee`() {
       val accessResponse = """
       {
         "access": [
@@ -171,7 +171,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
           },
           {
             "crn": "X12350",
-            "userExcluded": false,
+            "userExcluded": true,
             "userRestricted": false
           }
         ]
@@ -206,6 +206,14 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
       assertThat(result.regionCasesResponse).hasSize(2)
 
       with(result.regionCasesResponse.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12350")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(isLao).isTrue()
+      }
+
+      with(result.regionCasesResponse.last()) {
         assertThat(crnNumber).isEqualTo("X12349")
         assertThat(name).isEqualTo("Test2 Person2")
       }

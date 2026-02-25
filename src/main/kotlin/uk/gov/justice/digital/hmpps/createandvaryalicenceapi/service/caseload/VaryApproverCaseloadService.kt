@@ -124,6 +124,7 @@ class VaryApproverCaseloadService(
     val searchString = searchTerm.lowercase().trim()
 
     return cases.filter { case ->
+      if (case.isLao && !case.crnNumber.contains(searchString, ignoreCase = true)) return@filter false
       case.crnNumber.lowercase().contains(searchString) ||
         case.name?.lowercase()?.contains(searchString) ?: false ||
         case.probationPractitioner.name?.lowercase()?.contains(searchString) ?: false
