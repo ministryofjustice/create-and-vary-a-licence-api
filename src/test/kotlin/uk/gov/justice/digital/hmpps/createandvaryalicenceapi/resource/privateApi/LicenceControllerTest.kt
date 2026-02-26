@@ -97,6 +97,7 @@ class LicenceControllerTest {
           licenceService,
           updateSentenceDateService,
           licenceCreationService,
+          prisonEventHandlerEnabled = false,
         ),
       )
       .setControllerAdvice(ControllerAdvice())
@@ -226,8 +227,6 @@ class LicenceControllerTest {
   @Test
   fun `match licences by pdu and status`() {
     // Given
-    val pduList = listOf("A", "B", "C")
-
     val licenceQueryObject = LicenceQueryObject(
       statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
       sortBy = "id",

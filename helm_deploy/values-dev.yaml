@@ -27,6 +27,7 @@ generic-service:
     TIME_SERVED_PRISONS: "MDI, BAI, BNI, WCI, EXI, WDI, IWI, EWI"
     HDC_ENABLED: false
     LAO_ENABLED: true
+    PRISON_EVENT_LISTENER_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
