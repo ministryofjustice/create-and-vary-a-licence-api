@@ -32,7 +32,7 @@ generic-service:
     sqs-domain-events-queue-secret:
       HMPPS_SQS_QUEUES_DOMAINEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
 
-    cvl-prison-events-sqs-instance-output:
+    sqs-prison-events-queue-secret:
       HMPPS_SQS_QUEUES_PRISONEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
 
   scheduledDowntime:
