@@ -98,6 +98,32 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql("classpath:test_data/seed-licence-id-1.sql")
+  fun `Get a licence by ID - new testing approach`() {
+    // Given
+    val requestSpec = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+
+    // When
+    val responseSpec = requestSpec.exchange()
+
+    // Then
+    val variables = mapOf(
+      "licenceId" to 1,
+      "responsibleComFullName" to "Test Client",
+      "electronicMonitoringProviderStatus" to "COMPLETE",
+    )
+
+    jsonTestUtils.assertJsonEquals(
+      templateName = "licence_by_id",
+      variables = variables,
+      responseSpec = responseSpec,
+    )
+  }
+
+  @Test
   @Sql(
     "classpath:test_data/seed-licence-id-5.sql",
   )
