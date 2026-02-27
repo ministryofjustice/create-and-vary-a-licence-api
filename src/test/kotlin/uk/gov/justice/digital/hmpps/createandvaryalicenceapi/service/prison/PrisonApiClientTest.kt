@@ -32,7 +32,7 @@ class PrisonApiClientTest {
 
   @BeforeEach
   fun reset() {
-    var webClient = WebClient.builder().baseUrl("http://localhost:${wiremock.port}").build()
+    val webClient = WebClient.builder().baseUrl("http://localhost:${wiremock.port}").build()
     prisonApiClient = PrisonApiClient(webClient)
   }
 
