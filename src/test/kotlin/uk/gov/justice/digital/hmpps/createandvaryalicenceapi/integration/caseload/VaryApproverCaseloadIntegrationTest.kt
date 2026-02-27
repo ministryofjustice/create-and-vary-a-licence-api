@@ -115,7 +115,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12350")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
 
       with(caseload[1]) {
@@ -210,7 +210,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12350")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
 
       with(result.regionCasesResponse.last()) {

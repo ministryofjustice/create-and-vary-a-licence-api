@@ -1158,7 +1158,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(teamName).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(isOnProbation).isFalse()
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -1191,7 +1191,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(teamName).isEqualTo("Restricted")
         assertThat(isOnProbation).isFalse()
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -1224,7 +1224,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(teamName).isEqualTo("Restricted")
         assertThat(isOnProbation).isFalse()
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -1256,7 +1256,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(teamName).isEqualTo("Restricted")
         assertThat(isOnProbation).isFalse()
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -1296,7 +1296,7 @@ class ComCaseloadSearchServiceTest {
       val result = service.searchForOffenderOnProbationUserCaseload(request)
 
       assertThat(result.results.size).isEqualTo(1)
-      assertThat(result.results.first().isLao).isTrue()
+      assertThat(result.results.first().isRestricted).isTrue()
     }
 
     @Test
@@ -1336,7 +1336,7 @@ class ComCaseloadSearchServiceTest {
       val result = service.searchForOffenderOnProbationUserCaseload(request)
 
       assertThat(result.results).hasSize(1)
-      assertThat(result.results.first().isLao).isFalse()
+      assertThat(result.results.first().isRestricted).isFalse()
     }
 
     @Test
@@ -1347,7 +1347,7 @@ class ComCaseloadSearchServiceTest {
       val result = service.searchForOffenderOnProbationUserCaseload(request)
 
       assertThat(result.results).hasSize(1)
-      assertThat(result.results.first().isLao).isFalse()
+      assertThat(result.results.first().isRestricted).isFalse()
     }
 
     @Test
@@ -1375,7 +1375,7 @@ class ComCaseloadSearchServiceTest {
       val result = service.searchForOffenderOnProbationUserCaseload(request)
 
       assertThat(result.results).hasSize(1)
-      assertThat(result.results.first().isLao).isTrue()
+      assertThat(result.results.first().isRestricted).isTrue()
       assertThat(result.results.first().name).isEqualTo("Access restricted on NDelius")
     }
 
@@ -1395,7 +1395,7 @@ class ComCaseloadSearchServiceTest {
       val result = service.searchForOffenderOnProbationUserCaseload(request)
 
       assertThat(result.results).hasSize(1)
-      assertThat(result.results.first().isLao).isTrue()
+      assertThat(result.results.first().isRestricted).isTrue()
     }
 
     @Test
@@ -1427,7 +1427,7 @@ class ComCaseloadSearchServiceTest {
         assertThat(releaseDate).isEqualTo(aLicenceEntity.licenceStartDate)
         assertThat(teamName).isEqualTo("Restricted")
         assertThat(isOnProbation).isTrue()
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -1475,7 +1475,7 @@ class ComCaseloadSearchServiceTest {
       val result = service.searchForOffenderOnProbationUserCaseload(request)
 
       assertThat(result.results).hasSize(1)
-      assertThat(result.results.first().isLao).isTrue()
+      assertThat(result.results.first().isRestricted).isTrue()
     }
 
     @Test
@@ -1496,7 +1496,7 @@ class ComCaseloadSearchServiceTest {
       val result = service.searchForOffenderOnProbationUserCaseload(request)
 
       assertThat(result.results).hasSize(1)
-      assertThat(result.results.first().isLao).isTrue()
+      assertThat(result.results.first().isRestricted).isTrue()
     }
 
     @Test

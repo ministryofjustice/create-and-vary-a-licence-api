@@ -542,7 +542,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
       assertThat(releaseDate).isEqualTo(LocalDate.now())
       assertThat(isOnProbation).isFalse()
-      assertThat(isLao).isTrue()
+      assertThat(isRestricted).isTrue()
     }
 
     assertThat(inPrisonCount).isEqualTo(2)
@@ -692,7 +692,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
       assertThat(releaseDate).isEqualTo(LocalDate.now())
       assertThat(isOnProbation).isFalse()
-      assertThat(isLao).isTrue()
+      assertThat(isRestricted).isTrue()
     }
 
     assertThat(inPrisonCount).isEqualTo(2)

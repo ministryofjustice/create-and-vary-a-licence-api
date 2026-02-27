@@ -452,7 +452,7 @@ class VaryApproverCaseloadServiceTest {
     // Then
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
-      assertThat(isLao).isFalse()
+      assertThat(isRestricted).isFalse()
       assertThat(name).isNotEqualTo("Restricted")
     }
     verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
@@ -487,9 +487,9 @@ class VaryApproverCaseloadServiceTest {
 
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
-      assertThat(isLao).isTrue()
+      assertThat(isRestricted).isTrue()
       assertThat(name).isEqualTo("Access restricted on NDelius")
-      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.laoProbationPractitioner())
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.restrictedView())
     }
   }
 
@@ -522,9 +522,9 @@ class VaryApproverCaseloadServiceTest {
 
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
-      assertThat(isLao).isTrue()
+      assertThat(isRestricted).isTrue()
       assertThat(name).isEqualTo("Access restricted on NDelius")
-      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.laoProbationPractitioner())
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.restrictedView())
     }
   }
 
@@ -561,14 +561,14 @@ class VaryApproverCaseloadServiceTest {
     )
 
     assertThat(caseload).hasSize(1)
-    assertThat(caseload.first().isLao).isTrue()
+    assertThat(caseload.first().isRestricted).isTrue()
     with(caseload.first()) {
       assertThat(name).isEqualTo("Access restricted on NDelius")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(probationPractitioner.name).isEqualTo("Restricted")
       assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
       assertThat(releaseDate).isNull()
-      assertThat(isLao).isTrue()
+      assertThat(isRestricted).isTrue()
     }
   }
 
@@ -640,14 +640,14 @@ class VaryApproverCaseloadServiceTest {
     )
 
     assertThat(caseload).hasSize(1)
-    assertThat(caseload.first().isLao).isTrue()
+    assertThat(caseload.first().isRestricted).isTrue()
     with(caseload.first()) {
       assertThat(name).isEqualTo("Access restricted on NDelius")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(probationPractitioner.name).isEqualTo("Restricted")
       assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
       assertThat(releaseDate).isNull()
-      assertThat(isLao).isTrue()
+      assertThat(isRestricted).isTrue()
     }
   }
 

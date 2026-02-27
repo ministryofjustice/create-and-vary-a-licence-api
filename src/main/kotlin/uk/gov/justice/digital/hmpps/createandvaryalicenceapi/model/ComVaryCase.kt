@@ -50,7 +50,7 @@ data class ComVaryCase(
   val kind: LicenceKind,
 
   @field:Schema(description = "Is the offender a limited access offender (LAO)?", example = "true")
-  val isLao: Boolean,
+  val isRestricted: Boolean,
 ) {
   companion object {
     fun restrictedCase(licence: LicenceComCase, probationPractitioner: ProbationPractitioner) = ComVaryCase(
@@ -64,7 +64,7 @@ data class ComVaryCase(
       releaseDate = licence.licenceStartDate,
       probationPractitioner = probationPractitioner,
       isReviewNeeded = licence.isReviewNeeded(),
-      isLao = true,
+      isRestricted = true,
     )
   }
 }

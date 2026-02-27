@@ -225,7 +225,7 @@ class ComCaseloadSearchService(
       isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
       releaseDateLabel = releaseDateLabelFactory.fromLicence(licence),
       isReviewNeeded = licence is ReviewablePostRelease && licence.isReviewNeeded(),
-      isLao = false,
+      isRestricted = false,
     )
   }
 
@@ -247,7 +247,7 @@ class ComCaseloadSearchService(
   }
 
   private fun FoundComCase.isExcludedFromCaseloads(searchTerm: String) = when {
-    crn?.contains(searchTerm, ignoreCase = true) == false && isLao == true -> true
+    crn?.contains(searchTerm, ignoreCase = true) == false && isRestricted == true -> true
     isOnProbation == true -> false
     releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) == true -> false
     kind == TIME_SERVED -> false

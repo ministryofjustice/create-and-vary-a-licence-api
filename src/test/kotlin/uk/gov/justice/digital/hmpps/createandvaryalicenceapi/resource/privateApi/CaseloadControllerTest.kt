@@ -306,7 +306,7 @@ class CaseloadControllerTest {
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.IN_PROGRESS,
           isOnProbation = false,
-          isLao = false,
+          isRestricted = false,
         ),
       ),
       1,
