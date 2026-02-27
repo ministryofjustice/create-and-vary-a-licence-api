@@ -911,7 +911,7 @@ fun CaseloadResult.transformToUnstartedRecord(
     isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
     releaseDateLabel = releaseDateLabel,
     isReviewNeeded = false,
-    isLao = false,
+    isRestricted = false,
   )
 }
 

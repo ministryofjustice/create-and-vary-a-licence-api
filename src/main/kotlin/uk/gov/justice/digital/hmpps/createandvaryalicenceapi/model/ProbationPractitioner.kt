@@ -23,6 +23,6 @@ data class ProbationPractitioner(
       false,
     )
     fun unallocated(staffCode: String?): ProbationPractitioner = ProbationPractitioner(staffCode, NOT_ALLOCATED, false)
-    fun laoProbationPractitioner(): ProbationPractitioner = ProbationPractitioner("Restricted", "Restricted", true)
+    fun restrictedView(): ProbationPractitioner = ProbationPractitioner("Restricted", "Restricted", true)
   }
 }

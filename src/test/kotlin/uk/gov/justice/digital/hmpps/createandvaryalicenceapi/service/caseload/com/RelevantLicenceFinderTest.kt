@@ -133,6 +133,6 @@ class RelevantLicenceFinderTest {
     licenceCreationType = licenceCreationType,
     isReviewNeeded = false,
     releaseDate = null,
-    isLao = false,
+    isRestricted = false,
   )
 }

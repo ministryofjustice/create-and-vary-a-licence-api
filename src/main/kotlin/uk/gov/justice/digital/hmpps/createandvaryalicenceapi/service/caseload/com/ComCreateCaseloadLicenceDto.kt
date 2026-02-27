@@ -19,7 +19,7 @@ data class ComCreateCaseloadLicenceDto(
   val releaseDate: LocalDate?,
   val isReviewNeeded: Boolean,
   val licenceCreationType: LicenceCreationType?,
-  val isLao: Boolean,
+  val isRestricted: Boolean,
 ) {
 
   companion object {
@@ -35,7 +35,7 @@ data class ComCreateCaseloadLicenceDto(
       releaseDate = releaseDate,
       isReviewNeeded = false,
       licenceCreationType = null,
-      isLao = true,
+      isRestricted = true,
     )
   }
 }
