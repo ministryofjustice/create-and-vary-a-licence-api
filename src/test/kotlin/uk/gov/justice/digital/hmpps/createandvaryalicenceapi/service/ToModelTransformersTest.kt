@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner.Companion.laoProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner.Companion.restrictedView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.FoundComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -64,9 +64,9 @@ class ToModelTransformersTest {
 
     assertThat(restrictedCase.name).isEqualTo("Access restricted on NDelius")
     assertThat(restrictedCase.comName).isEqualTo("Restricted")
-    assertThat(restrictedCase.probationPractitioner).isEqualTo(laoProbationPractitioner())
+    assertThat(restrictedCase.probationPractitioner).isEqualTo(restrictedView())
     assertThat(restrictedCase.teamName).isEqualTo("Restricted")
-    assertThat(restrictedCase.isLao).isTrue()
+    assertThat(restrictedCase.isRestricted).isTrue()
   }
 
   @Test
@@ -80,7 +80,7 @@ class ToModelTransformersTest {
 
     assertThat(restrictedCase.name).isEqualTo("Access restricted on NDelius")
     assertThat(restrictedCase.comName).isEqualTo("Restricted")
-    assertThat(restrictedCase.probationPractitioner).isEqualTo(laoProbationPractitioner())
-    assertThat(restrictedCase.isLao).isTrue()
+    assertThat(restrictedCase.probationPractitioner).isEqualTo(restrictedView())
+    assertThat(restrictedCase.isRestricted).isTrue()
   }
 }

@@ -450,7 +450,7 @@ class ComVaryCaseloadServiceTest {
     val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
-    assertThat(caseload[0].isLao).isFalse()
+    assertThat(caseload[0].isRestricted).isFalse()
     verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
   }
 
@@ -492,8 +492,8 @@ class ComVaryCaseloadServiceTest {
     val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
-    assertThat(caseload[0].isLao).isTrue()
-    assertThat(caseload[0].probationPractitioner).isEqualTo(ProbationPractitioner.laoProbationPractitioner())
+    assertThat(caseload[0].isRestricted).isTrue()
+    assertThat(caseload[0].probationPractitioner).isEqualTo(ProbationPractitioner.restrictedView())
   }
 
   @Test
@@ -534,8 +534,8 @@ class ComVaryCaseloadServiceTest {
     val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
-    assertThat(caseload[0].isLao).isTrue()
-    assertThat(caseload[0].probationPractitioner).isEqualTo(ProbationPractitioner.laoProbationPractitioner())
+    assertThat(caseload[0].isRestricted).isTrue()
+    assertThat(caseload[0].probationPractitioner).isEqualTo(ProbationPractitioner.restrictedView())
   }
 
   @Test
@@ -576,7 +576,7 @@ class ComVaryCaseloadServiceTest {
     val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
-    assertThat(caseload[0].isLao).isFalse()
+    assertThat(caseload[0].isRestricted).isFalse()
     assertThat(caseload[0].probationPractitioner).isEqualTo(
       ProbationPractitioner(
         staffCode = "X1234",
@@ -626,7 +626,7 @@ class ComVaryCaseloadServiceTest {
     val caseload = serviceWithLaoEnabled.getTeamVaryCaseload(listOf("team A"), listOf(selectedTeam))
 
     assertThat(caseload).hasSize(1)
-    assertThat(caseload[0].isLao).isTrue()
+    assertThat(caseload[0].isRestricted).isTrue()
   }
 
   private fun verifyCase(

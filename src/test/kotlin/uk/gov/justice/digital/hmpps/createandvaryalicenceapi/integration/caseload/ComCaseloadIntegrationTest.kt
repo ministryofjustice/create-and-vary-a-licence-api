@@ -140,7 +140,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12352")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
       with(caseload[1]) {
         assertThat(crnNumber).isEqualTo("X12348")
@@ -237,7 +237,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12352")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -343,7 +343,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12353")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -435,7 +435,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12352")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
 
       with(caseload[1]) {
@@ -524,7 +524,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12353")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
 
       with(caseload[1]) {
