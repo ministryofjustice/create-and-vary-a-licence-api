@@ -25,6 +25,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
@@ -32,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EX
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenderSentenceAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -46,6 +49,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
@@ -781,12 +785,21 @@ object TestData {
     variationRequestDate = LocalDate.of(2023, 11, 24),
     releaseDate = LocalDate.of(2021, 10, 22),
     probationPractitioner = ProbationPractitioner(allocated = true),
+    isLao = false,
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
     approvalStatus = "REJECTED",
     bookingId = 1,
     passed = true,
+  )
+
+  fun currentPrisonerHdcStatus(
+    bookingId: Long = 1,
+    currentHdcStatus: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+  ) = CurrentPrisonerHdcStatus(
+    bookingId = bookingId,
+    currentHdcStatus = currentHdcStatus,
   )
 
   private fun someModelStandardConditions() = listOf(
@@ -1132,5 +1145,26 @@ object TestData {
     email = "testemail@probation.gov.uk",
     firstName = "X",
     lastName = "Y",
+  )
+
+  fun offenderSentencesAndOffences(bookingId: Long): List<OffenderSentenceAndOffences> {
+    val sentenceAndOffences1 =
+      OffenderSentenceAndOffences(bookingId = bookingId, sentenceDate = LocalDate.of(2025, 8, 20))
+    val sentenceAndOffences2 = sentenceAndOffences1.copy(sentenceDate = LocalDate.of(2025, 8, 25))
+    return listOf(sentenceAndOffences1, sentenceAndOffences2)
+  }
+
+  fun aCaseAccessResponse(
+    crn: String,
+    excluded: Boolean,
+    restricted: Boolean,
+    exclusionMessage: String? = null,
+    restrictedMessage: String? = null,
+  ) = CaseAccessResponse(
+    crn = crn,
+    userExcluded = excluded,
+    userRestricted = restricted,
+    exclusionMessage = exclusionMessage,
+    restrictionMessage = restrictedMessage,
   )
 }

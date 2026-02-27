@@ -76,9 +76,37 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           "LR_SOPC21",
           RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
         )
+      val accessResponse = """
+      {
+        "access": [
+           {
+            "crn": "X12348",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12351",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12352",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          },
+          {
+            "crn": "X12353",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+      """.trimIndent()
 
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetCheckUserAccess(accessResponse)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
@@ -108,6 +136,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "AB1234J",
       )
       with(caseload.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12352")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(isLao).isTrue()
+      }
+      with(caseload[1]) {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
@@ -129,8 +164,36 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           "LR_SOPC21",
           RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
         )
+      val accessResponse = """
+      {
+        "access": [
+           {
+            "crn": "X12348",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12351",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12352",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          },
+          {
+            "crn": "X12353",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+      """.trimIndent()
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetCheckUserAccess(accessResponse)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
@@ -169,6 +232,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "AB1234I",
         "AB1234J",
       )
+      with(caseload[2]) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12352")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(isLao).isTrue()
+      }
     }
 
     private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String) {
@@ -210,9 +280,32 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `Successfully retrieve team create caseload`() {
+      val accessResponse = """
+      {
+        "access": [
+          {
+            "crn": "X12348",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12349",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12353",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          }
+        ]
+      }
+      """.trimIndent()
       // Given
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
+      deliusMockServer.stubGetCheckUserAccess(accessResponse)
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
@@ -240,10 +333,17 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "AB1234F",
         "AB1234G",
       )
-      with(caseload.first()) {
+      with(caseload[1]) {
         assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
+      }
+      with(caseload.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12353")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(isLao).isTrue()
       }
     }
 
@@ -282,30 +382,66 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(UNAUTHORIZED.value())
     }
-  }
 
-  @Test
-  @Sql(
-    "classpath:test_data/seed-variation-licence-for-staff-vary-caseload.sql",
-  )
-  fun `Successfully retrieve staff vary caseload`() {
-    deliusMockServer.stubGetStaffDetailsByUsername()
-    deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    @Test
+    @Sql(
+      "classpath:test_data/seed-variation-licence-for-staff-vary-caseload.sql",
+    )
+    fun `Successfully retrieve staff vary caseload`() {
+      val accessResponse = """
+      {
+        "access": [
+           {
+            "crn": "X12348",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12351",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12352",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          },
+          {
+            "crn": "X12353",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+      """.trimIndent()
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetCheckUserAccess(accessResponse)
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
-    val caseload = webTestClient.get()
-      .uri(GET_STAFF_VARY_CASELOAD)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isEqualTo(OK.value())
-      .expectHeader().contentType(APPLICATION_JSON)
-      .expectBody(typeReference<List<ComCreateCase>>())
-      .returnResult().responseBody!!
+      val caseload = webTestClient.get()
+        .uri(GET_STAFF_VARY_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCreateCase>>())
+        .returnResult().responseBody!!
 
-    assertThat(caseload).hasSize(1)
-    with(caseload.first()) {
-      assertThat(crnNumber).isEqualTo("X12348")
-      assertThat(prisonerNumber).isEqualTo("AB1234E")
+      assertThat(caseload).hasSize(2)
+      with(caseload.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12352")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(isLao).isTrue()
+      }
+
+      with(caseload[1]) {
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(prisonerNumber).isEqualTo("AB1234E")
+      }
     }
   }
 
@@ -341,8 +477,36 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-variation-licence-for-team-vary-caseload.sql",
     )
     fun `Successfully retrieve team vary caseload`() {
+      val accessResponse = """
+      {
+        "access": [
+           {
+            "crn": "X12348",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12351",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12352",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12353",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          }
+        ]
+      }
+      """.trimIndent()
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
+      deliusMockServer.stubGetCheckUserAccess(accessResponse)
 
       val caseload = webTestClient.post()
         .uri(GET_TEAM_VARY_CASELOAD)
@@ -354,8 +518,16 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(1)
+      assertThat(caseload).hasSize(2)
       with(caseload.first()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12353")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(isLao).isTrue()
+      }
+
+      with(caseload[1]) {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
       }

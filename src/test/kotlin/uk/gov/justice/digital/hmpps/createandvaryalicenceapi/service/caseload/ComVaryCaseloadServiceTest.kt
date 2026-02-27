@@ -4,11 +4,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
@@ -21,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -43,6 +48,13 @@ class ComVaryCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
+    val authentication = org.mockito.kotlin.mock<Authentication>()
+    val securityContext = org.mockito.kotlin.mock<SecurityContext>()
+
+    whenever(authentication.name).thenReturn("Test Username")
+    whenever(securityContext.authentication).thenReturn(authentication)
+    SecurityContextHolder.setContext(securityContext)
+
     reset(deliusApiClient, licenceCaseRepository)
   }
 
@@ -411,6 +423,210 @@ class ComVaryCaseloadServiceTest {
       ),
       expectedReviewNeeded = true,
     )
+  }
+
+  @Test
+  fun `does not check Delius user access when laoEnabled is false`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+      listOf(
+        createLicenceComCase(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+        ),
+      ),
+    )
+
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    assertThat(caseload[0].isLao).isFalse()
+    verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
+  }
+
+  @Test
+  fun `LAO cases are returned as restricted in the caseload when they are excluded`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+    )
+
+    val serviceWithLaoEnabled = ComVaryCaseloadService(
+      deliusApiClient,
+      licenceCaseRepository,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+      listOf(
+        createLicenceComCase(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+        ),
+      ),
+    )
+
+    whenever(deliusApiClient.getCheckUserAccess(any(), eq(listOf("X12348")), any())).thenReturn(
+      listOf(
+        CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false),
+      ),
+    )
+
+    val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    assertThat(caseload[0].isLao).isTrue()
+    assertThat(caseload[0].probationPractitioner).isEqualTo(ProbationPractitioner.laoProbationPractitioner())
+  }
+
+  @Test
+  fun `LAO cases are returned as restricted in the caseload when they are restricted`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+    )
+
+    val serviceWithLaoEnabled = ComVaryCaseloadService(
+      deliusApiClient,
+      licenceCaseRepository,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+      listOf(
+        createLicenceComCase(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+        ),
+      ),
+    )
+
+    whenever(deliusApiClient.getCheckUserAccess(any(), eq(listOf("X12348")), any())).thenReturn(
+      listOf(
+        CaseAccessResponse(crn = "X12348", userExcluded = false, userRestricted = true),
+      ),
+    )
+
+    val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    assertThat(caseload[0].isLao).isTrue()
+    assertThat(caseload[0].probationPractitioner).isEqualTo(ProbationPractitioner.laoProbationPractitioner())
+  }
+
+  @Test
+  fun `Cases are not returned as restricted where they are not excluded or restricted`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+    )
+
+    val serviceWithLaoEnabled = ComVaryCaseloadService(
+      deliusApiClient,
+      licenceCaseRepository,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+      listOf(
+        createLicenceComCase(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+        ),
+      ),
+    )
+
+    whenever(deliusApiClient.getCheckUserAccess(any(), eq(listOf("X12348")), any())).thenReturn(
+      listOf(
+        CaseAccessResponse(crn = "X12348", userExcluded = false, userRestricted = false),
+      ),
+    )
+
+    val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    assertThat(caseload[0].isLao).isFalse()
+    assertThat(caseload[0].probationPractitioner).isEqualTo(
+      ProbationPractitioner(
+        staffCode = "X1234",
+        name = "Joe Bloggs",
+        allocated = true,
+      ),
+    )
+  }
+
+  @Test
+  fun `Team caseload with LAO restrictions is handled correctly`() {
+    val selectedTeam = "team C"
+
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+    )
+
+    val serviceWithLaoEnabled = ComVaryCaseloadService(
+      deliusApiClient,
+      licenceCaseRepository,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
+
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+      listOf(
+        createLicenceComCase(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+        ),
+      ),
+    )
+
+    whenever(deliusApiClient.getCheckUserAccess(any(), eq(listOf("X12348")), any())).thenReturn(
+      listOf(
+        CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false),
+      ),
+    )
+
+    val caseload = serviceWithLaoEnabled.getTeamVaryCaseload(listOf("team A"), listOf(selectedTeam))
+
+    assertThat(caseload).hasSize(1)
+    assertThat(caseload[0].isLao).isTrue()
   }
 
   private fun verifyCase(

@@ -6,9 +6,12 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.bodyToMono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.SearchQueryRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.UserAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.coerce404ToEmptyOrThrow
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
@@ -18,16 +21,18 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     private const val STAFF_EMAIL_BATCH = 500
     private const val STAFF_USERNAME_BATCH = 500
     private const val PROBATION_CASE_BATCH_SIZE = 500
+    private const val CHECK_ACCESS_BATCH_SIZE = 500
     const val CASELOAD_PAGE_SIZE = 2000
   }
 
-  fun getProbationCase(crnOrNomisId: String): ProbationCase = deliusApiWebClient
+  fun getProbationCase(crnOrNomisId: String): ProbationCase? = deliusApiWebClient
     .get()
     .uri("/probation-case/{crnOrNomisId}", crnOrNomisId)
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono(ProbationCase::class.java)
-    .block() ?: error("Unexpected null response from API")
+    .bodyToMono<ProbationCase>()
+    .coerce404ToEmptyOrThrow()
+    .block()
 
   fun getProbationCases(
     crnsOrNomisIds: List<String>,
@@ -54,7 +59,7 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .uri("/staff/bycode/{code}", staffCode)
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono(User::class.java)
+    .bodyToMono<User>()
     .coerce404ToEmptyOrThrow()
     .block()
 
@@ -63,7 +68,7 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .uri("/staff/byid/{staffIdentifier}", staffIdentifier)
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono(User::class.java)
+    .bodyToMono<User>()
     .coerce404ToEmptyOrThrow()
     .block()
 
@@ -171,4 +176,31 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .retrieve()
     .toBodilessEntity()
     .block() ?: error("Unexpected response while assigning delius role for user: $username")
+
+  fun getCheckUserAccess(
+    username: String,
+    crns: List<String>,
+    batchSize: Int = CHECK_ACCESS_BATCH_SIZE,
+  ): List<CaseAccessResponse> = batchRequests(batchSize, crns) { batch ->
+    val response = deliusApiWebClient
+      .post()
+      .uri("/users/$username/access")
+      .bodyValue(batch)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<UserAccessResponse>())
+      .block() ?: error("Unexpected null response from Delius check user access for user: $username")
+    response.access
+  }
+
+  fun getCheckUserAccessForCRN(
+    username: String,
+    crn: String,
+  ): CaseAccessResponse = deliusApiWebClient
+    .get()
+    .uri("/users/$username/access/$crn")
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono(typeReference<CaseAccessResponse>())
+    .block() ?: error("Unexpected null response while checking user access for user: $username and CRN: $crn")
 }

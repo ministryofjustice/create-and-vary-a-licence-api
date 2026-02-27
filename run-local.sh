@@ -69,6 +69,8 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 export FEATURE_TOGGLE_TIMESERVED_ENABLED=true
 export TIME_SERVED_PRISONS="MDI, BAI, BNI"
 export HDC_ENABLED=true
+export LAO_ENABLED=true
+export USE_CURRENT_HDC_STATUS=false
 
 SKIP_DOCKER=false
 DEBUG=""

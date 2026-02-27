@@ -322,6 +322,29 @@ class DeliusMockServer : WireMockServer(8093) {
                     "code": "probationArea-code-3", 
                     "description": "probationArea-description-3"
                   }
+                },                
+                {
+                  "code": "staff-code-4",
+                  "case": {
+                    "crn": "X12350",
+                    "nomisId": "A1234AC"
+                  },
+                  "name": {
+                    "forename": "Test4",
+                    "surname": "Test4"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-4",
+                    "description": "staff-description-4",
+                    "borough": { "code": "borough-code-4", "description": "borough-description-4" },
+                    "district": { "code": "district-code-4", "description": "district-description-4" },
+                    "provider": { "code": "probationArea-code-4", "description": "probationArea-description-4" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-4", 
+                    "description": "probationArea-description-4"
+                  }
                 }]
               """.trimMargin(),
             ).withStatus(200),
@@ -453,6 +476,30 @@ class DeliusMockServer : WireMockServer(8093) {
                   "provider": { 
                     "code": "probationArea-code-4", 
                     "description": "probationArea-description-4"
+                  },
+                  "unallocated": false
+                },
+                {
+                  "code": "staff-code-5",
+                  "case": {
+                    "crn": "X12350",
+                    "nomisId": "A1234AC"
+                  },
+                  "name": {
+                    "forename": "Test5",
+                    "surname": "Test5"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-5",
+                    "description": "staff-description-5",
+                    "borough": { "code": "borough-code-5", "description": "borough-description-5" },
+                    "district": { "code": "district-code-5", "description": "district-description-5" },
+                    "provider": { "code": "probationArea-code-5", "description": "probationArea-description-5" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-5", 
+                    "description": "probationArea-description-5"
                   },
                   "unallocated": false
                 }]
@@ -879,7 +926,7 @@ class DeliusMockServer : WireMockServer(8093) {
         "crn": "X12348",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234E"
+        "nomisId": "A1234AA"
       },
       {
         "crn": "X12349",
@@ -891,19 +938,19 @@ class DeliusMockServer : WireMockServer(8093) {
         "crn": "X12350",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234G"
+        "nomisId": "A1234AC"
       },
       {
         "crn": "X12351",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234H"
+        "nomisId": "A1234AD"
       },
       {
         "crn": "X12352",
         "croNumber": null,
         "pncNumber": null,
-        "nomisId": "AB1234I"
+        "nomisId": "A1234AE"
       }
     ]
     """.trimIndent()
@@ -917,90 +964,91 @@ class DeliusMockServer : WireMockServer(8093) {
     )
   }
 
-  fun stubGetTeamManagedCases() {
+  fun stubGetTeamManagedCases(response: String? = null) {
+    // language=json
+    val offendersJson = response ?: """{
+      "content": [
+        {
+          "crn": "CRN1",
+          "nomisId": "A1234AA",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1", 
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        },
+        {
+          "crn": "CRN2",
+          "nomisId": "A1234AD",
+          "name": {
+            "surname": "Surname",
+            "forename": "Test",
+            "middleName": ""
+          },
+          "staff": {
+            "code": "A01B02C",
+            "name": {
+              "surname": "Surname",
+              "forename": "Staff"
+            }
+          },
+          "team": {
+            "code": "A01B02",
+            "description": "Test Team",
+            "borough": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "district": {
+              "code": "A01B02",
+              "description": "description"
+            },
+            "provider": { 
+              "code": "probationArea-code-1",
+              "description": "probationArea-description-1"
+            }
+          },
+          "allocationDate": "2023-05-24"
+        }
+      ],
+      "page": {
+        "number": 0,
+        "size": 100,
+        "totalPages": 1,
+        "totalElements": 2
+      }
+    }
+    """.trimIndent()
     stubFor(
       post(urlPathMatching("/staff/byid/.+/caseload/team-managed-offenders"))
         .willReturn(
           aResponse().withHeader("Content-Type", "application/json")
-            .withBody(
-              // language=json
-              """{
-                "content": [
-                  {
-                    "crn": "CRN1",
-                    "nomisId": "A1234AA",
-                    "name": {
-                      "surname": "Surname",
-                      "forename": "Test",
-                      "middleName": ""
-                    },
-                    "staff": {
-                      "code": "A01B02C",
-                      "name": {
-                        "surname": "Surname",
-                        "forename": "Staff"
-                      }
-                    },
-                    "team": {
-                      "code": "A01B02",
-                      "description": "Test Team",
-                      "borough": {
-                        "code": "A01B02",
-                        "description": "description"
-                      },
-                      "district": {
-                        "code": "A01B02",
-                        "description": "description"
-                      },
-                      "provider": { 
-                        "code": "probationArea-code-1", 
-                        "description": "probationArea-description-1"
-                      }
-                    },
-                    "allocationDate": "2023-05-24"
-                  },
-                  {
-                    "crn": "CRN2",
-                    "nomisId": "A1234AD",
-                    "name": {
-                      "surname": "Surname",
-                      "forename": "Test",
-                      "middleName": ""
-                    },
-                    "staff": {
-                      "code": "A01B02C",
-                      "name": {
-                        "surname": "Surname",
-                        "forename": "Staff"
-                      }
-                    },
-                    "team": {
-                      "code": "A01B02",
-                      "description": "Test Team",
-                      "borough": {
-                        "code": "A01B02",
-                        "description": "description"
-                      },
-                      "district": {
-                        "code": "A01B02",
-                        "description": "description"
-                      },
-                      "provider": { 
-                        "code": "probationArea-code-1",
-                        "description": "probationArea-description-1"
-                      }
-                    },
-                    "allocationDate": "2023-05-24"
-                  }
-                ],
-                "page": {
-                  "number": 0,
-                  "size": 100,
-                  "totalPages": 1,
-                  "totalElements": 2
-                }
-              }""",
-            ).withStatus(200),
+            .withBody(offendersJson)
+            .withStatus(200),
         ),
     )
   }
@@ -1054,6 +1102,97 @@ class DeliusMockServer : WireMockServer(8093) {
                   "totalPages": 1,
                   "totalElements": 2
                 }
+              }""",
+            ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetCheckUserAccess(response: String? = null) {
+    // language=json
+    val accessJson = response ?: """
+      {
+        "access": [
+          {
+            "crn": "X12348",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12349",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12350",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12351",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12352",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12353",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12354",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12355",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "CRN1",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "CRN2",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+    """.trimIndent()
+    stubFor(
+      post(urlPathMatching("/users/.+/access"))
+        .willReturn(
+          aResponse().withHeader("Content-Type", "application/json")
+            .withBody(accessJson)
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetCaseAccessDetails(
+    userExcluded: Boolean = false,
+    userRestricted: Boolean = false,
+    exclusionMessage: String? = null,
+    restrictionMessage: String? = null,
+  ) {
+    stubFor(
+      get(urlPathMatching("/users/.+/access/CRN1"))
+        .willReturn(
+          aResponse().withHeader("Content-Type", "application/json")
+            .withBody(
+              """{
+                "crn": "CRN1",
+                "userExcluded": $userExcluded,
+                "userRestricted": $userRestricted,
+                "exclusionMessage": "$exclusionMessage",
+                "restrictionMessage": "$restrictionMessage"
               }""",
             ).withStatus(200),
         ),

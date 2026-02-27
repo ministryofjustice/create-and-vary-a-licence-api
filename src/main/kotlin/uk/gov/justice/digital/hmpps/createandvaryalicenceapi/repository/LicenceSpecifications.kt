@@ -10,20 +10,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.includedIn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
+@Deprecated(message = "Don't use licence query - instead create repo specific queries")
 data class LicenceQueryObject(
-  val prisonCodes: List<String>? = null,
   val statusCodes: List<LicenceStatus>? = null,
   val nomsIds: List<String>? = null,
-  val pdus: List<String>? = null,
   val sortBy: String? = null,
   val sortOrder: String? = null,
 )
 
 fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasStatusCodeIn(statusCodes),
-  hasPrisonCodeIn(prisonCodes),
   hasNomsIdIn(nomsIds),
-  hasPdusIn(pdus),
 ).and { root, query, _ ->
   root.fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.LEFT)
   query.distinct(true)
@@ -42,18 +39,10 @@ fun LicenceQueryObject.getSort(): Sort = when {
   }
 }
 
-fun hasPrisonCodeIn(prisonCodes: List<String>?): Specification<Licence>? = prisonCodes?.let {
-  Licence::prisonCode.includedIn(it)
-}
-
 fun hasStatusCodeIn(statusCodes: List<LicenceStatus>?): Specification<Licence>? = statusCodes?.let {
   Licence::statusCode.includedIn(it)
 }
 
 fun hasNomsIdIn(nomsIds: List<String>?): Specification<Licence>? = nomsIds?.let {
   Licence::nomsId.includedIn(it)
-}
-
-fun hasPdusIn(pduCodes: List<String>?): Specification<Licence>? = pduCodes?.let {
-  Licence::probationPduCode.includedIn(it)
 }

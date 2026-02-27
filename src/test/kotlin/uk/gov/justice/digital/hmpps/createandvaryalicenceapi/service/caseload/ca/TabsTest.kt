@@ -31,6 +31,7 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = null,
       licenceCaCase = licenceCase,
+      timeServedCase = false,
       now = clock,
     )
 
@@ -39,7 +40,7 @@ class TabsTest {
   }
 
   @Test
-  fun `returns ATTENTION_NEEDED when licence is approved and start date is in the past`() {
+  fun `returns ATTENTION_NEEDED when licence is approved and start date is in the past and is not a time served case`() {
     // Given
     val licenceCase = createLicenceCase(licenceStatus = APPROVED)
 
@@ -48,6 +49,25 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = fixedNow.minusDays(1),
       licenceCaCase = licenceCase,
+      timeServedCase = false,
+      now = clock,
+    )
+
+    // Then
+    assertThat(result).isEqualTo(ATTENTION_NEEDED)
+  }
+
+  @Test
+  fun `returns RELEASES_IN_NEXT_TWO_WORKING_DAYS when licence is approved and start date is in the past and it's a time served case`() {
+    // Given
+    val licenceCase = createLicenceCase(licenceStatus = APPROVED)
+
+    // When
+    val result = determineCaViewCasesTab(
+      isDueToBeReleasedInTheNextTwoWorkingDays = false,
+      licenceStartDate = fixedNow.minusDays(1),
+      licenceCaCase = licenceCase,
+      timeServedCase = true,
       now = clock,
     )
 
@@ -65,6 +85,7 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow,
       licenceCaCase = licenceCase,
+      timeServedCase = false,
       now = clock,
     )
 
@@ -82,6 +103,7 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(1),
       licenceCaCase = licenceCase,
+      timeServedCase = false,
       now = clock,
     )
 
@@ -99,6 +121,7 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = null,
       licenceCaCase = licenceCaCase,
+      timeServedCase = false,
       now = clock,
     )
 
@@ -118,6 +141,7 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(1),
       licenceCaCase = licenceCase,
+      timeServedCase = false,
       now = clock,
     )
 
@@ -126,7 +150,7 @@ class TabsTest {
   }
 
   @Test
-  fun `returns RELEASES_IN_NEXT_TWO_WORKING_DAYS when licence LSD is in the past`() {
+  fun `returns ATTENTION_NEEDED when licence LSD is in the past and it's not a time served case`() {
     // Given
     val licenceCase = createLicenceCase(
       licenceStatus = APPROVED,
@@ -137,6 +161,27 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.minusDays(1),
       licenceCaCase = licenceCase,
+      timeServedCase = false,
+      now = clock,
+    )
+
+    // Then
+    assertThat(result).isEqualTo(ATTENTION_NEEDED)
+  }
+
+  @Test
+  fun `returns RELEASES_IN_NEXT_TWO_WORKING_DAYS when licence LSD is in the past and it's a time served case`() {
+    // Given
+    val licenceCase = createLicenceCase(
+      licenceStatus = APPROVED,
+    )
+
+    // When
+    val result = determineCaViewCasesTab(
+      isDueToBeReleasedInTheNextTwoWorkingDays = true,
+      licenceStartDate = fixedNow.minusDays(1),
+      licenceCaCase = licenceCase,
+      timeServedCase = true,
       now = clock,
     )
 
@@ -154,6 +199,7 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       licenceStartDate = fixedNow.plusDays(2),
       licenceCaCase = licenceCaCase,
+      timeServedCase = false,
       now = clock,
     )
 
@@ -173,6 +219,7 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = fixedNow.plusDays(3),
       licenceCaCase = licenceCase,
+      timeServedCase = false,
       now = clock,
     )
 
@@ -190,6 +237,7 @@ class TabsTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       licenceStartDate = fixedNow.plusDays(3),
       licenceCaCase = licenceCaCase,
+      timeServedCase = false,
       now = clock,
     )
 

@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
@@ -68,7 +69,7 @@ class LicenceCreationService(
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val offenderManager =
-      deliusApiClient.getOffenderManager(deliusRecord.crn) ?: error("Offender manager for $prisonNumber not found")
+      deliusApiClient.getOffenderManager(deliusRecord!!.crn) ?: error("Offender manager for $prisonNumber not found")
 
     require(!offenderManager.unallocated) { "offender $prisonNumber is currently unallocated in delius" }
 
@@ -139,6 +140,8 @@ class LicenceCreationService(
     val username = SecurityContextHolder.getContext().authentication.name
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
+      ?: throw InvalidStateException("Could not find a probation case in Delius for nomis id $prisonNumber")
+
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val offenderManager = deliusApiClient.getOffenderManager(deliusRecord.crn)
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)

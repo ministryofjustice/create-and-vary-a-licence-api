@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
@@ -17,6 +19,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse.Companion.unrestricted
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -33,6 +37,8 @@ class ComCreateCaseloadService(
   private val licenceCaseRepository: LicenceCaseRepository,
   private val cvlRecordService: CvlRecordService,
   private val telemetryService: TelemetryService,
+  @param:Value("\${feature.toggle.lao.enabled}") private val laoEnabled: Boolean = false,
+
 ) {
   companion object {
     private val COM_CREATE_LICENCE_STATUSES = listOf(ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT)
@@ -96,11 +102,22 @@ class ComCreateCaseloadService(
     val crns = cases.map { (deliusRecord, _) -> deliusRecord.crn!! }
     val licencesByCrn = getExistingActiveAndPreReleaseLicences(crns).groupBy { it.crn }
     val cvlRecordsByNomisId = cvlRecords.associateBy { it.nomisId }
+    val caseAccessRecords = if (laoEnabled) {
+      getCaseAccessRecords(crns)
+    } else {
+      emptyMap()
+    }
 
     return cases.mapNotNull { (deliusRecord, nomisRecord) ->
       val licences = licencesByCrn[deliusRecord.crn!!] ?: emptyList()
       val cvlRecord = cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!
-      val probationPractitioner = deliusRecord.toProbationPractitioner()
+      val caseAccessRecord = caseAccessRecords[deliusRecord.crn] ?: unrestricted
+      val isLao = caseAccessRecord.userExcluded || caseAccessRecord.userRestricted
+      val probationPractitioner = if (isLao) {
+        ProbationPractitioner.laoProbationPractitioner()
+      } else {
+        deliusRecord.toProbationPractitioner()
+      }
 
       when {
         // No licences found for this offender so treat as a not started case
@@ -108,7 +125,7 @@ class ComCreateCaseloadService(
           probationPractitioner,
           nomisRecord,
           cvlRecord,
-          createNotStartedLicenceDto(deliusRecord, nomisRecord, cvlRecord),
+          createNotStartedLicenceDto(deliusRecord, nomisRecord, cvlRecord, isLao),
         )
 
         // Has an active licence so shouldn't appear in create caseload
@@ -117,7 +134,7 @@ class ComCreateCaseloadService(
 
         // Should appear in create caseload with relevant licence
         else ->
-          Case(probationPractitioner, nomisRecord, cvlRecord, findRelevantLicencePerCase(licences))
+          createCaseForRelevantLicence(probationPractitioner, nomisRecord, cvlRecord, findRelevantLicencePerCase(licences), isLao)
       }
     }
   }
@@ -142,12 +159,14 @@ class ComCreateCaseloadService(
     isReviewNeeded = case.isReviewNeeded(),
     // populated by findRelevantLicencePerCase
     licenceCreationType = null,
+    isLao = false,
   )
 
   private fun createNotStartedLicenceDto(
     deliusRecord: ManagedOffenderCrn,
     nomisRecord: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
+    isLao: Boolean,
   ): ComCreateCaseloadLicenceDto {
     val kind = cvlRecord.hardStopKind ?: cvlRecord.eligibleKind!!
     val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
@@ -155,6 +174,17 @@ class ComCreateCaseloadService(
       TIMED_OUT
     } else {
       NOT_STARTED
+    }
+
+    if (isLao) {
+      return ComCreateCaseloadLicenceDto.restrictedCase(
+        licenceStatus,
+        kind,
+        cvlRecord.licenceType,
+        deliusRecord.crn,
+        nomisRecord.prisonerNumber,
+        cvlRecord.licenceStartDate,
+      )
     }
 
     val caseLoadSummary = ComCreateCaseloadLicenceDto(
@@ -169,6 +199,7 @@ class ComCreateCaseloadService(
       kind = kind,
       isReviewNeeded = false,
       licenceCreationType = null,
+      isLao = false,
     )
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
   }
@@ -195,9 +226,33 @@ class ComCreateCaseloadService(
         kind = kind,
         licenceCreationType = licenceCreationType,
         isReviewNeeded = isReviewNeeded,
+        isLao = isLao,
       )
     }
   }.sortedWith(compareBy<ComCreateCase> { it.releaseDate }.thenBy { it.name })
+
+  private fun getCaseAccessRecords(crns: List<String>): Map<String, CaseAccessResponse> {
+    val username = SecurityContextHolder.getContext().authentication.name
+    return deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
+  }
+
+  private fun createCaseForRelevantLicence(probationPractitioner: ProbationPractitioner, nomisRecord: PrisonerSearchPrisoner, cvlRecord: CvlRecord, createCaseloadLicence: ComCreateCaseloadLicenceDto, isLao: Boolean): Case = if (isLao) {
+    Case(
+      probationPractitioner,
+      nomisRecord,
+      cvlRecord,
+      ComCreateCaseloadLicenceDto.restrictedCase(
+        createCaseloadLicence.licenceStatus,
+        createCaseloadLicence.kind,
+        cvlRecord.licenceType,
+        createCaseloadLicence.crn,
+        nomisRecord.prisonerNumber,
+        cvlRecord.licenceStartDate,
+      ),
+    )
+  } else {
+    Case(probationPractitioner, nomisRecord, cvlRecord, createCaseloadLicence)
+  }
 
   private data class Case(
     val probationPractitioner: ProbationPractitioner,

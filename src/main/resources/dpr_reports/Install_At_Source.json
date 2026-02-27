@@ -1,6 +1,6 @@
 {
   "id": "em-install-at-source",
-  "name": "Electronic Monitoring Install at Source Report" ,
+  "name": "Electronic Monitoring Install at Source Report",
   "description": "Data products for Create and Vary a licence ",
   "metadata": {
     "author": "Caija Addai",
@@ -13,7 +13,6 @@
       "id": "cvl",
       "name": "cvl"
     }
-
   ],
   "dataset": [
     {
@@ -73,24 +72,25 @@
     }
   ],
   "policy": [
-  {
-    "id": "access",
-    "type": "access",
-    "rule": [
-      {
-        "effect": "permit",
-        "condition": [
-          {
-            "match": [
-              "${role}",
-              "ROLE_NOMIS_BATCHLOAD"
-            ]
-          }
-        ]
-      }
-    ]
-  }
-],
+    {
+      "id": "access",
+      "type": "access",
+      "rule": [
+        {
+          "effect": "permit",
+          "condition": [
+            {
+              "match": [
+                "${role}",
+                "ROLE_NOMIS_BATCHLOAD",
+                "ROLE_CVL_REPORTS"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "report": [
     {
       "id": "em-install-at-source",
@@ -104,6 +104,8 @@
           "type": "print"
         }
       ],
+      "loadType": "sync",
+      "classification": "sync",
       "specification": {
         "template": "list",
         "field": [

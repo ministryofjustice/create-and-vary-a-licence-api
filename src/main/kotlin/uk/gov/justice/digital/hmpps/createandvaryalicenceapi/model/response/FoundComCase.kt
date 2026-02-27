@@ -87,4 +87,20 @@ data class FoundComCase(
   @field:Schema(description = "Is a review of this licence is required", example = "true")
   val isReviewNeeded: Boolean? = null,
 
-)
+  @field:Schema(description = "Is the offender a limited access offender (LAO)?", example = "true")
+  val isLao: Boolean? = null,
+) {
+  companion object {
+    fun restrictedCase(kind: LicenceKind, crn: String?, releaseDate: LocalDate?, isOnProbation: Boolean): FoundComCase = FoundComCase(
+      kind = kind,
+      releaseDate = releaseDate,
+      name = "Access restricted on NDelius",
+      crn = crn,
+      comName = "Restricted",
+      teamName = "Restricted",
+      probationPractitioner = ProbationPractitioner.laoProbationPractitioner(),
+      isOnProbation = isOnProbation,
+      isLao = true,
+    )
+  }
+}

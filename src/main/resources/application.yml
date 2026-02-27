@@ -157,11 +157,8 @@ dpr:
   lib:
     definition:
       locations: dpr_reports/Active_Licences.json, dpr_reports/Install_At_Source.json
-    caseloads:
-      host: ${hmpps.manageusers.api.url}
-      path: /users/me/caseloads
-    user:
-      role: ROLE_NOMIS_BATCHLOAD
+    system:
+      role: ROLE_CVL_ADMIN
 
 address:
   search:
@@ -174,9 +171,12 @@ feature:
   toggle:
     hdc:
       enabled: ${HDC_ENABLED}
+      useCurrentStatus: ${USE_CURRENT_HDC_STATUS}
     timeServed:
       enabled: ${FEATURE_TOGGLE_TIMESERVED_ENABLED}
       prisons: ${TIME_SERVED_PRISONS}
+    lao:
+      enabled: ${LAO_ENABLED}
 
 hmpps:
   cases:

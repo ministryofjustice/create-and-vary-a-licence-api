@@ -11,7 +11,13 @@ class IS91DeterminationService(
 
   private companion object IS91Constants {
     const val OFFENCE_DESCRIPTION = "ILLEGAL IMMIGRANT/DETAINEE"
-    val RESULT_CODES = listOf("3006", "4022", "5500", "5502")
+    const val DEPORTATION_RECOMMENDED = "3006"
+    const val IMMIGRATION_DETAINEE = "5500"
+    const val IMMIGRATION_DECISION_TO_DEPORT = "5502"
+    const val EXTRADITED = "4022"
+
+    val IS91_RESULT_CODES =
+      listOf(DEPORTATION_RECOMMENDED, EXTRADITED, IMMIGRATION_DETAINEE, IMMIGRATION_DECISION_TO_DEPORT)
   }
 
   fun isIS91Case(prisoner: PrisonerSearchPrisoner) = getIS91AndExtraditionBookingIds(listOf(prisoner)).isNotEmpty()
@@ -24,7 +30,7 @@ class IS91DeterminationService(
   }
 
   private fun bookingsWithIS91Outcomes(bookingIds: List<Long>): List<Long> {
-    val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(bookingIds, RESULT_CODES)
+    val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(bookingIds, IS91_RESULT_CODES)
     return courtEventOutcomes.map { it.bookingId }
   }
 }

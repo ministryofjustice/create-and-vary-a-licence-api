@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.bodyToMono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.coerce404ToEmptyOrThrow
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
@@ -25,7 +26,7 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
     .uri("/offender-sentences/booking/{bookingId}/home-detention-curfews/latest", bookingId)
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono(PrisonerHdcStatus::class.java)
+    .bodyToMono<PrisonerHdcStatus>()
     .coerce404ToEmptyOrThrow()
     .block()
     ?: PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN")
@@ -63,7 +64,7 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
       .uri("/agencies/prison/{prisonId}", prisonId)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono(Prison::class.java)
+      .bodyToMono<Prison>()
       .block()
 
     return prisonerApiResponse
@@ -76,7 +77,7 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
       .uri("/offenders/{nomsId}", nomsId)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono(PrisonApiPrisoner::class.java)
+      .bodyToMono<PrisonApiPrisoner>()
       .block()
 
     return prisonApiResponse ?: error("Unexpected null response from Prison API for nomsId $nomsId")
@@ -91,5 +92,17 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
       .retrieve()
       .bodyToMono(typeReference<List<BookingSentenceAndRecallTypes>>())
       .block()
+  }
+
+  fun getPrisonerSentenceAndOffences(bookingId: Long): List<OffenderSentenceAndOffences> {
+    val sentencesAndOffences = prisonerApiWebClient
+      .get()
+      .uri("api/offender-sentences/booking/$bookingId/sentences-and-offences")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<OffenderSentenceAndOffences>>())
+      .block()
+    return sentencesAndOffences
+      ?: error("Unexpected null response from Prison API while getting sentences and offences for bookingId $bookingId")
   }
 }

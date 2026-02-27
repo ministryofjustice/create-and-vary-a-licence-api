@@ -19,4 +19,23 @@ data class ComCreateCaseloadLicenceDto(
   val releaseDate: LocalDate?,
   val isReviewNeeded: Boolean,
   val licenceCreationType: LicenceCreationType?,
-)
+  val isLao: Boolean,
+) {
+
+  companion object {
+    fun restrictedCase(licenceStatus: LicenceStatus, kind: LicenceKind, licenceType: LicenceType, crn: String?, nomisId: String, releaseDate: LocalDate?) = ComCreateCaseloadLicenceDto(
+      licenceId = null,
+      licenceStatus = licenceStatus,
+      kind = kind,
+      licenceType = licenceType,
+      crn = crn,
+      nomisId = nomisId,
+      name = "Access restricted on NDelius",
+      versionOf = null,
+      releaseDate = releaseDate,
+      isReviewNeeded = false,
+      licenceCreationType = null,
+      isLao = true,
+    )
+  }
+}
