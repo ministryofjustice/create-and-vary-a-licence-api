@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -55,7 +57,12 @@ class LicenceController(
   private val licenceService: LicenceService,
   private val updateSentenceDateService: UpdateSentenceDateService,
   private val licenceCreationService: LicenceCreationService,
+  @param:Value("\${prison.event.listener.enabled:false}")
+  private val prisonEventHandlerEnabled: Boolean,
 ) {
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
 
   @Deprecated("Use /licence/prison or /licence/probation instead")
   @Tag(name = Tags.LICENCES)
@@ -1135,7 +1142,14 @@ class LicenceController(
   fun updateSentenceDates(
     @PathVariable("licenceId") licenceId: Long,
   ) {
-    updateSentenceDateService.updateSentenceDates(licenceId)
+    if (prisonEventHandlerEnabled) {
+      log.debug(
+        "Not updating sentence dates for licenceId: {} as prison events handler is enabled",
+        licenceId,
+      )
+    } else {
+      updateSentenceDateService.updateSentenceDates(licenceId)
+    }
   }
 
   @Tag(name = Tags.LICENCES)
@@ -1253,7 +1267,16 @@ class LicenceController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     body: DeactivateLicenceAndVariationsRequest,
-  ) = licenceService.deactivateLicenceAndVariations(licenceId, body)
+  ) {
+    if (prisonEventHandlerEnabled) {
+      log.debug(
+        "Not deactivating licence and variations for licenceId: {} as prison events handler is enabled",
+        licenceId,
+      )
+    } else {
+      licenceService.deactivateLicenceAndVariations(licenceId, body)
+    }
+  }
 
   @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/id/{licenceId}/permissions"])
