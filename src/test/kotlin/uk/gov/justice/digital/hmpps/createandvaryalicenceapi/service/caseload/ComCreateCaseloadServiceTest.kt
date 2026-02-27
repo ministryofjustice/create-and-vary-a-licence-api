@@ -40,7 +40,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
-import kotlin.collections.get
 
 class ComCreateCaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
@@ -1505,7 +1504,7 @@ class ComCreateCaseloadServiceTest {
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(tenDaysFromNow)
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -1525,7 +1524,7 @@ class ComCreateCaseloadServiceTest {
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(tenDaysFromNow)
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -1544,7 +1543,7 @@ class ComCreateCaseloadServiceTest {
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(tenDaysFromNow)
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -1592,7 +1591,7 @@ class ComCreateCaseloadServiceTest {
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(releaseDate).isEqualTo(tenDaysFromNow)
-        assertThat(isLao).isTrue()
+        assertThat(isRestricted).isTrue()
       }
     }
 
@@ -1636,7 +1635,7 @@ class ComCreateCaseloadServiceTest {
       assertThat(caseload).hasSize(2)
       assertThat(caseload.map { it.crnNumber }).containsExactlyInAnyOrder("X12348", "X12349")
       caseload.forEach { case ->
-        assertThat(case.isLao).isTrue()
+        assertThat(case.isRestricted).isTrue()
         assertThat(case.kind).isEqualTo(LicenceKind.TIME_SERVED)
         assertThat(case.releaseDate).isEqualTo(twoDaysAgo)
         assertThat(case.name).isEqualTo("Access restricted on NDelius")

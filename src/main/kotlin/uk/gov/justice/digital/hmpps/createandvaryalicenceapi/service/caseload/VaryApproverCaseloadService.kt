@@ -82,12 +82,12 @@ class VaryApproverCaseloadService(
       val nomisRecord = nomisRecords[licence.prisonNumber]
       val deliusRecord = deliusRecords[licence.prisonNumber]
       val caseAccessRecord = caseAccessRecords[deliusRecord?.crn] ?: unrestricted
-      val isLao = caseAccessRecord.userExcluded || caseAccessRecord.userRestricted
+      val isRestricted = caseAccessRecord.isRestricted
       val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()] ?: ProbationPractitioner.UNALLOCATED
 
       when {
         nomisRecord == null || deliusRecord == null -> null
-        isLao -> VaryApproverCase.restrictedCase(licence)
+        isRestricted -> VaryApproverCase.restrictedCase(licence)
         else -> VaryApproverCase(
           licenceId = licence.licenceId,
           name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim()
@@ -97,7 +97,7 @@ class VaryApproverCaseloadService(
           variationRequestDate = licence.dateCreated?.toLocalDate(),
           releaseDate = licence.licenceStartDate,
           probationPractitioner = probationPractitioner,
-          isLao = false,
+          isRestricted = false,
         )
       }
     }
@@ -124,7 +124,7 @@ class VaryApproverCaseloadService(
     val searchString = searchTerm.lowercase().trim()
 
     return cases.filter { case ->
-      if (case.isLao && !case.crnNumber.contains(searchString, ignoreCase = true)) return@filter false
+      if (case.isRestricted && !case.crnNumber.contains(searchString, ignoreCase = true)) return@filter false
       case.crnNumber.lowercase().contains(searchString) ||
         case.name?.lowercase()?.contains(searchString) ?: false ||
         case.probationPractitioner.name?.lowercase()?.contains(searchString) ?: false

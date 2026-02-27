@@ -11,6 +11,9 @@ data class CaseAccessResponse(
   val exclusionMessage: String? = null,
   val restrictionMessage: String? = null,
 ) {
+  val isRestricted: Boolean
+    get() = userExcluded || userRestricted
+
   companion object {
     val unrestricted = CaseAccessResponse(
       crn = "",

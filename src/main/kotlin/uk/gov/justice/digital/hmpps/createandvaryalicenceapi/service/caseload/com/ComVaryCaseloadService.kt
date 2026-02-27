@@ -70,15 +70,15 @@ class ComVaryCaseloadService(
       val caseLicences = licences.filter { licence -> case.crn == licence.crn }
       val licence = findVaryLicenceToDisplay(caseLicences)
       val caseAccessRecord = caseAccessRecords[licence?.crn] ?: unrestricted
-      val isLao = caseAccessRecord.userExcluded || caseAccessRecord.userRestricted
-      val probationPractitioner = if (isLao) {
-        ProbationPractitioner.laoProbationPractitioner()
+      val isRestricted = caseAccessRecord.isRestricted
+      val probationPractitioner = if (isRestricted) {
+        ProbationPractitioner.restrictedView()
       } else {
         case.toProbationPractitioner()
       }
       when {
         licence == null -> null
-        isLao -> ComVaryCase.restrictedCase(licence, probationPractitioner)
+        isRestricted -> ComVaryCase.restrictedCase(licence, probationPractitioner)
         else ->
           ComVaryCase(
             licenceId = licence.licenceId,
@@ -91,7 +91,7 @@ class ComVaryCaseloadService(
             releaseDate = licence.licenceStartDate,
             probationPractitioner = probationPractitioner,
             isReviewNeeded = licence.isReviewNeeded(),
-            isLao = false,
+            isRestricted = false,
           )
       }
     }.sortedWith(compareBy<ComVaryCase> { it.releaseDate }.thenBy { it.name })

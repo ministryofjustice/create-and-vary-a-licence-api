@@ -54,7 +54,7 @@ data class VaryApproverCase(
   val probationPractitioner: ProbationPractitioner,
 
   @field:Schema(description = "Is the offender a limited access offender (LAO)?", example = "true")
-  val isLao: Boolean,
+  val isRestricted: Boolean,
 ) {
   companion object {
     fun restrictedCase(licence: LicenceVaryApproverCase) = VaryApproverCase(
@@ -64,8 +64,8 @@ data class VaryApproverCase(
       licenceType = null,
       variationRequestDate = null,
       releaseDate = null,
-      probationPractitioner = ProbationPractitioner.laoProbationPractitioner(),
-      isLao = true,
+      probationPractitioner = ProbationPractitioner.restrictedView(),
+      isRestricted = true,
     )
   }
 }
