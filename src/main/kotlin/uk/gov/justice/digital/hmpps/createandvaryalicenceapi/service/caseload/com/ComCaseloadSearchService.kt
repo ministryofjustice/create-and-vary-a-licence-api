@@ -61,7 +61,7 @@ class ComCaseloadSearchService(
       val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
       val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
       createCase(licence, caseloadResult, prisonerRecord, cvlRecord)
-    }.filterOutPastReleaseDate()
+    }.filterOutPastReleaseDate().filter { !it.kind.isHdc() }
 
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
