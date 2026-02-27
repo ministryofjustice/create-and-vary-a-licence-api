@@ -97,7 +97,7 @@ class PrisonApiClient(@param:Qualifier("oauthPrisonClient") val prisonerApiWebCl
   fun getPrisonerSentenceAndOffences(bookingId: Long): List<OffenderSentenceAndOffences> {
     val sentencesAndOffences = prisonerApiWebClient
       .get()
-      .uri("api/offender-sentences/booking/$bookingId/sentences-and-offences")
+      .uri("/offender-sentences/booking/$bookingId/sentences-and-offences")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<OffenderSentenceAndOffences>>())
