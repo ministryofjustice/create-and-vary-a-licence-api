@@ -76,7 +76,7 @@ class ComCaseloadSearchService(
       val caseAccessRecord = caseAccessRecords[caseloadResult.crn] ?: unrestricted
       val case = createCase(licence, caseloadResult, prisonerRecord, cvlRecord, caseAccessRecord)
       case?.takeUnless { it.isExcludedFromCaseloads(body.query) }
-    }
+    }.filter { !it.kind.isHdc() }
 
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }

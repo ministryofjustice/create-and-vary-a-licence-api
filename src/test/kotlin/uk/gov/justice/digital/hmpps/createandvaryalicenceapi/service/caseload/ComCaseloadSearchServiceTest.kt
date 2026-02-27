@@ -570,7 +570,7 @@ class ComCaseloadSearchServiceTest {
     value = LicenceStatus::class,
     names = ["NOT_STARTED", "IN_PROGRESS", "SUBMITTED", "APPROVED"],
   )
-  fun `search for offenders in prison with an in progress HDC licence, eligible for CVL and is an approved HDC case`(
+  fun `can not search for offenders in prison with an in progress HDC licence, eligible for CVL and is an approved HDC case`(
     status: LicenceStatus,
   ) {
     val prisoner = aPrisonerSearchResult.copy(
@@ -588,13 +588,17 @@ class ComCaseloadSearchServiceTest {
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
-    assertThat(result.results).hasSize(1)
-    assertThat(result.inPrisonCount).isEqualTo(1)
-    assertThat(result.onProbationCount).isEqualTo(0)
+    assertThat(result.results).hasSize(0)
+    /**
+     Temporarily Removed as part of https://dsdmoj.atlassian.net/browse/CVSL-3821
+     assertThat(result.results).hasSize(1)
+     assertThat(result.inPrisonCount).isEqualTo(1)
+     assertThat(result.onProbationCount).isEqualTo(0)
+     */
   }
 
   @Test
-  fun `search for offenders in prison without a licence, eligible for CVL, HDC case and is approved for HDC`() {
+  fun `can not search for offenders in prison without a licence, eligible for CVL, HDC case and is approved for HDC`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
@@ -607,7 +611,9 @@ class ComCaseloadSearchServiceTest {
     )
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
-
+    assertThat(result.results.size).isEqualTo(0)
+/*
+    Temporarily Removed as part of https://dsdmoj.atlassian.net/browse/CVSL-3821
     assertThat(result.results.size).isEqualTo(1)
     assertThat(result.inPrisonCount).isEqualTo(1)
     assertThat(result.onProbationCount).isEqualTo(0)
@@ -633,6 +639,7 @@ class ComCaseloadSearchServiceTest {
         false,
       ),
     )
+ */
   }
 
   @Test
