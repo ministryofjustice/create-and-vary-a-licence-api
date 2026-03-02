@@ -111,16 +111,16 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
       assertThat(caseload).hasSize(2)
 
       with(caseload.first()) {
+        assertThat(crnNumber).isEqualTo("X12349")
+        assertThat(name).isEqualTo("Test2 Person2")
+      }
+
+      with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
         assertThat(crnNumber).isEqualTo("X12350")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
-      }
-
-      with(caseload[1]) {
-        assertThat(crnNumber).isEqualTo("X12349")
-        assertThat(name).isEqualTo("Test2 Person2")
       }
     }
   }
@@ -206,16 +206,16 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
       assertThat(result.regionCasesResponse).hasSize(2)
 
       with(result.regionCasesResponse.first()) {
+        assertThat(crnNumber).isEqualTo("X12349")
+        assertThat(name).isEqualTo("Test2 Person2")
+      }
+
+      with(result.regionCasesResponse.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
         assertThat(crnNumber).isEqualTo("X12350")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
-      }
-
-      with(result.regionCasesResponse.last()) {
-        assertThat(crnNumber).isEqualTo("X12349")
-        assertThat(name).isEqualTo("Test2 Person2")
       }
     }
   }

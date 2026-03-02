@@ -129,22 +129,22 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(4)
-      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
+      assertThat(caseload.map { it.prisonerNumber }).containsExactly(
         "AB1234E",
         "AB1234H",
-        "AB1234I",
         "AB1234J",
+        "AB1234I",
       )
       with(caseload.first()) {
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(prisonerNumber).isEqualTo("AB1234E")
+      }
+      with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
         assertThat(crnNumber).isEqualTo("X12352")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
-      }
-      with(caseload[1]) {
-        assertThat(crnNumber).isEqualTo("X12348")
-        assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
     }
 
@@ -232,7 +232,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "AB1234I",
         "AB1234J",
       )
-      with(caseload[2]) {
+      with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
         assertThat(crnNumber).isEqualTo("X12352")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
@@ -333,12 +333,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "AB1234F",
         "AB1234G",
       )
-      with(caseload[1]) {
+      with(caseload.first()) {
         assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
-      with(caseload.first()) {
+      with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
         assertThat(crnNumber).isEqualTo("X12353")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
@@ -430,17 +430,18 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(2)
+
       with(caseload.first()) {
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(prisonerNumber).isEqualTo("AB1234E")
+      }
+
+      with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
         assertThat(crnNumber).isEqualTo("X12352")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
-      }
-
-      with(caseload[1]) {
-        assertThat(crnNumber).isEqualTo("X12348")
-        assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
     }
   }
@@ -519,17 +520,18 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(2)
+
       with(caseload.first()) {
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(prisonerNumber).isEqualTo("AB1234E")
+      }
+
+      with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
         assertThat(crnNumber).isEqualTo("X12353")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
-      }
-
-      with(caseload[1]) {
-        assertThat(crnNumber).isEqualTo("X12348")
-        assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
     }
   }

@@ -229,7 +229,12 @@ class ComCreateCaseloadService(
         isRestricted = isRestricted,
       )
     }
-  }.sortedWith(compareBy<ComCreateCase> { it.releaseDate }.thenBy { it.name })
+  }.sortedWith(
+    compareBy<ComCreateCase> { it.isRestricted }
+      .thenBy { case -> case.releaseDate.takeUnless { case.isRestricted } }
+      .thenBy { case -> case.name.takeUnless { case.isRestricted } }
+      .thenBy { it.crnNumber },
+  )
 
   private fun getCaseAccessRecords(crns: List<String>): Map<String, CaseAccessResponse> {
     val username = SecurityContextHolder.getContext().authentication.name

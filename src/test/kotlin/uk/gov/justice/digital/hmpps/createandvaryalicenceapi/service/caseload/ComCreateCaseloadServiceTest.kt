@@ -1642,6 +1642,96 @@ class ComCreateCaseloadServiceTest {
         assertThat(case.probationPractitioner.name).isEqualTo("Restricted")
       }
     }
+
+    @Test
+    fun `it sorts non-restricted cases by release date then name before restricted cases which are sorted by CRN`() {
+      val managedOffenders = listOf(
+        ManagedOffenderCrn(crn = "X12351", nomisId = "AB1234E", staff = staffDetail),
+        ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234F", staff = staffDetail),
+        ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234G", staff = staffDetail),
+        ManagedOffenderCrn(crn = "X12350", nomisId = "AB1234H", staff = staffDetail),
+        ManagedOffenderCrn(crn = "X12352", nomisId = "AB1234I", staff = staffDetail),
+      )
+
+      whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+        listOf(
+          prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = elevenDaysFromNow, bookingId = "1", firstName = "Test", lastName = "Person1"),
+          prisonerSearchResult().copy(prisonerNumber = "AB1234F", conditionalReleaseDate = nineDaysFromNow, bookingId = "2", firstName = "Test", lastName = "Person2"),
+          prisonerSearchResult().copy(prisonerNumber = "AB1234G", conditionalReleaseDate = nineDaysFromNow, bookingId = "3", firstName = "Test", lastName = "Person3"),
+          prisonerSearchResult().copy(prisonerNumber = "AB1234H", conditionalReleaseDate = nineDaysFromNow, bookingId = "4", firstName = "Test", lastName = "Person4"),
+          prisonerSearchResult().copy(prisonerNumber = "AB1234I", conditionalReleaseDate = tenDaysFromNow, bookingId = "5", firstName = "Test", lastName = "Person5"),
+        ),
+      )
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+        listOf(
+          aCvlRecord(nomsId = "AB1234E", licenceStartDate = elevenDaysFromNow),
+          aCvlRecord(nomsId = "AB1234F", licenceStartDate = nineDaysFromNow),
+          aCvlRecord(nomsId = "AB1234G", licenceStartDate = nineDaysFromNow),
+          aCvlRecord(nomsId = "AB1234H", licenceStartDate = nineDaysFromNow),
+          aCvlRecord(nomsId = "AB1234I", licenceStartDate = tenDaysFromNow),
+        ),
+      )
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(crn = "X12351", excluded = true, restricted = false),
+          aCaseAccessResponse(crn = "X12348", excluded = false, restricted = false),
+          aCaseAccessResponse(crn = "X12349", excluded = false, restricted = false),
+          aCaseAccessResponse(crn = "X12350", excluded = false, restricted = false),
+          aCaseAccessResponse(crn = "X12352", excluded = true, restricted = false),
+        ),
+      )
+
+      val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+      assertThat(caseload).hasSize(5)
+
+      // Non-restricted sorted by: date, name
+      assertThat(caseload[0].crnNumber).isEqualTo("X12348")
+      assertThat(caseload[1].crnNumber).isEqualTo("X12349")
+      assertThat(caseload[2].crnNumber).isEqualTo("X12350")
+
+      // Restricted sorted by CRN
+      assertThat(caseload[3].crnNumber).isEqualTo("X12351")
+      assertThat(caseload[4].crnNumber).isEqualTo("X12352")
+    }
+
+    @Test
+    fun `it sorts multiple restricted LAO cases by CRN`() {
+      val managedOffenders = listOf(
+        ManagedOffenderCrn(crn = "X12350", nomisId = "AB1234E", staff = staffDetail),
+        ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234F", staff = staffDetail),
+        ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234G", staff = staffDetail),
+      )
+
+      whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+        listOf(
+          prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = tenDaysFromNow, bookingId = "1"),
+          prisonerSearchResult().copy(prisonerNumber = "AB1234F", conditionalReleaseDate = tenDaysFromNow, bookingId = "2"),
+          prisonerSearchResult().copy(prisonerNumber = "AB1234G", conditionalReleaseDate = tenDaysFromNow, bookingId = "3"),
+        ),
+      )
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+        listOf(
+          aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow),
+          aCvlRecord(nomsId = "AB1234F", licenceStartDate = tenDaysFromNow),
+          aCvlRecord(nomsId = "AB1234G", licenceStartDate = tenDaysFromNow),
+        ),
+      )
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(crn = "X12350", excluded = true, restricted = false),
+          aCaseAccessResponse(crn = "X12348", excluded = true, restricted = false),
+          aCaseAccessResponse(crn = "X12349", excluded = true, restricted = false),
+        ),
+      )
+
+      val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+      assertThat(caseload).hasSize(3)
+      assertThat(caseload.map { it.crnNumber }).containsExactly("X12348", "X12349", "X12350")
+    }
   }
 
   private fun verifyCase(
