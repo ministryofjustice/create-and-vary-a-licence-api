@@ -43,7 +43,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 
 @Tag(
   name = Tags.CASELOAD,
@@ -479,8 +478,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getStaffCreateCaseloadHdc(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) =
-    comCreateCaseloadService.getStaffCreateCaseloadHdc(deliusStaffIdentifier)
+  fun getStaffCreateCaseloadHdc(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCreateCaseloadService.getStaffCreateCaseloadHdc(deliusStaffIdentifier)
 
   @PostMapping("/caseload/com/team/create-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

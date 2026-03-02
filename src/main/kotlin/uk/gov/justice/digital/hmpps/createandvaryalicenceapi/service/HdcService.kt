@@ -134,11 +134,9 @@ class HdcService(
     private val byBookingId: Map<Long, HdcStatusHolder> = hdcStatuses.associateBy { it.bookingId as Long }
     private fun containsBookingId(bookingId: Long) = byBookingId.containsKey(bookingId)
 
-    fun isWaitingForActivation(kind: LicenceKind, bookingId: Long) =
-      kind == HDC && !containsBookingId(bookingId)
+    fun isWaitingForActivation(kind: LicenceKind, bookingId: Long) = kind == HDC && !containsBookingId(bookingId)
 
-    fun canBeActivated(kind: LicenceKind, bookingId: Long) =
-      isValidByKind(kind, bookingId)
+    fun canBeActivated(kind: LicenceKind, bookingId: Long) = isValidByKind(kind, bookingId)
 
     fun isExpectedHdcRelease(bookingId: Long) = containsBookingId(bookingId)
 

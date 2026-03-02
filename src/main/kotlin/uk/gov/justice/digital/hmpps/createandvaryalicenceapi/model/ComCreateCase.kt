@@ -66,4 +66,3 @@ data class ComCreateCase(
   @field:Schema(description = "The current status of the HDC case", example = "APPROVED")
   val currentHdcStatus: HdcStatus,
 )
-

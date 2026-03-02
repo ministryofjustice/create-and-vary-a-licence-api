@@ -61,7 +61,7 @@ class CvlRecordService(
         ),
         licenceType = getLicenceType(prisoner, licenceStartDate, eligibility.eligibleKind),
         isTimedOut = isInHardStopPeriod || hardStopKind == TIME_SERVED,
-        currentHdcStatus = nomisIdsToEligibilityWithHdcStatus[prisoner.prisonerNumber]!!.currentHdcStatus
+        currentHdcStatus = nomisIdsToEligibilityWithHdcStatus[prisoner.prisonerNumber]!!.currentHdcStatus,
       )
     }
   }

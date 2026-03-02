@@ -20,5 +20,5 @@ data class CvlRecord(
   val hardStopKind: LicenceKind? = null,
   val licenceType: LicenceType,
   val isTimedOut: Boolean = false,
-  val currentHdcStatus: HdcStatus = HdcStatus.NOT_STARTED
+  val currentHdcStatus: HdcStatus = HdcStatus.NOT_STARTED,
 )

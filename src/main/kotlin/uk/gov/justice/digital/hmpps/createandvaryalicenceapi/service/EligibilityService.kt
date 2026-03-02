@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
 import java.time.Clock
@@ -248,21 +247,24 @@ class EligibilityService(
       when {
         case?.isStandardRecall() == true -> wrapper.copy(
           assessment = wrapper.assessment.copy(
-            prrdIneligibilityReasons = wrapper.assessment.prrdIneligibilityReasons + "is on a standard recall"
-          )
+            prrdIneligibilityReasons = wrapper.assessment.prrdIneligibilityReasons + "is on a standard recall",
+          ),
         )
 
         case?.isFixedTermRecall() == true -> wrapper
 
         else -> {
           val ineligibilityMessage =
-            if (case == null) "does not have any active sentences"
-            else "is on an unidentified non-fixed term recall"
+            if (case == null) {
+              "does not have any active sentences"
+            } else {
+              "is on an unidentified non-fixed term recall"
+            }
 
           wrapper.copy(
             assessment = wrapper.assessment.copy(
-              prrdIneligibilityReasons = wrapper.assessment.prrdIneligibilityReasons + ineligibilityMessage
-            )
+              prrdIneligibilityReasons = wrapper.assessment.prrdIneligibilityReasons + ineligibilityMessage,
+            ),
           )
         }
       }

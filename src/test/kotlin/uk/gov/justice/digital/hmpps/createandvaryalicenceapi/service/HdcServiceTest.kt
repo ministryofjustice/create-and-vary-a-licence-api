@@ -251,8 +251,8 @@ class HdcServiceTest {
     assertThat(result).isNotNull
     assertThat(result.hdcStatuses).isEqualTo(
       listOf(
-        hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED")
-      )
+        hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED"),
+      ),
     )
   }
 
@@ -503,10 +503,10 @@ class HdcServiceTest {
 
       assertThat(result).isNotNull
       assertThat(result.hdcStatuses).isEqualTo(
-          listOf(
-            currentPrisonerHdcStatus(bookingId = 1L, currentHdcStatus = HdcStatus.APPROVED),
-            currentPrisonerHdcStatus(bookingId = 5L, currentHdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
-          )
+        listOf(
+          currentPrisonerHdcStatus(bookingId = 1L, currentHdcStatus = HdcStatus.APPROVED),
+          currentPrisonerHdcStatus(bookingId = 5L, currentHdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
+        ),
       )
     }
   }

@@ -175,7 +175,7 @@ class LicenceActivationServiceTest {
         listOf(
           hdcPrisonerStatus().copy(bookingId = aLicenceEntity.bookingId!!, approvalStatus = "APPROVED"),
         ),
-      )
+      ),
     )
 
     service.licenceActivation()
@@ -348,7 +348,7 @@ class LicenceActivationServiceTest {
         listOf(
           hdcPrisonerStatus().copy(bookingId = hdcLicence.bookingId!!, approvalStatus = "APPROVED"),
           hdcPrisonerStatus().copy(bookingId = aLicenceEntity.bookingId!!, approvalStatus = "APPROVED"),
-        )
+        ),
       ),
     )
 
@@ -397,7 +397,7 @@ class LicenceActivationServiceTest {
       HdcStatuses(
         listOf(
           hdcPrisonerStatus().copy(bookingId = hdcLicence.bookingId!!, approvalStatus = "APPROVED"),
-        )
+        ),
       ),
     )
 
@@ -434,8 +434,8 @@ class LicenceActivationServiceTest {
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(
         listOf(
-          hdcPrisonerStatus().copy(bookingId = hdcLicence.bookingId!!, approvalStatus = "APPROVED")
-        )
+          hdcPrisonerStatus().copy(bookingId = hdcLicence.bookingId!!, approvalStatus = "APPROVED"),
+        ),
       ),
     )
 

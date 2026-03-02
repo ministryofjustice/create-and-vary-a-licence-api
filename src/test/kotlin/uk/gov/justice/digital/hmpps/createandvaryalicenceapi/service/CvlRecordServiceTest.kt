@@ -10,11 +10,10 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityWithHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anIneligibleEligibilityAssessment
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.eligibilityWithHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -44,7 +43,7 @@ class CvlRecordServiceTest {
         ),
       ),
     ).thenReturn(
-    mapOf(
+      mapOf(
         aPrisonerSearchPrisoner.prisonerNumber to eligibilityWithHdcStatus(currentHdcStatus = HdcStatus.APPROVED),
         "A1234AB" to eligibilityWithHdcStatus(assessment = prrdEligibilityAssessment),
         "A1234AC" to eligibilityWithHdcStatus(assessment = anIneligibleEligibilityAssessment()),
@@ -143,11 +142,14 @@ class CvlRecordServiceTest {
       eligibilityService.getEligibilityAssessments(
         listOf(aPrisonerSearchPrisoner),
       ),
-    ).thenReturn(mapOf(aPrisonerSearchPrisoner.prisonerNumber to
-      eligibilityWithHdcStatus(
-        currentHdcStatus = HdcStatus.NOT_STARTED
-      )
-    ))
+    ).thenReturn(
+      mapOf(
+        aPrisonerSearchPrisoner.prisonerNumber to
+          eligibilityWithHdcStatus(
+            currentHdcStatus = HdcStatus.NOT_STARTED,
+          ),
+      ),
+    )
 
     whenever(
       releaseDateService.getLicenceStartDates(
