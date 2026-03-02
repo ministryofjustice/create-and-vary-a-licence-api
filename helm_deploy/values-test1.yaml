@@ -31,6 +31,7 @@ generic-service:
     HDC_ENABLED: true
     LAO_ENABLED: true
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
+    PRISON_EVENT_LISTENER_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
