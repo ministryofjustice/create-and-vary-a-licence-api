@@ -629,6 +629,80 @@ class ComVaryCaseloadServiceTest {
     assertThat(caseload[0].isRestricted).isTrue()
   }
 
+  @Test
+  fun `it sorts non-restricted cases by release date then name before restricted cases which are sorted by CRN`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person1"))),
+      ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234F", staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person2"))),
+      ManagedOffenderCrn(crn = "X12350", nomisId = "AB1234G", staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person3"))),
+    )
+
+    val service = ComVaryCaseloadService(
+      deliusApiClient,
+      licenceCaseRepository,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+      listOf(
+        createLicenceComCase(crn = "X12348", nomisId = "AB1234E", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
+        createLicenceComCase(crn = "X12349", nomisId = "AB1234F", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
+        createLicenceComCase(crn = "X12350", nomisId = "AB1234G", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
+      ),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+      listOf(
+        CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false),
+        CaseAccessResponse(crn = "X12349", userExcluded = false, userRestricted = false),
+        CaseAccessResponse(crn = "X12350", userExcluded = true, userRestricted = false),
+      ),
+    )
+
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(3)
+    assertThat(caseload.map { it.crnNumber }).containsExactly("X12349", "X12348", "X12350")
+  }
+
+  @Test
+  fun `it sorts multiple restricted LAO cases by CRN`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12350", nomisId = "AB1234E", staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))),
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234F", staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))),
+      ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234G", staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))),
+    )
+
+    val serviceWithLaoEnabled = ComVaryCaseloadService(
+      deliusApiClient,
+      licenceCaseRepository,
+      telemetryService,
+      laoEnabled = true,
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+      listOf(
+        createLicenceComCase(crn = "X12350", nomisId = "AB1234E", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
+        createLicenceComCase(crn = "X12348", nomisId = "AB1234F", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
+        createLicenceComCase(crn = "X12349", nomisId = "AB1234G", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
+      ),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+      listOf(
+        CaseAccessResponse(crn = "X12350", userExcluded = true, userRestricted = false),
+        CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false),
+        CaseAccessResponse(crn = "X12349", userExcluded = true, userRestricted = false),
+      ),
+    )
+
+    val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(3)
+    assertThat(caseload.map { it.crnNumber }).containsExactly("X12348", "X12349", "X12350")
+  }
+
   private fun verifyCase(
     case: ComVaryCase,
     expectedCrn: String,

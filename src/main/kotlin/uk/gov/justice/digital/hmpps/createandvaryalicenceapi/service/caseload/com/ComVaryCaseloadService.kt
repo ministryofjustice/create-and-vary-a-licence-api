@@ -94,7 +94,12 @@ class ComVaryCaseloadService(
             isRestricted = false,
           )
       }
-    }.sortedWith(compareBy<ComVaryCase> { it.releaseDate }.thenBy { it.name })
+    }.sortedWith(
+      compareBy<ComVaryCase> { it.isRestricted }
+        .thenBy { case -> case.releaseDate.takeUnless { case.isRestricted } }
+        .thenBy { case -> case.name.takeUnless { case.isRestricted } }
+        .thenBy { it.crnNumber },
+    )
   }
 
   private fun findExistingActiveAndVariationLicences(crnList: List<String>): List<LicenceComCase> = if (crnList.isEmpty()) {
