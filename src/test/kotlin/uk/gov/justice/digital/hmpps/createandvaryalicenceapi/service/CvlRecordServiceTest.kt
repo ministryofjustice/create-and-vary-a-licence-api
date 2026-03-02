@@ -10,10 +10,13 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityWithHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anIneligibleEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.eligibilityWithHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
@@ -41,12 +44,13 @@ class CvlRecordServiceTest {
         ),
       ),
     ).thenReturn(
-      mapOf(
-        aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment(),
-        "A1234AB" to prrdEligibilityAssessment,
-        "A1234AC" to anIneligibleEligibilityAssessment(),
+    mapOf(
+        aPrisonerSearchPrisoner.prisonerNumber to eligibilityWithHdcStatus(currentHdcStatus = HdcStatus.APPROVED),
+        "A1234AB" to eligibilityWithHdcStatus(assessment = prrdEligibilityAssessment),
+        "A1234AC" to eligibilityWithHdcStatus(assessment = anIneligibleEligibilityAssessment()),
       ),
     )
+
     whenever(
       releaseDateService.getLicenceStartDates(
         listOf(
@@ -96,6 +100,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
         licenceType = AP,
         isTimedOut = true,
+        currentHdcStatus = HdcStatus.APPROVED,
       ),
       CvlRecord(
         nomisId = "A1234AB",
@@ -111,6 +116,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
         licenceType = AP,
         isTimedOut = true,
+        currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
       CvlRecord(
         nomisId = "A1234AC",
@@ -126,6 +132,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
         licenceType = AP,
         isTimedOut = true,
+        currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
     )
   }
@@ -136,7 +143,11 @@ class CvlRecordServiceTest {
       eligibilityService.getEligibilityAssessments(
         listOf(aPrisonerSearchPrisoner),
       ),
-    ).thenReturn(mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()))
+    ).thenReturn(mapOf(aPrisonerSearchPrisoner.prisonerNumber to
+      eligibilityWithHdcStatus(
+        currentHdcStatus = HdcStatus.NOT_STARTED
+      )
+    ))
 
     whenever(
       releaseDateService.getLicenceStartDates(
@@ -170,7 +181,7 @@ class CvlRecordServiceTest {
     @BeforeEach
     fun reset() {
       whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
-        mapOf(prisonerSearchResult().prisonerNumber to anEligibilityAssessment()),
+        mapOf(prisonerSearchResult().prisonerNumber to eligibilityWithHdcStatus()),
       )
       whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
     }
@@ -232,7 +243,7 @@ class CvlRecordServiceTest {
     @Test
     fun `AP_PSS recall cases are PSS-only if the licence start date is equal to the LED`() {
       whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
-        mapOf(prisonerSearchResult().prisonerNumber to prrdEligibilityAssessment),
+        mapOf(prisonerSearchResult().prisonerNumber to eligibilityWithHdcStatus(assessment = prrdEligibilityAssessment)),
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
         mapOf(prisonerSearchResult().prisonerNumber to LocalDate.of(2021, 10, 22)),
@@ -253,7 +264,7 @@ class CvlRecordServiceTest {
     @BeforeEach
     fun setup() {
       whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
-        mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()),
+        mapOf(aPrisonerSearchPrisoner.prisonerNumber to eligibilityWithHdcStatus()),
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
         mapOf(aPrisonerSearchPrisoner.prisonerNumber to LocalDate.of(2021, 10, 22)),
@@ -296,7 +307,7 @@ class CvlRecordServiceTest {
     @BeforeEach
     fun setup() {
       whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
-        mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()),
+        mapOf(aPrisonerSearchPrisoner.prisonerNumber to eligibilityWithHdcStatus()),
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
         mapOf(aPrisonerSearchPrisoner.prisonerNumber to LocalDate.of(2021, 10, 22)),

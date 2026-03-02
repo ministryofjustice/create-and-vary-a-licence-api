@@ -52,6 +52,18 @@ class ComCreateCaseloadService(
     return cases
   }
 
+  fun getStaffCreateCaseloadHdc(deliusStaffIdentifier: Long): List<ComCreateCase> {
+    val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
+    val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
+    val cvlRecords = cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
+
+    val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
+    val cases = createComCases(eligibleCases, cvlRecords)
+    val hdcCases = cases.filter { it.cvlRecord.eligibleKind == LicenceKind.HDC }
+
+    return transformToCreateCaseload(hdcCases)
+  }
+
   fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCreateCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = deliusApiClient.getManagedOffendersByTeam(teamCode)
@@ -112,9 +124,9 @@ class ComCreateCaseloadService(
       val licences = licencesByCrn[deliusRecord.crn!!] ?: emptyList()
       val cvlRecord = cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!
       val caseAccessRecord = caseAccessRecords[deliusRecord.crn] ?: unrestricted
-      val isRestricted = caseAccessRecord.isRestricted
-      val probationPractitioner = if (isRestricted) {
-        ProbationPractitioner.restrictedView()
+      val isLao = caseAccessRecord.userExcluded || caseAccessRecord.userRestricted
+      val probationPractitioner = if (isLao) {
+        ProbationPractitioner.laoProbationPractitioner()
       } else {
         deliusRecord.toProbationPractitioner()
       }
@@ -125,7 +137,7 @@ class ComCreateCaseloadService(
           probationPractitioner,
           nomisRecord,
           cvlRecord,
-          createNotStartedLicenceDto(deliusRecord, nomisRecord, cvlRecord, isRestricted),
+          createNotStartedLicenceDto(deliusRecord, nomisRecord, cvlRecord, isLao),
         )
 
         // Has an active licence so shouldn't appear in create caseload
@@ -134,7 +146,7 @@ class ComCreateCaseloadService(
 
         // Should appear in create caseload with relevant licence
         else ->
-          createCaseForRelevantLicence(probationPractitioner, nomisRecord, cvlRecord, findRelevantLicencePerCase(licences), isRestricted)
+          createCaseForRelevantLicence(probationPractitioner, nomisRecord, cvlRecord, findRelevantLicencePerCase(licences), isLao)
       }
     }
   }
@@ -159,14 +171,14 @@ class ComCreateCaseloadService(
     isReviewNeeded = case.isReviewNeeded(),
     // populated by findRelevantLicencePerCase
     licenceCreationType = null,
-    isRestricted = false,
+    isLao = false,
   )
 
   private fun createNotStartedLicenceDto(
     deliusRecord: ManagedOffenderCrn,
     nomisRecord: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
-    isRestricted: Boolean,
+    isLao: Boolean,
   ): ComCreateCaseloadLicenceDto {
     val kind = cvlRecord.hardStopKind ?: cvlRecord.eligibleKind!!
     val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
@@ -176,7 +188,7 @@ class ComCreateCaseloadService(
       NOT_STARTED
     }
 
-    if (isRestricted) {
+    if (isLao) {
       return ComCreateCaseloadLicenceDto.restrictedCase(
         licenceStatus,
         kind,
@@ -199,7 +211,7 @@ class ComCreateCaseloadService(
       kind = kind,
       isReviewNeeded = false,
       licenceCreationType = null,
-      isRestricted = false,
+      isLao = false,
     )
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
   }
@@ -226,22 +238,18 @@ class ComCreateCaseloadService(
         kind = kind,
         licenceCreationType = licenceCreationType,
         isReviewNeeded = isReviewNeeded,
-        isRestricted = isRestricted,
+        isLao = isLao,
+        currentHdcStatus = it.cvlRecord.currentHdcStatus,
       )
     }
-  }.sortedWith(
-    compareBy<ComCreateCase> { it.isRestricted }
-      .thenBy { case -> case.releaseDate.takeUnless { case.isRestricted } }
-      .thenBy { case -> case.name.takeUnless { case.isRestricted } }
-      .thenBy { it.crnNumber },
-  )
+  }.sortedWith(compareBy<ComCreateCase> { it.releaseDate }.thenBy { it.name })
 
   private fun getCaseAccessRecords(crns: List<String>): Map<String, CaseAccessResponse> {
     val username = SecurityContextHolder.getContext().authentication.name
     return deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
   }
 
-  private fun createCaseForRelevantLicence(probationPractitioner: ProbationPractitioner, nomisRecord: PrisonerSearchPrisoner, cvlRecord: CvlRecord, createCaseloadLicence: ComCreateCaseloadLicenceDto, isRestricted: Boolean): Case = if (isRestricted) {
+  private fun createCaseForRelevantLicence(probationPractitioner: ProbationPractitioner, nomisRecord: PrisonerSearchPrisoner, cvlRecord: CvlRecord, createCaseloadLicence: ComCreateCaseloadLicenceDto, isLao: Boolean): Case = if (isLao) {
     Case(
       probationPractitioner,
       nomisRecord,

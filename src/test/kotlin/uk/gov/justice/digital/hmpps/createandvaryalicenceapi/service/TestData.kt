@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityWithHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
@@ -799,6 +800,14 @@ object TestData {
     currentHdcStatus: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
   ) = CurrentPrisonerHdcStatus(
     bookingId = bookingId,
+    currentHdcStatus = currentHdcStatus,
+  )
+
+  fun eligibilityWithHdcStatus(
+    assessment: EligibilityAssessment = anEligibilityAssessment(),
+    currentHdcStatus: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+  ) = EligibilityWithHdcStatus(
+    assessment = assessment,
     currentHdcStatus = currentHdcStatus,
   )
 

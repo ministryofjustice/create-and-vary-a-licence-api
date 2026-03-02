@@ -27,12 +27,12 @@ class CvlRecordService(
   fun getCvlRecords(
     prisoners: List<PrisonerSearchPrisoner>,
   ): List<CvlRecord> {
-    val nomisIdsToEligibility = eligibilityService.getEligibilityAssessments(prisoners)
+    val nomisIdsToEligibilityWithHdcStatus = eligibilityService.getEligibilityAssessments(prisoners)
     val nomisIdsToEligibleKinds =
-      nomisIdsToEligibility.map { (nomisId, eligibility) -> nomisId to eligibility.eligibleKind }.toMap()
+      nomisIdsToEligibilityWithHdcStatus.map { (nomisId, eligibility) -> nomisId to eligibility.assessment.eligibleKind }.toMap()
     val nomisIdsToLicenceStartDates = releaseDateService.getLicenceStartDates(prisoners, nomisIdsToEligibleKinds)
     return prisoners.map { prisoner ->
-      val eligibility = nomisIdsToEligibility[prisoner.prisonerNumber]!!
+      val eligibility = nomisIdsToEligibilityWithHdcStatus[prisoner.prisonerNumber]!!.assessment
       val licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber]
       val hardStopKind = when {
         releaseDateService.isTimeServed(prisoner) -> TIME_SERVED
@@ -61,6 +61,7 @@ class CvlRecordService(
         ),
         licenceType = getLicenceType(prisoner, licenceStartDate, eligibility.eligibleKind),
         isTimedOut = isInHardStopPeriod || hardStopKind == TIME_SERVED,
+        currentHdcStatus = nomisIdsToEligibilityWithHdcStatus[prisoner.prisonerNumber]!!.currentHdcStatus
       )
     }
   }

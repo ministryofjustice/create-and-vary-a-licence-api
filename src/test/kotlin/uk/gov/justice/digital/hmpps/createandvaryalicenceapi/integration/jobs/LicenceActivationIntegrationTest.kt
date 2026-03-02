@@ -36,6 +36,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-licences-for-activation.sql",
+
   )
   fun `Run licence activation job`() {
     webTestClient.post()

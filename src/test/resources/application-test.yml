@@ -81,13 +81,14 @@ hmpps:
 feature:
   toggle:
     hdc:
-      enabled: false
+      enabled: true
       useCurrentStatus: false
     timeServed:
       enabled: true
       prisons: "MDI, GHI"
     lao:
       enabled: true
+
 
 os:
   places:

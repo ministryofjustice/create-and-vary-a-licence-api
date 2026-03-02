@@ -8,11 +8,14 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityWithHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSentenceAndRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatusHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
@@ -33,7 +36,7 @@ class EligibilityServiceTest {
 
   @BeforeEach
   fun reset() {
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptyList()))
   }
 
   @Nested
@@ -360,7 +363,11 @@ class EligibilityServiceTest {
 
     @Test
     fun `Person with HDC approval - not eligible for CVL`() {
-      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(aPrisonerSearchResult.bookingId!!.toLong())))
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = aPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "APPROVED")
+        ))
+      )
       val result = service.getEligibilityAssessment(aPrisonerSearchResult)
 
       assertThat(result.isEligible).isFalse()
@@ -377,8 +384,8 @@ class EligibilityServiceTest {
         listOf(aPrisonerSearchResult, aPrisonerSearchResult.copy(prisonerNumber = "A1234AB")),
       )
       assertThat(result.size).isEqualTo(2)
-      assertThat(result["A1234AA"]!!.isEligible).isTrue()
-      assertThat(result["A1234AB"]!!.isEligible).isTrue()
+      assertThat(result["A1234AA"]!!.assessment.isEligible).isTrue()
+      assertThat(result["A1234AB"]!!.assessment.isEligible).isTrue()
     }
 
     @Test
@@ -695,7 +702,11 @@ class EligibilityServiceTest {
 
     @Test
     fun `Person with HDC approval - not eligible for CVL`() {
-      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(aRecallPrisonerSearchResult.bookingId!!.toLong())))
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = aRecallPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "APPROVED")
+        )
+      ))
       val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
 
       assertThat(result.isEligible).isFalse()
@@ -712,7 +723,11 @@ class EligibilityServiceTest {
 
     @BeforeEach
     fun reset() {
-      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(anHdcPrisonerSearchResult.bookingId!!.toLong())))
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = anHdcPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "APPROVED")
+        )
+      ))
     }
 
     @Test
@@ -765,7 +780,7 @@ class EligibilityServiceTest {
 
     @Test
     fun `Case does not have HDC approval - ineligible for CVL`() {
-      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptyList()))
 
       // Also make the case ineligible for a CRD licence
       val result = service.getEligibilityAssessment(

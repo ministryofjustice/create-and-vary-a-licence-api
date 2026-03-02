@@ -249,7 +249,11 @@ class HdcServiceTest {
     val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
 
     assertThat(result).isNotNull
-    assertThat(result.approvedIds).containsExactly(1L)
+    assertThat(result.hdcStatuses).isEqualTo(
+      listOf(
+        hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED")
+      )
+    )
   }
 
   @Test
@@ -274,7 +278,11 @@ class HdcServiceTest {
 
   @Nested
   inner class HdcStatusesTest {
-    val statuses = HdcStatuses(setOf(1L))
+    val statuses = HdcStatuses(
+      listOf(
+        hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED"),
+      ),
+    )
 
     @Test
     fun isWaitingForActivation() {
@@ -494,7 +502,12 @@ class HdcServiceTest {
       val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
 
       assertThat(result).isNotNull
-      assertThat(result.approvedIds).containsExactly(1L, 5L)
+      assertThat(result.hdcStatuses).isEqualTo(
+          listOf(
+            currentPrisonerHdcStatus(bookingId = 1L, currentHdcStatus = HdcStatus.APPROVED),
+            currentPrisonerHdcStatus(bookingId = 5L, currentHdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
+          )
+      )
     }
   }
 

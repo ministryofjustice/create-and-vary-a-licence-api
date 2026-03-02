@@ -26,7 +26,7 @@ class HdcApiClient(@param:Qualifier("oauthHdcApiClient") val hdcApiWebClient: We
   fun getCurrentHdcStatuses(bookingIds: List<Long>, batchSize: Int = HDC_BATCH_SIZE) = batchRequests(batchSize, bookingIds) { batch ->
     hdcApiWebClient
       .post()
-      .uri("/licence/hdc/current-hdc-statuses")
+      .uri("/licence/hdc/statuses")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(batch)
       .retrieve()

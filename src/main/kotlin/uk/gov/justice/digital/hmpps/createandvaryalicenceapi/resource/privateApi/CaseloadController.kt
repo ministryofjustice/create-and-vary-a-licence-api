@@ -43,6 +43,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 
 @Tag(
   name = Tags.CASELOAD,
@@ -436,6 +437,50 @@ class CaseloadController(
     ],
   )
   fun getStaffCreateCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCreateCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier)
+
+  @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/create-case-load/hdc")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Returns the create caseload for an officer filtered to HDC cases",
+    description = "Returns an enriched list of cases which require an HDC licence to be created for an officer",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returning an enriched list of HDC cases which require a licence to be created for an officer",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = ComCreateCase::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getStaffCreateCaseloadHdc(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) =
+    comCreateCaseloadService.getStaffCreateCaseloadHdc(deliusStaffIdentifier)
 
   @PostMapping("/caseload/com/team/create-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

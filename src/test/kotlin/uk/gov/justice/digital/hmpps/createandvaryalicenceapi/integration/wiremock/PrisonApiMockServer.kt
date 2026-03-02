@@ -87,6 +87,16 @@ class PrisonApiMockServer : WireMockServer(8091) {
                   "bookingId": "123",
                   "approvalStatus": "APPROVED",
                   "passed": false
+               },
+               {
+                  "bookingId": "1",
+                  "approvalStatus": "APPROVED",
+                  "passed": true
+               },
+               {
+                  "bookingId": "2",
+                  "approvalStatus": "APPROVED",
+                  "passed": true
                }
               ]
             """.trimIndent(),
