@@ -54,6 +54,7 @@ class SentenceDatesChangedHandler(
     val ssd = prisonService.getPrisonerLatestSentenceStartDate(bookingId)
     val lsd = licence.licenceStartDate
 
+    log.debug("Checking if prisoner resentenced, ssd: {}, lsd: {}", ssd, lsd)
     if (ssd != null && lsd != null && ssd.isAfter(lsd)) {
       licenceService.deactivateLicenceAndVariations(
         licence.id,
