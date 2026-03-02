@@ -38,6 +38,7 @@ export FEATURE_TOGGLE_TIMESERVED_ENABLED=false
 export TIME_SERVED_PRISONS="MDI, BAI, BNI"
 export HDC_ENABLED=false
 export LAO_ENABLED=false
+export USE_CURRENT_HDC_STATUS=false
 
 # --- Write to .env file ---
 fileDir=~/env-config/
@@ -68,6 +69,7 @@ cat > "$fileToAddVars" <<EOF
   TIME_SERVED_PRISONS=${TIME_SERVED_PRISONS}
   HDC_ENABLED=${HDC_ENABLED}
   LAO_ENABLED=${LAO_ENABLED}
+  USE_CURRENT_HDC_STATUS=${USE_CURRENT_HDC_STATUS}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"
