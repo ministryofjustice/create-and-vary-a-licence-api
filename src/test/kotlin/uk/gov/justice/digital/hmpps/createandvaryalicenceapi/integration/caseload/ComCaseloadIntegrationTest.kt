@@ -640,7 +640,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           assertThat(currentHdcStatus).isEqualTo(HdcStatus.APPROVED)
         }
       }
-
     }
   }
 
