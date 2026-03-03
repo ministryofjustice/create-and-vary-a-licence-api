@@ -124,7 +124,7 @@ class ComCreateCaseloadService(
       val licences = licencesByCrn[deliusRecord.crn!!] ?: emptyList()
       val cvlRecord = cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!
       val caseAccessRecord = caseAccessRecords[deliusRecord.crn] ?: unrestricted
-      val isRestricted = caseAccessRecord.userExcluded || caseAccessRecord.userRestricted
+      val isRestricted = caseAccessRecord.userRestricted
       val probationPractitioner = if (isRestricted) {
         ProbationPractitioner.restrictedView()
       } else {

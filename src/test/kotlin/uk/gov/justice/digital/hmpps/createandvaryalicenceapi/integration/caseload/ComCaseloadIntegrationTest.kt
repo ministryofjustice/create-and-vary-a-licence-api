@@ -634,12 +634,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "A1234AA",
         "AB1234F",
       )
-      with(caseload[0]) {
-        assertThat(currentHdcStatus).isEqualTo(HdcStatus.APPROVED)
+
+      caseload.take(2).forEach {
+        with(it) {
+          assertThat(currentHdcStatus).isEqualTo(HdcStatus.APPROVED)
+        }
       }
-      with(caseload[1]) {
-        assertThat(currentHdcStatus).isEqualTo(HdcStatus.APPROVED)
-      }
+
     }
   }
 

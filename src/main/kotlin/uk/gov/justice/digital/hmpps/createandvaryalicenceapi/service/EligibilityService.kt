@@ -245,13 +245,13 @@ class EligibilityService(
       val case = bookingId?.let { caseByBookingId[it] }
 
       when {
-        case?.isStandardRecall() == true -> wrapper.copy(
+        case.isStandardRecall() -> wrapper.copy(
           assessment = wrapper.assessment.copy(
             prrdIneligibilityReasons = wrapper.assessment.prrdIneligibilityReasons + "is on a standard recall",
           ),
         )
 
-        case?.isFixedTermRecall() == true -> wrapper
+        case.isFixedTermRecall() -> wrapper
 
         else -> {
           val ineligibilityMessage =

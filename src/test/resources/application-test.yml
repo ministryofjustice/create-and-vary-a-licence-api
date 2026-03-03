@@ -89,7 +89,6 @@ feature:
     lao:
       enabled: true
 
-
 os:
   places:
     api:
