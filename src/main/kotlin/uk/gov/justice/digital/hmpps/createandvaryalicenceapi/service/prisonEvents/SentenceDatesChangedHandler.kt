@@ -29,8 +29,6 @@ class SentenceDatesChangedHandler(
   }
 
   fun handleEvent(message: String) {
-    log.info("Received sentence dates changed event")
-
     val event = try {
       objectMapper.readValue(message, SentenceDatesChangedEvent::class.java)
     } catch (e: JacksonException) {
@@ -40,9 +38,11 @@ class SentenceDatesChangedHandler(
     val bookingId = event.bookingId
     val nomisId = event.offenderIdDisplay ?: prisonService.searchPrisonersByBookingIds(listOf(bookingId))
       .first().prisonerNumber
+    log.info("Processing sentence dates changed event for bookingId: $bookingId, nomisId: $nomisId")
 
     val activeLicence = getActiveLicence(nomisId)
     if (activeLicence != null) {
+      log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
       deactivateLicencesIfPrisonerResentenced(activeLicence, bookingId)
       deactivateLicencesIfFuturePrrd(activeLicence)
     } else {
@@ -54,7 +54,7 @@ class SentenceDatesChangedHandler(
     val ssd = prisonService.getPrisonerLatestSentenceStartDate(bookingId)
     val lsd = licence.licenceStartDate
 
-    log.debug("Checking if prisoner resentenced, ssd: {}, lsd: {}", ssd, lsd)
+    log.info("Checking if prisoner resentenced, ssd: {}, lsd: {}", ssd, lsd)
     if (ssd != null && lsd != null && ssd.isAfter(lsd)) {
       licenceService.deactivateLicenceAndVariations(
         licence.id,
