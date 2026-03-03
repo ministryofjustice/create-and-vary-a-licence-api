@@ -61,7 +61,7 @@ data class ComCreateCase(
   val licenceCreationType: LicenceCreationType? = null,
 
   @field:Schema(description = "Is the offender a limited access offender (LAO)?", example = "true")
-  val isLao: Boolean,
+  val isRestricted: Boolean,
 
   @field:Schema(description = "The current status of the HDC case", example = "APPROVED")
   val currentHdcStatus: HdcStatus,
