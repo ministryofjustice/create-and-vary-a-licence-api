@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEven
 
 import com.fasterxml.jackson.core.JacksonException
 import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -28,6 +29,7 @@ class SentenceDatesChangedHandler(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
+  @Transactional
   fun handleEvent(message: String) {
     val event = try {
       objectMapper.readValue(message, SentenceDatesChangedEvent::class.java)
@@ -46,6 +48,7 @@ class SentenceDatesChangedHandler(
       deactivateLicencesIfPrisonerResentenced(activeLicence, bookingId)
       deactivateLicencesIfFuturePrrd(activeLicence)
     } else {
+      log.info("updating sentence dates for nomisId: $nomisId")
       updateSentenceDates(nomisId)
     }
   }
