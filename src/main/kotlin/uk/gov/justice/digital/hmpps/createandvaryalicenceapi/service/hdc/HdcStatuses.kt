@@ -3,50 +3,30 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 
-data class HdcStatuses(val hdcStatuses: List<HdcStatusHolder>) {
+data class HdcStatuses(
+  private val hdcStatuses: Map<Long, HdcStatus>,
+) : Map<Long, HdcStatus> by hdcStatuses {
 
-  private fun asBookingIdToStatusMap(): Map<Long, HdcStatus> = hdcStatuses.associate { it.bookingId as Long to it.hdcStatus }
+  constructor(list: List<HdcStatusHolder>) : this(
+    list.associate { holder: HdcStatusHolder ->
+      holder.bookingId as Long to holder.hdcStatus
+    },
+  )
 
-  val statusMap: Map<Long, HdcStatus> by lazy { asBookingIdToStatusMap() }
-
-  /**
-   * RULE:
-   * Waiting for activation if:
-   *   - kind == HDC
-   *   - AND status NOT IN [APPROVED, NOT_A_HDC_RELEASE]
-   *   - null (no entry) counts as waiting
-   */
   fun isWaitingForActivation(kind: LicenceKind, bookingId: Long): Boolean {
     if (kind != HDC) return false
-
-    val status = statusMap[bookingId]
-    return when (status) {
+    return when (hdcStatuses[bookingId]) {
       null -> true
       HdcStatus.APPROVED, HdcStatus.NOT_A_HDC_RELEASE -> false
       else -> true
     }
   }
 
-  /**
-   * RULE:
-   * Can be activated if:
-   *   - kind == HDC AND status == APPROVED
-   *   - OR kind != HDC AND status != APPROVED
-   *   - null (no entry) counts as not approved
-   */
   fun canBeActivated(kind: LicenceKind, bookingId: Long): Boolean {
-    val status = statusMap[bookingId]
-    val approvedForHdc = status == HdcStatus.APPROVED
-
-    return (kind == HDC && approvedForHdc) ||
-      (kind != HDC && !approvedForHdc)
+    val approved = hdcStatuses[bookingId] == HdcStatus.APPROVED
+    return (kind == HDC && approved) ||
+      (kind != HDC && !approved)
   }
 
-  /**
-   * RULE:
-   * Expected HDC release if:
-   *   - status != NOT_A_HDC_RELEASE
-   *   - null (no entry) counts as not expected
-   */
-  fun isExpectedHdcRelease(bookingId: Long): Boolean = statusMap[bookingId] != null && statusMap[bookingId] != HdcStatus.NOT_A_HDC_RELEASE
+  fun isExpectedHdcRelease(bookingId: Long): Boolean = hdcStatuses[bookingId]?.let { it != HdcStatus.NOT_A_HDC_RELEASE } == true
 }

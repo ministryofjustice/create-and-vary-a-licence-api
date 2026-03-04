@@ -30,7 +30,7 @@ class CvlRecordService(
     prisoners: List<PrisonerSearchPrisoner>,
   ): List<CvlRecord> {
     val nomisIdsToEligibility = eligibilityService.getEligibilityAssessments(prisoners)
-    val bookingIdsToHdcStatus = hdcService.getHdcStatus(prisoners).statusMap
+    val bookingIdsToHdcStatus = hdcService.getHdcStatus(prisoners)
     val nomisIdsToEligibleKinds =
       nomisIdsToEligibility.map { (nomisId, eligibility) -> nomisId to eligibility.eligibleKind }.toMap()
     val nomisIdsToLicenceStartDates = releaseDateService.getLicenceStartDates(prisoners, nomisIdsToEligibleKinds)

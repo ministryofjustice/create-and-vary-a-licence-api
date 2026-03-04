@@ -249,10 +249,12 @@ class HdcServiceTest {
     val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
 
     assertThat(result).isNotNull
-    assertThat(result.hdcStatuses).isEqualTo(
-      listOf(
-        hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED"),
-        hdcPrisonerStatus().copy(bookingId = 4L, approvalStatus = "REJECTED"),
+    assertThat(result).isEqualTo(
+      HdcStatuses(
+        mapOf(
+          1L to HdcStatus.APPROVED,
+          4L to HdcStatus.NOT_A_HDC_RELEASE,
+        ),
       ),
     )
   }
@@ -478,7 +480,7 @@ class HdcServiceTest {
         licenceRepository,
         staffRepository,
         auditService,
-        usehdcStatus = true,
+        useCurrentHdcStatus = true,
       )
 
     @Test
@@ -504,12 +506,15 @@ class HdcServiceTest {
       val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
 
       assertThat(result).isNotNull
-      assertThat(result.hdcStatuses).isEqualTo(
-        listOf(
-          currentPrisonerHdcStatus(bookingId = 1L, hdcStatus = HdcStatus.APPROVED),
-          currentPrisonerHdcStatus(bookingId = 4L, hdcStatus = HdcStatus.NOT_A_HDC_RELEASE),
-          currentPrisonerHdcStatus(bookingId = 5L, hdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
+      assertThat(result).isEqualTo(
+        HdcStatuses(
+          mapOf(
+            1L to HdcStatus.APPROVED,
+            4L to HdcStatus.NOT_A_HDC_RELEASE,
+            5L to HdcStatus.ELIGIBILITY_CHECKS_COMPLETE,
+          ),
         ),
+
       )
     }
   }
