@@ -52,7 +52,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
   fun `Successfully retrieve ca caseload with licences`() {
     // Given
     prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
-    prisonApiMockServer.getHdcStatuses()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
@@ -297,7 +296,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     managers: List<CommunityManagerWithoutUser>,
   ) {
     prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(prisoners)
-    prisonApiMockServer.getHdcStatuses()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()

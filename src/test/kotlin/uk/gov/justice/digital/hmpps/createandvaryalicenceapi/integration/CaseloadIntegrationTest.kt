@@ -13,9 +13,12 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 private const val GET_PRISONER = "/prisoner-search/nomisid/A1234AA"
@@ -64,6 +67,11 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     fun success() {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
       prisonApiMockServer.stubGetCourtOutcomes()
+      hdcApiMockServer.stubGetHdcStatuses(
+        listOf(
+          CurrentPrisonerHdcStatus(123, HdcStatus.APPROVED),
+        ),
+      )
       deliusMockServer.stubGetOffenderManagerWithNomsId()
 
       val caseloadItem = webTestClient.get()
@@ -111,6 +119,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     val govUkMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
     val deliusMockServer = DeliusMockServer()
+    val hdcApiMockServer = HdcApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -120,6 +129,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
       prisonApiMockServer.start()
       deliusMockServer.start()
+      hdcApiMockServer.start()
     }
 
     @JvmStatic
@@ -129,6 +139,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
       govUkMockServer.stop()
       prisonApiMockServer.stop()
       deliusMockServer.stop()
+      hdcApiMockServer.stop()
     }
   }
 }

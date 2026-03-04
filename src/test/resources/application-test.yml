@@ -82,7 +82,7 @@ feature:
   toggle:
     hdc:
       enabled: true
-      useCurrentStatus: false
+      useCurrentStatus: true
     timeServed:
       enabled: true
       prisons: "MDI, GHI"

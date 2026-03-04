@@ -12,10 +12,14 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
@@ -206,9 +210,9 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     val managers = listOf(createCommunityManager(1, prisoner.prisonerNumber))
 
     stubClients(prisoners, managers)
-    prisonApiMockServer.getHdcStatuses(
+    hdcApiMockServer.stubGetHdcStatuses(
       listOf(
-        prisoner.bookingId!! to true,
+        CurrentPrisonerHdcStatus(prisoners.first().bookingId?.toLong()!!, HdcStatus.APPROVED),
       ),
     )
 
@@ -258,11 +262,11 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     managers: List<CommunityManager>,
   ) {
     prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(prisoners)
-    prisonApiMockServer.getHdcStatuses()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
     deliusMockServer.stubGetManagers(managers)
+    govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
   }
 
   fun createCommunityManager(id: Long, nomisId: String): CommunityManager = CommunityManager(
@@ -343,6 +347,8 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
+    val hdcApiMockServer = HdcApiMockServer()
+    val govUkMockServer = GovUkMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -350,6 +356,8 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.start()
       deliusMockServer.start()
       prisonApiMockServer.start()
+      hdcApiMockServer.start()
+      govUkMockServer.start()
     }
 
     @JvmStatic
@@ -358,6 +366,8 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.stop()
       deliusMockServer.stop()
       prisonApiMockServer.stop()
+      hdcApiMockServer.stop()
+      govUkMockServer.stop()
     }
   }
 }

@@ -14,12 +14,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
@@ -37,6 +39,9 @@ private const val GET_STAFF_VARY_CASELOAD = "/caseload/com/staff/$DELIUS_STAFF_I
 private const val GET_TEAM_VARY_CASELOAD = "/caseload/com/team/vary-case-load"
 
 class ComCaseloadIntegrationTest : IntegrationTestBase() {
+
+  fun readFile(filename: String): String = this.javaClass.getResourceAsStream("/test_data/integration/caseload/$filename.json")!!.bufferedReader(UTF_8)
+    .readText()
 
   @Nested
   inner class GetStaffCreateCaseload {
@@ -346,6 +351,16 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(isRestricted).isTrue()
       }
     }
+
+    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String, hdcad: String = "", hdced: String = "") {
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        readFile("team-create-case-load-prisoners").replace(
+          "\$releaseDate",
+          releaseDate,
+        ).replace("\$sled", sled).replace("\$tused", tused)
+          .replace("\$hdcad", hdcad).replace("\$hdced", hdced),
+      )
+    }
   }
 
   @Nested
@@ -602,13 +617,19 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
       val hdced = LocalDate.now().plusDays(12).format(DateTimeFormatter.ISO_DATE)
       val hdcad = LocalDate.now().plusDays(13).format(DateTimeFormatter.ISO_DATE)
-      stubSearchPrisonersByNomisId(releaseDate, sled, tused, hdced, hdcad)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused, hdcad, hdced)
       prisonApiMockServer.stubGetCourtOutcomes()
-      prisonApiMockServer.getHdcStatuses()
       prisonApiMockServer.stubGetSentenceAndRecallTypes(
         listOf(
           BookingSentenceAndRecallTypes(6, listOf(ftr14Ora)),
           BookingSentenceAndRecallTypes(7, listOf(lrSopc21)),
+        ),
+      )
+      hdcApiMockServer.stubGetHdcStatuses(
+        listOf(
+          CurrentPrisonerHdcStatus(1, HdcStatus.APPROVED),
+          CurrentPrisonerHdcStatus(2, HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
+          CurrentPrisonerHdcStatus(3, HdcStatus.APPROVED),
         ),
       )
 
@@ -635,11 +656,17 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "AB1234F",
       )
 
-      caseload.take(2).forEach {
-        with(it) {
-          assertThat(currentHdcStatus).isEqualTo(HdcStatus.APPROVED)
-        }
-      }
+      assertThat(caseload.first().currentHdcStatus).isEqualTo(HdcStatus.APPROVED)
+      assertThat(caseload.last().currentHdcStatus).isEqualTo(HdcStatus.ELIGIBILITY_CHECKS_COMPLETE)
+    }
+
+    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String, hdcad: String, hdced: String) {
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        readFile("team-create-case-load-prisoners")
+          .replace("\$releaseDate", releaseDate)
+          .replace("\$sled", sled).replace("\$tused", tused)
+          .replace("\$hdcad", hdcad).replace("\$hdced", hdced),
+      )
     }
   }
 
@@ -648,18 +675,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     val deliusMockServer = DeliusMockServer()
     val govUkMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
-
-    fun readFile(filename: String): String = this.javaClass.getResourceAsStream("/test_data/integration/caseload/$filename.json")!!.bufferedReader(UTF_8)
-      .readText()
-
-    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String, hdced: String = "", hdcad: String = "") {
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
-        readFile("team-create-case-load-prisoners").replace(
-          "\$releaseDate",
-          releaseDate,
-        ).replace("\$sled", sled).replace("\$tused", tused).replace("\$hdced", hdced).replace("\$hdcad", hdcad),
-      )
-    }
+    val hdcApiMockServer = HdcApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -669,6 +685,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       govUkMockServer.start()
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
       prisonApiMockServer.start()
+      hdcApiMockServer.start()
     }
 
     @JvmStatic
@@ -678,6 +695,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stop()
       govUkMockServer.stop()
       prisonApiMockServer.stop()
+      hdcApiMockServer.stop()
     }
   }
 }

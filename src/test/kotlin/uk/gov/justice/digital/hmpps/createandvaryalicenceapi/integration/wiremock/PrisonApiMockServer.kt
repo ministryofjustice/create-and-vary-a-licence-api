@@ -62,74 +62,191 @@ class PrisonApiMockServer : WireMockServer(8091) {
     )
   }
 
-  fun getHdcStatuses() {
-    stubFor(
-      post(urlEqualTo("/api/offender-sentences/home-detention-curfews/latest"))
-        .willReturn(
-          aResponse().withHeader(
-            "Content-Type",
-            "application/json",
-          ).withBody(
-            """[
-                {
-                  "bookingId": "123",
-                  "passed": false
-               },
-               {
-                  "bookingId": "456",
-                  "passed": true
-               },
-               {
-                  "bookingId": "789",
-                  "passed": true
-               },
-               {
-                  "bookingId": "123",
-                  "approvalStatus": "APPROVED",
-                  "passed": false
-               },
-               {
-                  "bookingId": "1",
-                  "approvalStatus": "APPROVED",
-                  "passed": true
-               },
-               {
-                  "bookingId": "2",
-                  "approvalStatus": "APPROVED",
-                  "passed": true
-               }
-              ]
-            """.trimIndent(),
-          ).withStatus(200),
-        ),
-    )
-  }
+//  fun getHdcStatuses() {
+//    stubFor(
+//      post(urlEqualTo("/api/licence/hdc/statuses"))
+//        .willReturn(
+//          aResponse().withHeader(
+//            "Content-Type",
+//            "application/json",
+//          ).withBody(
+//            """[
+//                {
+//                  "bookingId": "123",
+//                  "passed": false
+//               },
+//               {
+//                  "bookingId": "456",
+//                  "passed": true
+//               },
+//               {
+//                  "bookingId": "789",
+//                  "passed": true
+//               },
+//               {
+//                  "bookingId": "123",
+//                  "approvalStatus": "APPROVED",
+//                  "passed": false
+//               },
+//               {
+//                  "bookingId": "1",
+//                  "approvalStatus": "APPROVED",
+//                  "passed": true
+//               },
+//               {
+//                  "bookingId": "2",
+//                  "approvalStatus": "APPROVED",
+//                  "passed": true
+//               }
+//              ]
+//            """.trimIndent(),
+//          ).withStatus(200),
+//        ),
+//    )
+//  }
 
-  fun getHdcStatuses(statuses: List<Pair<String, Boolean>>) {
-    val jsonArray = statuses.joinToString(
-      prefix = "[",
-      postfix = "]",
-      separator = ",",
-    ) { (bookingId, passed) ->
-      """
-      {
-        "bookingId": "$bookingId",
-        "passed": $passed,
-        "approvalStatus": "APPROVED"
-      }
-      """.trimIndent()
-    }
+//  fun getHdcStatus(bookingId: Long = 12345, status: String = HdcStatus.NOT_A_HDC_RELEASE.name) {
+//    stubFor(
+//      post(urlEqualTo("/api/licence/hdc/statuses"))
+//        .willReturn(
+//          aResponse().withHeader("Content-Type", "application/json").withBody(
+//            """[
+//                {
+//                  "status": "$status",
+//                  "bookingId": $bookingId
+//               },
+//               {
+//                  "bookingId": "123",
+//                  "status": "APPROVED"
+//               },
+//               {
+//                  "bookingId": "456",
+//                  "status": "NOT_A_HDC_RELEASE"
+//               },
+//               {
+//                  "bookingId": "789",
+//                  "status": "APPROVED"
+//               },
+//               {
+//                  "bookingId": "123",
+//                  "status": "APPROVED"
+//               },
+//               {
+//                  "bookingId": "1",
+//                  "status": "APPROVED"
+//               },
+//               {
+//                  "bookingId": "2",
+//                  "status": "APPROVED"
+//               }
+//              ]
+//              """.trimIndent(),
+//          ).withStatus(200),
+//        ),
+//    )
+//  }
 
-    stubFor(
-      post(urlEqualTo("/api/offender-sentences/home-detention-curfews/latest"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(jsonArray)
-            .withStatus(200),
-        ),
-    )
-  }
+//  fun stubGetHdcStatus(bookingHdcStatus: List<BookingHdcStatus>) {
+//    stubFor(
+//      post(urlEqualTo("/api/licence/hdc/statuses")).willReturn(
+//        aResponse().withHeader("Content-Type", "application/json").withBody(
+//          objectMapper.writeValueAsString(bookingHdcStatus),
+//        ).withStatus(200),
+//      ),
+//    )
+//  }
+
+//  fun stubGetHdcStatuses(currentPrisonerHdcStatus: List<CurrentPrisonerHdcStatus>) {
+//    val jsonArray = currentPrisonerHdcStatus.joinToString(
+//      prefix = "[",
+//      postfix = "]",
+//      separator = ",",
+//    ) { (bookingId, currentHdcStatus) ->
+//      """
+//    {
+//      "bookingId": $bookingId,
+//      "currentHdcStatus": "${currentHdcStatus.name}"
+//    }
+//    """.trimIndent()
+//    }
+//
+//    stubFor(
+//      post(urlEqualTo("/api/licence/hdc/status"))
+//        .willReturn(
+//          aResponse()
+//            .withHeader("Content-Type", "application/json")
+//            .withBody(jsonArray)
+//            .withStatus(200),
+//        ),
+//    )
+//  }
+
+//  fun stubGetHdcStatuses(currentStatuses: List<CurrentPrisonerHdcStatus>) {
+//    val jsonArray = currentStatuses.joinToString(
+//      prefix = "[",
+//      postfix = "]",
+//      separator = ","
+//    ) { (bookingId, status) ->
+//      """
+//    {
+//      "bookingId": $bookingId,
+//      "status": $status
+//    }
+//    """.trimIndent()
+//    }
+//
+//    stubFor(
+//      post(urlEqualTo("/api/licence/hdc/status"))
+//        .willReturn(
+//          aResponse()
+//            .withStatus(200)
+//            .withHeader("Content-Type", "application/json")
+//            .withBody(jsonArray)
+//        )
+//    )
+//  }
+
+//  fun stubCurrentHdcStatusesFlexible(
+//    allStatuses: List<CurrentPrisonerHdcStatus>,
+//    objectMapper: ObjectMapper
+//  ) {
+//    val body = objectMapper.writeValueAsString(allStatuses)
+//    stubFor(
+//      post(urlEqualTo("/api/licence/hdc/statuses"))
+//        .willReturn(
+//          aResponse()
+//            .withHeader("Content-Type", "application/json")
+//            .withStatus(200)
+//            .withBody(body)
+//        )
+//    )
+//  }
+
+//  fun getHdcStatuses(statuses: List<Pair<String, Boolean>>) {
+//    val jsonArray = statuses.joinToString(
+//      prefix = "[",
+//      postfix = "]",
+//      separator = ",",
+//    ) { (bookingId, passed) ->
+//      """
+//      {
+//        "bookingId": "$bookingId",
+//        "passed": $passed,
+//        "approvalStatus": "APPROVED"
+//      }
+//      """.trimIndent()
+//    }
+//
+//    stubFor(
+//      post(urlEqualTo("/api/offender-sentences/home-detention-curfews/latest"))
+//        .willReturn(
+//          aResponse()
+//            .withHeader("Content-Type", "application/json")
+//            .withBody(jsonArray)
+//            .withStatus(200),
+//        ),
+//    )
+//  }
 
   fun stubGetPrisonerDetail(nomsId: String = "A1234AA", releaseDate: LocalDate? = LocalDate.of(2021, 10, 22)) {
     stubFor(

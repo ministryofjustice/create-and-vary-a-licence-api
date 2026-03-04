@@ -13,12 +13,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatusHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -45,7 +43,7 @@ class HdcService(
     } else {
       prisonApiClient.getHdcStatuses(bookingsWithHdc)
     }
-    return HdcStatuses(hdcStatuses.filter { it.isHdcRelease() })
+    return HdcStatuses(hdcStatuses)
   }
 
   fun isApprovedForHdc(bookingId: Long, hdced: LocalDate?) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
@@ -128,24 +126,6 @@ class HdcService(
 
     licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventUpdateHdcCurfewTimes(licenceEntity, entityCurfewTimes, staffMember)
-  }
-
-  data class HdcStatuses(val hdcStatuses: List<HdcStatusHolder>) {
-    private val byBookingId: Map<Long, HdcStatusHolder> = hdcStatuses.associateBy { it.bookingId as Long }
-    private fun containsBookingId(bookingId: Long) = byBookingId.containsKey(bookingId)
-
-    fun isWaitingForActivation(kind: LicenceKind, bookingId: Long) = kind == HDC && !containsBookingId(bookingId)
-
-    fun canBeActivated(kind: LicenceKind, bookingId: Long) = isValidByKind(kind, bookingId)
-
-    fun isExpectedHdcRelease(bookingId: Long) = containsBookingId(bookingId)
-
-    fun getHdcStatus(bookingId: Long): HdcStatus = byBookingId[bookingId]?.currentHdcStatus ?: HdcStatus.NOT_STARTED
-
-    private fun isValidByKind(kind: LicenceKind?, bookingId: Long): Boolean {
-      val approvedForHdc = containsBookingId(bookingId)
-      return (kind == HDC && approvedForHdc) || (kind != HDC && !approvedForHdc)
-    }
   }
 
   companion object {
