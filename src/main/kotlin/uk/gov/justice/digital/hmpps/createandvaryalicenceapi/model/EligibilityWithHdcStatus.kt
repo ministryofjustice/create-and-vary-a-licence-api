@@ -7,5 +7,5 @@ data class EligibilityWithHdcStatus(
   @get:Schema(description = "The eligibility assessment")
   val assessment: EligibilityAssessment,
   @get:Schema(description = "The current HDC status of the case", example = "NOT_A_HDC_RELEASE")
-  val currentHdcStatus: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+  val currentHdcStatus: HdcStatus,
 )
