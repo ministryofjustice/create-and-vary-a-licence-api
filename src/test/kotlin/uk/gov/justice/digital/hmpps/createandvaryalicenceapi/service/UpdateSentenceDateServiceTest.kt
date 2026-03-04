@@ -1195,7 +1195,7 @@ class UpdateSentenceDateServiceTest {
         isInHardStopPeriod = false,
         licenceType = LicenceType.PSS,
         isTimedOut = false,
-        currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
     )
 
@@ -1287,7 +1287,7 @@ class UpdateSentenceDateServiceTest {
         isInHardStopPeriod = false,
         licenceType = LicenceType.AP_PSS,
         isTimedOut = false,
-        currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
     )
 

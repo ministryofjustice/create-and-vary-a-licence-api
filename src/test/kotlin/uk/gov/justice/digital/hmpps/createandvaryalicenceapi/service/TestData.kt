@@ -179,7 +179,7 @@ object TestData {
     hardStopWarningDate = hardStopWarningDate,
     licenceType = licenceType,
     isTimedOut = isTimedOut,
-    currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+    hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
   )
 
   fun anEligibilityAssessment() = EligibilityAssessment(
@@ -188,24 +188,6 @@ object TestData {
     prrdIneligibilityReasons = emptyList(),
     hdcIneligibilityReasons = listOf("An HDC reason"),
   )
-
-//  fun anHdcStatus() = HdcService.HdcStatuses(
-//    hdcStatuses = listOf(
-//        bookingId = 1111,
-//        currentHdcStatus = HdcStatus.APPROVED
-//    )
-//  )
-//
-//  fun anHdcStatus(
-//    bookingId: Long = 1111L,
-//    status: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE
-//  ): HdcService.HdcStatuses {
-//    return HdcStatuses(
-//        listOf(
-//          hdcPrisonerStatus().copy(bookingId = bookingId, approvalStatus = status),
-//        ),
-//      )
-//  }
 
   fun anIneligibleEligibilityAssessment() = EligibilityAssessment(
     genericIneligibilityReasons = listOf("A CRD reason", "A PRRD reason"),
@@ -815,10 +797,10 @@ object TestData {
 
   fun currentPrisonerHdcStatus(
     bookingId: Long = 1,
-    currentHdcStatus: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+    hdcStatus: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
   ) = CurrentPrisonerHdcStatus(
     bookingId = bookingId,
-    currentHdcStatus = currentHdcStatus,
+    hdcStatus = hdcStatus,
   )
 
   private fun someModelStandardConditions() = listOf(

@@ -30,7 +30,7 @@ class CvlRecordService(
     prisoners: List<PrisonerSearchPrisoner>,
   ): List<CvlRecord> {
     val nomisIdsToEligibility = eligibilityService.getEligibilityAssessments(prisoners)
-    val bookingIdsToHdcStatus = hdcService.getHdcStatus(prisoners).asBookingIdToStatusMap()
+    val bookingIdsToHdcStatus = hdcService.getHdcStatus(prisoners).statusMap
     val nomisIdsToEligibleKinds =
       nomisIdsToEligibility.map { (nomisId, eligibility) -> nomisId to eligibility.eligibleKind }.toMap()
     val nomisIdsToLicenceStartDates = releaseDateService.getLicenceStartDates(prisoners, nomisIdsToEligibleKinds)
@@ -64,7 +64,7 @@ class CvlRecordService(
         ),
         licenceType = getLicenceType(prisoner, licenceStartDate, eligibility.eligibleKind),
         isTimedOut = isInHardStopPeriod || hardStopKind == TIME_SERVED,
-        currentHdcStatus = bookingIdsToHdcStatus.get(prisoner.bookingId?.toLong()) ?: HdcStatus.NOT_A_HDC_RELEASE,
+        hdcStatus = bookingIdsToHdcStatus.get(prisoner.bookingId?.toLong()) ?: HdcStatus.NOT_A_HDC_RELEASE,
       )
     }
   }

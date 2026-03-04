@@ -478,18 +478,18 @@ class HdcServiceTest {
         licenceRepository,
         staffRepository,
         auditService,
-        useCurrentHdcStatus = true,
+        usehdcStatus = true,
       )
 
     @Test
     fun `getHdcStatuses sets approvedIds to those that are potential HDC releases`() {
       whenever(hdcApiClient.getCurrentHdcStatuses(listOf(1L, 3L, 4L, 5L))).thenReturn(
         listOf(
-          currentPrisonerHdcStatus(bookingId = 1L, currentHdcStatus = HdcStatus.APPROVED),
+          currentPrisonerHdcStatus(bookingId = 1L, hdcStatus = HdcStatus.APPROVED),
           // Didn't request 2L as missing HDCED
           // Missing data for 3L
-          currentPrisonerHdcStatus(bookingId = 4L, currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE),
-          currentPrisonerHdcStatus(bookingId = 5L, currentHdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
+          currentPrisonerHdcStatus(bookingId = 4L, hdcStatus = HdcStatus.NOT_A_HDC_RELEASE),
+          currentPrisonerHdcStatus(bookingId = 5L, hdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
         ),
       )
 
@@ -506,9 +506,9 @@ class HdcServiceTest {
       assertThat(result).isNotNull
       assertThat(result.hdcStatuses).isEqualTo(
         listOf(
-          currentPrisonerHdcStatus(bookingId = 1L, currentHdcStatus = HdcStatus.APPROVED),
-          currentPrisonerHdcStatus(bookingId = 4L, currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE),
-          currentPrisonerHdcStatus(bookingId = 5L, currentHdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
+          currentPrisonerHdcStatus(bookingId = 1L, hdcStatus = HdcStatus.APPROVED),
+          currentPrisonerHdcStatus(bookingId = 4L, hdcStatus = HdcStatus.NOT_A_HDC_RELEASE),
+          currentPrisonerHdcStatus(bookingId = 5L, hdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
         ),
       )
     }

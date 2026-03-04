@@ -656,8 +656,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "AB1234F",
       )
 
-      assertThat(caseload.first().currentHdcStatus).isEqualTo(HdcStatus.APPROVED)
-      assertThat(caseload.last().currentHdcStatus).isEqualTo(HdcStatus.ELIGIBILITY_CHECKS_COMPLETE)
+      assertThat(caseload.first().hdcStatus).isEqualTo(HdcStatus.APPROVED)
+      assertThat(caseload.last().hdcStatus).isEqualTo(HdcStatus.ELIGIBILITY_CHECKS_COMPLETE)
     }
 
     private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String, hdcad: String, hdced: String) {

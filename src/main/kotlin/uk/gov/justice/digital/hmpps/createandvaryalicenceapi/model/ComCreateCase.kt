@@ -64,5 +64,5 @@ data class ComCreateCase(
   val isRestricted: Boolean,
 
   @field:Schema(description = "The current status of the HDC case", example = "APPROVED")
-  val currentHdcStatus: HdcStatus,
+  val hdcStatus: HdcStatus,
 )

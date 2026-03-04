@@ -239,7 +239,7 @@ class ComCreateCaseloadService(
         licenceCreationType = licenceCreationType,
         isReviewNeeded = isReviewNeeded,
         isRestricted = isRestricted,
-        currentHdcStatus = it.cvlRecord.currentHdcStatus,
+        hdcStatus = it.cvlRecord.hdcStatus,
       )
     }
   }.sortedWith(

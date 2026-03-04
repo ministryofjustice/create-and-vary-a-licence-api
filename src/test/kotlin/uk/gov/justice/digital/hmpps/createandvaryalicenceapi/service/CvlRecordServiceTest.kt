@@ -109,7 +109,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
         licenceType = AP,
         isTimedOut = true,
-        currentHdcStatus = HdcStatus.APPROVED,
+        hdcStatus = HdcStatus.APPROVED,
       ),
       CvlRecord(
         nomisId = "A1234AB",
@@ -125,7 +125,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
         licenceType = AP,
         isTimedOut = true,
-        currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
       CvlRecord(
         nomisId = "A1234AC",
@@ -141,7 +141,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
         licenceType = AP,
         isTimedOut = true,
-        currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
     )
   }
@@ -188,7 +188,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = false,
         licenceType = AP,
         isTimedOut = false,
-        currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
     )
   }

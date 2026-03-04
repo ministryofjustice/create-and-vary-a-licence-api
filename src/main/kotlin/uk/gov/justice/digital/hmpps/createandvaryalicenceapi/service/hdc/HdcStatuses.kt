@@ -5,9 +5,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HD
 
 data class HdcStatuses(val hdcStatuses: List<HdcStatusHolder>) {
 
-  fun asBookingIdToStatusMap(): Map<Long, HdcStatus> = hdcStatuses.associate { it.bookingId as Long to it.currentHdcStatus }
+  private fun asBookingIdToStatusMap(): Map<Long, HdcStatus> = hdcStatuses.associate { it.bookingId as Long to it.hdcStatus }
 
-  private val statusMap: Map<Long, HdcStatus> by lazy { asBookingIdToStatusMap() }
+  val statusMap: Map<Long, HdcStatus> by lazy { asBookingIdToStatusMap() }
 
   /**
    * RULE:

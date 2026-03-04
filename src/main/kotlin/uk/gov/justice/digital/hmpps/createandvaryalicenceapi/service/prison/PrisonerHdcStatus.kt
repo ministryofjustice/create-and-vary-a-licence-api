@@ -11,7 +11,7 @@ data class PrisonerHdcStatus(
   val passed: Boolean,
   val refusedReason: String? = null,
 ) : HdcStatusHolder {
-  override val currentHdcStatus: HdcStatus = if (isApproved()) HdcStatus.APPROVED else HdcStatus.NOT_A_HDC_RELEASE
+  override val hdcStatus: HdcStatus = if (isApproved()) HdcStatus.APPROVED else HdcStatus.NOT_A_HDC_RELEASE
   override fun isApproved() = approvalStatus == "APPROVED"
   override fun isHdcRelease() = isApproved()
 }

@@ -102,11 +102,11 @@ class HdcApiMockServer : WireMockServer(8100) {
       prefix = "[",
       postfix = "]",
       separator = ",",
-    ) { (bookingId, currentHdcStatus) ->
+    ) { (bookingId, hdcStatus) ->
       """
     {
       "bookingId": $bookingId,
-      "currentHdcStatus": "${currentHdcStatus.name}"
+      "hdcStatus": "${hdcStatus.name}"
     }
       """.trimIndent()
     }

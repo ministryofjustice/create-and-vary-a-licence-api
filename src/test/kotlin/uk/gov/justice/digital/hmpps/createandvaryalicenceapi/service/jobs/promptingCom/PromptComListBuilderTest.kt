@@ -310,7 +310,7 @@ class PromptComListBuilderTest {
           isEligibleForEarlyRelease = false,
           licenceType = LicenceType.AP,
           isTimedOut = false,
-          currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+          hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
         ),
         CvlRecord(
           nomisId = nomisId2,
@@ -320,7 +320,7 @@ class PromptComListBuilderTest {
           isEligibleForEarlyRelease = false,
           licenceType = LicenceType.AP,
           isTimedOut = false,
-          currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+          hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
         ),
         CvlRecord(
           nomisId = nomisId3,
@@ -330,7 +330,7 @@ class PromptComListBuilderTest {
           isEligibleForEarlyRelease = false,
           licenceType = LicenceType.AP,
           isTimedOut = false,
-          currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+          hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
         ),
       )
       val result = promptComListBuilder.buildEmailsToSend(listOf(promptCase1, promptCase2, promptCase3), cvlRecords)
