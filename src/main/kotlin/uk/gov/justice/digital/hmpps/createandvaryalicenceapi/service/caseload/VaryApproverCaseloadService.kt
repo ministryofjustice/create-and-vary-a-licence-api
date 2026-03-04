@@ -25,11 +25,16 @@ class VaryApproverCaseloadService(
 ) {
 
   fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
+    println("Get")
+    println(varyApproverCaseloadSearchRequest)
     val licenceCases = findLicencesCasesForProbation(varyApproverCaseloadSearchRequest)
-    return processLicences(licenceCases, varyApproverCaseloadSearchRequest.searchTerm)
+    val licences = processLicences(licenceCases, varyApproverCaseloadSearchRequest.searchTerm)
+    println(licences)
+    return licences
   }
 
   fun searchForOffenderOnVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): VaryApproverCaseloadSearchResponse {
+    println(varyApproverCaseloadSearchRequest)
     val (pduLicences, regionLicences) = searchLicences(varyApproverCaseloadSearchRequest)
     val pduCasesResults = processLicences(pduLicences, varyApproverCaseloadSearchRequest.searchTerm)
     val regionCasesResults = processLicences(regionLicences, varyApproverCaseloadSearchRequest.searchTerm)
