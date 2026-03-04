@@ -651,14 +651,117 @@ class VaryApproverCaseloadServiceTest {
     }
   }
 
+  @Test
+  fun `it sorts non-restricted cases by release date then name before restricted cases which are sorted by CRN`() {
+    service = VaryApproverCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      laoEnabled = true,
+    )
+
+    val probationAreaCode = "N01"
+    val licenceSummaries = listOf(
+      aLicenceVaryApproverCase(prisonNumber = "AB1234E"),
+      aLicenceVaryApproverCase(id = 2, prisonNumber = "AB1234F", crn = "X12349"),
+      aLicenceVaryApproverCase(id = 3, prisonNumber = "AB1234G", crn = "X12350"),
+    )
+    val probationCases = listOf(
+      aProbationCase().copy(nomisId = "AB1234E", crn = "X12348"),
+      aProbationCase().copy(nomisId = "AB1234F", crn = "X12349"),
+      aProbationCase().copy(nomisId = "AB1234G", crn = "X12350"),
+    )
+
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(deliusApiClient.getProbationCases(licenceSummaries.map { it.prisonNumber!! })).thenReturn(probationCases)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
+      listOf(
+        prisonerSearchResult().copy(prisonerNumber = "AB1234E"),
+        prisonerSearchResult().copy(prisonerNumber = "AB1234F"),
+        prisonerSearchResult().copy(prisonerNumber = "AB1234G"),
+      ),
+    )
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
+      listOf(
+        aCommunityManagerWithoutUser().copy(case = ProbationCase(crn = "X12348", nomisId = "AB1234E")),
+        aCommunityManagerWithoutUser().copy(case = ProbationCase(crn = "X12349", nomisId = "AB1234F")),
+        aCommunityManagerWithoutUser().copy(case = ProbationCase(crn = "X12350", nomisId = "AB1234G")),
+      ),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+      listOf(
+        CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false),
+        CaseAccessResponse(crn = "X12349", userExcluded = false, userRestricted = false),
+        CaseAccessResponse(crn = "X12350", userExcluded = true, userRestricted = false),
+      ),
+    )
+
+    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+
+    assertThat(caseload).hasSize(3)
+    assertThat(caseload.map { it.crnNumber }).containsExactly("X12349", "X12348", "X12350")
+  }
+
+  @Test
+  fun `it sorts multiple restricted LAO cases by CRN`() {
+    service = VaryApproverCaseloadService(
+      prisonerSearchApiClient,
+      deliusApiClient,
+      licenceCaseRepository,
+      laoEnabled = true,
+    )
+
+    val probationAreaCode = "N01"
+    val licenceSummaries = listOf(
+      aLicenceVaryApproverCase(prisonNumber = "AB1234E", crn = "X12350"),
+      aLicenceVaryApproverCase(id = 2, prisonNumber = "AB1234F", crn = "X12348"),
+      aLicenceVaryApproverCase(id = 3, prisonNumber = "AB1234G", crn = "X12349"),
+    )
+    val probationCases = listOf(
+      aProbationCase().copy(nomisId = "AB1234E", crn = "X12350"),
+      aProbationCase().copy(nomisId = "AB1234F", crn = "X12348"),
+      aProbationCase().copy(nomisId = "AB1234G", crn = "X12349"),
+    )
+
+    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
+    whenever(deliusApiClient.getProbationCases(licenceSummaries.map { it.prisonNumber!! })).thenReturn(probationCases)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
+      listOf(
+        prisonerSearchResult().copy(prisonerNumber = "AB1234E"),
+        prisonerSearchResult().copy(prisonerNumber = "AB1234F"),
+        prisonerSearchResult().copy(prisonerNumber = "AB1234G"),
+      ),
+    )
+    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
+      listOf(
+        aCommunityManagerWithoutUser().copy(case = ProbationCase(crn = "X12350", nomisId = "AB1234E")),
+        aCommunityManagerWithoutUser().copy(case = ProbationCase(crn = "X12348", nomisId = "AB1234F")),
+        aCommunityManagerWithoutUser().copy(case = ProbationCase(crn = "X12349", nomisId = "AB1234G")),
+      ),
+    )
+    whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+      listOf(
+        CaseAccessResponse(crn = "X12350", userExcluded = true, userRestricted = false),
+        CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false),
+        CaseAccessResponse(crn = "X12349", userExcluded = true, userRestricted = false),
+      ),
+    )
+
+    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+
+    assertThat(caseload).hasSize(3)
+    assertThat(caseload.map { it.crnNumber }).containsExactly("X12348", "X12349", "X12350")
+  }
+
   fun aLicenceVaryApproverCase(
     id: Long = 1,
     type: LicenceType = LicenceType.AP_PSS,
     prisonNumber: String = "AB1234E",
     licenceStartDate: LocalDate = LocalDate.now().plusDays(10),
+    crn: String = "X12348",
   ) = LicenceVaryApproverCase(
     licenceId = id,
-    crn = "X12348",
+    crn = crn,
     comUsername = "joebloggs",
     licenceStartDate = licenceStartDate,
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),

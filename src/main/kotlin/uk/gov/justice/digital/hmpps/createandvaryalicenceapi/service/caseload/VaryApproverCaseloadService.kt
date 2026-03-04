@@ -131,7 +131,11 @@ class VaryApproverCaseloadService(
     }
   }
 
-  private fun applySort(cases: List<VaryApproverCase>): List<VaryApproverCase> = cases.sortedBy { it.releaseDate }
+  private fun applySort(cases: List<VaryApproverCase>): List<VaryApproverCase> = cases.sortedWith(
+    compareBy<VaryApproverCase> { it.isRestricted }
+      .thenBy { case -> case.releaseDate.takeUnless { case.isRestricted } }
+      .thenBy { it.crnNumber },
+  )
 
   private fun getCaseAccessRecords(crns: List<String>): Map<String, CaseAccessResponse> {
     val username = SecurityContextHolder.getContext().authentication.name
