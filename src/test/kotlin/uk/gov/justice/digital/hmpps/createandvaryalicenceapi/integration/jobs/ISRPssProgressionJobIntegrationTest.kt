@@ -49,8 +49,4 @@ class ISRPssProgressionJobIntegrationTest : IntegrationTestBase() {
     .accept(MediaType.APPLICATION_JSON)
     .headers(setAuthorisation(roles = roles))
     .exchange()
-
-  companion object {
-    // Add shared mocks here if needed later
-  }
 }
