@@ -71,8 +71,8 @@ class ISRPssProgressionChunkService(
       "changes" to mapOf(
         "oldTypeCode" to licence.typeCode.name,
         "newTypeCode" to LicenceType.AP.name,
-        "additional conditions deleted for " to deletedAdditionalConditions.map { it.conditionText },
-        "standard conditions deleted for " to deletedStandardConditions.map { it.conditionText },
+        "additionalConditionsDeletedFor" to deletedAdditionalConditions.joinToString(", ") { it.conditionText },
+        "standardConditionsDeletedFor" to deletedStandardConditions.joinToString(", ") { it.conditionText },
       ),
     )
 

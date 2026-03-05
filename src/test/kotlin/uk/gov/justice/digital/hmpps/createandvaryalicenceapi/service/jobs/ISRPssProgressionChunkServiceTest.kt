@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import kotlin.collections.emptyMap
 
 class ISRPssProgressionChunkServiceTest {
 
@@ -176,14 +175,10 @@ class ISRPssProgressionChunkServiceTest {
       .contains("type AP_PSS")
       .contains("status IN_PROGRESS")
 
-    val changesMap = audit.changes?.get("changes") as? Map<*, *> ?: emptyMap<Any, Any>()
+    val changesMap = audit.changes?.get("changes") as Map<*, *>
     assertThat(changesMap["oldTypeCode"]).isEqualTo(LicenceType.AP_PSS.name)
     assertThat(changesMap["newTypeCode"]).isEqualTo(LicenceType.AP.name)
-
-    val additionalDeleted = changesMap["additional conditions deleted for "] as? List<*> ?: emptyList<Any>()
-    val standardDeleted = changesMap["standard conditions deleted for "] as? List<*> ?: emptyList<Any>()
-
-    assertThat(additionalDeleted).contains("PSS condition")
-    assertThat(standardDeleted).contains("PSS condition")
+    assertThat(changesMap["additionalConditionsDeletedFor"] as String).isEqualTo("PSS condition")
+    assertThat(changesMap["standardConditionsDeletedFor"] as String).isEqualTo("PSS condition")
   }
 }
