@@ -40,7 +40,7 @@ class ISRPssProgressionService(
     try {
       chunkService.processApPssLicenceChunk(chunkLicenceIds)
     } catch (ex: Exception) {
-      log.error("ISR PSS progression chunk failed for chunk: {}", chunkLicenceIds, ex)
+      log.error("ISR PSS progression chunk failed for chunkLicenceIds: {}", chunkLicenceIds, ex)
       throw ex
     }
   }
