@@ -64,55 +64,28 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
     mockPrisonerSearchResponse(
       SentenceDetail(
         conditionalReleaseDate = LocalDate.now(),
-        confirmedReleaseDate = LocalDate.now(),
-        sentenceStartDate = LocalDate.now().minusYears(2),
-        sentenceExpiryDate = LocalDate.now().plusYears(1),
-        licenceExpiryDate = LocalDate.now().plusYears(1),
-        topupSupervisionStartDate = LocalDate.now().plusYears(1),
-        topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
       ),
     )
 
-    // Put the licence into hard stop
-    val result = webTestClient.put()
-      .uri("/licence/id/2/sentence-dates")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-
-    result.expectStatus().isOk
+    moveLicenceIntoHardStop(2L)
     assertThat(auditEventRepository.count()).isEqualTo(1)
     assertThat(licenceEventRepository.count()).isEqualTo(1)
 
     val previousLicence = licenceRepository.findById(2L).getOrNull()
     assertThat(previousLicence?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
-    mockPrisonerSearchResponse(
-      SentenceDetail(
-        conditionalReleaseDate = LocalDate.now().plusWeeks(1),
-        confirmedReleaseDate = LocalDate.now().plusWeeks(1),
-        sentenceStartDate = LocalDate.now().minusYears(2),
-        sentenceExpiryDate = LocalDate.now().plusYears(1),
-        licenceExpiryDate = LocalDate.now().plusYears(1),
-        topupSupervisionStartDate = LocalDate.now().plusYears(1),
-        topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
-      ),
-    )
 
-    // move out of hard stop
-    webTestClient.put()
-      .uri("/licence/id/2/sentence-dates")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
+    moveLicenceOutofHardStop(2L)
     val currentLicence = licenceRepository.findById(2L).getOrNull()
     assertThat(currentLicence).isNotNull
-
     assertThat(auditEventRepository.count()).isEqualTo(2)
     assertThat(licenceEventRepository.count()).isEqualTo(1)
     assertThat(currentLicence?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
 
+    moveLicenceIntoHardStop(2L)
+    moveLicenceOutofHardStop(2L)
+
+    // Even though we've moved out of hard stop twice, we should have only
+    // created one potentuial hard stop case record
     assertThat(potentialHardstopCaseRepository.count()).isEqualTo(1)
     val potentialHardstopCase = potentialHardstopCaseRepository.findById(1L).getOrNull()
     assertThat(potentialHardstopCase).isNotNull()
@@ -127,33 +100,11 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetHdcLatest()
     prisonApiMockServer.stubGetCourtOutcomes()
 
-    mockPrisonerSearchResponse(
-      SentenceDetail(
-        conditionalReleaseDate = LocalDate.now().plusWeeks(1),
-        confirmedReleaseDate = LocalDate.now().plusWeeks(1),
-        sentenceStartDate = LocalDate.now().minusYears(2),
-        sentenceExpiryDate = LocalDate.now().plusYears(1),
-        licenceExpiryDate = LocalDate.now().plusYears(1),
-        topupSupervisionStartDate = LocalDate.now().plusYears(1),
-        topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
-      ),
-    )
-
     // move the timed out licence out of the hard stop period
-    webTestClient.put()
-      .uri("/licence/id/2/sentence-dates")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
+    moveLicenceOutofHardStop(2L)
 
     // move the in-progress licence out of the hard stop period
-    webTestClient.put()
-      .uri("/licence/id/3/sentence-dates")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
+    moveLicenceOutofHardStop(3L)
 
     assertThat(auditEventRepository.count()).isEqualTo(2)
     assertThat(licenceEventRepository.count()).isEqualTo(0)
@@ -167,6 +118,35 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
     assertThat(potentialHardstopCaseRepository.findAll())
       .extracting("status")
       .contains(PotentialHardstopCaseStatus.PENDING, PotentialHardstopCaseStatus.PENDING)
+  }
+
+  private fun moveLicenceIntoHardStop(licenceId: Long) {
+    mockPrisonerSearchResponse(
+      SentenceDetail(
+        conditionalReleaseDate = LocalDate.now(),
+      ),
+    )
+    updateSentenceDates(licenceId)
+  }
+
+  private fun moveLicenceOutofHardStop(licenceId: Long) {
+    mockPrisonerSearchResponse(
+      SentenceDetail(
+        conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+      ),
+    )
+
+    updateSentenceDates(licenceId)
+  }
+
+  private fun updateSentenceDates(licenceId: Long) {
+    val result = webTestClient.put()
+      .uri("/licence/id/$licenceId/sentence-dates")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+    result.expectStatus().isOk
   }
 
   private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {
