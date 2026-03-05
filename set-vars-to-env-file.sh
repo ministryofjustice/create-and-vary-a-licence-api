@@ -39,6 +39,7 @@ export TIME_SERVED_PRISONS="MDI, BAI, BNI"
 export HDC_ENABLED=false
 export LAO_ENABLED=false
 export USE_CURRENT_HDC_STATUS=false
+export STANDARD_RECALLS_ENABLED=false
 
 # --- Write to .env file ---
 fileDir=~/env-config/
@@ -70,6 +71,7 @@ cat > "$fileToAddVars" <<EOF
   HDC_ENABLED=${HDC_ENABLED}
   LAO_ENABLED=${LAO_ENABLED}
   USE_CURRENT_HDC_STATUS=${USE_CURRENT_HDC_STATUS}
+  STANDARD_RECALLS_ENABLED=${STANDARD_RECALLS_ENABLED}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"
