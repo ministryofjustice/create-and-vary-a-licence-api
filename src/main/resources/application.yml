@@ -177,6 +177,8 @@ feature:
       prisons: ${TIME_SERVED_PRISONS}
     lao:
       enabled: ${LAO_ENABLED}
+    standardRecalls:
+      enabled: ${STANDARD_RECALLS_ENABLED}
 
 hmpps:
   cases:
