@@ -11,6 +11,12 @@ class ISRPssProgressionChunkService(
   private val repository: ISRProgressionLicenceRepository,
 ) {
 
+  /**
+   * Each chunk runs in its own transaction so that:
+   *  1. Progress is committed per chunk
+   *  2. Failures only roll back the current chunk
+   *  3. Long-running transactions and large table locks are avoided
+   */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun processApPssLicenceChunk(licenceIds: List<Long>) {
     if (licenceIds.isEmpty()) return

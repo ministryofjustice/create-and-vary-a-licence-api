@@ -28,6 +28,7 @@ class ISRPssProgressionService(
       LicenceType.AP_PSS.toString(),
     )
 
+    // Cut the apPssLicenceIds into batches/chunks to allow smaller transaction sizes
     apPssLicenceIds.chunked(BATCH_SIZE).forEach {
       processChunkSafely(it)
     }
