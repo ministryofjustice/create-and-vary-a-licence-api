@@ -179,6 +179,7 @@ object TestData {
     hardStopWarningDate = hardStopWarningDate,
     licenceType = licenceType,
     isTimedOut = isTimedOut,
+    hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
   )
 
   fun anEligibilityAssessment() = EligibilityAssessment(
@@ -796,10 +797,10 @@ object TestData {
 
   fun currentPrisonerHdcStatus(
     bookingId: Long = 1,
-    currentHdcStatus: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
+    hdcStatus: HdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
   ) = CurrentPrisonerHdcStatus(
     bookingId = bookingId,
-    currentHdcStatus = currentHdcStatus,
+    hdcStatus = hdcStatus,
   )
 
   private fun someModelStandardConditions() = listOf(

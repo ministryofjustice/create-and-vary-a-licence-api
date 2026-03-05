@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremo
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 
 class HdcApiMockServer : WireMockServer(8100) {
   fun stubGetHdcLicenceData(bookingId: Long = 54321) {
@@ -92,6 +94,31 @@ class HdcApiMockServer : WireMockServer(8100) {
     stubFor(
       get(urlEqualTo("/licence/hdc/$bookingId"))
         .willReturn(aResponse().withStatus(404)),
+    )
+  }
+
+  fun stubGetHdcStatuses(currentPrisonerHdcStatus: List<CurrentPrisonerHdcStatus>) {
+    val jsonArray = currentPrisonerHdcStatus.joinToString(
+      prefix = "[",
+      postfix = "]",
+      separator = ",",
+    ) { (bookingId, hdcStatus) ->
+      """
+    {
+      "bookingId": $bookingId,
+      "hdcStatus": "${hdcStatus.name}"
+    }
+      """.trimIndent()
+    }
+
+    stubFor(
+      post(urlEqualTo("/licence/hdc/status"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(jsonArray)
+            .withStatus(200),
+        ),
     )
   }
 }

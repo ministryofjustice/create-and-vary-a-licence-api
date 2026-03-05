@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
@@ -33,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
@@ -249,7 +249,14 @@ class HdcServiceTest {
     val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
 
     assertThat(result).isNotNull
-    assertThat(result.approvedIds).containsExactly(1L)
+    assertThat(result).isEqualTo(
+      HdcStatuses(
+        mapOf(
+          1L to HdcStatus.APPROVED,
+          4L to HdcStatus.NOT_A_HDC_RELEASE,
+        ),
+      ),
+    )
   }
 
   @Test
@@ -274,12 +281,17 @@ class HdcServiceTest {
 
   @Nested
   inner class HdcStatusesTest {
-    val statuses = HdcStatuses(setOf(1L))
+    val statuses = HdcStatuses(
+      listOf(
+        hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = HdcStatus.APPROVED.name),
+        hdcPrisonerStatus().copy(bookingId = 2L, approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
+      ),
+    )
 
     @Test
     fun isWaitingForActivation() {
       assertThat(statuses.isWaitingForActivation(HDC, 1L)).isFalse
-      assertThat(statuses.isWaitingForActivation(HDC, 2L)).isTrue
+      assertThat(statuses.isWaitingForActivation(HDC, 2L)).isFalse
 
       assertThat(statuses.isWaitingForActivation(CRD, 1L)).isFalse
       assertThat(statuses.isWaitingForActivation(CRD, 2L)).isFalse
@@ -315,7 +327,7 @@ class HdcServiceTest {
           approvalStatus = "APPROVED",
         ),
       )
-      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(someHdcLicenceData)
+      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId.toLong())).thenReturn(someHdcLicenceData)
       assertDoesNotThrow {
         service.checkEligibleForHdcLicence(aPrisonerSearchResult, someHdcLicenceData)
       }
@@ -369,7 +381,7 @@ class HdcServiceTest {
           approvalStatus = "APPROVED",
         ),
       )
-      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
+      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId.toLong())).thenReturn(
         someHdcLicenceData.copy(
           curfewAddress = null,
         ),
@@ -396,7 +408,7 @@ class HdcServiceTest {
           approvalStatus = "APPROVED",
         ),
       )
-      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
+      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId.toLong())).thenReturn(
         someHdcLicenceData.copy(
           curfewAddress = null,
         ),
@@ -475,11 +487,11 @@ class HdcServiceTest {
     fun `getHdcStatuses sets approvedIds to those that are potential HDC releases`() {
       whenever(hdcApiClient.getCurrentHdcStatuses(listOf(1L, 3L, 4L, 5L))).thenReturn(
         listOf(
-          currentPrisonerHdcStatus(bookingId = 1L, currentHdcStatus = HdcStatus.APPROVED),
+          currentPrisonerHdcStatus(bookingId = 1L, hdcStatus = HdcStatus.APPROVED),
           // Didn't request 2L as missing HDCED
           // Missing data for 3L
-          currentPrisonerHdcStatus(bookingId = 4L, currentHdcStatus = HdcStatus.NOT_A_HDC_RELEASE),
-          currentPrisonerHdcStatus(bookingId = 5L, currentHdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
+          currentPrisonerHdcStatus(bookingId = 4L, hdcStatus = HdcStatus.NOT_A_HDC_RELEASE),
+          currentPrisonerHdcStatus(bookingId = 5L, hdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
         ),
       )
 
@@ -494,7 +506,16 @@ class HdcServiceTest {
       val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
 
       assertThat(result).isNotNull
-      assertThat(result.approvedIds).containsExactly(1L, 5L)
+      assertThat(result).isEqualTo(
+        HdcStatuses(
+          mapOf(
+            1L to HdcStatus.APPROVED,
+            4L to HdcStatus.NOT_A_HDC_RELEASE,
+            5L to HdcStatus.ELIGIBILITY_CHECKS_COMPLETE,
+          ),
+        ),
+
+      )
     }
   }
 

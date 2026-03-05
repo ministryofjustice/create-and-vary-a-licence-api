@@ -5,7 +5,6 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.propagateAny404
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
@@ -26,7 +25,7 @@ class HdcApiClient(@param:Qualifier("oauthHdcApiClient") val hdcApiWebClient: We
   fun getCurrentHdcStatuses(bookingIds: List<Long>, batchSize: Int = HDC_BATCH_SIZE) = batchRequests(batchSize, bookingIds) { batch ->
     hdcApiWebClient
       .post()
-      .uri("/licence/hdc/current-hdc-statuses")
+      .uri("/licence/hdc/status")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(batch)
       .retrieve()

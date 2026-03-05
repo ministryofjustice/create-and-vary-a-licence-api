@@ -52,6 +52,18 @@ class ComCreateCaseloadService(
     return cases
   }
 
+  fun getStaffCreateCaseloadHdc(deliusStaffIdentifier: Long): List<ComCreateCase> {
+    val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
+    val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
+    val cvlRecords = cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
+
+    val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
+    val cases = createComCases(eligibleCases, cvlRecords)
+    val hdcCases = cases.filter { it.cvlRecord.eligibleKind == LicenceKind.HDC }
+
+    return transformToCreateCaseload(hdcCases)
+  }
+
   fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCreateCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = deliusApiClient.getManagedOffendersByTeam(teamCode)
@@ -227,6 +239,7 @@ class ComCreateCaseloadService(
         licenceCreationType = licenceCreationType,
         isReviewNeeded = isReviewNeeded,
         isRestricted = isRestricted,
+        hdcStatus = it.cvlRecord.hdcStatus,
       )
     }
   }.sortedWith(

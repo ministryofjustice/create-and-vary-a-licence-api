@@ -13,7 +13,9 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueToBeReleasedInTheNextTwoWorkingDays": false
+    "isDueToBeReleasedInTheNextTwoWorkingDays": false,
+    "homeDetentionCurfewEligibilityDate": "$hdced",
+    "homeDetentionCurfewActualDate": "$hdcad"
   },
   {
     "prisonerNumber": "AB1234F",
@@ -28,7 +30,9 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueToBeReleasedInTheNextTwoWorkingDays": false
+    "isDueToBeReleasedInTheNextTwoWorkingDays": false,
+    "homeDetentionCurfewEligibilityDate": "$hdced",
+    "homeDetentionCurfewActualDate": "$hdcad"
   },
   {
     "prisonerNumber": "AB1234G",
@@ -47,6 +51,8 @@
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
-    "isDueToBeReleasedInTheNextTwoWorkingDays": false
+    "isDueToBeReleasedInTheNextTwoWorkingDays": false,
+    "homeDetentionCurfewEligibilityDate": "$hdced",
+    "homeDetentionCurfewActualDate": "$hdcad"
   }
 ]

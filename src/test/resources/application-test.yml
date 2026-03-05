@@ -81,8 +81,7 @@ hmpps:
 feature:
   toggle:
     hdc:
-      enabled: false
-      useCurrentStatus: false
+      enabled: true
     timeServed:
       enabled: true
       prisons: "MDI, GHI"

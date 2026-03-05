@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -17,6 +18,7 @@ import java.time.LocalDate
 class CvlRecordService(
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
+  private val hdcService: HdcService,
 ) {
 
   fun getCvlRecord(prisoner: PrisonerSearchPrisoner): CvlRecord {
@@ -28,6 +30,7 @@ class CvlRecordService(
     prisoners: List<PrisonerSearchPrisoner>,
   ): List<CvlRecord> {
     val nomisIdsToEligibility = eligibilityService.getEligibilityAssessments(prisoners)
+    val bookingIdsToHdcStatus = hdcService.getHdcStatus(prisoners)
     val nomisIdsToEligibleKinds =
       nomisIdsToEligibility.map { (nomisId, eligibility) -> nomisId to eligibility.eligibleKind }.toMap()
     val nomisIdsToLicenceStartDates = releaseDateService.getLicenceStartDates(prisoners, nomisIdsToEligibleKinds)
@@ -61,6 +64,7 @@ class CvlRecordService(
         ),
         licenceType = getLicenceType(prisoner, licenceStartDate, eligibility.eligibleKind),
         isTimedOut = isInHardStopPeriod || hardStopKind == TIME_SERVED,
+        hdcStatus = bookingIdsToHdcStatus.get(prisoner.bookingId?.toLong()) ?: HdcStatus.NOT_A_HDC_RELEASE,
       )
     }
   }

@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -1194,6 +1195,7 @@ class UpdateSentenceDateServiceTest {
         isInHardStopPeriod = false,
         licenceType = LicenceType.PSS,
         isTimedOut = false,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
     )
 
@@ -1285,6 +1287,7 @@ class UpdateSentenceDateServiceTest {
         isInHardStopPeriod = false,
         licenceType = LicenceType.AP_PSS,
         isTimedOut = false,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
     )
 

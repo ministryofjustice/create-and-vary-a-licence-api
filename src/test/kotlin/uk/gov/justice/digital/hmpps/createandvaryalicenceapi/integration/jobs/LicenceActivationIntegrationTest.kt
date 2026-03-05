@@ -15,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -23,6 +24,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 
@@ -110,6 +113,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val govUkMockServer = GovUkMockServer()
+    val hdcApiMockServer = HdcApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -117,10 +121,15 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.start()
       prisonerSearchMockServer.start()
       govUkMockServer.start()
+      hdcApiMockServer.start()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
       prisonApiMockServer.stubGetCourtOutcomes()
-      prisonApiMockServer.getHdcStatuses()
+      hdcApiMockServer.stubGetHdcStatuses(
+        listOf(
+          CurrentPrisonerHdcStatus(123, HdcStatus.APPROVED),
+        ),
+      )
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
@@ -130,6 +139,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stop()
       prisonerSearchMockServer.stop()
       govUkMockServer.stop()
+      hdcApiMockServer.stop()
     }
   }
 }
