@@ -106,7 +106,7 @@ class HdcApiMockServer : WireMockServer(8100) {
       """
     {
       "bookingId": $bookingId,
-      "hdcStatus": "${hdcStatus.name}"
+      "status": "${hdcStatus.name}"
     }
       """.trimIndent()
     }
