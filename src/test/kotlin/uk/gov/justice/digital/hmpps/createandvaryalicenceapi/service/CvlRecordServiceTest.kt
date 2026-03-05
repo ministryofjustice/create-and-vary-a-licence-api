@@ -12,8 +12,11 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anIneligibleEligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
@@ -22,8 +25,9 @@ import java.time.LocalDate
 class CvlRecordServiceTest {
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val hdcService = mock<HdcService>()
 
-  private val service = CvlRecordService(eligibilityService, releaseDateService)
+  private val service = CvlRecordService(eligibilityService, releaseDateService, hdcService)
 
   @BeforeEach
   fun reset() {
@@ -36,8 +40,8 @@ class CvlRecordServiceTest {
       eligibilityService.getEligibilityAssessments(
         listOf(
           aPrisonerSearchPrisoner,
-          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB"),
-          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC"),
+          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)),
+          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)),
         ),
       ),
     ).thenReturn(
@@ -51,8 +55,8 @@ class CvlRecordServiceTest {
       releaseDateService.getLicenceStartDates(
         listOf(
           aPrisonerSearchPrisoner,
-          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB"),
-          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC"),
+          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)),
+          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)),
         ),
         mapOf(
           aPrisonerSearchPrisoner.prisonerNumber to LicenceKind.CRD,
@@ -73,12 +77,21 @@ class CvlRecordServiceTest {
     whenever(releaseDateService.isInHardStopPeriod(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.isEligibleForEarlyRelease(anyOrNull<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(anyOrNull())).thenReturn(true)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(
+      HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
+          hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)?.toLong(), approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
+          hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)?.toLong(), approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
+        ),
+      ),
+    )
 
     val results = service.getCvlRecords(
       listOf(
         aPrisonerSearchPrisoner,
-        aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB"),
-        aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC"),
+        aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)),
+        aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)),
       ),
     )
     assertThat(results).containsExactlyInAnyOrder(
@@ -96,6 +109,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
         licenceType = AP,
         isTimedOut = true,
+        hdcStatus = HdcStatus.APPROVED,
       ),
       CvlRecord(
         nomisId = "A1234AB",
@@ -111,6 +125,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
         licenceType = AP,
         isTimedOut = true,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
       CvlRecord(
         nomisId = "A1234AC",
@@ -126,6 +141,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
         licenceType = AP,
         isTimedOut = true,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
     )
   }
@@ -137,6 +153,17 @@ class CvlRecordServiceTest {
         listOf(aPrisonerSearchPrisoner),
       ),
     ).thenReturn(mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()))
+
+    whenever(hdcService.getHdcStatus(any())).thenReturn(
+      HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(
+            bookingId = aPrisonerSearchPrisoner.bookingId?.toLong(),
+            approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name,
+          ),
+        ),
+      ),
+    )
 
     whenever(
       releaseDateService.getLicenceStartDates(
@@ -161,6 +188,7 @@ class CvlRecordServiceTest {
         isDueToBeReleasedInTheNextTwoWorkingDays = false,
         licenceType = AP,
         isTimedOut = false,
+        hdcStatus = HdcStatus.NOT_A_HDC_RELEASE,
       ),
     )
   }
@@ -173,6 +201,13 @@ class CvlRecordServiceTest {
         mapOf(prisonerSearchResult().prisonerNumber to anEligibilityAssessment()),
       )
       whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
+      whenever(hdcService.getHdcStatus(any())).thenReturn(
+        HdcStatuses(
+          listOf(
+            hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
+          ),
+        ),
+      )
     }
 
     @Test
@@ -258,6 +293,13 @@ class CvlRecordServiceTest {
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
         mapOf(aPrisonerSearchPrisoner.prisonerNumber to LocalDate.of(2021, 10, 22)),
       )
+      whenever(hdcService.getHdcStatus(any())).thenReturn(
+        HdcStatuses(
+          listOf(
+            hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
+          ),
+        ),
+      )
     }
 
     @Test
@@ -300,6 +342,13 @@ class CvlRecordServiceTest {
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
         mapOf(aPrisonerSearchPrisoner.prisonerNumber to LocalDate.of(2021, 10, 22)),
+      )
+      whenever(hdcService.getHdcStatus(any())).thenReturn(
+        HdcStatuses(
+          listOf(
+            hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
+          ),
+        ),
       )
     }
 

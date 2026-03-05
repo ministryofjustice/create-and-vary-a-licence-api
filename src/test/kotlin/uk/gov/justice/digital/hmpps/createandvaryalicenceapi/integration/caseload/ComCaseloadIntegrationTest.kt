@@ -14,11 +14,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
@@ -29,6 +33,7 @@ import kotlin.text.Charsets.UTF_8
 
 private const val DELIUS_STAFF_IDENTIFIER = 3492L
 private const val GET_STAFF_CREATE_CASELOAD = "/caseload/com/staff/$DELIUS_STAFF_IDENTIFIER/create-case-load"
+private const val GET_STAFF_CREATE_CASELOAD_HDC = "/caseload/com/staff/$DELIUS_STAFF_IDENTIFIER/create-case-load/hdc"
 private const val GET_TEAM_CREATE_CASELOAD = "/caseload/com/team/create-case-load"
 private const val GET_STAFF_VARY_CASELOAD = "/caseload/com/staff/$DELIUS_STAFF_IDENTIFIER/vary-case-load"
 private const val GET_TEAM_VARY_CASELOAD = "/caseload/com/team/vary-case-load"
@@ -347,12 +352,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       }
     }
 
-    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String) {
+    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String, hdcad: String = "", hdced: String = "") {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("team-create-case-load-prisoners").replace(
           "\$releaseDate",
           releaseDate,
-        ).replace("\$sled", sled).replace("\$tused", tused),
+        ).replace("\$sled", sled).replace("\$tused", tused)
+          .replace("\$hdcad", hdcad).replace("\$hdced", hdced),
       )
     }
   }
@@ -426,7 +432,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCreateCase>>())
+        .expectBody(typeReference<List<ComVaryCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(2)
@@ -516,7 +522,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCreateCase>>())
+        .expectBody(typeReference<List<ComVaryCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(2)
@@ -536,11 +542,140 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  inner class GetStaffCreateCaseloadHdc {
+    @Test
+    fun `Get forbidden (403) when incorrect roles are supplied`() {
+      val result = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD_HDC)
+        .accept(APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
+        .exchange()
+        .expectStatus().isForbidden
+        .expectStatus().isEqualTo(FORBIDDEN.value())
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+    }
+
+    @Test
+    fun `Unauthorized (401) when no token is supplied`() {
+      webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD_HDC)
+        .accept(APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(UNAUTHORIZED.value())
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-licences-with-e_m_providers.sql",
+    )
+    fun `Successfully retrieve a caseload with licences`() {
+      // Given
+      val ftr14Ora =
+        SentenceAndRecallType(
+          "14FTR_ORA",
+          RecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
+        )
+      val lrSopc21 =
+        SentenceAndRecallType(
+          "LR_SOPC21",
+          RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
+        )
+      val accessResponse = """
+      {
+        "access": [
+           {
+            "crn": "X12348",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12351",
+            "userExcluded": false,
+            "userRestricted": false
+          },
+          {
+            "crn": "X12352",
+            "userExcluded": true,
+            "userRestricted": false,
+            "exclusionMessage": "Access restricted on NDelius"
+          },
+          {
+            "crn": "X12353",
+            "userExcluded": false,
+            "userRestricted": false
+          }
+        ]
+      }
+      """.trimIndent()
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetCheckUserAccess(accessResponse)
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
+      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
+      val hdced = LocalDate.now().plusDays(12).format(DateTimeFormatter.ISO_DATE)
+      val hdcad = LocalDate.now().plusDays(13).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused, hdcad, hdced)
+      prisonApiMockServer.stubGetCourtOutcomes()
+      prisonApiMockServer.stubGetSentenceAndRecallTypes(
+        listOf(
+          BookingSentenceAndRecallTypes(6, listOf(ftr14Ora)),
+          BookingSentenceAndRecallTypes(7, listOf(lrSopc21)),
+        ),
+      )
+      hdcApiMockServer.stubGetHdcStatuses(
+        listOf(
+          CurrentPrisonerHdcStatus(1, HdcStatus.APPROVED),
+          CurrentPrisonerHdcStatus(2, HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
+          CurrentPrisonerHdcStatus(3, HdcStatus.APPROVED),
+        ),
+      )
+
+      // When
+      val result = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD_HDC)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      val caseload = result.expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCreateCase>>())
+        .returnResult().responseBody!!
+
+      assertThat(caseload).hasSize(2)
+
+      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
+        1,
+        null,
+      )
+      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
+        "A1234AA",
+        "AB1234F",
+      )
+
+      assertThat(caseload.first().hdcStatus).isEqualTo(HdcStatus.APPROVED)
+      assertThat(caseload.last().hdcStatus).isEqualTo(HdcStatus.ELIGIBILITY_CHECKS_COMPLETE)
+    }
+
+    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String, hdcad: String, hdced: String) {
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        readFile("team-create-case-load-prisoners")
+          .replace("\$releaseDate", releaseDate)
+          .replace("\$sled", sled).replace("\$tused", tused)
+          .replace("\$hdcad", hdcad).replace("\$hdced", hdced),
+      )
+    }
+  }
+
   private companion object {
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val govUkMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
+    val hdcApiMockServer = HdcApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -550,6 +685,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       govUkMockServer.start()
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
       prisonApiMockServer.start()
+      hdcApiMockServer.start()
     }
 
     @JvmStatic
@@ -559,6 +695,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stop()
       govUkMockServer.stop()
       prisonApiMockServer.stop()
+      hdcApiMockServer.stop()
     }
   }
 }

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -61,4 +62,7 @@ data class ComCreateCase(
 
   @field:Schema(description = "Is the offender a limited access offender (LAO)?", example = "true")
   val isRestricted: Boolean,
+
+  @field:Schema(description = "The current status of the HDC case", example = "APPROVED")
+  val hdcStatus: HdcStatus,
 )

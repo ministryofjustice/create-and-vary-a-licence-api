@@ -45,7 +45,6 @@ class EligibilityService(
     }.toMap()
 
     val standardRecallsExcluded = overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
-
     return standardRecallsExcluded
   }
 
@@ -234,7 +233,6 @@ class EligibilityService(
       val prisoner = prisoners.first { it.prisonerNumber == nomisId }
       return@associate nomisId to prisoner.bookingId!!.toLong()
     }
-
     val bookingsSentenceAndRecallTypes = prisonApiClient.getSentenceAndRecallTypes(nomisIdsToBookingIds.values.toList())
     return recallCases.map { (nomisId, eligibilityAssessment) ->
       val bookingId = nomisIdsToBookingIds[nomisId]!!

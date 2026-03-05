@@ -78,7 +78,6 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun `Successfully retrieve ca caseload`() {
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
-      prisonApiMockServer.getHdcStatuses()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       deliusMockServer.stubGetManagers()
       deliusMockServer.stubGetStaffDetailsByUsername()
@@ -144,7 +143,6 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun successfullyRetrievePrisonProbationCases() {
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
-      prisonApiMockServer.getHdcStatuses()
       prisonApiMockServer.stubGetCourtOutcomes()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       deliusMockServer.stubGetStaffDetailsByUsername()
@@ -188,7 +186,6 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun successfullyRetrieveTimeServedCaseWithNomisLicence() {
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
-      prisonApiMockServer.getHdcStatuses()
       prisonApiMockServer.stubGetCourtOutcomes()
       prisonApiMockServer.stubGetSentenceAndRecallTypes()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()

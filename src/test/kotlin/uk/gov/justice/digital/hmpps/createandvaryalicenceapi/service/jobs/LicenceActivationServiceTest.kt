@@ -14,11 +14,12 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder.setContext
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.IS91_LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_DEACTIVATION
@@ -82,7 +83,7 @@ class LicenceActivationServiceTest {
       .thenReturn(emptyList())
     whenever(
       hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
-    ).thenReturn(HdcStatuses(emptySet()))
+    ).thenReturn(HdcStatuses(emptyList()))
 
     service.licenceActivation()
 
@@ -101,7 +102,7 @@ class LicenceActivationServiceTest {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
       .thenReturn(emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(emptySet()),
+      HdcStatuses(emptyList()),
     )
 
     service.licenceActivation()
@@ -127,7 +128,7 @@ class LicenceActivationServiceTest {
       .thenReturn(listOf(aLicenceEntity.bookingId!!))
     whenever(
       hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
-    ).thenReturn(HdcStatuses(emptySet()))
+    ).thenReturn(HdcStatuses(emptyList()))
 
     service.licenceActivation()
 
@@ -152,7 +153,7 @@ class LicenceActivationServiceTest {
       .thenReturn(listOf(aLicenceEntity.bookingId!!))
     whenever(
       hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
-    ).thenReturn(HdcStatuses(emptySet()))
+    ).thenReturn(HdcStatuses(emptyList()))
 
     service.licenceActivation()
 
@@ -170,7 +171,11 @@ class LicenceActivationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(prisoners)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(setOf(aLicenceEntity.bookingId!!)),
+      HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = aLicenceEntity.bookingId!!, approvalStatus = "APPROVED"),
+        ),
+      ),
     )
 
     service.licenceActivation()
@@ -187,7 +192,7 @@ class LicenceActivationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(prisoners)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(emptySet()),
+      HdcStatuses(emptyList()),
     )
 
     service.licenceActivation()
@@ -208,7 +213,7 @@ class LicenceActivationServiceTest {
       emptyList(),
     )
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(emptySet()),
+      HdcStatuses(emptyList()),
     )
 
     service.licenceActivation()
@@ -227,7 +232,7 @@ class LicenceActivationServiceTest {
       .thenReturn(listOf(aPrisonerSearchPrisoner.copy(status = "ACTIVE IN")))
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(unreleasedPrisoner))).thenReturn(emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(emptySet()),
+      HdcStatuses(emptyList()),
     )
 
     service.licenceActivation()
@@ -253,7 +258,7 @@ class LicenceActivationServiceTest {
 
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(emptySet()),
+      HdcStatuses(emptyList()),
     )
 
     service.licenceActivation()
@@ -281,7 +286,7 @@ class LicenceActivationServiceTest {
 
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(listOf(54321))
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(emptySet()),
+      HdcStatuses(emptyList()),
     )
 
     service.licenceActivation()
@@ -309,7 +314,7 @@ class LicenceActivationServiceTest {
 
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(listOf(54321))
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(emptySet()),
+      HdcStatuses(emptyList()),
     )
 
     service.licenceActivation()
@@ -339,7 +344,12 @@ class LicenceActivationServiceTest {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(hdcPrisoner)))
       .thenReturn(emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(setOf(hdcLicence.bookingId!!, aLicenceEntity.bookingId!!)),
+      HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = hdcLicence.bookingId!!, approvalStatus = "APPROVED"),
+          hdcPrisonerStatus().copy(bookingId = aLicenceEntity.bookingId!!, approvalStatus = "APPROVED"),
+        ),
+      ),
     )
 
     service.licenceActivation()
@@ -366,7 +376,7 @@ class LicenceActivationServiceTest {
     )
 
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(emptySet()),
+      HdcStatuses(emptyList()),
     )
 
     service.licenceActivation()
@@ -384,7 +394,11 @@ class LicenceActivationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(hdcLicence.bookingId!!)))
       .thenReturn(prisoners)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(setOf(hdcLicence.bookingId!!)),
+      HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = hdcLicence.bookingId!!, approvalStatus = "APPROVED"),
+        ),
+      ),
     )
 
     service.licenceActivation()
@@ -418,7 +432,11 @@ class LicenceActivationServiceTest {
       .thenReturn(prisoners)
 
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-      HdcStatuses(setOf(hdcLicence.bookingId!!)),
+      HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = hdcLicence.bookingId!!, approvalStatus = "APPROVED"),
+        ),
+      ),
     )
 
     service.licenceActivation()
