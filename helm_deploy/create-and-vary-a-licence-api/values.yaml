@@ -135,5 +135,5 @@ jobs:
   - name: isr-ap-pss-progression-job
     enabled: false
     path: /jobs/isr-ap-pss-progression
-    cron: "59 23 * * 4" # 23:59 UTC every thursday
+    cron: "59 23 * * 4" # 23:59 UTC every Thursday
     allowRetry: true

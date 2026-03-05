@@ -14,21 +14,20 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 
 class ISRPssProgressionServiceTest {
 
   private val chunkService = mock<ISRPssProgressionChunkService>()
   private val repository = mock<ISRProgressionLicenceRepository>()
 
-  val clockPassedCutOff: Clock = Clock.fixed(
-    Instant.parse("2027-01-01T00:00:00Z"),
-    ZoneOffset.UTC,
+  val clockBeforeCutOff: Clock = Clock.fixed(
+    Instant.parse("2026-03-01T00:00:00Z"),
+    Clock.systemDefaultZone().zone,
   )
 
-  private fun createService(): ISRPssProgressionService = ISRPssProgressionService(
-    chunkService,
-    repository,
+  val clockPassedCutOff: Clock = Clock.fixed(
+    Instant.parse("2027-01-01T00:00:00Z"),
+    Clock.systemDefaultZone().zone,
   )
 
   private fun createService(overrideClock: Clock): ISRPssProgressionService = ISRPssProgressionService(
@@ -51,7 +50,7 @@ class ISRPssProgressionServiceTest {
       ),
     ).thenReturn(emptyList())
 
-    createService().processApPssLicences()
+    createService(clockBeforeCutOff).processApPssLicences()
 
     verifyNoInteractions(chunkService)
   }
@@ -67,7 +66,7 @@ class ISRPssProgressionServiceTest {
       ),
     ).thenReturn(licenceIds)
 
-    createService().processApPssLicences()
+    createService(clockBeforeCutOff).processApPssLicences()
 
     verify(chunkService).processApPssLicenceChunk(licenceIds)
   }
@@ -83,7 +82,7 @@ class ISRPssProgressionServiceTest {
       ),
     ).thenReturn(licenceIds)
 
-    createService().processApPssLicences()
+    createService(clockBeforeCutOff).processApPssLicences()
 
     verify(chunkService).processApPssLicenceChunk((1L..200L).toList())
     verify(chunkService).processApPssLicenceChunk((201L..400L).toList())

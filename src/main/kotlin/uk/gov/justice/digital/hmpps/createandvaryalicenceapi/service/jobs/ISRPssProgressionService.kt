@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 class ISRPssProgressionService(
   private val chunkService: ISRPssProgressionChunkService,
   private val repository: ISRProgressionLicenceRepository,
-  private val clock: Clock = Clock.systemUTC(),
+  private val clock: Clock = Clock.systemDefaultZone(),
 ) {
 
   fun processApPssLicences() {
@@ -48,7 +48,7 @@ class ISRPssProgressionService(
   companion object {
     private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
     private val CUTOFF_DATE: LocalDate = LocalDate.of(2026, 4, 30)
-    private val CUTOFF_EXECUTION_DEADLINE: LocalDateTime = CUTOFF_DATE.atTime(23, 59).plusMinutes(5)
+    private val CUTOFF_EXECUTION_DEADLINE: LocalDateTime = CUTOFF_DATE.atTime(23, 59).plusHours(2)
     private const val BATCH_SIZE = 200
   }
 }
