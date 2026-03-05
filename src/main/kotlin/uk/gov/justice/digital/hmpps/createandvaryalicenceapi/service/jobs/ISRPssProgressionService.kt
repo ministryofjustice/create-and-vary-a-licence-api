@@ -35,11 +35,12 @@ class ISRPssProgressionService(
 
   private fun getCurrentDateAndTime(): LocalDateTime = LocalDateTime.now(clock)
 
-  private fun processChunkSafely(chunk: List<Long>) {
+  @Suppress("TooGenericExceptionCaught")
+  private fun processChunkSafely(chunkLicenceIds: List<Long>) {
     try {
-      chunkService.processApPssLicenceChunk(chunk)
+      chunkService.processApPssLicenceChunk(chunkLicenceIds)
     } catch (ex: Exception) {
-      log.error("ISR PSS progression chunk failed", ex)
+      log.error("ISR PSS progression chunk failed for chunk: {}", chunkLicenceIds, ex)
       throw ex
     }
   }
