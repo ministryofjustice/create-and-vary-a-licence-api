@@ -14,7 +14,7 @@ class ISRPssProgressionJobIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-isr-ap-pss-progression.sql",
   )
-  fun `Progress AP plus PSS licences job`() {
+  fun `When progress of licence with type ofAP_PSS then type is updated and conditions are deleted as expected`() {
     // Given
     val uri = "/jobs/isr-ap-pss-progression"
 
@@ -32,9 +32,13 @@ class ISRPssProgressionJobIntegrationTest : IntegrationTestBase() {
 
     val additionalConditionsAfter = licenceAfter.additionalConditions.toList()
     val standardConditionsAfter = licenceAfter.standardConditions.toList()
-
+    assertThat(additionalConditionsAfter.size).isEqualTo(1)
+    assertThat(standardConditionsAfter.size).isEqualTo(1)
     assertThat(additionalConditionsAfter.none { it.conditionType == "PSS" }).isTrue
     assertThat(standardConditionsAfter.none { it.conditionType == "PSS" }).isTrue
+
+    val auditEvent = testRepository.findAllAuditEvents().first()
+    assertThat(auditEvent.summary).isEqualTo("Licence type automatically changed to AP for ISR PSS Progression due to PSS repeal")
   }
 
   private fun postRequest(

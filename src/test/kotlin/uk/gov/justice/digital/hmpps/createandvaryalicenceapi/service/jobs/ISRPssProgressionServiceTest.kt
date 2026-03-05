@@ -73,7 +73,7 @@ class ISRPssProgressionServiceTest {
 
   @Test
   fun `should split processing when licences exceed batch size`() {
-    val licenceIds = (1L..450L).toList()
+    val licenceIds = (1L..250L).toList()
 
     whenever(
       repository.findLicenceIds(
@@ -84,9 +84,9 @@ class ISRPssProgressionServiceTest {
 
     createService(clockBeforeCutOff).processApPssLicences()
 
-    verify(chunkService).processApPssLicenceChunk((1L..200L).toList())
-    verify(chunkService).processApPssLicenceChunk((201L..400L).toList())
-    verify(chunkService).processApPssLicenceChunk((401L..450L).toList())
+    verify(chunkService).processApPssLicenceChunk((1L..100L).toList())
+    verify(chunkService).processApPssLicenceChunk((101L..200L).toList())
+    verify(chunkService).processApPssLicenceChunk((201L..250L).toList())
 
     verify(chunkService, times(3))
       .processApPssLicenceChunk(any())
