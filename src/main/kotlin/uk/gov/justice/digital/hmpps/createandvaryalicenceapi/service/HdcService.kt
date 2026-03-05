@@ -27,7 +27,7 @@ class HdcService(
   private val licenceRepository: LicenceRepository,
   private val staffRepository: StaffRepository,
   private val auditService: AuditService,
-  @param:Value("\${feature.toggle.hdc.useCurrentStatus}") private val useCurrentHdcStatus: Boolean = false,
+  @param:Value("\${feature.toggle.hdc.enabled}") private val useCurrentHdcStatus: Boolean = false,
 ) {
 
   fun getHdcStatus(records: List<PrisonerSearchPrisoner>) = getHdcStatus(records, { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
