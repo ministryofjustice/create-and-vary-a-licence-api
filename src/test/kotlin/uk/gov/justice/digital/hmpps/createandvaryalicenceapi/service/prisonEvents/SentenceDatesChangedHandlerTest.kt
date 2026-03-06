@@ -50,7 +50,7 @@ class SentenceDatesChangedHandlerTest {
   )
   val prisoner = prisonerSearchResult()
   val nomisId = prisoner.prisonerNumber
-  val activeLicence = createCrdLicence().copy(statusCode = ACTIVE)
+  val activeLicence = createCrdLicence().copy(statusCode = ACTIVE, bookingId = bookingId)
   val prisonApiPrisoner = aPrisonApiPrisoner()
 
   @BeforeEach
@@ -113,6 +113,29 @@ class SentenceDatesChangedHandlerTest {
     verify(licenceService).deactivateLicenceAndVariations(
       activeLicence.id,
       DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
+    )
+  }
+
+  @Test
+  fun `should deactivate the active licence and any variations if an offender has recalled on a standard recall`() {
+    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
+    whenever(
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(
+        prisoner.prisonerNumber,
+        listOf(
+          ACTIVE,
+        ),
+      ),
+    ).thenReturn(listOf(activeLicence))
+
+    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
+    whenever(prisonService.hasStandardRecallSentence(bookingId)).thenReturn(true)
+
+    sentenceDatesChangedHandler.handleEvent(message)
+
+    verify(licenceService).deactivateLicenceAndVariations(
+      activeLicence.id,
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.STANDARD_RECALL),
     )
   }
 
