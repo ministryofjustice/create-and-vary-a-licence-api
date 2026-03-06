@@ -16,7 +16,7 @@ class ISRPssProgressionJobIntegrationTest : IntegrationTestBase() {
   )
   fun `When progress of licence with type ofAP_PSS then type is updated and conditions are deleted as expected`() {
     // Given
-    val uri = "/jobs/isr-ap-pss-progression"
+    val uri = "/jobs/isr-in-flight-ap-pss-licences"
 
     val licenceBefore = testRepository.findLicenceByTypeCode(LicenceType.AP_PSS)
     val licenceId = licenceBefore.first().id
