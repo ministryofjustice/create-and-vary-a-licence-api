@@ -11,13 +11,22 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.PotentialHardstopCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.Companion.LICENCE_DEACTIVATION_HARD_STOP_TASK
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 
 class InactivateHardstopLicencesTaskTest {
+  private val licenceRepository = mock<LicenceRepository>()
+
   private val licenceService = mock<LicenceService>()
 
   private val potentialHardstopCaseRepository = mock<PotentialHardstopCaseRepository>()
@@ -25,7 +34,12 @@ class InactivateHardstopLicencesTaskTest {
   private val releaseDateService = mock<ReleaseDateService>()
 
   private val inactivateHardstopLicencesTask =
-    InactivateHardstopLicencesTask(licenceService, potentialHardstopCaseRepository, releaseDateService)
+    InactivateHardstopLicencesTask(
+      licenceRepository,
+      licenceService,
+      potentialHardstopCaseRepository,
+      releaseDateService,
+    )
 
   @Test
   fun `should inactivate licences no longer in hard stop period`() {
@@ -48,6 +62,13 @@ class InactivateHardstopLicencesTaskTest {
     )
     whenever(releaseDateService.isInHardStopPeriod(licence1.licenceStartDate, licence1.kind)).thenReturn(true)
     whenever(releaseDateService.isInHardStopPeriod(licence2.licenceStartDate, licence2.kind)).thenReturn(false)
+    whenever(
+      licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
+        licence1.bookingId!!,
+        listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
+        listOf(CRD, HARD_STOP),
+      ),
+    ).thenReturn(listOf(licence2))
     inactivateHardstopLicencesTask.runTask()
 
     verify(
