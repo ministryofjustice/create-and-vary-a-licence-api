@@ -103,5 +103,11 @@ jobs:
   - name: isr-in-flight-ap-pss-licences-job
     enabled: true
     path: /isr-in-flight-ap-pss-licences
-    cron: "59 13 * * 5" # 11:59 UTC every Friday
+    cron: "59 10 * * 1" # 10:59 UTC every Monday
+    allowRetry: true
+
+  - name: isr-active-licences-job
+    enabled: true
+    path: /isr-active-licences
+    cron: "30 11 9 3 *" # 01:00 UTC on the 9th of March
     allowRetry: true
