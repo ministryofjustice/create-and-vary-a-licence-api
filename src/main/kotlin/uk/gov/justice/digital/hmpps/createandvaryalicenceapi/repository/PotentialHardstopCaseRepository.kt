@@ -10,6 +10,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHar
 import java.time.LocalDateTime
 
 interface PotentialHardstopCaseRepository : JpaRepository<PotentialHardstopCase, Long> {
+
+  fun existsByLicenceIdAndStatus(licenceId: Long, status: PotentialHardstopCaseStatus): Boolean
+
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @QueryHints(value = [QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")])
   fun findAllByStatusAndDateCreatedBefore(

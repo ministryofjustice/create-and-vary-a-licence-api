@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -121,7 +122,13 @@ class UpdateSentenceDateService(
 
     if (hardstopChangeType == NO_LONGER_IN_HARDSTOP) {
       if (hardstopJobEnabled) {
-        potentialHardstopCaseRepository.saveAndFlush(PotentialHardstopCase(licence = updatedLicence))
+        if (!potentialHardstopCaseRepository.existsByLicenceIdAndStatus(
+            updatedLicence.id,
+            PotentialHardstopCaseStatus.PENDING,
+          )
+        ) {
+          potentialHardstopCaseRepository.saveAndFlush(PotentialHardstopCase(licence = updatedLicence))
+        }
       } else {
         val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
           updatedLicence.bookingId!!,
