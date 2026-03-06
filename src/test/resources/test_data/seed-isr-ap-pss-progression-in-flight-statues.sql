@@ -31,7 +31,7 @@ INSERT INTO licence (id,
 					 licence_version)
 VALUES
 
--- AP_PSS IN_PROGRESS (Original Job Target)
+-- AP_PSS IN_PROGRESS
 (10001,'CRD','AP_PSS','1.0','IN_PROGRESS',
  'A1234AA','BOOKNOISR',54321,'CRNISR','PNCISR1','CROISR1',
  'MDI','Moorland (HMP)','Test1','Tester1',
