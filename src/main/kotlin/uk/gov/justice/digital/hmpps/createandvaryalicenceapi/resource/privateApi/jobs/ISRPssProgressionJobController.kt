@@ -21,7 +21,7 @@ class ISRPssProgressionJobController(
 ) {
 
   @ProtectedByIngress
-  @PostMapping(value = ["/jobs/isr-ap-pss-progression"])
+  @PostMapping(value = ["/jobs/isr-in-flight-ap-pss-licences"])
   @Operation(
     summary = "Progress AP+PSS licences.",
     description = """

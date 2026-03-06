@@ -100,8 +100,8 @@ jobs:
     cron: "0 11 * * 1-5" # 11am UTC, Monday - Friday
     allowRetry: false
 
-  - name: isr-ap-pss-progression-job
+  - name: isr-in-flight-ap-pss-licences-job
     enabled: true
-    path: /jobs/isr-ap-pss-progression
-    cron: "59 11 * * 5" # 11:59 UTC every Friday
+    path: /isr-in-flight-ap-pss-licences
+    cron: "59 13 * * 5" # 11:59 UTC every Friday
     allowRetry: true
