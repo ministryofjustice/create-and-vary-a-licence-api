@@ -1,0 +1,57 @@
+INSERT INTO licence (id,
+					 kind,
+					 type_code,
+					 version,
+					 status_code,
+					 noms_id,
+					 booking_no,
+					 booking_id,
+					 crn,
+					 pnc,
+					 cro,
+					 prison_code,
+					 prison_description,
+					 forename,
+					 surname,
+					 date_of_birth,
+					 conditional_release_date,
+					 actual_release_date,
+					 sentence_start_date,
+					 sentence_end_date,
+					 topup_supervision_start_date,
+					 topup_supervision_expiry_date,
+					 licence_start_date,
+					 licence_expiry_date,
+					 probation_area_code,
+					 probation_pdu_code,
+					 probation_lau_code,
+					 probation_team_code,
+					 responsible_com_id,
+					 created_by_com_id,
+					 licence_version)
+VALUES
+
+-- AP_PSS IN_PROGRESS
+(10001,'CRD','AP_PSS','1.0','IN_PROGRESS',
+ 'A1234AA','BOOKNOISR',54321,'CRNISR','PNCISR1','CROISR1',
+ 'MDI','Moorland (HMP)','Test1','Tester1',
+ '1980-01-01','2022-02-12','2022-02-25','2020-10-11',
+ '2022-02-25','2026-05-01','2022-02-25','2022-02-25',
+ '2023-02-25','N01','PDU1','LAU1','TEAM1',1,1,'1.0'),
+
+-- AP_PSS SUBMITTED
+(10002,'CRD','AP_PSS','1.0','SUBMITTED',
+ 'NOMSAPPS2','BOOKAPPS2',54322,'CRNAPPS2','PNCAPPS2','CROAPPS2',
+ 'MDI','Moorland (HMP)','Test2','Tester2',
+ '1985-01-01','2022-03-12','2022-03-25','2020-11-11',
+ '2022-03-25','2026-05-01','2022-03-25','2022-03-25',
+ '2023-03-25','N02','PDU2','LAU2','TEAM2',1,1,'1.0'),
+
+-- AP_PSS APPROVED
+(10003,'CRD','AP_PSS','1.0','APPROVED',
+ 'NOMSPSS1','BOOKPSS1',54323,'CRNPSS1','PNCPSS1','CROPSS1',
+ 'MDI','Moorland (HMP)','Test3','Tester3',
+ '1988-01-01','2022-04-12','2022-04-25','2020-12-11',
+ '2022-04-25','2026-05-01','2022-04-25','2022-04-25',
+ '2023-04-25','N03','PDU3','LAU3','TEAM3',1,1,'1.0');
+
