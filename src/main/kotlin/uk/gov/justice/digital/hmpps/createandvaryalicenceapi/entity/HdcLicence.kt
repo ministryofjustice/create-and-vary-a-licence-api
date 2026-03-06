@@ -46,6 +46,7 @@ class HdcLicence(
   licenceActivatedDate: LocalDateTime? = null,
   override var homeDetentionCurfewActualDate: LocalDate? = null,
   var homeDetentionCurfewEndDate: LocalDate? = null,
+  var homeDetentionCurfewEligibilityDate: LocalDate? = null,
   topupSupervisionStartDate: LocalDate? = null,
   topupSupervisionExpiryDate: LocalDate? = null,
   postRecallReleaseDate: LocalDate? = null,
@@ -189,6 +190,7 @@ class HdcLicence(
     licenceActivatedDate: LocalDateTime? = this.licenceActivatedDate,
     homeDetentionCurfewActualDate: LocalDate? = this.homeDetentionCurfewActualDate,
     homeDetentionCurfewEndDate: LocalDate? = this.homeDetentionCurfewEndDate,
+    homeDetentionCurfewEligibilityDate: LocalDate? = this.homeDetentionCurfewEligibilityDate,
     topupSupervisionStartDate: LocalDate? = this.topupSupervisionStartDate,
     topupSupervisionExpiryDate: LocalDate? = this.topupSupervisionExpiryDate,
     postRecallReleaseDate: LocalDate? = this.postRecallReleaseDate,
@@ -248,6 +250,7 @@ class HdcLicence(
     licenceActivatedDate = licenceActivatedDate,
     homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
     homeDetentionCurfewEndDate = homeDetentionCurfewEndDate,
+    homeDetentionCurfewEligibilityDate = homeDetentionCurfewEligibilityDate,
     topupSupervisionStartDate = topupSupervisionStartDate,
     topupSupervisionExpiryDate = topupSupervisionExpiryDate,
     postRecallReleaseDate = postRecallReleaseDate,
@@ -331,6 +334,7 @@ class HdcLicence(
     "licenceActivatedDate=$licenceActivatedDate, " +
     "homeDetentionCurfewActualDate=$homeDetentionCurfewActualDate, " +
     "homeDetentionCurfewEndDate=$homeDetentionCurfewEndDate, " +
+    "homeDetentionCurfewEligibilityDate=$homeDetentionCurfewEligibilityDate, " +
     "topupSupervisionStartDate=$topupSupervisionStartDate, " +
     "topupSupervisionExpiryDate=$topupSupervisionExpiryDate, " +
     "probationAreaCode=$probationAreaCode, " +
