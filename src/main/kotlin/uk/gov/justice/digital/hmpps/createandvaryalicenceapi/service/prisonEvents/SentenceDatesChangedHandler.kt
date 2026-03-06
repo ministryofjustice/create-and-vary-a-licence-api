@@ -45,24 +45,26 @@ class SentenceDatesChangedHandler(
     val activeLicence = getActiveLicence(nomisId)
     if (activeLicence != null) {
       log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
-      deactivateLicencesIfPrisonerResentenced(activeLicence, bookingId)
-      deactivateLicencesIfFuturePrrd(activeLicence)
+      processDeactivationChecks(activeLicence)
     } else {
       log.info("updating sentence dates for nomisId: $nomisId")
       updateSentenceDates(nomisId)
     }
   }
 
-  private fun deactivateLicencesIfPrisonerResentenced(licence: Licence, bookingId: Long) {
-    val ssd = prisonService.getPrisonerLatestSentenceStartDate(bookingId)
+  private fun processDeactivationChecks(licence: Licence) {
+    deactivateLicencesIfPrisonerResentenced(licence)
+    deactivateLicencesIfFuturePrrd(licence)
+    deactivateLicenceIfOnStandardRecall(licence)
+  }
+
+  private fun deactivateLicencesIfPrisonerResentenced(licence: Licence) {
+    val ssd = prisonService.getPrisonerLatestSentenceStartDate(licence.bookingId!!)
     val lsd = licence.licenceStartDate
 
     log.info("Checking if prisoner resentenced, ssd: {}, lsd: {}", ssd, lsd)
     if (ssd != null && lsd != null && ssd.isAfter(lsd)) {
-      licenceService.deactivateLicenceAndVariations(
-        licence.id,
-        DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RESENTENCED),
-      )
+      deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeativationReason.RESENTENCED)
     }
   }
 
@@ -75,12 +77,22 @@ class SentenceDatesChangedHandler(
         return
       }
       if (prrd.isAfter(LocalDate.now())) {
-        licenceService.deactivateLicenceAndVariations(
-          licence.id,
-          DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
-        )
+        deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeativationReason.RECALLED)
       }
     }
+  }
+
+  private fun deactivateLicenceIfOnStandardRecall(licence: Licence) {
+    if (prisonService.hasStandardRecallSentence(licence.bookingId!!)) {
+      deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeativationReason.STANDARD_RECALL)
+    }
+  }
+
+  private fun deactivateLicenceAndVariations(licenceId: Long, reason: DateChangeLicenceDeativationReason) {
+    licenceService.deactivateLicenceAndVariations(
+      licenceId,
+      DeactivateLicenceAndVariationsRequest(reason),
+    )
   }
 
   private fun updateSentenceDates(nomisId: String) {
