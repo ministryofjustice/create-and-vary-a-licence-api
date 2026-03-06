@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedProbationConfirmContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.util.Optional
 
 @Repository
@@ -186,5 +187,14 @@ class TestRepository(
     if (assertNotNull) assertThat(reason).isNotNull
     reason?.updatedByCa?.fullName
     return reason
+  }
+
+  fun findLicenceByTypeCode(typeCode: LicenceType): List<Licence> {
+    val licences = licenceRepository.findAll()
+      .filter { it.typeCode == typeCode }
+      .sortedBy { it.id }
+
+    assertThat(licences).isNotEmpty
+    return licences
   }
 }
