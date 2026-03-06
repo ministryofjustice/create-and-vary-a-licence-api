@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresCont
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.setPostgresContainerProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.JsonTestUtils
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
 import uk.gov.justice.hmpps.sqs.MissingQueueException
@@ -78,6 +79,9 @@ abstract class IntegrationTestBase {
 
   @Autowired
   protected lateinit var testRepository: TestRepository
+
+  @Autowired
+  protected lateinit var jsonTestUtils: JsonTestUtils
 
   protected val domainEventsTopic by lazy {
     hmppsQueueService.findByTopicId("domainevents") ?: throw MissingQueueException("HmppsTopic domainevents not found")
