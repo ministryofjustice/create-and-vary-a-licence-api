@@ -14,7 +14,7 @@ interface ISRProgressionLicenceRepository : JpaRepository<Licence, Long> {
     value = """
             SELECT l.id
             FROM licence l
-            WHERE l.status_code IN ('IN PROGRESS','SUBMITTED','APPROVED')
+            WHERE l.status_code IN ('IN_PROGRESS','SUBMITTED','APPROVED')
               AND l.topup_supervision_start_date >= :cutoffDate
               AND l.type_code = :typeCode ORDER BY l.id
               """,
