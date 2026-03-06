@@ -107,6 +107,22 @@ class ISRPssProgressionJobIntegrationTest : IntegrationTestBase() {
     assertThat(auditEvent.summary).isEqualTo("Active licence type automatically changed to INACTIVE for Test3 Tester3 due to PSS repeal")
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/seed-isr-ap-pss-progression-in-flight-statues.sql",
+  )
+  fun `when progress of licences with type of AP_PSS then all inflight status will be processed`() {
+    // Given
+    val uri = "/jobs/isr-in-flight-ap-pss-licences"
+
+    // When
+    val result = postRequest(uri)
+
+    // Then
+    result.expectStatus().isOk
+    assertThat(testRepository.findAllLicence().count { it.typeCode == LicenceType.AP }).isEqualTo(3)
+  }
+
   private fun postRequest(
     uri: String,
     roles: List<String> = listOf("ROLE_CVL_ADMIN"),
