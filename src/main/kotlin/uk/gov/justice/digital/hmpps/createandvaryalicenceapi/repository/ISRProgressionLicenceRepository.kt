@@ -20,8 +20,21 @@ interface ISRProgressionLicenceRepository : JpaRepository<Licence, Long> {
               """,
     nativeQuery = true,
   )
-  fun findLicenceIds(
+  fun findInFlightLicenceIds(
     @Param("cutoffDate") cutoffDate: LocalDate,
+    @Param("typeCode") typeCode: String,
+  ): List<Long>
+
+  @Query(
+    value = """
+            SELECT l.id
+            FROM licence l
+            WHERE l.status_code = 'ACTIVE'
+              AND l.type_code = :typeCode ORDER BY l.id
+              """,
+    nativeQuery = true,
+  )
+  fun findActiveLicenceIds(
     @Param("typeCode") typeCode: String,
   ): List<Long>
 }

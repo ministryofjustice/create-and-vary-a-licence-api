@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
-import org.junit.jupiter.api.BeforeEach
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
-import org.mockito.kotlin.any
-import org.mockito.kotlin.reset
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -14,92 +14,141 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 class ISRPssProgressionServiceTest {
 
-  private val chunkService = mock<ISRPssProgressionChunkService>()
-  private val repository = mock<ISRProgressionLicenceRepository>()
+  private companion object {
 
-  val clockBeforeCutOff: Clock = Clock.fixed(
-    Instant.parse("2026-03-01T00:00:00Z"),
-    Clock.systemDefaultZone().zone,
+    val CUTOFF_DATE: LocalDate = LocalDate.of(2026, 4, 30)
+    val CLOCK_TIME: Instant = Instant.parse("2026-04-01T10:00:00Z")
+    val LATE_CLOCK_TIME: Instant = Instant.parse("2026-05-01T05:00:00Z")
+  }
+
+  private val chunkService: ISRPssProgressionChunkService = mock()
+  private val repository: ISRProgressionLicenceRepository = mock()
+
+  private val fixedClock = Clock.fixed(
+    CLOCK_TIME,
+    ZoneId.systemDefault(),
   )
 
-  val clockPassedCutOff: Clock = Clock.fixed(
-    Instant.parse("2027-01-01T00:00:00Z"),
-    Clock.systemDefaultZone().zone,
-  )
-
-  private fun createService(overrideClock: Clock): ISRPssProgressionService = ISRPssProgressionService(
+  private val service = ISRPssProgressionService(
     chunkService,
     repository,
-    overrideClock,
+    fixedClock,
   )
 
-  @BeforeEach
-  fun resetMocks() {
-    reset(chunkService, repository)
+  private fun rangeIds(start: Long, end: Long) = (start..end).toList()
+
+  @Test
+  fun `should process active PSS and AP_PSS licences`() {
+    // Given
+    val pssIds = listOf(1L, 2L)
+    val apPssIds = listOf(3L, 4L)
+
+    whenever(
+      repository.findActiveLicenceIds(LicenceType.PSS.toString()),
+    ).thenReturn(pssIds)
+
+    whenever(
+      repository.findActiveLicenceIds(LicenceType.AP_PSS.toString()),
+    ).thenReturn(apPssIds)
+
+    // When
+    service.processActiveApPssAndPssLicences()
+
+    // Then
+    verify(chunkService).processActivePssLicenceChunk(pssIds)
+    verify(chunkService).processActiveApPssLicenceChunk(apPssIds)
   }
 
   @Test
-  fun `should do nothing when no licences returned`() {
+  fun `should process in flight AP_PSS licences before cutoff`() {
+    // Given
+    val ids = listOf(10L, 20L)
+
     whenever(
-      repository.findLicenceIds(
-        LocalDate.of(2026, 4, 30),
-        LicenceType.AP_PSS.toString(),
-      ),
-    ).thenReturn(emptyList())
+      repository.findInFlightLicenceIds(CUTOFF_DATE, LicenceType.AP_PSS.toString()),
+    ).thenReturn(ids)
 
-    createService(clockBeforeCutOff).processApPssLicences()
+    // When
+    service.processInFlightApPssLicences()
 
+    // Then
+    verify(chunkService).processApPssInFlightLicenceChunk(ids)
+  }
+
+  @Test
+  fun `should not process in flight licences after cutoff`() {
+    // Given
+    val lateClock = Clock.fixed(
+      LATE_CLOCK_TIME,
+      ZoneId.systemDefault(),
+    )
+
+    val lateService = ISRPssProgressionService(
+      chunkService,
+      repository,
+      lateClock,
+    )
+
+    // When
+    lateService.processInFlightApPssLicences()
+
+    // Then
+    verifyNoInteractions(repository)
     verifyNoInteractions(chunkService)
   }
 
   @Test
-  fun `should process licences in single chunk when below batch size`() {
-    val licenceIds = listOf(1L, 2L, 3L)
+  fun `should split in flight licences into batches of 100`() {
+    // Given
+    val ids = rangeIds(1L, 250L)
 
     whenever(
-      repository.findLicenceIds(
-        LocalDate.of(2026, 4, 30),
-        LicenceType.AP_PSS.toString(),
-      ),
-    ).thenReturn(licenceIds)
+      repository.findInFlightLicenceIds(CUTOFF_DATE, LicenceType.AP_PSS.toString()),
+    ).thenReturn(ids)
 
-    createService(clockBeforeCutOff).processApPssLicences()
+    val captor = argumentCaptor<List<Long>>()
 
-    verify(chunkService).processApPssLicenceChunk(licenceIds)
+    // When
+    service.processInFlightApPssLicences()
+
+    // Then
+    verify(chunkService, times(3)).processApPssInFlightLicenceChunk(captor.capture())
+
+    assertThat(captor.allValues.map { it.size }).containsExactly(100, 100, 50)
+    assertThat(captor.allValues.flatten()).containsExactlyElementsOf(ids)
   }
 
   @Test
-  fun `should split processing when licences exceed batch size`() {
-    val licenceIds = (1L..250L).toList()
+  fun `should split active PSS and AP_PSS licences into batches of 100`() {
+    // Given
+    val pssIds = rangeIds(1L, 250L)
+    val apPssIds = rangeIds(300L, 420L)
 
     whenever(
-      repository.findLicenceIds(
-        LocalDate.of(2026, 4, 30),
-        LicenceType.AP_PSS.toString(),
-      ),
-    ).thenReturn(licenceIds)
+      repository.findActiveLicenceIds(LicenceType.PSS.toString()),
+    ).thenReturn(pssIds)
 
-    createService(clockBeforeCutOff).processApPssLicences()
-
-    verify(chunkService).processApPssLicenceChunk((1L..100L).toList())
-    verify(chunkService).processApPssLicenceChunk((101L..200L).toList())
-    verify(chunkService).processApPssLicenceChunk((201L..250L).toList())
-
-    verify(chunkService, times(3))
-      .processApPssLicenceChunk(any())
-  }
-
-  @Test
-  fun `should skip processing when cutoff deadline has passed`() {
     whenever(
-      repository.findLicenceIds(any(), any()),
-    ).thenReturn(listOf(1L))
+      repository.findActiveLicenceIds(LicenceType.AP_PSS.toString()),
+    ).thenReturn(apPssIds)
 
-    createService(clockPassedCutOff).processApPssLicences()
+    val pssCaptor = argumentCaptor<List<Long>>()
+    val apCaptor = argumentCaptor<List<Long>>()
 
-    verifyNoInteractions(chunkService)
+    // When
+    service.processActiveApPssAndPssLicences()
+
+    // Then
+    verify(chunkService, atLeastOnce()).processActivePssLicenceChunk(pssCaptor.capture())
+    verify(chunkService, atLeastOnce()).processActiveApPssLicenceChunk(apCaptor.capture())
+
+    assertThat(pssCaptor.allValues.map { it.size }).containsExactly(100, 100, 50)
+    assertThat(apCaptor.allValues.map { it.size }).containsExactly(100, 21)
+    assertThat(pssCaptor.allValues.flatten()).containsExactlyElementsOf(pssIds)
+    assertThat(apCaptor.allValues.flatten()).containsExactlyElementsOf(apPssIds)
   }
 }

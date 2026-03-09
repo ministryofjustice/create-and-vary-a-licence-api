@@ -54,6 +54,42 @@ class ISRPssProgressionJobController(
     ],
   )
   fun progressionOfTypeApPssLicences() {
-    progressionService.processApPssLicences()
+    progressionService.processInFlightApPssLicences()
+  }
+
+  @ProtectedByIngress
+  @PostMapping(value = ["/jobs/isr-active-licences"])
+  @Operation(
+    summary = "Progress AP_PSS & PSS Active/licences.",
+    description = """
+            Triggers a job to progress active licences
+        
+            The job applies where:
+            - The current date is after 30/04/2026
+            - The licence type code is PSS OR AP_PSS
+            - The licence status is ACTIVE
+        
+            The licence will then be updated to:
+            <ul>
+              <li>INACTIVE status if PSS</li>
+              <li>AP TYPE CODE if AP_PSS</li>
+            </ul>
+    """,
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Progression of active licences job executed.",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised",
+        content = [Content(mediaType = "text/html")],
+      ),
+    ],
+  )
+  fun progressionOfActiveLicences() {
+    progressionService.processActiveApPssAndPssLicences()
   }
 }
