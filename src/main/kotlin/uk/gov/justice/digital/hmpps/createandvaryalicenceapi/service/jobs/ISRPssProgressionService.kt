@@ -16,7 +16,7 @@ class ISRPssProgressionService(
 ) {
 
   fun processActiveApPssAndPssLicences() {
-    // There will be around 530 licences in prod of PSS type
+    // There will be around 145 licences in prod of PSS type
     val activePSSLicences = repository.findActiveLicenceIds(LicenceType.PSS.toString())
 
     log.info("ISR PSS progression found {} PSS Active licences to process", activePSSLicences.size)
@@ -25,7 +25,7 @@ class ISRPssProgressionService(
       processActivePssLicenceChunkSafely(it)
     }
 
-    // There will be around 15177 licenses in prod or AP PSS type
+    // There will be around 15552 licenses in prod or AP PSS type
     val activeApPSSLicences = repository.findActiveLicenceIds(LicenceType.AP_PSS.toString())
 
     log.info("ISR AP_PSS progression found {} AP_PSS Active licences to process", activePSSLicences.size)
