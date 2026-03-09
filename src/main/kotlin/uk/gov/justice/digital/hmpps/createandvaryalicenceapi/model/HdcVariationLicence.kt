@@ -299,7 +299,10 @@ data class HdcVariationLicence(
   override val updatedByUsername: String? = null,
 
   @field:Schema(description = "The curfew times for this licence")
-  val curfewTimes: List<HdcCurfewTimes>? = emptyList(),
+  val weeklyCurfewTimes: List<HdcCurfewTimes>? = emptyList(),
+
+  @field:Schema(description = "The first night curfew time for this licence")
+  val firstNightCurfewTimes: HdcCurfewTimes? = null,
 
   @field:Schema(description = "The list of standard licence conditions on this licence")
   override val standardLicenceConditions: List<StandardCondition>? = emptyList(),

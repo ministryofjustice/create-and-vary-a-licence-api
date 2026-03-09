@@ -651,7 +651,8 @@ fun toHdc(
   isInHardStopPeriod = isInHardStopPeriod,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
-  curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
+  weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
+  firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
   electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
     transformToModelElectronicMonitoringProvider(
@@ -745,7 +746,8 @@ fun toHdcVariation(
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isReviewNeeded = false,
   submittedByFullName = licence.getSubmittedByFullName(),
-  curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
+  weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
+  firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
 )
 
@@ -822,8 +824,8 @@ fun transform(entity: EntityAdditionalConditionUpload): ModelAdditionalCondition
   description = entity.description,
 )
 
-// Transform a list of entity hdc curfew times to model hdc curfew times
-fun List<EntityHdcCurfewTimes>.transformToModelCurfewTimes(): List<ModelHdcCurfewTimes> = map(::transform)
+// Transform a list of entity hdc weekly curfew times to model hdc curfew times
+fun List<EntityHdcCurfewTimes>.transformToModelWeeklyCurfewTimes(): List<ModelHdcCurfewTimes> = map(::transform)
 
 private fun transform(entity: EntityHdcCurfewTimes): ModelHdcCurfewTimes = ModelHdcCurfewTimes(
   id = entity.id,
@@ -832,6 +834,15 @@ private fun transform(entity: EntityHdcCurfewTimes): ModelHdcCurfewTimes = Model
   fromTime = entity.fromTime,
   untilDay = entity.untilDay,
   untilTime = entity.untilTime,
+)
+
+fun EntityHdcCurfewTimes.transformToModelFirstNightCurfewTimes(): ModelHdcCurfewTimes = ModelHdcCurfewTimes(
+  id = id,
+  curfewTimesSequence = curfewTimesSequence,
+  fromDay = fromDay,
+  fromTime = fromTime,
+  untilDay = untilDay,
+  untilTime = untilTime,
 )
 
 fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
