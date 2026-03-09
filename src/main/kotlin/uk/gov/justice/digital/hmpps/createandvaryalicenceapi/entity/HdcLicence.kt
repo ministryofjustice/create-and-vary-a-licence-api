@@ -84,16 +84,15 @@ class HdcLicence(
 //  @OrderBy("curfewTimesSequence")
 //  override var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
 
-
   @OneToMany(
     fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],
-    orphanRemoval = true
+    orphanRemoval = true,
   )
   @JoinTable(
     name = "hdc_weekly_curfew_times",
     joinColumns = [JoinColumn(name = "licence_id")],
-    inverseJoinColumns = [JoinColumn(name = "curfew_time_id")]
+    inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
   @OrderBy("curfewTimesSequence")
   var weeklyCurfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
@@ -101,12 +100,12 @@ class HdcLicence(
   @OneToOne(
     fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],
-    orphanRemoval = true
+    orphanRemoval = true,
   )
   @JoinTable(
     name = "hdc_first_night_curfew_times",
     joinColumns = [JoinColumn(name = "licence_id")],
-    inverseJoinColumns = [JoinColumn(name = "curfew_time_id")]
+    inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
   var firstNightCurfewTimes: HdcCurfewTimes? = null,
 
