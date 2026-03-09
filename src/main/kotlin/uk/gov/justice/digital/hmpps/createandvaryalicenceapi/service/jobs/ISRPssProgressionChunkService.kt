@@ -50,7 +50,7 @@ class ISRPssProgressionChunkService(
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun processActivePssLicenceChunkSafely(licenceIds: List<Long>) {
+  fun processActivePssLicenceChunk(licenceIds: List<Long>) {
     if (licenceIds.isEmpty()) return
     val licences = licenceRepository.findAllById(licenceIds)
     val audits = mutableListOf<AuditEvent>()
@@ -66,7 +66,7 @@ class ISRPssProgressionChunkService(
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun processActiveApPssLicenceChunkSafely(licenceIds: List<Long>) {
+  fun processActiveApPssLicenceChunk(licenceIds: List<Long>) {
     if (licenceIds.isEmpty()) return
     val licences = licenceRepository.findAllById(licenceIds)
     val audits = mutableListOf<AuditEvent>()

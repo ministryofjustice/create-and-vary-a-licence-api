@@ -130,7 +130,7 @@ class ISRPssProgressionChunkServiceTest {
     val auditCaptor = argumentCaptor<List<AuditEvent>>()
 
     // When
-    chunkService.processActivePssLicenceChunkSafely(listOf(1L))
+    chunkService.processActivePssLicenceChunk(listOf(1L))
 
     // Then
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
@@ -147,7 +147,7 @@ class ISRPssProgressionChunkServiceTest {
     val licenceIds = emptyList<Long>()
 
     // When
-    chunkService.processActivePssLicenceChunkSafely(licenceIds)
+    chunkService.processActivePssLicenceChunk(licenceIds)
 
     // Then
     verifyNoInteractions(repository)
@@ -170,7 +170,7 @@ class ISRPssProgressionChunkServiceTest {
     val auditCaptor = argumentCaptor<List<AuditEvent>>()
 
     // When
-    chunkService.processActiveApPssLicenceChunkSafely(listOf(1L))
+    chunkService.processActiveApPssLicenceChunk(listOf(1L))
 
     // Then
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
@@ -187,7 +187,7 @@ class ISRPssProgressionChunkServiceTest {
     val licenceIds = emptyList<Long>()
 
     // When
-    chunkService.processActiveApPssLicenceChunkSafely(licenceIds)
+    chunkService.processActiveApPssLicenceChunk(licenceIds)
 
     // Then
     verifyNoInteractions(repository)

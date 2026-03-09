@@ -22,7 +22,7 @@ class ISRPssProgressionService(
     log.info("ISR PSS progression found {} PSS Active licences to process", activePSSLicences.size)
     // Cut the apPssLicenceIds into batches/chunks to allow smaller transaction sizes
     activePSSLicences.chunked(BATCH_SIZE).forEach {
-      processActivePssLicenceChunkSafely(it)
+        chunkService.processActivePssLicenceChunk(it)
     }
 
     // There will be around 15552 licenses in prod or AP PSS type
@@ -32,7 +32,7 @@ class ISRPssProgressionService(
 
     // Cut the apPssLicenceIds into batches/chunks to allow smaller transaction sizes
     activeApPSSLicences.chunked(BATCH_SIZE).forEach {
-      processActiveApPssLicenceChunkSafely(it)
+        chunkService.processActiveApPssLicenceChunk(it)
     }
   }
 
@@ -53,41 +53,14 @@ class ISRPssProgressionService(
     log.info("ISR PSS progression found {} AP PSS licences to process", apPssLicenceIds.size)
     // Cut the apPssLicenceIds into batches/chunks to allow smaller transaction sizes
     apPssLicenceIds.chunked(BATCH_SIZE).forEach {
-      processApPssInFlightLicenceChunkSafely(it)
+        chunkService.processApPssInFlightLicenceChunk(it)
     }
   }
 
   private fun getCurrentDateAndTime(): LocalDateTime = LocalDateTime.now(clock)
 
-  @Suppress("TooGenericExceptionCaught")
-  private fun processApPssInFlightLicenceChunkSafely(chunkLicenceIds: List<Long>) {
-    try {
-      chunkService.processApPssInFlightLicenceChunk(chunkLicenceIds)
-    } catch (ex: Exception) {
-      log.error("ISR AP_PSS repealed in flight licence chunk failed for chunkLicenceIds: {}", chunkLicenceIds, ex)
-      throw ex
-    }
-  }
 
-  @Suppress("TooGenericExceptionCaught")
-  private fun processActivePssLicenceChunkSafely(chunkLicenceIds: List<Long>) {
-    try {
-      chunkService.processActivePssLicenceChunkSafely(chunkLicenceIds)
-    } catch (ex: Exception) {
-      log.error("ISR PSS repealed active progression chunk failed for chunkLicenceIds: {}", chunkLicenceIds, ex)
-      throw ex
-    }
-  }
 
-  @Suppress("TooGenericExceptionCaught")
-  private fun processActiveApPssLicenceChunkSafely(chunkLicenceIds: List<Long>) {
-    try {
-      chunkService.processActiveApPssLicenceChunkSafely(chunkLicenceIds)
-    } catch (ex: Exception) {
-      log.error("ISR AP_PSS repealed Active progression chunk failed for chunkLicenceIds: {}", chunkLicenceIds, ex)
-      throw ex
-    }
-  }
 
   companion object {
     private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)

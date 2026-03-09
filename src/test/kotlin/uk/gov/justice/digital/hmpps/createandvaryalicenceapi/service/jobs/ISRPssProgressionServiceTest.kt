@@ -59,8 +59,8 @@ class ISRPssProgressionServiceTest {
     service.processActiveApPssAndPssLicences()
 
     // Then
-    verify(chunkService).processActivePssLicenceChunkSafely(pssIds)
-    verify(chunkService).processActiveApPssLicenceChunkSafely(apPssIds)
+    verify(chunkService).processActivePssLicenceChunk(pssIds)
+    verify(chunkService).processActiveApPssLicenceChunk(apPssIds)
   }
 
   @Test
@@ -143,8 +143,8 @@ class ISRPssProgressionServiceTest {
     service.processActiveApPssAndPssLicences()
 
     // Then
-    verify(chunkService, atLeastOnce()).processActivePssLicenceChunkSafely(pssCaptor.capture())
-    verify(chunkService, atLeastOnce()).processActiveApPssLicenceChunkSafely(apCaptor.capture())
+    verify(chunkService, atLeastOnce()).processActivePssLicenceChunk(pssCaptor.capture())
+    verify(chunkService, atLeastOnce()).processActiveApPssLicenceChunk(apCaptor.capture())
 
     assertThat(pssCaptor.allValues.map { it.size }).containsExactly(100, 100, 50)
     assertThat(apCaptor.allValues.map { it.size }).containsExactly(100, 21)
