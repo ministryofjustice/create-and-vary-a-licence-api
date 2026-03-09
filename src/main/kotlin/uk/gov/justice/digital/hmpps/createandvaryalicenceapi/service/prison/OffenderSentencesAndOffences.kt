@@ -19,10 +19,10 @@ data class OffenderSentenceAndOffences(
   val sentenceDate: LocalDate? = null,
   val sentenceStartDate: LocalDate? = null,
   val sentenceEndDate: LocalDate? = null,
-  val terms: MutableList<OffenderSentenceTerm?>? = null,
-  val offences: MutableList<OffenderOffence?>? = null,
+  val terms: List<OffenderSentenceTerm>? = null,
+  val offences: List<OffenderOffence>? = null,
   val fineAmount: Double? = null,
-  val revocationDates: MutableList<LocalDate?>? = null,
+  val revocationDates: List<LocalDate>? = null,
 )
 
 data class OffenderSentenceTerm(
@@ -40,5 +40,5 @@ data class OffenderOffence(
   val offenceStatute: String? = null,
   val offenceCode: String? = null,
   val offenceDescription: String? = null,
-  val indicators: MutableList<String?>? = null,
+  val indicators: List<String>? = null,
 )
