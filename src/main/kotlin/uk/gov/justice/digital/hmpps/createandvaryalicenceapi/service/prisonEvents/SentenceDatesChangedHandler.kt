@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.LocalDate
@@ -64,7 +64,7 @@ class SentenceDatesChangedHandler(
 
     log.info("Checking if prisoner resentenced, ssd: {}, lsd: {}", ssd, lsd)
     if (ssd != null && lsd != null && ssd.isAfter(lsd)) {
-      deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeativationReason.RESENTENCED)
+      deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeactivationReason.RESENTENCED)
     }
   }
 
@@ -77,18 +77,18 @@ class SentenceDatesChangedHandler(
         return
       }
       if (prrd.isAfter(LocalDate.now())) {
-        deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeativationReason.RECALLED)
+        deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeactivationReason.RECALLED)
       }
     }
   }
 
   private fun deactivateLicenceIfOnStandardRecall(licence: Licence) {
     if (prisonService.hasStandardRecallSentence(licence.bookingId!!)) {
-      deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeativationReason.STANDARD_RECALL)
+      deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeactivationReason.STANDARD_RECALL)
     }
   }
 
-  private fun deactivateLicenceAndVariations(licenceId: Long, reason: DateChangeLicenceDeativationReason) {
+  private fun deactivateLicenceAndVariations(licenceId: Long, reason: DateChangeLicenceDeactivationReason) {
     licenceService.deactivateLicenceAndVariations(
       licenceId,
       DeactivateLicenceAndVariationsRequest(reason),

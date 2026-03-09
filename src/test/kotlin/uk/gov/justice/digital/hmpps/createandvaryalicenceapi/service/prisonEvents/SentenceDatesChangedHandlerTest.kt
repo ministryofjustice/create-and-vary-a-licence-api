@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.LocalDate
@@ -81,11 +81,11 @@ class SentenceDatesChangedHandlerTest {
 
     verify(licenceService).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RESENTENCED),
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RESENTENCED),
     )
     verify(licenceService, never()).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RECALLED),
     )
   }
 
@@ -112,7 +112,7 @@ class SentenceDatesChangedHandlerTest {
 
     verify(licenceService).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RECALLED),
     )
   }
 
@@ -135,7 +135,7 @@ class SentenceDatesChangedHandlerTest {
 
     verify(licenceService).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.STANDARD_RECALL),
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.STANDARD_RECALL),
     )
   }
 

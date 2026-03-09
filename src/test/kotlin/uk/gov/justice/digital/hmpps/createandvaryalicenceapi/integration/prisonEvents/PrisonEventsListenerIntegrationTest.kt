@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SENTENCE_DATES_CHANGED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SentenceDatesChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SentenceDatesChangedHandler
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 import java.time.LocalDateTime
@@ -93,7 +93,7 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
     val licence = testRepository.findLicence(2L)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
     val auditEvent = testRepository.findFirstAuditEvent(2L)
-    assertThat(auditEvent.summary).isEqualTo("${DateChangeLicenceDeativationReason.STANDARD_RECALL.message} for ${licence.forename} ${licence.surname}")
+    assertThat(auditEvent.summary).isEqualTo("${DateChangeLicenceDeactivationReason.STANDARD_RECALL.message} for ${licence.forename} ${licence.surname}")
   }
 
   private fun sendEvent(message: String) {
