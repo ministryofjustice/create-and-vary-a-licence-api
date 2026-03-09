@@ -75,10 +75,6 @@ class HdcVariationLicence(
   licenceVersion: String? = "1.0",
   updatedBy: Staff? = null,
 
-//  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-//  @OrderBy("curfewTimesSequence")
-//  override var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
-
   @OneToMany(
     fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],

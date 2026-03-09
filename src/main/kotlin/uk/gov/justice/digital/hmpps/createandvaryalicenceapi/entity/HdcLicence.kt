@@ -74,16 +74,6 @@ class HdcLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   updatedBy: Staff? = null,
 
-//  @OneToMany(
-//    mappedBy = "licence",
-//    fetch = FetchType.LAZY,
-//    cascade = [CascadeType.ALL],
-//    orphanRemoval = true,
-//    targetEntity = HdcCurfewTimes::class,
-//  )
-//  @OrderBy("curfewTimesSequence")
-//  override var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
-
   @OneToMany(
     fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],
