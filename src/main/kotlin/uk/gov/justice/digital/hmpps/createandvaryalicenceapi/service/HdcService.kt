@@ -117,7 +117,7 @@ class HdcService(
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     val entityCurfewTimes =
-      request.weeklyCurfewTimes.transformToEntityHdcCurfewTimes(licenceEntity)
+      request.weeklyCurfewTimes.transformToEntityWeeklyCurfewTimes()
 
     licenceEntity.updateWeeklyCurfewTimes(
       updatedWeeklyCurfewTimes = entityCurfewTimes,

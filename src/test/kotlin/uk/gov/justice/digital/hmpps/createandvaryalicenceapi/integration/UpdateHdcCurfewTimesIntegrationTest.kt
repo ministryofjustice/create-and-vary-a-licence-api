@@ -11,7 +11,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
@@ -67,49 +67,49 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
   private companion object {
     val anUpdateCurfewTimesRequest = UpdateCurfewTimesRequest(
       listOf(
-        HdcCurfewTimes(
+        CurfewTimes(
           curfewTimesSequence = 1,
           fromDay = DayOfWeek.MONDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.TUESDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           curfewTimesSequence = 2,
           fromDay = DayOfWeek.TUESDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.WEDNESDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           curfewTimesSequence = 3,
           fromDay = DayOfWeek.WEDNESDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.THURSDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           curfewTimesSequence = 4,
           fromDay = DayOfWeek.THURSDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.FRIDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           curfewTimesSequence = 5,
           fromDay = DayOfWeek.FRIDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.SATURDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           curfewTimesSequence = 6,
           fromDay = DayOfWeek.SATURDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.SUNDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           curfewTimesSequence = 7,
           fromDay = DayOfWeek.SUNDAY,
           fromTime = LocalTime.of(20, 0),

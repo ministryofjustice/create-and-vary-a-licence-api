@@ -7,14 +7,14 @@ import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes as EntityCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes as ModelCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 /*
@@ -90,12 +90,9 @@ fun transform(model: ModelHdcCurfewAddress, licence: EntityLicence): EntityHdcCu
 )
 
 // Transform a list of model hdc curfew times to a list of entity hdc curfew times, setting the licenceId
-fun List<ModelHdcCurfewTimes>.transformToEntityHdcCurfewTimes(
-  licence: EntityLicence,
-): List<EntityHdcCurfewTimes> = map { time -> transform(time, licence) }
+fun List<ModelCurfewTimes>.transformToEntityWeeklyCurfewTimes(): List<EntityCurfewTimes> = map { time -> transform(time) }
 
-fun transform(model: ModelHdcCurfewTimes, licence: EntityLicence): EntityHdcCurfewTimes = EntityHdcCurfewTimes(
-  licence = licence,
+fun transform(model: ModelCurfewTimes): EntityCurfewTimes = EntityCurfewTimes(
   curfewTimesSequence = model.curfewTimesSequence,
   fromDay = model.fromDay,
   fromTime = model.fromTime,

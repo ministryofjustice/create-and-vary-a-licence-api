@@ -90,7 +90,7 @@ class HdcVariationLicence(
     inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
   @OrderBy("curfewTimesSequence")
-  var weeklyCurfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
+  override var weeklyCurfewTimes: MutableList<CurfewTimes> = mutableListOf(),
 
   @OneToOne(
     fetch = FetchType.LAZY,
@@ -102,7 +102,7 @@ class HdcVariationLicence(
     joinColumns = [JoinColumn(name = "licence_id")],
     inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
-  var firstNightCurfewTimes: HdcCurfewTimes? = null,
+  var firstNightCurfewTimes: CurfewTimes? = null,
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   override val curfewAddress: HdcCurfewAddress? = null,
@@ -229,8 +229,8 @@ class HdcVariationLicence(
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
     responsibleCom: CommunityOffenderManager = this.getCom(),
-    weeklyCurfewTimes: MutableList<HdcCurfewTimes> = this.weeklyCurfewTimes.toMutableList(),
-    firstNightCurfewTimes: HdcCurfewTimes? = this.firstNightCurfewTimes,
+    weeklyCurfewTimes: MutableList<CurfewTimes> = this.weeklyCurfewTimes.toMutableList(),
+    firstNightCurfewTimes: CurfewTimes? = this.firstNightCurfewTimes,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,

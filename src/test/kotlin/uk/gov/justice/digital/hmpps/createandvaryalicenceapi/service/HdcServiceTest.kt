@@ -47,10 +47,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Optional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes as EntityCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes as ModelCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 
 class HdcServiceTest {
   private val hdcApiClient = mock<HdcApiClient>()
@@ -550,9 +550,8 @@ class HdcServiceTest {
 
     val anEntitySetOfCurfewTimes =
       listOf(
-        EntityHdcCurfewTimes(
+        EntityCurfewTimes(
           1L,
-          aLicenceEntity,
           1,
           MONDAY,
           LocalTime.of(20, 0),
@@ -560,9 +559,8 @@ class HdcServiceTest {
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
-        EntityHdcCurfewTimes(
+        EntityCurfewTimes(
           1L,
-          aLicenceEntity,
           2,
           TUESDAY,
           LocalTime.of(20, 0),
@@ -570,9 +568,8 @@ class HdcServiceTest {
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
-        EntityHdcCurfewTimes(
+        EntityCurfewTimes(
           1L,
-          aLicenceEntity,
           3,
           WEDNESDAY,
           LocalTime.of(20, 0),
@@ -580,9 +577,8 @@ class HdcServiceTest {
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
-        EntityHdcCurfewTimes(
+        EntityCurfewTimes(
           1L,
-          aLicenceEntity,
           4,
           THURSDAY,
           LocalTime.of(20, 0),
@@ -590,9 +586,8 @@ class HdcServiceTest {
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
-        EntityHdcCurfewTimes(
+        EntityCurfewTimes(
           1L,
-          aLicenceEntity,
           5,
           FRIDAY,
           LocalTime.of(20, 0),
@@ -600,9 +595,8 @@ class HdcServiceTest {
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
-        EntityHdcCurfewTimes(
+        EntityCurfewTimes(
           1L,
-          aLicenceEntity,
           6,
           SATURDAY,
           LocalTime.of(20, 0),
@@ -610,9 +604,8 @@ class HdcServiceTest {
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
-        EntityHdcCurfewTimes(
+        EntityCurfewTimes(
           1L,
-          aLicenceEntity,
           7,
           SUNDAY,
           LocalTime.of(20, 0),
@@ -624,7 +617,7 @@ class HdcServiceTest {
 
     val aModelSetOfCurfewTimes =
       listOf(
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           1,
           MONDAY,
@@ -632,7 +625,7 @@ class HdcServiceTest {
           TUESDAY,
           LocalTime.of(8, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           2,
           TUESDAY,
@@ -640,7 +633,7 @@ class HdcServiceTest {
           WEDNESDAY,
           LocalTime.of(8, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           3,
           WEDNESDAY,
@@ -648,7 +641,7 @@ class HdcServiceTest {
           THURSDAY,
           LocalTime.of(8, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           4,
           THURSDAY,
@@ -656,7 +649,7 @@ class HdcServiceTest {
           FRIDAY,
           LocalTime.of(8, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           5,
           FRIDAY,
@@ -664,7 +657,7 @@ class HdcServiceTest {
           SATURDAY,
           LocalTime.of(8, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           6,
           SATURDAY,
@@ -672,7 +665,7 @@ class HdcServiceTest {
           SUNDAY,
           LocalTime.of(8, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           7,
           SUNDAY,
@@ -684,7 +677,7 @@ class HdcServiceTest {
 
     val aUpdatedModelSetOfCurfewTimes =
       listOf(
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           1,
           MONDAY,
@@ -692,7 +685,7 @@ class HdcServiceTest {
           TUESDAY,
           LocalTime.of(9, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           2,
           TUESDAY,
@@ -700,7 +693,7 @@ class HdcServiceTest {
           WEDNESDAY,
           LocalTime.of(9, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           3,
           WEDNESDAY,
@@ -708,7 +701,7 @@ class HdcServiceTest {
           THURSDAY,
           LocalTime.of(9, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           4,
           THURSDAY,
@@ -716,7 +709,7 @@ class HdcServiceTest {
           FRIDAY,
           LocalTime.of(9, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           5,
           FRIDAY,
@@ -724,7 +717,7 @@ class HdcServiceTest {
           SATURDAY,
           LocalTime.of(9, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           6,
           SATURDAY,
@@ -732,7 +725,7 @@ class HdcServiceTest {
           SUNDAY,
           LocalTime.of(9, 0),
         ),
-        ModelHdcCurfewTimes(
+        ModelCurfewTimes(
           1L,
           7,
           SUNDAY,
