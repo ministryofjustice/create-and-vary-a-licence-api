@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedProbationConfirmContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.util.Optional
 
@@ -28,6 +29,11 @@ interface TestLicenceRepository : JpaRepository<Licence, Long> {
 
   @EntityGraph(attributePaths = ["standardConditions", "appointment", "appointment.address", "responsibleCom", "responsibleCom.savedAppointmentAddresses"])
   override fun findAll(): List<Licence>
+
+  fun findByStatusCodeAndTypeCodeOrderById(
+    statusCode: LicenceStatus,
+    typeCode: LicenceType,
+  ): List<Licence>
 }
 
 @Repository
@@ -189,11 +195,8 @@ class TestRepository(
     return reason
   }
 
-  fun findLicenceByTypeCode(typeCode: LicenceType): List<Licence> {
-    val licences = licenceRepository.findAll()
-      .filter { it.typeCode == typeCode }
-      .sortedBy { it.id }
-
+  fun findLicenceBy(status: LicenceStatus, typeCode: LicenceType): List<Licence> {
+    val licences = licenceRepository.findByStatusCodeAndTypeCodeOrderById(status, typeCode)
     assertThat(licences).isNotEmpty
     return licences
   }
