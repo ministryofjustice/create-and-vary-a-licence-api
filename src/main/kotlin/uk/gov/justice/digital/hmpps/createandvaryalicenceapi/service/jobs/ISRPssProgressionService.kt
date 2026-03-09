@@ -22,7 +22,7 @@ class ISRPssProgressionService(
     log.info("ISR PSS progression found {} PSS Active licences to process", activePSSLicences.size)
     // Cut the apPssLicenceIds into batches/chunks to allow smaller transaction sizes
     activePSSLicences.chunked(BATCH_SIZE).forEach {
-        chunkService.processActivePssLicenceChunk(it)
+      chunkService.processActivePssLicenceChunk(it)
     }
 
     // There will be around 15552 licenses in prod or AP PSS type
@@ -32,7 +32,7 @@ class ISRPssProgressionService(
 
     // Cut the apPssLicenceIds into batches/chunks to allow smaller transaction sizes
     activeApPSSLicences.chunked(BATCH_SIZE).forEach {
-        chunkService.processActiveApPssLicenceChunk(it)
+      chunkService.processActiveApPssLicenceChunk(it)
     }
   }
 
@@ -53,14 +53,11 @@ class ISRPssProgressionService(
     log.info("ISR PSS progression found {} AP PSS licences to process", apPssLicenceIds.size)
     // Cut the apPssLicenceIds into batches/chunks to allow smaller transaction sizes
     apPssLicenceIds.chunked(BATCH_SIZE).forEach {
-        chunkService.processApPssInFlightLicenceChunk(it)
+      chunkService.processApPssInFlightLicenceChunk(it)
     }
   }
 
   private fun getCurrentDateAndTime(): LocalDateTime = LocalDateTime.now(clock)
-
-
-
 
   companion object {
     private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
