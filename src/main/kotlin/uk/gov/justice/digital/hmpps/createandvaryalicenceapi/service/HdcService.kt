@@ -62,10 +62,10 @@ class HdcService(
 
     val licenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
 
-    val weeklyCurfewTimes = if (licence.weeklyCurfewTimes.isNotEmpty()) {
-      licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes()
+    val weeklyCurfewTimes = if (licence.hdcWeeklyCurfewTimes.isNotEmpty()) {
+      licence.hdcWeeklyCurfewTimes.transformToModelWeeklyCurfewTimes()
     } else {
-      licenceData.weeklyCurfewTimes
+      licenceData.hdcWeeklyCurfewTimes
     }
 
     val curfewAddress = if (licence.curfewAddress != null) {
@@ -74,13 +74,13 @@ class HdcService(
       licenceData.curfewAddress
     }
 
-    val firstNightCurfewHours = licenceData.firstNightCurfewHours ?: DEFAULT_FIRST_NIGHT_HOURS
+    val hdcFirstNightCurfewHours = licenceData.hdcFirstNightCurfewHours ?: DEFAULT_FIRST_NIGHT_HOURS
 
     return HdcLicenceData(
       licenceId = licenceData.licenceId,
       curfewAddress = curfewAddress,
-      firstNightCurfewHours = firstNightCurfewHours,
-      weeklyCurfewTimes = weeklyCurfewTimes,
+      hdcFirstNightCurfewHours = hdcFirstNightCurfewHours,
+      hdcWeeklyCurfewTimes = weeklyCurfewTimes,
     )
   }
 
@@ -101,7 +101,7 @@ class HdcService(
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as there is no curfew address")
     }
 
-    if (hdcLicenceData.weeklyCurfewTimes == null) {
+    if (hdcLicenceData.hdcWeeklyCurfewTimes == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as curfew times are missing")
     }
   }
@@ -117,7 +117,7 @@ class HdcService(
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     val entityCurfewTimes =
-      request.weeklyCurfewTimes.transformToEntityWeeklyCurfewTimes()
+      request.hdcWeeklyCurfewTimes.transformToEntityHdcWeeklyCurfewTimes()
 
     licenceEntity.updateWeeklyCurfewTimes(
       updatedWeeklyCurfewTimes = entityCurfewTimes,

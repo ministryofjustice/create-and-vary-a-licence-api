@@ -95,7 +95,7 @@ class HdcLicence(
     inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
   @OrderBy("curfewTimesSequence")
-  override var weeklyCurfewTimes: MutableList<CurfewTimes> = mutableListOf(),
+  override var hdcWeeklyCurfewTimes: MutableList<CurfewTimes> = mutableListOf(),
 
   @OneToOne(
     fetch = FetchType.LAZY,
@@ -107,7 +107,7 @@ class HdcLicence(
     joinColumns = [JoinColumn(name = "licence_id")],
     inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
-  var firstNightCurfewTimes: CurfewTimes? = null,
+  var hdcFirstNightCurfewTimes: CurfewTimes? = null,
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   override val curfewAddress: HdcCurfewAddress? = null,
@@ -239,8 +239,8 @@ class HdcLicence(
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
     responsibleCom: CommunityOffenderManager = this.getCom(),
-    weeklyCurfewTimes: List<CurfewTimes> = this.weeklyCurfewTimes,
-    firstNightCurfewTimes: CurfewTimes? = this.firstNightCurfewTimes,
+    hdcWeeklyCurfewTimes: List<CurfewTimes> = this.hdcWeeklyCurfewTimes,
+    hdcFirstNightCurfewTimes: CurfewTimes? = this.hdcFirstNightCurfewTimes,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     versionOfId: Long? = this.versionOfId,
@@ -299,8 +299,8 @@ class HdcLicence(
     additionalConditions = additionalConditions,
     bespokeConditions = bespokeConditions,
     responsibleCom = responsibleCom,
-    weeklyCurfewTimes = weeklyCurfewTimes.toMutableList(),
-    firstNightCurfewTimes = firstNightCurfewTimes,
+    hdcWeeklyCurfewTimes = hdcWeeklyCurfewTimes.toMutableList(),
+    hdcFirstNightCurfewTimes = hdcFirstNightCurfewTimes,
     submittedBy = submittedBy,
     createdBy = createdBy,
     versionOfId = versionOfId,
@@ -323,8 +323,8 @@ class HdcLicence(
     updatedWeeklyCurfewTimes: List<CurfewTimes>,
     staffMember: Staff?,
   ) {
-    this.weeklyCurfewTimes.clear()
-    this.weeklyCurfewTimes.addAll(updatedWeeklyCurfewTimes)
+    this.hdcWeeklyCurfewTimes.clear()
+    this.hdcWeeklyCurfewTimes.addAll(updatedWeeklyCurfewTimes)
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
@@ -389,8 +389,8 @@ class HdcLicence(
     "additionalConditions=$additionalConditions, " +
     "bespokeConditions=$bespokeConditions, " +
     "responsibleCom=$responsibleCom, " +
-    "weeklyCurfewTimes=$weeklyCurfewTimes, " +
-    "firstNightCurfewTimes=$firstNightCurfewTimes, " +
+    "hdcWeeklyCurfewTimes=$hdcWeeklyCurfewTimes, " +
+    "hdcFirstNightCurfewTimes=$hdcFirstNightCurfewTimes, " +
     "submittedBy=$submittedBy, " +
     "createdBy=$createdBy, " +
     "versionOfId=$versionOfId, " +

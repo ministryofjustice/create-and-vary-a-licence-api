@@ -90,7 +90,7 @@ fun transform(model: ModelHdcCurfewAddress, licence: EntityLicence): EntityHdcCu
 )
 
 // Transform a list of model hdc curfew times to a list of entity hdc curfew times, setting the licenceId
-fun List<ModelCurfewTimes>.transformToEntityWeeklyCurfewTimes(): List<EntityCurfewTimes> = map { time -> transform(time) }
+fun List<ModelCurfewTimes>.transformToEntityHdcWeeklyCurfewTimes(): List<EntityCurfewTimes> = map { time -> transform(time) }
 
 fun transform(model: ModelCurfewTimes): EntityCurfewTimes = EntityCurfewTimes(
   curfewTimesSequence = model.curfewTimesSequence,

@@ -90,7 +90,7 @@ class HdcVariationLicence(
     inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
   @OrderBy("curfewTimesSequence")
-  override var weeklyCurfewTimes: MutableList<CurfewTimes> = mutableListOf(),
+  override var hdcWeeklyCurfewTimes: MutableList<CurfewTimes> = mutableListOf(),
 
   @OneToOne(
     fetch = FetchType.LAZY,
@@ -102,7 +102,7 @@ class HdcVariationLicence(
     joinColumns = [JoinColumn(name = "licence_id")],
     inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
-  var firstNightCurfewTimes: CurfewTimes? = null,
+  var hdcFirstNightCurfewTimes: CurfewTimes? = null,
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   override val curfewAddress: HdcCurfewAddress? = null,
@@ -229,8 +229,8 @@ class HdcVariationLicence(
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
     responsibleCom: CommunityOffenderManager = this.getCom(),
-    weeklyCurfewTimes: MutableList<CurfewTimes> = this.weeklyCurfewTimes.toMutableList(),
-    firstNightCurfewTimes: CurfewTimes? = this.firstNightCurfewTimes,
+    hdcWeeklyCurfewTimes: MutableList<CurfewTimes> = this.hdcWeeklyCurfewTimes.toMutableList(),
+    hdcFirstNightCurfewTimes: CurfewTimes? = this.hdcFirstNightCurfewTimes,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,
@@ -289,8 +289,8 @@ class HdcVariationLicence(
       additionalConditions = additionalConditions,
       bespokeConditions = bespokeConditions,
       responsibleCom = responsibleCom,
-      weeklyCurfewTimes = weeklyCurfewTimes,
-      firstNightCurfewTimes = firstNightCurfewTimes,
+      hdcWeeklyCurfewTimes = hdcWeeklyCurfewTimes,
+      hdcFirstNightCurfewTimes = hdcFirstNightCurfewTimes,
       submittedBy = submittedBy,
       createdBy = createdBy,
       variationOfId = variationOfId,
@@ -372,8 +372,8 @@ class HdcVariationLicence(
     "additionalConditions=$additionalConditions, " +
     "bespokeConditions=$bespokeConditions, " +
     "responsibleCom=$responsibleCom, " +
-    "weeklyCurfewTimes=$weeklyCurfewTimes, " +
-    "firstNightCurfewTimes=$firstNightCurfewTimes, " +
+    "hdcWeeklyCurfewTimes=$hdcWeeklyCurfewTimes, " +
+    "hdcFirstNightCurfewTimes=$hdcFirstNightCurfewTimes, " +
     "submittedBy=$submittedBy, " +
     "createdBy=$createdBy, " +
     "variationOfId=$variationOfId, " +

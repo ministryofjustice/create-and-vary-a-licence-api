@@ -651,8 +651,8 @@ fun toHdc(
   isInHardStopPeriod = isInHardStopPeriod,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
-  weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
-  firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
+  hdcWeeklyCurfewTimes = licence.hdcWeeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
+  hdcFirstNightCurfewTimes = licence.hdcFirstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
   electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
     transformToModelElectronicMonitoringProvider(
@@ -746,8 +746,8 @@ fun toHdcVariation(
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isReviewNeeded = false,
   submittedByFullName = licence.getSubmittedByFullName(),
-  weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
-  firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
+  hdcWeeklyCurfewTimes = licence.hdcWeeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
+  hdcFirstNightCurfewTimes = licence.hdcFirstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
 )
 

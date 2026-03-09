@@ -7,5 +7,5 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 data class UpdateCurfewTimesRequest(
   @field:Schema(description = "The list of hdc licence curfew times from service configuration")
   @field:NotNull
-  val weeklyCurfewTimes: List<CurfewTimes> = emptyList(),
+  val hdcWeeklyCurfewTimes: List<CurfewTimes> = emptyList(),
 )

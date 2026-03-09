@@ -49,7 +49,7 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
       .expectBody(HdcLicenceData::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.weeklyCurfewTimes)
+    assertThat(result?.hdcWeeklyCurfewTimes)
       .extracting<Tuple> { tuple(it.fromDay, it.fromTime, it.untilDay, it.untilTime) }
       .containsAll(
         listOf(

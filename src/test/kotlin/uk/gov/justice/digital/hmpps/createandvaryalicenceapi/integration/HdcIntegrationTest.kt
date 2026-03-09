@@ -53,14 +53,14 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "AB1 2CD",
         ),
       )
-      assertThat(result.firstNightCurfewHours).isEqualTo(
+      assertThat(result.hdcFirstNightCurfewHours).isEqualTo(
         FirstNight(
           LocalTime.of(15, 0),
           LocalTime.of(7, 0),
         ),
       )
 
-      assertThat(result.weeklyCurfewTimes).isEqualTo(
+      assertThat(result.hdcWeeklyCurfewTimes).isEqualTo(
         listOf(
           CurfewTimes(
             1L,
@@ -151,14 +151,14 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "AB1 2CD",
         ),
       )
-      assertThat(result.firstNightCurfewHours).isEqualTo(
+      assertThat(result.hdcFirstNightCurfewHours).isEqualTo(
         FirstNight(
           LocalTime.of(15, 0),
           LocalTime.of(7, 0),
         ),
       )
 
-      assertThat(result.weeklyCurfewTimes).isEqualTo(
+      assertThat(result.hdcWeeklyCurfewTimes).isEqualTo(
         listOf(
           CurfewTimes(
             1L,
