@@ -12,7 +12,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateHdcWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import java.time.DayOfWeek
@@ -32,8 +32,8 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
     hdcApiMockServer.stubGetHdcLicenceData(54321L)
 
     webTestClient.put()
-      .uri("/licence/id/1/curfew-times")
-      .bodyValue(anUpdateCurfewTimesRequest)
+      .uri("/licence/id/1/hdc-weekly-curfew-times")
+      .bodyValue(anUpdateHdcWeeklyCurfewTimesRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -65,7 +65,7 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val anUpdateCurfewTimesRequest = UpdateCurfewTimesRequest(
+    val anUpdateHdcWeeklyCurfewTimesRequest = UpdateHdcWeeklyCurfewTimesRequest(
       listOf(
         CurfewTimes(
           curfewTimesSequence = 1,

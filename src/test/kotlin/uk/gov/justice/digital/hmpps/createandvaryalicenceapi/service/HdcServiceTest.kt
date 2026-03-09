@@ -19,7 +19,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateHdcWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
@@ -434,9 +434,9 @@ class HdcServiceTest {
 
       val weeklyCurfewTimes = aUpdatedModelSetOfCurfewTimes
 
-      service.updateCurfewTimes(
+      service.updateHdcWeeklyCurfewTimes(
         1,
-        UpdateCurfewTimesRequest(
+        UpdateHdcWeeklyCurfewTimesRequest(
           hdcWeeklyCurfewTimes = weeklyCurfewTimes,
         ),
       )

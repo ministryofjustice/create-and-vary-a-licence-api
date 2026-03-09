@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateHdcWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
@@ -107,7 +107,7 @@ class HdcService(
   }
 
   @Transactional
-  fun updateCurfewTimes(licenceId: Long, request: UpdateCurfewTimesRequest) {
+  fun updateHdcWeeklyCurfewTimes(licenceId: Long, request: UpdateHdcWeeklyCurfewTimesRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicence
@@ -116,16 +116,16 @@ class HdcService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    val entityCurfewTimes =
+    val entityHdcWeeklyCurfewTimes =
       request.hdcWeeklyCurfewTimes.transformToEntityHdcWeeklyCurfewTimes()
 
     licenceEntity.updateWeeklyCurfewTimes(
-      updatedWeeklyCurfewTimes = entityCurfewTimes,
+      updatedWeeklyCurfewTimes = entityHdcWeeklyCurfewTimes,
       staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(licenceEntity)
-    auditService.recordAuditEventUpdateHdcCurfewTimes(licenceEntity, entityCurfewTimes, staffMember)
+    auditService.recordAuditEventUpdateHdcCurfewTimes(licenceEntity, entityHdcWeeklyCurfewTimes, staffMember)
   }
 
   companion object {
