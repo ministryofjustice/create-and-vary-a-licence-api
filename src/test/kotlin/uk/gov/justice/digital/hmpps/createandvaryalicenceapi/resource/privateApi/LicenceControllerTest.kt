@@ -58,7 +58,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.SentenceDates
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -468,7 +468,7 @@ class LicenceControllerTest {
 
   @Test
   fun `deactivate a licence and variations`() {
-    val request = DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RECALLED)
+    val request = DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RECALLED)
     mvc.perform(
       post("/licence/id/4/deactivate-licence-and-variations")
         .accept(APPLICATION_JSON)
