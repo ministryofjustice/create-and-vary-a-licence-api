@@ -63,7 +63,7 @@ class HdcService(
     val licenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
 
     val hdcWeeklyCurfewTimes = if (licence.hdcWeeklyCurfewTimes.isNotEmpty()) {
-      licence.hdcWeeklyCurfewTimes.transformToModelWeeklyCurfewTimes()
+      licence.hdcWeeklyCurfewTimes.transformToModelHdcWeeklyCurfewTimes()
     } else {
       licenceData.hdcWeeklyCurfewTimes
     }
