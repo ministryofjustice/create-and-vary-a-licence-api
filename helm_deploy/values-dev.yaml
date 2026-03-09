@@ -98,3 +98,9 @@ jobs:
     path: /notify-probation-of-unapproved-licences
     cron: "0 11 * * 1-5" # 11am UTC, Monday - Friday
     allowRetry: false
+
+  - name: isr-in-flight-ap-pss-licences-job
+    enabled: true
+    path: /isr-in-flight-ap-pss-licences
+    cron: "59 13 * * 5" # 11:59 UTC every Friday
+    allowRetry: true

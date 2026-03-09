@@ -8,10 +8,17 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.PotentialHardstopCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.Companion.LICENCE_DEACTIVATION_HARD_STOP_TASK
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.DurationUnit
@@ -22,6 +29,7 @@ import kotlin.time.DurationUnit
  */
 @Component
 class InactivateHardstopLicencesTask(
+  private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
   private val potentialHardstopCaseRepository: PotentialHardstopCaseRepository,
   private val releaseDateService: ReleaseDateService,
@@ -65,8 +73,14 @@ class InactivateHardstopLicencesTask(
     val licence = potentialHardStopCase.licence
     val inHardStop = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind)
     if (!inHardStop) {
-      log.info("inactivating licence: ${licence.id} as it's still not in the hard stop period")
-      licenceService.inactivateLicences(listOf(licence), LICENCE_DEACTIVATION_HARD_STOP_TASK)
+      val bookingId = licence.bookingId!!
+      log.info("inactivating in flight licences for booking id: $bookingId")
+      val licencesToDeactivate = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
+        licence.bookingId!!,
+        listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
+        listOf(CRD, HARD_STOP),
+      )
+      licenceService.inactivateLicences(licencesToDeactivate, LICENCE_DEACTIVATION_HARD_STOP_TASK)
     } else {
       log.info("not inactivating ${licence.id} as it's back in the hard stop period")
     }
