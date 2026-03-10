@@ -74,7 +74,7 @@ class HdcService(
       licenceData.curfewAddress
     }
 
-    val hdcFirstNightCurfewHours = licenceData.hdcFirstNightCurfewHours
+    val hdcFirstNightCurfewHours = licenceData.hdcFirstNightCurfewHours ?: DEFAULT_FIRST_NIGHT_HOURS
 
     return HdcLicenceData(
       licenceId = licenceData.licenceId,
