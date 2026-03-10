@@ -14,7 +14,7 @@ import java.time.LocalTime
 
 @Entity
 @Table(name = "curfew_times")
-data class CurfewTimes(
+class CurfewTimes(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @field:Positive
