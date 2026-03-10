@@ -28,6 +28,7 @@ generic-service:
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     TIME_SERVED_PRISONS: "MDI, BAI, BNI, LEI, WCI, EXI, WDI, IWI, EWI"
     PRISON_EVENT_LISTENER_ENABLED: true
+    HARDSTOP_DEACTIVATION_JOB_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
