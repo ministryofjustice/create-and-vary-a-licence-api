@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -19,6 +20,7 @@ class CvlRecordService(
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
   private val hdcService: HdcService,
+  private val isrPssProgressionService: ISRPssProgressionService,
 ) {
 
   fun getCvlRecord(prisoner: PrisonerSearchPrisoner): CvlRecord {
@@ -74,14 +76,15 @@ class CvlRecordService(
     nomisRecord.licenceExpiryDate == null -> PSS
     nomisRecord.topupSupervisionExpiryDate == null || nomisRecord.topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
     kind == PRRD -> getRecallLicenceType(nomisRecord, licenceStartDate)
-    else -> AP_PSS
+    !isrPssProgressionService.isRepealDatePassed() -> AP_PSS
+    else -> AP
   }
 
   private fun getRecallLicenceType(nomisRecord: PrisonerSearchPrisoner, licenceStartDate: LocalDate?) = when {
     // If release at SLED, go directly into PSS period
     releaseDateService.isReleaseAtLed(licenceStartDate, nomisRecord.licenceExpiryDate) -> PSS
-
     // If early release, the period spent on early release is AP
-    else -> AP_PSS
+    !isrPssProgressionService.isRepealDatePassed() -> AP_PSS
+    else -> AP
   }
 }

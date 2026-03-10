@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ISRProgressionLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -12,6 +14,8 @@ import kotlin.collections.chunked
 class ISRPssProgressionService(
   private val chunkService: ISRPssProgressionChunkService,
   private val repository: ISRProgressionLicenceRepository,
+  @param:Value("\${feature.toggle.isr.repeal.date:2026-04-30}")
+  private val isrRepealDate: LocalDate,
   private val clock: Clock = Clock.systemDefaultZone(),
 ) {
 
@@ -37,16 +41,16 @@ class ISRPssProgressionService(
   }
 
   fun processInFlightApPssLicences() {
-    if (getCurrentDateAndTime().isAfter(CUTOFF_EXECUTION_DEADLINE)) {
+    if (getCurrentDateAndTime().isAfter(getCutoffExecutionDeadline())) {
       log.info(
         "ISR PSS progression job skipped because cutoff execution deadline {} has passed",
-        CUTOFF_EXECUTION_DEADLINE,
+        getCutoffExecutionDeadline(),
       )
       return
     }
 
     val apPssLicenceIds = repository.findInFlightLicenceIds(
-      CUTOFF_DATE,
+      isrRepealDate,
       LicenceType.AP_PSS.toString(),
     )
 
@@ -57,12 +61,14 @@ class ISRPssProgressionService(
     }
   }
 
+  fun isRepealDatePassed(): Boolean = getCurrentDate().isAfter(isrRepealDate)
+
+  private fun getCurrentDate(): LocalDate = LocalDate.now(clock)
   private fun getCurrentDateAndTime(): LocalDateTime = LocalDateTime.now(clock)
+  private fun getCutoffExecutionDeadline(): LocalDateTime? = isrRepealDate.plusDays(1).atTime(2, 0)
 
   companion object {
-    private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
-    private val CUTOFF_DATE: LocalDate = LocalDate.of(2026, 4, 30)
-    private val CUTOFF_EXECUTION_DEADLINE: LocalDateTime = CUTOFF_DATE.atTime(23, 59).plusHours(2)
+    private val log = LoggerFactory.getLogger(this::class.java)
     private const val BATCH_SIZE = 100
   }
 }

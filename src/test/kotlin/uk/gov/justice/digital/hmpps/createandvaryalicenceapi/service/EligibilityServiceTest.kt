@@ -4,6 +4,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -14,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
@@ -30,11 +35,64 @@ class EligibilityServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
-  private var service = EligibilityService(prisonApiClient, releaseDateService, hdcService, clock)
+  private val isrPssProgressionService = org.mockito.kotlin.mock<ISRPssProgressionService>()
+  private var service = EligibilityService(prisonApiClient, releaseDateService, hdcService, isrPssProgressionService, clock)
 
   @BeforeEach
   fun reset() {
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptyList()))
+    whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(false)
+  }
+
+  @Nested
+  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  inner class PssProgressionRepeal {
+
+    @ParameterizedTest
+    @MethodSource("pssRepealCases")
+    fun `pss repeal eligibility scenarios`(
+      repealDatePassed: Boolean,
+      licenceExpiryDate: LocalDate?,
+      topUpSupervisionExpiryDate: LocalDate?,
+      expectedEligible: Boolean,
+    ) {
+      // Given
+      whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(repealDatePassed)
+
+      val prisonerSearchResult = aPrisonerSearchResult.copy(
+        licenceExpiryDate = licenceExpiryDate,
+        topupSupervisionExpiryDate = topUpSupervisionExpiryDate,
+      )
+
+      // When
+      val result = service.getEligibilityAssessment(prisonerSearchResult)
+
+      // Then
+      assertThat(result.isEligible).isEqualTo(expectedEligible)
+
+      if (!expectedEligible) {
+        assertThat(result.genericIneligibilityReasons)
+          .containsExactly("PSS licences no longer supported")
+      }
+    }
+
+    fun pssRepealCases(): List<Arguments> {
+      val now = LocalDate.now(clock)
+
+      return listOf(
+        // repeal date passed / PSS blocked
+        Arguments.of(true, null, now.plusDays(1), false),
+        // repeal date passed
+        Arguments.of(true, now.plusDays(1), now.plusDays(1), true),
+        Arguments.of(true, now.plusDays(1), null, true),
+        Arguments.of(true, null, null, true),
+        // before repeal
+        Arguments.of(false, null, now.plusDays(1), true),
+        Arguments.of(false, now.plusDays(1), now.plusDays(1), true),
+        Arguments.of(false, now.plusDays(1), null, true),
+        Arguments.of(false, null, null, true),
+      )
+    }
   }
 
   @Nested
@@ -426,7 +484,7 @@ class EligibilityServiceTest {
   inner class PrrdCases {
     @BeforeEach
     fun setup() {
-      service = EligibilityService(prisonApiClient, releaseDateService, hdcService, clock)
+      service = EligibilityService(prisonApiClient, releaseDateService, hdcService, isrPssProgressionService, clock)
 
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
@@ -721,7 +779,7 @@ class EligibilityServiceTest {
 
   @Nested
   inner class HdcCases {
-    private var service = EligibilityService(prisonApiClient, releaseDateService, hdcService, clock, hdcEnabled = true)
+    private var service = EligibilityService(prisonApiClient, releaseDateService, hdcService, isrPssProgressionService, clock, hdcEnabled = true)
 
     @BeforeEach
     fun reset() {

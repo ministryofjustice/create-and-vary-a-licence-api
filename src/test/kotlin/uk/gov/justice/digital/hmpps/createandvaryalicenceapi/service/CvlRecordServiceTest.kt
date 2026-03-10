@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.pr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
@@ -26,12 +27,14 @@ class CvlRecordServiceTest {
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
+  private val isrPssProgressionService = mock<ISRPssProgressionService>()
 
-  private val service = CvlRecordService(eligibilityService, releaseDateService, hdcService)
+  private val service = CvlRecordService(eligibilityService, releaseDateService, hdcService, isrPssProgressionService)
 
   @BeforeEach
   fun reset() {
     reset(eligibilityService, releaseDateService)
+    whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(false)
   }
 
   @Test
@@ -262,6 +265,39 @@ class CvlRecordServiceTest {
       )
       val cvlRecord = service.getCvlRecord(nomisRecord)
       assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.AP_PSS)
+    }
+
+    @Test
+    fun `should be AP when TUSED is after LED and Pss repeal date has passed`() {
+      whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(true)
+
+      val nomisRecord = prisonerSearchResult().copy(
+        licenceExpiryDate = LocalDate.of(2021, 10, 22),
+        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
+      )
+
+      val cvlRecord = service.getCvlRecord(nomisRecord)
+      assertThat(cvlRecord.licenceType).isEqualTo(AP)
+    }
+
+    @Test
+    fun `AP_PSS recall cases are AP-only if Pss repeal date has passed`() {
+      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
+        mapOf(prisonerSearchResult().prisonerNumber to prrdEligibilityAssessment),
+      )
+      whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
+        mapOf(prisonerSearchResult().prisonerNumber to LocalDate.of(2021, 10, 22)),
+      )
+      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
+      whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(true)
+
+      val nomisRecord = prisonerSearchResult().copy(
+        licenceExpiryDate = LocalDate.of(2021, 10, 22),
+        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
+      )
+
+      val cvlRecord = service.getCvlRecord(nomisRecord)
+      assertThat(cvlRecord.licenceType).isEqualTo(AP)
     }
 
     @Test
