@@ -5,7 +5,7 @@ import java.time.DayOfWeek
 import java.time.LocalTime
 
 @Schema(description = "Describes the curfew times on this hdc licence")
-data class CurfewTimes(
+class CurfewTimes(
 
   @field:Schema(description = "The internal ID for these curfew times on this hdc licence", example = "98987")
   val id: Long? = null,
