@@ -37,4 +37,13 @@ class CurfewTimes(
     "untilTime=$untilTime" +
     "created_timestamp=$createdTimestamp" +
     ")"
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is CurfewTimes) return false
+    if (id != other.id) return false
+    return true
+  }
+
+  override fun hashCode(): Int = super.hashCode()
 }
