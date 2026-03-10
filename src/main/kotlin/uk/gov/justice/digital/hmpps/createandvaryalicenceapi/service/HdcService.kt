@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateHdcWeeklyCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
@@ -62,10 +62,10 @@ class HdcService(
 
     val licenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
 
-    val hdcWeeklyCurfewTimes = if (licence.hdcWeeklyCurfewTimes.isNotEmpty()) {
-      licence.hdcWeeklyCurfewTimes.transformToModelHdcWeeklyCurfewTimes()
+    val weeklyCurfewTimes = if (licence.weeklyCurfewTimes.isNotEmpty()) {
+      licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes()
     } else {
-      licenceData.hdcWeeklyCurfewTimes
+      licenceData.weeklyCurfewTimes
     }
 
     val curfewAddress = if (licence.curfewAddress != null) {
@@ -80,7 +80,7 @@ class HdcService(
       licenceId = licenceData.licenceId,
       curfewAddress = curfewAddress,
       hdcFirstNightCurfewHours = hdcFirstNightCurfewHours,
-      hdcWeeklyCurfewTimes = hdcWeeklyCurfewTimes,
+      weeklyCurfewTimes = weeklyCurfewTimes,
     )
   }
 
@@ -101,13 +101,13 @@ class HdcService(
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as there is no curfew address")
     }
 
-    if (hdcLicenceData.hdcWeeklyCurfewTimes == null) {
+    if (hdcLicenceData.weeklyCurfewTimes == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as curfew times are missing")
     }
   }
 
   @Transactional
-  fun updateHdcWeeklyCurfewTimes(licenceId: Long, request: UpdateHdcWeeklyCurfewTimesRequest) {
+  fun updateWeeklyCurfewTimes(licenceId: Long, request: UpdateWeeklyCurfewTimesRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicence
@@ -116,16 +116,16 @@ class HdcService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    val entityHdcWeeklyCurfewTimes =
-      request.hdcWeeklyCurfewTimes.transformToEntityHdcWeeklyCurfewTimes()
+    val entityWeeklyCurfewTimes =
+      request.weeklyCurfewTimes.transformToEntityWeeklyCurfewTimes()
 
     licenceEntity.updateWeeklyCurfewTimes(
-      updatedWeeklyCurfewTimes = entityHdcWeeklyCurfewTimes,
+      updatedWeeklyCurfewTimes = entityWeeklyCurfewTimes,
       staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(licenceEntity)
-    auditService.recordAuditEventUpdateHdcCurfewTimes(licenceEntity, entityHdcWeeklyCurfewTimes, staffMember)
+    auditService.recordAuditEventUpdateHdcCurfewTimes(licenceEntity, entityWeeklyCurfewTimes, staffMember)
   }
 
   companion object {

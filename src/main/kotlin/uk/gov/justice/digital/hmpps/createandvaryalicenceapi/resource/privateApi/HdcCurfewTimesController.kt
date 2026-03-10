@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateHdcWeeklyCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 
@@ -82,11 +82,11 @@ class HdcCurfewTimesController(
       ),
     ],
   )
-  fun updateHdcWeeklyCurfewTimes(
+  fun updateWeeklyCurfewTimes(
     @PathVariable licenceId: Long,
     @Valid @RequestBody
-    request: UpdateHdcWeeklyCurfewTimesRequest,
+    request: UpdateWeeklyCurfewTimesRequest,
   ) {
-    hdcService.updateHdcWeeklyCurfewTimes(licenceId, request)
+    hdcService.updateWeeklyCurfewTimes(licenceId, request)
   }
 }

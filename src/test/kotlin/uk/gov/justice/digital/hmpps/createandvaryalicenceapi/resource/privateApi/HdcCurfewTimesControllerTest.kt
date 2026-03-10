@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateHdcWeeklyCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -64,11 +64,11 @@ class HdcCurfewTimesControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(hdcService, times(1)).updateHdcWeeklyCurfewTimes(123456, anCurfewTimesRequest)
+    verify(hdcService, times(1)).updateWeeklyCurfewTimes(123456, anCurfewTimesRequest)
   }
 
   private companion object {
-    val anCurfewTimesRequest = UpdateHdcWeeklyCurfewTimesRequest(
+    val anCurfewTimesRequest = UpdateWeeklyCurfewTimesRequest(
       listOf(
         CurfewTimes(
           1L,

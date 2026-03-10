@@ -60,7 +60,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
         ),
       )
 
-      assertThat(result.hdcWeeklyCurfewTimes).isEqualTo(
+      assertThat(result.weeklyCurfewTimes).isEqualTo(
         listOf(
           CurfewTimes(
             1L,
@@ -158,7 +158,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
         ),
       )
 
-      assertThat(result.hdcWeeklyCurfewTimes).isEqualTo(
+      assertThat(result.weeklyCurfewTimes).isEqualTo(
         listOf(
           CurfewTimes(
             1L,

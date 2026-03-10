@@ -261,14 +261,14 @@ class AuditService(
 
   fun recordAuditEventUpdateHdcCurfewTimes(
     licence: Licence,
-    updatedHdcWeeklyCurfewTimes: List<CurfewTimes>,
+    updatedWeeklyCurfewTimes: List<CurfewTimes>,
     staffMember: Staff?,
   ) {
     val summary = "Updated HDC curfew times"
 
     val changes = mapOf(
       "type" to summary,
-      "changes" to updatedHdcWeeklyCurfewTimes.map {
+      "changes" to updatedWeeklyCurfewTimes.map {
         mapOf(
           "fromDay" to it.fromDay,
           "fromTime" to it.fromTime,

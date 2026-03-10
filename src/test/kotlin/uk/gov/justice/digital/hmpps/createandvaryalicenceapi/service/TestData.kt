@@ -536,7 +536,7 @@ object TestData {
   ).let {
     it.copy(
       standardConditions = someEntityStandardConditions(it),
-      hdcWeeklyCurfewTimes = emptyList(),
+      weeklyCurfewTimes = emptyList(),
     )
   }
 
@@ -579,7 +579,7 @@ object TestData {
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
   ).let {
-    it.copy(standardConditions = someEntityStandardConditions(it), hdcWeeklyCurfewTimes = mutableListOf())
+    it.copy(standardConditions = someEntityStandardConditions(it), weeklyCurfewTimes = mutableListOf())
   }
 
   fun prisonerSearchResult(
