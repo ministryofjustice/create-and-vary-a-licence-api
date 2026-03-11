@@ -160,6 +160,7 @@ class HdcService(
       entityFirstNightCurfewTimes,
       staffMember,
     )
+    auditService.recordAuditEventUpdateHdcCurfewTimes(licenceEntity, entityWeeklyCurfewTimes, staffMember)
   }
 
   companion object {

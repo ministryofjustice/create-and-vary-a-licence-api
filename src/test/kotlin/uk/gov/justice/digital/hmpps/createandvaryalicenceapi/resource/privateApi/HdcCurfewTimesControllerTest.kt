@@ -83,6 +83,11 @@ class HdcCurfewTimesControllerTest {
 
   private companion object {
     val anWeeklyCurfewTimesRequest = UpdateWeeklyCurfewTimesRequest(
+    verify(hdcService, times(1)).updateWeeklyCurfewTimes(123456, anCurfewTimesRequest)
+  }
+
+  private companion object {
+    val anCurfewTimesRequest = UpdateWeeklyCurfewTimesRequest(
       listOf(
         CurfewTimes(
           1L,
