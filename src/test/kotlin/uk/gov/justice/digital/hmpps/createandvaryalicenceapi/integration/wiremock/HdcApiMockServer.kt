@@ -25,7 +25,7 @@ class HdcApiMockServer : WireMockServer(8100) {
               "firstNightFrom": "15:00",
               "firstNightUntil": "07:00"
             },
-            "curfewTimes": [
+            "weeklyCurfewTimes": [
               {
                 "id": "1",
                 "curfewTimesSequence": "1",

@@ -1,15 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Positive
 import java.time.DayOfWeek
@@ -17,17 +13,12 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 @Entity
-@Table(name = "hdc_curfew_times")
-data class HdcCurfewTimes(
+@Table(name = "curfew_times")
+class CurfewTimes(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @field:Positive
   open val id: Long? = null,
-
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REFRESH])
-  @JoinColumn(name = "licence_id", nullable = false)
-  var licence: Licence,
-
   val curfewTimesSequence: Int? = null,
   @Enumerated(EnumType.STRING)
   val fromDay: DayOfWeek? = null,
@@ -37,9 +28,8 @@ data class HdcCurfewTimes(
   val untilTime: LocalTime? = null,
   val createdTimestamp: LocalDateTime? = null,
 ) {
-  override fun toString(): String = "HdcCurfewTimes(" +
+  override fun toString(): String = "CurfewTimes(" +
     "id=$id, " +
-    "licence=${licence.id}, " +
     "curfewTimesSequence=$curfewTimesSequence, " +
     "fromDay=$fromDay, " +
     "fromTime=$fromTime, " +
@@ -47,4 +37,13 @@ data class HdcCurfewTimes(
     "untilTime=$untilTime" +
     "created_timestamp=$createdTimestamp" +
     ")"
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is CurfewTimes) return false
+    if (id != other.id) return false
+    return true
+  }
+
+  override fun hashCode(): Int = super.hashCode()
 }

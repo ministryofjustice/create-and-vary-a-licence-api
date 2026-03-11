@@ -11,8 +11,8 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
@@ -60,9 +60,9 @@ class HdcIntegrationTest : IntegrationTestBase() {
         ),
       )
 
-      assertThat(result.curfewTimes).isEqualTo(
+      assertThat(result.weeklyCurfewTimes).isEqualTo(
         listOf(
-          HdcCurfewTimes(
+          CurfewTimes(
             1L,
             1,
             DayOfWeek.MONDAY,
@@ -70,7 +70,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.TUESDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             1L,
             2,
             DayOfWeek.TUESDAY,
@@ -78,7 +78,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.WEDNESDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             1L,
             3,
             DayOfWeek.WEDNESDAY,
@@ -86,7 +86,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.THURSDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             1L,
             4,
             DayOfWeek.THURSDAY,
@@ -94,7 +94,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.FRIDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             1L,
             5,
             DayOfWeek.FRIDAY,
@@ -102,7 +102,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.SATURDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             1L,
             6,
             DayOfWeek.SATURDAY,
@@ -110,7 +110,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.SUNDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             1L,
             7,
             DayOfWeek.SUNDAY,
@@ -158,9 +158,9 @@ class HdcIntegrationTest : IntegrationTestBase() {
         ),
       )
 
-      assertThat(result.curfewTimes).isEqualTo(
+      assertThat(result.weeklyCurfewTimes).isEqualTo(
         listOf(
-          HdcCurfewTimes(
+          CurfewTimes(
             1L,
             1,
             DayOfWeek.MONDAY,
@@ -168,7 +168,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.TUESDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             2L,
             2,
             DayOfWeek.TUESDAY,
@@ -176,7 +176,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.WEDNESDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             3L,
             3,
             DayOfWeek.WEDNESDAY,
@@ -184,7 +184,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.THURSDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             4L,
             4,
             DayOfWeek.THURSDAY,
@@ -192,7 +192,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.FRIDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             5L,
             5,
             DayOfWeek.FRIDAY,
@@ -200,7 +200,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.SATURDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             6L,
             6,
             DayOfWeek.SATURDAY,
@@ -208,7 +208,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             DayOfWeek.SUNDAY,
             LocalTime.of(7, 0),
           ),
-          HdcCurfewTimes(
+          CurfewTimes(
             7L,
             7,
             DayOfWeek.SUNDAY,

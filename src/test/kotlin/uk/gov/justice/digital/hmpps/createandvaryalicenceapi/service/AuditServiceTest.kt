@@ -17,7 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
@@ -1089,63 +1089,56 @@ class AuditServiceTest {
 
     val aSetOfCurfewTimes =
       listOf(
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
-          aHdcLicenceEntity,
           1,
           DayOfWeek.MONDAY,
           LocalTime.of(20, 0),
           DayOfWeek.TUESDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
-          aHdcLicenceEntity,
           2,
           DayOfWeek.TUESDAY,
           LocalTime.of(20, 0),
           DayOfWeek.WEDNESDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
-          aHdcLicenceEntity,
           3,
           DayOfWeek.WEDNESDAY,
           LocalTime.of(20, 0),
           DayOfWeek.THURSDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
-          aHdcLicenceEntity,
           4,
           DayOfWeek.THURSDAY,
           LocalTime.of(20, 0),
           DayOfWeek.FRIDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
-          aHdcLicenceEntity,
           5,
           DayOfWeek.FRIDAY,
           LocalTime.of(20, 0),
           DayOfWeek.SATURDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
-          aHdcLicenceEntity,
           6,
           DayOfWeek.SATURDAY,
           LocalTime.of(20, 0),
           DayOfWeek.SUNDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
-          aHdcLicenceEntity,
           7,
           DayOfWeek.SUNDAY,
           LocalTime.of(20, 0),
