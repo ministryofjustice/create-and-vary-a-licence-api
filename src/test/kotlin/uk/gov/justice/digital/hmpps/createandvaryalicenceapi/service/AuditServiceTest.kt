@@ -856,9 +856,7 @@ class AuditServiceTest {
           listOf(
             "Updated HDC first night curfew times",
             mapOf(
-              "fromDay" to DayOfWeek.MONDAY,
               "fromTime" to LocalTime.of(20, 0),
-              "untilDay" to DayOfWeek.TUESDAY,
               "untilTime" to LocalTime.of(8, 0),
             ),
           ),

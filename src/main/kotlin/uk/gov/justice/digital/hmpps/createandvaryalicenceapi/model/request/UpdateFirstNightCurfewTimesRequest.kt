@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 
 data class UpdateFirstNightCurfewTimesRequest(
-  @field:Schema(description = "The list of hdc licence curfew times from service configuration")
+  @field:Schema(description = "The first night curfew times for the licence")
   @field:NotNull
   val firstNightCurfewTimes: CurfewTimes,
 )

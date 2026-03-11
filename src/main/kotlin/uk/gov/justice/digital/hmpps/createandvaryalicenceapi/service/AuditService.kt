@@ -290,9 +290,7 @@ class AuditService(
     val changes = mapOf(
       "type" to summary,
       "changes" to mapOf(
-        "fromDay" to updatedFirstNightCurfewTimes.fromDay,
         "fromTime" to updatedFirstNightCurfewTimes.fromTime,
-        "untilDay" to updatedFirstNightCurfewTimes.untilDay,
         "untilTime" to updatedFirstNightCurfewTimes.untilTime,
       ),
     )

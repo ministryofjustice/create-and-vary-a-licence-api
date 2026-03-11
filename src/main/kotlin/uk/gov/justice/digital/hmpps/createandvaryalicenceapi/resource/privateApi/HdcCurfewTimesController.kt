@@ -27,7 +27,7 @@ class HdcCurfewTimesController(
   private val hdcService: HdcService,
 ) {
 
-  @Tag(name = Tags.HDC_LICENCE_CURFEW_TIMES)
+  @Tag(name = Tags.HDC_LICENCE_WEEKLY_CURFEW_TIMES)
   @PutMapping("/id/{licenceId}/hdc-weekly-curfew-times")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(

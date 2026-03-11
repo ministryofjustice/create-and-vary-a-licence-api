@@ -497,8 +497,8 @@ class HdcServiceTest {
         .isEqualTo(listOf(aCom.username, aCom))
 
       assertThat(licenceCaptor.value.firstNightCurfewTimes)
-        .extracting("fromDay", "fromTime", "UntilDay", "UntilTime")
-        .isEqualTo(listOf(MONDAY, LocalTime.of(16, 0), TUESDAY, LocalTime.of(8, 0)))
+        .extracting("fromTime", "UntilTime")
+        .isEqualTo(listOf(LocalTime.of(16, 0), LocalTime.of(8, 0)))
     }
   }
 
@@ -768,12 +768,9 @@ class HdcServiceTest {
 
     val aUpdatedModelSetOfFirstNightCurfewTimes =
       ModelCurfewTimes(
-        1L,
-        1,
-        MONDAY,
-        LocalTime.of(16, 0),
-        TUESDAY,
-        LocalTime.of(8, 0),
+        id = 1L,
+        fromTime = LocalTime.of(16, 0),
+        untilTime = LocalTime.of(8, 0),
       )
 
     val aLicenceEntityWithCurfewDetails = createHdcLicence()

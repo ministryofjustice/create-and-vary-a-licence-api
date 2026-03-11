@@ -838,10 +838,7 @@ private fun transform(entity: EntityCurfewTimes): ModelCurfewTimes = ModelCurfew
 
 fun EntityCurfewTimes.transformToModelFirstNightCurfewTimes(): ModelCurfewTimes = ModelCurfewTimes(
   id = id,
-  curfewTimesSequence = curfewTimesSequence,
-  fromDay = fromDay,
   fromTime = fromTime,
-  untilDay = untilDay,
   untilTime = untilTime,
 )
 

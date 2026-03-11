@@ -150,12 +150,9 @@ class HdcCurfewTimesControllerTest {
 
     val anFirstNightCurfewTimesRequest = UpdateFirstNightCurfewTimesRequest(
       CurfewTimes(
-        1L,
-        1,
-        DayOfWeek.MONDAY,
-        LocalTime.of(20, 0),
-        DayOfWeek.TUESDAY,
-        LocalTime.of(8, 0),
+        id = 1,
+        fromTime = LocalTime.of(20, 0),
+        untilTime = LocalTime.of(8, 0),
       ),
     )
   }

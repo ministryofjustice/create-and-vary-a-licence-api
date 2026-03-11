@@ -93,8 +93,8 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result.firstNightCurfewTimes)
-      .extracting("fromDay", "fromTime", "untilDay", "untilTime")
-      .containsExactly(DayOfWeek.MONDAY, LocalTime.of(20, 0), DayOfWeek.TUESDAY, LocalTime.of(8, 0))
+      .extracting("fromTime", "untilTime")
+      .containsExactly(LocalTime.of(20, 0), LocalTime.of(8, 0))
 
     val defaultValuesResult = webTestClient.get()
       .uri("/hdc/curfew/licenceId/2")
