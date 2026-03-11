@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 
@@ -27,10 +27,10 @@ class HdcCurfewTimesController(
 ) {
 
   @Tag(name = Tags.HDC_LICENCE_CURFEW_TIMES)
-  @PutMapping("/id/{licenceId}/curfew-times")
+  @PutMapping("/id/{licenceId}/hdc-weekly-curfew-times")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Update the curfew times for a HDC licence.",
+    summary = "Update the hdc weekly curfew times for a HDC licence.",
     description = "Replace the curfew times against a HDC licence if curfew times change. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
@@ -82,11 +82,11 @@ class HdcCurfewTimesController(
       ),
     ],
   )
-  fun updateCurfewTimes(
-    @PathVariable("licenceId") licenceId: Long,
+  fun updateWeeklyCurfewTimes(
+    @PathVariable licenceId: Long,
     @Valid @RequestBody
-    request: UpdateCurfewTimesRequest,
+    request: UpdateWeeklyCurfewTimesRequest,
   ) {
-    hdcService.updateCurfewTimes(licenceId, request)
+    hdcService.updateWeeklyCurfewTimes(licenceId, request)
   }
 }

@@ -21,8 +21,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -57,20 +57,20 @@ class HdcCurfewTimesControllerTest {
   @Test
   fun `update HDC curfew times by licence ID`() {
     mvc.perform(
-      put("/licence/id/123456/curfew-times")
+      put("/licence/id/123456/hdc-weekly-curfew-times")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(mapper.writeValueAsBytes(anCurfewTimesRequest)),
     )
       .andExpect(status().isOk)
 
-    verify(hdcService, times(1)).updateCurfewTimes(123456, anCurfewTimesRequest)
+    verify(hdcService, times(1)).updateWeeklyCurfewTimes(123456, anCurfewTimesRequest)
   }
 
   private companion object {
-    val anCurfewTimesRequest = UpdateCurfewTimesRequest(
+    val anCurfewTimesRequest = UpdateWeeklyCurfewTimesRequest(
       listOf(
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
           1,
           DayOfWeek.MONDAY,
@@ -78,7 +78,7 @@ class HdcCurfewTimesControllerTest {
           DayOfWeek.TUESDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
           2,
           DayOfWeek.TUESDAY,
@@ -86,7 +86,7 @@ class HdcCurfewTimesControllerTest {
           DayOfWeek.WEDNESDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
           3,
           DayOfWeek.WEDNESDAY,
@@ -94,7 +94,7 @@ class HdcCurfewTimesControllerTest {
           DayOfWeek.THURSDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
           4,
           DayOfWeek.THURSDAY,
@@ -102,7 +102,7 @@ class HdcCurfewTimesControllerTest {
           DayOfWeek.FRIDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
           5,
           DayOfWeek.FRIDAY,
@@ -110,7 +110,7 @@ class HdcCurfewTimesControllerTest {
           DayOfWeek.SATURDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
           6,
           DayOfWeek.SATURDAY,
@@ -118,7 +118,7 @@ class HdcCurfewTimesControllerTest {
           DayOfWeek.SUNDAY,
           LocalTime.of(8, 0),
         ),
-        HdcCurfewTimes(
+        CurfewTimes(
           1L,
           7,
           DayOfWeek.SUNDAY,
