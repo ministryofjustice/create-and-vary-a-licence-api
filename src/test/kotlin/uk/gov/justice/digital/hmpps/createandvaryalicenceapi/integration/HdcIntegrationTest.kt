@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -53,10 +52,10 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "AB1 2CD",
         ),
       )
-      assertThat(result.firstNightCurfewHours).isEqualTo(
-        FirstNight(
-          LocalTime.of(15, 0),
-          LocalTime.of(7, 0),
+      assertThat(result.firstNightCurfewTimes).isEqualTo(
+        CurfewTimes(
+          fromTime = LocalTime.of(15, 0),
+          untilTime = LocalTime.of(7, 0),
         ),
       )
 
@@ -151,10 +150,10 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "AB1 2CD",
         ),
       )
-      assertThat(result.firstNightCurfewHours).isEqualTo(
-        FirstNight(
-          LocalTime.of(15, 0),
-          LocalTime.of(7, 0),
+      assertThat(result.firstNightCurfewTimes).isEqualTo(
+        CurfewTimes(
+          fromTime = LocalTime.of(15, 0),
+          untilTime = LocalTime.of(7, 0),
         ),
       )
 

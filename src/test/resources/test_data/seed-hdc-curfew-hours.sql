@@ -48,6 +48,13 @@ values (
         'MONDAY',
         '07:00',
         '7',
-        current_date);
+        current_date),
+        (
+            'MONDAY',
+            '18:00',
+            'TUESDAY',
+            '08:00',
+            '1',
+            current_date);
 
 insert into hdc_weekly_curfew_times (licence_id, curfew_time_id) values (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7);

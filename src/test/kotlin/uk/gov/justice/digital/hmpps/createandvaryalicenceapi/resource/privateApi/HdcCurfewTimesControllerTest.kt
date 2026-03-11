@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import java.time.DayOfWeek
@@ -60,15 +61,28 @@ class HdcCurfewTimesControllerTest {
       put("/licence/id/123456/hdc-weekly-curfew-times")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anCurfewTimesRequest)),
+        .content(mapper.writeValueAsBytes(anWeeklyCurfewTimesRequest)),
     )
       .andExpect(status().isOk)
 
-    verify(hdcService, times(1)).updateWeeklyCurfewTimes(123456, anCurfewTimesRequest)
+    verify(hdcService, times(1)).updateWeeklyCurfewTimes(123456, anWeeklyCurfewTimesRequest)
+  }
+
+  @Test
+  fun `update HDC first night curfew times by licence ID with invalid request body`() {
+    mvc.perform(
+      put("/licence/id/123456/hdc-first-night-curfew-times")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anFirstNightCurfewTimesRequest)),
+    )
+      .andExpect(status().isOk)
+
+    verify(hdcService, times(1)).updateFirstNightCurfewTimes(123456, anFirstNightCurfewTimesRequest)
   }
 
   private companion object {
-    val anCurfewTimesRequest = UpdateWeeklyCurfewTimesRequest(
+    val anWeeklyCurfewTimesRequest = UpdateWeeklyCurfewTimesRequest(
       listOf(
         CurfewTimes(
           1L,
@@ -126,6 +140,17 @@ class HdcCurfewTimesControllerTest {
           DayOfWeek.MONDAY,
           LocalTime.of(8, 0),
         ),
+      ),
+    )
+
+    val anFirstNightCurfewTimesRequest = UpdateFirstNightCurfewTimesRequest(
+      CurfewTimes(
+        1L,
+        1,
+        DayOfWeek.MONDAY,
+        LocalTime.of(20, 0),
+        DayOfWeek.TUESDAY,
+        LocalTime.of(8, 0),
       ),
     )
   }

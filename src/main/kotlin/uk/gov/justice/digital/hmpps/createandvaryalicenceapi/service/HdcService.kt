@@ -7,10 +7,11 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatusHolder
@@ -74,12 +75,17 @@ class HdcService(
       licenceData.curfewAddress
     }
 
-    val firstNightCurfewHours = licenceData.firstNightCurfewHours ?: DEFAULT_FIRST_NIGHT_HOURS
+    val firstNightCurfewTimes = if(licence.firstNightCurfewTimes != null) {
+      licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes()
+    } else {
+      licenceData.firstNightCurfewTimes ?: DEFAULT_FIRST_NIGHT_HOURS
+    }
+//      licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes() ?: DEFAULT_FIRST_NIGHT_HOURS
 
     return HdcLicenceData(
       licenceId = licenceData.licenceId,
       curfewAddress = curfewAddress,
-      firstNightCurfewHours = firstNightCurfewHours,
+      firstNightCurfewTimes = firstNightCurfewTimes,
       weeklyCurfewTimes = weeklyCurfewTimes,
     )
   }
@@ -125,13 +131,42 @@ class HdcService(
     )
 
     licenceRepository.saveAndFlush(licenceEntity)
-    auditService.recordAuditEventUpdateHdcCurfewTimes(licenceEntity, entityWeeklyCurfewTimes, staffMember)
+    auditService.recordAuditEventUpdateHdcWeeklyCurfewTimes(licenceEntity, entityWeeklyCurfewTimes, staffMember)
+  }
+
+  @Transactional
+  fun updateFirstNightCurfewTimes(
+    licenceId: Long,
+    request: UpdateFirstNightCurfewTimesRequest,
+  ) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicence
+
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    val entityFirstNightCurfewTimes =
+      request.firstNightCurfewTimes.transformToEntityFirstNightCurfewTimes()
+
+    licenceEntity.updateFirstNightCurfewTimes(
+      updatedFirstNightCurfewTimes = entityFirstNightCurfewTimes,
+      staffMember = staffMember,
+    )
+
+    licenceRepository.saveAndFlush(licenceEntity)
+
+    auditService.recordAuditEventUpdateHdcFirstNightCurfewTimes(
+      licenceEntity,
+      entityFirstNightCurfewTimes,
+      staffMember,
+    )
   }
 
   companion object {
-    val DEFAULT_FIRST_NIGHT_HOURS = FirstNight(
-      firstNightFrom = LocalTime.of(15, 0),
-      firstNightUntil = LocalTime.of(7, 0),
+    val DEFAULT_FIRST_NIGHT_HOURS = CurfewTimes(
+      fromTime = LocalTime.of(15, 0),
+      untilTime = LocalTime.of(7, 0),
     )
   }
 }

@@ -19,6 +19,8 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -28,7 +30,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.currentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
@@ -133,7 +134,7 @@ class HdcServiceTest {
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
-    assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(aSetOfFirstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
@@ -150,7 +151,7 @@ class HdcServiceTest {
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
-    assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(aSetOfFirstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
@@ -166,7 +167,7 @@ class HdcServiceTest {
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isNull()
-    assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(aSetOfFirstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
@@ -182,7 +183,7 @@ class HdcServiceTest {
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
-    assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(aSetOfFirstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isNull()
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
@@ -209,11 +210,11 @@ class HdcServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
       someHdcLicenceData.copy(
-        firstNightCurfewHours = null,
+        firstNightCurfewTimes = null,
       ),
     )
     val result = service.getHdcLicenceData(1)
-    assertThat(result?.firstNightCurfewHours).isEqualTo(HdcService.DEFAULT_FIRST_NIGHT_HOURS)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(HdcService.DEFAULT_FIRST_NIGHT_HOURS)
   }
 
   @Test
@@ -224,7 +225,7 @@ class HdcServiceTest {
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result?.curfewAddress).isEqualTo(someHdcLicenceData.curfewAddress)
-    assertThat(result?.firstNightCurfewHours).isEqualTo(someHdcLicenceData.firstNightCurfewHours)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(someHdcLicenceData.firstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isEqualTo(someHdcLicenceData.weeklyCurfewTimes)
   }
 
@@ -444,7 +445,7 @@ class HdcServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(HdcLicence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateHdcCurfewTimes(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateHdcWeeklyCurfewTimes(any(), any(), any())
 
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
@@ -468,6 +469,36 @@ class HdcServiceTest {
           tuple(SATURDAY, LocalTime.of(21, 0), SUNDAY, LocalTime.of(9, 0)),
           tuple(SUNDAY, LocalTime.of(21, 0), MONDAY, LocalTime.of(9, 0)),
         )
+    }
+  }
+
+  @Nested
+  inner class `update first night curfew hours` {
+    @Test
+    fun `update first night curfew hours for a licence`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+
+      val firstNightCurfewTimes = aUpdatedModelSetOfFirstNightCurfewTimes
+
+      service.updateFirstNightCurfewTimes(
+        1,
+        UpdateFirstNightCurfewTimesRequest(
+          firstNightCurfewTimes = firstNightCurfewTimes,
+        ),
+      )
+
+      val licenceCaptor = ArgumentCaptor.forClass(HdcLicence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditService, times(1)).recordAuditEventUpdateHdcFirstNightCurfewTimes(any(), any(), any())
+      assertThat(licenceCaptor.value)
+        .extracting("updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(aCom.username, aCom))
+
+      assertThat(licenceCaptor.value.firstNightCurfewTimes)
+        .extracting("fromDay", "fromTime", "UntilDay", "UntilTime")
+        .isEqualTo(listOf(MONDAY, LocalTime.of(16, 0), TUESDAY, LocalTime.of(8, 0)))
     }
   }
 
@@ -543,9 +574,9 @@ class HdcServiceTest {
       "AB1 2CD",
     )
 
-    val aSetOfFirstNightCurfewHours = FirstNight(
-      LocalTime.of(16, 0),
-      LocalTime.of(8, 0),
+    val aSetOfFirstNightCurfewTimes = CurfewTimes(
+      fromTime = LocalTime.of(16, 0),
+      untilTime = LocalTime.of(8, 0),
     )
 
     val anEntitySetOfCurfewTimes =
@@ -735,6 +766,16 @@ class HdcServiceTest {
         ),
       )
 
+    val aUpdatedModelSetOfFirstNightCurfewTimes =
+      ModelCurfewTimes(
+        1L,
+        1,
+        MONDAY,
+        LocalTime.of(16, 0),
+        TUESDAY,
+        LocalTime.of(8, 0),
+      )
+
     val aLicenceEntityWithCurfewDetails = createHdcLicence()
       .copy(
         weeklyCurfewTimes = anEntitySetOfCurfewTimes,
@@ -744,7 +785,7 @@ class HdcServiceTest {
     val someHdcLicenceData = HdcLicenceData(
       licenceId = 1L,
       aModelCurfewAddress,
-      aSetOfFirstNightCurfewHours,
+      aSetOfFirstNightCurfewTimes,
       aModelSetOfCurfewTimes,
     )
 

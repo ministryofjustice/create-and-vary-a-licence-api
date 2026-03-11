@@ -259,7 +259,7 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
-  fun recordAuditEventUpdateHdcCurfewTimes(
+  fun recordAuditEventUpdateHdcWeeklyCurfewTimes(
     licence: Licence,
     updatedWeeklyCurfewTimes: List<CurfewTimes>,
     staffMember: Staff?,
@@ -278,6 +278,24 @@ class AuditService(
       },
     )
 
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
+  }
+
+  fun recordAuditEventUpdateHdcFirstNightCurfewTimes(
+    licence: Licence,
+    updatedFirstNightCurfewTimes: CurfewTimes,
+    staffMember: Staff?,
+  ) {
+    val summary = "Updated HDC first night curfew times"
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to mapOf(
+        "fromDay" to updatedFirstNightCurfewTimes.fromDay,
+        "fromTime" to updatedFirstNightCurfewTimes.fromTime,
+        "untilDay" to updatedFirstNightCurfewTimes.untilDay,
+        "untilTime" to updatedFirstNightCurfewTimes.untilTime,
+      ),
+    )
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 

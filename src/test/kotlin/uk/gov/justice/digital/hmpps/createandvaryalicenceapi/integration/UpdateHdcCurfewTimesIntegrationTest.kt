@@ -12,6 +12,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
@@ -62,6 +63,52 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
           tuple(DayOfWeek.SUNDAY, LocalTime.of(20, 0), DayOfWeek.MONDAY, LocalTime.of(8, 0)),
         ),
       )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-hdc-licence-id-1.sql",
+    "classpath:test_data/seed-hdc-curfew-hours.sql",
+  )
+  fun `Update the first night curfew times`() {
+    hdcApiMockServer.stubGetHdcLicenceData(54321L)
+    hdcApiMockServer.stubGetHdcLicenceData(54322L)
+
+    webTestClient.put()
+      .uri("/licence/id/1/hdc-first-night-curfew-times")
+      .bodyValue(anUpdateFirstNightCurfewTimesRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/hdc/curfew/licenceId/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(HdcLicenceData::class.java)
+      .returnResult().responseBody
+
+    assertThat(result.firstNightCurfewTimes)
+      .extracting("fromDay", "fromTime", "untilDay", "untilTime")
+      .containsExactly(DayOfWeek.MONDAY, LocalTime.of(20, 0), DayOfWeek.TUESDAY, LocalTime.of(8, 0))
+
+    val defaultValuesResult = webTestClient.get()
+      .uri("/hdc/curfew/licenceId/2")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(HdcLicenceData::class.java)
+      .returnResult().responseBody
+
+    assertThat(defaultValuesResult.firstNightCurfewTimes)
+      .extracting("fromTime", "untilTime")
+      .containsExactly(LocalTime.of(15, 0), LocalTime.of(7, 0))
   }
 
   private companion object {
@@ -116,6 +163,16 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
           untilDay = DayOfWeek.MONDAY,
           untilTime = LocalTime.of(8, 0),
         ),
+      ),
+    )
+
+    val anUpdateFirstNightCurfewTimesRequest = UpdateFirstNightCurfewTimesRequest(
+      CurfewTimes(
+        curfewTimesSequence = 1,
+        fromDay = DayOfWeek.MONDAY,
+        fromTime = LocalTime.of(20, 0),
+        untilDay = DayOfWeek.TUESDAY,
+        untilTime = LocalTime.of(8, 0),
       ),
     )
 

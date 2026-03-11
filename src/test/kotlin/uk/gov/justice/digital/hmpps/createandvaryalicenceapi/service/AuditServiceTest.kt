@@ -763,7 +763,7 @@ class AuditServiceTest {
   inner class `audit events for HDC curfew times` {
     @Test
     fun `records an audit event when curfew times are updated`() {
-      service.recordAuditEventUpdateHdcCurfewTimes(aLicenceEntity, aSetOfCurfewTimes, aCom)
+      service.recordAuditEventUpdateHdcWeeklyCurfewTimes(aLicenceEntity, aSetOfCurfewTimes, aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -827,6 +827,39 @@ class AuditServiceTest {
                 "untilDay" to DayOfWeek.MONDAY,
                 "untilTime" to LocalTime.of(8, 0),
               ),
+            ),
+          ),
+        )
+    }
+
+    @Test
+    fun `records an audit event when first night curfew times are updated`() {
+      service.recordAuditEventUpdateHdcFirstNightCurfewTimes(aLicenceEntity, aSetOfCurfewTimes.first(), aCom)
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
+      assertThat(auditCaptor.value.summary)
+        .isEqualTo(
+          "Updated HDC first night curfew times for " +
+            "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        )
+      assertThat(auditCaptor.value.detail)
+        .isEqualTo(
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+            "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+        )
+      assertThat(auditCaptor.value.changes)
+        .extracting("type", "changes")
+        .isEqualTo(
+          listOf(
+            "Updated HDC first night curfew times",
+            mapOf(
+              "fromDay" to DayOfWeek.MONDAY,
+              "fromTime" to LocalTime.of(20, 0),
+              "untilDay" to DayOfWeek.TUESDAY,
+              "untilTime" to LocalTime.of(8, 0),
             ),
           ),
         )
