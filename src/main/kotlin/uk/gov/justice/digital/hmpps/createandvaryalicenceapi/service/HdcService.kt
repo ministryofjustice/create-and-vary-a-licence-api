@@ -80,7 +80,6 @@ class HdcService(
     } else {
       licenceData.firstNightCurfewTimes ?: DEFAULT_FIRST_NIGHT_HOURS
     }
-//      licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes() ?: DEFAULT_FIRST_NIGHT_HOURS
 
     return HdcLicenceData(
       licenceId = licenceData.licenceId,
