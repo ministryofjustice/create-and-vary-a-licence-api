@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCAD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCENDDATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCENDDATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LSD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.PRRD

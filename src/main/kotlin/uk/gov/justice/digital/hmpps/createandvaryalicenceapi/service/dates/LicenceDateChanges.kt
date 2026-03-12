@@ -5,8 +5,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.ARD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCAD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCENDDATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCENDDATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LSD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.PRRD
