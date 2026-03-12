@@ -28,6 +28,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
     @Test
     @Sql(
       "classpath:test_data/seed-hdc-licence-id-1.sql",
+      "classpath:test_data/seed-hdc-curfew-hours.sql"
     )
     fun `Get HDC licence data by licence ID`() {
       hdcApiMockServer.stubGetHdcLicenceData(54321L)
@@ -54,8 +55,9 @@ class HdcIntegrationTest : IntegrationTestBase() {
       )
       assertThat(result.firstNightCurfewTimes).isEqualTo(
         CurfewTimes(
-          fromTime = LocalTime.of(15, 0),
-          untilTime = LocalTime.of(7, 0),
+          8L,
+          fromTime = LocalTime.of(18, 0),
+          untilTime = LocalTime.of(8, 0),
         ),
       )
 
@@ -152,8 +154,9 @@ class HdcIntegrationTest : IntegrationTestBase() {
       )
       assertThat(result.firstNightCurfewTimes).isEqualTo(
         CurfewTimes(
-          fromTime = LocalTime.of(15, 0),
-          untilTime = LocalTime.of(7, 0),
+          8L,
+          fromTime = LocalTime.of(18, 0),
+          untilTime = LocalTime.of(8, 0),
         ),
       )
 

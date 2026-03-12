@@ -95,20 +95,6 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
     assertThat(result.firstNightCurfewTimes)
       .extracting("fromTime", "untilTime")
       .containsExactly(LocalTime.of(20, 0), LocalTime.of(8, 0))
-
-    val defaultValuesResult = webTestClient.get()
-      .uri("/hdc/curfew/licenceId/2")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(HdcLicenceData::class.java)
-      .returnResult().responseBody
-
-    assertThat(defaultValuesResult.firstNightCurfewTimes)
-      .extracting("fromTime", "untilTime")
-      .containsExactly(LocalTime.of(15, 0), LocalTime.of(7, 0))
   }
 
   private companion object {
