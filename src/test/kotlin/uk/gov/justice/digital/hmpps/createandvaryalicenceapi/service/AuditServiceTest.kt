@@ -834,7 +834,7 @@ class AuditServiceTest {
 
     @Test
     fun `records an audit event when first night curfew times are updated`() {
-      service.recordAuditEventUpdateHdcFirstNightCurfewTimes(aLicenceEntity, aSetOfCurfewTimes.first(), aCom)
+      service.recordAuditEventUpdateHdcFirstNightCurfewTimes(aHdcLicenceEntity, aSetOfCurfewTimes.first(), aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -843,18 +843,22 @@ class AuditServiceTest {
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated HDC first night curfew times for " +
-            "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+            "${aHdcLicenceEntity.forename} ${aHdcLicenceEntity.surname}",
         )
       assertThat(auditCaptor.value.detail)
         .isEqualTo(
-          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
-            "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+          "ID ${aHdcLicenceEntity.id} type ${aHdcLicenceEntity.typeCode.name} " +
+            "status ${aHdcLicenceEntity.statusCode.name} version ${aHdcLicenceEntity.version}",
         )
       assertThat(auditCaptor.value.changes)
-        .extracting("type", "changes")
+        .extracting("type", "before", "after")
         .isEqualTo(
           listOf(
             "Updated HDC first night curfew times",
+            mapOf(
+              "fromTime" to LocalTime.of(12, 0),
+              "untilTime" to LocalTime.of(13, 0),
+            ),
             mapOf(
               "fromTime" to LocalTime.of(20, 0),
               "untilTime" to LocalTime.of(8, 0),

@@ -69,7 +69,7 @@ class HdcCurfewTimesControllerTest {
   }
 
   @Test
-  fun `update HDC first night curfew times by licence ID with invalid request body`() {
+  fun `update HDC first night curfew times by licence ID`() {
     mvc.perform(
       put("/licence/id/123456/hdc-first-night-curfew-times")
         .accept(APPLICATION_JSON)

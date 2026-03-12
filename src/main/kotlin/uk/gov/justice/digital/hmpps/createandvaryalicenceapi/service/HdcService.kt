@@ -7,7 +7,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -19,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.LocalDate
-import java.time.LocalTime
 
 @Service
 class HdcService(
@@ -78,7 +76,7 @@ class HdcService(
     val firstNightCurfewTimes = if (licence.firstNightCurfewTimes != null) {
       licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes()
     } else {
-      licenceData.firstNightCurfewTimes ?: DEFAULT_FIRST_NIGHT_HOURS
+      licenceData.firstNightCurfewTimes
     }
 
     return HdcLicenceData(
@@ -159,13 +157,6 @@ class HdcService(
       licenceEntity,
       entityFirstNightCurfewTimes,
       staffMember,
-    )
-  }
-
-  companion object {
-    val DEFAULT_FIRST_NIGHT_HOURS = CurfewTimes(
-      fromTime = LocalTime.of(15, 0),
-      untilTime = LocalTime.of(7, 0),
     )
   }
 }

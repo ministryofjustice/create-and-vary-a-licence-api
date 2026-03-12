@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
@@ -282,18 +283,25 @@ class AuditService(
   }
 
   fun recordAuditEventUpdateHdcFirstNightCurfewTimes(
-    licence: Licence,
+    licence: HdcLicence,
     updatedFirstNightCurfewTimes: CurfewTimes,
     staffMember: Staff?,
   ) {
     val summary = "Updated HDC first night curfew times"
+    val previous = licence.firstNightCurfewTimes
+
     val changes = mapOf(
       "type" to summary,
-      "changes" to mapOf(
+      "before" to mapOf(
+        "fromTime" to previous?.fromTime,
+        "untilTime" to previous?.untilTime,
+      ),
+      "after" to mapOf(
         "fromTime" to updatedFirstNightCurfewTimes.fromTime,
         "untilTime" to updatedFirstNightCurfewTimes.untilTime,
       ),
     )
+
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 

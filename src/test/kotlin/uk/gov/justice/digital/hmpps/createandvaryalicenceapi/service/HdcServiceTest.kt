@@ -206,18 +206,6 @@ class HdcServiceTest {
   }
 
   @Test
-  fun `getHdcLicenceData returns default first night hours if not provided from HDC`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
-      someHdcLicenceData.copy(
-        firstNightCurfewTimes = null,
-      ),
-    )
-    val result = service.getHdcLicenceData(1)
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(HdcService.DEFAULT_FIRST_NIGHT_HOURS)
-  }
-
-  @Test
   fun `getHdcLicenceData returns curfew information for HDC variations`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcVariationLicence()))
     whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
