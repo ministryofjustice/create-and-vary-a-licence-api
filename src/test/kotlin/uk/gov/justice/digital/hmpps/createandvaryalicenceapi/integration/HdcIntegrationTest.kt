@@ -28,7 +28,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
     @Test
     @Sql(
       "classpath:test_data/seed-hdc-licence-id-1.sql",
-      "classpath:test_data/seed-hdc-curfew-hours.sql"
+      "classpath:test_data/seed-hdc-curfew-hours.sql",
     )
     fun `Get HDC licence data by licence ID`() {
       hdcApiMockServer.stubGetHdcLicenceData(54321L)
@@ -72,7 +72,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             LocalTime.of(7, 0),
           ),
           CurfewTimes(
-            1L,
+            2L,
             2,
             DayOfWeek.TUESDAY,
             LocalTime.of(19, 0),
@@ -80,7 +80,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             LocalTime.of(7, 0),
           ),
           CurfewTimes(
-            1L,
+            3L,
             3,
             DayOfWeek.WEDNESDAY,
             LocalTime.of(19, 0),
@@ -88,7 +88,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             LocalTime.of(7, 0),
           ),
           CurfewTimes(
-            1L,
+            4L,
             4,
             DayOfWeek.THURSDAY,
             LocalTime.of(19, 0),
@@ -96,7 +96,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             LocalTime.of(7, 0),
           ),
           CurfewTimes(
-            1L,
+            5L,
             5,
             DayOfWeek.FRIDAY,
             LocalTime.of(19, 0),
@@ -104,7 +104,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             LocalTime.of(7, 0),
           ),
           CurfewTimes(
-            1L,
+            6L,
             6,
             DayOfWeek.SATURDAY,
             LocalTime.of(19, 0),
@@ -112,7 +112,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             LocalTime.of(7, 0),
           ),
           CurfewTimes(
-            1L,
+            7L,
             7,
             DayOfWeek.SUNDAY,
             LocalTime.of(19, 0),
