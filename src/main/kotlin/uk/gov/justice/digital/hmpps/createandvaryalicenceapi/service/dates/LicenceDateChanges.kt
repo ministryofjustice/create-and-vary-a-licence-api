@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Licen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCAD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCENDDATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LSD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.PRRD
@@ -37,6 +38,11 @@ fun Licence.getDateChanges(sentenceDates: SentenceDates, newLsd: LocalDate?): Da
       HDCENDDATE,
       if (this is HdcLicence) sentenceDates.homeDetentionCurfewEndDate else null,
       if (this is HdcLicence) homeDetentionCurfewEndDate else null,
+    ),
+    DateChange(
+      HDCED,
+      if (this is HdcLicence) sentenceDates.homeDetentionCurfewEligibilityDate else null,
+      if (this is HdcLicence) homeDetentionCurfewEligibilityDate else null,
     ),
   )
 

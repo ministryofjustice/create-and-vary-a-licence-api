@@ -120,6 +120,7 @@ class LicenceOverrideService(
         if (licence is HdcLicence) {
           append("HDCAD ${licence.homeDetentionCurfewActualDate}")
           append("HDCEndDate ${licence.homeDetentionCurfewEndDate}")
+          append("HDCED ${licence.homeDetentionCurfewEligibilityDate}")
         }
       },
     )
@@ -137,6 +138,7 @@ class LicenceOverrideService(
       postRecallReleaseDate = request.postRecallReleaseDate,
       homeDetentionCurfewActualDate = request.homeDetentionCurfewActualDate,
       homeDetentionCurfewEndDate = request.homeDetentionCurfewEndDate,
+      homeDetentionCurfewEligibilityDate = request.homeDetentionCurfewEligibilityDate,
     )
 
     val updatedLicence = licenceService.updateLicenceKind(licence, request.updatedKind)
@@ -159,6 +161,7 @@ class LicenceOverrideService(
         if (licence is HdcLicence) {
           append("HDCAD ${request.homeDetentionCurfewActualDate}, ")
           append("HDCEndDate ${request.homeDetentionCurfewEndDate}")
+          append("HDCED ${licence.homeDetentionCurfewEligibilityDate}")
         }
       },
     )
@@ -177,6 +180,7 @@ class LicenceOverrideService(
       postRecallReleaseDate = request.postRecallReleaseDate,
       homeDetentionCurfewActualDate = request.homeDetentionCurfewActualDate,
       homeDetentionCurfewEndDate = request.homeDetentionCurfewEndDate,
+      homeDetentionCurfewEligibilityDate = request.homeDetentionCurfewEligibilityDate,
       staffMember = staffMember,
     )
 

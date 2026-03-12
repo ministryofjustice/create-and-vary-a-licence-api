@@ -519,6 +519,7 @@ object TestData {
     licenceStartDate = LocalDate.of(2021, 10, 22),
     licenceExpiryDate = LocalDate.of(2021, 10, 22),
     homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 22),
+    homeDetentionCurfewEligibilityDate = LocalDate.of(2021, 10, 22),
     topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
     probationAreaCode = "N01",
@@ -565,6 +566,7 @@ object TestData {
     topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
     homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 22),
+    homeDetentionCurfewEligibilityDate = LocalDate.of(2021, 10, 22),
     probationAreaCode = "N01",
     probationAreaDescription = "Wales",
     probationPduCode = "N01A",
@@ -1088,6 +1090,7 @@ object TestData {
     variationOf = 1,
     homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 22),
     homeDetentionCurfewEndDate = LocalDate.of(2022, 10, 22),
+    homeDetentionCurfewEligibilityDate = LocalDate.of(2022, 10, 22),
   )
 
   fun aLicenceSummary(
