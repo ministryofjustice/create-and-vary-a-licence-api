@@ -8,23 +8,24 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDateTime
 
+/**
+ * Each chunk runs in its own transaction so that:
+ *  1. Progress is committed per chunk
+ *  2. Failures only roll back the current chunk
+ *  3. Long-running transactions and large table locks are avoided
+ */
 @Service
 class ISRPssProgressionChunkService(
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
 ) {
 
-  /**
-   * Each chunk runs in its own transaction so that:
-   *  1. Progress is committed per chunk
-   *  2. Failures only roll back the current chunk
-   *  3. Long-running transactions and large table locks are avoided
-   */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun processApPssLicenceChunk(licenceIds: List<Long>) {
+  fun processApPssInFlightLicenceChunk(licenceIds: List<Long>) {
     if (licenceIds.isEmpty()) return
 
     val licences = licenceRepository.findAllById(licenceIds)
@@ -32,40 +33,62 @@ class ISRPssProgressionChunkService(
     licences.forEach { licence ->
 
       if (licence.typeCode != LicenceType.AP_PSS) {
-        log.warn("ISR PSS repealed licence {} skipped — unexpected type {}", licence.id, licence.typeCode)
+        log.warn("ISR AP_PSS repealed in flight licence {} skipped — unexpected type {}", licence.id, licence.typeCode)
         return@forEach
       }
-      audits.add(createAuditEvent(licence, licenceIds))
+      audits.add(createInflightAuditEvent(licence, licenceIds))
 
-      log.info("ISR PSS repealed licence {} type code {}, to AP started", licence.id, licence.typeCode)
+      log.info("ISR AP_PSS repealed in flight licence {} type code {}, to AP started", licence.id, licence.typeCode)
       licence.typeCode = LicenceType.AP
       licence.additionalConditions.removeIf { it.conditionType == "PSS" }
       licence.standardConditions.removeIf { it.conditionType == "PSS" }
-
-      log.info("ISR PSS repealed licence {}, type code {} complete", licence.id, licence.typeCode)
     }
     if (audits.isNotEmpty()) {
       auditEventRepository.saveAll(audits)
     }
-    log.info("ISR progression AP+Pss chunk completed. size={} batch {} to {}", licenceIds.size, licenceIds.first(), licenceIds.last())
+    log.info("ISR AP_PSS repealed in flight licence chunk completed. size={} batch {} to {}", licenceIds.size, licenceIds.first(), licenceIds.last())
   }
 
-  private fun createAuditEvent(
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  fun processActivePssLicenceChunk(licenceIds: List<Long>) {
+    if (licenceIds.isEmpty()) return
+    val licences = licenceRepository.findAllById(licenceIds)
+    val audits = mutableListOf<AuditEvent>()
+    licences.forEach { licence ->
+      audits.add(createActivePssAuditEvent(licence, licenceIds))
+      log.info("ISR PSS repealed active licence {} type code {}, to Inactive started", licence.id, licence.typeCode)
+      licence.statusCode = LicenceStatus.INACTIVE
+    }
+    if (audits.isNotEmpty()) {
+      auditEventRepository.saveAll(audits)
+    }
+    log.info("ISR PSS repealed active licence chunk completed. size={} batch {} to {}", licenceIds.size, licenceIds.first(), licenceIds.last())
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  fun processActiveApPssLicenceChunk(licenceIds: List<Long>) {
+    if (licenceIds.isEmpty()) return
+    val licences = licenceRepository.findAllById(licenceIds)
+    val audits = mutableListOf<AuditEvent>()
+    licences.forEach { licence ->
+      audits.add(createActiveApPssAuditEvent(licence, licenceIds))
+      log.info("ISR AP_PSS repealed active licence {} type code {}, to AP started", licence.id, licence.typeCode)
+      licence.typeCode = LicenceType.AP
+    }
+    if (audits.isNotEmpty()) {
+      auditEventRepository.saveAll(audits)
+    }
+    log.info("ISR AP_PSS repealed active licence chunk completed. size={} batch {} to {}", licenceIds.size, licenceIds.first(), licenceIds.last())
+  }
+
+  private fun createInflightAuditEvent(
     licence: Licence,
     licenceIds: List<Long>,
   ): AuditEvent {
     val deletedAdditionalConditions = licence.additionalConditions.filter { it.conditionType == "PSS" }
     val deletedStandardConditions = licence.standardConditions.filter { it.conditionType == "PSS" }
-    val batchStart = licenceIds.first()
-    val batchEnd = licenceIds.last()
-    val eventTime = LocalDateTime.now()
 
-    val summary = "Licence type automatically changed to AP for ${licence.forename} ${licence.surname} due to PSS repeal"
-    val detail = "ID ${licence.id} type ${licence.typeCode} " +
-      "status ${licence.statusCode.name} " +
-      "version ${licence.version} " +
-      "batch details: $batchStart to $batchEnd"
-
+    val summary = "In flight licence type automatically changed to ${LicenceType.AP.name} for ${licence.forename} ${licence.surname} due to PSS repeal"
     val changes = mapOf(
       "type" to summary,
       "changes" to mapOf(
@@ -76,17 +99,69 @@ class ISRPssProgressionChunkService(
       ),
     )
 
-    return AuditEvent(
-      licenceId = licence.id,
-      detail = detail,
-      eventTime = eventTime,
-      eventType = AuditEventType.SYSTEM_EVENT,
-      username = Licence.SYSTEM_USER,
-      fullName = Licence.SYSTEM_USER,
-      summary = summary,
-      changes = changes,
-    )
+    return createAudit(licence, licenceIds, summary, changes)
   }
+
+  private fun createActivePssAuditEvent(
+    licence: Licence,
+    licenceIds: List<Long>,
+  ): AuditEvent {
+    val summary = "Active licence type automatically changed to ${LicenceStatus.INACTIVE.name} for ${licence.forename} ${licence.surname} due to PSS repeal"
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to mapOf(
+        "oldStatusCode" to licence.statusCode.name,
+        "newStatusCode" to LicenceStatus.INACTIVE.name,
+      ),
+    )
+
+    return createAudit(licence, licenceIds, summary, changes)
+  }
+
+  private fun createActiveApPssAuditEvent(
+    licence: Licence,
+    licenceIds: List<Long>,
+  ): AuditEvent {
+    val summary = "Active Licence type automatically changed to ${LicenceType.AP.name} for ${licence.forename} ${licence.surname} due to PSS repeal"
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to mapOf(
+        "oldTypeCode" to licence.typeCode.name,
+        "newTypeCode" to LicenceType.AP.name,
+      ),
+    )
+
+    return createAudit(licence, licenceIds, summary, changes)
+  }
+
+  private fun getAuditDetail(
+    licenceIds: List<Long>,
+    licence: Licence,
+  ): String {
+    val batchStart = licenceIds.first()
+    val batchEnd = licenceIds.last()
+    val detail = "ID ${licence.id} type ${licence.typeCode} " +
+      "status ${licence.statusCode.name} " +
+      "version ${licence.version} " +
+      "batch details: $batchStart to $batchEnd"
+    return detail
+  }
+
+  private fun createAudit(
+    licence: Licence,
+    licenceIds: List<Long>,
+    summary: String,
+    changes: Map<String, Any>,
+  ): AuditEvent = AuditEvent(
+    licenceId = licence.id,
+    detail = getAuditDetail(licenceIds, licence),
+    eventTime = LocalDateTime.now(),
+    eventType = AuditEventType.SYSTEM_EVENT,
+    username = Licence.SYSTEM_USER,
+    fullName = Licence.SYSTEM_USER,
+    summary = summary,
+    changes = changes,
+  )
 
   companion object {
     private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)

@@ -1,4 +1,3 @@
--- 1. Insert AP_PSS licenses
 INSERT INTO licence (id,
 					 kind,
 					 type_code,
@@ -32,7 +31,7 @@ INSERT INTO licence (id,
 					 licence_version)
 VALUES
 
--- AP_PSS IN_PROGRESS (Original Job Target)
+-- AP_PSS IN_PROGRESS
 (10001,'CRD','AP_PSS','1.0','IN_PROGRESS',
  'A1234AA','BOOKNOISR',54321,'CRNISR','PNCISR1','CROISR1',
  'MDI','Moorland (HMP)','Test1','Tester1',
@@ -40,49 +39,19 @@ VALUES
  '2022-02-25','2026-05-01','2022-02-25','2022-02-25',
  '2023-02-25','N01','PDU1','LAU1','TEAM1',1,1,'1.0'),
 
--- AP_PSS ACTIVE
-(10002,'CRD','AP_PSS','1.0','ACTIVE',
+-- AP_PSS SUBMITTED
+(10002,'CRD','AP_PSS','1.0','SUBMITTED',
  'NOMSAPPS2','BOOKAPPS2',54322,'CRNAPPS2','PNCAPPS2','CROAPPS2',
  'MDI','Moorland (HMP)','Test2','Tester2',
  '1985-01-01','2022-03-12','2022-03-25','2020-11-11',
  '2022-03-25','2026-05-01','2022-03-25','2022-03-25',
  '2023-03-25','N02','PDU2','LAU2','TEAM2',1,1,'1.0'),
 
--- PSS ACTIVE
-(10003,'CRD','PSS','1.0','ACTIVE',
+-- AP_PSS APPROVED
+(10003,'CRD','AP_PSS','1.0','APPROVED',
  'NOMSPSS1','BOOKPSS1',54323,'CRNPSS1','PNCPSS1','CROPSS1',
  'MDI','Moorland (HMP)','Test3','Tester3',
  '1988-01-01','2022-04-12','2022-04-25','2020-12-11',
  '2022-04-25','2026-05-01','2022-04-25','2022-04-25',
  '2023-04-25','N03','PDU3','LAU3','TEAM3',1,1,'1.0');
 
--- Standard Conditions (Only for Licence 10001)
-
-INSERT INTO standard_condition (
-	licence_id,
-	condition_code,
-	condition_sequence,
-	condition_text,
-	condition_type
-)
-VALUES
-	(10001,'pssConditionStd',1,'PSS Standard Condition','PSS'),
-	(10001,'testConditionStd',2,'TEST Standard Condition','TEST');
-
--- Additional Conditions (Only for Licence 10001)
-
-INSERT INTO additional_condition (
-	licence_id,
-	condition_version,
-	condition_category,
-	condition_code,
-	condition_sequence,
-	condition_text,
-	condition_type
-)
-VALUES
-	(10001,'1.0','(Additional) Freedom of movement',
-	 'pssConditionAdd',1,'PSS Additional Condition','PSS'),
-
-	(10001,'1.0','(Additional) Freedom of movement',
-	 'testConditionAdd',2,'TEST Additional Condition','TEST');

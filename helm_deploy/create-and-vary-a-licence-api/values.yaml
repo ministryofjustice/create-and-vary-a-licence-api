@@ -43,7 +43,7 @@ generic-service:
     FEATURE_TOGGLE_TIMESERVED_ENABLED: true
     TIME_SERVED_PRISONS: "BNI"
     HDC_ENABLED: false
-    LAO_ENABLED: false
+    LAO_ENABLED: true
     STANDARD_RECALLS_ENABLED: false
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
@@ -136,4 +136,10 @@ jobs:
     enabled: false
     path: /isr-in-flight-ap-pss-licences
     cron: "59 23 * * 4" # 23:59 UTC every Thursday
+    allowRetry: true
+
+  - name: isr-active-licences-job
+    enabled: false
+    path: /isr-active-licences
+    cron: "0 1 1 5 *" # 01:00 UTC on the 1st of May
     allowRetry: true

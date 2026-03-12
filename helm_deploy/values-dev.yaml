@@ -25,8 +25,8 @@ generic-service:
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     TIME_SERVED_PRISONS: "MDI, BAI, BNI, WCI, EXI, WDI, IWI, EWI"
-    LAO_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
+    HARDSTOP_DEACTIVATION_JOB_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
@@ -103,5 +103,11 @@ jobs:
   - name: isr-in-flight-ap-pss-licences-job
     enabled: true
     path: /isr-in-flight-ap-pss-licences
-    cron: "59 13 * * 5" # 11:59 UTC every Friday
+    cron: "59 8 * * 2" # 8:59 UTC every Tuesday
+    allowRetry: true
+
+  - name: isr-active-licences-job
+    enabled: true
+    path: /isr-active-licences
+    cron: "30 9 10 3 *" # 09:30 UTC on the 10th of March
     allowRetry: true

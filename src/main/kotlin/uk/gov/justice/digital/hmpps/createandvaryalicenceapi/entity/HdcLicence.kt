@@ -5,6 +5,7 @@ import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
@@ -75,14 +76,29 @@ class HdcLicence(
   updatedBy: Staff? = null,
 
   @OneToMany(
-    mappedBy = "licence",
     fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],
     orphanRemoval = true,
-    targetEntity = HdcCurfewTimes::class,
+  )
+  @JoinTable(
+    name = "hdc_weekly_curfew_times",
+    joinColumns = [JoinColumn(name = "licence_id")],
+    inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
   @OrderBy("curfewTimesSequence")
-  override var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
+  override var weeklyCurfewTimes: MutableList<CurfewTimes> = mutableListOf(),
+
+  @OneToOne(
+    fetch = FetchType.LAZY,
+    cascade = [CascadeType.ALL],
+    orphanRemoval = true,
+  )
+  @JoinTable(
+    name = "hdc_first_night_curfew_times",
+    joinColumns = [JoinColumn(name = "licence_id")],
+    inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
+  )
+  var firstNightCurfewTimes: CurfewTimes? = null,
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   override val curfewAddress: HdcCurfewAddress? = null,
@@ -215,7 +231,8 @@ class HdcLicence(
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
     responsibleCom: CommunityOffenderManager = this.getCom(),
-    curfewTimes: List<HdcCurfewTimes> = this.curfewTimes,
+    weeklyCurfewTimes: List<CurfewTimes> = this.weeklyCurfewTimes,
+    firstNightCurfewTimes: CurfewTimes? = this.firstNightCurfewTimes,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     versionOfId: Long? = this.versionOfId,
@@ -275,7 +292,8 @@ class HdcLicence(
     additionalConditions = additionalConditions,
     bespokeConditions = bespokeConditions,
     responsibleCom = responsibleCom,
-    curfewTimes = curfewTimes.toMutableList(),
+    weeklyCurfewTimes = weeklyCurfewTimes.toMutableList(),
+    firstNightCurfewTimes = firstNightCurfewTimes,
     submittedBy = submittedBy,
     createdBy = createdBy,
     versionOfId = versionOfId,
@@ -294,12 +312,12 @@ class HdcLicence(
     updatedBy = submittedBy
   }
 
-  fun updateCurfewTimes(
-    updatedCurfewTimes: List<HdcCurfewTimes>,
+  fun updateWeeklyCurfewTimes(
+    updatedWeeklyCurfewTimes: List<CurfewTimes>,
     staffMember: Staff?,
   ) {
-    this.curfewTimes.clear()
-    this.curfewTimes.addAll(updatedCurfewTimes)
+    this.weeklyCurfewTimes.clear()
+    this.weeklyCurfewTimes.addAll(updatedWeeklyCurfewTimes)
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
@@ -365,7 +383,8 @@ class HdcLicence(
     "additionalConditions=$additionalConditions, " +
     "bespokeConditions=$bespokeConditions, " +
     "responsibleCom=$responsibleCom, " +
-    "curfewTimes=$curfewTimes, " +
+    "weeklyCurfewTimes=$weeklyCurfewTimes, " +
+    "firstNightCurfewTimes=$firstNightCurfewTimes, " +
     "submittedBy=$submittedBy, " +
     "createdBy=$createdBy, " +
     "versionOfId=$versionOfId, " +

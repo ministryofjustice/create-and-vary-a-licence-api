@@ -27,8 +27,8 @@ generic-service:
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     TIME_SERVED_PRISONS: "MDI, BAI, BNI, LEI, WCI, EXI, WDI, IWI, EWI"
-    LAO_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
+    HARDSTOP_DEACTIVATION_JOB_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:

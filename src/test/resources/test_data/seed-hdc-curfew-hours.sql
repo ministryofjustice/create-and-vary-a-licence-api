@@ -1,7 +1,6 @@
-insert into hdc_curfew_times (licence_id, from_day, from_time, until_day, until_time, curfew_times_sequence,
+insert into curfew_times (from_day, from_time, until_day, until_time, curfew_times_sequence,
                               created_timestamp)
 values (
-        1,
         'MONDAY',
         '19:00',
         'TUESDAY',
@@ -9,7 +8,6 @@ values (
         '1',
         current_date),
        (
-        1,
         'TUESDAY',
         '19:00',
         'WEDNESDAY',
@@ -17,7 +15,6 @@ values (
         '2',
         current_date),
        (
-        1,
         'WEDNESDAY',
         '19:00',
         'THURSDAY',
@@ -25,7 +22,6 @@ values (
         '3',
         current_date),
        (
-        1,
         'THURSDAY',
         '19:00',
         'FRIDAY',
@@ -33,7 +29,6 @@ values (
         '4',
         current_date),
        (
-        1,
         'FRIDAY',
         '19:00',
         'SATURDAY',
@@ -41,7 +36,6 @@ values (
         '5',
         current_date),
        (
-        1,
         'SATURDAY',
         '19:00',
         'SUNDAY',
@@ -49,10 +43,11 @@ values (
         '6',
         current_date),
        (
-        1,
         'SUNDAY',
         '19:00',
         'MONDAY',
         '07:00',
         '7',
         current_date);
+
+insert into hdc_weekly_curfew_times (licence_id, curfew_time_id) values (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7);
