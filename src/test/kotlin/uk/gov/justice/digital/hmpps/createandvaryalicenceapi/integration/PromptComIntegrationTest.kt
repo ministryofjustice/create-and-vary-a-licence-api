@@ -45,7 +45,7 @@ class PromptComIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("")))
       .exchange()
-      .expectStatus().isUnauthorized
+      .expectStatus().isForbidden
   }
 
   @Test
