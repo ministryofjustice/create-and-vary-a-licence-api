@@ -129,19 +129,19 @@ class HdcServiceTest {
 
   @Test
   fun `getHdcLicenceData returns HDC licence data successfully from hdcApiClient`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(firstNightCurfewTimes = null)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(hdcApiClient.getByBookingId(54321)).thenReturn(someHdcLicenceData)
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(aSetOfFirstNightCurfewTimes)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
   @Test
   fun `getHdcLicenceData returns HDC licence data successfully from licenceRepository`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntityWithCurfewDetails.copy(firstNightCurfewTimes = null)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntityWithCurfewDetails))
     whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
       someHdcLicenceData.copy(
         weeklyCurfewTimes = emptyList(),
@@ -151,14 +151,14 @@ class HdcServiceTest {
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(aSetOfFirstNightCurfewTimes)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntityWithCurfewDetails.firstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
   @Test
   fun `getHdcLicenceData returns HDC licence data successfully when there is no curfew address`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(firstNightCurfewTimes = null)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
       someHdcLicenceData.copy(
         curfewAddress = null,
@@ -167,14 +167,14 @@ class HdcServiceTest {
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isNull()
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(aSetOfFirstNightCurfewTimes)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
   @Test
   fun `getHdcLicenceData returns HDC licence data successfully when no recorded curfew times`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(firstNightCurfewTimes = null)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
       someHdcLicenceData.copy(
         weeklyCurfewTimes = null,
@@ -183,7 +183,7 @@ class HdcServiceTest {
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(aSetOfFirstNightCurfewTimes)
+    assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isNull()
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
@@ -213,7 +213,6 @@ class HdcServiceTest {
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result?.curfewAddress).isEqualTo(someHdcLicenceData.curfewAddress)
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(someHdcLicenceData.firstNightCurfewTimes)
     assertThat(result?.weeklyCurfewTimes).isEqualTo(someHdcLicenceData.weeklyCurfewTimes)
   }
 

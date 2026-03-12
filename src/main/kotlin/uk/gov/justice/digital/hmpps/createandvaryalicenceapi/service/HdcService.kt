@@ -73,11 +73,7 @@ class HdcService(
       licenceData.curfewAddress
     }
 
-    val firstNightCurfewTimes = if (licence.firstNightCurfewTimes != null) {
-      licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes()
-    } else {
-      licenceData.firstNightCurfewTimes
-    }
+    val firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes()
 
     return HdcLicenceData(
       licenceId = licenceData.licenceId,
