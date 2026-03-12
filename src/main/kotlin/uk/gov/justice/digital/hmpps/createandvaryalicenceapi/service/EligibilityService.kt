@@ -21,6 +21,7 @@ class EligibilityService(
   private val isrPssProgressionService: ISRPssProgressionService,
   private val clock: Clock,
   @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
+  @param:Value("\${feature.toggle.standardRecalls.enabled}") private val standardRecallsEnabled: Boolean = false,
 ) {
 
   fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner): EligibilityAssessment {
@@ -256,12 +257,16 @@ class EligibilityService(
       val case = bookingsSentenceAndRecallTypes.firstOrNull { it.bookingId == bookingId }
       when {
         case.isStandardRecall() -> {
-          nomisId to EligibilityAssessment(
-            genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
-            crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
-            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on a standard recall",
-            hdcIneligibilityReasons = eligibilityAssessment.hdcIneligibilityReasons,
-          )
+          if (standardRecallsEnabled) {
+            nomisId to eligibilityAssessment
+          } else {
+            nomisId to EligibilityAssessment(
+              genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
+              crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
+              prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on a standard recall",
+              hdcIneligibilityReasons = eligibilityAssessment.hdcIneligibilityReasons,
+            )
+          }
         }
 
         case.isFixedTermRecall() -> nomisId to eligibilityAssessment

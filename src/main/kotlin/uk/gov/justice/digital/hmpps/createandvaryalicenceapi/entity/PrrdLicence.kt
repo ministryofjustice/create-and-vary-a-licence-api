@@ -87,6 +87,7 @@ class PrrdLicence(
   var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
   override var versionOfId: Long? = null,
   responsibleCom: CommunityOffenderManager,
+  recallType: PrrdRecallType? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.PRRD,
@@ -254,6 +255,7 @@ class PrrdLicence(
     versionOfId = versionOfId,
     licenceVersion = licenceVersion,
     updatedBy = updatedBy,
+    recallType = recallType,
     electronicMonitoringProvider = electronicMonitoringProvider,
   )
 

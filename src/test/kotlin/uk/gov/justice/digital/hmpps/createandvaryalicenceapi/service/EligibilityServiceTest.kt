@@ -699,7 +699,8 @@ class EligibilityServiceTest {
     }
 
     @Test
-    fun `Case with a standard recall is ineligible`() {
+    fun `Case with a standard recall is ineligible when the feature is not enable`() {
+      service = EligibilityService(prisonApiClient, releaseDateService, hdcService, clock, standardRecallsEnabled = false)
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
           BookingSentenceAndRecallTypes(
@@ -724,6 +725,35 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).containsExactly("is on a standard recall")
       assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `Case with a standard recall is eligible if enabled`() {
+      service = EligibilityService(prisonApiClient, releaseDateService, hdcService, clock, standardRecallsEnabled = true)
+      whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
+        listOf(
+          BookingSentenceAndRecallTypes(
+            bookingId = 123456,
+            sentenceTypeRecallTypes = listOf(
+              aSentenceAndRecallType(),
+              aSentenceAndRecallType(
+                recallType = aRecallType(
+                  isStandardRecall = true,
+                  isFixedTermRecall = false,
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+
+      assertThat(result.isEligible).isTrue()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(PRRD)
     }
 
     @Test
