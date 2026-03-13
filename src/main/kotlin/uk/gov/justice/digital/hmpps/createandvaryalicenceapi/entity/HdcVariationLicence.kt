@@ -46,6 +46,7 @@ class HdcVariationLicence(
   licenceActivatedDate: LocalDateTime? = null,
   override val homeDetentionCurfewActualDate: LocalDate? = null,
   val homeDetentionCurfewEndDate: LocalDate? = null,
+  val homeDetentionCurfewEligibilityDate: LocalDate? = null,
   topupSupervisionStartDate: LocalDate? = null,
   topupSupervisionExpiryDate: LocalDate? = null,
   postRecallReleaseDate: LocalDate? = null,
@@ -98,7 +99,7 @@ class HdcVariationLicence(
     joinColumns = [JoinColumn(name = "licence_id")],
     inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
-  var firstNightCurfewTimes: CurfewTimes? = null,
+  override var firstNightCurfewTimes: CurfewTimes? = null,
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   override val curfewAddress: HdcCurfewAddress? = null,
@@ -197,6 +198,7 @@ class HdcVariationLicence(
     licenceActivatedDate: LocalDateTime? = this.licenceActivatedDate,
     homeDetentionCurfewActualDate: LocalDate? = this.homeDetentionCurfewActualDate,
     homeDetentionCurfewEndDate: LocalDate? = this.homeDetentionCurfewEndDate,
+    homeDetentionCurfewEligibilityDate: LocalDate? = this.homeDetentionCurfewEligibilityDate,
     topupSupervisionStartDate: LocalDate? = this.topupSupervisionStartDate,
     topupSupervisionExpiryDate: LocalDate? = this.topupSupervisionExpiryDate,
     postRecallReleaseDate: LocalDate? = this.postRecallReleaseDate,
@@ -259,6 +261,7 @@ class HdcVariationLicence(
       licenceActivatedDate = licenceActivatedDate,
       homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
       homeDetentionCurfewEndDate = homeDetentionCurfewEndDate,
+      homeDetentionCurfewEligibilityDate = homeDetentionCurfewEligibilityDate,
       topupSupervisionStartDate = topupSupervisionStartDate,
       topupSupervisionExpiryDate = topupSupervisionExpiryDate,
       postRecallReleaseDate = postRecallReleaseDate,
@@ -336,6 +339,7 @@ class HdcVariationLicence(
     "licenceActivatedDate=$licenceActivatedDate, " +
     "homeDetentionCurfewActualDate=$homeDetentionCurfewActualDate, " +
     "homeDetentionCurfewEndDate=$homeDetentionCurfewEndDate, " +
+    "homeDetentionCurfewEligibilityDate=$homeDetentionCurfewEligibilityDate, " +
     "topupSupervisionStartDate=$topupSupervisionStartDate, " +
     "topupSupervisionExpiryDate=$topupSupervisionExpiryDate, " +
     "probationAreaCode=$probationAreaCode, " +

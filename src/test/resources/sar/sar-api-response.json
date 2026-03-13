@@ -1,0 +1,111 @@
+{
+  "licences": [
+    {
+      "additionalLicenceConditions": [],
+      "additionalPssConditions": [],
+      "appointmentAddress": null,
+      "appointmentAlternativeTelephoneNumber": null,
+      "appointmentPersonLastName": null,
+      "appointmentPersonType": null,
+      "appointmentTelephoneNumber": null,
+      "appointmentTime": null,
+      "appointmentTimeType": null,
+      "approvedByLastName": null,
+      "approvedDate": null,
+      "bespokeConditions": [
+        "condition 1",
+        "condition 2"
+      ],
+      "createdByLastName": "Client",
+      "dateCreated": "01/06/2019 14:00:00",
+      "dateLastUpdated": "01/06/2024 15:00:00",
+      "isToBeTaggedForProgramme": null,
+      "kind": "CRD",
+      "licenceVersion": null,
+      "policyVersion": "1.0",
+      "prisonNumber": "A1234AA",
+      "programmeName": null,
+      "standardLicenceConditions": [
+        {
+          "code": "goodBehaviour",
+          "text": "Be of generally good behaviour"
+        },
+        {
+          "code": "notBreakLaw",
+          "text": "Do not break the law"
+        }
+      ],
+      "standardPssConditions": [
+        {
+          "code": "attendMeetings",
+          "text": "Attend meetings"
+        }
+      ],
+      "statusCode": "In progress",
+      "submittedDate": null,
+      "supersededDate": null,
+      "typeCode": "All purpose"
+    },
+    {
+      "additionalLicenceConditions": [],
+      "additionalPssConditions": [],
+      "appointmentAddress": "123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA",
+      "appointmentAlternativeTelephoneNumber": "07000000000",
+      "appointmentPersonLastName": "Smith",
+      "appointmentPersonType": "Specific person",
+      "appointmentTelephoneNumber": "07123456789",
+      "appointmentTime": "25/02/2022 10:00",
+      "appointmentTimeType": "Specific date time",
+      "approvedByLastName": "Approver",
+      "approvedDate": "11/08/2024 11:22:00",
+      "bespokeConditions": [
+        "condition 3"
+      ],
+      "createdByLastName": "Client",
+      "dateCreated": "11/04/2020 10:00:00",
+      "dateLastUpdated": "21/07/2024 11:12:00",
+      "isToBeTaggedForProgramme": null,
+      "kind": "CRD",
+      "licenceVersion": "2.3",
+      "policyVersion": "1.0",
+      "prisonNumber": "A1234AA",
+      "programmeName": null,
+      "standardLicenceConditions": [
+        {
+          "code": "goodBehaviour",
+          "text": "Be of generally good behaviour"
+        },
+        {
+          "code": "notBreakLaw",
+          "text": "Do not break the law"
+        }
+      ],
+      "standardPssConditions": [
+        {
+          "code": "attendMeetings",
+          "text": "Attend meetings"
+        }
+      ],
+      "statusCode": "Approved",
+      "submittedDate": "20/02/2024 15:12:00",
+      "supersededDate": null,
+      "typeCode": "All purpose"
+    }
+  ],
+  "timeServedExternalRecords": [
+    {
+      "dateCreated": "01/06/2024 10:00:00",
+      "dateLastUpdated": "01/06/2024 11:00:00",
+      "prisonCode": "MDI",
+      "prisonNumber": "A1234AA",
+      "reason": "Time served licence created in NOMIS"
+    },
+    {
+      "dateCreated": "02/06/2024 10:00:00",
+      "dateLastUpdated": "02/06/2024 11:00:00",
+      "prisonCode": "MDI",
+      "prisonNumber": "A1234AA",
+      "reason": "Some other time served licence created in NOMIS"
+    }
+  ]
+}

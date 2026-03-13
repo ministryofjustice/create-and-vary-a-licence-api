@@ -478,6 +478,7 @@ class LicenceOverrideServiceTest {
       topupSupervisionExpiryDate = LocalDate.now(),
       postRecallReleaseDate = LocalDate.now(),
       homeDetentionCurfewActualDate = LocalDate.now(),
+      homeDetentionCurfewEligibilityDate = LocalDate.now(),
       reason = "Test override dates",
     )
     val newLicenceStartDate = request.conditionalReleaseDate
@@ -509,14 +510,14 @@ class LicenceOverrideServiceTest {
         "conditionalReleaseDate", "actualReleaseDate",
         "sentenceStartDate", "sentenceEndDate", "licenceStartDate", "licenceExpiryDate",
         "topupSupervisionStartDate", "topupSupervisionExpiryDate", "postRecallReleaseDate",
-        "homeDetentionCurfewActualDate", "updatedByUsername", "updatedBy",
+        "homeDetentionCurfewActualDate", "homeDetentionCurfewEligibilityDate", "updatedByUsername", "updatedBy",
       )
       .isEqualTo(
         listOf(
           request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
           request.sentenceEndDate, newLicenceStartDate, request.licenceExpiryDate,
           request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, request.postRecallReleaseDate,
-          request.homeDetentionCurfewActualDate, aCom.username, aCom,
+          request.homeDetentionCurfewActualDate, request.homeDetentionCurfewEligibilityDate, aCom.username, aCom,
         ),
       )
 

@@ -101,6 +101,11 @@ fun transform(model: ModelCurfewTimes): EntityCurfewTimes = EntityCurfewTimes(
   createdTimestamp = LocalDateTime.now(),
 )
 
+fun ModelCurfewTimes.transformToEntityFirstNightCurfewTimes(): EntityCurfewTimes = EntityCurfewTimes(
+  fromTime = fromTime,
+  untilTime = untilTime,
+)
+
 fun UpdatePrisonUserRequest.toEntity() = PrisonUser(
   username = staffUsername.uppercase(),
   email = staffEmail,

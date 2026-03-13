@@ -598,6 +598,7 @@ fun toHdc(
   licenceExpiryDate = licence.licenceExpiryDate,
   homeDetentionCurfewActualDate = licence.homeDetentionCurfewActualDate,
   homeDetentionCurfewEndDate = licence.homeDetentionCurfewEndDate,
+  homeDetentionCurfewEligibilityDate = licence.homeDetentionCurfewEligibilityDate,
   topupSupervisionStartDate = licence.topupSupervisionStartDate,
   topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
   postRecallReleaseDate = licence.postRecallReleaseDate,
@@ -693,6 +694,7 @@ fun toHdcVariation(
   licenceExpiryDate = licence.licenceExpiryDate,
   homeDetentionCurfewActualDate = licence.homeDetentionCurfewActualDate,
   homeDetentionCurfewEndDate = licence.homeDetentionCurfewEndDate,
+  homeDetentionCurfewEligibilityDate = licence.homeDetentionCurfewEligibilityDate,
   topupSupervisionStartDate = licence.topupSupervisionStartDate,
   topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
   postRecallReleaseDate = licence.postRecallReleaseDate,
@@ -838,10 +840,7 @@ private fun transform(entity: EntityCurfewTimes): ModelCurfewTimes = ModelCurfew
 
 fun EntityCurfewTimes.transformToModelFirstNightCurfewTimes(): ModelCurfewTimes = ModelCurfewTimes(
   id = id,
-  curfewTimesSequence = curfewTimesSequence,
-  fromDay = fromDay,
   fromTime = fromTime,
-  untilDay = untilDay,
   untilTime = untilTime,
 )
 
