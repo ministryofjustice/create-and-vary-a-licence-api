@@ -6,6 +6,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddr
 data class HdcLicenceData(
   val licenceId: Long? = null,
   val curfewAddress: HdcCurfewAddress? = null,
-  val firstNightCurfewHours: FirstNight? = null,
+  val firstNightCurfewTimes: CurfewTimes? = null,
   val weeklyCurfewTimes: List<CurfewTimes>? = null,
 )

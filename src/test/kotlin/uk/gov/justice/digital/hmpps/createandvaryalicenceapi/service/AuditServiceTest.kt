@@ -763,7 +763,7 @@ class AuditServiceTest {
   inner class `audit events for HDC curfew times` {
     @Test
     fun `records an audit event when curfew times are updated`() {
-      service.recordAuditEventUpdateHdcCurfewTimes(aLicenceEntity, aSetOfCurfewTimes, aCom)
+      service.recordAuditEventUpdateHdcWeeklyCurfewTimes(aLicenceEntity, aSetOfCurfewTimes, aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -827,6 +827,41 @@ class AuditServiceTest {
                 "untilDay" to DayOfWeek.MONDAY,
                 "untilTime" to LocalTime.of(8, 0),
               ),
+            ),
+          ),
+        )
+    }
+
+    @Test
+    fun `records an audit event when first night curfew times are updated`() {
+      service.recordAuditEventUpdateHdcFirstNightCurfewTimes(aHdcLicenceEntity, aSetOfCurfewTimes.first(), aCom)
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
+      assertThat(auditCaptor.value.summary)
+        .isEqualTo(
+          "Updated HDC first night curfew times for " +
+            "${aHdcLicenceEntity.forename} ${aHdcLicenceEntity.surname}",
+        )
+      assertThat(auditCaptor.value.detail)
+        .isEqualTo(
+          "ID ${aHdcLicenceEntity.id} type ${aHdcLicenceEntity.typeCode.name} " +
+            "status ${aHdcLicenceEntity.statusCode.name} version ${aHdcLicenceEntity.version}",
+        )
+      assertThat(auditCaptor.value.changes)
+        .extracting("type", "before", "after")
+        .isEqualTo(
+          listOf(
+            "Updated HDC first night curfew times",
+            mapOf(
+              "fromTime" to LocalTime.of(12, 0),
+              "untilTime" to LocalTime.of(13, 0),
+            ),
+            mapOf(
+              "fromTime" to LocalTime.of(20, 0),
+              "untilTime" to LocalTime.of(8, 0),
             ),
           ),
         )

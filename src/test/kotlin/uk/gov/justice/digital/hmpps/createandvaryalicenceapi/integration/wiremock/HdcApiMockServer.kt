@@ -21,9 +21,9 @@ class HdcApiMockServer : WireMockServer(8100) {
               "county": null,
               "postcode": "AB1 2CD"
             },
-            "firstNightCurfewHours": {
-              "firstNightFrom": "15:00",
-              "firstNightUntil": "07:00"
+            "firstNightCurfewTimes": {
+              "fromTime": "15:00",
+              "untilTime": "07:00"
             },
             "weeklyCurfewTimes": [
               {
