@@ -308,6 +308,7 @@ abstract class Licence(
     postRecallReleaseDate: LocalDate?,
     homeDetentionCurfewActualDate: LocalDate?,
     homeDetentionCurfewEndDate: LocalDate?,
+    homeDetentionCurfewEligibilityDate: LocalDate?,
     staffMember: Staff?,
   ) {
     this.statusCode = status ?: this.statusCode
@@ -326,6 +327,7 @@ abstract class Licence(
     if (this is HdcLicence) {
       this.homeDetentionCurfewActualDate = homeDetentionCurfewActualDate
       this.homeDetentionCurfewEndDate = homeDetentionCurfewEndDate
+      this.homeDetentionCurfewEligibilityDate = homeDetentionCurfewEligibilityDate
     }
   }
 

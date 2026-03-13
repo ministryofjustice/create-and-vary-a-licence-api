@@ -16,6 +16,7 @@ enum class LicenceDateType(
   PRRD("Post recall release date"),
   HDCAD("HDC actual date", hdcOnly = true),
   HDCENDDATE("HDC end date", hdcOnly = true),
+  HDCED("HDC eligibility date", hdcOnly = true),
 
   /**
    * SED has special rules that mean we include any changes in notifications,
