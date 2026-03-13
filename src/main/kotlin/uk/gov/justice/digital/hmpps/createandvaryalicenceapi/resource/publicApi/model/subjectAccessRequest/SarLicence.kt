@@ -22,12 +22,6 @@ data class SarLicence(
   @field:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   val appointmentPerson: String?,
 
-  @field:Schema(
-    description = "Who type of contact they will meet at their initial appointment",
-    example = "SPECIFIC_PERSON",
-  )
-  val appointmentPersonType: SarAppointmentPersonType?,
-
   @field:Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm")
   val appointmentTime: LocalDateTime?,
@@ -40,6 +34,13 @@ data class SarLicence(
     example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
   )
   val appointmentAddress: String?,
+
+  @Deprecated("Use appointmentTelephoneNumber instead")
+  @get:Schema(
+    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "0114 2557665",
+  )
+  val appointmentContact: String?,
 
   @get:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
@@ -108,9 +109,6 @@ data class SarLicence(
 
   @field:Schema(description = "The version number of this licence", example = "1.3")
   val licenceVersion: String?,
-
-  @field:Schema(description = "The policy version of this licence", example = "1.3")
-  val policyVersion: String?,
 
   @field:Schema(description = "Is the licence to be tagged for electronic monitoring programme")
   val isToBeTaggedForProgramme: Boolean? = null,
