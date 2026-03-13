@@ -9,9 +9,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderSentencesAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenderSentenceAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import java.time.LocalDate
 
@@ -152,47 +150,11 @@ class PrisonApiMockServer : WireMockServer(8091) {
     )
   }
 
-  fun stubGetSentenceAndRecallTypesWithStandardRecall(bookingId: Long = 123) {
-    stubFor(
-      post(urlEqualTo("/api/offender-sentences/bookings/sentence-and-recall-types")).willReturn(
-        aResponse().withHeader("Content-Type", "application/json").withBody(
-          """[{
-            "bookingId": "$bookingId",
-            "sentenceTypeRecallTypes": [
-              {
-                "sentenceType": "SENTENCE_TYPE",
-                "recallType": {
-                  "recallName": "RECALL_NAME",
-                  "isStandardRecall": true,
-                  "isFixedTermRecall": false
-                }
-              }
-            ]
-          }]
-          """.trimMargin(),
-        ).withStatus(200),
-      ),
-    )
-  }
-
   fun stubGetSentenceAndRecallTypes(sentenceAndRecallTypes: List<BookingSentenceAndRecallTypes>) {
     stubFor(
       post(urlEqualTo("/api/offender-sentences/bookings/sentence-and-recall-types")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           objectMapper.writeValueAsString(sentenceAndRecallTypes),
-        ).withStatus(200),
-      ),
-    )
-  }
-
-  fun stubGetSentencesAndOffences(
-    bookingId: Long,
-    sentencesAndOffences: List<OffenderSentenceAndOffences> = offenderSentencesAndOffences(bookingId),
-  ) {
-    stubFor(
-      get(urlEqualTo("/api/offender-sentences/booking/$bookingId/sentences-and-offences")).willReturn(
-        aResponse().withHeader("Content-Type", "application/json").withBody(
-          objectMapper.writeValueAsString(sentencesAndOffences),
         ).withStatus(200),
       ),
     )
