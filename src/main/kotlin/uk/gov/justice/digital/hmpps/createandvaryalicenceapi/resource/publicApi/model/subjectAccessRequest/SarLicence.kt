@@ -19,11 +19,8 @@ data class SarLicence(
   @field:Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
   val prisonNumber: String?,
 
-  @field:Schema(
-    description = "The last name of the person they will meet at their initial appointment",
-    example = "Smith",
-  )
-  val appointmentPersonLastName: String?,
+  @field:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
+  val appointmentPerson: String?,
 
   @field:Schema(
     description = "Who type of contact they will meet at their initial appointment",
@@ -71,10 +68,10 @@ data class SarLicence(
   val submittedDate: LocalDateTime?,
 
   @field:Schema(
-    description = "The last name of the person who approved the licence on behalf of the prison governor",
-    example = "Smith",
+    description = "The full name of the person who approved the licence on behalf of the prison governor",
+    example = "John Smith",
   )
-  val approvedByLastName: String?,
+  val approvedByName: String?,
 
   @field:Schema(
     description = "The date and time that this licence was superseded by a new variant",
@@ -106,8 +103,8 @@ data class SarLicence(
   @field:Schema(description = "The list of bespoke conditions on this licence")
   val bespokeConditions: List<String> = emptyList(),
 
-  @field:Schema(description = "The last name of the person who created licence or variation", example = "Smith")
-  val createdByLastName: String?,
+  @field:Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
+  val createdByFullName: String?,
 
   @field:Schema(description = "The version number of this licence", example = "1.3")
   val licenceVersion: String?,
