@@ -98,7 +98,7 @@ class HdcLicence(
     joinColumns = [JoinColumn(name = "licence_id")],
     inverseJoinColumns = [JoinColumn(name = "curfew_time_id")],
   )
-  var firstNightCurfewTimes: CurfewTimes? = null,
+  override var firstNightCurfewTimes: CurfewTimes? = null,
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   override val curfewAddress: HdcCurfewAddress? = null,
@@ -318,6 +318,12 @@ class HdcLicence(
   ) {
     this.weeklyCurfewTimes.clear()
     this.weeklyCurfewTimes.addAll(updatedWeeklyCurfewTimes)
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
+
+  fun updateFirstNightCurfewTimes(updatedFirstNightCurfewTimes: CurfewTimes, staffMember: Staff?) {
+    this.firstNightCurfewTimes = updatedFirstNightCurfewTimes
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
