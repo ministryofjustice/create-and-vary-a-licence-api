@@ -152,6 +152,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
           createCommunityManager(1, "F2504MG"),
           createCommunityManager(2, "B1234BB"),
           createCommunityManager(3, "C1234BC"),
+          createCommunityManager(4, "Z1874KW"),
         ),
       )
 
