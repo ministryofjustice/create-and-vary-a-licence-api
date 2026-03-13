@@ -100,7 +100,7 @@ hmpps:
       attachments-expected: true
       # When changing expected schema version this should act as a prompt to consider whether SAR requires updating
       #check with the rest of the team to see if this required
-      expected-flyway-schema-version: 69
+      expected-flyway-schema-version: 70
       expected-jpa-entity-schema:
         path: /sar/entity-schema.json
       expected-api-response:
