@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicenceStatusProgressionResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.UpcomingReleasesWithMonitoringConditionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.LastMinuteHandoverCaseService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.LicenceStatusProgressionReportService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.UpcomingReleasesWithMonitoringConditionsReportService
 
 @RestController
@@ -26,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.Upc
 class CvlReportController(
   private val lastMinuteHandoverCaseService: LastMinuteHandoverCaseService,
   private val upcomingElectronicMonitoringCasesService: UpcomingReleasesWithMonitoringConditionsReportService,
+  private val licenceStatusProgressionCasesService: LicenceStatusProgressionReportService,
 ) {
   @GetMapping("/last-minute-handover-cases")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -69,7 +72,7 @@ class CvlReportController(
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Retrieve list of upcoming cases with electronic monitoring conditions for FTR-56 report",
-    description = "Returns a list of LastMinuteHandoverCaseResponse objects",
+    description = "Returns a list of UpcomingReleasesWithMonitoringConditionsResponse objects",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
@@ -102,4 +105,42 @@ class CvlReportController(
     ],
   )
   fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> = upcomingElectronicMonitoringCasesService.getUpcomingReleasesWithMonitoringConditions()
+
+  @GetMapping("/licence-status-report")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Retrieve list of cases providing all licences at all statuses to track the flow of a licence",
+    description = "Returns a list of LicenceStatusProgressionResponse objects",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "A list of licence status progression cases",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = LicenceStatusProgressionResponse::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request parameters must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getLicenceStatusProgressionCases(): List<LicenceStatusProgressionResponse> = licenceStatusProgressionCasesService.getCases()
 }
