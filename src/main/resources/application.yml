@@ -178,6 +178,9 @@ feature:
       enabled: ${LAO_ENABLED}
     standardRecalls:
       enabled: ${STANDARD_RECALLS_ENABLED}
+    isr:
+      repeal:
+        date: ${ISR_REPEAL_DATE:#{null}}
 
 hmpps:
   cases:

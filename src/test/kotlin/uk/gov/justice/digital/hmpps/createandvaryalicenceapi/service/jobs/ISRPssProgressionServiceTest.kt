@@ -170,6 +170,59 @@ class ISRPssProgressionServiceTest {
     assertThat(result).isTrue()
   }
 
+  @Test
+  fun `should not process active licences when repeal date is null`() {
+    // Given
+    val serviceWithNullDate = ISRPssProgressionService(
+      chunkService,
+      repository,
+      null,
+      fixedClock,
+    )
+
+    // When
+    serviceWithNullDate.processActiveApPssAndPssLicences()
+
+    // Then
+    verifyNoInteractions(repository)
+    verifyNoInteractions(chunkService)
+  }
+
+  @Test
+  fun `should not process in flight licences when repeal date is null`() {
+    // Given
+    val serviceWithNullDate = ISRPssProgressionService(
+      chunkService,
+      repository,
+      null,
+      fixedClock,
+    )
+
+    // When
+    serviceWithNullDate.processInFlightApPssLicences()
+
+    // Then
+    verifyNoInteractions(repository)
+    verifyNoInteractions(chunkService)
+  }
+
+  @Test
+  fun `should return false when repeal date is null`() {
+    // Given
+    val serviceWithNullDate = ISRPssProgressionService(
+      chunkService,
+      repository,
+      null,
+      fixedClock,
+    )
+
+    // When
+    val result = serviceWithNullDate.isRepealDatePassed()
+
+    // Then
+    assertThat(result).isFalse()
+  }
+
   private companion object {
     val CUTOFF_DATE: LocalDate = LocalDate.of(2026, 4, 30)
     val CLOCK_TIME: Instant = Instant.parse("2026-04-01T10:00:00Z")

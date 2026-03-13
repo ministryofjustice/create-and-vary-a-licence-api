@@ -14,12 +14,17 @@ import kotlin.collections.chunked
 class ISRPssProgressionService(
   private val chunkService: ISRPssProgressionChunkService,
   private val repository: ISRProgressionLicenceRepository,
-  @param:Value("\${feature.toggle.isr.repeal.date:2026-04-30}")
-  private val isrRepealDate: LocalDate,
+  @param:Value("\${feature.toggle.isr.repeal.date:#{null}}")
+  private val isrRepealDate: LocalDate?,
   private val clock: Clock = Clock.systemDefaultZone(),
 ) {
 
   fun processActiveApPssAndPssLicences() {
+    if (isrRepealDate == null) {
+      log.info("ISR PSS progression skipped because repeal date is not configured")
+      return
+    }
+
     // There will be around 145 licences in prod of PSS type
     val activePSSLicences = repository.findActiveLicenceIds(LicenceType.PSS.toString())
 
@@ -32,7 +37,7 @@ class ISRPssProgressionService(
     // There will be around 15552 licenses in prod or AP PSS type
     val activeApPSSLicences = repository.findActiveLicenceIds(LicenceType.AP_PSS.toString())
 
-    log.info("ISR AP_PSS progression found {} AP_PSS Active licences to process", activePSSLicences.size)
+    log.info("ISR AP_PSS progression found {} AP_PSS Active licences to process", activeApPSSLicences.size)
 
     // Cut the apPssLicenceIds into batches/chunks to allow smaller transaction sizes
     activeApPSSLicences.chunked(BATCH_SIZE).forEach {
@@ -41,7 +46,12 @@ class ISRPssProgressionService(
   }
 
   fun processInFlightApPssLicences() {
-    if (getCurrentDateAndTime().isAfter(getCutoffExecutionDeadline())) {
+    if (isrRepealDate == null) {
+      log.info("ISR PSS progression skipped because repeal date is not configured")
+      return
+    }
+
+    if (getCurrentDateAndTime().isAfter(getCutoffExecutionDeadline()!!)) {
       log.info(
         "ISR PSS progression job skipped because cutoff execution deadline {} has passed",
         getCutoffExecutionDeadline(),
@@ -61,11 +71,12 @@ class ISRPssProgressionService(
     }
   }
 
-  fun isRepealDatePassed(): Boolean = getCurrentDate().isAfter(isrRepealDate)
+  fun isRepealDatePassed(): Boolean = isrRepealDate?.let { getCurrentDate().isAfter(it) } ?: false
 
   private fun getCurrentDate(): LocalDate = LocalDate.now(clock)
   private fun getCurrentDateAndTime(): LocalDateTime = LocalDateTime.now(clock)
-  private fun getCutoffExecutionDeadline(): LocalDateTime? = isrRepealDate.plusDays(1).atTime(2, 0)
+
+  private fun getCutoffExecutionDeadline(): LocalDateTime? = isrRepealDate?.plusDays(1)?.atTime(2, 0)
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
