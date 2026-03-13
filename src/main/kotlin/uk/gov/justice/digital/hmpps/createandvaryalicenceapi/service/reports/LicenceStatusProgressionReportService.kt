@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Clock
 import java.time.LocalDate
+import kotlin.text.get
 
 @Service
 class LicenceStatusProgressionReportService(
@@ -25,19 +26,21 @@ class LicenceStatusProgressionReportService(
   fun getCases(): List<LicenceStatusProgressionResponse> {
     val nomisRecords = getPrisonerData()
     val nomisIds = nomisRecords.keys.toList()
+
     val deliusRecords =
       deliusApiClient.getOffenderManagers(nomisIds).filter { it.case.nomisId != null }.associateBy { it.case.nomisId!! }
     log.info("Found ${deliusRecords.size} delius records")
+
     val cvlRecords = cvlRecordService.getCvlRecords(nomisRecords.values.toList())
+
     val licences = licenceRepository.findAllPreReleaseAndActiveLicencesForToday().associateBy { it.nomsId!! }
 
-    val eligibleNotStartedCases = nomisRecords.filter { (nomsId, _) ->
-      val cvlRecord = cvlRecords.find { record -> record.nomisId == nomsId }
-      return@filter cvlRecord?.isEligible == true
-    }.mapNotNull { (nomisId, prisoner) ->
-      val deliusRecord = deliusRecords[nomisId]
-      val licence = licences[nomisId]
-      if (licence == null) {
+    val eligibleNotStartedCases = nomisRecords
+      .filter { (nomsId, _) ->
+        cvlRecords.any { it.nomisId == nomsId && it.isEligible } && nomsId !in licences
+      }
+      .map { (nomisId, prisoner) ->
+        val deliusRecord = deliusRecords[nomisId]
         LicenceStatusProgressionResponse(
           probationRegion = deliusRecord?.team?.borough?.description,
           prison = prisoner.prisonName,
@@ -46,18 +49,15 @@ class LicenceStatusProgressionReportService(
           prisonerName = prisoner.fullName(),
           status = LicenceStatus.NOT_STARTED,
         )
-      } else {
-        null
       }
-    }
     log.info("Found ${eligibleNotStartedCases.size} eligible cases")
 
-    val relevantLicences = licences.map { (nomisId, licence) ->
+    val relevantLicences = licences.values.map { licence ->
       LicenceStatusProgressionResponse(
         probationRegion = licence.probationPduDescription,
         prison = licence.prisonDescription,
         crn = licence.crn,
-        nomisNumber = nomisId,
+        nomisNumber = licence.nomsId,
         prisonerName = licence.let { "${it.forename} ${it.middleNames} ${it.surname}" },
         status = licence.statusCode,
       )
