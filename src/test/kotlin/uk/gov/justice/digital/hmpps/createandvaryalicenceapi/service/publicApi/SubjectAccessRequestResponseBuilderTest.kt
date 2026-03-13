@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
@@ -44,15 +43,12 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(kind).isEqualTo(crdLicence.kind)
       assertThat(typeCode).isEqualTo(SarLicenceType.AP)
       assertThat(statusCode).isEqualTo(SarLicenceStatus.valueOf(crdLicence.statusCode!!.name))
-      assertThat(policyVersion).isEqualTo(crdLicence.version)
       assertThat(prisonNumber).isEqualTo(crdLicence.nomsId)
       assertThat(appointmentPerson).isEqualTo(crdLicence.appointmentPerson)
-      assertThat(appointmentPersonType).isEqualTo(SarAppointmentPersonType.from(crdLicence.appointmentPersonType))
       assertThat(appointmentTime).isEqualTo(crdLicence.appointmentTime)
-      assertThat(appointmentTimeType).isEqualTo(SarAppointmentTimeType.from(crdLicence.appointmentTimeType))
+      assertThat(appointmentTimeType).isEqualTo(SarAppointmentTimeType.valueOf(crdLicence.appointmentTimeType!!.name))
       assertThat(appointmentAddress).isEqualTo(crdLicence.appointmentAddress)
-      assertThat(appointmentTelephoneNumber).isEqualTo(crdLicence.appointmentTelephoneNumber)
-      assertThat(appointmentAlternativeTelephoneNumber).isEqualTo(crdLicence.appointmentAlternativeTelephoneNumber)
+      assertThat(appointmentContact).isEqualTo(crdLicence.appointmentContact)
       assertThat(approvedDate).isEqualTo(crdLicence.approvedDate)
       assertThat(submittedDate).isEqualTo(crdLicence.submittedDate)
       assertThat(approvedByName).isEqualTo(crdLicence.approvedByName)
@@ -191,7 +187,6 @@ class SubjectAccessRequestResponseBuilderTest {
       licence = createCrdLicence().copy(
         version = "2.1",
         typeCode = AP,
-        licenceVersion = "2.0",
         appointment = TestData.createAppointment(timeType = AppointmentTimeType.SPECIFIC_DATE_TIME),
       ),
       earliestReleaseDate = LocalDate.of(2024, 1, 3),

@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportsElect
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalConditionUploadSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
@@ -45,10 +44,10 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
         prisonNumber = licence.nomsId,
         dateLastUpdated = licence.dateLastUpdated,
         appointmentPerson = licence.appointmentPerson,
-        appointmentPersonType = SarAppointmentPersonType.from(licence.appointmentPersonType),
         appointmentTime = licence.appointmentTime,
         appointmentTimeType = SarAppointmentTimeType.from(licence.appointmentTimeType),
         appointmentAddress = licence.appointmentAddress,
+        appointmentContact = licence.appointmentContact,
         appointmentTelephoneNumber = licence.appointmentTelephoneNumber,
         appointmentAlternativeTelephoneNumber = licence.appointmentAlternativeTelephoneNumber,
         approvedDate = licence.approvedDate,
@@ -73,7 +72,6 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
         bespokeConditions = licence.bespokeConditions.map { it.text.toString() },
         createdByFullName = licence.createdByFullName,
         licenceVersion = licence.licenceVersion,
-        policyVersion = licence.version,
         isToBeTaggedForProgramme = isToBeTaggedForProgramme,
         programmeName = programmeName,
       ),
