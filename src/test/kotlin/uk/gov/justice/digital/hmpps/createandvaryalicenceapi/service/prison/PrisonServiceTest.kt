@@ -1,14 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aRecallType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderSentencesAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import java.time.LocalDate
@@ -58,23 +55,5 @@ class PrisonServiceTest {
 
     assertThat(actualDate).isEqualTo(LocalDate.of(2025, 8, 25))
     verify(prisonApiClient).getPrisonerSentenceAndOffences(bookingId)
-  }
-
-  @Test
-  fun `should return if a booking has any standard recall sentences`() {
-    val bookingId = 392L
-
-    val sentenceAndRecallTypes = listOf(
-      aSentenceAndRecallType(recallType = aRecallType(isStandardRecall = false)),
-      aSentenceAndRecallType(recallType = aRecallType(isStandardRecall = true)),
-    )
-    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(bookingId, sentenceAndRecallTypes)
-
-    whenever(prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))).thenReturn(
-      listOf(
-        bookingSentenceAndRecallTypes,
-      ),
-    )
-    assertTrue(service.hasStandardRecallSentence(bookingId))
   }
 }
