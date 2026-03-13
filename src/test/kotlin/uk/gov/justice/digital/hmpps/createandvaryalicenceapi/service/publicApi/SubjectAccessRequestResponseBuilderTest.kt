@@ -46,7 +46,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(statusCode).isEqualTo(SarLicenceStatus.valueOf(crdLicence.statusCode!!.name))
       assertThat(policyVersion).isEqualTo(crdLicence.version)
       assertThat(prisonNumber).isEqualTo(crdLicence.nomsId)
-      assertThat(appointmentPerson).isEqualTo(crdLicence.appointmentPerson)
+      assertThat(appointmentPersonLastName).isEqualTo(extractSurname(crdLicence.appointmentPerson))
       assertThat(appointmentPersonType).isEqualTo(SarAppointmentPersonType.from(crdLicence.appointmentPersonType))
       assertThat(appointmentTime).isEqualTo(crdLicence.appointmentTime)
       assertThat(appointmentTimeType).isEqualTo(SarAppointmentTimeType.from(crdLicence.appointmentTimeType))
@@ -55,7 +55,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(appointmentAlternativeTelephoneNumber).isEqualTo(crdLicence.appointmentAlternativeTelephoneNumber)
       assertThat(approvedDate).isEqualTo(crdLicence.approvedDate)
       assertThat(submittedDate).isEqualTo(crdLicence.submittedDate)
-      assertThat(approvedByName).isEqualTo(crdLicence.approvedByName)
+      assertThat(approvedByLastName).isEqualTo(extractSurname(crdLicence.approvedByName))
       assertThat(supersededDate).isEqualTo(crdLicence.supersededDate)
       assertThat(dateCreated).isEqualTo(crdLicence.dateCreated)
       assertThat(dateLastUpdated).isEqualTo(crdLicence.dateLastUpdated)
@@ -64,7 +64,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(additionalLicenceConditions).isEmpty()
       assertThat(additionalPssConditions).isEmpty()
       assertThat(bespokeConditions).isEmpty()
-      assertThat(createdByFullName).isEqualTo(crdLicence.createdByFullName)
+      assertThat(createdByLastName).isEqualTo(extractSurname(crdLicence.createdByFullName))
       assertThat(licenceVersion).isEqualTo(crdLicence.licenceVersion)
       assertThat(isToBeTaggedForProgramme).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.isToBeTaggedForProgramme)
       assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider.programmeName)
@@ -185,6 +185,57 @@ class SubjectAccessRequestResponseBuilderTest {
   private fun List<SarLicence>.findAttachmentSummary(attachmentNumber: Int) = flatMap { licences ->
     licences.additionalLicenceConditions.flatMap { conditions -> conditions.uploadSummary }
   }.find { it.attachmentNumber == attachmentNumber }!!
+
+  @Test
+  fun `extractSurname should return surname from firstname surname format`() {
+    assertThat(extractSurname("John Smith")).isEqualTo("Smith")
+    assertThat(extractSurname("Anne Approver")).isEqualTo("Approver")
+    assertThat(extractSurname("Test Client")).isEqualTo("Client")
+  }
+
+  @Test
+  fun `extractSurname should handle multiple spaces and return last word`() {
+    assertThat(extractSurname("John Middle Smith")).isEqualTo("Smith")
+    assertThat(extractSurname("Mary Jane Watson")).isEqualTo("Watson")
+  }
+
+  @Test
+  fun `extractSurname should return original name if no space`() {
+    assertThat(extractSurname("SingleName")).isEqualTo("SingleName")
+  }
+
+  @Test
+  fun `extractSurname should handle null and blank strings`() {
+    assertThat(extractSurname(null)).isNull()
+    assertThat(extractSurname("")).isEqualTo("")
+    assertThat(extractSurname("   ")).isEqualTo("   ")
+  }
+
+  @Test
+  fun `extractSurname should handle names with leading and trailing spaces`() {
+    assertThat(extractSurname("  John Smith  ")).isEqualTo("Smith")
+  }
+
+  @Test
+  fun `surname extraction is applied to createdByFullName, approvedByName, and appointmentPerson`() {
+    val licence = crdLicence.copy(
+      createdByFullName = "Test Client",
+      approvedByName = "Anne Approver",
+      appointmentPerson = "John Smith",
+    )
+
+    val result = SubjectAccessRequestResponseBuilder("https://some-host")
+      .addLicence(licence)
+      .build()
+
+    val content = result.content as Content
+
+    with(content.licences.first()) {
+      assertThat(createdByLastName).isEqualTo("Client")
+      assertThat(approvedByLastName).isEqualTo("Approver")
+      assertThat(appointmentPersonLastName).isEqualTo("Smith")
+    }
+  }
 
   companion object {
     private val crdLicence = toCrd(
