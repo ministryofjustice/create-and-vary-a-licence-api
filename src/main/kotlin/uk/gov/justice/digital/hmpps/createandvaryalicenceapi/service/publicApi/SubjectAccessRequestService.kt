@@ -32,11 +32,11 @@ class SubjectAccessRequestService(
 
     val licenceBuilder = SubjectAccessRequestResponseBuilder(baseUrl)
 
-    licenceIds.sorted().forEach {
+    licenceIds.forEach {
       licenceBuilder.addLicence(licenceService.getLicenceById(it))
     }
 
-    externalRecords.sortedBy { it.id }.forEach {
+    externalRecords.forEach {
       licenceBuilder.addTimeServedExternalRecord(it)
     }
 
