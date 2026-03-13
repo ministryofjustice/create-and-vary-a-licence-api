@@ -107,6 +107,7 @@ class UpdateSentenceDateService(
       postRecallReleaseDate = sentenceDates.postRecallReleaseDate,
       homeDetentionCurfewActualDate = sentenceDates.homeDetentionCurfewActualDate,
       homeDetentionCurfewEndDate = sentenceDates.homeDetentionCurfewEndDate,
+      homeDetentionCurfewEligibilityDate = sentenceDates.homeDetentionCurfewEligibilityDate,
     )
 
     val hardstopChangeType = getHardstopChangeType(currentLicenceStartDate, currentLicenceKind, updatedLicence)

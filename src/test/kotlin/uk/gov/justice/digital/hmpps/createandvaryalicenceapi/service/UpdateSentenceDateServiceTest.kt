@@ -304,7 +304,7 @@ class UpdateSentenceDateServiceTest {
   }
 
   @Test
-  fun `update sentence dates persists the updated HDCAD if HDC licence`() {
+  fun `update sentence dates persists the updated HDC dates if HDC licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
     whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aHdcLicenceEntity)
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
@@ -320,6 +320,8 @@ class UpdateSentenceDateServiceTest {
           topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
           postRecallReleaseDate = LocalDate.parse("2025-09-11"),
           homeDetentionCurfewActualDate = LocalDate.parse("2025-09-11"),
+          homeDetentionCurfewEndDate = LocalDate.parse("2025-09-11"),
+          homeDetentionCurfewEligibilityDate = LocalDate.parse("2025-09-11"),
         ),
       ),
     )
@@ -343,6 +345,8 @@ class UpdateSentenceDateServiceTest {
         "topupSupervisionExpiryDate",
         "postRecallReleaseDate",
         "homeDetentionCurfewActualDate",
+        "homeDetentionCurfewEndDate",
+        "homeDetentionCurfewEligibilityDate",
         "updatedByUsername",
         "updatedBy",
       )
@@ -355,6 +359,8 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2023-09-11"),
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2025-09-11"),
+          LocalDate.parse("2025-09-11"),
           LocalDate.parse("2025-09-11"),
           LocalDate.parse("2025-09-11"),
           LocalDate.parse("2025-09-11"),
@@ -381,6 +387,7 @@ class UpdateSentenceDateServiceTest {
           topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
           homeDetentionCurfewActualDate = LocalDate.parse("2023-09-11"),
           homeDetentionCurfewEndDate = LocalDate.parse("2023-09-12"),
+          homeDetentionCurfewEligibilityDate = LocalDate.parse("2023-09-10"),
         ),
       ),
     )
@@ -402,6 +409,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to 11 September 2025",
         "HDC actual date has changed to 11 September 2023",
         "HDC end date has changed to 12 September 2023",
+        "HDC eligibility date has changed to 10 September 2023",
       ),
     )
   }

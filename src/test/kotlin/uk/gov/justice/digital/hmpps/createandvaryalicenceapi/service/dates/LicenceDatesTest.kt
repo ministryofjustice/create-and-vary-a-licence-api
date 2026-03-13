@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCAD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCENDDATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LSD
@@ -45,6 +46,7 @@ class LicenceDatesTest {
     topupSupervisionExpiryDate = fiveDaysAgo,
     homeDetentionCurfewActualDate = fiveDaysAgo,
     homeDetentionCurfewEndDate = fiveDaysAgo,
+    homeDetentionCurfewEligibilityDate = fiveDaysAgo,
     typeCode = LicenceType.AP_PSS,
   )
 
@@ -58,6 +60,7 @@ class LicenceDatesTest {
     topupSupervisionExpiryDate = fiveDaysAgo,
     homeDetentionCurfewActualDate = fiveDaysAgo,
     homeDetentionCurfewEndDate = fiveDaysAgo,
+    homeDetentionCurfewEligibilityDate = fiveDaysAgo,
   )
 
   @Test
@@ -104,6 +107,19 @@ class LicenceDatesTest {
     )
 
     assertThat(sentenceChanges.changedTypes()).containsExactly(HDCENDDATE)
+    assertThat(sentenceChanges.isMaterial).isTrue
+  }
+
+  @Test
+  fun `Sentence Changes should return for material change for HDCED update to HDC licence`() {
+    val licence = testHdcLicence.copy(homeDetentionCurfewEligibilityDate = fiveDaysAgo)
+
+    val sentenceChanges = licence.getDateChanges(
+      testSentenceChanges.copy(homeDetentionCurfewEligibilityDate = fourDaysAgo),
+      newLsd = fiveDaysAgo,
+    )
+
+    assertThat(sentenceChanges.changedTypes()).containsExactly(HDCED)
     assertThat(sentenceChanges.isMaterial).isTrue
   }
 

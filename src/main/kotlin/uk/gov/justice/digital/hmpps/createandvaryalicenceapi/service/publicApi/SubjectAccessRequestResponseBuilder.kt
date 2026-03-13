@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportsElect
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
@@ -23,6 +24,21 @@ private const val UNAVAILABLE = "unavailable"
 
 // We should be able to remove this and make everything non-nullable after migration
 private const val UNAVAILABLE_SIZE = -1
+
+/**
+ * Extracts the surname from a full name in "firstname surname" format.
+ * Returns the surname if the name contains at least one space, otherwise returns the original name.
+ */
+fun extractSurname(fullName: String?): String? {
+  if (fullName.isNullOrBlank()) return fullName
+  val trimmed = fullName.trim()
+  val lastSpaceIndex = trimmed.lastIndexOf(' ')
+  return if (lastSpaceIndex > 0) {
+    trimmed.substring(lastSpaceIndex + 1)
+  } else {
+    trimmed
+  }
+}
 
 class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
   private val attachmentIdSeq = AtomicInteger()
@@ -43,16 +59,16 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
         statusCode = SarLicenceStatus.from(licence.statusCode!!),
         prisonNumber = licence.nomsId,
         dateLastUpdated = licence.dateLastUpdated,
-        appointmentPerson = licence.appointmentPerson,
+        appointmentPersonLastName = extractSurname(licence.appointmentPerson),
+        appointmentPersonType = SarAppointmentPersonType.from(licence.appointmentPersonType),
         appointmentTime = licence.appointmentTime,
         appointmentTimeType = SarAppointmentTimeType.from(licence.appointmentTimeType),
         appointmentAddress = licence.appointmentAddress,
-        appointmentContact = licence.appointmentContact,
         appointmentTelephoneNumber = licence.appointmentTelephoneNumber,
         appointmentAlternativeTelephoneNumber = licence.appointmentAlternativeTelephoneNumber,
         approvedDate = licence.approvedDate,
         submittedDate = licence.submittedDate,
-        approvedByName = licence.approvedByName,
+        approvedByLastName = extractSurname(licence.approvedByName),
         supersededDate = licence.supersededDate,
         dateCreated = licence.dateCreated,
         standardLicenceConditions = licence.standardLicenceConditions?.map(::transformToSarStandardConditions),
@@ -70,8 +86,9 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
           )
         },
         bespokeConditions = licence.bespokeConditions.map { it.text.toString() },
-        createdByFullName = licence.createdByFullName,
+        createdByLastName = extractSurname(licence.createdByFullName),
         licenceVersion = licence.licenceVersion,
+        policyVersion = licence.version,
         isToBeTaggedForProgramme = isToBeTaggedForProgramme,
         programmeName = programmeName,
       ),

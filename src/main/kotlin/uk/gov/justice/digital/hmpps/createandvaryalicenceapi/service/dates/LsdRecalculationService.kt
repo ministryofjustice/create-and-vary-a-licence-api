@@ -57,6 +57,7 @@ class LsdRecalculationService(
           postRecallReleaseDate = it.postRecallReleaseDate,
           homeDetentionCurfewActualDate = if (it is HdcLicence) it.homeDetentionCurfewActualDate else null,
           homeDetentionCurfewEndDate = if (it is HdcLicence) it.homeDetentionCurfewEndDate else null,
+          homeDetentionCurfewEligibilityDate = if (it is HdcLicence) it.homeDetentionCurfewEligibilityDate else null,
           staffMember = null,
         )
 
