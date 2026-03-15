@@ -2,6 +2,7 @@ insert into licence (id,
                      kind,
                      type_code,
                      version,
+                     licence_version,
                      status_code,
                      noms_id,
                      booking_no,
@@ -33,6 +34,7 @@ insert into licence (id,
 values (1,
         'CRD',
         'AP',
+        '3.0',
         '1.0',
         'IN_PROGRESS',
         'A1234AA',
@@ -76,6 +78,7 @@ insert into licence (id,
                      kind,
                      type_code,
                      version,
+                     licence_version,
                      status_code,
                      noms_id,
                      booking_no,
@@ -102,6 +105,7 @@ insert into licence (id,
                      probation_team_code,
                      responsible_com_id,
                      created_by_com_id,
+                     submitted_by_com_id,
                      version_of_id,
                      date_created,
                      date_last_updated,
@@ -112,6 +116,7 @@ values (2,
         'CRD',
         'AP',
         '1.0',
+        '2.3',
         'APPROVED',
         'A1234AA',
         'BOOKNO',
@@ -136,6 +141,7 @@ values (2,
         'PDU1',
         'LAU1',
         'TEAM1',
+        1,
         1,
         1,
         1,
@@ -201,7 +207,7 @@ VALUES ('SPECIFIC_PERSON', -- person_type
 
 -- 3. Link licence <> appointment
 INSERT INTO licence_appointment (licence_id, appointment_id)
-VALUES ((SELECT MAX(id) FROM licence),
+VALUES (2,
         (SELECT MAX(id) FROM appointment));
 
 -- 4. Address row
@@ -218,6 +224,53 @@ VALUES ('550e8400-e29b-41d4-a716-446655440000',
         'Testville',
         'Testshire',
         'TE5 7AA',
+        'MANUAL');
+
+-- 5. Appointment <> Address join
+INSERT INTO appointment_address (appointment_id, address_id)
+VALUES ((SELECT MAX(id) FROM appointment),
+        (SELECT MAX(id) FROM address));
+
+
+-- 2. Insert the appointment
+INSERT INTO appointment (person_type,
+                         person,
+                         time_type,
+                         time,
+                         address_text,
+                         telephone_contact_number,
+                         alternative_telephone_contact_number,
+                         date_created,
+                         date_last_updated)
+VALUES ('RESPONSIBLE_COM', -- person_type
+        null, -- person
+        'IMMEDIATE_UPON_RELEASE', -- time_type
+        null,
+        '6A Main Road, Shady town, TestTon,Great Testerham,TA5 1AA',
+        '1234556', -- contact
+        '342324343', -- contact_alternative
+        '2020-05-11 10:00:00',
+        '2024-06-21 11:12:00');
+
+-- 3. Link licence <> appointment
+INSERT INTO licence_appointment (licence_id, appointment_id)
+VALUES (1,
+        (SELECT MAX(id) FROM appointment));
+
+-- 4. Address row
+INSERT INTO address (reference,
+                     first_line,
+                     second_line,
+                     town_or_city,
+                     county,
+                     postcode,
+                     source)
+VALUES ('550e8400-e29b-41d4-a716-1211212121',
+        '6A Main Road',
+        'Shady town',
+        'TestTon',
+        'Great Testerham',
+        'TA5 1AA',
         'MANUAL');
 
 -- 5. Appointment <> Address join
@@ -254,4 +307,75 @@ VALUES ('A1234AA',
         '2024-06-02 10:00:00',
         '2024-06-02 11:00:00')
 ;
+
+insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
+VALUES (1, true, 'Test Programme');
+
+-- Create the AP and PSS additional condition
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
+                                  condition_sequence, condition_text, expanded_condition_text, condition_type)
+values (1, 2, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1,
+        'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+        'Not to enter exclusion zone SuperMarket',
+        'AP');
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
+                                  condition_sequence, condition_text, expanded_condition_text, condition_type)
+values (3, 2, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 2,
+        'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+        'Not to enter exclusion zone Takeaway',
+        'AP');
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
+                                  condition_sequence, condition_text, expanded_condition_text, condition_type)
+values (4, 2, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 2,
+        'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+        'Not to enter exclusion zone Park',
+        'PSS');
+
+
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
+                                  condition_sequence, condition_text, expanded_condition_text, condition_type)
+values (5, 2, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1,
+        'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+        'Not to enter exclusion zone area of outstanding natural beauty',
+        'AP');
+
+
+-- For Uploaded File
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
+                                  condition_sequence, condition_text, expanded_condition_text, condition_type)
+values (6, 2, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 2,
+        'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+        'Not to enter exclusion zone the playground',
+        'AP');
+
+INSERT INTO additional_condition_upload (id,
+                                         additional_condition_id,
+                                         full_size_image_ds_uuid,
+                                         original_data_ds_uuid,
+                                         thumbnail_image_ds_uuid,
+                                         file_size, filename, image_type, description, uploaded_time)
+VALUES (1, 6,
+        '37eb7e31-a133-4259-96bc-93369b917eb8',
+        '1595ef41-36e0-4fa8-a98b-bce5c5c98220',
+        '92939445-4159-4214-aa75-d07568a3e136',
+        1,
+        'exclusion zone.png',
+        'image/png',
+        'A description of the exclusion zone boundaries', '2024-06-22 11:32:00');
+
+-- Create the data for the exclusion zone condition
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (1, 1, 1, 'outOfBoundArea', 'Town centre');
+
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (2, 1, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
+
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (5, 3, 1, 'outOfBoundArea', 'Town centre');
+
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (6, 3, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
 
