@@ -44,11 +44,9 @@ class SentenceDatesChangedHandler(
 
     val activeLicence = getActiveLicence(nomisId)
     if (activeLicence != null) {
-      log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
       deactivateLicencesIfPrisonerResentenced(activeLicence, bookingId)
       deactivateLicencesIfFuturePrrd(activeLicence)
     } else {
-      log.info("updating sentence dates for nomisId: $nomisId")
       updateSentenceDates(nomisId)
     }
   }
@@ -57,7 +55,6 @@ class SentenceDatesChangedHandler(
     val ssd = prisonService.getPrisonerLatestSentenceStartDate(bookingId)
     val lsd = licence.licenceStartDate
 
-    log.info("Checking if prisoner resentenced, ssd: {}, lsd: {}", ssd, lsd)
     if (ssd != null && lsd != null && ssd.isAfter(lsd)) {
       licenceService.deactivateLicenceAndVariations(
         licence.id,
