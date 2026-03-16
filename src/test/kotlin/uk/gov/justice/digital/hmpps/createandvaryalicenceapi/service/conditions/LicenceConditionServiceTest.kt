@@ -342,7 +342,7 @@ class LicenceConditionServiceTest {
       assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
       verify(licenceRepository, times(1)).findById(1L)
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
       verifyNoInteractions(uploadFileConditionsService)
       verifyNoInteractions(staffRepository)
     }
@@ -587,7 +587,7 @@ class LicenceConditionServiceTest {
 
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
-      verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
+      verify(bespokeConditionRepository, times(0)).saveAndFlush(any<BespokeCondition>())
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any(), any())
 
@@ -607,7 +607,7 @@ class LicenceConditionServiceTest {
       assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
       verify(licenceRepository, times(1)).findById(1L)
-      verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
+      verify(bespokeConditionRepository, times(0)).saveAndFlush(any<BespokeCondition>())
       verifyNoInteractions(staffRepository)
     }
   }
@@ -638,7 +638,7 @@ class LicenceConditionServiceTest {
       assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
       verify(licenceRepository, times(1)).findById(1L)
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
       verifyNoInteractions(staffRepository)
     }
 
@@ -677,7 +677,7 @@ class LicenceConditionServiceTest {
       assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
       verify(licenceRepository, times(1)).findById(1L)
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
       verifyNoInteractions(staffRepository)
     }
 

@@ -3,13 +3,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 
 class ControllerAdviceTest {
   private val controllerAdvice = ControllerAdvice()
 
   @Test
   fun handleInvalidStateException() {
-    val exception = IllegalStateException("Delius record not found for nomisId: 1234567890")
+    val exception = InvalidStateException("Delius record not found for nomisId: 1234567890")
 
     val response = controllerAdvice.handleInvalidStateException(exception)
 

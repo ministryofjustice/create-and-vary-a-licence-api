@@ -48,7 +48,7 @@ class LicenceOverrideService(
   fun changeStatus(licenceId: Long, newStatus: LicenceStatus, reason: String) {
     val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
@@ -166,7 +166,7 @@ class LicenceOverrideService(
       },
     )
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
     updatedLicence.updateLicenceDates(
       conditionalReleaseDate = request.conditionalReleaseDate,
@@ -201,7 +201,7 @@ class LicenceOverrideService(
   @Transactional
   fun changePrisonerDetails(licenceId: Long, request: OverrideLicencePrisonerDetailsRequest) {
     val licence: Licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     licence.updatePrisonerDetails(

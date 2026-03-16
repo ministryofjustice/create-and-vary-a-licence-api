@@ -19,12 +19,15 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
@@ -134,7 +137,7 @@ class LicenceCreationServiceTest {
 
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
-      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+      whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
     }
 
@@ -466,10 +469,10 @@ class LicenceCreationServiceTest {
 
       assertThat(exception.existingResourceId).isEqualTo(existingLicence.id)
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -495,10 +498,10 @@ class LicenceCreationServiceTest {
 
       assertThat(exception.existingResourceId).isEqualTo(notApprovedLicence.id)
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -516,10 +519,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Offender manager for NOMSID not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -536,10 +539,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Offender manager for NOMSID not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -558,10 +561,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("staff with staff identifier: '2000', missing record in delius")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -572,7 +575,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
       whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
-      whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
+      whenever(staffRepository.saveAndFlush(any<Staff>())).thenReturn(newCom)
 
       service.createLicence(PRISON_NUMBER)
 
@@ -611,10 +614,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Staff with username ${com.username} not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
   }
 
@@ -647,7 +650,7 @@ class LicenceCreationServiceTest {
 
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
-      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+      whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
     }
 
@@ -966,10 +969,10 @@ class LicenceCreationServiceTest {
 
       assertThat(exception.existingResourceId).isEqualTo(existingLicence.id)
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -995,10 +998,10 @@ class LicenceCreationServiceTest {
 
       assertThat(exception.existingResourceId).isEqualTo(notApprovedLicence.id)
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1017,10 +1020,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Offender manager for NOMSID not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1038,10 +1041,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Offender manager for NOMSID not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1062,10 +1065,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("staff with staff identifier: '2000', missing record in delius")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1077,7 +1080,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
       whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
-      whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
+      whenever(staffRepository.saveAndFlush(any<Staff>())).thenReturn(newCom)
 
       service.createLicence(PRISON_NUMBER)
 
@@ -1117,10 +1120,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Staff with username ${com.username} not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
   }
 
@@ -1152,7 +1155,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
 
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
-      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+      whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           kind = LicenceKind.CRD,
@@ -1527,10 +1530,10 @@ class LicenceCreationServiceTest {
         .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
       assertThat(exception.existingResourceId).isEqualTo(existingLicence.id)
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1548,10 +1551,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalArgumentException::class.java)
         .hasMessage("Offender manager for X12345 not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1568,10 +1571,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalArgumentException::class.java)
         .hasMessage("offender NOMSID is currently unallocated in delius")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1590,10 +1593,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("staff with staff identifier: '2000', missing record in delius")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1604,7 +1607,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
       whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
-      whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
+      whenever(staffRepository.saveAndFlush(any<Staff>())).thenReturn(newCom)
 
       service.createHardStopLicence(PRISON_NUMBER)
 
@@ -1643,10 +1646,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Staff with username ca not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1671,10 +1674,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("No hardStopKind on CVL record for $PRISON_NUMBER - not eligible for hard stop licence")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -1858,7 +1861,7 @@ class LicenceCreationServiceTest {
 
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
-      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+      whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
     }
 
@@ -2186,10 +2189,10 @@ class LicenceCreationServiceTest {
 
       assertThat(exception.existingResourceId).isEqualTo(existingLicence.id)
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -2215,10 +2218,10 @@ class LicenceCreationServiceTest {
 
       assertThat(exception.existingResourceId).isEqualTo(notApprovedLicence.id)
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -2236,10 +2239,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Offender manager for NOMSID not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -2256,10 +2259,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Offender manager for NOMSID not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -2278,10 +2281,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("staff with staff identifier: '2000', missing record in delius")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
 
     @Test
@@ -2292,7 +2295,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
       whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
-      whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
+      whenever(staffRepository.saveAndFlush(any<Staff>())).thenReturn(newCom)
 
       service.createLicence(PRISON_NUMBER)
 
@@ -2331,10 +2334,10 @@ class LicenceCreationServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Staff with username ${com.username} not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
   }
 

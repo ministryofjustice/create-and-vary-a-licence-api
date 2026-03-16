@@ -124,7 +124,7 @@ class StaffService(
 
   @Transactional
   fun getPreferredAddress(): List<AddressResponse> {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses(username)
       ?: error("Staff with username $username not found")
 
@@ -134,7 +134,7 @@ class StaffService(
 
   @Transactional
   fun deleteAddressByReference(reference: String) {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staff = staffRepository.findByUsernameIgnoreCaseWithAddresses(username)
       ?: error("Staff with username $username not found")
 
