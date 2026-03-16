@@ -1159,8 +1159,14 @@ object TestData {
 
   fun offenderSentencesAndOffences(bookingId: Long): List<OffenderSentenceAndOffences> {
     val sentenceAndOffences1 =
-      OffenderSentenceAndOffences(bookingId = bookingId, sentenceDate = LocalDate.of(2025, 8, 20))
-    val sentenceAndOffences2 = sentenceAndOffences1.copy(sentenceDate = LocalDate.of(2025, 8, 25))
+      OffenderSentenceAndOffences(
+        bookingId = bookingId,
+        sentenceDate = LocalDate.of(2025, 8, 20),
+        terms = listOf(),
+        offences = listOf(),
+      )
+    val sentenceAndOffences2 =
+      sentenceAndOffences1.copy(sentenceDate = LocalDate.of(2025, 8, 25), terms = listOf(), offences = listOf())
     return listOf(sentenceAndOffences1, sentenceAndOffences2)
   }
 
