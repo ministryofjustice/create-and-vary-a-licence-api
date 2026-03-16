@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -18,6 +19,7 @@ class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
   private val releaseDateService: ReleaseDateService,
   private val hdcService: HdcService,
+  private val isrPssProgressionService: ISRPssProgressionService,
   private val clock: Clock,
   @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
 ) {
@@ -55,6 +57,7 @@ class EligibilityService(
       !isOnIndeterminateSentence(prisoner) to "is on indeterminate sentence",
       hasActivePrisonStatus(prisoner) to "is not active in prison",
       !isBreachOfTopUpSupervision(prisoner) to "is breach of top up supervision case",
+      isPssTypeStillEligible(prisoner) to "PSS licences no longer supported",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
@@ -182,6 +185,16 @@ class EligibilityService(
       }
     }
     return false
+  }
+
+  private fun isPssTypeStillEligible(prisoner: PrisonerSearchPrisoner): Boolean {
+    if (prisoner.licenceExpiryDate == null &&
+      prisoner.topupSupervisionExpiryDate != null &&
+      isrPssProgressionService.isRepealDatePassed()
+    ) {
+      return false
+    }
+    return true
   }
 
   private fun isDead(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.legalStatus == "DEAD"

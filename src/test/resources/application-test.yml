@@ -118,7 +118,9 @@ feature:
       prisons: "MDI, GHI"
     lao:
       enabled: true
-
+    isr:
+      repeal:
+        date: "2026-03-16"
 os:
   places:
     api:
