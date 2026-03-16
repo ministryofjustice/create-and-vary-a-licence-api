@@ -104,6 +104,7 @@ fun transform(model: ModelCurfewTimes): EntityCurfewTimes = EntityCurfewTimes(
 fun ModelCurfewTimes.transformToEntityFirstNightCurfewTimes(): EntityCurfewTimes = EntityCurfewTimes(
   fromTime = fromTime,
   untilTime = untilTime,
+  createdTimestamp = LocalDateTime.now(),
 )
 
 fun UpdatePrisonUserRequest.toEntity() = PrisonUser(
