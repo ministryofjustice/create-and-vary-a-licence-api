@@ -111,7 +111,7 @@ class HdcService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicence
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
@@ -136,7 +136,7 @@ class HdcService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicence
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     val entityFirstNightCurfewTimes =

@@ -87,7 +87,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -166,7 +166,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -254,7 +254,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -309,7 +309,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -367,7 +367,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -483,7 +483,8 @@ class VaryApproverCaseloadServiceTest {
       listOf(CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false)),
     )
 
-    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+    val caseload =
+      service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
 
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
@@ -518,7 +519,8 @@ class VaryApproverCaseloadServiceTest {
       listOf(CaseAccessResponse(crn = "X12348", userExcluded = false, userRestricted = true)),
     )
 
-    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+    val caseload =
+      service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
 
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
@@ -696,7 +698,8 @@ class VaryApproverCaseloadServiceTest {
       ),
     )
 
-    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+    val caseload =
+      service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
 
     assertThat(caseload).hasSize(3)
     assertThat(caseload.map { it.crnNumber }).containsExactly("X12349", "X12348", "X12350")
@@ -747,7 +750,8 @@ class VaryApproverCaseloadServiceTest {
       ),
     )
 
-    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+    val caseload =
+      service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
 
     assertThat(caseload).hasSize(3)
     assertThat(caseload.map { it.crnNumber }).containsExactly("X12348", "X12349", "X12350")

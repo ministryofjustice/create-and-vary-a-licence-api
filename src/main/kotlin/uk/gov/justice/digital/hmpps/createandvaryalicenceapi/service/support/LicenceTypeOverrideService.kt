@@ -47,7 +47,7 @@ class LicenceTypeOverrideService(
       )
     }
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     licence.typeCode = newType

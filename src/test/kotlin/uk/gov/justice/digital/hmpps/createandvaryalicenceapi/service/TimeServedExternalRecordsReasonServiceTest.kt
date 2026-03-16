@@ -36,12 +36,12 @@ private const val PREVIOUS_REASON = "old reason"
 
 class TimeServedExternalRecordsReasonServiceTest {
 
-  private val licenceRepository = mock<TimeServedExternalRecordsRepository>()
+  private val timeServedExternalRecordsRepository = mock<TimeServedExternalRecordsRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
 
   private val service = TimeServedExternalRecordService(
-    licenceRepository,
+    timeServedExternalRecordsRepository,
     staffRepository,
     auditEventRepository,
   )
@@ -49,7 +49,7 @@ class TimeServedExternalRecordsReasonServiceTest {
   @BeforeEach
   fun reset() {
     reset(
-      licenceRepository,
+      timeServedExternalRecordsRepository,
       staffRepository,
       auditEventRepository,
     )
@@ -80,8 +80,8 @@ class TimeServedExternalRecordsReasonServiceTest {
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Staff with username $USERNAME not found")
 
-      verify(licenceRepository, times(0)).saveAndFlush(any())
-      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(timeServedExternalRecordsRepository, times(0)).saveAndFlush(any<TimeServedExternalRecord>())
+      verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
     }
 
     @Test
@@ -91,15 +91,15 @@ class TimeServedExternalRecordsReasonServiceTest {
       val staff = prisonUser().copy(username = USERNAME)
 
       whenever(staffRepository.findByUsernameIgnoreCase(USERNAME)).thenReturn(staff)
-      whenever(licenceRepository.findByNomsIdAndBookingId(PRISON_NUMBER, BOOKING_ID)).thenReturn(null)
-      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+      whenever(timeServedExternalRecordsRepository.findByNomsIdAndBookingId(PRISON_NUMBER, BOOKING_ID)).thenReturn(null)
+      whenever(timeServedExternalRecordsRepository.saveAndFlush(any<TimeServedExternalRecord>())).thenAnswer { it.arguments[0] }
 
       // When
       service.setTimeServedExternalRecord(PRISON_NUMBER, BOOKING_ID, request)
 
       // Then
       argumentCaptor<TimeServedExternalRecord> {
-        verify(licenceRepository).saveAndFlush(capture())
+        verify(timeServedExternalRecordsRepository).saveAndFlush(capture())
         with(firstValue) {
           assertThat(nomsId).isEqualTo(PRISON_NUMBER)
           assertThat(bookingId).isEqualTo(BOOKING_ID)
@@ -137,15 +137,15 @@ class TimeServedExternalRecordsReasonServiceTest {
       )
 
       whenever(staffRepository.findByUsernameIgnoreCase(USERNAME)).thenReturn(staff)
-      whenever(licenceRepository.findByNomsIdAndBookingId(PRISON_NUMBER, BOOKING_ID)).thenReturn(existingRecord)
-      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+      whenever(timeServedExternalRecordsRepository.findByNomsIdAndBookingId(PRISON_NUMBER, BOOKING_ID)).thenReturn(existingRecord)
+      whenever(timeServedExternalRecordsRepository.saveAndFlush(any<TimeServedExternalRecord>())).thenAnswer { it.arguments[0] }
 
       // When
       service.setTimeServedExternalRecord(PRISON_NUMBER, BOOKING_ID, request)
 
       // Then
       argumentCaptor<TimeServedExternalRecord> {
-        verify(licenceRepository).saveAndFlush(capture())
+        verify(timeServedExternalRecordsRepository).saveAndFlush(capture())
         with(firstValue) {
           assertThat(nomsId).isEqualTo(PRISON_NUMBER)
           assertThat(bookingId).isEqualTo(BOOKING_ID)

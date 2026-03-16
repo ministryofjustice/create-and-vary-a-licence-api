@@ -87,6 +87,16 @@ dependencies {
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:1.2.1")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.8.2")
+}
+
+configurations.matching { it.name == "detekt" }.all {
+  resolutionStrategy.eachDependency {
+    if (requested.group == "org.jetbrains.kotlin") {
+      useVersion("2.0.21")
+    }
+  }
 }
 
 detekt {
@@ -118,8 +128,16 @@ configurations {
 
 tasks {
   withType<KotlinCompile> {
-    compilerOptions.jvmTarget = JVM_21
-    compilerOptions.freeCompilerArgs = listOf("-Xjvm-default=all")
+    compilerOptions {
+      jvmTarget = JVM_21
+      freeCompilerArgs.addAll(
+        "-Xwhen-guards",
+        "-Xjvm-default=all",
+        "-Xjsr305=warn",
+        "-Xtype-enhancement-improvements-strict-mode=false",
+        "-Xjspecify-annotations=ignore",
+      )
+    }
   }
   withType<Detekt> {
     reports {

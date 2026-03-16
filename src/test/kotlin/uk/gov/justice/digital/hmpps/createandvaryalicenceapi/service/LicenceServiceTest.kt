@@ -459,7 +459,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
@@ -883,7 +883,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     verify(notifyService, never()).sendLicenceToOmuForReApprovalEmail(
       eq("test@test.com"),
       eq(aLicenceEntity.forename ?: "unknown"),
@@ -1243,9 +1243,9 @@ class LicenceServiceTest {
       )
     }
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<EntityAuditEvent>())
     verify(notifyService, times(0)).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
@@ -1262,9 +1262,9 @@ class LicenceServiceTest {
       )
     }
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<EntityAuditEvent>())
     verify(notifyService, times(0)).sendLicenceToOmuForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
@@ -1305,9 +1305,9 @@ class LicenceServiceTest {
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<EntityAuditEvent>())
     verifyNoInteractions(staffRepository)
   }
 
@@ -1322,9 +1322,9 @@ class LicenceServiceTest {
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<EntityAuditEvent>())
     verifyNoInteractions(staffRepository)
   }
 
@@ -1450,9 +1450,9 @@ class LicenceServiceTest {
 
     val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<EntityAuditEvent>())
     assertThat(exception).isInstanceOf(ValidationException::class.java)
     assertThat(exception).message().isEqualTo("Unable to perform action, licence 1 is ineligible for CVL")
   }
@@ -1957,7 +1957,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(aLicenceEntity),
     )
-    whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(aLicenceEntity)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
@@ -1989,7 +1989,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(anHdcLicenceEntity),
     )
-    whenever(licenceRepository.save(any())).thenReturn(anHdcLicenceEntity)
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcLicenceEntity)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
@@ -2028,7 +2028,7 @@ class LicenceServiceTest {
         ),
       ),
     )
-    whenever(licenceRepository.save(any())).thenReturn(
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(
       aLicenceEntity.copy(
         additionalConditions = additionalConditions,
         licenceExpiryDate = LocalDate.now().plusDays(1),
@@ -2062,7 +2062,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(aTimeServedLicence.copy(responsibleCom = null)),
     )
-    whenever(licenceRepository.save(any())).thenReturn(aTimeServedLicence)
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(aTimeServedLicence)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
@@ -2102,7 +2102,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(approvedLicence),
     )
-    whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(aLicenceEntity)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
     val auditEventCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -2148,7 +2148,7 @@ class LicenceServiceTest {
       Optional.of(approvedLicence),
     )
 
-    whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(approvedLicence)
 
     val newLicenceCaptor = argumentCaptor<Licence>()
     service.editLicence(1L)
@@ -2192,7 +2192,7 @@ class LicenceServiceTest {
         dateCreated = LocalDateTime.now(),
       ),
     )
-    whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(approvedLicence)
 
     service.editLicence(1L)
     verify(notifyService, times(1)).sendLicenceToOmuForReApprovalEmail(
@@ -2235,8 +2235,8 @@ class LicenceServiceTest {
 
     val exception = assertThrows<ValidationException> { service.editLicence(1L) }
 
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<EntityAuditEvent>())
     assertThat(exception).isInstanceOf(ValidationException::class.java)
     assertThat(exception).message().isEqualTo("Unable to perform action, licence 1 is ineligible for CVL")
   }
@@ -2458,9 +2458,9 @@ class LicenceServiceTest {
     assertThrows<IllegalStateException> { service.referLicenceVariation(1L, referVariationRequest) }
 
     verify(licenceRepository, times(1)).findById(1L)
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<EntityAuditEvent>())
     verify(notifyService, times(0)).sendVariationReferredEmail(
       any(),
       any(),
@@ -2697,9 +2697,9 @@ class LicenceServiceTest {
     assertThrows<IllegalStateException> { service.approveLicenceVariation(2L) }
 
     verify(licenceRepository, times(1)).findById(2L)
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<EntityAuditEvent>())
     verify(notifyService, times(0)).sendVariationApprovedEmail(
       any(),
       any(),
@@ -2933,9 +2933,9 @@ class LicenceServiceTest {
     verify(
       licenceRepository,
       times(0),
-    ).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    ).saveAndFlush(any<EntityLicence>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<EntityAuditEvent>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
   }
 
   @Test
@@ -3159,9 +3159,9 @@ class LicenceServiceTest {
 
       service.reviewWithNoVariationRequired(1L)
 
-      verify(licenceRepository, never()).saveAndFlush(any())
-      verify(auditEventRepository, never()).saveAndFlush(any())
-      verify(licenceEventRepository, never()).saveAndFlush(any())
+      verify(licenceRepository, never()).saveAndFlush(any<EntityLicence>())
+      verify(auditEventRepository, never()).saveAndFlush(any<EntityAuditEvent>())
+      verify(licenceEventRepository, never()).saveAndFlush(any<EntityLicenceEvent>())
     }
 
     @Test
@@ -3173,9 +3173,9 @@ class LicenceServiceTest {
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessage("1")
 
-      verify(licenceRepository, never()).saveAndFlush(any())
-      verify(auditEventRepository, never()).saveAndFlush(any())
-      verify(licenceEventRepository, never()).saveAndFlush(any())
+      verify(licenceRepository, never()).saveAndFlush(any<EntityLicence>())
+      verify(auditEventRepository, never()).saveAndFlush(any<EntityAuditEvent>())
+      verify(licenceEventRepository, never()).saveAndFlush(any<EntityLicenceEvent>())
     }
 
     @Test
@@ -3190,9 +3190,9 @@ class LicenceServiceTest {
       }.isInstanceOf(ValidationException::class.java)
         .hasMessage("Trying to review a CrdLicence: 1")
 
-      verify(licenceRepository, never()).saveAndFlush(any())
-      verify(auditEventRepository, never()).saveAndFlush(any())
-      verify(licenceEventRepository, never()).saveAndFlush(any())
+      verify(licenceRepository, never()).saveAndFlush(any<EntityLicence>())
+      verify(auditEventRepository, never()).saveAndFlush(any<EntityAuditEvent>())
+      verify(licenceEventRepository, never()).saveAndFlush(any<EntityLicenceEvent>())
     }
   }
 
@@ -3357,9 +3357,9 @@ class LicenceServiceTest {
 
       service.activateVariation(1L)
 
-      verify(licenceRepository, never()).saveAndFlush(any())
-      verify(auditEventRepository, never()).saveAndFlush(any())
-      verify(licenceEventRepository, never()).saveAndFlush(any())
+      verify(licenceRepository, never()).saveAndFlush(any<EntityLicence>())
+      verify(auditEventRepository, never()).saveAndFlush(any<EntityAuditEvent>())
+      verify(licenceEventRepository, never()).saveAndFlush(any<EntityLicenceEvent>())
     }
 
     @Test
@@ -3376,9 +3376,9 @@ class LicenceServiceTest {
 
       service.activateVariation(1L)
 
-      verify(licenceRepository, never()).saveAndFlush(any())
-      verify(auditEventRepository, never()).saveAndFlush(any())
-      verify(licenceEventRepository, never()).saveAndFlush(any())
+      verify(licenceRepository, never()).saveAndFlush(any<EntityLicence>())
+      verify(auditEventRepository, never()).saveAndFlush(any<EntityAuditEvent>())
+      verify(licenceEventRepository, never()).saveAndFlush(any<EntityLicenceEvent>())
     }
 
     @Test
@@ -3467,7 +3467,7 @@ class LicenceServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
 
       assertThat(licenceCaptor.value)
         .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
@@ -4001,7 +4001,7 @@ class LicenceServiceTest {
         anEligibilityAssessment(),
       )
 
-      whenever(licenceRepository.save(any())).thenReturn(anHdcLicenceEntity)
+      whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcLicenceEntity)
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
@@ -4048,7 +4048,7 @@ class LicenceServiceTest {
         anEligibilityAssessment(),
       )
 
-      whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
+      whenever(licenceRepository.save(any<Licence>())).thenReturn(approvedLicence)
 
       val newLicenceCaptor = argumentCaptor<Licence>()
 

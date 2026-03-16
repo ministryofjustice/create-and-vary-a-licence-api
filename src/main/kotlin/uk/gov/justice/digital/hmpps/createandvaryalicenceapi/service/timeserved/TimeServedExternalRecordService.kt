@@ -132,7 +132,7 @@ class TimeServedExternalRecordService(
   }
 
   private fun getCurrentStaff(): Staff {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     return staffRepository.findByUsernameIgnoreCase(username)
       ?: error("Staff with username $username not found")
   }

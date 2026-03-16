@@ -72,6 +72,7 @@ export HDC_ENABLED=true
 export LAO_ENABLED=true
 export STANDARD_RECALLS_ENABLED=false
 export USE_CURRENT_HDC_STATUS=false
+export ISR_REPEAL_DATE="2026-03-16"
 
 SKIP_DOCKER=false
 DEBUG=""

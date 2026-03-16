@@ -193,7 +193,7 @@ class LicenceTypeOverrideServiceTest {
 
       licenceOverrideService.changeType(licence.id, AP, "Test change to AP")
 
-      verify(licenceRepository, never()).saveAndFlush(any())
+      verify(licenceRepository, never()).saveAndFlush(any<Licence>())
       verifyNoInteractions(auditEventRepository)
     }
   }
@@ -333,7 +333,7 @@ class LicenceTypeOverrideServiceTest {
 
       licenceOverrideService.changeType(licence.id, PSS, "Test change to PSS")
 
-      verify(licenceRepository, never()).saveAndFlush(any())
+      verify(licenceRepository, never()).saveAndFlush(any<Licence>())
       verifyNoInteractions(auditEventRepository)
     }
   }
@@ -468,7 +468,7 @@ class LicenceTypeOverrideServiceTest {
 
       licenceOverrideService.changeType(licence.id, AP_PSS, "Test change to AP_PSS")
 
-      verify(licenceRepository, never()).saveAndFlush(any())
+      verify(licenceRepository, never()).saveAndFlush(any<Licence>())
       verifyNoInteractions(auditEventRepository)
     }
   }

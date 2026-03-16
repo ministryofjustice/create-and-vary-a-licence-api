@@ -39,6 +39,7 @@ export TIME_SERVED_PRISONS="MDI, BAI, BNI"
 export HDC_ENABLED=false
 export LAO_ENABLED=false
 export STANDARD_RECALLS_ENABLED=false
+export ISR_REPEAL_DATE="2026-03-16"
 
 # --- Write to .env file ---
 fileDir=~/env-config/
@@ -70,6 +71,7 @@ cat > "$fileToAddVars" <<EOF
   HDC_ENABLED=${HDC_ENABLED}
   LAO_ENABLED=${LAO_ENABLED}
   STANDARD_RECALLS_ENABLED=${STANDARD_RECALLS_ENABLED}
+  ISR_REPEAL_DATE=${ISR_REPEAL_DATE}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"

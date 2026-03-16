@@ -17,6 +17,7 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCountsDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
@@ -40,7 +41,7 @@ class StaffServiceTest {
   @BeforeEach
   fun reset() {
     reset(staffRepository, deliusApiClient, licenceRepository)
-    whenever(staffRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+    whenever(staffRepository.saveAndFlush(any<Staff>())).thenAnswer { it.arguments[0] }
   }
 
   @Nested
@@ -235,7 +236,7 @@ class StaffServiceTest {
       )
 
       verify(staffRepository, times(1)).findPrisonUserByUsernameIgnoreCase("jbloggs")
-      verify(staffRepository, never()).saveAndFlush(any())
+      verify(staffRepository, never()).saveAndFlush(any<Staff>())
     }
 
     @Test
