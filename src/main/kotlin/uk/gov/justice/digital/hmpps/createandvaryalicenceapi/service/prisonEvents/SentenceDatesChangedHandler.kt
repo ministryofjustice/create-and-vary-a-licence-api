@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
@@ -24,6 +25,8 @@ class SentenceDatesChangedHandler(
   private val licenceService: LicenceService,
   private val prisonService: PrisonService,
   private val updateSentenceDateService: UpdateSentenceDateService,
+  @param:Value("\${feature.toggle.standardRecalls.enabled:false}")
+  private val areStandardRecallsEnabled: Boolean = false,
 ) {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -83,8 +86,10 @@ class SentenceDatesChangedHandler(
   }
 
   private fun deactivateLicenceIfOnStandardRecall(licence: Licence) {
-    if (prisonService.hasStandardRecallSentence(licence.bookingId!!)) {
-      deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeactivationReason.STANDARD_RECALL)
+    if (areStandardRecallsEnabled) {
+      if (prisonService.hasStandardRecallSentence(licence.bookingId!!)) {
+        deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeactivationReason.STANDARD_RECALL)
+      }
     }
   }
 

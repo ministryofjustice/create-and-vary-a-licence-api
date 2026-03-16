@@ -87,6 +87,8 @@ feature:
       prisons: "MDI, GHI"
     lao:
       enabled: true
+    standardRecalls:
+      enabled: true
 
 os:
   places:
