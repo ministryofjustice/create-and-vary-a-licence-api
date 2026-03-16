@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -16,6 +15,7 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.ResponseEntity
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
@@ -28,22 +28,25 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.W
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.mapper.OffenderManagerMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.WorkLoadAllocationResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class ComAllocatedHandlerTest {
+
+  private val mapper: ObjectMapper = createMapper()
 
   private val deliusApiClient = mock<DeliusApiClient>()
   private val workLoadApiClient = mock<WorkLoadApiClient>()
   private val offenderService = mock<OffenderService>()
   private val staffService = mock<StaffService>()
   private val offenderManagerMapper = mock<OffenderManagerMapper>()
-  private val objectMapper = jacksonObjectMapper()
+
   private val handler = ComAllocatedHandler(
     deliusApiClient,
     workLoadApiClient,
     offenderService,
-    objectMapper,
+    mapper,
     staffService,
     offenderManagerMapper,
   )
@@ -218,7 +221,7 @@ class ComAllocatedHandlerTest {
     teamDescription = "Test Team",
   )
 
-  private fun buildEventJson(crn: String, detailUrl: String? = "/allocation/person/${UUID.randomUUID()}"): String = objectMapper.writeValueAsString(
+  private fun buildEventJson(crn: String, detailUrl: String? = "/allocation/person/${UUID.randomUUID()}"): String = mapper.writeValueAsString(
     HMPPSDomainEvent(
       eventType = COM_ALLOCATED_EVENT_TYPE,
       version = 0,

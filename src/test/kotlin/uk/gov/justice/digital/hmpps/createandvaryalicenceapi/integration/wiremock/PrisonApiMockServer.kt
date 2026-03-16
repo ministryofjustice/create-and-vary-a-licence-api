@@ -1,28 +1,22 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderSentencesAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenderSentenceAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
 import java.time.LocalDate
 
 class PrisonApiMockServer : WireMockServer(8091) {
 
   companion object {
-    val objectMapper = ObjectMapper().apply {
-      registerModule(Jdk8Module())
-      registerModule(JavaTimeModule())
-      registerKotlinModule()
-    }
+    private val mapper: ObjectMapper = createMapper()
   }
 
   fun stubGetHdcLatest(bookingId: Long = 12345, approvalStatus: String = "REJECTED", passed: Boolean = true) {
@@ -115,7 +109,7 @@ class PrisonApiMockServer : WireMockServer(8091) {
                }
             ],
             "legalStatus": "SENTENCED",
-            "sentenceDetail": ${objectMapper.writeValueAsString(sentenceDetail)},
+            "sentenceDetail": ${mapper.writeValueAsString(sentenceDetail)},
             "agencyId": "ABC",
             "status": "ACTIVE IN"
           }
@@ -179,7 +173,7 @@ class PrisonApiMockServer : WireMockServer(8091) {
     stubFor(
       post(urlEqualTo("/api/offender-sentences/bookings/sentence-and-recall-types")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
-          objectMapper.writeValueAsString(sentenceAndRecallTypes),
+          mapper.writeValueAsString(sentenceAndRecallTypes),
         ).withStatus(200),
       ),
     )
@@ -192,7 +186,7 @@ class PrisonApiMockServer : WireMockServer(8091) {
     stubFor(
       get(urlEqualTo("/api/offender-sentences/booking/$bookingId/sentences-and-offences")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
-          objectMapper.writeValueAsString(sentencesAndOffences),
+          mapper.writeValueAsString(sentencesAndOffences),
         ).withStatus(200),
       ),
     )

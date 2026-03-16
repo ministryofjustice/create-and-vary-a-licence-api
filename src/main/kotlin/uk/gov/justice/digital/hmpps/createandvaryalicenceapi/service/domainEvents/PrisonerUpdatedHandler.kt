@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 
 @Service
 class PrisonerUpdatedHandler(
-  private val objectMapper: ObjectMapper,
+  private val mapper: ObjectMapper,
   private val offenderService: OffenderService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   @param:Value("\${update.offender.details.handler.enabled}") private val updateOffenderDetailsHandleEnabled: Boolean,
@@ -22,7 +22,7 @@ class PrisonerUpdatedHandler(
 
   fun handleEvent(message: String) {
     if (updateOffenderDetailsHandleEnabled) {
-      val event = objectMapper.readValue(message, HMPPSPrisonerUpdatedEvent::class.java)
+      val event = mapper.readValue(message, HMPPSPrisonerUpdatedEvent::class.java)
       if (event.additionalInformation.categoriesChanged.contains(DiffCategory.PERSONAL_DETAILS)) {
         updatePrisonerDetails(event.additionalInformation.nomsNumber)
       }

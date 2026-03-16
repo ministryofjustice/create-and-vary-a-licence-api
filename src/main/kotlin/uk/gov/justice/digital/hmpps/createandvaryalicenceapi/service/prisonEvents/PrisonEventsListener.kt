@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.EventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Message
 
@@ -17,7 +17,7 @@ const val CONFIRMED_RELEASE_DATE_CHANGED_EVENT_TYPE = "CONFIRMED_RELEASE_DATE-CH
 @Service
 class PrisonEventsListener(
   private val sentenceDatesChangedHandler: SentenceDatesChangedHandler,
-  private val objectMapper: ObjectMapper,
+  private val mapper: ObjectMapper,
 ) {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -27,7 +27,7 @@ class PrisonEventsListener(
   fun onMessage(
     rawMessage: String,
   ) {
-    val (message, _, messageAttributes) = objectMapper.readValue<Message>(rawMessage)
+    val (message, _, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
 
     when (val eventType = messageAttributes.eventType.value) {
       SENTENCE_DATES_CHANGED_EVENT_TYPE, CONFIRMED_RELEASE_DATE_CHANGED_EVENT_TYPE -> {
