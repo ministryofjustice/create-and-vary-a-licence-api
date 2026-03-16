@@ -206,7 +206,7 @@ class OffenderServiceTest {
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
     verify(licenceRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
   }
 
   @Test

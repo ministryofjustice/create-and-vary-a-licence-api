@@ -176,7 +176,7 @@ class ControllerAdvice {
   }
 
   @ExceptionHandler(InvalidStateException::class)
-  fun handleInvalidStateException(e: Exception): ResponseEntity<ErrorResponse?> {
+  fun handleInvalidStateException(e: InvalidStateException): ResponseEntity<ErrorResponse?> {
     log.error("InvalidStateException: ${e.message}")
     return ResponseEntity
       .status(HttpStatus.UNPROCESSABLE_ENTITY)

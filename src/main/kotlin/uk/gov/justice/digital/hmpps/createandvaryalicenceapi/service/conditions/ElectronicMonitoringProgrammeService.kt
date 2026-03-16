@@ -32,7 +32,7 @@ class ElectronicMonitoringProgrammeService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     val electronicMonitoringProvider = when (licenceEntity) {

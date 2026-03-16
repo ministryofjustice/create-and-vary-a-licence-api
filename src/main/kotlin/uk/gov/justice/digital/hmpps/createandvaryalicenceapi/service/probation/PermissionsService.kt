@@ -16,7 +16,7 @@ class PermissionsService(
 ) {
 
   fun getDetailsForExcludedOrRestrictedCase(crn: String): CaseAccessDetails {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val caseAccessResponse = deliusApiClient.getCheckUserAccessForCRN(username, crn)
 
     return if (caseAccessResponse.userRestricted) {
@@ -29,7 +29,7 @@ class PermissionsService(
   }
 
   fun checkCaseAccess(checkCaseAccessRequest: CheckCaseAccessRequest): CaseAccessDetails {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
 
     if (checkCaseAccessRequest.crn == null && checkCaseAccessRequest.nomisId == null && checkCaseAccessRequest.licenceId == null) {
       throw ValidationException("crn, nomisId or licenceId must be provided")
