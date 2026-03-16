@@ -106,7 +106,7 @@ class CvlReportController(
   )
   fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> = upcomingElectronicMonitoringCasesService.getUpcomingReleasesWithMonitoringConditions()
 
-  @GetMapping("/licence-status-report")
+  @GetMapping("/licence-status-cases")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Retrieve a list of cases providing all licences at all statuses today",
