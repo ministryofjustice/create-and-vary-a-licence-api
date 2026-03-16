@@ -241,7 +241,7 @@ class ComCaseloadSearchService(
   }
 
   private fun getCaseAccessRecords(deliusRecordsToLicences: List<Pair<CaseloadResult, Licence?>>): Map<String, CaseAccessResponse> {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val crns = deliusRecordsToLicences.map { (caseloadResult, _) -> caseloadResult.crn }
     return deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
   }

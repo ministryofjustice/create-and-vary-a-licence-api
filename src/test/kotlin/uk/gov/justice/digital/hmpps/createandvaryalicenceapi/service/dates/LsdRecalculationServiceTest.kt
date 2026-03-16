@@ -85,8 +85,8 @@ class LsdRecalculationServiceTest {
 
     assertThat(service.batchUpdateLicenceStartDate(10, 0)).isEqualTo(1)
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
   }
 
   @Test
@@ -140,7 +140,7 @@ class LsdRecalculationServiceTest {
 
     service.batchUpdateLicenceStartDate(10, 0)
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
   }
 
   @Test
@@ -204,7 +204,7 @@ class LsdRecalculationServiceTest {
 
     service.batchUpdateLicenceStartDate(10, 0)
 
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
   }
 
   private companion object {

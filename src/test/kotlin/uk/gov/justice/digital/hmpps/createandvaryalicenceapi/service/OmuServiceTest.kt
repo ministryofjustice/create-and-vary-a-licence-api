@@ -52,13 +52,13 @@ class OmuServiceTest {
   fun `updates existing OMU email`() {
     val expectedOmuContact =
       OmuContact(email = "test.omu@test.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
-    whenever(omuContactRepository.saveAndFlush(any())).thenReturn(expectedOmuContact)
+    whenever(omuContactRepository.saveAndFlush(any<OmuContact>())).thenReturn(expectedOmuContact)
     val omuContactRequest = UpdateOmuEmailRequest(email = "test.omu@test.com")
 
     val result = omuService.updateOmuEmail("FPI", omuContactRequest)
 
     verify(omuContactRepository, times(1)).findByPrisonCode("FPI")
-    verify(omuContactRepository, times(1)).saveAndFlush(any())
+    verify(omuContactRepository, times(1)).saveAndFlush(any<OmuContact>())
     assertThat(result).isEqualTo(expectedOmuContact)
   }
 
@@ -67,13 +67,13 @@ class OmuServiceTest {
     val expectedOmuContact =
       OmuContact(email = "test.omu@test.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
     whenever(omuContactRepository.findByPrisonCode("FPI")).thenReturn(null)
-    whenever(omuContactRepository.saveAndFlush(any())).thenReturn(expectedOmuContact)
+    whenever(omuContactRepository.saveAndFlush(any<OmuContact>())).thenReturn(expectedOmuContact)
     val omuContactRequest = UpdateOmuEmailRequest(email = "test.omu@test.com")
 
     val result = omuService.updateOmuEmail("FPI", omuContactRequest)
 
     verify(omuContactRepository, times(1)).findByPrisonCode("FPI")
-    verify(omuContactRepository, times(1)).saveAndFlush(any())
+    verify(omuContactRepository, times(1)).saveAndFlush(any<OmuContact>())
     assertThat(result).isEqualTo(expectedOmuContact)
   }
 

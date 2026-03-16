@@ -8,6 +8,7 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -35,7 +36,7 @@ class LicenceExpiryServiceTest {
 
     service.expireLicences()
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
   }
 
   @Test

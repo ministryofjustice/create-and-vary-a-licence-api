@@ -13,7 +13,7 @@ import java.time.LocalTime
 
 @Configuration
 class OpenApiConfiguration(buildProperties: BuildProperties) {
-  private val version: String = buildProperties.version
+  private val version: String = buildProperties.version!!
 
   private val publicApiDescription: String =
     """

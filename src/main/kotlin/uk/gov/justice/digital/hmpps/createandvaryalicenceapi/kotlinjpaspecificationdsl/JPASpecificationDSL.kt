@@ -38,7 +38,7 @@ fun <T, R : Any> KProperty1<T, R?>.includedIn(values: Collection<R>): Specificat
     `in`(path).apply { values.forEach { this.value(it) } }
   }
 } else {
-  Specification.where(null)
+  Specification.unrestricted<T>()
 }
 
 // Comparison
@@ -93,4 +93,4 @@ operator fun <T> Specification<T>.not(): Specification<T> = Specification.not(th
 inline fun <reified T> combineSpecification(specs: Iterable<Specification<T>?>, operation: Specification<T>.(Specification<T>) -> Specification<T>): Specification<T> = specs.filterNotNull().fold(emptySpecification()) { existing, new -> existing.operation(new) }
 
 // Empty Specification
-inline fun <reified T> emptySpecification(): Specification<T> = Specification.where(null)
+inline fun <reified T> emptySpecification(): Specification<T> = Specification.unrestricted<T>()

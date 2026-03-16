@@ -19,7 +19,7 @@ class TimeServedProbationConfirmContactService(
 
   @Transactional
   fun addConfirmContact(licenceId: Long, request: TimeServedProbationConfirmContactRequest) {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
 
     log.info("Creating new TimeServedProbationConfirmContact for licenceId $licenceId")
     val newEntity = TimeServedProbationConfirmContact(

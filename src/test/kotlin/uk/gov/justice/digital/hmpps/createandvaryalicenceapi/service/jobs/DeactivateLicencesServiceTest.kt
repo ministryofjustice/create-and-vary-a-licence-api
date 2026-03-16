@@ -66,8 +66,8 @@ class DeactivateLicencesServiceTest {
     service.deactivateLicences()
     verify(licenceRepository, times(1)).getDraftLicencesPassedReleaseDate()
     verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
   }
 
   @Test

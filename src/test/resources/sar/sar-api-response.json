@@ -1,0 +1,157 @@
+{
+  "licences": [
+    {
+      "licenceId": 1,
+      "kind": "CRD",
+      "typeCode": "All purpose",
+      "statusCode": "In progress",
+      "prisonNumber": "A1234AA",
+      "appointmentPersonLastName": null,
+      "appointmentPersonType": "Responsible COM",
+      "appointmentTime": null,
+      "appointmentTimeType": "Immediate upon release",
+      "appointmentAddress": "6A Main Road, Shady town, TestTon,Great Testerham,TA5 1AA",
+      "approvedDate": null,
+      "submittedByLastName": null,
+      "submittedDate": null,
+      "approvedByLastName": null,
+      "supersededDate": null,
+      "dateCreated": "01/06/2019 14:00:00",
+      "licenceStartDate": "25/02/2022",
+      "dateLastUpdated": "01/06/2024 15:00:00",
+      "standardLicenceConditions": [
+        {
+          "code": "goodBehaviour",
+          "text": "Be of generally good behaviour"
+        },
+        {
+          "code": "notBreakLaw",
+          "text": "Do not break the law"
+        }
+      ],
+      "standardPssConditions": [
+        {
+          "code": "attendMeetings",
+          "text": "Attend meetings"
+        }
+      ],
+      "additionalLicenceConditions": [],
+      "additionalPssConditions": [],
+      "bespokeConditions": [
+        "condition 1",
+        "condition 2"
+      ],
+      "createdByLastName": "Client",
+      "licenceVersion": "1.0",
+      "policyVersion": "3.0",
+      "isToBeTaggedForProgramme": true,
+      "programmeName": "Test Programme"
+    },
+    {
+      "licenceId": 2,
+      "kind": "CRD",
+      "typeCode": "All purpose",
+      "statusCode": "Approved",
+      "prisonNumber": "A1234AA",
+      "appointmentPersonLastName": "Smith",
+      "appointmentPersonType": "Specific person",
+      "appointmentTime": "25/02/2022 10:00",
+      "appointmentTimeType": "Specific date time",
+      "appointmentAddress": "123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA",
+      "approvedDate": "11/08/2024 11:22:00",
+      "submittedByLastName": "Client",
+      "submittedDate": "20/02/2024 15:12:00",
+      "approvedByLastName": "Approver",
+      "supersededDate": null,
+      "dateCreated": "11/04/2020 10:00:00",
+      "licenceStartDate": "25/02/2022",
+      "dateLastUpdated": "21/07/2024 11:12:00",
+      "standardLicenceConditions": [
+        {
+          "code": "goodBehaviour",
+          "text": "Be of generally good behaviour"
+        },
+        {
+          "code": "notBreakLaw",
+          "text": "Do not break the law"
+        }
+      ],
+      "standardPssConditions": [
+        {
+          "code": "attendMeetings",
+          "text": "Attend meetings"
+        }
+      ],
+      "additionalLicenceConditions": [
+        {
+          "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
+          "version": "1.0",
+          "category": "Freedom of movement",
+          "text": "Not to enter exclusion zone SuperMarket",
+          "uploadSummary": []
+        },
+        {
+          "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
+          "version": "1.0",
+          "category": "Freedom of movement",
+          "text": "Not to enter exclusion zone area of outstanding natural beauty",
+          "uploadSummary": []
+        },
+        {
+          "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
+          "version": "1.0",
+          "category": "Freedom of movement",
+          "text": "Not to enter exclusion zone Takeaway",
+          "uploadSummary": []
+        },
+        {
+          "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
+          "version": "1.0",
+          "category": "Freedom of movement",
+          "text": "Not to enter exclusion zone the playground",
+          "uploadSummary": [
+            {
+              "attachmentNumber": 0,
+              "filename": "exclusion zone.png",
+              "imageType": "image/png",
+              "fileSize": 1,
+              "uploadedTime": "22/06/2024 11:32",
+              "description": "A description of the exclusion zone boundaries"
+            }
+          ]
+        }
+      ],
+      "additionalPssConditions": [
+        {
+          "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
+          "version": "1.0",
+          "category": "Freedom of movement",
+          "text": "Not to enter exclusion zone Park",
+          "uploadSummary": []
+        }
+      ],
+      "bespokeConditions": [
+        "condition 3"
+      ],
+      "createdByLastName": "Client",
+      "licenceVersion": "2.3",
+      "policyVersion": "1.0",
+      "isToBeTaggedForProgramme": null,
+      "programmeName": null
+    }
+  ],
+  "timeServedExternalRecords": [
+    {
+      "reason": "Time served licence created in NOMIS",
+      "prisonCode": "MDI",
+      "dateCreated": "01/06/2024 10:00:00",
+      "dateLastUpdated": "01/06/2024 11:00:00"
+    },
+    {
+      "reason": "Some other time served licence created in NOMIS",
+      "prisonCode": "MDI",
+      "dateCreated": "02/06/2024 10:00:00",
+      "dateLastUpdated": "02/06/2024 11:00:00"
+    }
+  ]
+}
