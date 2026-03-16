@@ -146,8 +146,8 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
         LEFT JOIN l.responsibleCom com
         LEFT JOIN l.updatedBy updatedBy
         WHERE l.prisonCode IN :prisonCodes 
-        AND (l.statusCode = 'ACTIVE' and l.licenceActivatedDate > :dateAfter)
-        OR (l.statusCode = 'APPROVED' and l.approvedDate > :dateAfter)
+        AND ((l.statusCode = 'ACTIVE' and l.licenceActivatedDate > :dateAfter)
+        OR (l.statusCode = 'APPROVED' and l.approvedDate > :dateAfter))
     ORDER BY l.approvedDate DESC
     """,
   )

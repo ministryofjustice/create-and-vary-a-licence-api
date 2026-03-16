@@ -139,22 +139,6 @@ Pull latest dependencies according to the `build.gradle.kts` file
 
 `./gradlew dependencyCheckAnalyze`
 
-## Subject access requests
-
-This project makes use of the subject access request test library.
-
-If we persist any additional information about an offender, as a team we need consider whether we need to include this
-in the SAR responses.
-
-Any changes to data models or API responses that will affect the SAR responses should be reflected in the SAR snapshots.
-These are stored in `src/test/resources/sar-snapshots` and are used to compare against the actual responses received
-from the API when running the SAR integration tests.
-
-To regenerate SAR snapshots - use the following command, which will run the SAR integration tests and update the
-snapshots with the actual responses received from the API. This is useful to do if you have made changes to the API that
-will affect the SAR responses, and you want to make sure the snapshots are up to date with the new expected responses.
-`SAR_GENERATE_ACTUAL=true ./gradlew integrationTest --tests "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.sar.SubjectAccessRequestIntegrationTest"`
-
 ## Kotlin JPA specification
 
 This project makes use of `https://github.com/consoleau/kotlin-jpa-specification-dsl` to wrap the JPA specification

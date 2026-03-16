@@ -19,17 +19,8 @@ data class SarLicence(
   @field:Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
   val prisonNumber: String?,
 
-  @field:Schema(
-    description = "The last name of the person they will meet at their initial appointment",
-    example = "Smith",
-  )
-  val appointmentPersonLastName: String?,
-
-  @field:Schema(
-    description = "Who type of contact they will meet at their initial appointment",
-    example = "SPECIFIC_PERSON",
-  )
-  val appointmentPersonType: SarAppointmentPersonType?,
+  @field:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
+  val appointmentPerson: String?,
 
   @field:Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -43,6 +34,13 @@ data class SarLicence(
     example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
   )
   val appointmentAddress: String?,
+
+  @Deprecated("Use appointmentTelephoneNumber instead")
+  @get:Schema(
+    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "0114 2557665",
+  )
+  val appointmentContact: String?,
 
   @get:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
@@ -71,10 +69,10 @@ data class SarLicence(
   val submittedDate: LocalDateTime?,
 
   @field:Schema(
-    description = "The last name of the person who approved the licence on behalf of the prison governor",
-    example = "Smith",
+    description = "The full name of the person who approved the licence on behalf of the prison governor",
+    example = "John Smith",
   )
-  val approvedByLastName: String?,
+  val approvedByName: String?,
 
   @field:Schema(
     description = "The date and time that this licence was superseded by a new variant",
@@ -106,14 +104,11 @@ data class SarLicence(
   @field:Schema(description = "The list of bespoke conditions on this licence")
   val bespokeConditions: List<String> = emptyList(),
 
-  @field:Schema(description = "The last name of the person who created licence or variation", example = "Smith")
-  val createdByLastName: String?,
+  @field:Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
+  val createdByFullName: String?,
 
   @field:Schema(description = "The version number of this licence", example = "1.3")
   val licenceVersion: String?,
-
-  @field:Schema(description = "The policy version of this licence", example = "1.3")
-  val policyVersion: String?,
 
   @field:Schema(description = "Is the licence to be tagged for electronic monitoring programme")
   val isToBeTaggedForProgramme: Boolean? = null,
