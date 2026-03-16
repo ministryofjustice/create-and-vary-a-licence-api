@@ -215,4 +215,14 @@ interface LicenceRepository :
     """,
   )
   fun updateLicenceKinds(id: Long, newKind: LicenceKind, newEligibleKind: LicenceKind?)
+
+  @Query(
+    """
+      SELECT l
+      FROM Licence l
+      WHERE l.statusCode in (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE)
+      AND l.licenceStartDate = CURRENT_DATE
+    """,
+  )
+  fun findAllPreReleaseAndActiveLicencesForToday(): List<Licence>
 }
