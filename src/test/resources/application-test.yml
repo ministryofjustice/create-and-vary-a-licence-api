@@ -120,7 +120,6 @@ feature:
       enabled: true
     standardRecalls:
       enabled: true
-
     isr:
       repeal:
         date: "2026-03-16"
