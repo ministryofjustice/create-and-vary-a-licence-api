@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicenceStatusProgressionResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicenceStatusResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.UpcomingReleasesWithMonitoringConditionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.LastMinuteHandoverCaseService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.LicenceStatusProgressionReportService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.LicenceStatusReportService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.UpcomingReleasesWithMonitoringConditionsReportService
 
 @RestController
@@ -28,7 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.Upc
 class CvlReportController(
   private val lastMinuteHandoverCaseService: LastMinuteHandoverCaseService,
   private val upcomingElectronicMonitoringCasesService: UpcomingReleasesWithMonitoringConditionsReportService,
-  private val licenceStatusProgressionCasesService: LicenceStatusProgressionReportService,
+  private val licenceStatusCasesService: LicenceStatusReportService,
 ) {
   @GetMapping("/last-minute-handover-cases")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -109,19 +109,19 @@ class CvlReportController(
   @GetMapping("/licence-status-report")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Retrieve list of cases providing all licences at all statuses to track the flow of a licence",
-    description = "Returns a list of LicenceStatusProgressionResponse objects",
+    summary = "Retrieve a list of cases providing all licences at all statuses today",
+    description = "Returns a list of LicenceStatusResponse objects",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "A list of licence status progression cases",
+        description = "A list of licence status cases",
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = LicenceStatusProgressionResponse::class)),
+            array = ArraySchema(schema = Schema(implementation = LicenceStatusResponse::class)),
           ),
         ],
       ),
@@ -142,5 +142,5 @@ class CvlReportController(
       ),
     ],
   )
-  fun getLicenceStatusProgressionCases(): List<LicenceStatusProgressionResponse> = licenceStatusProgressionCasesService.getCases()
+  fun getLicenceStatusCases(): List<LicenceStatusResponse> = licenceStatusCasesService.getCases()
 }

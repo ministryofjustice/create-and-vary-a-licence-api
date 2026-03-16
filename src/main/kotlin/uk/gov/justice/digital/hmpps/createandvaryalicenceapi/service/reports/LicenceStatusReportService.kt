@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicenceStatusProgressionResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicenceStatusResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -11,10 +11,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Clock
 import java.time.LocalDate
-import kotlin.text.get
 
 @Service
-class LicenceStatusProgressionReportService(
+class LicenceStatusReportService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val deliusApiClient: DeliusApiClient,
   private val cvlRecordService: CvlRecordService,
@@ -23,7 +22,7 @@ class LicenceStatusProgressionReportService(
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
-  fun getCases(): List<LicenceStatusProgressionResponse> {
+  fun getCases(): List<LicenceStatusResponse> {
     val nomisRecords = getPrisonerData()
     val nomisIds = nomisRecords.keys.toList()
 
@@ -41,7 +40,7 @@ class LicenceStatusProgressionReportService(
       }
       .map { (nomisId, prisoner) ->
         val deliusRecord = deliusRecords[nomisId]
-        LicenceStatusProgressionResponse(
+        LicenceStatusResponse(
           probationRegion = deliusRecord?.team?.borough?.description,
           prison = prisoner.prisonName,
           crn = deliusRecord?.case?.crn,
@@ -53,7 +52,7 @@ class LicenceStatusProgressionReportService(
     log.info("Found ${eligibleNotStartedCases.size} eligible cases")
 
     val relevantLicences = licences.values.map { licence ->
-      LicenceStatusProgressionResponse(
+      LicenceStatusResponse(
         probationRegion = licence.probationPduDescription,
         prison = licence.prisonDescription,
         crn = licence.crn,
