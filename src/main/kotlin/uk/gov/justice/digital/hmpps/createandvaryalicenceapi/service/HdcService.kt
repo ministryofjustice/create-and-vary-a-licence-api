@@ -142,17 +142,17 @@ class HdcService(
     val entityFirstNightCurfewTimes =
       request.firstNightCurfewTimes.transformToEntityFirstNightCurfewTimes()
 
+    auditService.recordAuditEventUpdateHdcFirstNightCurfewTimes(
+      licenceEntity,
+      entityFirstNightCurfewTimes,
+      staffMember,
+    )
+
     licenceEntity.updateFirstNightCurfewTimes(
       updatedFirstNightCurfewTimes = entityFirstNightCurfewTimes,
       staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(licenceEntity)
-
-    auditService.recordAuditEventUpdateHdcFirstNightCurfewTimes(
-      licenceEntity,
-      entityFirstNightCurfewTimes,
-      staffMember,
-    )
   }
 }
