@@ -1,26 +1,27 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
 
 class PrisonerUpdatedHandlerTest {
-  private val objectMapper = jacksonObjectMapper()
+  private val mapper: ObjectMapper = createMapper()
   private val offenderService = mock<OffenderService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
 
   @Test
   fun `should process prisoner updated event`() {
     val handler = PrisonerUpdatedHandler(
-      objectMapper,
+      mapper,
       offenderService,
       prisonerSearchApiClient,
       updateOffenderDetailsHandleEnabled = true,
@@ -53,7 +54,7 @@ class PrisonerUpdatedHandlerTest {
   @Test
   fun `should not update prisoner details when categories do not include person details`() {
     val handler = PrisonerUpdatedHandler(
-      objectMapper,
+      mapper,
       offenderService,
       prisonerSearchApiClient,
       updateOffenderDetailsHandleEnabled = true,
@@ -74,7 +75,7 @@ class PrisonerUpdatedHandlerTest {
   @Test
   fun `should not process prisoner updated event if the feature flag is turned off`() {
     val handler = PrisonerUpdatedHandler(
-      objectMapper,
+      mapper,
       offenderService,
       prisonerSearchApiClient,
       updateOffenderDetailsHandleEnabled = false,
@@ -92,7 +93,7 @@ class PrisonerUpdatedHandlerTest {
     verifyNoInteractions(offenderService)
   }
 
-  private fun aPrisonerUpdatedEventMessage(nomsId: String, categories: List<DiffCategory>) = jacksonObjectMapper().writeValueAsString(
+  private fun aPrisonerUpdatedEventMessage(nomsId: String, categories: List<DiffCategory>) = mapper.writeValueAsString(
     HMPPSPrisonerUpdatedEvent(
       eventType = COM_ALLOCATED_EVENT_TYPE,
       additionalInformation = AdditionalInformationPrisonerUpdated(

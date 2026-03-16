@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
@@ -18,7 +18,7 @@ class ComAllocatedHandler(
   private val deliusApiClient: DeliusApiClient,
   private val workLoadApiClient: WorkLoadApiClient,
   private val offenderService: OffenderService,
-  private val objectMapper: ObjectMapper,
+  private val mapper: ObjectMapper,
   private val staffService: StaffService,
   private val offenderManagerMapper: OffenderManagerMapper,
 ) {
@@ -38,7 +38,7 @@ class ComAllocatedHandler(
     log.info("Received COM allocation event")
 
     val event = try {
-      objectMapper.readValue(message, HMPPSDomainEvent::class.java)
+      mapper.readValue(message, HMPPSDomainEvent::class.java)
     } catch (e: Exception) {
       log.error("Failed to parse event message", e)
       return

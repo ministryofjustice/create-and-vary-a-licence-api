@@ -58,7 +58,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as VariationLicenceDto
 
-class LicenceIntegrationTest : IntegrationTestBase() {
+open class LicenceIntegrationTest : IntegrationTestBase() {
 
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
@@ -142,7 +142,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Get forbidden (403) when incorrect roles are supplied`() {
+  fun `Get forbidden 403 when incorrect roles are supplied`() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
@@ -159,7 +159,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Unauthorized (401) when no token is supplied`() {
+  fun `Unauthorized 401 when no token is supplied`() {
     webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
@@ -934,7 +934,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Nested
-  inner class CheckReviewingLicences {
+  open inner class CheckReviewingLicences {
     @Test
     @Sql(
       "classpath:test_data/seed-prison-case-administrator.sql",
@@ -984,7 +984,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `Get forbidden (403) when incorrect roles are supplied`() {
+    fun `Get forbidden 403 when incorrect roles are supplied`() {
       val result = webTestClient.post()
         .uri("/licence/id/1/review-with-no-variation-required")
         .accept(MediaType.APPLICATION_JSON)
@@ -998,7 +998,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `Unauthorized (401) when no token is supplied`() {
+    fun `Unauthorized 401 when no token is supplied`() {
       webTestClient.post()
         .uri("/licence/id/1/review-with-no-variation-required")
         .accept(MediaType.APPLICATION_JSON)
@@ -1008,7 +1008,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Nested
-  inner class CheckActivatingVariations {
+  open inner class CheckActivatingVariations {
     @Test
     @Sql(
       "classpath:test_data/seed-variation-licence.sql",
@@ -1046,7 +1046,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `Get forbidden (403) when incorrect roles are supplied`() {
+    fun `Get forbidden 403 when incorrect roles are supplied`() {
       val result = webTestClient.put()
         .uri("/licence/id/1/activate-variation")
         .accept(MediaType.APPLICATION_JSON)
@@ -1060,7 +1060,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `Unauthorized (401) when no token is supplied`() {
+    fun `Unauthorized 401 when no token is supplied`() {
       webTestClient.post()
         .uri("/licence/id/1/activate-variation")
         .accept(MediaType.APPLICATION_JSON)
@@ -1070,7 +1070,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Nested
-  inner class ThrowErrorIfIneligible {
+  open inner class ThrowErrorIfIneligible {
     @Test
     @Sql(
       "classpath:test_data/seed-licence-id-1.sql",
