@@ -13,10 +13,6 @@ class CorePersonRecordApiClient(@param:Qualifier("oauthCorePersonRecordApiClient
     .uri("/person/prison/$prisonNumber")
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    // .bodyToMono<String>()
     .bodyToMono<PrisonCanonicalRecord>()
     .block() ?: error("null response while getting core person record for $prisonNumber")
-  // println(personRecord)
-  // return PrisonCanonicalRecord(identifiers = CanonicalIdentifiers(prisonNumbers = listOf(prisonNumber)))
-  // return personRecord
 }

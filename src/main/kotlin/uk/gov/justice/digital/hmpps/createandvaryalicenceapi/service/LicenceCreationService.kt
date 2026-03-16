@@ -76,10 +76,7 @@ class LicenceCreationService(
     require(!offenderManager.unallocated) { "offender $prisonNumber is currently unallocated in delius" }
 
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
-
     val responsibleCom = getOrCreateCom(offenderManager.id)
-    // val deliusRecord2 = corePersonRecordApiClient.getPersonRecord(prisonNumber)
-    // println(deliusRecord2)
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
       ?: error("Staff with username $username not found")
