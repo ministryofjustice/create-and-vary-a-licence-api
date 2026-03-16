@@ -467,18 +467,19 @@ class HdcServiceTest {
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val firstNightCurfewTimes = aUpdatedModelSetOfFirstNightCurfewTimes
+      val request = UpdateFirstNightCurfewTimesRequest(
+        firstNightCurfewTimes = firstNightCurfewTimes,
+      )
 
       service.updateFirstNightCurfewTimes(
         1,
-        UpdateFirstNightCurfewTimesRequest(
-          firstNightCurfewTimes = firstNightCurfewTimes,
-        ),
+        request,
       )
 
       val licenceCaptor = ArgumentCaptor.forClass(HdcLicence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateHdcFirstNightCurfewTimes(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateHdcFirstNightCurfewTimes(aLicenceEntity, request.firstNightCurfewTimes.transformToEntityFirstNightCurfewTimes(), aCom)
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
         .isEqualTo(listOf(aCom.username, aCom))
