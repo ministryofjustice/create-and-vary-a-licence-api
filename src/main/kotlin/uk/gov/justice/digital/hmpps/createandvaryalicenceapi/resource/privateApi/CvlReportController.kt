@@ -26,9 +26,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports.Upc
 @Tag(name = Tags.REPORTS)
 @RequestMapping(value = ["/cvl-report"], produces = [MediaType.APPLICATION_JSON_VALUE])
 class CvlReportController(
-    private val lastMinuteHandoverCaseService: LastMinuteHandoverCaseService,
-    private val upcomingElectronicMonitoringCasesService: UpcomingReleasesWithMonitoringConditionsReportService,
-    private val licenceStatusCasesService: LicenceStatusReportService,
+  private val lastMinuteHandoverCaseService: LastMinuteHandoverCaseService,
+  private val upcomingElectronicMonitoringCasesService: UpcomingReleasesWithMonitoringConditionsReportService,
+  private val licenceStatusCasesService: LicenceStatusReportService,
 ) {
   @GetMapping("/last-minute-handover-cases")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -109,7 +109,7 @@ class CvlReportController(
   @GetMapping("/licence-status-report")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Retrieve list of cases providing all licences at all statuses today",
+    summary = "Retrieve a list of cases providing all licences at all statuses today",
     description = "Returns a list of LicenceStatusResponse objects",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
