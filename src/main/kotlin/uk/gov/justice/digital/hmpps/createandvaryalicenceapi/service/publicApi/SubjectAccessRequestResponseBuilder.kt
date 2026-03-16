@@ -29,7 +29,7 @@ private const val UNAVAILABLE_SIZE = -1
  * Extracts the surname from a full name in "firstname surname" format.
  * Returns the surname if the name contains at least one space, otherwise returns the original name.
  */
-fun extractSurname(fullName: String?): String? {
+fun extractLastname(fullName: String?): String? {
   if (fullName.isNullOrBlank()) return fullName
   val trimmed = fullName.trim()
   val lastSpaceIndex = trimmed.lastIndexOf(' ')
@@ -55,22 +55,24 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     sarLicences.add(
       SarLicence(
         kind = licence.kind,
+        licenceId = licence.id,
         typeCode = SarLicenceType.from(licence.typeCode),
         statusCode = SarLicenceStatus.from(licence.statusCode!!),
         prisonNumber = licence.nomsId,
         dateLastUpdated = licence.dateLastUpdated,
-        appointmentPersonLastName = extractSurname(licence.appointmentPerson),
+        appointmentPersonLastName = extractLastname(licence.appointmentPerson),
         appointmentPersonType = SarAppointmentPersonType.from(licence.appointmentPersonType),
         appointmentTime = licence.appointmentTime,
         appointmentTimeType = SarAppointmentTimeType.from(licence.appointmentTimeType),
         appointmentAddress = licence.appointmentAddress,
-        appointmentTelephoneNumber = licence.appointmentTelephoneNumber,
-        appointmentAlternativeTelephoneNumber = licence.appointmentAlternativeTelephoneNumber,
-        approvedDate = licence.approvedDate,
         submittedDate = licence.submittedDate,
-        approvedByLastName = extractSurname(licence.approvedByName),
+        submittedByLastName = extractLastname(licence.submittedByFullName),
+        approvedDate = licence.approvedDate,
+        approvedByLastName = extractLastname(licence.approvedByName),
         supersededDate = licence.supersededDate,
+        createdByLastName = extractLastname(licence.createdByFullName),
         dateCreated = licence.dateCreated,
+        licenceStartDate = licence.licenceStartDate,
         standardLicenceConditions = licence.standardLicenceConditions?.map(::transformToSarStandardConditions),
         standardPssConditions = licence.standardPssConditions?.map(::transformToSarStandardConditions),
         additionalLicenceConditions = licence.additionalLicenceConditions.map {
@@ -86,7 +88,6 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
           )
         },
         bespokeConditions = licence.bespokeConditions.map { it.text.toString() },
-        createdByLastName = extractSurname(licence.createdByFullName),
         licenceVersion = licence.licenceVersion,
         policyVersion = licence.version,
         isToBeTaggedForProgramme = isToBeTaggedForProgramme,
@@ -132,6 +133,7 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
       filename = entity.filename ?: UNAVAILABLE,
       imageType = entity.imageType ?: UNAVAILABLE,
       uploadedTime = entity.uploadedTime,
+      fileSize = entity.fileSize,
       description = entity.description,
     )
   }
@@ -159,7 +161,6 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     with(record) {
       externalRecords.add(
         SarExternalRecord(
-          prisonNumber = nomsId,
           reason = reason,
           prisonCode = prisonCode,
           dateCreated = dateCreated,

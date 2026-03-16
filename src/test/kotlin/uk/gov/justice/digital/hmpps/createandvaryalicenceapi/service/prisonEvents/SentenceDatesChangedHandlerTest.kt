@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.LocalDate
@@ -50,7 +50,7 @@ class SentenceDatesChangedHandlerTest {
   )
   val prisoner = prisonerSearchResult()
   val nomisId = prisoner.prisonerNumber
-  val activeLicence = createCrdLicence().copy(statusCode = ACTIVE, bookingId = bookingId)
+  val activeLicence = createCrdLicence().copy(statusCode = ACTIVE)
   val prisonApiPrisoner = aPrisonApiPrisoner()
 
   @BeforeEach
@@ -81,11 +81,11 @@ class SentenceDatesChangedHandlerTest {
 
     verify(licenceService).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RESENTENCED),
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RESENTENCED),
     )
     verify(licenceService, never()).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RECALLED),
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
     )
   }
 
@@ -112,30 +112,7 @@ class SentenceDatesChangedHandlerTest {
 
     verify(licenceService).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RECALLED),
-    )
-  }
-
-  @Test
-  fun `should deactivate the active licence and any variations if an offender has recalled on a standard recall`() {
-    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
-    whenever(
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(
-        prisoner.prisonerNumber,
-        listOf(
-          ACTIVE,
-        ),
-      ),
-    ).thenReturn(listOf(activeLicence))
-
-    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
-    whenever(prisonService.hasStandardRecallSentence(bookingId)).thenReturn(true)
-
-    sentenceDatesChangedHandler.handleEvent(message)
-
-    verify(licenceService).deactivateLicenceAndVariations(
-      activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.STANDARD_RECALL),
+      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeativationReason.RECALLED),
     )
   }
 

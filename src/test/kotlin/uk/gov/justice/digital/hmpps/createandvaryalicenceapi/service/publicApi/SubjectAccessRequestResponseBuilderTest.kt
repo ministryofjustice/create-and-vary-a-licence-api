@@ -46,16 +46,14 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(statusCode).isEqualTo(SarLicenceStatus.valueOf(crdLicence.statusCode!!.name))
       assertThat(policyVersion).isEqualTo(crdLicence.version)
       assertThat(prisonNumber).isEqualTo(crdLicence.nomsId)
-      assertThat(appointmentPersonLastName).isEqualTo(extractSurname(crdLicence.appointmentPerson))
+      assertThat(appointmentPersonLastName).isEqualTo(extractLastname(crdLicence.appointmentPerson))
       assertThat(appointmentPersonType).isEqualTo(SarAppointmentPersonType.from(crdLicence.appointmentPersonType))
       assertThat(appointmentTime).isEqualTo(crdLicence.appointmentTime)
       assertThat(appointmentTimeType).isEqualTo(SarAppointmentTimeType.from(crdLicence.appointmentTimeType))
       assertThat(appointmentAddress).isEqualTo(crdLicence.appointmentAddress)
-      assertThat(appointmentTelephoneNumber).isEqualTo(crdLicence.appointmentTelephoneNumber)
-      assertThat(appointmentAlternativeTelephoneNumber).isEqualTo(crdLicence.appointmentAlternativeTelephoneNumber)
       assertThat(approvedDate).isEqualTo(crdLicence.approvedDate)
       assertThat(submittedDate).isEqualTo(crdLicence.submittedDate)
-      assertThat(approvedByLastName).isEqualTo(extractSurname(crdLicence.approvedByName))
+      assertThat(approvedByLastName).isEqualTo(extractLastname(crdLicence.approvedByName))
       assertThat(supersededDate).isEqualTo(crdLicence.supersededDate)
       assertThat(dateCreated).isEqualTo(crdLicence.dateCreated)
       assertThat(dateLastUpdated).isEqualTo(crdLicence.dateLastUpdated)
@@ -64,7 +62,7 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(additionalLicenceConditions).isEmpty()
       assertThat(additionalPssConditions).isEmpty()
       assertThat(bespokeConditions).isEmpty()
-      assertThat(createdByLastName).isEqualTo(extractSurname(crdLicence.createdByFullName))
+      assertThat(createdByLastName).isEqualTo(extractLastname(crdLicence.createdByFullName))
       assertThat(licenceVersion).isEqualTo(crdLicence.licenceVersion)
       assertThat(isToBeTaggedForProgramme).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.isToBeTaggedForProgramme)
       assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider.programmeName)
@@ -188,32 +186,32 @@ class SubjectAccessRequestResponseBuilderTest {
 
   @Test
   fun `extractSurname should return surname from firstname surname format`() {
-    assertThat(extractSurname("John Smith")).isEqualTo("Smith")
-    assertThat(extractSurname("Anne Approver")).isEqualTo("Approver")
-    assertThat(extractSurname("Test Client")).isEqualTo("Client")
+    assertThat(extractLastname("John Smith")).isEqualTo("Smith")
+    assertThat(extractLastname("Anne Approver")).isEqualTo("Approver")
+    assertThat(extractLastname("Test Client")).isEqualTo("Client")
   }
 
   @Test
   fun `extractSurname should handle multiple spaces and return last word`() {
-    assertThat(extractSurname("John Middle Smith")).isEqualTo("Smith")
-    assertThat(extractSurname("Mary Jane Watson")).isEqualTo("Watson")
+    assertThat(extractLastname("John Middle Smith")).isEqualTo("Smith")
+    assertThat(extractLastname("Mary Jane Watson")).isEqualTo("Watson")
   }
 
   @Test
   fun `extractSurname should return original name if no space`() {
-    assertThat(extractSurname("SingleName")).isEqualTo("SingleName")
+    assertThat(extractLastname("SingleName")).isEqualTo("SingleName")
   }
 
   @Test
   fun `extractSurname should handle null and blank strings`() {
-    assertThat(extractSurname(null)).isNull()
-    assertThat(extractSurname("")).isEqualTo("")
-    assertThat(extractSurname("   ")).isEqualTo("   ")
+    assertThat(extractLastname(null)).isNull()
+    assertThat(extractLastname("")).isEqualTo("")
+    assertThat(extractLastname("   ")).isEqualTo("   ")
   }
 
   @Test
   fun `extractSurname should handle names with leading and trailing spaces`() {
-    assertThat(extractSurname("  John Smith  ")).isEqualTo("Smith")
+    assertThat(extractLastname("  John Smith  ")).isEqualTo("Smith")
   }
 
   @Test

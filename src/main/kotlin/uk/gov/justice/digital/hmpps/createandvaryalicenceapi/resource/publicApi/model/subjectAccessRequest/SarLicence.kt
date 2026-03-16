@@ -2,10 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
 data class SarLicence(
+  @field:Schema(description = "The internal id of the licence", example = "123")
+  val licenceId: Long?,
 
   @field:Schema(description = "Kind of licence", example = "CRD")
   val kind: String,
@@ -26,7 +29,7 @@ data class SarLicence(
   val appointmentPersonLastName: String?,
 
   @field:Schema(
-    description = "Who type of contact they will meet at their initial appointment",
+    description = "what type of contact they will meet at their initial appointment",
     example = "SPECIFIC_PERSON",
   )
   val appointmentPersonType: SarAppointmentPersonType?,
@@ -44,24 +47,18 @@ data class SarLicence(
   )
   val appointmentAddress: String?,
 
-  @get:Schema(
-    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
-    example = "0114 2557665",
-  )
-  val appointmentTelephoneNumber: String?,
-
-  @get:Schema(
-    description = "An alternative UK telephone number to contact the person the offender should meet for their initial meeting",
-    example = "07700 900000",
-  )
-  val appointmentAlternativeTelephoneNumber: String?,
-
   @field:Schema(
     description = "The date and time that this prison approved this licence",
     example = "24/08/2022 11:30:33",
   )
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val approvedDate: LocalDateTime?,
+
+  @field:Schema(
+    description = "The last name of the person who submitted the licence",
+    example = "Smith",
+  )
+  val submittedByLastName: String?,
 
   @field:Schema(
     description = "The date and time that this licence was submitted for approval",
@@ -86,6 +83,10 @@ data class SarLicence(
   @field:Schema(description = "The date and time that this licence was first created", example = "24/08/2022 09:30:33")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val dateCreated: LocalDateTime?,
+
+  @field:Schema(description = "The date that this licence was first created", example = "24/08/2022")
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
+  val licenceStartDate: LocalDate?,
 
   @field:Schema(description = "The date and time that this licence was last updated", example = "24/08/2022 09:30:33")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -120,4 +121,5 @@ data class SarLicence(
 
   @field:Schema(description = "Programme Name of the licence", example = "Off Some Road")
   val programmeName: String? = null,
+
 )
