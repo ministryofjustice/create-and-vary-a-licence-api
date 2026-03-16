@@ -34,13 +34,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.setPostgresContainerProperties
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.MissingTopicException
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
+import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
 /*
 ** The abstract parent class for integration tests.
@@ -105,7 +105,7 @@ abstract class IntegrationTestBase {
   lateinit var webTestClient: WebTestClient
 
   @Autowired
-  lateinit var jwtAuthHelper: JwtAuthHelper
+  lateinit var jwtAuthHelper: JwtAuthorisationHelper
 
   @Autowired
   lateinit var mapper: ObjectMapper
@@ -119,7 +119,12 @@ abstract class IntegrationTestBase {
   internal fun setAuthorisation(
     user: String = "test-client",
     roles: List<String> = listOf(),
-  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
+  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(
+    clientId = "create-and-vary-a-licence-admin",
+    username = user,
+    roles = roles,
+    scope = listOf("read"),
+  )
 
   init {
     // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets
