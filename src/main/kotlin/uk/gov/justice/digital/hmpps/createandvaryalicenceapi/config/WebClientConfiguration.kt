@@ -25,6 +25,7 @@ class WebClientConfiguration(
   @param:Value("\${hmpps.document.api.url}") private val documentApiUrl: String,
   @param:Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String,
   @param:Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
+  @param:Value("\${hmpps.corepersonrecord.api.url}") private val corePersonRecordApiUrl: String,
   @param:Value("\${os.places.api.url}") private val osPlacesApiUrl: String,
 ) {
   @Bean
@@ -74,6 +75,12 @@ class WebClientConfiguration(
 
   @Bean
   fun oauthHdcApiClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(hdcApiUrl, authorizedClientManager, builder)
+
+  @Bean
+  fun oauthCorePersonRecordApiClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = getWebClient(corePersonRecordApiUrl, authorizedClientManager, builder)
 
   @Bean
   fun authorizedClientManager(

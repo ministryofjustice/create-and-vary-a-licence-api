@@ -20,12 +20,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonRecord.CorePersonRecordApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.TimeServedExternalRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -53,6 +54,7 @@ class LicenceCreationService(
   private val isTimeServedLogicEnabled: Boolean = false,
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
+  private val corePersonRecordApiClient: CorePersonRecordApiClient,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -76,6 +78,8 @@ class LicenceCreationService(
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
     val responsibleCom = getOrCreateCom(offenderManager.id)
+    // val deliusRecord2 = corePersonRecordApiClient.getPersonRecord(prisonNumber)
+    // println(deliusRecord2)
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
       ?: error("Staff with username $username not found")
@@ -139,9 +143,9 @@ class LicenceCreationService(
 
     val username = SecurityContextHolder.getContext().authentication?.name!!
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
-    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
-      ?: throw InvalidStateException("Could not find a probation case in Delius for nomis id $prisonNumber")
-
+    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber) ?: ProbationCase.from(
+      corePersonRecordApiClient.getPersonRecord(prisonNumber),
+    )
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val offenderManager = deliusApiClient.getOffenderManager(deliusRecord.crn)
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)

@@ -32,7 +32,7 @@ class PrisonerSearchApiClientTest {
 
   @BeforeEach
   fun reset() {
-    var webClient = WebClient.builder().baseUrl("http://localhost:${wiremock.port}").build()
+    val webClient = WebClient.builder().baseUrl("http://localhost:${wiremock.port}").build()
     prisonerSearchApiClient = PrisonerSearchApiClient(webClient)
   }
 
@@ -52,7 +52,7 @@ class PrisonerSearchApiClientTest {
 
   private fun stubPage(pageNumber: Int, foundRecordsOnThisPage: Int, pageSize: Int, totalElements: Int) {
     val foundResults =
-      MutableList(foundRecordsOnThisPage) { i -> prisonerSearchResult().copy(bookingId = "$pageNumber-$i") }
+      List(foundRecordsOnThisPage) { i -> prisonerSearchResult().copy(bookingId = "$pageNumber-$i") }
     wiremock.stubFor(
       post("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber")
         .willReturn(

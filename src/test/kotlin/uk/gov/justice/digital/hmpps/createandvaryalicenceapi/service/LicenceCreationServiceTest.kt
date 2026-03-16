@@ -40,12 +40,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonCanonicalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonRecord.CorePersonRecordApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
@@ -89,6 +91,7 @@ class LicenceCreationServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val telemetryService = mock<TelemetryService>()
   private val timeServedExternalRecordsService = mock<TimeServedExternalRecordService>()
+  private val corePersonRecordApiClient = mock<CorePersonRecordApiClient>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -106,6 +109,7 @@ class LicenceCreationServiceTest {
     isTimeServedLogicEnabled = true,
     telemetryService,
     timeServedExternalRecordsService,
+    corePersonRecordApiClient,
   )
 
   @Nested
@@ -1816,12 +1820,13 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `An InvalidStateException is thrown if a Delius record cannot be found for the provided nomis id`() {
+    fun `An InvalidStateException is thrown if a CRN cannot be found for the provided nomis id`() {
       val prisoner = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(prisoner),
       )
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(null)
+      whenever(corePersonRecordApiClient.getPersonRecord(any())).thenReturn(aPrisonCanonicalRecord(crns = emptyList()))
 
       val exception = assertThrows<InvalidStateException> {
         service.createHardStopLicence(PRISON_NUMBER)

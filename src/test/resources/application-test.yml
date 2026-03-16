@@ -76,7 +76,10 @@ hmpps:
   hdc:
     api:
       url: http://localhost:8100
-      enabled: true
+  corepersonrecord:
+    api:
+      url: http://localhost:8098
+
 
   sqs:
     provider: localstack
