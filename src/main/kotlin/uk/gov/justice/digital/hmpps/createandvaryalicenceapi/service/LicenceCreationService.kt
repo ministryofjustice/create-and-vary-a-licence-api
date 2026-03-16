@@ -62,7 +62,7 @@ class LicenceCreationService(
   fun createLicence(prisonNumber: String): CreateLicenceResponse {
     verifyNoInFlightLicence(prisonNumber)
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
 
@@ -137,7 +137,7 @@ class LicenceCreationService(
   fun createHardStopLicence(prisonNumber: String): CreateLicenceResponse {
     verifyNoInFlightLicence(prisonNumber)
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
       ?: throw InvalidStateException("Could not find a probation case in Delius for nomis id $prisonNumber")

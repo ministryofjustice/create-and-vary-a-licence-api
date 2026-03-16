@@ -286,7 +286,7 @@ class AppointmentService(
   }
 
   private fun getStaffUser(): Staff? {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     return staffRepository.findByUsernameIgnoreCase(username)
   }
 }

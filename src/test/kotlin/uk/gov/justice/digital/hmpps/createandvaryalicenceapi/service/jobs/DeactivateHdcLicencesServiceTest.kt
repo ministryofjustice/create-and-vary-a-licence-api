@@ -58,9 +58,9 @@ class DeactivateHdcLicencesServiceTest {
 
     service.runJob()
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     verify(telemetryService, times(0)).recordDeactivateHdcLicencesJobEvent(any())
   }
 

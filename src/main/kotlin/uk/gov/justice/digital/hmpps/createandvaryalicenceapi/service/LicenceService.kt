@@ -447,7 +447,7 @@ class LicenceService(
   fun submitLicence(licenceId: Long, notifyRequest: List<NotifyRequest>?) {
     val licenceEntity = getLicence(licenceId)
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
@@ -698,7 +698,7 @@ class LicenceService(
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to update spo discussion for non-variation: $licenceId")
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
 
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -715,7 +715,7 @@ class LicenceService(
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to update vlo discussion for non-variation: $licenceId")
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
 
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -732,7 +732,7 @@ class LicenceService(
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to update variation reason for non-variation: $licenceId")
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
     licenceEntity.recordUpdate(
@@ -756,7 +756,7 @@ class LicenceService(
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
     licenceEntity.referVariation(staffMember)
@@ -800,7 +800,7 @@ class LicenceService(
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
     licenceEntity.approveVariation(username, staffMember)
@@ -848,7 +848,7 @@ class LicenceService(
       return
     }
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val user =
       this.staffRepository.findByUsernameIgnoreCase(username) ?: error("need user in scope to activate variation")
 
@@ -885,7 +885,7 @@ class LicenceService(
   fun discardLicence(licenceId: Long) {
     val licenceEntity = getLicence(licenceId)
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val discardedBy = this.staffRepository.findByUsernameIgnoreCase(username)
 
     auditEventRepository.saveAndFlush(
@@ -911,7 +911,7 @@ class LicenceService(
   fun updatePrisonInformation(licenceId: Long, prisonInformationRequest: UpdatePrisonInformationRequest) {
     val licenceEntity = getLicence(licenceId)
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
 
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
@@ -1024,7 +1024,7 @@ class LicenceService(
   }
 
   private fun getCommunityOffenderManagerForCurrentUser(): CommunityOffenderManager {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staff = this.staffRepository.findByUsernameIgnoreCase(username)
       ?: error("Cannot find staff with username: $username")
     return staff as? CommunityOffenderManager ?: error("Cannot find staff with username: $username")
@@ -1066,7 +1066,7 @@ class LicenceService(
     val licenceEntity = getLicence(licenceId)
 
     if (licenceEntity !is Reviewable) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
     if (licenceEntity.reviewDate != null) {
@@ -1185,7 +1185,7 @@ class LicenceService(
       }
 
       val userUpdating =
-        staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication.name)
+        staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication?.name!!)
       auditService.recordAuditEventLicenceKindUpdated(
         licence,
         licence.kind,

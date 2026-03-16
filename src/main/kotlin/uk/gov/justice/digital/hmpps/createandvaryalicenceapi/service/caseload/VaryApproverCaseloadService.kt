@@ -138,7 +138,7 @@ class VaryApproverCaseloadService(
   )
 
   private fun getCaseAccessRecords(crns: List<String>): Map<String, CaseAccessResponse> {
-    val username = SecurityContextHolder.getContext().authentication.name
+    val username = SecurityContextHolder.getContext().authentication?.name!!
     return deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
   }
 }
