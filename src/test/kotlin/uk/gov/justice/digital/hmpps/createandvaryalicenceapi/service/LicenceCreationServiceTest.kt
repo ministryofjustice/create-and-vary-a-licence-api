@@ -125,6 +125,7 @@ class LicenceCreationServiceTest {
         prisonApiClient,
         deliusApiClient,
         cvlRecordService,
+        corePersonRecordApiClient,
       )
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
@@ -1817,6 +1818,26 @@ class LicenceCreationServiceTest {
       }
 
       verify(staffRepository, times(0)).findByStaffIdentifier(any())
+    }
+
+    @Test
+    fun `Should call core person record to get probation case details if the record cannot be found it Delius`() {
+      val prisoner = prisonerSearchResult()
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(null)
+      whenever(corePersonRecordApiClient.getPersonRecord(any())).thenReturn(
+        aPrisonCanonicalRecord(
+          crns = listOf(
+            aProbationCaseResult.crn,
+          ),
+        ),
+      )
+
+      service.createHardStopLicence(PRISON_NUMBER)
+
+      verify(corePersonRecordApiClient).getPersonRecord(PRISON_NUMBER)
     }
 
     @Test
