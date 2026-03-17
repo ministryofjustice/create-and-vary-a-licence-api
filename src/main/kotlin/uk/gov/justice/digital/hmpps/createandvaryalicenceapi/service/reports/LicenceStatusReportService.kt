@@ -46,7 +46,8 @@ class LicenceStatusReportService(
           crn = deliusRecord?.case?.crn,
           nomisNumber = nomisId,
           prisonerName = prisoner.fullName(),
-          status = LicenceStatus.NOT_STARTED,
+          // All eligible not started cases would now be TIMED_OUT as the report is checking all releases for today
+          status = LicenceStatus.TIMED_OUT,
         )
       }
     log.info("Found ${eligibleNotStartedCases.size} eligible cases")
