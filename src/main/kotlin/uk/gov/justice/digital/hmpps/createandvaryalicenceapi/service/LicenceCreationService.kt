@@ -20,9 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonRecord.CorePersonRecordApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -54,7 +52,7 @@ class LicenceCreationService(
   private val isTimeServedLogicEnabled: Boolean = false,
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
-  private val corePersonRecordApiClient: CorePersonRecordApiClient,
+  private val caseService: CaseService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -140,11 +138,7 @@ class LicenceCreationService(
 
     val username = SecurityContextHolder.getContext().authentication?.name!!
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
-    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
-    if (deliusRecord == null) {
-      logCorePersonRecord(prisonNumber)
-      throw InvalidStateException("Could not find a delius record for nomis id: $prisonNumber")
-    }
+    val deliusRecord = caseService.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val offenderManager = deliusApiClient.getOffenderManager(deliusRecord.crn)
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
@@ -288,17 +282,4 @@ class LicenceCreationService(
   }
 
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
-
-  private fun logCorePersonRecord(prisonNumber: String) {
-    val corePersonRecord = corePersonRecordApiClient.getPersonRecord(prisonNumber)
-    val crns = corePersonRecord.identifiers.crns
-    val baseMessage = "Could not find a delius record for nomis id: $prisonNumber"
-    if (crns.isEmpty()) {
-      log.info("$baseMessage - no crns found in core person record")
-    } else if (crns.size == 1) {
-      log.info("$baseMessage - one crn found in core person record: ${crns.first()}")
-    } else {
-      log.info("$baseMessage - ${crns.size} crns found in core person record: ${crns.joinToString()}")
-    }
-  }
 }

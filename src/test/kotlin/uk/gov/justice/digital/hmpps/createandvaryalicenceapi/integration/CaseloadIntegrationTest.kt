@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
@@ -17,11 +18,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 private const val GET_PRISONER = "/prisoner-search/nomisid/A1234AA"
+private const val GET_PROBATION_CASE = "/caseload/probation-case/A1234AA"
 
 class CaseloadIntegrationTest : IntegrationTestBase() {
   @Nested
@@ -35,7 +38,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isForbidden
         .expectStatus().isEqualTo(FORBIDDEN.value())
-        .expectBody(ErrorResponse::class.java)
+        .expectBody<ErrorResponse>()
         .returnResult().responseBody
 
       assertThat(result?.userMessage).contains("Access Denied")
@@ -81,7 +84,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(PrisonerWithCvlFields::class.java)
+        .expectBody<PrisonerWithCvlFields>()
         .returnResult().responseBody!!
 
       with(caseloadItem) {
@@ -111,6 +114,50 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody()
         .jsonPath("$.cvl.hardStopDate").value<String> { assertThat(it).matches("\\d{2}/\\d{2}/\\d{4}") }
         .jsonPath("$.prisoner.dateOfBirth").value<String> { assertThat(it).matches("\\d{4}-\\d{2}-\\d{2}") }
+    }
+  }
+
+  @Nested
+  inner class GetProbationCase {
+    @Test
+    fun `Get forbidden (403) when incorrect roles are supplied`() {
+      val result = webTestClient.get()
+        .uri(GET_PROBATION_CASE)
+        .accept(APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
+        .exchange()
+        .expectStatus().isForbidden
+        .expectStatus().isEqualTo(FORBIDDEN.value())
+        .expectBody<ErrorResponse>()
+        .returnResult().responseBody
+
+      assertThat(result?.userMessage).contains("Access Denied")
+    }
+
+    @Test
+    fun `Unauthorized (401) when no token is supplied`() {
+      webTestClient.get()
+        .uri(GET_PROBATION_CASE)
+        .accept(APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(UNAUTHORIZED.value())
+    }
+
+    @Test
+    fun success() {
+      deliusMockServer.stubGetProbationCase()
+
+      val probationCase = webTestClient.get()
+        .uri(GET_PROBATION_CASE)
+        .accept(APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody<ProbationCase>()
+        .returnResult().responseBody!!
+
+      assertThat(probationCase).isEqualTo(ProbationCase(crn = "X12345", prisonNumber = "A1234AA"))
     }
   }
 
