@@ -29,7 +29,7 @@ generic-service:
     TIME_SERVED_PRISONS: "BNI, WCI, EXI, IWI, EWI"
     PRISON_EVENT_LISTENER_ENABLED: true
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
-    ISR_REPEAL_DATE: "2026-03-16"
+    ISR_REPEAL_DATE: "2026-05-10"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
