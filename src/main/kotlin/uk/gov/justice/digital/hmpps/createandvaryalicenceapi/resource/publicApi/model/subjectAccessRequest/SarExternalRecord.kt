@@ -7,6 +7,9 @@ import java.time.LocalDateTime
 @Schema(description = "Describes when a decision was made to create a licence in NOMIS instead of CVL")
 data class SarExternalRecord(
 
+  @field:Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
+  val prisonNumber: String,
+
   @field:Schema(description = "The reason for creating a licence in NOMIS", example = "A9999AA")
   var reason: String,
 

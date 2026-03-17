@@ -13,23 +13,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import net.minidev.json.JSONObject
-import org.junit.jupiter.api.extension.AfterAllCallback
-import org.junit.jupiter.api.extension.BeforeAllCallback
-import org.junit.jupiter.api.extension.ExtensionContext
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentType
 import java.util.UUID
 
 class DocumentApiMockServer : WireMockServer(8097) {
-  class Extension :
-    AfterAllCallback,
-    BeforeAllCallback {
-    val documentMockServer = DocumentApiMockServer()
-
-    override fun beforeAll(context: ExtensionContext?) = documentMockServer.start()
-
-    override fun afterAll(context: ExtensionContext?) = documentMockServer.stop()
-  }
-
   fun stubUploadDocument() {
     stubFor(
       post(urlMatching("/documents/EXCLUSION_ZONE_MAP/[a-z0-9A-Z|-]{36}")).willReturn(
@@ -80,15 +67,6 @@ class DocumentApiMockServer : WireMockServer(8097) {
     stubFor(
       get(urlMatching("/documents/$withUUID/file")).willReturn(
         aResponse().withBody(document),
-      ),
-    )
-  }
-
-  fun stubDownloadImage(withUUID: String = "[a-z0-9A-Z|-]{36}") {
-    val aFullSizeMapImage = this::class.java.getResourceAsStream("/test_map.jpg")!!.readAllBytes()
-    stubFor(
-      get(urlMatching("/documents/$withUUID/file")).willReturn(
-        aResponse().withBody(aFullSizeMapImage),
       ),
     )
   }
