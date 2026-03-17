@@ -28,7 +28,7 @@ class WebClientConfiguration(
   @param:Value("\${os.places.api.url}") private val osPlacesApiUrl: String,
 ) {
 
-  private val maxBuffer = 10 * 1024 * 1024 // 10 MB
+  private val maxBuffer = 10485760 // 10 MB
 
   @Bean
   fun oauthApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(oauthApiUrl)
