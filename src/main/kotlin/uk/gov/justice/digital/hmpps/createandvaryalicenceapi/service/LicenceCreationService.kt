@@ -296,9 +296,9 @@ class LicenceCreationService(
     if (crns.isEmpty()) {
       log.info("$baseMessage - no crns found in core person record")
     } else if (crns.size == 1) {
-      log.info("$baseMessage - one crn found in core person record")
+      log.info("$baseMessage - one crn found in core person record: ${crns.first()}")
     } else {
-      log.info("$baseMessage - ${crns.size} crns found in core person record")
+      log.info("$baseMessage - ${crns.size} crns found in core person record: ${crns.joinToString()}")
     }
   }
 }
