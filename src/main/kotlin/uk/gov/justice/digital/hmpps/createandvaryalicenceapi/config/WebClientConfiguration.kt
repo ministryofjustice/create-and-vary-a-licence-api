@@ -12,6 +12,7 @@ import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.service.GlobalPrincipalOAuth2AuthorizedClientService
 
 private const val HMPPS_AUTH = "hmpps-auth"
+private const val MAX_IN_MEMORY_SIZE = 10485760 // 10 MB
 
 @Configuration
 class WebClientConfiguration(
@@ -28,26 +29,24 @@ class WebClientConfiguration(
   @param:Value("\${os.places.api.url}") private val osPlacesApiUrl: String,
 ) {
 
-  private val maxBuffer = 10485760 // 10 MB
-
   @Bean
   fun oauthApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(oauthApiUrl)
-    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) }
+    .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE) }
     .build()
 
   @Bean
   fun govUkWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(govUkApiUrl)
-    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) }
+    .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE) }
     .build()
 
   @Bean
   fun prisonRegisterApiWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(prisonRegisterApiUrl)
-    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) }
+    .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE) }
     .build()
 
   @Bean
   fun osPlacesClient(builder: WebClient.Builder): WebClient = builder.baseUrl(osPlacesApiUrl)
-    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) }
+    .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE) }
     .build()
 
   @Bean
@@ -118,6 +117,6 @@ class WebClientConfiguration(
       registrationId = HMPPS_AUTH,
     )
     .mutate()
-    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) } // <-- add maxInMemorySize here
+    .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE) } // <-- add maxInMemorySize here
     .build()
 }
