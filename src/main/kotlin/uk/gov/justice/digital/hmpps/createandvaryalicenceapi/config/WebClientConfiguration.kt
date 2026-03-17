@@ -27,20 +27,34 @@ class WebClientConfiguration(
   @param:Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
   @param:Value("\${os.places.api.url}") private val osPlacesApiUrl: String,
 ) {
-  @Bean
-  fun oauthApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(oauthApiUrl).build()
+
+  private val maxBuffer = 10 * 1024 * 1024 // 10 MB
 
   @Bean
-  fun govUkWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(govUkApiUrl).build()
+  fun oauthApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(oauthApiUrl)
+    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) }
+    .build()
 
   @Bean
-  fun prisonRegisterApiWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(prisonRegisterApiUrl).build()
+  fun govUkWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(govUkApiUrl)
+    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) }
+    .build()
 
   @Bean
-  fun osPlacesClient(builder: WebClient.Builder): WebClient = builder.baseUrl(osPlacesApiUrl).build()
+  fun prisonRegisterApiWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(prisonRegisterApiUrl)
+    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) }
+    .build()
 
   @Bean
-  fun oauthPrisonClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(prisonApiUrl, authorizedClientManager, builder)
+  fun osPlacesClient(builder: WebClient.Builder): WebClient = builder.baseUrl(osPlacesApiUrl)
+    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) }
+    .build()
+
+  @Bean
+  fun oauthPrisonClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = getWebClient(prisonApiUrl, authorizedClientManager, builder)
 
   @Bean
   fun oauthManageUsersWebClient(
@@ -73,13 +87,18 @@ class WebClientConfiguration(
   ): WebClient = getWebClient(workLoadApiUrl, authorizedClientManager, builder)
 
   @Bean
-  fun oauthHdcApiClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(hdcApiUrl, authorizedClientManager, builder)
+  fun oauthHdcApiClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = getWebClient(hdcApiUrl, authorizedClientManager, builder)
 
   @Bean
   fun authorizedClientManager(
     clientRegistrationRepository: ClientRegistrationRepository,
   ): OAuth2AuthorizedClientManager {
-    val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build()
+    val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
+      .clientCredentials()
+      .build()
     val authorizedClientManager = AuthorizedClientServiceOAuth2AuthorizedClientManager(
       clientRegistrationRepository,
       GlobalPrincipalOAuth2AuthorizedClientService(clientRegistrationRepository),
@@ -92,9 +111,13 @@ class WebClientConfiguration(
     url: String,
     authorizedClientManager: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = builder.authorisedWebClient(
-    authorizedClientManager = authorizedClientManager,
-    url = url,
-    registrationId = HMPPS_AUTH,
-  )
+  ): WebClient = builder
+    .authorisedWebClient(
+      authorizedClientManager = authorizedClientManager,
+      url = url,
+      registrationId = HMPPS_AUTH,
+    )
+    .mutate()
+    .codecs { it.defaultCodecs().maxInMemorySize(maxBuffer) } // <-- add maxInMemorySize here
+    .build()
 }

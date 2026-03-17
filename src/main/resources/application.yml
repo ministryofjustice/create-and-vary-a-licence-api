@@ -6,9 +6,6 @@ spring:
   application:
     name: create-and-vary-a-licence-api
 
-  codec:
-    max-in-memory-size: 10MB
-
   jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
 
