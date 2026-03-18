@@ -23,7 +23,6 @@ class LicenceStatusReportService(
   private val clock: Clock,
   private val licenceRepository: LicenceRepository,
 ) {
-  private val log = LoggerFactory.getLogger(this::class.java)
 
   fun getCases(): List<LicenceStatusResponse> {
     val today = LocalDate.now(clock)
@@ -72,7 +71,7 @@ class LicenceStatusReportService(
     return notStartedCases + casesWithLicence
   }
 
-  private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate)
+  private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE)
 
   private fun enrichWithDeliusData(candidates: List<PrisonerSearchPrisoner>): Map<PrisonerSearchPrisoner, CommunityManager> {
     val coms = deliusApiClient.getOffenderManagers(candidates.map { it.prisonerNumber }).filter { it.case.nomisId != null }.associateBy { it.case.nomisId!! }
@@ -92,5 +91,10 @@ class LicenceStatusReportService(
       val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }
       return@filter cvlRecord.isEligible && cvlRecord.licenceStartDate == LocalDate.now(clock) && nomisRecord.prisonerNumber !in nomisIdsWithALicence
     }
+  }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+    private const val LICENCE_STATUS_REPORT_PAGE_SIZE = 100
   }
 }
