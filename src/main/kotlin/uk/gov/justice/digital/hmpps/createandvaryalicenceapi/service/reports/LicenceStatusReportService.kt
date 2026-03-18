@@ -22,8 +22,7 @@ class LicenceStatusReportService(
   private val deliusApiClient: DeliusApiClient,
   private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
-  private val licenceRepository: LicenceRepository,
-  private val releaseDateService: ReleaseDateService,
+  private val licenceRepository: LicenceRepository
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -92,8 +91,7 @@ class LicenceStatusReportService(
     val nomisIdsWithALicence = licences.keys
     return nomisRecordswithDeliusData.filter { (nomisRecord, _) ->
       val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }
-      val potentialLsd = releaseDateService.getLicenceStartDate(nomisRecord, cvlRecord.eligibleKind)
-      return@filter cvlRecord.isEligible && potentialLsd == LocalDate.now(clock) && nomisRecord.prisonerNumber !in nomisIdsWithALicence
+      return@filter cvlRecord.isEligible && cvlRecord.licenceStartDate == LocalDate.now(clock) && nomisRecord.prisonerNumber !in nomisIdsWithALicence
     }
   }
 }
