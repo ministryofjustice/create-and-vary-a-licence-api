@@ -57,6 +57,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Reviewable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
@@ -1170,10 +1171,11 @@ class LicenceService(
 
     val isKindUpdated =
       licence.kind !in listOf(HARD_STOP, TIME_SERVED, VARIATION) && updatedKind != licence.kind
-    val isEligibleKindUpdated = updatedKind != licence.eligibleKind
+    val isEligibleKindUpdated = updatedKind != licence.eligibleKind?.licenceKind
 
     val newKind = if (isKindUpdated) updatedKind else licence.kind
-    val newEligibleKind = if (isEligibleKindUpdated) updatedKind else licence.eligibleKind
+
+    val newEligibleKind = if (isEligibleKindUpdated) EligibileKind.findByLicenceKind(updatedKind) else licence.eligibleKind
 
     if (isKindUpdated || isEligibleKindUpdated) {
       if (isKindUpdated) {

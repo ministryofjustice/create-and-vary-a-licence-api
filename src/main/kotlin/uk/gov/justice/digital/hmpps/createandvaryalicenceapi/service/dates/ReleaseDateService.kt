@@ -6,10 +6,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind.FIXED_TERM
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
@@ -98,20 +99,20 @@ class ReleaseDateService(
 
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
-    licenceKind: LicenceKind?,
+    eligibileKind: EligibileKind?,
   ): LocalDate? = getLicenceStartDates(
     listOf(nomisRecord),
-    mapOf(nomisRecord.prisonerNumber to licenceKind),
+    mapOf(nomisRecord.prisonerNumber to eligibileKind),
   )[nomisRecord.prisonerNumber]
 
   fun getLicenceStartDates(
     prisoners: List<PrisonerSearchPrisoner>,
-    nomisIdsToKinds: Map<String, LicenceKind?>,
+    nomisIdsToKinds: Map<String, EligibileKind?>,
   ): Map<String, LocalDate?> {
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
     return prisoners.associate {
       it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
-        PRRD -> calculatePrrdLicenceStartDate(it)
+        FIXED_TERM -> calculatePrrdLicenceStartDate(it)
         CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
         HDC -> it.homeDetentionCurfewActualDate
         else -> null

@@ -7,6 +7,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -17,7 +18,7 @@ import java.time.LocalDateTime
 @DiscriminatorValue(value = "VARIATION")
 class VariationLicence(
   id: Long? = null,
-  eligibleKind: LicenceKind?,
+  eligibleKind: EligibileKind?,
   typeCode: LicenceType,
   version: String? = null,
   statusCode: LicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
@@ -136,7 +137,7 @@ class VariationLicence(
 
   fun copy(
     id: Long? = this.id,
-    eligibleKind: LicenceKind? = this.eligibleKind,
+    eligibleKind: EligibileKind? = this.eligibleKind,
     typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,

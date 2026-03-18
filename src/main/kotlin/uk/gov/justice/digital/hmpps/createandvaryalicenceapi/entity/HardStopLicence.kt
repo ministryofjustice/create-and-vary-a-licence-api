@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Reviewable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -19,7 +20,7 @@ import java.time.LocalDateTime
 @DiscriminatorValue(value = "HARD_STOP")
 class HardStopLicence(
   id: Long? = null,
-  eligibleKind: LicenceKind?,
+  eligibleKind: EligibileKind?,
   typeCode: LicenceType,
   version: String? = null,
   statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
@@ -140,7 +141,7 @@ class HardStopLicence(
 
   fun copy(
     id: Long? = this.id,
-    eligibleKind: LicenceKind? = this.eligibleKind,
+    eligibleKind: EligibileKind? = this.eligibleKind,
     typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,

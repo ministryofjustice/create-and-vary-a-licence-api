@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -138,7 +138,7 @@ object LicenceFactory {
     responsibleCom: CommunityOffenderManager,
     timedOutLicence: CrdLicence?,
     licenceStartDate: LocalDate?,
-    eligibleKind: LicenceKind?,
+    eligibleKind: EligibileKind?,
   ) = HardStopLicence(
     typeCode = licenceType,
     version = version,
@@ -182,7 +182,7 @@ object LicenceFactory {
 
   fun createTimeServe(
     licenceType: LicenceType,
-    eligibleKind: LicenceKind?,
+    eligibleKind: EligibileKind?,
     nomsId: String,
     version: String,
     nomisRecord: PrisonerSearchPrisoner,

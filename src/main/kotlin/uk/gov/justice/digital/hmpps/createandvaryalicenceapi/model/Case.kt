@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.LocalDate
 
@@ -21,6 +22,6 @@ data class Case(
   val licenceStartDate: LocalDate,
 
   @field:Schema(description = "The licence kind which the prisoner is eligible for", example = "CRD")
-  val kind: LicenceKind?,
+  val kind: EligibileKind?,
 
 )

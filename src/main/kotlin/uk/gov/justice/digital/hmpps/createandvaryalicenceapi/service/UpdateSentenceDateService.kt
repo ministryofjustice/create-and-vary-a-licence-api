@@ -66,7 +66,7 @@ class UpdateSentenceDateService(
     val updatedLicence = if (cvlRecord.isEligible && cvlRecord.eligibleKind != null) {
       licenceService.updateLicenceKind(
         currentLicence,
-        cvlRecord.eligibleKind,
+        cvlRecord.eligibleKind.licenceKind,
       )
     } else {
       currentLicence
