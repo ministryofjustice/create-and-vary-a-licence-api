@@ -8,7 +8,7 @@ parameters:
     default: the_elephants_devs
   java-version:
     type: string
-    default: "25"
+    default: "25.0.1"
   localstack-version:
     type: string
     default: "3.0.2"
