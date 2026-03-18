@@ -70,7 +70,7 @@ import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 )
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @AutoConfigureWebTestClient(timeout = "25000") // 25 seconds
-@ImportAutoConfiguration(WebClientAutoConfiguration::class) // <--- Add this
+@ImportAutoConfiguration(WebClientAutoConfiguration::class)
 abstract class IntegrationTestBase {
 
   @MockitoSpyBean
