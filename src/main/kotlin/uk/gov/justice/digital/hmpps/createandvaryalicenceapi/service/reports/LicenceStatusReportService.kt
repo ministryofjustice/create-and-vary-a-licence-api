@@ -77,7 +77,7 @@ class LicenceStatusReportService(
   private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate)
 
   private fun enrichWithDeliusData(candidates: List<PrisonerSearchPrisoner>): Map<PrisonerSearchPrisoner, CommunityManager> {
-    val coms = deliusApiClient.getOffenderManagers(candidates.map {it.prisonerNumber}).filter { it.case.nomisId != null }.associateBy { it.case.nomisId!!}
+    val coms = deliusApiClient.getOffenderManagers(candidates.map { it.prisonerNumber }).filter { it.case.nomisId != null }.associateBy { it.case.nomisId!! }
     return candidates.mapNotNull {
       val com = coms[it.prisonerNumber] ?: return@mapNotNull null
       it to com
@@ -87,7 +87,7 @@ class LicenceStatusReportService(
   private fun findEligibleCases(
     nomisRecordswithDeliusData: Map<PrisonerSearchPrisoner, CommunityManager>,
     cvlRecords: List<CvlRecord>,
-    licences: Map<String, Licence>
+    licences: Map<String, Licence>,
   ): Map<PrisonerSearchPrisoner, CommunityManager> {
     val nomisIdsWithALicence = licences.keys
     return nomisRecordswithDeliusData.filter { (nomisRecord, _) ->
