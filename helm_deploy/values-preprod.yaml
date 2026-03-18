@@ -98,6 +98,18 @@ jobs:
     cron: "40 9 * * *" # 9:40am every day
     allowRetry: false
 
+  - name: isr-in-flight-ap-pss-licences-job
+    enabled: true
+    path: /isr-in-flight-ap-pss-licences
+    cron: "30 7 * * *"
+    allowRetry: true
+
+  - name: isr-active-licences-job
+    enabled: true
+    path: /isr-active-licences
+    cron: "00 8 * * *"
+    allowRetry: true
+
 #CloudPlatform AlertManager receiver to route prometheus alerts to slack
 #See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
