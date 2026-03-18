@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Lice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
@@ -22,7 +21,7 @@ class LicenceStatusReportService(
   private val deliusApiClient: DeliusApiClient,
   private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
-  private val licenceRepository: LicenceRepository
+  private val licenceRepository: LicenceRepository,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
