@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.applicationinsights.TelemetryClient
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
@@ -12,9 +11,11 @@ import org.mockito.Mockito.reset
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.webclient.autoconfigure.WebClientAutoConfiguration
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -30,17 +31,18 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.setPostgresContainerProperties
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.MissingTopicException
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
+import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
 /*
 ** The abstract parent class for integration tests.
@@ -68,6 +70,7 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 )
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @AutoConfigureWebTestClient(timeout = "25000") // 25 seconds
+@ImportAutoConfiguration(WebClientAutoConfiguration::class)
 abstract class IntegrationTestBase {
 
   @MockitoSpyBean
@@ -105,7 +108,7 @@ abstract class IntegrationTestBase {
   lateinit var webTestClient: WebTestClient
 
   @Autowired
-  lateinit var jwtAuthHelper: JwtAuthHelper
+  lateinit var jwtAuthHelper: JwtAuthorisationHelper
 
   @Autowired
   lateinit var mapper: ObjectMapper
@@ -119,7 +122,12 @@ abstract class IntegrationTestBase {
   internal fun setAuthorisation(
     user: String = "test-client",
     roles: List<String> = listOf(),
-  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
+  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(
+    clientId = "create-and-vary-a-licence-admin",
+    username = user,
+    roles = roles,
+    scope = listOf("read"),
+  )
 
   init {
     // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets

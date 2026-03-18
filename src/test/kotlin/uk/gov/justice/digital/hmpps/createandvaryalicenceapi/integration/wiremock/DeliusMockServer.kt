@@ -1,8 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
@@ -10,11 +7,12 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
+import tools.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
 
 class DeliusMockServer : WireMockServer(8093) {
 
-  private val objectMapper = ObjectMapper().registerModule(JavaTimeModule())
-    .registerKotlinModule()
+  private val mapper: ObjectMapper = createMapper()
 
   fun stubAssignDeliusRole(userName: String) {
     stubFor(
@@ -513,7 +511,7 @@ class DeliusMockServer : WireMockServer(8093) {
     managers: List<Any>,
     excludeUserInfo: Boolean = false,
   ) {
-    val jsonBody = objectMapper.writeValueAsString(managers)
+    val jsonBody = mapper.writeValueAsString(managers)
 
     stubFor(
       post(urlEqualTo("/probation-case/responsible-community-manager${if (excludeUserInfo) "?includeEmail=false" else ""}"))

@@ -1,9 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import net.javacrumbs.jsonunit.assertj.assertThatJson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -18,7 +14,9 @@ import software.amazon.awssdk.services.sns.SnsAsyncClient
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sns.model.PublishResponse
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
 import java.util.concurrent.CompletableFuture
@@ -29,15 +27,11 @@ class OutboundEventsPublisherTest {
   private val mockHmppsTopic = mock<HmppsTopic>()
   private val snsClient = mock<SnsAsyncClient>()
 
-  private val objectMapper = ObjectMapper().apply {
-    registerModule(Jdk8Module())
-    registerModule(JavaTimeModule())
-    registerKotlinModule()
-  }
+  private val mapper: ObjectMapper = createMapper()
 
   private val outboundEventsPublisher = OutboundEventsPublisher(
     hmppsQueueService = hmppsQueueServiceMock,
-    objectMapper = objectMapper,
+    mapper = mapper,
   )
 
   @Nested
@@ -52,7 +46,7 @@ class OutboundEventsPublisherTest {
 
       val publishRequest = PublishRequest.builder()
         .topicArn(anArn)
-        .message(objectMapper.writeValueAsString(aHMPPSDomainEvent))
+        .message(mapper.writeValueAsString(aHMPPSDomainEvent))
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(aHMPPSDomainEvent.eventType)
@@ -109,7 +103,7 @@ class OutboundEventsPublisherTest {
 
       val publishRequest = PublishRequest.builder()
         .topicArn(anArn)
-        .message(objectMapper.writeValueAsString(payload))
+        .message(mapper.writeValueAsString(payload))
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(payload.eventType).build(),
@@ -169,7 +163,7 @@ class OutboundEventsPublisherTest {
 
       val publishRequest = PublishRequest.builder()
         .topicArn(anArn)
-        .message(objectMapper.writeValueAsString(payload))
+        .message(mapper.writeValueAsString(payload))
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(payload.eventType).build(),
@@ -226,7 +220,7 @@ class OutboundEventsPublisherTest {
 
       val publishRequest = PublishRequest.builder()
         .topicArn(anArn)
-        .message(objectMapper.writeValueAsString(payload))
+        .message(mapper.writeValueAsString(payload))
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(payload.eventType).build(),
@@ -290,7 +284,7 @@ class OutboundEventsPublisherTest {
 
       val publishRequest = PublishRequest.builder()
         .topicArn(anArn)
-        .message(objectMapper.writeValueAsString(payload))
+        .message(mapper.writeValueAsString(payload))
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(payload.eventType).build(),
@@ -350,7 +344,7 @@ class OutboundEventsPublisherTest {
       )
       val publishRequest = PublishRequest.builder()
         .topicArn(anArn)
-        .message(objectMapper.writeValueAsString(payload))
+        .message(mapper.writeValueAsString(payload))
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(payload.eventType).build(),
@@ -401,7 +395,7 @@ class OutboundEventsPublisherTest {
 
     val publishRequest = PublishRequest.builder()
       .topicArn(anArn)
-      .message(objectMapper.writeValueAsString(aHMPPSDomainEvent))
+      .message(mapper.writeValueAsString(aHMPPSDomainEvent))
       .messageAttributes(
         mapOf(
           "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(aHMPPSDomainEvent.eventType)

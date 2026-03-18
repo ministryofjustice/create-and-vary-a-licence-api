@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
-import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -10,7 +8,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Positive
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import java.time.LocalDateTime
@@ -38,7 +37,6 @@ data class AuditEvent(
 
   val detail: String? = null,
 
-  @Type(JsonBinaryType::class)
-  @Column(columnDefinition = "jsonb")
+  @JdbcTypeCode(SqlTypes.JSON)
   val changes: Map<String, Any>? = null,
 )
