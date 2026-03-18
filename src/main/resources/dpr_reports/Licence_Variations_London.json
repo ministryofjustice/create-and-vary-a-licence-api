@@ -1,0 +1,126 @@
+{
+  "id": "approved-licences-varied-london",
+  "name": "Approved licences variations in London (N07)" ,
+  "description": "Data products for Create and Vary a licence ",
+  "metadata": {
+    "author": "Caija Addai",
+    "owner": "Caija Addai",
+    "version": "1.0.5",
+    "interactive": "true"
+  },
+  "datasource": [
+    {
+      "id": "cvl",
+      "name": "cvl"
+    }
+
+  ],
+  "dataset": [
+    {
+      "id": "licence-dataset",
+      "name": "licence-dataset",
+      "datasource": "cvl",
+      "query": "select distinct l.licence_start_date, l.probation_pdu_code, l.probation_pdu_description, l.crn from licence l where l.approved_date is null and l.variation_of_id is not null and l.probation_area_code = 'N07' and l.status_code <> 'INACTIVE'",
+      "schema": {
+        "field": [
+          {
+            "name": "licence_start_date",
+            "type": "date",
+            "display": "Release date"
+          },
+          {
+            "name": "probation_pdu_code",
+            "type": "string",
+            "display": "Probation PDU code"
+          },
+          {
+            "name": "probation_pdu_description",
+            "type": "string",
+            "display": "Probation PDU"
+          },
+          {
+            "name": "crn",
+            "type": "string",
+            "display": "CRN"
+          }
+        ]
+      }
+    }
+  ],
+  "policy": [
+    {
+      "id": "access",
+      "type": "access",
+      "rule": [
+        {
+          "effect": "permit",
+          "condition": [
+            {
+              "match": [
+                "${role}",
+                "ROLE_NOMIS_BATCHLOAD"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "report": [
+    {
+      "id": "approved-licences-varied-london",
+      "name": "Approved licence variations in London (N07)",
+      "description": "Number of CVL licence variations approved in London",
+      "version": "1.0.0",
+      "render": "HTML",
+      "dataset": "$ref:licence-dataset",
+      "feature": [
+        {
+          "type": "print"
+        }
+      ],
+      "specification": {
+        "template": "list",
+        "field": [
+          {
+            "name": "$ref:licence_start_date",
+            "display": "Release date",
+
+            "formula": "format_date(${licence_start_date}, 'dd/MM/yyyy')",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false,
+            "filter": {
+          "type": "daterange",
+          "interactive":true,
+          "default": "today(-1,months) - today()"
+          }
+          },
+          {
+            "name": "$ref:probation_pdu_code",
+            "display": "Probation PDU code",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": true
+          },
+          {
+            "name": "$ref:probation_pdu_description",
+            "display": "Probation PDU",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:crn",
+            "display": "CRN",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          }
+        ]
+      },
+      "summary": [
+      ]
+    }
+  ]
+}
