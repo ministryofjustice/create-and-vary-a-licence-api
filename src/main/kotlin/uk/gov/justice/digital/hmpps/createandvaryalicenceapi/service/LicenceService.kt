@@ -57,6 +57,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Reviewable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
@@ -1165,15 +1166,16 @@ class LicenceService(
   }
 
   @Transactional
-  fun updateLicenceKind(licence: EntityLicence, updatedKind: LicenceKind): EntityLicence {
+  fun updateLicenceKind(licence: EntityLicence, updatedLicenceKind: LicenceKind, updatedEligibleKind: EligibleKind? = null): EntityLicence {
     if (licence.kind == HDC) return licence
 
     val isKindUpdated =
-      licence.kind !in listOf(HARD_STOP, TIME_SERVED, VARIATION) && updatedKind != licence.kind
-    val isEligibleKindUpdated = updatedKind != licence.eligibleKind
+      licence.kind !in listOf(HARD_STOP, TIME_SERVED, VARIATION) && updatedLicenceKind != licence.kind
+    val isEligibleKindUpdated = updatedEligibleKind != licence.eligibleKind
 
-    val newKind = if (isKindUpdated) updatedKind else licence.kind
-    val newEligibleKind = if (isEligibleKindUpdated) updatedKind else licence.eligibleKind
+    val newKind = if (isKindUpdated) updatedLicenceKind else licence.kind
+
+    val newEligibleKind = if (isEligibleKindUpdated) updatedEligibleKind else licence.eligibleKind
 
     if (isKindUpdated || isEligibleKindUpdated) {
       if (isKindUpdated) {

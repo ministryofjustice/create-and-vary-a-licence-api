@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -844,7 +845,7 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = prisonerNumber,
-          kind = LicenceKind.PRRD,
+          eligibleKind = EligibleKind.FIXED_TERM,
           licenceStartDate = LocalDate.now(),
         ),
       ),
@@ -877,7 +878,7 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = prisonerNumber,
-          kind = LicenceKind.PRRD,
+          eligibleKind = EligibleKind.FIXED_TERM,
           licenceStartDate = LocalDate.now(),
         ),
       ),

@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.of
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.promptCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.Instant
@@ -150,7 +151,7 @@ class PromptComServiceTest {
           crn = "crn",
           name = "name",
           licenceStartDate = LocalDate.of(2022, 1, 2),
-          kind = LicenceKind.CRD,
+          kind = EligibleKind.CRD,
         ),
       ),
     )

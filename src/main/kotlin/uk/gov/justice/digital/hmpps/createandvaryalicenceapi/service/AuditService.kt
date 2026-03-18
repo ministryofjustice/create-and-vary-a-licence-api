@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 
@@ -364,8 +365,8 @@ class AuditService(
     licence: Licence,
     oldKind: LicenceKind,
     newKind: LicenceKind,
-    oldEligibleKind: LicenceKind?,
-    newEligibleKind: LicenceKind?,
+    oldEligibleKind: EligibleKind?,
+    newEligibleKind: EligibleKind?,
     staffMember: Staff?,
   ) {
     val summary = "Licence kind updated on licence"

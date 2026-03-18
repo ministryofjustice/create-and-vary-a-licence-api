@@ -15,8 +15,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Notif
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -78,7 +78,7 @@ class NotifyServiceTest {
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
         Case(name = "Test one", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09"), CRD),
-        Case(name = "Test two", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10"), PRRD),
+        Case(name = "Test two", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10"), FIXED_TERM),
         Case(name = "Test three", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-11"), CRD),
       ),
     )
@@ -105,7 +105,7 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        Case(name = "test one", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09"), kind = PRRD),
+        Case(name = "test one", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09"), kind = FIXED_TERM),
         Case(name = "test two", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10"), kind = CRD),
         Case(name = "test three", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-24"), kind = CRD),
       ),

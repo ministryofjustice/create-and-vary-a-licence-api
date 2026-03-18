@@ -141,14 +141,15 @@ class LicenceOverrideService(
       homeDetentionCurfewEligibilityDate = request.homeDetentionCurfewEligibilityDate,
     )
 
-    val updatedLicence = licenceService.updateLicenceKind(licence, request.updatedKind)
+    val updatedLicence = licenceService.updateLicenceKind(licence, request.updatedLicenceKind, request.updatedEligibleKind)
     val licenceStartDate =
       releaseDateService.getLicenceStartDate(prisonerSearchPrisonerOverriddenDates, updatedLicence.eligibleKind)
 
     log.info(
       buildString {
         append("Updated kind and dates - ID $licenceId")
-        append("kind ${request.updatedKind}, ")
+        append("licenceKind ${request.updatedLicenceKind}, ")
+        append("eligibleKind ${request.updatedLicenceKind}, ")
         append("CRD ${request.conditionalReleaseDate}, ")
         append("ARD ${request.actualReleaseDate}. ")
         append("SSD ${request.sentenceStartDate}, ")

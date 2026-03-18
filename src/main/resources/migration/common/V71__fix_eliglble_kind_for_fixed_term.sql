@@ -1,0 +1,1 @@
+UPDATE licence SET eligible_kind = 'FIXED_TERM' WHERE eligible_kind = 'PRRD';

@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.C
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -567,7 +568,7 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.HDC,
+          eligibleKind = EligibleKind.HDC,
           licenceStartDate = LocalDate.of(2023, 9, 14),
         ),
       ),
