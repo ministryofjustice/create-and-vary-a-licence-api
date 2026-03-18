@@ -62,7 +62,7 @@ jobs:
           path: build/reports/jacoco
   integration-test:
     docker:
-      - image: cimg/openjdk:<< pipeline.parameters.java-version >>
+      - image: cimg/openjdk:25.0.1
       - image: localstack/localstack:<< pipeline.parameters.localstack-version >>
         environment:
           SERVICES: << pipeline.parameters.services >>

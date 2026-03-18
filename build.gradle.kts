@@ -1,5 +1,5 @@
 import io.gitlab.arturbosch.detekt.Detekt
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_23
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_24
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -122,8 +122,8 @@ java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(25)) // Java runtime
   }
-  sourceCompatibility = JavaVersion.VERSION_23
-  targetCompatibility = JavaVersion.VERSION_23
+  sourceCompatibility = JavaVersion.VERSION_24
+  targetCompatibility = JavaVersion.VERSION_24
 }
 
 configurations {
@@ -144,7 +144,7 @@ configurations {
 tasks {
   withType<KotlinCompile> {
     compilerOptions {
-      jvmTarget = JVM_23
+      jvmTarget = JVM_24
       freeCompilerArgs.addAll(
         "-Xwhen-guards",
         "-Xjvm-default=all",
