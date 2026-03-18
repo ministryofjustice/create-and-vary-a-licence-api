@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.applicationinsights.TelemetryClient
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
@@ -12,9 +11,11 @@ import org.mockito.Mockito.reset
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.webclient.autoconfigure.WebClientAutoConfiguration
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -30,6 +31,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer
@@ -68,6 +70,7 @@ import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 )
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @AutoConfigureWebTestClient(timeout = "25000") // 25 seconds
+@ImportAutoConfiguration(WebClientAutoConfiguration::class)
 abstract class IntegrationTestBase {
 
   @MockitoSpyBean

@@ -1,8 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
@@ -12,15 +9,16 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
 
 class PrisonerSearchMockServer : WireMockServer(8099) {
 
-  private val objectMapper = ObjectMapper().registerModule(JavaTimeModule())
-    .registerKotlinModule()
+  private val mapper: ObjectMapper = createMapper()
 
   fun stubSearchPrisonersByBookingIds(nomisId: String = "G7285UT") {
     stubFor(
@@ -233,7 +231,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           postRecallReleaseDate = postRecallReleaseDate,
         ),
       )
-      jsonString = objectMapper.writeValueAsString(prisoners)
+      jsonString = mapper.writeValueAsString(prisoners)
     } else {
       jsonString = prisonerSearchResponse
     }
@@ -597,7 +595,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
   fun stubSearchPrisonersByReleaseDate(prisoners: List<PrisonerSearchPrisoner>) {
     val pageable: Pageable = PageRequest.of(0, 100, Sort.by("releaseDate").ascending())
     val prisonerPage: Page<PrisonerSearchPrisoner> = PageImpl(prisoners, pageable, prisoners.size.toLong())
-    stubSearchPrisonersByReleaseDate(objectMapper.writeValueAsString(prisonerPage), 0)
+    stubSearchPrisonersByReleaseDate(mapper.writeValueAsString(prisonerPage), 0)
   }
 
   fun stubSearchPrisonersByReleaseDate(jsonBody: String, page: Int) {

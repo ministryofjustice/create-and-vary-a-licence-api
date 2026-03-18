@@ -6,13 +6,8 @@ spring:
   application:
     name: create-and-vary-a-licence-api
 
-  codec:
-    max-in-memory-size: 10MB
-
   jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
-    serialization:
-      WRITE_DATES_AS_TIMESTAMPS: false
 
   profiles:
     include: stdout
@@ -63,6 +58,9 @@ spring:
   sql:
     init:
       continue-on-error: true
+  web:
+    error:
+      include-message: always
 
 server:
   port: 8080
@@ -75,8 +73,6 @@ server:
       protocol-header: x-forwarded-proto
       internal-proxies: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1|::1|100\.6[4-9]\.\d{1,3}\.\d{1,3}|100\.[7-9][0-9]{1}\.\d{1,3}\.\d{1,3}|100\.1[0-1][0-9]{1}\.\d{1,3}\.\d{1,3}|100\.12[0-7]\.\d{1,3}\.\d{1,3}
   shutdown: graceful
-  error:
-    include-message: always
 
 logging:
   level:
@@ -188,6 +184,3 @@ hmpps:
       prisons: CFI,SWI,PBI,PFI,SUI,RNI,FEI
   sar:
     additionalAccessRole: CVL_ADMIN
-    template:
-      path: /templates/sar_create-and-vary-a-licence-api.mustache
-      enabled: true

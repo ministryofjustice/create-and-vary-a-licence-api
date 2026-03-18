@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.3.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.5"
   id("org.owasp.dependencycheck") version "12.2.0"
-  kotlin("plugin.spring") version "2.3.0"
-  kotlin("plugin.jpa") version "2.3.0"
+  kotlin("plugin.spring") version "2.3.10"
+  kotlin("plugin.jpa") version "2.3.10"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
@@ -25,7 +25,7 @@ dependencies {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
     }
   }
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.8.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.0.1")
 
   // CVE-2025-67735 - it does not fix all occurrences
   implementation(enforcedPlatform("io.netty:netty-bom:4.2.8.Final"))
@@ -45,9 +45,11 @@ dependencies {
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
+  implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-cache")
+  implementation("org.springframework.boot:spring-boot-starter-flyway")
 
   // GOVUK Notify:
   implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
@@ -59,44 +61,53 @@ dependencies {
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.8")
-
   implementation("com.google.code.gson:gson:2.13.2")
   implementation("io.arrow-kt:arrow-core:2.2.1.1")
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.14.1")
 
   // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.6.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.0.1")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
 
   // Digital prison reporting
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:9.11.20")
 
+  // To help override SAR
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.0.0")
+  implementation("org.jsoup:jsoup:1.18.3")
+
+  // New in Spring Boot 4: Dedicated starter for HTTP clients
+  implementation("org.springframework.boot:spring-boot-starter-webclient")
+
+  // Required for @AutoConfigureWebTestClient and testing WebClient
+  testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
+
+  // Update to a version compatible with Spring Boot 4.0
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
+
+  // Also, ensure your HMPPS test support is at least 2.0.x
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.0.4")
+
   // Test dependencies
-  testImplementation("org.wiremock:wiremock-standalone:3.13.1")
-  testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("io.jsonwebtoken:jjwt-api:0.13.0")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.13.0")
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.13.0")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.1")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.37")
-  testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:1.2.1")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.8.2")
-}
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.2")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.1")
+  testImplementation("org.springframework.boot:spring-boot-webtestclient")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
 
-configurations.matching { it.name == "detekt" }.all {
-  resolutionStrategy.eachDependency {
-    if (requested.group == "org.jetbrains.kotlin") {
-      useVersion("2.0.21")
-    }
-  }
+  // Specifically for Spring Boot 4 Web MVC testing
+  testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 }
 
 detekt {
@@ -120,7 +131,7 @@ configurations {
   matching { it.name == "detekt" }.all {
     resolutionStrategy.eachDependency {
       if (requested.group == "org.jetbrains.kotlin") {
-        useVersion(io.gitlab.arturbosch.detekt.getSupportedKotlinVersion())
+        useVersion("2.0.21")
       }
     }
   }

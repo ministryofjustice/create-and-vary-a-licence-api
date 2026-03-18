@@ -78,37 +78,6 @@ hmpps:
       url: http://localhost:8100
       enabled: true
 
-  sqs:
-    provider: localstack
-    queues:
-      domaineventsqueue:
-        queueName: domainevents-queue
-        dlqName: domainevents-queue-dlq
-        subscribeTopicId: domainevents
-      prisoneventsqueue:
-        queueName: prisonevents-queue
-        dlqName: prisonevents-queue-dlq
-        subscribeTopicId: prisonevents
-    topics:
-      domainevents:
-        arn: arn:aws:sns:eu-west-2:000000000000:domainevents-topic
-      prisonevents:
-        arn: arn:aws:sns:eu-west-2:000000000000:prisonevents-topic
-
-  sar:
-    tests:
-      # This was implemented in reverse, it's been fixed in the latest version of the sar library so will need to be reversed then.
-      attachments-expected: false
-      # When changing expected schema version this should act as a prompt to consider whether SAR requires updating
-      # check with the rest of the team to see if this is required
-      expected-flyway-schema-version: 70
-      expected-jpa-entity-schema:
-        path: /sar/entity-schema.json
-      expected-api-response:
-        path: /sar/sar-api-response.json
-      expected-render-result:
-        path: /sar/sar-generated-report.html
-
 feature:
   toggle:
     hdc:
@@ -143,6 +112,23 @@ cache:
     bank-holidays:
       cron: "0 45 23 * * ?"
 
+hmpps.sqs:
+  provider: localstack
+  queues:
+    domaineventsqueue:
+      queueName: domainevents-queue
+      dlqName: domainevents-queue-dlq
+      subscribeTopicId: domainevents
+    prisoneventsqueue:
+      queueName: prisonevents-queue
+      dlqName: prisonevents-queue-dlq
+      subscribeTopicId: prisonevents
+  topics:
+    domainevents:
+      arn: arn:aws:sns:eu-west-2:000000000000:domainevents-topic
+    prisonevents:
+      arn: arn:aws:sns:eu-west-2:000000000000:prisonevents-topic
+
 domain:
   event:
     listener:
@@ -163,4 +149,3 @@ update:
 progression:
   model:
     policy-start-date: 2025-09-19
-

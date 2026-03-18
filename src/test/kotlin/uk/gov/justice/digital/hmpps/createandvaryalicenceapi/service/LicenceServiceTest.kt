@@ -22,9 +22,9 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import org.springframework.data.core.PropertyReferenceException
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
-import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
