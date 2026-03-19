@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.web.reactive.function.client.WebClient
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import java.time.LocalDate
 
 class PrisonerSearchApiClientTest {
@@ -19,7 +19,7 @@ class PrisonerSearchApiClientTest {
   companion object {
     @RegisterExtension
     val wiremock = WireMockExtension.newInstance().options(wireMockConfig().dynamicPort()).build()
-    private val mapper: ObjectMapper = createMapper()
+    private val mapper: ObjectMapper = createTestMapper()
   }
 
   lateinit var prisonerSearchApiClient: PrisonerSearchApiClient

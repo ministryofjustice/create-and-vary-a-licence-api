@@ -11,14 +11,14 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
 
 class PrisonerSearchMockServer : WireMockServer(8099) {
 
-  private val mapper: ObjectMapper = createMapper()
+  private val mapper: ObjectMapper = createTestMapper()
 
   fun stubSearchPrisonersByBookingIds(nomisId: String = "G7285UT") {
     stubFor(
