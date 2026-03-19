@@ -23,13 +23,13 @@ restart_docker () {
   #You will be prompted to continue with the deletion in the terminal
   #docker system prune --all
 
-echo "Pulling back end containers ..."
-docker compose pull
+  echo "Pulling back end containers ..."
+  docker compose pull
 
-echo "Starting and waiting for back end containers ..."
-docker compose -f docker-compose.yml up -d --wait
+  echo "Starting and waiting for back end containers ..."
+  docker compose -f docker-compose.yml up -d --wait
 
-echo "Back end containers are now ready"
+  echo "Back end containers are now ready"
 }
 
 # Server port - avoid clash with prison-api
