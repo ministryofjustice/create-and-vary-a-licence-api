@@ -25,15 +25,9 @@ restart_docker () {
 
   echo "Pulling back end containers ..."
   docker compose pull
-  docker compose -f docker-compose.yml up -d
 
-  echo "Waiting for back end containers to be ready ..."
-  until [ "`docker inspect -f {{.State.Health.Status}} licences-db`" == "healthy" ]; do
-      sleep 0.1;
-  done;
-  until [ "`docker inspect -f {{.State.Health.Status}} localstack-api`" == "healthy" ]; do
-      sleep 0.1;
-  done;
+  echo "Starting and waiting for back end containers ..."
+  docker compose -f docker-compose.yml up -d --wait
 
   echo "Back end containers are now ready"
 }

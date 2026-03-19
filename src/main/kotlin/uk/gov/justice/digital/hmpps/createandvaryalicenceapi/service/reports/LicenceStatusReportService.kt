@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Lice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
@@ -23,7 +22,6 @@ class LicenceStatusReportService(
   private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
   private val licenceRepository: LicenceRepository,
-  private val releaseDateService: ReleaseDateService,
 ) {
 
   fun getCases(): List<LicenceStatusResponse> {
@@ -91,8 +89,7 @@ class LicenceStatusReportService(
     val nomisIdsWithALicence = licences.keys
     return nomisRecordswithDeliusData.filter { (nomisRecord, _) ->
       val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }
-      val potentialLsd = releaseDateService.getLicenceStartDate(nomisRecord, cvlRecord.eligibleKind)
-      return@filter cvlRecord.isEligible && potentialLsd == LocalDate.now(clock) && nomisRecord.prisonerNumber !in nomisIdsWithALicence
+      return@filter cvlRecord.isEligible && cvlRecord.licenceStartDate == LocalDate.now(clock) && nomisRecord.prisonerNumber !in nomisIdsWithALicence
     }
   }
 

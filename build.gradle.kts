@@ -168,6 +168,8 @@ tasks {
   register<Test>("integrationTest") {
     description = "Integration tests"
     group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
     shouldRunAfter("test")
     useJUnitPlatform()
     filter {
