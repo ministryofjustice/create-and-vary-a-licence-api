@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Lice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
@@ -23,9 +22,7 @@ class LicenceStatusReportService(
   private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
   private val licenceRepository: LicenceRepository,
-  private val releaseDateService: ReleaseDateService,
 ) {
-  private val log = LoggerFactory.getLogger(this::class.java)
 
   fun getCases(): List<LicenceStatusResponse> {
     val today = LocalDate.now(clock)
@@ -74,7 +71,7 @@ class LicenceStatusReportService(
     return notStartedCases + casesWithLicence
   }
 
-  private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate)
+  private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE)
 
   private fun enrichWithDeliusData(candidates: List<PrisonerSearchPrisoner>): Map<PrisonerSearchPrisoner, CommunityManager> {
     val coms = deliusApiClient.getOffenderManagers(candidates.map { it.prisonerNumber }).filter { it.case.nomisId != null }.associateBy { it.case.nomisId!! }
@@ -92,8 +89,12 @@ class LicenceStatusReportService(
     val nomisIdsWithALicence = licences.keys
     return nomisRecordswithDeliusData.filter { (nomisRecord, _) ->
       val cvlRecord = cvlRecords.first { cvlRecord -> cvlRecord.nomisId == nomisRecord.prisonerNumber }
-      val potentialLsd = releaseDateService.getLicenceStartDate(nomisRecord, cvlRecord.eligibleKind)
-      return@filter cvlRecord.isEligible && potentialLsd == LocalDate.now(clock) && nomisRecord.prisonerNumber !in nomisIdsWithALicence
+      return@filter cvlRecord.isEligible && cvlRecord.licenceStartDate == LocalDate.now(clock) && nomisRecord.prisonerNumber !in nomisIdsWithALicence
     }
+  }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+    private const val LICENCE_STATUS_REPORT_PAGE_SIZE = 100
   }
 }
