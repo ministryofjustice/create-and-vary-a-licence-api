@@ -26,6 +26,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonRecord.CanonicalIdentifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonRecord.PrisonCanonicalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptCase
@@ -1182,5 +1184,15 @@ object TestData {
     userRestricted = restricted,
     exclusionMessage = exclusionMessage,
     restrictionMessage = restrictedMessage,
+  )
+
+  fun aPrisonCanonicalRecord(crns: List<String> = listOf("X12348"), prisonNumbers: List<String> = listOf("AB1234E")) = PrisonCanonicalRecord(
+    cprUUID = "12345678-1234-1234-1234-123456789012",
+    identifiers = CanonicalIdentifiers(
+      crns = crns,
+      prisonNumbers = prisonNumbers,
+      pncs = listOf("12/394773H"),
+      cros = listOf("29906/12J"),
+    ),
   )
 }
