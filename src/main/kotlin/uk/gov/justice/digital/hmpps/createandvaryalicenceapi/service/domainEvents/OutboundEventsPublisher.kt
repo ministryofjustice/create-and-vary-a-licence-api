@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -8,13 +7,14 @@ import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import java.util.concurrent.TimeUnit
 
 @Service
 class OutboundEventsPublisher(
   private val hmppsQueueService: HmppsQueueService,
-  private val objectMapper: ObjectMapper,
+  private val mapper: ObjectMapper,
 ) {
 
   companion object {
@@ -35,7 +35,7 @@ class OutboundEventsPublisher(
     domainEventsTopicClient.publish(
       PublishRequest.builder()
         .topicArn(domainEventsTopic.arn)
-        .message(objectMapper.writeValueAsString(event))
+        .message(mapper.writeValueAsString(event))
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(event.eventType).build(),

@@ -1,9 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
@@ -13,7 +9,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.web.reactive.function.client.WebClient
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
 import java.time.LocalDate
 
 class PrisonerSearchApiClientTest {
@@ -21,11 +19,7 @@ class PrisonerSearchApiClientTest {
   companion object {
     @RegisterExtension
     val wiremock = WireMockExtension.newInstance().options(wireMockConfig().dynamicPort()).build()
-    val objectMapper = ObjectMapper().apply {
-      registerModule(Jdk8Module())
-      registerModule(JavaTimeModule())
-      registerKotlinModule()
-    }
+    private val mapper: ObjectMapper = createMapper()
   }
 
   lateinit var prisonerSearchApiClient: PrisonerSearchApiClient
@@ -58,7 +52,7 @@ class PrisonerSearchApiClientTest {
         .willReturn(
           aResponse().withHeader("Content-Type", "application/json").withBody(
             """
-              { "content": ${objectMapper.writeValueAsString(foundResults)}, "number": $pageNumber, "size": $pageSize, "totalElements": $totalElements }
+              { "content": ${mapper.writeValueAsString(foundResults)}, "number": $pageNumber, "size": $pageSize, "totalElements": $totalElements }
               """,
           ),
         ),

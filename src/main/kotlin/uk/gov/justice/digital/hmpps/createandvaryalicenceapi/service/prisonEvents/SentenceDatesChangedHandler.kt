@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents
 
 import com.fasterxml.jackson.core.JacksonException
-import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -20,7 +20,7 @@ import java.time.LocalDate
 
 @Service
 class SentenceDatesChangedHandler(
-  private val objectMapper: ObjectMapper,
+  private val mapper: ObjectMapper,
   private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
   private val prisonService: PrisonService,
@@ -35,7 +35,7 @@ class SentenceDatesChangedHandler(
   @Transactional
   fun handleEvent(message: String) {
     val event = try {
-      objectMapper.readValue(message, SentenceDatesChangedEvent::class.java)
+      mapper.readValue(message, SentenceDatesChangedEvent::class.java)
     } catch (e: JacksonException) {
       log.error("Failed to parse sentence dates change event message", e)
       throw e

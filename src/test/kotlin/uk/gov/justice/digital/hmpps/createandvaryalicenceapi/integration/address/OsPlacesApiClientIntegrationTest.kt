@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.address
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
@@ -13,11 +12,15 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.OsPlacesApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 class OsPlacesApiClientIntegrationTest {
+
+  private val mapper: ObjectMapper = createMapper()
 
   @Test
   fun `should url encode search query when calling os places`() {
@@ -102,7 +105,7 @@ class OsPlacesApiClientIntegrationTest {
       ),
     )
 
-    val json = jacksonObjectMapper().writeValueAsString(response)
+    val json = mapper.writeValueAsString(response)
 
     wireMock.stubFor(
       get(urlPathEqualTo("/find"))

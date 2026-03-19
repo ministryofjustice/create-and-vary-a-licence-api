@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -11,6 +9,7 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -20,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -27,7 +27,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class SentenceDatesChangedHandlerTest {
-  private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val mapper: ObjectMapper = createMapper()
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceService = mock<LicenceService>()
   private val prisonService = mock<PrisonService>()
@@ -35,7 +35,7 @@ class SentenceDatesChangedHandlerTest {
 
   private val sentenceDatesChangedHandler =
     SentenceDatesChangedHandler(
-      objectMapper,
+      mapper,
       licenceRepository,
       licenceService,
       prisonService,
@@ -43,7 +43,7 @@ class SentenceDatesChangedHandlerTest {
     )
 
   private val bookingId = 73892L
-  private val message: String = objectMapper.writeValueAsString(
+  private val message: String = mapper.writeValueAsString(
     SentenceDatesChangedEvent(
       eventDatetime = LocalDateTime.now(),
       bookingId = bookingId,
@@ -158,7 +158,7 @@ class SentenceDatesChangedHandlerTest {
 
     val recallsEnabledHandler =
       SentenceDatesChangedHandler(
-        objectMapper,
+        mapper,
         licenceRepository,
         licenceService,
         prisonService,
