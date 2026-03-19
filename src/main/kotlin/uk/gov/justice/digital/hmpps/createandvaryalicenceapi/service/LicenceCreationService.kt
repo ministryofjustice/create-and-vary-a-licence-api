@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
@@ -53,6 +52,7 @@ class LicenceCreationService(
   private val isTimeServedLogicEnabled: Boolean = false,
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
+  private val caseService: CaseService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -74,7 +74,6 @@ class LicenceCreationService(
     require(!offenderManager.unallocated) { "offender $prisonNumber is currently unallocated in delius" }
 
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
-
     val responsibleCom = getOrCreateCom(offenderManager.id)
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
@@ -139,9 +138,7 @@ class LicenceCreationService(
 
     val username = SecurityContextHolder.getContext().authentication?.name!!
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
-    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
-      ?: throw InvalidStateException("Could not find a probation case in Delius for nomis id $prisonNumber")
-
+    val deliusRecord = caseService.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val offenderManager = deliusApiClient.getOffenderManager(deliusRecord.crn)
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)

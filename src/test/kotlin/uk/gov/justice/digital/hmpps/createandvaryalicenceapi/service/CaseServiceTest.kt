@@ -18,21 +18,26 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonRecord.CorePersonRecordApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
-class CaseloadServiceTest {
+class CaseServiceTest {
+  private val corePersonRecordApiClient = mock<CorePersonRecordApiClient>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val deliusApiClient = mock<DeliusApiClient>()
-  private val service = CaseService(prisonerSearchApiClient, cvlRecordService)
+
+  private val service =
+    CaseService(corePersonRecordApiClient, cvlRecordService, deliusApiClient, prisonerSearchApiClient)
 
   @BeforeEach
   fun reset() {
-    reset(prisonerSearchApiClient, cvlRecordService, deliusApiClient)
+    reset(corePersonRecordApiClient, prisonerSearchApiClient, cvlRecordService, deliusApiClient)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
     whenever(
       prisonerSearchApiClient.searchPrisonersByReleaseDate(
@@ -121,5 +126,17 @@ class CaseloadServiceTest {
 
     assertThatThrownBy { service.getPrisoner("A1234AA") }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessage("A1234AA")
+  }
+
+  @Test
+  fun `should get a probation case`() {
+    val prisonNumber = "A1234AA"
+    val deliusRecord =
+      ProbationCase(crn = "X123456", nomisId = prisonNumber, croNumber = "43792/24M", pncNumber = "2019/123445")
+
+    whenever(deliusApiClient.getProbationCase(prisonNumber)).thenReturn(deliusRecord)
+
+    val probationCase = service.getProbationCase(prisonNumber)
+    assertThat(probationCase).isEqualTo(deliusRecord)
   }
 }
