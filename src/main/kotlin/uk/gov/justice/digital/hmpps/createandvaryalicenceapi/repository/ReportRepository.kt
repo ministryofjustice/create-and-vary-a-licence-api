@@ -26,9 +26,7 @@ WITH condition_lookup (condition_code, condition_value) AS (
     ('${ELECTRONIC_TAG_COND_CODE_14B}', '14b'),
     ('${ELECTRONIC_TAG_COND_CODE_14C}', '14c'),
     ('${ELECTRONIC_TAG_COND_CODE_14D}', '14d'),
-    ('${ELECTRONIC_TAG_COND_CODE_14E}', '14e'),
-    ('${ELECTRONIC_TAG_COND_CODE_5A}', '5e'),
-    ('${ELECTRONIC_TAG_COND_CODE_5H}', '5h')
+    ('${ELECTRONIC_TAG_COND_CODE_14E}', '14e')
 ),
 ranked AS (
   SELECT
