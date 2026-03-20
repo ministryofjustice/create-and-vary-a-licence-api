@@ -1135,7 +1135,7 @@ class ReleaseDateServiceTest {
         clock,
         workingDaysService,
         iS91DeterminationService,
-        isTimeServedEnabled = false,
+        isTimeServedEnabled = true,
         timeServedEnabledPrisons = listOf("ABC"),
       )
 
@@ -1146,6 +1146,25 @@ class ReleaseDateServiceTest {
       )
 
       assertThat(service.isTimeServed(nomisRecord)).isFalse()
+    }
+
+    @Test
+    fun `returns true when prison is not in enabled list but ALL_PRISONS is`() {
+      val service = ReleaseDateService(
+        clock,
+        workingDaysService,
+        iS91DeterminationService,
+        isTimeServedEnabled = true,
+        timeServedEnabledPrisons = listOf("ABC", "ALL_PRISONS"),
+      )
+
+      val nomisRecord = prisonerSearchResult().copy(
+        sentenceStartDate = today,
+        conditionalReleaseDate = today,
+        prisonId = prisonCode,
+      )
+
+      assertThat(service.isTimeServed(nomisRecord)).isTrue()
     }
 
     @Test
