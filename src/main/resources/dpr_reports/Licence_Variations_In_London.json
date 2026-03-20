@@ -20,7 +20,7 @@
       "id": "licence-dataset",
       "name": "licence-dataset",
       "datasource": "cvl",
-      "query": "select distinct l.licence_start_date, l.probation_pdu_code, l.probation_pdu_description, l.crn from licence l where l.approved_date is null and l.variation_of_id is not null and l.probation_area_code = 'N07' and l.status_code <> 'INACTIVE'",
+      "query": "SELECT l.licence_start_date, l.probation_pdu_code, l.probation_pdu_description, l.crn FROM licence l WHERE kind = 'VARIATION' AND l.approved_date IS NOT NULL AND l.probation_area_code = 'N07' AND l.status_code = 'VARIATION_APPROVED'",
       "schema": {
         "field": [
           {

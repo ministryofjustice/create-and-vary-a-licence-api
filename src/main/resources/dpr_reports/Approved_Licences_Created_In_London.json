@@ -20,7 +20,7 @@
       "id": "licence-dataset",
       "name": "licence-dataset",
       "datasource": "cvl",
-      "query": "select distinct licence_start_date, probation_pdu_code, probation_pdu_description, crn from licence where approved_date is not null and variation_of_id is null and probation_area_code = 'N07' and status_code <> 'INACTIVE'",
+      "query": "SELECT licence_start_date, probation_pdu_code, probation_pdu_description, crn FROM licence WHERE kind <> 'VARIATION' AND approved_date IS NOT NULL AND probation_area_code = 'N07' AND status_code <> 'INACTIVE'",
       "schema": {
         "field": [
           {
@@ -70,7 +70,7 @@
     {
       "id": "approved-licences-created-london",
       "name": "Approved licences created in London (N07)",
-      "description": "Number of approved CVL licences created in London",
+      "description": "Number of CVL licences created and approved in London",
       "version": "1.0.0",
       "render": "HTML",
       "dataset": "$ref:licence-dataset",
@@ -85,13 +85,13 @@
           {
             "name": "$ref:licence_start_date",
             "display": "Release date",
-
             "formula": "format_date(${licence_start_date}, 'dd/MM/yyyy')",
             "visible": "true",
             "sortable": true,
             "defaultsort": false,
             "filter": {
               "type": "daterange",
+              "interactive": true,
               "default": "today(-1,months) - today()"
             }
           },
