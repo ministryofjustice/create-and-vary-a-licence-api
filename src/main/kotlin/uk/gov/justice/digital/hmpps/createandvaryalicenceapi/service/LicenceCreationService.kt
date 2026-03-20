@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.TimeServedExternalRecordService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibileKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -80,7 +81,7 @@ class LicenceCreationService(
       ?: error("Staff with username $username not found")
 
     val licence = when (cvlRecord.eligibleKind) {
-      LicenceKind.PRRD -> LicenceFactory.createPrrd(
+      EligibileKind.FIXED_TERM ->  LicenceFactory.createPrrd(
         licenceType = cvlRecord.licenceType,
         nomsId = nomisRecord.prisonerNumber,
         version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
@@ -93,7 +94,7 @@ class LicenceCreationService(
         licenceStartDate = cvlRecord.licenceStartDate,
       )
 
-      LicenceKind.CRD -> LicenceFactory.createCrd(
+      EligibileKind.CRD -> LicenceFactory.createCrd(
         licenceType = cvlRecord.licenceType,
         nomsId = nomisRecord.prisonerNumber,
         version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
@@ -106,7 +107,7 @@ class LicenceCreationService(
         licenceStartDate = cvlRecord.licenceStartDate,
       )
 
-      LicenceKind.HDC -> LicenceFactory.createHdc(
+      EligibileKind.HDC -> LicenceFactory.createHdc(
         licenceType = cvlRecord.licenceType,
         nomsId = nomisRecord.prisonerNumber,
         version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
