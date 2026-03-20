@@ -136,7 +136,7 @@ class ReleaseDateService(
     conditionalReleaseDate: LocalDate?,
     prisonCode: String?,
   ): Boolean = isTimeServedEnabled &&
-    timeServedEnabledPrisons?.contains(prisonCode) == true &&
+    ((timeServedEnabledPrisons?.contains(prisonCode) == true) || (timeServedEnabledPrisons?.contains("ALL_PRISONS") == true)) &&
     sentenceStartDate == conditionalReleaseDate &&
     conditionalReleaseDate?.isAfter(LocalDate.now(clock).minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved)) ?: false
 
