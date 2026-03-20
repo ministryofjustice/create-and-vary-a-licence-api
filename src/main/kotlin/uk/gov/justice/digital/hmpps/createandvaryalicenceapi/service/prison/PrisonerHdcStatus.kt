@@ -8,7 +8,7 @@ data class PrisonerHdcStatus(
   val approvalStatusDate: String? = null,
   override val bookingId: Long? = null,
   val checksPassedDate: String? = null,
-  val passed: Boolean,
+  val passed: Boolean = false,
   val refusedReason: String? = null,
 ) : HdcStatusHolder {
   override val hdcStatus: HdcStatus = if (isApproved()) HdcStatus.APPROVED else HdcStatus.NOT_A_HDC_RELEASE
