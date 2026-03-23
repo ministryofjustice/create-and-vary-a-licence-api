@@ -74,7 +74,7 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:12.0.0")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.1.2")
   implementation("org.jsoup:jsoup:1.18.3")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
@@ -86,9 +86,6 @@ dependencies {
   // Update to a version compatible with Spring Boot 4.0
   testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
 
-  // Also, ensure your HMPPS test support is at least 2.0.x
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.0.4")
-
   // Test dependencies
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("io.jsonwebtoken:jjwt-api:0.13.0")
@@ -99,7 +96,7 @@ dependencies {
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:1.2.1")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.1.2")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.2")
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
