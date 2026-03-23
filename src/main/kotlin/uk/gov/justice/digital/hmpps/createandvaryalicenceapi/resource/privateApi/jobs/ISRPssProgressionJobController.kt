@@ -30,7 +30,7 @@ class ISRPssProgressionJobController(
     description = """
             Triggers a job to progress licences types :
                 a) PSS into inactive status
-                b) AP_PSS int AP type and remove PSS conditions  
+                b) AP_PSS into AP type and remove PSS conditions  
     """,
   )
   @ApiResponses(
