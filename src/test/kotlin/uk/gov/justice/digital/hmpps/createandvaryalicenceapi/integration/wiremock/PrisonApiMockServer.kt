@@ -10,13 +10,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.of
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenderSentenceAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import java.time.LocalDate
 
 class PrisonApiMockServer : WireMockServer(8091) {
 
   companion object {
-    private val mapper: ObjectMapper = createMapper()
+    private val mapper: ObjectMapper = createTestMapper()
   }
 
   fun stubGetHdcLatest(bookingId: Long = 12345, approvalStatus: String = "REJECTED", passed: Boolean = true) {

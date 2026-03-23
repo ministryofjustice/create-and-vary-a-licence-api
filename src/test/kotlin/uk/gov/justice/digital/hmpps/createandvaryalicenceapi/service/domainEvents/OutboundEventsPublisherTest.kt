@@ -16,7 +16,7 @@ import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sns.model.PublishResponse
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
 import java.util.concurrent.CompletableFuture
@@ -27,7 +27,7 @@ class OutboundEventsPublisherTest {
   private val mockHmppsTopic = mock<HmppsTopic>()
   private val snsClient = mock<SnsAsyncClient>()
 
-  private val mapper: ObjectMapper = createMapper()
+  private val mapper: ObjectMapper = createTestMapper()
 
   private val outboundEventsPublisher = OutboundEventsPublisher(
     hmppsQueueService = hmppsQueueServiceMock,
