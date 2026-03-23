@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
@@ -27,7 +26,6 @@ class ComVaryCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceCaseRepository: LicenceCaseRepository,
   private val telemetryService: TelemetryService,
-  @param:Value("\${feature.toggle.lao.enabled}") private val laoEnabled: Boolean = false,
 ) {
   companion object {
     private val COM_VARY_LICENCE_STATUSES =
@@ -61,11 +59,7 @@ class ComVaryCaseloadService(
     val licences = findExistingActiveAndVariationLicences(cases.mapNotNull { it.crn })
 
     val crns = cases.mapNotNull { it.crn }.distinct()
-    val caseAccessRecords = if (laoEnabled) {
-      getCaseAccessRecords(crns)
-    } else {
-      emptyMap()
-    }
+    val caseAccessRecords = getCaseAccessRecords(crns)
     return cases.mapNotNull { case ->
       val caseLicences = licences.filter { licence -> case.crn == licence.crn }
       val licence = findVaryLicenceToDisplay(caseLicences)
@@ -78,7 +72,9 @@ class ComVaryCaseloadService(
       }
       when {
         licence == null -> null
+
         isRestricted -> ComVaryCase.restrictedCase(licence, probationPractitioner)
+
         else ->
           ComVaryCase(
             licenceId = licence.licenceId,
