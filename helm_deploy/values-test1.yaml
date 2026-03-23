@@ -33,7 +33,6 @@ generic-service:
     HDC_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
 
-
   namespace_secrets:
     sqs-domain-events-queue-secret:
       HMPPS_SQS_QUEUES_DOMAINEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
