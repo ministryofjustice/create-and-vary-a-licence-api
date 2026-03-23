@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Test
 import tools.jackson.core.type.TypeReference
 import tools.jackson.databind.ObjectMapper
@@ -42,11 +41,16 @@ class JacksonConfigTest {
     )
 
     // Then
-    assertThat(result)
-      .extracting("approvalStatus", "approvalStatusDate", "bookingId", "checksPassedDate", "passed", "refusedReason")
-      .containsExactly(
-        Tuple.tuple("APPROVED", "2024-01-01", 123L, "2024-01-02", false, "NONE"),
-      )
+    assertThat(result).hasSize(1)
+
+    with(result[0]) {
+      assertThat(approvalStatus).isEqualTo("APPROVED")
+      assertThat(approvalStatusDate).isEqualTo("2024-01-01")
+      assertThat(bookingId).isEqualTo(123L)
+      assertThat(checksPassedDate).isEqualTo("2024-01-02")
+      assertThat(passed).isFalse()
+      assertThat(refusedReason).isEqualTo("NONE")
+    }
   }
 
   @Test
@@ -80,11 +84,24 @@ class JacksonConfigTest {
     )
 
     // Then
-    assertThat(result)
-      .extracting("approvalStatus", "approvalStatusDate", "bookingId", "checksPassedDate", "passed", "refusedReason")
-      .containsExactly(
-        Tuple.tuple("APPROVED", "2024-01-01", 123L, "2024-01-02", false, "NONE"),
-        Tuple.tuple("REFUSED", "2024-02-01", 456L, "2024-02-02", false, "SOME_REASON"),
-      )
+    assertThat(result).hasSize(2)
+
+    with(result[0]) {
+      assertThat(approvalStatus).isEqualTo("APPROVED")
+      assertThat(approvalStatusDate).isEqualTo("2024-01-01")
+      assertThat(bookingId).isEqualTo(123L)
+      assertThat(checksPassedDate).isEqualTo("2024-01-02")
+      assertThat(passed).isFalse()
+      assertThat(refusedReason).isEqualTo("NONE")
+    }
+
+    with(result[1]) {
+      assertThat(approvalStatus).isEqualTo("REFUSED")
+      assertThat(approvalStatusDate).isEqualTo("2024-02-01")
+      assertThat(bookingId).isEqualTo(456L)
+      assertThat(checksPassedDate).isEqualTo("2024-02-02")
+      assertThat(passed).isFalse()
+      assertThat(refusedReason).isEqualTo("SOME_REASON")
+    }
   }
 }
