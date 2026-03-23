@@ -24,8 +24,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCreateCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -33,7 +34,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -72,7 +72,7 @@ class ComCreateCaseloadServiceTest {
     val authentication = org.mockito.kotlin.mock<Authentication>()
     val securityContext = org.mockito.kotlin.mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn(aCom().username)
+    whenever(authentication.name).thenReturn(offenderManager().username)
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -1410,7 +1410,6 @@ class ComCreateCaseloadServiceTest {
         licenceCaseRepository,
         cvlRecordService,
         telemetryService,
-        true,
       )
       val managedOffenders = listOf(
         ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = staffDetail),
@@ -1428,26 +1427,6 @@ class ComCreateCaseloadServiceTest {
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
         listOf(aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow)),
       )
-    }
-
-    @Test
-    fun `does not check Delius user access when laoEnabled is false`() {
-      service = ComCreateCaseloadService(
-        prisonerSearchApiClient,
-        deliusApiClient,
-        licenceCaseRepository,
-        cvlRecordService,
-        telemetryService,
-        false,
-      )
-      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
-        listOf(aCaseAccessResponse(crn = "X12348", excluded = true, restricted = false)),
-      )
-
-      val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
-
-      assertThat(caseload).hasSize(1)
-      verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
     }
 
     @Test
@@ -1619,8 +1598,20 @@ class ComCreateCaseloadServiceTest {
       )
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
         listOf(
-          aCvlRecord(nomsId = "AB1234E", licenceStartDate = twoDaysAgo, hardStopDate = yesterday, hardStopWarningDate = twoDaysAgo, hardStopKind = LicenceKind.TIME_SERVED),
-          aCvlRecord(nomsId = "AB1234F", licenceStartDate = twoDaysAgo, hardStopDate = yesterday, hardStopWarningDate = twoDaysAgo, hardStopKind = LicenceKind.TIME_SERVED),
+          aCvlRecord(
+            nomsId = "AB1234E",
+            licenceStartDate = twoDaysAgo,
+            hardStopDate = yesterday,
+            hardStopWarningDate = twoDaysAgo,
+            hardStopKind = LicenceKind.TIME_SERVED,
+          ),
+          aCvlRecord(
+            nomsId = "AB1234F",
+            licenceStartDate = twoDaysAgo,
+            hardStopDate = yesterday,
+            hardStopWarningDate = twoDaysAgo,
+            hardStopKind = LicenceKind.TIME_SERVED,
+          ),
         ),
       )
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
@@ -1656,11 +1647,41 @@ class ComCreateCaseloadServiceTest {
       whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
         listOf(
-          prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = elevenDaysFromNow, bookingId = "1", firstName = "Test", lastName = "Person1"),
-          prisonerSearchResult().copy(prisonerNumber = "AB1234F", conditionalReleaseDate = nineDaysFromNow, bookingId = "2", firstName = "Test", lastName = "Person2"),
-          prisonerSearchResult().copy(prisonerNumber = "AB1234G", conditionalReleaseDate = nineDaysFromNow, bookingId = "3", firstName = "Test", lastName = "Person3"),
-          prisonerSearchResult().copy(prisonerNumber = "AB1234H", conditionalReleaseDate = nineDaysFromNow, bookingId = "4", firstName = "Test", lastName = "Person4"),
-          prisonerSearchResult().copy(prisonerNumber = "AB1234I", conditionalReleaseDate = tenDaysFromNow, bookingId = "5", firstName = "Test", lastName = "Person5"),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = elevenDaysFromNow,
+            bookingId = "1",
+            firstName = "Test",
+            lastName = "Person1",
+          ),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234F",
+            conditionalReleaseDate = nineDaysFromNow,
+            bookingId = "2",
+            firstName = "Test",
+            lastName = "Person2",
+          ),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234G",
+            conditionalReleaseDate = nineDaysFromNow,
+            bookingId = "3",
+            firstName = "Test",
+            lastName = "Person3",
+          ),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234H",
+            conditionalReleaseDate = nineDaysFromNow,
+            bookingId = "4",
+            firstName = "Test",
+            lastName = "Person4",
+          ),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234I",
+            conditionalReleaseDate = tenDaysFromNow,
+            bookingId = "5",
+            firstName = "Test",
+            lastName = "Person5",
+          ),
         ),
       )
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
@@ -1707,9 +1728,21 @@ class ComCreateCaseloadServiceTest {
       whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
         listOf(
-          prisonerSearchResult().copy(prisonerNumber = "AB1234E", conditionalReleaseDate = tenDaysFromNow, bookingId = "1"),
-          prisonerSearchResult().copy(prisonerNumber = "AB1234F", conditionalReleaseDate = tenDaysFromNow, bookingId = "2"),
-          prisonerSearchResult().copy(prisonerNumber = "AB1234G", conditionalReleaseDate = tenDaysFromNow, bookingId = "3"),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = tenDaysFromNow,
+            bookingId = "1",
+          ),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234F",
+            conditionalReleaseDate = tenDaysFromNow,
+            bookingId = "2",
+          ),
+          prisonerSearchResult().copy(
+            prisonerNumber = "AB1234G",
+            conditionalReleaseDate = tenDaysFromNow,
+            bookingId = "3",
+          ),
         ),
       )
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
@@ -1803,12 +1836,4 @@ class ComCreateCaseloadServiceTest {
     nomisId,
     staff = staffDetail,
   )
-
-  private fun aCaseAccessResponse(crn: String, excluded: Boolean, restricted: Boolean) = CaseAccessResponse(
-    crn = crn,
-    userExcluded = excluded,
-    userRestricted = restricted,
-  )
-
-  private fun aCom() = communityOffenderManager()
 }
