@@ -28,6 +28,7 @@ generic-service:
     PRISON_EVENT_LISTENER_ENABLED: true
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
     ISR_REPEAL_DATE: "2026-03-20"
+    DPR_MANAGE_USERS_HOST: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:

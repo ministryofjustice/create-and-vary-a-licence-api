@@ -26,11 +26,13 @@ generic-service:
     SELF_LINK: "https://create-and-vary-a-licence-test1.hmpps.service.justice.gov.uk"
     SELF_API_LINK: "https://create-and-vary-a-licence-api-test1.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
+    DPR_MANAGE_USERS_HOST: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-01-14
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
     HDC_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
+
 
   namespace_secrets:
     sqs-domain-events-queue-secret:

@@ -93,3 +93,8 @@ update:
 progression:
   model:
     policy-start-date: 2026-09-01
+
+dpr:
+  lib:
+    manage-users:
+      host: https://manage-users-api-dev.hmpps.service.justice.gov.uk
