@@ -88,8 +88,6 @@ feature:
     timeServed:
       enabled: true
       prisons: "MDI, GHI"
-    lao:
-      enabled: true
     standardRecalls:
       enabled: true
     isr:

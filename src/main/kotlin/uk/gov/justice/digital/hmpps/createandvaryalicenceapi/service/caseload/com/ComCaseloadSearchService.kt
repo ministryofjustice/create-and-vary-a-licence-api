@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
 import jakarta.transaction.Transactional
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.core.context.SecurityContextHolder
@@ -45,7 +44,6 @@ class ComCaseloadSearchService(
   private val clock: Clock,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
-  @param:Value("\${feature.toggle.lao.enabled}") private val laoEnabled: Boolean = false,
 ) {
   @Transactional()
   fun searchForOffenderOnProbationUserCaseload(body: ProbationUserSearchRequest): ComSearchResponse {
@@ -63,12 +61,7 @@ class ComCaseloadSearchService(
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsToLicences)
     val cvlRecordsByPrisonNumber =
       cvlRecordService.getCvlRecords(prisonerRecords.values.toList()).associateBy { it.nomisId }
-
-    val caseAccessRecords = if (laoEnabled) {
-      getCaseAccessRecords(deliusRecordsToLicences)
-    } else {
-      emptyMap()
-    }
+    val caseAccessRecords = getCaseAccessRecords(deliusRecordsToLicences)
 
     val searchResults = deliusRecordsToLicences.mapNotNull { (caseloadResult, licence) ->
       val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
@@ -197,7 +190,12 @@ class ComCaseloadSearchService(
     isRestricted: Boolean,
   ): FoundComCase {
     if (isExcluded || isRestricted) {
-      return FoundComCase.restrictedCase(licence.kind, crn, licence.licenceStartDate, licence.statusCode.isOnProbation())
+      return FoundComCase.restrictedCase(
+        licence.kind,
+        crn,
+        licence.licenceStartDate,
+        licence.statusCode.isOnProbation(),
+      )
     }
 
     val com = if (staff.unallocated == true) null else staff

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -12,7 +11,6 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -114,27 +112,18 @@ class ComCaseloadSearchServiceTest {
     assertThat(result.inPrisonCount).isEqualTo(1)
     assertThat(result.onProbationCount).isEqualTo(0)
 
-    assertThat(result.results.first()).extracting {
-      tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
-        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-      )
-    }.isEqualTo(
-      tuple(
-        "Test Surname",
-        "X12345",
-        "A1234AA",
-        "Staff Surname",
-        "A01B02C",
-        ProbationPractitioner("A01B02C", "Staff Surname", true),
-        "Test Team",
-        LocalDate.parse("2021-10-22"),
-        1L,
-        LicenceType.AP,
-        LicenceStatus.IN_PROGRESS,
-        false,
-      ),
-    )
+    with(result.results.first()) {
+      assertThat(name).isEqualTo("Test Surname")
+      assertThat(crn).isEqualTo("X12345")
+      assertThat(nomisId).isEqualTo("A1234AA")
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner("A01B02C", "Staff Surname", true))
+      assertThat(teamName).isEqualTo("Test Team")
+      assertThat(releaseDate).isEqualTo(LocalDate.parse("2021-10-22"))
+      assertThat(licenceId).isEqualTo(1L)
+      assertThat(licenceType).isEqualTo(LicenceType.AP)
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(isOnProbation).isEqualTo(false)
+    }
   }
 
   @Test
@@ -183,10 +172,11 @@ class ComCaseloadSearchServiceTest {
     )
 
     assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.results.first()).extracting { tuple(it.name, it.comName, it.probationPractitioner, it.teamName) }
-      .isEqualTo(
-        tuple("Test Surname", "Staff Surname", ProbationPractitioner("A01B02C", "Staff Surname", true), "Test Team"),
-      )
+    with(result.results.first()) {
+      assertThat(name).isEqualTo("Test Surname")
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner("A01B02C", "Staff Surname", true))
+      assertThat(teamName).isEqualTo("Test Team")
+    }
   }
 
   @Test
@@ -218,27 +208,18 @@ class ComCaseloadSearchServiceTest {
     assertThat(result.inPrisonCount).isEqualTo(1)
     assertThat(result.onProbationCount).isEqualTo(0)
 
-    assertThat(result.results.first()).extracting {
-      tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
-        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-      )
-    }.isEqualTo(
-      tuple(
-        "Test Surname",
-        "X12345",
-        "A1234AA",
-        "Staff Surname",
-        "A01B02C",
-        ProbationPractitioner("A01B02C", "Staff Surname", true),
-        "Test Team",
-        LocalDate.parse("2021-10-22"),
-        2L,
-        LicenceType.AP,
-        LicenceStatus.IN_PROGRESS,
-        false,
-      ),
-    )
+    with(result.results.first()) {
+      assertThat(name).isEqualTo("Test Surname")
+      assertThat(crn).isEqualTo("X12345")
+      assertThat(nomisId).isEqualTo("A1234AA")
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner("A01B02C", "Staff Surname", true))
+      assertThat(teamName).isEqualTo("Test Team")
+      assertThat(releaseDate).isEqualTo(LocalDate.parse("2021-10-22"))
+      assertThat(licenceId).isEqualTo(2L)
+      assertThat(licenceType).isEqualTo(LicenceType.AP)
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(isOnProbation).isEqualTo(false)
+    }
   }
 
   @Test
@@ -267,27 +248,18 @@ class ComCaseloadSearchServiceTest {
     assertThat(result.inPrisonCount).isEqualTo(0)
     assertThat(result.onProbationCount).isEqualTo(1)
 
-    assertThat(result.results.first()).extracting {
-      tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
-        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-      )
-    }.isEqualTo(
-      tuple(
-        "Test Surname",
-        "X12345",
-        "A1234AA",
-        "Staff Surname",
-        "A01B02C",
-        ProbationPractitioner("A01B02C", "Staff Surname", true),
-        "Test Team",
-        LocalDate.parse("2021-10-22"),
-        2L,
-        LicenceType.AP,
-        LicenceStatus.VARIATION_SUBMITTED,
-        true,
-      ),
-    )
+    with(result.results.first()) {
+      assertThat(name).isEqualTo("Test Surname")
+      assertThat(crn).isEqualTo("X12345")
+      assertThat(nomisId).isEqualTo("A1234AA")
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner("A01B02C", "Staff Surname", true))
+      assertThat(teamName).isEqualTo("Test Team")
+      assertThat(releaseDate).isEqualTo(LocalDate.parse("2021-10-22"))
+      assertThat(licenceId).isEqualTo(2L)
+      assertThat(licenceType).isEqualTo(LicenceType.AP)
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
+      assertThat(isOnProbation).isEqualTo(true)
+    }
   }
 
   @Test
@@ -306,27 +278,18 @@ class ComCaseloadSearchServiceTest {
     assertThat(result.inPrisonCount).isEqualTo(1)
     assertThat(result.onProbationCount).isEqualTo(0)
 
-    assertThat(result.results.first()).extracting {
-      tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
-        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-      )
-    }.isEqualTo(
-      tuple(
-        "Test Surname",
-        "A123456",
-        "A1234AA",
-        "Staff Surname",
-        "A01B02C",
-        ProbationPractitioner("A01B02C", "Staff Surname", true),
-        "Test Team",
-        LocalDate.parse("2023-09-14"),
-        null,
-        LicenceType.AP,
-        LicenceStatus.NOT_STARTED,
-        false,
-      ),
-    )
+    with(result.results.first()) {
+      assertThat(name).isEqualTo("Test Surname")
+      assertThat(crn).isEqualTo("A123456")
+      assertThat(nomisId).isEqualTo("A1234AA")
+      assertThat(probationPractitioner).isEqualTo(ProbationPractitioner("A01B02C", "Staff Surname", true))
+      assertThat(teamName).isEqualTo("Test Team")
+      assertThat(releaseDate).isEqualTo(LocalDate.parse("2023-09-14"))
+      assertThat(licenceId).isNull()
+      assertThat(licenceType).isEqualTo(LicenceType.AP)
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
+      assertThat(isOnProbation).isEqualTo(false)
+    }
   }
 
   @Test
@@ -612,34 +575,34 @@ class ComCaseloadSearchServiceTest {
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
     assertThat(result.results.size).isEqualTo(0)
-/*
-    Temporarily Removed as part of https://dsdmoj.atlassian.net/browse/CVSL-3821
-    assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.inPrisonCount).isEqualTo(1)
-    assertThat(result.onProbationCount).isEqualTo(0)
+    /*
+        Temporarily Removed as part of https://dsdmoj.atlassian.net/browse/CVSL-3821
+        assertThat(result.results.size).isEqualTo(1)
+        assertThat(result.inPrisonCount).isEqualTo(1)
+        assertThat(result.onProbationCount).isEqualTo(0)
 
-    assertThat(result.results.first()).extracting {
-      tuple(
-        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
-        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-      )
-    }.isEqualTo(
-      tuple(
-        "Test Surname",
-        "A123456",
-        "A1234AA",
-        "Staff Surname",
-        "A01B02C",
-        ProbationPractitioner("A01B02C", "Staff Surname", true),
-        "Test Team",
-        LocalDate.parse("2023-09-14"),
-        null,
-        LicenceType.AP,
-        LicenceStatus.NOT_STARTED,
-        false,
-      ),
-    )
- */
+        assertThat(result.results.first()).extracting {
+          tuple(
+            it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
+            it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
+          )
+        }.isEqualTo(
+          tuple(
+            "Test Surname",
+            "A123456",
+            "A1234AA",
+            "Staff Surname",
+            "A01B02C",
+            ProbationPractitioner("A01B02C", "Staff Surname", true),
+            "Test Team",
+            LocalDate.parse("2023-09-14"),
+            null,
+            LicenceType.AP,
+            LicenceStatus.NOT_STARTED,
+            false,
+          ),
+        )
+     */
   }
 
   @Test
@@ -1040,7 +1003,6 @@ class ComCaseloadSearchServiceTest {
       clock,
       releaseDateLabelFactory,
       cvlRecordService,
-      false,
     )
 
     val licence = aLicenceEntity.copy(
@@ -1069,7 +1031,6 @@ class ComCaseloadSearchServiceTest {
       clock,
       releaseDateLabelFactory,
       cvlRecordService,
-      false,
     )
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
@@ -1102,7 +1063,6 @@ class ComCaseloadSearchServiceTest {
         clock,
         releaseDateLabelFactory,
         cvlRecordService,
-        true,
       )
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
@@ -1115,26 +1075,6 @@ class ComCaseloadSearchServiceTest {
         .thenReturn(CaseloadResponse(listOf(caseloadResult())))
 
       request = ProbationUserSearchRequest("A123456", 2000)
-    }
-
-    @Test
-    fun `does not check Delius user access when laoEnabled is false`() {
-      service = ComCaseloadSearchService(
-        licenceRepository,
-        deliusApiClient,
-        prisonerSearchApiClient,
-        releaseDateService,
-        clock,
-        releaseDateLabelFactory,
-        cvlRecordService,
-        false,
-      )
-
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-
-      service.searchForOffenderOnProbationUserCaseload(request)
-
-      verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
     }
 
     @Test
@@ -1327,26 +1267,6 @@ class ComCaseloadSearchServiceTest {
     }
 
     @Test
-    fun `uses unrestricted case access object when laoEnabled is false so is not a LAO`() {
-      service = ComCaseloadSearchService(
-        licenceRepository,
-        deliusApiClient,
-        prisonerSearchApiClient,
-        releaseDateService,
-        clock,
-        releaseDateLabelFactory,
-        cvlRecordService,
-        false,
-      )
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-
-      val result = service.searchForOffenderOnProbationUserCaseload(request)
-
-      assertThat(result.results).hasSize(1)
-      assertThat(result.results.first().isRestricted).isFalse()
-    }
-
-    @Test
     fun `uses unrestricted case access object when case access record is missing so is not a LAO`() {
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(emptyList())
@@ -1367,12 +1287,16 @@ class ComCaseloadSearchServiceTest {
         clock,
         releaseDateLabelFactory,
         cvlRecordService,
-        true,
       )
 
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
         .thenReturn(CaseloadResponse(listOf(caseloadResult())))
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity.copy(crn = "A123456")))
+      whenever(
+        licenceRepository.findAllByCrnAndStatusCodeIn(
+          any(),
+          any(),
+        ),
+      ).thenReturn(listOf(aLicenceEntity.copy(crn = "A123456")))
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
@@ -1407,7 +1331,15 @@ class ComCaseloadSearchServiceTest {
 
     @Test
     fun `when searching for a LAO offender who is restricted but on probation, include LAO case`() {
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE))))
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+        (
+          listOf(
+            aLicenceEntity.copy(
+              statusCode = LicenceStatus.ACTIVE,
+            ),
+          )
+          ),
+      )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(
@@ -1516,7 +1448,6 @@ class ComCaseloadSearchServiceTest {
         clock,
         releaseDateLabelFactory,
         cvlRecordService,
-        true,
       )
 
       val pastReleaseDate = LocalDate.now(clock).minusDays(2)
@@ -1553,7 +1484,13 @@ class ComCaseloadSearchServiceTest {
     val clock: Clock = Clock.fixed(Instant.parse("2021-01-01T00:00:00Z"), ZoneId.systemDefault())
   }
 
-  private fun aCaseAccessResponse(crn: String, excluded: Boolean, restricted: Boolean, exclusionMessage: String? = null, restrictedMessage: String? = null) = CaseAccessResponse(
+  private fun aCaseAccessResponse(
+    crn: String,
+    excluded: Boolean,
+    restricted: Boolean,
+    exclusionMessage: String? = null,
+    restrictedMessage: String? = null,
+  ) = CaseAccessResponse(
     crn = crn,
     userExcluded = excluded,
     userRestricted = restricted,

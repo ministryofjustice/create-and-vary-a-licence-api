@@ -43,7 +43,6 @@ generic-service:
     FEATURE_TOGGLE_TIMESERVED_ENABLED: true
     TIME_SERVED_PRISONS: "ALL_PRISONS"
     HDC_ENABLED: false
-    LAO_ENABLED: true
     STANDARD_RECALLS_ENABLED: false
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.

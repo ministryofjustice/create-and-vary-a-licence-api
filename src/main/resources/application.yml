@@ -152,7 +152,7 @@ cache:
 dpr:
   lib:
     definition:
-        locations: dpr_reports/Active_Licences.json, dpr_reports/Install_At_Source.json, dpr_reports/Licence_Variations_In_London.json, dpr_reports/Approved_Licences_Created_In_London.json
+      locations: dpr_reports/Active_Licences.json, dpr_reports/Install_At_Source.json, dpr_reports/Licence_Variations_In_London.json, dpr_reports/Approved_Licences_Created_In_London.json
     system:
       role: ROLE_CVL_ADMIN
 
@@ -170,8 +170,6 @@ feature:
     timeServed:
       enabled: ${FEATURE_TOGGLE_TIMESERVED_ENABLED}
       prisons: ${TIME_SERVED_PRISONS}
-    lao:
-      enabled: ${LAO_ENABLED}
     standardRecalls:
       enabled: ${STANDARD_RECALLS_ENABLED}
     isr:
