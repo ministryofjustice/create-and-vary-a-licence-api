@@ -9,18 +9,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 
 class JacksonConfigTest {
 
-    private val config = JacksonConfig()
+  private val config = JacksonConfig()
 
-    private fun createObjectMapper(): ObjectMapper {
-        val builder = JsonMapper.builder()
-        config.customizer().customize(builder)
-        return builder.build()
-    }
+  private fun createObjectMapper(): ObjectMapper {
+    val builder = JsonMapper.builder()
+    config.customizer().customize(builder)
+    return builder.build()
+  }
 
-    @Test
-    fun shouldDeserializeWithoutPassedFieldAndDefaultToFalse() {
-        // Given
-        val json = """
+  @Test
+  fun shouldDeserializeWithoutPassedFieldAndDefaultToFalse() {
+    // Given
+    val json = """
       [
         {
           "approvalStatus": "APPROVED",
@@ -32,31 +32,31 @@ class JacksonConfigTest {
       ]
     """.trimIndent()
 
-        val objectMapper = createObjectMapper()
+    val objectMapper = createObjectMapper()
 
-        // When
-        val result = objectMapper.readValue(
-            json,
-            object : TypeReference<List<PrisonerHdcStatus>>() {},
-        )
+    // When
+    val result = objectMapper.readValue(
+      json,
+      object : TypeReference<List<PrisonerHdcStatus>>() {},
+    )
 
-        // Then
-        assertThat(result).hasSize(1)
+    // Then
+    assertThat(result).hasSize(1)
 
-        with(result[0]) {
-            assertThat(approvalStatus).isEqualTo("APPROVED")
-            assertThat(approvalStatusDate).isEqualTo("2024-01-01")
-            assertThat(bookingId).isEqualTo(123L)
-            assertThat(checksPassedDate).isEqualTo("2024-01-02")
-            assertThat(passed).isFalse()
-            assertThat(refusedReason).isEqualTo("NONE")
-        }
+    with(result[0]) {
+      assertThat(approvalStatus).isEqualTo("APPROVED")
+      assertThat(approvalStatusDate).isEqualTo("2024-01-01")
+      assertThat(bookingId).isEqualTo(123L)
+      assertThat(checksPassedDate).isEqualTo("2024-01-02")
+      assertThat(passed).isFalse()
+      assertThat(refusedReason).isEqualTo("NONE")
     }
+  }
 
-    @Test
-    fun shouldDeserializeArrayAndDefaultPassedToFalseForAllItems() {
-        // Given
-        val json = """
+  @Test
+  fun shouldDeserializeArrayAndDefaultPassedToFalseForAllItems() {
+    // Given
+    val json = """
       [
         {
           "approvalStatus": "APPROVED",
@@ -75,33 +75,33 @@ class JacksonConfigTest {
       ]
     """.trimIndent()
 
-        val objectMapper = createObjectMapper()
+    val objectMapper = createObjectMapper()
 
-        // When
-        val result = objectMapper.readValue(
-            json,
-            object : TypeReference<List<PrisonerHdcStatus>>() {},
-        )
+    // When
+    val result = objectMapper.readValue(
+      json,
+      object : TypeReference<List<PrisonerHdcStatus>>() {},
+    )
 
-        // Then
-        assertThat(result).hasSize(2)
+    // Then
+    assertThat(result).hasSize(2)
 
-        with(result[0]) {
-            assertThat(approvalStatus).isEqualTo("APPROVED")
-            assertThat(approvalStatusDate).isEqualTo("2024-01-01")
-            assertThat(bookingId).isEqualTo(123L)
-            assertThat(checksPassedDate).isEqualTo("2024-01-02")
-            assertThat(passed).isFalse()
-            assertThat(refusedReason).isEqualTo("NONE")
-        }
-
-        with(result[1]) {
-            assertThat(approvalStatus).isEqualTo("REFUSED")
-            assertThat(approvalStatusDate).isEqualTo("2024-02-01")
-            assertThat(bookingId).isEqualTo(456L)
-            assertThat(checksPassedDate).isEqualTo("2024-02-02")
-            assertThat(passed).isFalse()
-            assertThat(refusedReason).isEqualTo("SOME_REASON")
-        }
+    with(result[0]) {
+      assertThat(approvalStatus).isEqualTo("APPROVED")
+      assertThat(approvalStatusDate).isEqualTo("2024-01-01")
+      assertThat(bookingId).isEqualTo(123L)
+      assertThat(checksPassedDate).isEqualTo("2024-01-02")
+      assertThat(passed).isFalse()
+      assertThat(refusedReason).isEqualTo("NONE")
     }
+
+    with(result[1]) {
+      assertThat(approvalStatus).isEqualTo("REFUSED")
+      assertThat(approvalStatusDate).isEqualTo("2024-02-01")
+      assertThat(bookingId).isEqualTo(456L)
+      assertThat(checksPassedDate).isEqualTo("2024-02-02")
+      assertThat(passed).isFalse()
+      assertThat(refusedReason).isEqualTo("SOME_REASON")
+    }
+  }
 }
