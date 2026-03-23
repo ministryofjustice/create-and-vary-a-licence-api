@@ -28,13 +28,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.W
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.mapper.OffenderManagerMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.WorkLoadAllocationResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class ComAllocatedHandlerTest {
 
-  private val mapper: ObjectMapper = createMapper()
+  private val mapper: ObjectMapper = createTestMapper()
 
   private val deliusApiClient = mock<DeliusApiClient>()
   private val workLoadApiClient = mock<WorkLoadApiClient>()

@@ -14,13 +14,13 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.OsPlacesApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 class OsPlacesApiClientIntegrationTest {
 
-  private val mapper: ObjectMapper = createMapper()
+  private val mapper: ObjectMapper = createTestMapper()
 
   @Test
   fun `should url encode search query when calling os places`() {

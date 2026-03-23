@@ -11,10 +11,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 
 class PrisonerUpdatedHandlerTest {
-  private val mapper: ObjectMapper = createMapper()
+  private val mapper: ObjectMapper = createTestMapper()
   private val offenderService = mock<OffenderService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
 

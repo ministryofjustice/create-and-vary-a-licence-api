@@ -8,11 +8,11 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.createMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 
 class DeliusMockServer : WireMockServer(8093) {
 
-  private val mapper: ObjectMapper = createMapper()
+  private val mapper: ObjectMapper = createTestMapper()
 
   fun stubAssignDeliusRole(userName: String) {
     stubFor(
