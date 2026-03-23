@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
@@ -426,48 +425,12 @@ class ComVaryCaseloadServiceTest {
   }
 
   @Test
-  fun `does not check Delius user access when laoEnabled is false`() {
-    val managedOffenders = listOf(
-      ManagedOffenderCrn(
-        crn = "X12348",
-        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
-      ),
-    )
-
-    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
-
-    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
-      listOf(
-        createLicenceComCase(
-          crn = "X12348",
-          nomisId = "AB1234E",
-          kind = VARIATION,
-          licenceStatus = VARIATION_IN_PROGRESS,
-        ),
-      ),
-    )
-
-    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
-
-    assertThat(caseload).hasSize(1)
-    assertThat(caseload[0].isRestricted).isFalse()
-    verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
-  }
-
-  @Test
   fun `LAO cases are returned as restricted in the caseload when they are excluded`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
-    )
-
-    val serviceWithLaoEnabled = ComVaryCaseloadService(
-      deliusApiClient,
-      licenceCaseRepository,
-      telemetryService,
-      laoEnabled = true,
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
@@ -489,7 +452,7 @@ class ComVaryCaseloadServiceTest {
       ),
     )
 
-    val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
     assertThat(caseload[0].isRestricted).isTrue()
@@ -503,13 +466,6 @@ class ComVaryCaseloadServiceTest {
         crn = "X12348",
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
-    )
-
-    val serviceWithLaoEnabled = ComVaryCaseloadService(
-      deliusApiClient,
-      licenceCaseRepository,
-      telemetryService,
-      laoEnabled = true,
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
@@ -531,7 +487,7 @@ class ComVaryCaseloadServiceTest {
       ),
     )
 
-    val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
     assertThat(caseload[0].isRestricted).isTrue()
@@ -545,13 +501,6 @@ class ComVaryCaseloadServiceTest {
         crn = "X12348",
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
-    )
-
-    val serviceWithLaoEnabled = ComVaryCaseloadService(
-      deliusApiClient,
-      licenceCaseRepository,
-      telemetryService,
-      laoEnabled = true,
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
@@ -573,7 +522,7 @@ class ComVaryCaseloadServiceTest {
       ),
     )
 
-    val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
     assertThat(caseload[0].isRestricted).isFalse()
@@ -597,13 +546,6 @@ class ComVaryCaseloadServiceTest {
       ),
     )
 
-    val serviceWithLaoEnabled = ComVaryCaseloadService(
-      deliusApiClient,
-      licenceCaseRepository,
-      telemetryService,
-      laoEnabled = true,
-    )
-
     whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
 
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
@@ -623,7 +565,7 @@ class ComVaryCaseloadServiceTest {
       ),
     )
 
-    val caseload = serviceWithLaoEnabled.getTeamVaryCaseload(listOf("team A"), listOf(selectedTeam))
+    val caseload = service.getTeamVaryCaseload(listOf("team A"), listOf(selectedTeam))
 
     assertThat(caseload).hasSize(1)
     assertThat(caseload[0].isRestricted).isTrue()
@@ -632,24 +574,53 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `it sorts non-restricted cases by release date then name before restricted cases which are sorted by CRN`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E", staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person1"))),
-      ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234F", staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person2"))),
-      ManagedOffenderCrn(crn = "X12350", nomisId = "AB1234G", staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person3"))),
+      ManagedOffenderCrn(
+        crn = "X12348",
+        nomisId = "AB1234E",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person1")),
+      ),
+      ManagedOffenderCrn(
+        crn = "X12349",
+        nomisId = "AB1234F",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person2")),
+      ),
+      ManagedOffenderCrn(
+        crn = "X12350",
+        nomisId = "AB1234G",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person3")),
+      ),
     )
 
     val service = ComVaryCaseloadService(
       deliusApiClient,
       licenceCaseRepository,
       telemetryService,
-      laoEnabled = true,
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceComCase(crn = "X12348", nomisId = "AB1234E", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
-        createLicenceComCase(crn = "X12349", nomisId = "AB1234F", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
-        createLicenceComCase(crn = "X12350", nomisId = "AB1234G", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
+        createLicenceComCase(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+          licenceStartDate = tenDaysFromNow,
+        ),
+        createLicenceComCase(
+          crn = "X12349",
+          nomisId = "AB1234F",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+          licenceStartDate = tenDaysFromNow,
+        ),
+        createLicenceComCase(
+          crn = "X12350",
+          nomisId = "AB1234G",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+          licenceStartDate = tenDaysFromNow,
+        ),
       ),
     )
     whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
@@ -669,24 +640,47 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `it sorts multiple restricted LAO cases by CRN`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(crn = "X12350", nomisId = "AB1234E", staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))),
-      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234F", staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))),
-      ManagedOffenderCrn(crn = "X12349", nomisId = "AB1234G", staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))),
-    )
-
-    val serviceWithLaoEnabled = ComVaryCaseloadService(
-      deliusApiClient,
-      licenceCaseRepository,
-      telemetryService,
-      laoEnabled = true,
+      ManagedOffenderCrn(
+        crn = "X12350",
+        nomisId = "AB1234E",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+      ManagedOffenderCrn(
+        crn = "X12348",
+        nomisId = "AB1234F",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+      ManagedOffenderCrn(
+        crn = "X12349",
+        nomisId = "AB1234G",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
     whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
       listOf(
-        createLicenceComCase(crn = "X12350", nomisId = "AB1234E", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
-        createLicenceComCase(crn = "X12348", nomisId = "AB1234F", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
-        createLicenceComCase(crn = "X12349", nomisId = "AB1234G", kind = VARIATION, licenceStatus = VARIATION_IN_PROGRESS, licenceStartDate = tenDaysFromNow),
+        createLicenceComCase(
+          crn = "X12350",
+          nomisId = "AB1234E",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+          licenceStartDate = tenDaysFromNow,
+        ),
+        createLicenceComCase(
+          crn = "X12348",
+          nomisId = "AB1234F",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+          licenceStartDate = tenDaysFromNow,
+        ),
+        createLicenceComCase(
+          crn = "X12349",
+          nomisId = "AB1234G",
+          kind = VARIATION,
+          licenceStatus = VARIATION_IN_PROGRESS,
+          licenceStartDate = tenDaysFromNow,
+        ),
       ),
     )
     whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
@@ -697,7 +691,7 @@ class ComVaryCaseloadServiceTest {
       ),
     )
 
-    val caseload = serviceWithLaoEnabled.getStaffVaryCaseload(deliusStaffIdentifier)
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(3)
     assertThat(caseload.map { it.crnNumber }).containsExactly("X12348", "X12349", "X12350")

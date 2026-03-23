@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
@@ -21,7 +20,6 @@ class VaryApproverCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val deliusApiClient: DeliusApiClient,
   private val licenceCaseRepository: LicenceCaseRepository,
-  @param:Value("\${feature.toggle.lao.enabled}") private val laoEnabled: Boolean = false,
 ) {
 
   fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
@@ -72,22 +70,21 @@ class VaryApproverCaseloadService(
       prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers).associateBy { it.prisonerNumber }
     val probationPractitioners = getProbationPractitioners(prisonNumbers)
     val crns = deliusRecords.values.map { it.crn }.distinct()
-    val caseAccessRecords = if (laoEnabled) {
-      getCaseAccessRecords(crns)
-    } else {
-      emptyMap()
-    }
+    val caseAccessRecords = getCaseAccessRecords(crns)
 
     return licences.mapNotNull { licence ->
       val nomisRecord = nomisRecords[licence.prisonNumber]
       val deliusRecord = deliusRecords[licence.prisonNumber]
       val caseAccessRecord = caseAccessRecords[deliusRecord?.crn] ?: unrestricted
       val isRestricted = caseAccessRecord.isRestricted
-      val probationPractitioner = probationPractitioners[licence.prisonNumber?.lowercase()] ?: ProbationPractitioner.UNALLOCATED
+      val probationPractitioner =
+        probationPractitioners[licence.prisonNumber?.lowercase()] ?: ProbationPractitioner.UNALLOCATED
 
       when {
         nomisRecord == null || deliusRecord == null -> null
+
         isRestricted -> VaryApproverCase.restrictedCase(licence)
+
         else -> VaryApproverCase(
           licenceId = licence.licenceId,
           name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim()

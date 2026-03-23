@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
@@ -37,8 +36,6 @@ class ComCreateCaseloadService(
   private val licenceCaseRepository: LicenceCaseRepository,
   private val cvlRecordService: CvlRecordService,
   private val telemetryService: TelemetryService,
-  @param:Value("\${feature.toggle.lao.enabled}") private val laoEnabled: Boolean = false,
-
 ) {
   companion object {
     private val COM_CREATE_LICENCE_STATUSES = listOf(ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT)
@@ -114,11 +111,7 @@ class ComCreateCaseloadService(
     val crns = cases.map { (deliusRecord, _) -> deliusRecord.crn!! }
     val licencesByCrn = getExistingActiveAndPreReleaseLicences(crns).groupBy { it.crn }
     val cvlRecordsByNomisId = cvlRecords.associateBy { it.nomisId }
-    val caseAccessRecords = if (laoEnabled) {
-      getCaseAccessRecords(crns)
-    } else {
-      emptyMap()
-    }
+    val caseAccessRecords = getCaseAccessRecords(crns)
 
     return cases.mapNotNull { (deliusRecord, nomisRecord) ->
       val licences = licencesByCrn[deliusRecord.crn!!] ?: emptyList()
@@ -146,7 +139,13 @@ class ComCreateCaseloadService(
 
         // Should appear in create caseload with relevant licence
         else ->
-          createCaseForRelevantLicence(probationPractitioner, nomisRecord, cvlRecord, findRelevantLicencePerCase(licences), isRestricted)
+          createCaseForRelevantLicence(
+            probationPractitioner,
+            nomisRecord,
+            cvlRecord,
+            findRelevantLicencePerCase(licences),
+            isRestricted,
+          )
       }
     }
   }
@@ -254,7 +253,13 @@ class ComCreateCaseloadService(
     return deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
   }
 
-  private fun createCaseForRelevantLicence(probationPractitioner: ProbationPractitioner, nomisRecord: PrisonerSearchPrisoner, cvlRecord: CvlRecord, createCaseloadLicence: ComCreateCaseloadLicenceDto, isRestricted: Boolean): Case = if (isRestricted) {
+  private fun createCaseForRelevantLicence(
+    probationPractitioner: ProbationPractitioner,
+    nomisRecord: PrisonerSearchPrisoner,
+    cvlRecord: CvlRecord,
+    createCaseloadLicence: ComCreateCaseloadLicenceDto,
+    isRestricted: Boolean,
+  ): Case = if (isRestricted) {
     Case(
       probationPractitioner,
       nomisRecord,

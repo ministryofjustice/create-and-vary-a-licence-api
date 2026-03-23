@@ -87,7 +87,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -166,7 +166,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -254,7 +254,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -309,7 +309,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -367,7 +367,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -381,7 +381,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(PSS)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
-      with(probationPractitioner!!) {
+      with(probationPractitioner) {
         assertThat(staffCode).isEqualTo("AB012C")
         assertThat(name).isEqualTo("Delius User")
       }
@@ -431,40 +431,11 @@ class VaryApproverCaseloadServiceTest {
   }
 
   @Test
-  fun `does not check Delius user access when laoEnabled is false`() {
-    val probationAreaCode = "N01"
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
-    val probationCases = listOf(aProbationCase())
-
-    whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
-    whenever(deliusApiClient.getProbationCases(licenceSummaries.map { it.prisonNumber!! })).thenReturn(probationCases)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(probationCases.map { it.nomisId!! })).thenReturn(
-      listOf(prisonerSearchResult().copy(prisonerNumber = aProbationCase().nomisId!!)),
-    )
-    whenever(deliusApiClient.getOffenderManagersWithoutUser(licenceSummaries.map { it.prisonNumber!! })).thenReturn(
-      listOf(aCommunityManagerWithoutUser()),
-    )
-
-    val caseload = service.getVaryApproverCaseload(
-      VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode),
-    )
-
-    // Then
-    assertThat(caseload).hasSize(1)
-    with(caseload.first()) {
-      assertThat(isRestricted).isFalse()
-      assertThat(name).isNotEqualTo("Restricted")
-    }
-    verify(deliusApiClient, times(0)).getCheckUserAccess(any(), any(), any())
-  }
-
-  @Test
   fun `LAO cases are returned as restricted in the caseload when they are excluded`() {
     service = VaryApproverCaseloadService(
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
-      laoEnabled = true,
     )
 
     val probationAreaCode = "N01"
@@ -483,7 +454,8 @@ class VaryApproverCaseloadServiceTest {
       listOf(CaseAccessResponse(crn = "X12348", userExcluded = true, userRestricted = false)),
     )
 
-    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+    val caseload =
+      service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
 
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
@@ -499,7 +471,6 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
-      laoEnabled = true,
     )
 
     val probationAreaCode = "N01"
@@ -518,7 +489,8 @@ class VaryApproverCaseloadServiceTest {
       listOf(CaseAccessResponse(crn = "X12348", userExcluded = false, userRestricted = true)),
     )
 
-    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+    val caseload =
+      service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
 
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
@@ -534,7 +506,6 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
-      laoEnabled = true,
     )
 
     val probationAreaCode = "N01"
@@ -578,7 +549,6 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
-      laoEnabled = true,
     )
 
     val probationAreaCode = "N01"
@@ -613,7 +583,6 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
-      laoEnabled = true,
     )
 
     val probationAreaCode = "N01"
@@ -657,7 +626,6 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
-      laoEnabled = true,
     )
 
     val probationAreaCode = "N01"
@@ -696,7 +664,8 @@ class VaryApproverCaseloadServiceTest {
       ),
     )
 
-    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+    val caseload =
+      service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
 
     assertThat(caseload).hasSize(3)
     assertThat(caseload.map { it.crnNumber }).containsExactly("X12349", "X12348", "X12350")
@@ -708,7 +677,6 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
-      laoEnabled = true,
     )
 
     val probationAreaCode = "N01"
@@ -747,7 +715,8 @@ class VaryApproverCaseloadServiceTest {
       ),
     )
 
-    val caseload = service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
+    val caseload =
+      service.getVaryApproverCaseload(VaryApproverCaseloadSearchRequest(probationAreaCode = probationAreaCode))
 
     assertThat(caseload).hasSize(3)
     assertThat(caseload.map { it.crnNumber }).containsExactly("X12348", "X12349", "X12350")
