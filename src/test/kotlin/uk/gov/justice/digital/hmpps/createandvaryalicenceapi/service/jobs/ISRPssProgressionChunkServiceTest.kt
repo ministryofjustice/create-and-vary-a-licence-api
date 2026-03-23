@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -21,7 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-
 class ISRPssProgressionChunkServiceTest {
 
   private val repository = mock<LicenceRepository>()
@@ -37,161 +37,201 @@ class ISRPssProgressionChunkServiceTest {
     reset(repository, auditEventRepository)
   }
 
-  @Test
-  fun `should process AP_PSS licences and remove PSS conditions`() {
-    // Given
-    val licence1 = createLicence(id = 1)
-    val licence2 = createLicence(id = 2)
+  @Nested
+  inner class ProcessApPssLicenceChunk {
 
-    val licenceIds = listOf(1L, 2L)
-    val licences = listOf(licence1, licence2)
+    @Test
+    fun `should process AP_PSS licences and remove PSS conditions`() {
+      // Given
+      val licence1 = createLicence(id = 1)
+      val licence2 = createLicence(id = 2)
 
-    whenever(repository.findAllById(licenceIds)).thenReturn(licences)
+      val ids = listOf(1L, 2L)
 
-    // When
-    chunkService.processApPssInFlightLicenceChunk(licenceIds)
+      whenever(repository.findAllById(ids)).thenReturn(listOf(licence1, licence2))
 
-    // Then
-    assertThat(licence1.typeCode).isEqualTo(LicenceType.AP)
-    assertThat(licence2.typeCode).isEqualTo(LicenceType.AP)
+      // When
+      chunkService.processApPssLicenceChunk(ids)
 
-    assertThat(licences).allSatisfy { licence ->
+      // Then
+      assertThat(listOf(licence1, licence2)).allSatisfy { licence ->
+        assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+        assertThat(licence.additionalConditions).noneMatch { it.conditionType == "PSS" }
+        assertThat(licence.standardConditions).noneMatch { it.conditionType == "PSS" }
+      }
+
+      verify(auditEventRepository).saveAll(any<List<AuditEvent>>())
+    }
+
+    @Test
+    fun `should skip licences that are not AP_PSS`() {
+      // Given
+      val licence = createLicence(id = 1, typeCode = LicenceType.AP)
+
+      whenever(repository.findAllById(listOf(1L))).thenReturn(listOf(licence))
+
+      // When
+      chunkService.processApPssLicenceChunk(listOf(1L))
+
+      // Then
       assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
-      assertThat(licence.additionalConditions).noneMatch { it.conditionType == "PSS" }
-      assertThat(licence.standardConditions).noneMatch { it.conditionType == "PSS" }
+      verifyNoInteractions(auditEventRepository)
     }
 
-    verify(auditEventRepository).saveAll(any<List<AuditEvent>>())
-  }
+    @Test
+    fun `should process only AP_PSS licences in mixed batch`() {
+      // Given
+      val apPss = createLicence(id = 1, typeCode = LicenceType.AP_PSS)
+      val ap = createLicence(id = 2, typeCode = LicenceType.AP)
 
-  @Test
-  fun `should skip licence when type is not AP_PSS`() {
-    // Given
-    val licence = createLicence(id = 1, typeCode = LicenceType.AP)
+      whenever(repository.findAllById(listOf(1L, 2L)))
+        .thenReturn(listOf(apPss, ap))
 
-    whenever(repository.findAllById(listOf(1L))).thenReturn(listOf(licence))
+      val captor = argumentCaptor<List<AuditEvent>>()
 
-    // When
-    chunkService.processApPssInFlightLicenceChunk(listOf(1L))
+      // When
+      chunkService.processApPssLicenceChunk(listOf(1L, 2L))
 
-    // Then
-    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
-    verifyNoInteractions(auditEventRepository)
-  }
+      // Then
+      assertThat(apPss.typeCode).isEqualTo(LicenceType.AP)
+      assertThat(ap.typeCode).isEqualTo(LicenceType.AP)
 
-  @Test
-  fun `should return immediately when licenceIds is empty`() {
-    // Given
-    val licenceIds = emptyList<Long>()
-
-    // When
-    chunkService.processApPssInFlightLicenceChunk(licenceIds)
-
-    // Then
-    verifyNoInteractions(repository)
-    verifyNoInteractions(auditEventRepository)
-  }
-
-  @Test
-  fun `should create correct inflight audit event`() {
-    // Given
-    val licence = createLicence(id = 1).apply {
-      forename = "John"
-      surname = "Smith"
+      verify(auditEventRepository).saveAll(captor.capture())
+      assertThat(captor.firstValue).hasSize(1)
     }
 
-    whenever(repository.findAllById(listOf(1L))).thenReturn(listOf(licence))
-    val auditCaptor = argumentCaptor<List<AuditEvent>>()
+    @Test
+    fun `should create correct audit event`() {
+      // Given
+      val licence = createLicence(id = 1).apply {
+        forename = "John"
+        surname = "Smith"
+      }
 
-    // When
-    chunkService.processApPssInFlightLicenceChunk(listOf(1L))
+      whenever(repository.findAllById(listOf(1L))).thenReturn(listOf(licence))
 
-    // Then
-    verify(auditEventRepository).saveAll(auditCaptor.capture())
+      val captor = argumentCaptor<List<AuditEvent>>()
 
-    val audits = auditCaptor.firstValue
-    assertThat(audits).hasSize(1)
-    assertInflightAuditEvent(audits.first())
-  }
+      // When
+      chunkService.processApPssLicenceChunk(listOf(1L))
 
-  @Test
-  fun `should mark active PSS licences as inactive`() {
-    // Given
-    val licence = createLicence(
-      id = 1,
-      typeCode = LicenceType.PSS,
-      status = LicenceStatus.ACTIVE,
-    ).apply {
-      forename = "John"
-      surname = "Smith"
+      // Then
+      verify(auditEventRepository).saveAll(captor.capture())
+
+      val audit = captor.firstValue.first()
+
+      assertCommonAuditFields(audit)
+
+      assertThat(audit.summary)
+        .contains("John Smith")
+        .contains("AP")
+        .contains("PSS repeal")
+
+      assertThat(audit.detail)
+        .contains("ID 1")
+        .contains("type AP_PSS")
+        .contains("status IN_PROGRESS")
+        .contains("batch details")
+
+      assertThat(audit.changes).isNotNull
+      val changes = audit.changes!!["changes"] as Map<*, *>
+
+      assertThat(changes["oldTypeCode"]).isEqualTo(LicenceType.AP_PSS.name)
+      assertThat(changes["newTypeCode"]).isEqualTo(LicenceType.AP.name)
     }
 
-    whenever(repository.findAllById(listOf(1L))).thenReturn(listOf(licence))
-    val auditCaptor = argumentCaptor<List<AuditEvent>>()
+    @Test
+    fun `should return immediately when licenceIds is empty`() {
+      // Given
+      val ids = emptyList<Long>()
 
-    // When
-    chunkService.processActivePssLicenceChunk(listOf(1L))
+      // When
+      chunkService.processApPssLicenceChunk(ids)
 
-    // Then
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
-    verify(auditEventRepository).saveAll(auditCaptor.capture())
-
-    val audits = auditCaptor.firstValue
-    assertThat(audits).hasSize(1)
-    assertActivePssAuditEvent(audits.first())
+      // Then
+      verifyNoInteractions(repository)
+      verifyNoInteractions(auditEventRepository)
+    }
   }
 
-  @Test
-  fun `should return immediately when active PSS licenceIds list is empty`() {
-    // Given
-    val licenceIds = emptyList<Long>()
+  @Nested
+  inner class ProcessPssLicenceChunk {
 
-    // When
-    chunkService.processActivePssLicenceChunk(licenceIds)
+    @Test
+    fun `should mark licences as inactive`() {
+      // Given
+      val licence = createLicence(
+        id = 1,
+        typeCode = LicenceType.PSS,
+        status = LicenceStatus.ACTIVE,
+      ).apply {
+        forename = "John"
+        surname = "Smith"
+      }
 
-    // Then
-    verifyNoInteractions(repository)
-    verifyNoInteractions(auditEventRepository)
-  }
+      whenever(repository.findAllById(listOf(1L))).thenReturn(listOf(licence))
 
-  @Test
-  fun `should change active AP_PSS licences to AP`() {
-    // Given
-    val licence = createLicence(
-      id = 1,
-      typeCode = LicenceType.AP_PSS,
-      status = LicenceStatus.ACTIVE,
-    ).apply {
-      forename = "John"
-      surname = "Smith"
+      val captor = argumentCaptor<List<AuditEvent>>()
+
+      // When
+      chunkService.processPssLicenceChunk(listOf(1L))
+
+      // Then
+      assertThat(licence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+
+      verify(auditEventRepository).saveAll(captor.capture())
+
+      val audit = captor.firstValue.first()
+
+      assertCommonAuditFields(audit)
+
+      assertThat(audit.summary)
+        .contains("John Smith")
+        .contains("INACTIVE")
+        .contains("PSS repeal")
+
+      assertThat(audit.detail)
+        .contains("ID 1")
+        .contains("status ACTIVE")
+        .contains("batch details")
+
+      assertThat(audit.changes).isNotNull
+
+      val changes = audit.changes!!["changes"] as Map<*, *>
+      assertThat(changes["oldStatusCode"]).isEqualTo(LicenceStatus.ACTIVE.name)
+      assertThat(changes["newStatusCode"]).isEqualTo(LicenceStatus.INACTIVE.name)
     }
 
-    whenever(repository.findAllById(listOf(1L))).thenReturn(listOf(licence))
-    val auditCaptor = argumentCaptor<List<AuditEvent>>()
+    @Test
+    fun `should return immediately when licenceIds is empty`() {
+      // Given
+      val ids = emptyList<Long>()
 
-    // When
-    chunkService.processActiveApPssLicenceChunk(listOf(1L))
+      // When
+      chunkService.processPssLicenceChunk(ids)
 
-    // Then
-    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
-    verify(auditEventRepository).saveAll(auditCaptor.capture())
-
-    val audits = auditCaptor.firstValue
-    assertThat(audits).hasSize(1)
-    assertActiveApPssAuditEvent(audits.first())
+      // Then
+      verifyNoInteractions(repository)
+      verifyNoInteractions(auditEventRepository)
+    }
   }
 
-  @Test
-  fun `should return immediately when active AP_PSS licenceIds list is empty`() {
-    // Given
-    val licenceIds = emptyList<Long>()
+  @Nested
+  inner class CommonBehaviour {
 
-    // When
-    chunkService.processActiveApPssLicenceChunk(licenceIds)
+    @Test
+    fun `should not save audit events when no valid AP_PSS licences`() {
+      // Given
+      val licence = createLicence(id = 1, typeCode = LicenceType.AP)
 
-    // Then
-    verifyNoInteractions(repository)
-    verifyNoInteractions(auditEventRepository)
+      whenever(repository.findAllById(listOf(1L))).thenReturn(listOf(licence))
+
+      // When
+      chunkService.processApPssLicenceChunk(listOf(1L))
+
+      // Then
+      verifyNoInteractions(auditEventRepository)
+    }
   }
 
   private fun createLicence(
@@ -213,9 +253,9 @@ class ISRPssProgressionChunkServiceTest {
         id = 1,
         licence = licence,
         conditionType = "PSS",
+        conditionText = "PSS condition",
         conditionCode = "PSS_CODE",
         conditionCategory = "TEST",
-        conditionText = "PSS condition",
         conditionVersion = "1",
       ),
     )
@@ -225,8 +265,8 @@ class ISRPssProgressionChunkServiceTest {
         id = 1,
         licence = licence,
         conditionType = "PSS",
-        conditionCode = "PSS_CODE",
         conditionText = "PSS condition",
+        conditionCode = "PSS_CODE",
         conditionSequence = 1,
       ),
     )
@@ -239,63 +279,5 @@ class ISRPssProgressionChunkServiceTest {
     assertThat(audit.eventType).isEqualTo(AuditEventType.SYSTEM_EVENT)
     assertThat(audit.username).isEqualTo(Licence.SYSTEM_USER)
     assertThat(audit.fullName).isEqualTo(Licence.SYSTEM_USER)
-  }
-
-  private fun assertInflightAuditEvent(audit: AuditEvent) {
-    assertCommonAuditFields(audit)
-
-    assertThat(audit.summary)
-      .contains("John Smith")
-      .contains("changed to AP")
-      .contains("PSS repeal")
-
-    assertThat(audit.detail)
-      .contains("ID 1")
-      .contains("type AP_PSS")
-      .contains("status IN_PROGRESS")
-
-    val changes = audit.changes?.get("changes") as Map<*, *>
-
-    assertThat(changes["oldTypeCode"]).isEqualTo(LicenceType.AP_PSS.name)
-    assertThat(changes["newTypeCode"]).isEqualTo(LicenceType.AP.name)
-    assertThat(changes["additionalConditionsDeletedFor"]).isEqualTo("PSS condition")
-    assertThat(changes["standardConditionsDeletedFor"]).isEqualTo("PSS condition")
-  }
-
-  private fun assertActivePssAuditEvent(audit: AuditEvent) {
-    assertCommonAuditFields(audit)
-
-    assertThat(audit.summary)
-      .contains("John Smith")
-      .contains("changed to INACTIVE")
-      .contains("PSS repeal")
-
-    assertThat(audit.detail)
-      .contains("ID 1")
-      .contains("status ACTIVE")
-
-    val changes = audit.changes?.get("changes") as Map<*, *>
-
-    assertThat(changes["oldStatusCode"]).isEqualTo(LicenceStatus.ACTIVE.name)
-    assertThat(changes["newStatusCode"]).isEqualTo(LicenceStatus.INACTIVE.name)
-  }
-
-  private fun assertActiveApPssAuditEvent(audit: AuditEvent) {
-    assertCommonAuditFields(audit)
-
-    assertThat(audit.summary)
-      .contains("John Smith")
-      .contains("changed to AP")
-      .contains("PSS repeal")
-
-    assertThat(audit.detail)
-      .contains("ID 1")
-      .contains("type AP_PSS")
-      .contains("status ACTIVE")
-
-    val changes = audit.changes?.get("changes") as Map<*, *>
-
-    assertThat(changes["oldTypeCode"]).isEqualTo(LicenceType.AP_PSS.name)
-    assertThat(changes["newTypeCode"]).isEqualTo(LicenceType.AP.name)
   }
 }

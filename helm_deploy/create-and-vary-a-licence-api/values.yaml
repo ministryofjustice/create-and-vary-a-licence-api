@@ -132,14 +132,8 @@ jobs:
     cron: "0 2 * * *" # 2am every day
     allowRetry: false
 
-  - name: isr-in-flight-ap-pss-licences-job
+  - name: isr-licence-progression-job
     enabled: false
-    path: /isr-in-flight-ap-pss-licences
-    cron: "59 23 * * 4" # 23:59 UTC every Thursday
-    allowRetry: true
-
-  - name: isr-active-licences-job
-    enabled: false
-    path: /isr-active-licences
-    cron: "0 1 1 5 *" # 01:00 UTC on the 1st of May
+    path: /isr-licence-progression-job
+    cron: "30 0 11 5 *" # 00:30 UTC on 11/05/2026
     allowRetry: true

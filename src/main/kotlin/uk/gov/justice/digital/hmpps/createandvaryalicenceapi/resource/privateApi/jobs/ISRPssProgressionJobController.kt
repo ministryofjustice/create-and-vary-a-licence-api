@@ -20,31 +20,24 @@ class ISRPssProgressionJobController(
   val progressionService: ISRPssProgressionService,
 ) {
 
+/**
+   * isr-in-flight-ap-pss-licences-job
+   */
   @ProtectedByIngress
-  @PostMapping(value = ["/jobs/isr-in-flight-ap-pss-licences"])
+  @PostMapping(value = ["/jobs/isr-licence-progression-job"])
   @Operation(
     summary = "Progress AP+PSS licences.",
     description = """
-            Triggers a job to progress licences currently in one of the following states:
-            IN_PROGRESS, SUBMITTED, or APPROVED.
-        
-            The job applies where:
-            - The TUSSD (Top-Up Supervision Start Date) is on or after 30/04/2026
-            - The licence type code is AP+PSS
-        
-            The licence will then be updated to:
-            <ul>
-              <li>Change the type code to AP</li>
-              <li>Remove PSS standard conditions</li>
-              <li>Remove PSS additional conditions</li>
-            </ul>
+            Triggers a job to progress licences types :
+                a) PSS into inactive status
+                b) AP_PSS int AP type and remove PSS conditions  
     """,
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Progression of AP+PSS licences job executed.",
+        description = "Progression of PSS and AP_PSS licences job executed.",
       ),
       ApiResponse(
         responseCode = "401",
@@ -54,42 +47,6 @@ class ISRPssProgressionJobController(
     ],
   )
   fun progressionOfTypeApPssLicences() {
-    progressionService.processInFlightApPssLicences()
-  }
-
-  @ProtectedByIngress
-  @PostMapping(value = ["/jobs/isr-active-licences"])
-  @Operation(
-    summary = "Progress AP_PSS & PSS Active/licences.",
-    description = """
-            Triggers a job to progress active licences
-        
-            The job applies where:
-            - The current date is after 30/04/2026
-            - The licence type code is PSS OR AP_PSS
-            - The licence status is ACTIVE
-        
-            The licence will then be updated to:
-            <ul>
-              <li>INACTIVE status if PSS</li>
-              <li>AP TYPE CODE if AP_PSS</li>
-            </ul>
-    """,
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Progression of active licences job executed.",
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised",
-        content = [Content(mediaType = "text/html")],
-      ),
-    ],
-  )
-  fun progressionOfActiveLicences() {
-    progressionService.processActiveApPssAndPssLicences()
+    progressionService.process()
   }
 }
