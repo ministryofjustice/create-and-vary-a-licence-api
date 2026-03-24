@@ -27,6 +27,7 @@ generic-service:
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     DPR_MANAGE_USERS_HOST: "https://manage-users-api.hmpps.service.justice.gov.uk"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
+    ISR_REPEAL_DATE: "2026-05-11"
 
 
   namespace_secrets:

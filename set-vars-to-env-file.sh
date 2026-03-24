@@ -38,7 +38,7 @@ export FEATURE_TOGGLE_TIMESERVED_ENABLED=false
 export TIME_SERVED_PRISONS="ALL_PRISONS"
 export HDC_ENABLED=false
 export STANDARD_RECALLS_ENABLED=false
-export ISR_REPEAL_DATE="2026-03-16"
+export ISR_REPEAL_DATE="2026-03-25"
 
 # --- Write to .env file ---
 fileDir=~/env-config/
