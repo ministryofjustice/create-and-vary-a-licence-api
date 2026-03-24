@@ -150,3 +150,8 @@ update:
 progression:
   model:
     policy-start-date: 2025-09-19
+
+dpr:
+  lib:
+    manage-users:
+      host:
