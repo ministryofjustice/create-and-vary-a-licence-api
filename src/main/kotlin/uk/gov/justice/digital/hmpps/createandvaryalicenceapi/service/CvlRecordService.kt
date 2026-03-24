@@ -74,8 +74,8 @@ class CvlRecordService(
     nomisRecord.licenceExpiryDate == null && nomisRecord.topupSupervisionExpiryDate == null -> AP
     nomisRecord.licenceExpiryDate == null -> PSS
     nomisRecord.topupSupervisionExpiryDate == null || nomisRecord.topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
-    !isrPssProgressionService.isPssNowRepealed() -> AP_PSS
     eligibleKind?.isRecall() == true -> getRecallLicenceType(nomisRecord, licenceStartDate)
+    !isrPssProgressionService.isPssNowRepealed() -> AP_PSS
     else -> AP
   }
 

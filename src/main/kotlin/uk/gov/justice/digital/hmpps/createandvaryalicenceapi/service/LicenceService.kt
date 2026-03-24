@@ -1177,7 +1177,7 @@ class LicenceService(
 
     val newEligibleKind = if (isEligibleKindUpdated) updatedEligibleKind else licence.eligibleKind
 
-    if (isKindUpdated || isEligibleKindUpdated) {
+    return if (isKindUpdated || isEligibleKindUpdated) {
       if (isKindUpdated) {
         log.info("Updating licence kind for nomis id: ${licence.nomsId} from ${licence.kind} to $newKind")
       }
@@ -1197,9 +1197,10 @@ class LicenceService(
         userUpdating,
       )
       licenceRepository.updateLicenceKinds(licence.id, newKind, newEligibleKind)
-      return getLicence(licence.id)
+      getLicence(licence.id)
+    } else {
+      licence
     }
-    return licence
   }
 
   private fun EntityLicence.toSummary(): LicenceSummary = transformToLicenceSummary(
