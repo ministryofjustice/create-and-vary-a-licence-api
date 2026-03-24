@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.kotlin.argumentCaptor
@@ -10,7 +9,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ISRProgressionLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -21,68 +19,75 @@ class ISRPssProgressionServiceTest {
   private val chunkService: ISRPssProgressionChunkService = mock()
   private val repository: ISRProgressionLicenceRepository = mock()
   private val fixedClock = Clock.fixed(CLOCK_TIME, ZoneId.systemDefault())
-  private val service = ISRPssProgressionService(
-    chunkService,
-    repository,
-    CUTOFF_DATE,
-    fixedClock,
-  )
-
-  private fun rangeIds(start: Long, end: Long) = (start..end).toList()
 
   @Test
-  fun `should process active PSS and AP_PSS licences`() {
+  fun `should process both PSS and AP_PSS licences when repeal date reached`() {
     // Given
+    val service = buildService(REPEAL_DATE)
+
     val pssIds = listOf(1L, 2L)
     val apPssIds = listOf(3L, 4L)
 
-    whenever(repository.findActiveLicenceIds(LicenceType.PSS.toString()))
+    whenever(repository.findInFlightAndActiveLicenceIds("PSS"))
       .thenReturn(pssIds)
 
-    whenever(repository.findActiveLicenceIds(LicenceType.AP_PSS.toString()))
+    whenever(repository.findInFlightAndActiveLicenceIds("AP_PSS"))
       .thenReturn(apPssIds)
 
     // When
-    service.processActiveApPssAndPssLicences()
+    service.process()
 
     // Then
-    verify(chunkService).processActivePssLicenceChunk(pssIds)
-    verify(chunkService).processActiveApPssLicenceChunk(apPssIds)
+    verify(chunkService).processPssLicenceChunk(pssIds)
+    verify(chunkService).processApPssLicenceChunk(apPssIds)
   }
 
   @Test
-  fun `should process in flight AP_PSS licences before cutoff`() {
+  fun `should process when time is exactly midnight on repeal date`() {
     // Given
-    val ids = listOf(10L, 20L)
-
-    whenever(
-      repository.findInFlightLicenceIds(CUTOFF_DATE, LicenceType.AP_PSS.toString()),
-    ).thenReturn(ids)
-
-    // When
-    service.processInFlightApPssLicences()
-
-    // Then
-    verify(chunkService).processApPssInFlightLicenceChunk(ids)
-  }
-
-  @Test
-  fun `should not process in flight licences after cutoff`() {
-    // Given
-    val lateClock = Clock.fixed(
-      LATE_CLOCK_TIME,
+    val midnightClock = Clock.fixed(
+      Instant.parse("2026-05-11T00:00:00Z"),
       ZoneId.systemDefault(),
     )
 
-    val lateService = ISRPssProgressionService(
+    val service = ISRPssProgressionService(
       chunkService,
       repository,
-      CUTOFF_DATE,
-      lateClock,
+      REPEAL_DATE,
+      midnightClock,
+    )
+
+    val pssIds = listOf(1L)
+    val apPssIds = listOf(2L)
+
+    whenever(repository.findInFlightAndActiveLicenceIds("PSS"))
+      .thenReturn(pssIds)
+
+    whenever(repository.findInFlightAndActiveLicenceIds("AP_PSS"))
+      .thenReturn(apPssIds)
+
+    // When
+    service.process()
+
+    // Then
+    verify(chunkService).processPssLicenceChunk(pssIds)
+    verify(chunkService).processApPssLicenceChunk(apPssIds)
+  }
+
+  @Test
+  fun `should not process when before repeal date`() {
+    // Given
+    val earlyClock = Clock.fixed(EARLY_CLOCK_TIME, ZoneId.systemDefault())
+
+    val service = ISRPssProgressionService(
+      chunkService,
+      repository,
+      REPEAL_DATE,
+      earlyClock,
     )
 
     // When
-    lateService.processInFlightApPssLicences()
+    service.process()
 
     // Then
     verifyNoInteractions(repository)
@@ -90,57 +95,80 @@ class ISRPssProgressionServiceTest {
   }
 
   @Test
-  fun `should split in flight licences into batches of 100`() {
+  fun `should not process when repeal date is null`() {
     // Given
+    val service = buildService(null)
+
+    // When
+    service.process()
+
+    // Then
+    verifyNoInteractions(repository)
+    verifyNoInteractions(chunkService)
+  }
+
+  @Test
+  fun `should split PSS licences into batches of 100`() {
+    // Given
+    val service = buildService(REPEAL_DATE)
+
     val ids = rangeIds(1L, 250L)
 
-    whenever(
-      repository.findInFlightLicenceIds(CUTOFF_DATE, LicenceType.AP_PSS.toString()),
-    ).thenReturn(ids)
+    whenever(repository.findInFlightAndActiveLicenceIds("PSS"))
+      .thenReturn(ids)
+
+    whenever(repository.findInFlightAndActiveLicenceIds("AP_PSS"))
+      .thenReturn(emptyList())
 
     val captor = argumentCaptor<List<Long>>()
 
     // When
-    service.processInFlightApPssLicences()
+    service.process()
 
     // Then
-    verify(chunkService, times(3)).processApPssInFlightLicenceChunk(captor.capture())
+    verify(chunkService, times(3)).processPssLicenceChunk(captor.capture())
 
     assertThat(captor.allValues.map { it.size }).containsExactly(100, 100, 50)
     assertThat(captor.allValues.flatten()).containsExactlyElementsOf(ids)
   }
 
   @Test
-  fun `should split active PSS and AP_PSS licences into batches of 100`() {
+  fun `should split AP_PSS licences into batches of 100`() {
     // Given
-    val pssIds = rangeIds(1L, 250L)
-    val apPssIds = rangeIds(300L, 420L)
+    val service = buildService(REPEAL_DATE)
 
-    whenever(repository.findActiveLicenceIds(LicenceType.PSS.toString()))
-      .thenReturn(pssIds)
+    val ids = rangeIds(1L, 220L)
 
-    whenever(repository.findActiveLicenceIds(LicenceType.AP_PSS.toString()))
-      .thenReturn(apPssIds)
+    whenever(repository.findInFlightAndActiveLicenceIds("PSS"))
+      .thenReturn(emptyList())
 
-    val pssCaptor = argumentCaptor<List<Long>>()
-    val apCaptor = argumentCaptor<List<Long>>()
+    whenever(repository.findInFlightAndActiveLicenceIds("AP_PSS"))
+      .thenReturn(ids)
+
+    val captor = argumentCaptor<List<Long>>()
 
     // When
-    service.processActiveApPssAndPssLicences()
+    service.process()
 
     // Then
-    verify(chunkService, atLeastOnce()).processActivePssLicenceChunk(pssCaptor.capture())
-    verify(chunkService, atLeastOnce()).processActiveApPssLicenceChunk(apCaptor.capture())
+    verify(chunkService, times(3)).processApPssLicenceChunk(captor.capture())
 
-    assertThat(pssCaptor.allValues.map { it.size }).containsExactly(100, 100, 50)
-    assertThat(apCaptor.allValues.map { it.size }).containsExactly(100, 21)
-
-    assertThat(pssCaptor.allValues.flatten()).containsExactlyElementsOf(pssIds)
-    assertThat(apCaptor.allValues.flatten()).containsExactlyElementsOf(apPssIds)
+    assertThat(captor.allValues.map { it.size }).containsExactly(100, 100, 20)
+    assertThat(captor.allValues.flatten()).containsExactlyElementsOf(ids)
   }
 
   @Test
-  fun `should return false when repeal date has not passed`() {
+  fun `should return false before repeal date`() {
+    // Given
+    val earlyClock = Clock.fixed(EARLY_CLOCK_TIME, ZoneId.systemDefault())
+
+    val service = ISRPssProgressionService(
+      chunkService,
+      repository,
+      REPEAL_DATE,
+      earlyClock,
+    )
+
     // When
     val result = service.isRepealDatePassed()
 
@@ -149,83 +177,41 @@ class ISRPssProgressionServiceTest {
   }
 
   @Test
-  fun `should return true when repeal date has passed`() {
+  fun `should return true on repeal date`() {
     // Given
-    val lateClock = Clock.fixed(
-      LATE_CLOCK_TIME,
-      ZoneId.systemDefault(),
-    )
-
-    val lateService = ISRPssProgressionService(
-      chunkService,
-      repository,
-      CUTOFF_DATE,
-      lateClock,
-    )
+    val service = buildService(REPEAL_DATE)
 
     // When
-    val result = lateService.isRepealDatePassed()
+    val result = service.isRepealDatePassed()
 
     // Then
     assertThat(result).isTrue()
   }
 
   @Test
-  fun `should not process active licences when repeal date is null`() {
-    // Given
-    val serviceWithNullDate = ISRPssProgressionService(
-      chunkService,
-      repository,
-      null,
-      fixedClock,
-    )
-
-    // When
-    serviceWithNullDate.processActiveApPssAndPssLicences()
-
-    // Then
-    verifyNoInteractions(repository)
-    verifyNoInteractions(chunkService)
-  }
-
-  @Test
-  fun `should not process in flight licences when repeal date is null`() {
-    // Given
-    val serviceWithNullDate = ISRPssProgressionService(
-      chunkService,
-      repository,
-      null,
-      fixedClock,
-    )
-
-    // When
-    serviceWithNullDate.processInFlightApPssLicences()
-
-    // Then
-    verifyNoInteractions(repository)
-    verifyNoInteractions(chunkService)
-  }
-
-  @Test
   fun `should return false when repeal date is null`() {
     // Given
-    val serviceWithNullDate = ISRPssProgressionService(
-      chunkService,
-      repository,
-      null,
-      fixedClock,
-    )
+    val service = buildService(null)
 
     // When
-    val result = serviceWithNullDate.isRepealDatePassed()
+    val result = service.isRepealDatePassed()
 
     // Then
     assertThat(result).isFalse()
   }
 
+  private fun buildService(date: LocalDate?) = ISRPssProgressionService(
+    chunkService,
+    repository,
+    date,
+    fixedClock,
+  )
+
+  private fun rangeIds(start: Long, end: Long) = (start..end).toList()
+
   private companion object {
-    val CUTOFF_DATE: LocalDate = LocalDate.of(2026, 4, 30)
-    val CLOCK_TIME: Instant = Instant.parse("2026-04-01T10:00:00Z")
-    val LATE_CLOCK_TIME: Instant = Instant.parse("2026-05-01T05:00:00Z")
+    val REPEAL_DATE: LocalDate = LocalDate.of(2026, 5, 11)
+    val CLOCK_TIME: Instant = Instant.parse("2026-05-11T10:00:00Z")
+    val EARLY_CLOCK_TIME: Instant = Instant.parse("2026-05-10T05:00:00Z")
   }
 }
