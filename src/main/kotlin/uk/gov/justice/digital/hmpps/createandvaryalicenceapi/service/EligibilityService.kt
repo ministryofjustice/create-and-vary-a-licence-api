@@ -190,7 +190,7 @@ class EligibilityService(
   private fun isPssTypeStillEligible(prisoner: PrisonerSearchPrisoner): Boolean {
     if (prisoner.licenceExpiryDate == null &&
       prisoner.topupSupervisionExpiryDate != null &&
-      isrPssProgressionService.isRepealDatePassed()
+      isrPssProgressionService.isPssNowRepealed()
     ) {
       return false
     }
