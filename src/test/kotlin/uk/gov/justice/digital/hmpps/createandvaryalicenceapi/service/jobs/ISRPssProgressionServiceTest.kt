@@ -170,7 +170,7 @@ class ISRPssProgressionServiceTest {
     )
 
     // When
-    val result = service.isRepealDatePassed()
+    val result = service.isPssNowRepealed()
 
     // Then
     assertThat(result).isFalse()
@@ -182,7 +182,7 @@ class ISRPssProgressionServiceTest {
     val service = buildService(REPEAL_DATE)
 
     // When
-    val result = service.isRepealDatePassed()
+    val result = service.isPssNowRepealed()
 
     // Then
     assertThat(result).isTrue()
@@ -194,7 +194,7 @@ class ISRPssProgressionServiceTest {
     val service = buildService(null)
 
     // When
-    val result = service.isRepealDatePassed()
+    val result = service.isPssNowRepealed()
 
     // Then
     assertThat(result).isFalse()
