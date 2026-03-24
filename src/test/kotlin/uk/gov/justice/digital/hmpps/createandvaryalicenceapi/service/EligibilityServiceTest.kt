@@ -30,7 +30,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import kotlin.text.get
 
 class EligibilityServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
