@@ -28,7 +28,7 @@ generic-service:
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
-    ISR_REPEAL_DATE: "2026-05-10"
+    ISR_REPEAL_DATE: "2026-03-25"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
