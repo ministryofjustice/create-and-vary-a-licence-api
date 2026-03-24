@@ -26,6 +26,7 @@ generic-service:
     SELF_API_LINK: "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
+    ISR_REPEAL_DATE: "2026-05-11"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
