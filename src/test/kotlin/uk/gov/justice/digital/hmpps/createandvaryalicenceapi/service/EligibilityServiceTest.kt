@@ -30,6 +30,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import kotlin.text.get
 
 class EligibilityServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
@@ -477,6 +478,32 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).containsExactly("CRD in the past and not eligible for time served")
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
       assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `filters out prisoners without bookingId when getting bulk eligibility assessments`() {
+      val prisonerWithBookingId = aPrisonerSearchResult.copy(
+        prisonerNumber = "A1234AA",
+        bookingId = "123456",
+      )
+      val prisonerWithoutBookingId = aPrisonerSearchResult.copy(
+        prisonerNumber = "A1234BB",
+        bookingId = null,
+      )
+      val anotherPrisonerWithBookingId = aPrisonerSearchResult.copy(
+        prisonerNumber = "A1234CC",
+        bookingId = "789012",
+      )
+
+      val result = service.getEligibilityAssessments(
+        listOf(prisonerWithBookingId, prisonerWithoutBookingId, anotherPrisonerWithBookingId),
+      )
+
+      assertThat(result.size).isEqualTo(2)
+      assertThat(result.keys).containsExactlyInAnyOrder("A1234AA", "A1234CC")
+      assertThat(result.keys).doesNotContain("A1234BB")
+      assertThat(result["A1234AA"]!!.isEligible).isTrue()
+      assertThat(result["A1234CC"]!!.isEligible).isTrue()
     }
   }
 
