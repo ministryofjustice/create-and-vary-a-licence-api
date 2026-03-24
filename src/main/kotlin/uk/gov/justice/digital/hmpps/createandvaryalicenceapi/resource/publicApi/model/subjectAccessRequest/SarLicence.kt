@@ -30,7 +30,7 @@ data class SarLicence(
 
   @field:Schema(
     description = "what type of contact they will meet at their initial appointment",
-    example = "SPECIFIC_PERSON",
+    example = "Specific Person",
   )
   val appointmentPersonType: SarAppointmentPersonType?,
 
@@ -84,7 +84,7 @@ data class SarLicence(
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val dateCreated: LocalDateTime?,
 
-  @field:Schema(description = "The date that this licence was first created", example = "24/08/2022")
+  @field:Schema(description = "The date it is expected the licence will become active", example = "24/08/2022")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val licenceStartDate: LocalDate?,
 

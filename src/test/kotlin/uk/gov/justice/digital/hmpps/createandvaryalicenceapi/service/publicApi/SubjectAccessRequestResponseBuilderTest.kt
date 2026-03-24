@@ -185,37 +185,37 @@ class SubjectAccessRequestResponseBuilderTest {
   }.find { it.attachmentNumber == attachmentNumber }!!
 
   @Test
-  fun `extractSurname should return surname from firstname surname format`() {
+  fun `extractLastname should return lastname from firstname lastname format`() {
     assertThat(extractLastname("John Smith")).isEqualTo("Smith")
     assertThat(extractLastname("Anne Approver")).isEqualTo("Approver")
     assertThat(extractLastname("Test Client")).isEqualTo("Client")
   }
 
   @Test
-  fun `extractSurname should handle multiple spaces and return last word`() {
+  fun `extractLastname should handle multiple spaces and return last word`() {
     assertThat(extractLastname("John Middle Smith")).isEqualTo("Smith")
     assertThat(extractLastname("Mary Jane Watson")).isEqualTo("Watson")
   }
 
   @Test
-  fun `extractSurname should return original name if no space`() {
+  fun `extractLastname should return original name if no space`() {
     assertThat(extractLastname("SingleName")).isEqualTo("SingleName")
   }
 
   @Test
-  fun `extractSurname should handle null and blank strings`() {
+  fun `extractLastname should handle null and blank strings`() {
     assertThat(extractLastname(null)).isNull()
     assertThat(extractLastname("")).isEqualTo("")
     assertThat(extractLastname("   ")).isEqualTo("   ")
   }
 
   @Test
-  fun `extractSurname should handle names with leading and trailing spaces`() {
+  fun `extractLastname should handle names with leading and trailing spaces`() {
     assertThat(extractLastname("  John Smith  ")).isEqualTo("Smith")
   }
 
   @Test
-  fun `surname extraction is applied to createdByFullName, approvedByName, and appointmentPerson`() {
+  fun `Lastname extraction is applied to createdByFullName, approvedByName, and appointmentPerson`() {
     val licence = crdLicence.copy(
       createdByFullName = "Test Client",
       approvedByName = "Anne Approver",

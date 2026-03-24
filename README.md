@@ -153,7 +153,7 @@ from the API when running the SAR integration tests.
 To regenerate SAR snapshots - use the following command, which will run the SAR integration tests and update the
 snapshots with the actual responses received from the API. This is useful to do if you have made changes to the API that
 will affect the SAR responses, and you want to make sure the snapshots are up to date with the new expected responses.
-`SAR_GENERATE_ACTUAL=true ./gradlew integrationTest --tests "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.sar.SubjectAccessRequestIntegrationTest"`
+`SAR_GENERATE_ACTUAL=true ./gradlew integrationTest --tests "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.publicApi.SubjectAccessRequestIntegrationTest"`
 
 The generate response will appear as log files in `src/test/resources`
 
