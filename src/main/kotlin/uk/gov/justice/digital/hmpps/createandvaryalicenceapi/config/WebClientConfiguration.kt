@@ -52,54 +52,54 @@ class WebClientConfiguration(
 
   @Bean
   fun oauthPrisonClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(prisonApiUrl, authorizedClientManager, builder)
+  ): WebClient = getWebClient(prisonApiUrl, authorizedClientManagerCvl, builder)
 
   @Bean
   fun oauthManageUsersWebClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(manageUsersApiUrl, authorizedClientManager, builder)
+  ): WebClient = getWebClient(manageUsersApiUrl, authorizedClientManagerCvl, builder)
 
   @Bean
   fun oauthPrisonerSearchClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(prisonerSearchApiUrl, authorizedClientManager, builder)
+  ): WebClient = getWebClient(prisonerSearchApiUrl, authorizedClientManagerCvl, builder)
 
   @Bean
   fun oauthDocumentApiClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(documentApiUrl, authorizedClientManager, builder)
+  ): WebClient = getWebClient(documentApiUrl, authorizedClientManagerCvl, builder)
 
   @Bean
   fun oauthDeliusApiClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(deliusApiUrl, authorizedClientManager, builder)
+  ): WebClient = getWebClient(deliusApiUrl, authorizedClientManagerCvl, builder)
 
   @Bean
   fun oauthWorkLoadApiClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(workLoadApiUrl, authorizedClientManager, builder)
+  ): WebClient = getWebClient(workLoadApiUrl, authorizedClientManagerCvl, builder)
 
   @Bean
   fun oauthHdcApiClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(hdcApiUrl, authorizedClientManager, builder)
+  ): WebClient = getWebClient(hdcApiUrl, authorizedClientManagerCvl, builder)
 
   @Bean
   fun oauthCorePersonRecordApiClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(corePersonRecordApiUrl, authorizedClientManager, builder)
+  ): WebClient = getWebClient(corePersonRecordApiUrl, authorizedClientManagerCvl, builder)
 
   @Bean
-  fun authorizedClientManager(
+  fun authorizedClientManagerCvl(
     clientRegistrationRepository: ClientRegistrationRepository,
   ): OAuth2AuthorizedClientManager {
     val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
@@ -115,11 +115,11 @@ class WebClientConfiguration(
 
   private fun getWebClient(
     url: String,
-    authorizedClientManager: OAuth2AuthorizedClientManager,
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
   ): WebClient = builder
     .authorisedWebClient(
-      authorizedClientManager = authorizedClientManager,
+      authorizedClientManager = authorizedClientManagerCvl,
       url = url,
       registrationId = HMPPS_AUTH,
     )

@@ -25,6 +25,7 @@ generic-service:
     SELF_API_LINK: "https://create-and-vary-a-licence-api-preprod.hmpps.service.justice.gov.uk"
     HMPPS_COREPERSONRECORD_API_URL: "https://hmpps-person-record-preprod.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
+    DPR_MANAGE_USERS_HOST: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
