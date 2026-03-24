@@ -76,7 +76,7 @@ class CvlRecordService(
     nomisRecord.licenceExpiryDate == null -> PSS
     nomisRecord.topupSupervisionExpiryDate == null || nomisRecord.topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
     kind == PRRD -> getRecallLicenceType(nomisRecord, licenceStartDate)
-    !isrPssProgressionService.isRepealDatePassed() -> AP_PSS
+    !isrPssProgressionService.isPssNowRepealed() -> AP_PSS
     else -> AP
   }
 
@@ -84,7 +84,7 @@ class CvlRecordService(
     // If release at SLED, go directly into PSS period
     releaseDateService.isReleaseAtLed(licenceStartDate, nomisRecord.licenceExpiryDate) -> PSS
     // If early release, the period spent on early release is AP
-    !isrPssProgressionService.isRepealDatePassed() -> AP_PSS
+    !isrPssProgressionService.isPssNowRepealed() -> AP_PSS
     else -> AP
   }
 }

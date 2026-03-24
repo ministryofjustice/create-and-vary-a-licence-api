@@ -23,7 +23,7 @@ class ISRPssProgressionService(
       log.info("ISR progression skipped because repeal date is not configured")
       return
     }
-    if (getCurrentDate().isBefore(isrRepealDate)) {
+    if (!isPssNowRepealed()) {
       log.info("ISR progression job skipped because appeal {} date has not been reached", getCurrentDate())
       return
     }
@@ -52,7 +52,7 @@ class ISRPssProgressionService(
     }
   }
 
-  fun isRepealDatePassed(): Boolean = isrRepealDate?.let { !getCurrentDate().isBefore(it) } ?: false
+  fun isPssNowRepealed(): Boolean = isrRepealDate?.let { !getCurrentDate().isBefore(it) } ?: false
 
   private fun getCurrentDate(): LocalDate = LocalDate.now(clock)
 

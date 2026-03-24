@@ -41,7 +41,7 @@ class EligibilityServiceTest {
   @BeforeEach
   fun reset() {
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptyList()))
-    whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(false)
+    whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(false)
   }
 
   @Nested
@@ -57,7 +57,7 @@ class EligibilityServiceTest {
       expectedEligible: Boolean,
     ) {
       // Given
-      whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(repealDatePassed)
+      whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(repealDatePassed)
 
       val prisonerSearchResult = aPrisonerSearchResult.copy(
         licenceExpiryDate = licenceExpiryDate,

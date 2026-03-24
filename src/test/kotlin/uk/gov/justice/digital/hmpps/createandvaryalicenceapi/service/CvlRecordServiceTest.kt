@@ -34,7 +34,7 @@ class CvlRecordServiceTest {
   @BeforeEach
   fun reset() {
     reset(eligibilityService, releaseDateService)
-    whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(false)
+    whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(false)
   }
 
   @Test
@@ -269,7 +269,7 @@ class CvlRecordServiceTest {
 
     @Test
     fun `should be AP when TUSED is after LED and Pss repeal date has passed`() {
-      whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(true)
+      whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(true)
 
       val nomisRecord = prisonerSearchResult().copy(
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
@@ -289,7 +289,7 @@ class CvlRecordServiceTest {
         mapOf(prisonerSearchResult().prisonerNumber to LocalDate.of(2021, 10, 22)),
       )
       whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
-      whenever(isrPssProgressionService.isRepealDatePassed()).thenReturn(true)
+      whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(true)
 
       val nomisRecord = prisonerSearchResult().copy(
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
