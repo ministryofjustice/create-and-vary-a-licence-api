@@ -105,6 +105,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
+  testImplementation("org.springframework:spring-test")
 
   // Specifically for Spring Boot 4 Web MVC testing
   testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
