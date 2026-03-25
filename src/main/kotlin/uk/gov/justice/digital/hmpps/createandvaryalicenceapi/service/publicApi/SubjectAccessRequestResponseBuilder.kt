@@ -27,7 +27,7 @@ private const val UNAVAILABLE_SIZE = -1
 
 /**
  * Extracts the surname from a full name in "firstname surname" format.
- * Returns the surname if the name contains at least one space, otherwise returns the original name.
+ * Returns the surname if the name contains at least one space, otherwise returns null.
  */
 fun extractLastname(fullName: String?): String? {
   if (fullName.isNullOrBlank()) return fullName
@@ -36,7 +36,7 @@ fun extractLastname(fullName: String?): String? {
   return if (lastSpaceIndex > 0) {
     trimmed.substring(lastSpaceIndex + 1)
   } else {
-    trimmed
+    null
   }
 }
 

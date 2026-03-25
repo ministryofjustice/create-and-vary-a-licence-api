@@ -199,7 +199,7 @@ class SubjectAccessRequestResponseBuilderTest {
 
   @Test
   fun `extractLastname should return original name if no space`() {
-    assertThat(extractLastname("SingleName")).isEqualTo("SingleName")
+    assertThat(extractLastname("SingleName")).isNull()
   }
 
   @Test

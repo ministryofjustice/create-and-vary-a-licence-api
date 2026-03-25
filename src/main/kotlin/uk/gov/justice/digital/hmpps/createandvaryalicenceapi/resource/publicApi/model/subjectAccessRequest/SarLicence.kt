@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 @Schema(description = "Describes a licence within this service")
 data class SarLicence(
   @field:Schema(description = "The internal id of the licence", example = "123")
-  val licenceId: Long?,
+  val licenceId: Long,
 
   @field:Schema(description = "Kind of licence", example = "CRD")
   val kind: String,
