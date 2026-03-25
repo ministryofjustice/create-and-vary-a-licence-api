@@ -32,7 +32,11 @@ class EligibilityService(
   fun getEligibilityAssessments(prisoners: List<PrisonerSearchPrisoner>): Map<String, EligibilityAssessment> {
     val hdcStatuses = hdcService.getHdcStatus(prisoners)
     val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
-      val isExpectedHdcRelease = hdcStatuses.isExpectedHdcRelease(prisoner.bookingId!!.toLong())
+      val isExpectedHdcRelease = if (prisoner.bookingId != null) {
+        hdcStatuses.isExpectedHdcRelease(prisoner.bookingId.toLong())
+      } else {
+        false
+      }
       val genericIneligibilityReasons = getGenericIneligibilityReasons(prisoner)
       val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner, isExpectedHdcRelease)
       val prrdIneligibilityReasons = getPrrdIneligibilityReasons(prisoner, isExpectedHdcRelease)
@@ -58,6 +62,7 @@ class EligibilityService(
       hasActivePrisonStatus(prisoner) to "is not active in prison",
       !isBreachOfTopUpSupervision(prisoner) to "is breach of top up supervision case",
       isPssTypeStillEligible(prisoner) to "PSS licences no longer supported",
+      hasBookingId(prisoner) to "has no booking ID",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
@@ -211,6 +216,8 @@ class EligibilityService(
   } ?: false
 
   private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.imprisonmentStatus == "BOTUS"
+
+  private fun hasBookingId(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.bookingId != null
 
   private fun dateIsTodayOrFuture(date: LocalDate?): Boolean {
     if (date == null) return false
