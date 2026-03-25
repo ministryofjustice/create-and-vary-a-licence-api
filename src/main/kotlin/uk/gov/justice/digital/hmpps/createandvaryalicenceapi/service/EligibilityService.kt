@@ -217,8 +217,6 @@ class EligibilityService(
 
   private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.imprisonmentStatus == "BOTUS"
 
-  private fun hasBookingId(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.bookingId != null
-
   private fun dateIsTodayOrFuture(date: LocalDate?): Boolean {
     if (date == null) return false
     return date.isEqual(LocalDate.now(clock)) || date.isAfter(LocalDate.now(clock))
