@@ -62,8 +62,7 @@ class EligibilityService(
       !isOnIndeterminateSentence(prisoner) to "is on indeterminate sentence",
       hasActivePrisonStatus(prisoner) to "is not active in prison",
       !isBreachOfTopUpSupervision(prisoner) to "is breach of top up supervision case",
-      isPssTypeStillEligible(prisoner) to "PSS licences no longer supported",
-      hasBookingId(prisoner) to "has no booking ID",
+      isPssTypeStillEligible(prisoner) to "PSS licences no longer supported"
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
