@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
@@ -456,6 +457,7 @@ class CaseloadController(
     body: PrisonUserSearchRequest,
   ) = caCaseloadService.searchForOffenderOnPrisonCaseAdminCaseload(body)
 
+  // TODO : update doc for new param
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/create-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
@@ -497,7 +499,14 @@ class CaseloadController(
       ),
     ],
   )
-  fun getStaffCreateCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCreateCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier)
+  fun getStaffCreateCaseload(
+    @Parameter(required = true) @PathVariable deliusStaffIdentifier: Long,
+    @RequestParam(
+      name = "isAdminUser",
+      required = false,
+      defaultValue = "false",
+    ) isAdminUser: Boolean,
+  ) = comCreateCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier, isAdminUser)
 
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/create-case-load/hdc")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -583,7 +592,14 @@ class CaseloadController(
       ),
     ],
   )
-  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCreateCase> = comCreateCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
+  fun getTeamCreateCaseload(
+    @Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest,
+    @RequestParam(
+      name = "isAdminUser",
+      required = false,
+      defaultValue = "false",
+    ) isAdminUser: Boolean,
+  ): List<ComCreateCase> = comCreateCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected, isAdminUser)
 
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/vary-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
