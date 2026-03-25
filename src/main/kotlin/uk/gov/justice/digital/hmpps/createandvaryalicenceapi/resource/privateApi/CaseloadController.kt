@@ -457,7 +457,6 @@ class CaseloadController(
     body: PrisonUserSearchRequest,
   ) = caCaseloadService.searchForOffenderOnPrisonCaseAdminCaseload(body)
 
-  // TODO : update doc for new param
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/create-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
