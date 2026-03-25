@@ -103,7 +103,6 @@ class CaCaseloadServiceTest {
       releaseDateLabelFactory,
       telemetryService,
     ),
-
   )
 
   private object PrisonQuery {
@@ -256,7 +255,6 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
-              kind = LicenceKind.CRD,
               hardStopKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
@@ -545,21 +543,18 @@ class CaCaseloadServiceTest {
         listOf(
           aCvlRecord(
             nomsId = "A1234AA",
-            kind = LicenceKind.CRD,
             hardStopKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
           ),
           aCvlRecord(
             nomsId = "A1234AB",
-            kind = LicenceKind.CRD,
             hardStopKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
           ),
           aCvlRecord(
             nomsId = "A1234AC",
-            kind = LicenceKind.CRD,
             hardStopKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
@@ -667,7 +662,6 @@ class CaCaseloadServiceTest {
         listOf(
           aCvlRecord(
             nomsId = "A1234AA",
-            kind = LicenceKind.CRD,
             hardStopKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
@@ -722,12 +716,10 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = "A1234AA",
-              kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
             ),
             aCvlRecord(
               nomsId = "A1234AB",
-              kind = null,
               licenceStartDate = null,
             ).copy(isEligible = false),
           ),
@@ -788,7 +780,6 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = "A1234AA",
-              kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
             ),
           ),
@@ -812,7 +803,6 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = aPrisonerSearchPrisoner.prisonerNumber,
-              kind = null,
               licenceStartDate = null,
               isEligible = false,
             ),
@@ -830,7 +820,7 @@ class CaCaseloadServiceTest {
         )
 
         whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-          listOf(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = twoDaysFromNow)),
+          listOf(aCvlRecord(licenceStartDate = twoDaysFromNow)),
         )
 
         val prisoner = aPrisonerSearchPrisoner.copy(
@@ -891,7 +881,6 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
-              kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               hardStopKind = LicenceKind.TIME_SERVED,
@@ -960,7 +949,6 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
-              kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               hardStopKind = LicenceKind.TIME_SERVED,
@@ -1026,7 +1014,6 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
-              kind = LicenceKind.CRD,
               hardStopKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
@@ -1095,7 +1082,6 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
-              kind = LicenceKind.CRD,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               hardStopKind = LicenceKind.TIME_SERVED,

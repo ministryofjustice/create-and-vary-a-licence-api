@@ -160,7 +160,6 @@ object TestData {
   fun aCvlRecord(
     nomsId: String = "A1234AA",
     licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22),
-    kind: LicenceKind? = LicenceKind.CRD,
     eligibleKind: EligibleKind? = EligibleKind.CRD,
     isEligible: Boolean = true,
     hardStopKind: LicenceKind? = null,

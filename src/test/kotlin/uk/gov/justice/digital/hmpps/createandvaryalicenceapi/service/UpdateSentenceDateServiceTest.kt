@@ -138,7 +138,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -215,7 +215,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -267,7 +267,6 @@ class UpdateSentenceDateServiceTest {
     )
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
       aCvlRecord(
-        kind = LicenceKind.CRD,
         licenceStartDate = aCrdLicenceEntity.licenceStartDate,
       ),
     )
@@ -297,7 +296,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -326,7 +325,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -392,7 +391,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -434,7 +433,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -506,7 +505,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -551,7 +550,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -596,7 +595,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -641,7 +640,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -687,7 +686,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -737,7 +736,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -777,7 +776,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -851,7 +850,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val logAppender = TestLogAppender()
     logAppender.start()
@@ -886,7 +885,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val logAppender = TestLogAppender()
     logAppender.start()
@@ -921,7 +920,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 
@@ -946,7 +945,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 
@@ -973,7 +972,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
       verify(licenceService, times(0)).timeout(any(), any())
@@ -998,7 +997,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 
@@ -1053,7 +1052,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 
@@ -1127,7 +1126,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       jobEnabledService.updateSentenceDates(1L)
 
@@ -1162,7 +1161,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 

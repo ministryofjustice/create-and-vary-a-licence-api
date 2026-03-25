@@ -1166,7 +1166,7 @@ class LicenceService(
   }
 
   @Transactional
-  fun updateLicenceKind(licence: EntityLicence, updatedLicenceKind: LicenceKind, updatedEligibleKind: EligibleKind? = null): EntityLicence {
+  fun updateLicenceKind(licence: EntityLicence, updatedLicenceKind: LicenceKind, updatedEligibleKind: EligibleKind?): EntityLicence {
     if (licence.kind == HDC) return licence
 
     val isKindUpdated =

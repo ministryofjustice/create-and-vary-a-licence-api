@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.pr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.promptCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -141,7 +140,7 @@ class PromptComServiceTest {
     val promptCases = listOf(promptCase())
     val casesWithEmails = promptCases.map { it to "com@test.com" }
     val casesWithEmailsAndLocalDates = casesWithEmails.map { it to LocalDate.of(2022, 1, 2) }
-    val cvlRecords = listOf(aCvlRecord(kind = LicenceKind.CRD))
+    val cvlRecords = listOf(aCvlRecord())
 
     val com = PromptComNotification(
       email = "com@test.com",

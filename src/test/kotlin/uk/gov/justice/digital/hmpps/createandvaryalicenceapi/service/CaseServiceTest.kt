@@ -55,7 +55,6 @@ class CaseServiceTest {
     whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager())
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
       aCvlRecord(
-        kind = LicenceKind.CRD,
         eligibleKind = EligibleKind.CRD,
         hardStopKind = LicenceKind.HARD_STOP,
         licenceStartDate = LocalDate.of(2021, 10, 22),

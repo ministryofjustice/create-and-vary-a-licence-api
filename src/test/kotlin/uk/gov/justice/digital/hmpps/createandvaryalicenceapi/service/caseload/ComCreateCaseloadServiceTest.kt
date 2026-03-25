@@ -378,12 +378,10 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234E", licenceStartDate = nineDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234F",
-          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(
           nomsId = "AB1234G",
-          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(nomsId = "AB1234H", licenceStartDate = tenDaysFromNow),
@@ -394,7 +392,6 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234M", licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234N",
-          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(nomsId = "AB1234P", licenceStartDate = nineDaysFromNow),
@@ -664,7 +661,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234F",
           licenceStartDate = tenDaysFromNow,

@@ -149,7 +149,7 @@ class LicenceOverrideService(
       buildString {
         append("Updated kind and dates - ID $licenceId")
         append("licenceKind ${request.updatedLicenceKind}, ")
-        append("eligibleKind ${request.updatedLicenceKind}, ")
+        append("eligibleKind ${request.updatedEligibleKind}, ")
         append("CRD ${request.conditionalReleaseDate}, ")
         append("ARD ${request.actualReleaseDate}. ")
         append("SSD ${request.sentenceStartDate}, ")

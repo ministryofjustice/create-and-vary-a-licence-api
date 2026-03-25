@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffEmail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -68,7 +67,7 @@ class PromptComListBuilderTest {
 
       val result = promptComListBuilder.excludeIneligibleCases(
         mapOf(prisoner to com),
-        listOf(aCvlRecord(kind = null).copy(isEligible = true)),
+        listOf(aCvlRecord().copy(isEligible = true)),
       )
 
       assertThat(result).isEqualTo(mapOf(prisoner to com))
@@ -81,7 +80,7 @@ class PromptComListBuilderTest {
 
       val result = promptComListBuilder.excludeIneligibleCases(
         mapOf(prisoner to com),
-        listOf(aCvlRecord(kind = null).copy(isEligible = false)),
+        listOf(aCvlRecord().copy(isEligible = false)),
       )
 
       assertThat(result).isEmpty()
@@ -204,7 +203,7 @@ class PromptComListBuilderTest {
     @Test
     fun present() {
       val promptCase = promptCase()
-      val cvlRecord = aCvlRecord(kind = CRD, licenceStartDate = LocalDate.of(2022, 1, 2))
+      val cvlRecord = aCvlRecord(licenceStartDate = LocalDate.of(2022, 1, 2))
 
       val result =
         promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
@@ -217,7 +216,7 @@ class PromptComListBuilderTest {
     fun missingStartDate() {
       val promptCase = promptCase()
 
-      val cvlRecord = aCvlRecord(kind = CRD, licenceStartDate = null)
+      val cvlRecord = aCvlRecord(licenceStartDate = null)
 
       val result =
         promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
