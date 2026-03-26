@@ -14,7 +14,7 @@ repositories {
   mavenCentral()
 }
 
-ext["logback.version"] = "1.5.19"
+ext["logback.version"] = "1.5.25"
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
@@ -23,6 +23,10 @@ dependencies {
   constraints {
     implementation("org.apache.commons:commons-compress:1.26.0") {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
+    }
+    // FIX: CVE-2026-23907
+    implementation("org.apache.pdfbox:jbig2-imageio:3.0.5") {
+      because("Versions <3.0.5 vulnerable to CVE-2026-23907")
     }
   }
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.0.1")
@@ -56,7 +60,6 @@ dependencies {
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:3.0.6")
-  implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
