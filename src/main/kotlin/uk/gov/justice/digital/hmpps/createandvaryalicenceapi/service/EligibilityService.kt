@@ -32,7 +32,12 @@ class EligibilityService(
   fun getEligibilityAssessments(prisoners: List<PrisonerSearchPrisoner>): Map<String, EligibilityAssessment> {
     val hdcStatuses = hdcService.getHdcStatus(prisoners)
     val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
-      val isExpectedHdcRelease = hdcStatuses.isExpectedHdcRelease(prisoner.bookingId!!.toLong())
+      if (prisoner.bookingId == null) {
+        return@map prisoner.prisonerNumber to EligibilityAssessment(
+          genericIneligibilityReasons = listOf("no active booking"),
+        )
+      }
+      val isExpectedHdcRelease = hdcStatuses.isExpectedHdcRelease(prisoner.bookingId.toLong())
       val genericIneligibilityReasons = getGenericIneligibilityReasons(prisoner)
       val crdIneligibilityReasons = getCrdIneligibilityReasons(prisoner, isExpectedHdcRelease)
       val prrdIneligibilityReasons = getPrrdIneligibilityReasons(prisoner, isExpectedHdcRelease)

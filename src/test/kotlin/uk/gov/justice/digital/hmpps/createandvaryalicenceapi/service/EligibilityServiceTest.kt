@@ -478,6 +478,27 @@ class EligibilityServiceTest {
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
       assertThat(result.eligibleKind).isNull()
     }
+
+    @Test
+    fun `Person does not have an active booking - not eligible for CVL`() {
+      val result = service.getEligibilityAssessments(
+        listOf(
+          aPrisonerSearchResult.copy(bookingId = null),
+          aPrisonerSearchResult.copy(prisonerNumber = "A1234AB"),
+        ),
+      )
+      assertThat(result["A1234AA"]!!.isEligible).isFalse()
+      assertThat(result["A1234AA"]!!.genericIneligibilityReasons).containsExactly("no active booking")
+      assertThat(result["A1234AA"]!!.crdIneligibilityReasons).isEmpty()
+      assertThat(result["A1234AA"]!!.prrdIneligibilityReasons).isEmpty()
+      assertThat(result["A1234AA"]!!.eligibleKind).isNull()
+
+      assertThat(result["A1234AB"]!!.isEligible).isTrue()
+      assertThat(result["A1234AB"]!!.genericIneligibilityReasons).isEmpty()
+      assertThat(result["A1234AB"]!!.crdIneligibilityReasons).isEmpty()
+      assertThat(result["A1234AB"]!!.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result["A1234AB"]!!.eligibleKind).isEqualTo(CRD)
+    }
   }
 
   @Nested
