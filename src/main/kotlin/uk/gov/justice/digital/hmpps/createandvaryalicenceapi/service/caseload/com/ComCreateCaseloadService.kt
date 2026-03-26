@@ -41,9 +41,9 @@ class ComCreateCaseloadService(
     private val COM_CREATE_LICENCE_STATUSES = listOf(ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT)
   }
 
-  fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCreateCase> {
+  fun getStaffCreateCaseload(deliusStaffIdentifier: Long, isAdminUser: Boolean = false): List<ComCreateCase> {
     val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
-    val cases = buildCreateCaseload(managedOffenders)
+    val cases = buildCreateCaseload(managedOffenders, isAdminUser)
 
     telemetryService.recordCaseloadLoad(ComCreateStaffCaseload, setOf(deliusStaffIdentifier.toString()), cases)
     return cases
@@ -55,16 +55,20 @@ class ComCreateCaseloadService(
     val cvlRecords = cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
 
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
-    val cases = createComCases(eligibleCases, cvlRecords)
+    val cases = createComCases(eligibleCases, cvlRecords, isAdminUser = false)
     val hdcCases = cases.filter { it.cvlRecord.eligibleKind == LicenceKind.HDC }
 
     return transformToCreateCaseload(hdcCases)
   }
 
-  fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCreateCase> {
+  fun getTeamCreateCaseload(
+    probationTeamCodes: List<String>,
+    teamSelected: List<String>,
+    isAdminUser: Boolean = false,
+  ): List<ComCreateCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = deliusApiClient.getManagedOffendersByTeam(teamCode)
-    val cases = buildCreateCaseload(managedOffenders)
+    val cases = buildCreateCaseload(managedOffenders, isAdminUser)
 
     telemetryService.recordCaseloadLoad(ComCreateTeamCaseload, setOf(teamCode), cases)
     return cases
@@ -76,12 +80,15 @@ class ComCreateCaseloadService(
     probationTeamCodes.first()
   }
 
-  private fun buildCreateCaseload(managedOffenders: List<ManagedOffenderCrn>): List<ComCreateCase> {
+  private fun buildCreateCaseload(
+    managedOffenders: List<ManagedOffenderCrn>,
+    isAdminUser: Boolean,
+  ): List<ComCreateCase> {
     val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
     val cvlRecords =
       cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
-    val cases = createComCases(eligibleCases, cvlRecords)
+    val cases = createComCases(eligibleCases, cvlRecords, isAdminUser)
     val filteredCases = filterFutureOrTimeservedReleases(cases)
 
     return transformToCreateCaseload(filteredCases)
@@ -107,6 +114,7 @@ class ComCreateCaseloadService(
   private fun createComCases(
     cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>,
     cvlRecords: List<CvlRecord>,
+    isAdminUser: Boolean,
   ): List<Case> {
     val crns = cases.map { (deliusRecord, _) -> deliusRecord.crn!! }
     val licencesByCrn = getExistingActiveAndPreReleaseLicences(crns).groupBy { it.crn }
@@ -118,7 +126,7 @@ class ComCreateCaseloadService(
       val cvlRecord = cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!
       val caseAccessRecord = caseAccessRecords[deliusRecord.crn] ?: unrestricted
       val isRestricted = caseAccessRecord.isRestricted
-      val probationPractitioner = if (isRestricted) {
+      val probationPractitioner = if (isRestricted && !isAdminUser) {
         ProbationPractitioner.restrictedView()
       } else {
         deliusRecord.toProbationPractitioner()
@@ -130,7 +138,7 @@ class ComCreateCaseloadService(
           probationPractitioner,
           nomisRecord,
           cvlRecord,
-          createNotStartedLicenceDto(deliusRecord, nomisRecord, cvlRecord, isRestricted),
+          createNotStartedLicenceDto(deliusRecord, nomisRecord, cvlRecord, isRestricted, isAdminUser),
         )
 
         // Has an active licence so shouldn't appear in create caseload
@@ -145,6 +153,7 @@ class ComCreateCaseloadService(
             cvlRecord,
             findRelevantLicencePerCase(licences),
             isRestricted,
+            isAdminUser,
           )
       }
     }
@@ -178,6 +187,7 @@ class ComCreateCaseloadService(
     nomisRecord: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
     isRestricted: Boolean,
+    isAdminUser: Boolean,
   ): ComCreateCaseloadLicenceDto {
     val kind = cvlRecord.hardStopKind ?: cvlRecord.eligibleKind!!
     val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
@@ -187,7 +197,7 @@ class ComCreateCaseloadService(
       NOT_STARTED
     }
 
-    if (isRestricted) {
+    if (isRestricted && !isAdminUser) {
       return ComCreateCaseloadLicenceDto.restrictedCase(
         licenceStatus,
         kind,
@@ -210,7 +220,7 @@ class ComCreateCaseloadService(
       kind = kind,
       isReviewNeeded = false,
       licenceCreationType = null,
-      isRestricted = false,
+      isRestricted = isRestricted,
     )
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
   }
@@ -259,7 +269,8 @@ class ComCreateCaseloadService(
     cvlRecord: CvlRecord,
     createCaseloadLicence: ComCreateCaseloadLicenceDto,
     isRestricted: Boolean,
-  ): Case = if (isRestricted) {
+    isAdminUser: Boolean,
+  ): Case = if (isRestricted && !isAdminUser) {
     Case(
       probationPractitioner,
       nomisRecord,

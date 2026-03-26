@@ -98,16 +98,10 @@ jobs:
     cron: "40 9 * * *" # 9:40am every day
     allowRetry: false
 
-  - name: isr-in-flight-ap-pss-licences-job
-    enabled: true
-    path: /isr-in-flight-ap-pss-licences
-    cron: "30 7 * * *"
-    allowRetry: true
-
   - name: isr-licence-progression-job
     enabled: true
     path: /isr-licence-progression-job
-    cron: "30 0 25 3 *" # 00:30 UTC on 25/03/2026
+    cron: "30 0 27 3 *" # 00:30 UTC on 25/03/2026
     allowRetry: true
 
 #CloudPlatform AlertManager receiver to route prometheus alerts to slack
