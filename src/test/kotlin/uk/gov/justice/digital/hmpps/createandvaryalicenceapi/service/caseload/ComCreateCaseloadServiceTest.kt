@@ -1488,6 +1488,64 @@ class ComCreateCaseloadServiceTest {
     }
 
     @Test
+    fun `LAO cases are not restricted for admin users`() {
+      val selectedTeam = "team c"
+
+      val managedOffenders = listOf(
+        ManagedOffenderCrn(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
+        ),
+        ManagedOffenderCrn(
+          crn = "X12349",
+          nomisId = "AB1234F",
+          staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
+        ),
+      )
+
+      whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+        listOf(
+          prisonerSearchResult().copy(
+            bookingId = "1",
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = tenDaysFromNow,
+          ),
+          prisonerSearchResult().copy(
+            bookingId = "2",
+            prisonerNumber = "AB1234F",
+            conditionalReleaseDate = tenDaysFromNow,
+          ),
+        ),
+      )
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
+        listOf(
+          aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow),
+          aCvlRecord(nomsId = "AB1234F", licenceStartDate = tenDaysFromNow),
+        ),
+      )
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(
+          aCaseAccessResponse(crn = "X12348", excluded = true, restricted = false),
+          aCaseAccessResponse(crn = "X12349", excluded = false, restricted = false),
+        ),
+      )
+
+      val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf(selectedTeam), isAdminUser = true)
+
+      assertThat(caseload).hasSize(2)
+      with(caseload.last()) {
+        assertThat(name).isEqualTo("A Prisoner")
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(probationPractitioner.name).isEqualTo("Joe Bloggs")
+        assertThat(probationPractitioner.staffCode).isEqualTo("X1234")
+        assertThat(releaseDate).isEqualTo(tenDaysFromNow)
+        assertThat(isRestricted).isTrue()
+      }
+    }
+
+    @Test
     fun `it marks cases in the create caseload as LAO when user is excluded`() {
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(aCaseAccessResponse(crn = "X12348", excluded = true, restricted = false)),
@@ -1521,6 +1579,25 @@ class ComCreateCaseloadServiceTest {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDate).isEqualTo(tenDaysFromNow)
+        assertThat(isRestricted).isTrue()
+      }
+    }
+
+    @Test
+    fun `it does not restrict cases in the staff caseload for an admin user`() {
+      whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
+        listOf(aCaseAccessResponse(crn = "X12348", excluded = false, restricted = true)),
+      )
+
+      val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier, isAdminUser = true)
+
+      assertThat(caseload).hasSize(1)
+      with(caseload.first()) {
+        assertThat(name).isEqualTo("A Prisoner")
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(probationPractitioner.name).isEqualTo("Joe Bloggs")
+        assertThat(probationPractitioner.staffCode).isEqualTo("X1234")
         assertThat(releaseDate).isEqualTo(tenDaysFromNow)
         assertThat(isRestricted).isTrue()
       }
