@@ -14,7 +14,8 @@ repositories {
   mavenCentral()
 }
 
-ext["logback.version"] = "1.5.19"
+// FIX: bump logback to a patched version for CVE-2026-1225
+ext["logback.version"] = "1.5.20"
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
@@ -22,9 +23,14 @@ dependencies {
   // hmpps-kotlin-lib
   constraints {
     implementation("org.apache.commons:commons-compress:1.26.0") {
-      because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
+      because("Versions <=1.24.0 vulnerable to CVE-2024-25710 and CVE-2024-26308")
+    }
+    // FIX: CVE-2026-23907
+    implementation("org.apache.pdfbox:pdfbox-examples:3.0.7") {
+      because("Versions <3.0.7 vulnerable to CVE-2026-23907")
     }
   }
+
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.0.1")
 
   // CVE-2025-67735 - it does not fix all occurrences
@@ -34,9 +40,6 @@ dependencies {
   implementation("io.netty:netty-handler")
   implementation("io.netty:netty-transport")
   // END of CVE-2025-67735 - Remove when fixed
-
-  // Fix for CVE-2025-48924
-  implementation("org.apache.commons:commons-lang3:3.18.0")
 
   // Fix for CVE-2025-68161 -  () - maven/org.apache.logging.log4j/log4j-api@2.25.0
   implementation(enforcedPlatform("org.apache.logging.log4j:log4j-bom:2.25.1"))
@@ -56,7 +59,6 @@ dependencies {
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:3.0.6")
-  implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
@@ -110,10 +112,10 @@ dependencies {
 
 detekt {
   source.setFrom("$projectDir/src/main")
-  buildUponDefaultConfig = true // preconfigure defaults
-  allRules = false // activate all available (even unstable) rules.
-  config.setFrom("$projectDir/detekt.yml") // point to your custom config defining rules to run, overwriting default behavior
-  baseline = file("$projectDir/detekt-baseline.xml") // a way of suppressing issues before introducing detekt
+  buildUponDefaultConfig = true
+  allRules = false
+  config.setFrom("$projectDir/detekt.yml")
+  baseline = file("$projectDir/detekt-baseline.xml")
 }
 
 java {
@@ -150,7 +152,7 @@ tasks {
   }
   withType<Detekt> {
     reports {
-      html.required.set(true) // observe findings in your browser with structure and code snippets
+      html.required.set(true)
     }
   }
   named<Test>("test") {
@@ -174,11 +176,13 @@ tasks {
       includeTestsMatching("*IntegrationTest*")
     }
   }
+
   register<Copy>("installLocalGitHook") {
     from(File(rootProject.rootDir, ".scripts/pre-commit"))
     into(File(rootProject.rootDir, ".git/hooks"))
     filePermissions { unix("755") }
   }
+
   getByName("check") {
     dependsOn(":ktlintCheck", "detekt")
   }
@@ -190,4 +194,7 @@ allOpen {
 
 dependencyCheck {
   nvd.datafeedUrl = "file:///opt/vulnz/cache"
+
+  // FIX: suppress false positive (build-time only dependency)
+  suppressionFile = "$projectDir/dependency-check-suppressions.xml"
 }
