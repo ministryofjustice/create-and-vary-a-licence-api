@@ -114,7 +114,7 @@ OffenderService(
             "${inProgressLicence.forename} ${inProgressLicence.surname}",
             inProgressLicence.crn!!,
             releaseDate!!,
-            kind = inProgressLicence.kind,
+            kind = inProgressLicence.eligibleKind,
           ),
         ),
       )

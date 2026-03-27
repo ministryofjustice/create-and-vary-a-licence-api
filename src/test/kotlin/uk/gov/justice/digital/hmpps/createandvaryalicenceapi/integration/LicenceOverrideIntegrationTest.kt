@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
@@ -217,7 +218,8 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .uri("/licence/id/1/override/dates")
       .bodyValue(
         OverrideLicenceDatesRequest(
-          updatedKind = LicenceKind.CRD,
+          updatedLicenceKind = LicenceKind.CRD,
+          updatedEligibleKind = EligibleKind.CRD,
           conditionalReleaseDate = newCrd,
           actualReleaseDate = initialLicence.actualReleaseDate,
           sentenceStartDate = newSsd,

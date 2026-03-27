@@ -88,7 +88,7 @@ class NotStartedCaseloadService(
         licenceStatus = TIMED_OUT
       }
       val timeServedExternalRecord = timeServedExternalRecordsFlags[case.nomisRecord.bookingId?.toLong()]
-      val kind = case.cvlRecord.hardStopKind ?: case.cvlRecord.eligibleKind
+      val kind = case.cvlRecord.hardStopKind ?: case.cvlRecord.eligibleKind?.licenceKind
 
       CaCase(
         kind = kind,

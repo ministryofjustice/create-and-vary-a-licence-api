@@ -21,6 +21,7 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -42,7 +43,7 @@ abstract class Licence(
   var kind: LicenceKind,
 
   @Enumerated(EnumType.STRING)
-  var eligibleKind: LicenceKind?,
+  var eligibleKind: EligibleKind?,
 
   @param:NotNull
   @Enumerated(EnumType.STRING)

@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -122,7 +123,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(aCrdLicenceEntity)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -137,7 +138,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -198,7 +199,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `specific date changes are added to the audit`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(aCrdLicenceEntity)
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
@@ -214,7 +215,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -247,7 +248,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `does not audit if no dates have changed`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(aCrdLicenceEntity)
     whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(aCrdLicenceEntity.licenceStartDate)
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
@@ -266,7 +267,6 @@ class UpdateSentenceDateServiceTest {
     )
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
       aCvlRecord(
-        kind = LicenceKind.CRD,
         licenceStartDate = aCrdLicenceEntity.licenceStartDate,
       ),
     )
@@ -280,7 +280,7 @@ class UpdateSentenceDateServiceTest {
   fun `does not attempt to notify COM is there isn't a responsible COM`() {
     val licenceWithoutCOM = createTimeServedLicence().copy(responsibleCom = null)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licenceWithoutCOM))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licenceWithoutCOM)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licenceWithoutCOM)
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
@@ -296,7 +296,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -306,7 +306,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates persists the updated HDC dates if HDC licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aHdcLicenceEntity)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(aHdcLicenceEntity)
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
@@ -325,7 +325,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -373,7 +373,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates emails if HDC licence is HDC Approved`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aHdcLicenceEntity)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(aHdcLicenceEntity)
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
@@ -391,7 +391,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -418,7 +418,7 @@ class UpdateSentenceDateServiceTest {
   fun `update sentence dates persists the updated entity with null dates`() {
     val licence = aCrdLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -433,7 +433,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -491,7 +491,7 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive when the offender has a new future conditional release date`() {
     val licence = aCrdLicenceEntity.copy(statusCode = ACTIVE)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -505,7 +505,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -536,7 +536,7 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive when the offender has a new future actual release date`() {
     val licence = aCrdLicenceEntity.copy(statusCode = ACTIVE)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -550,7 +550,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -581,7 +581,7 @@ class UpdateSentenceDateServiceTest {
   fun `should not set the license status to inactive if existing license is not active`() {
     val licence = aCrdLicenceEntity.copy(statusCode = IN_PROGRESS)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -595,7 +595,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -626,7 +626,7 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive even if conditionalReleaseDate is before today`() {
     val licence = aCrdLicenceEntity.copy(statusCode = ACTIVE)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -640,7 +640,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -671,7 +671,7 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive even if actualReleaseDate is before today`() {
     val licence = aCrdLicenceEntity.copy(statusCode = ACTIVE)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
 
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
@@ -686,7 +686,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -721,7 +721,7 @@ class UpdateSentenceDateServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(licence),
     )
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(null)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
@@ -736,7 +736,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -761,7 +761,7 @@ class UpdateSentenceDateServiceTest {
   fun `Recalculates Licence Start Date rather than reading from the request`() {
     whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(LocalDate.of(2024, 1, 1))
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(aCrdLicenceEntity)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(
@@ -776,7 +776,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.updateSentenceDates(1L)
 
@@ -834,7 +834,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should log when an in progress PRRD licence has it's PRRD removed`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(anInProgressPrrdLicence))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(anInProgressPrrdLicence)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(anInProgressPrrdLicence)
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
@@ -850,7 +850,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val logAppender = TestLogAppender()
     logAppender.start()
@@ -869,7 +869,7 @@ class UpdateSentenceDateServiceTest {
     prrdWithoutPrrd.postRecallReleaseDate = null
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(prrdWithoutPrrd))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(prrdWithoutPrrd)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(prrdWithoutPrrd)
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
@@ -885,7 +885,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val logAppender = TestLogAppender()
     logAppender.start()
@@ -905,7 +905,7 @@ class UpdateSentenceDateServiceTest {
     @Test
     fun `should time out CRD licence if the licence is now in hard stop period but previously was not`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-      whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
+      whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(aCrdLicenceEntity)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
         aPrisonApiPrisoner().copy(
@@ -920,7 +920,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 
@@ -930,7 +930,7 @@ class UpdateSentenceDateServiceTest {
     @Test
     fun `should time out PRRD licence if the licence is now in hard stop period but previously was not`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(anInProgressPrrdLicence))
-      whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(anInProgressPrrdLicence)
+      whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(anInProgressPrrdLicence)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
         aPrisonApiPrisoner().copy(
@@ -945,7 +945,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 
@@ -957,7 +957,7 @@ class UpdateSentenceDateServiceTest {
       val licence = aCrdLicenceEntity.copy(statusCode = SUBMITTED)
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-      whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+      whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
         aPrisonApiPrisoner().copy(
@@ -972,7 +972,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
       verify(licenceService, times(0)).timeout(any(), any())
@@ -982,7 +982,7 @@ class UpdateSentenceDateServiceTest {
     fun `should not time out if the licence is in hard stop period but is not a CRD licence`() {
       val licence = createHardStopLicence()
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-      whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+      whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
         aPrisonApiPrisoner().copy(
@@ -997,7 +997,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 
@@ -1025,7 +1025,7 @@ class UpdateSentenceDateServiceTest {
       )
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
-      whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(noLongerInHardStopLicence)
+      whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(noLongerInHardStopLicence)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true, false)
       whenever(
         licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
@@ -1052,7 +1052,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 
@@ -1099,7 +1099,7 @@ class UpdateSentenceDateServiceTest {
       )
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
-      whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(noLongerInHardStopLicence)
+      whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(noLongerInHardStopLicence)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true, false)
       whenever(
         licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
@@ -1126,7 +1126,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       jobEnabledService.updateSentenceDates(1L)
 
@@ -1145,7 +1145,7 @@ class UpdateSentenceDateServiceTest {
     fun `should not time out if the licence is in hard stop period but is a HDC licence`() {
       val licence = createHdcLicence()
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-      whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(licence)
+      whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(licence)
       whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
@@ -1161,7 +1161,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
 
@@ -1174,7 +1174,7 @@ class UpdateSentenceDateServiceTest {
   fun `should update the kind of a CRD licence to PRRD when the CRD is removed and a PRRD is added`() {
     val licence = aCrdLicenceEntity
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(anInProgressPrrdLicence)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(anInProgressPrrdLicence)
     val prisoner = aPrisonApiPrisoner().copy(
       sentenceDetail = SentenceDetail(
         conditionalReleaseDate = null,
@@ -1197,7 +1197,7 @@ class UpdateSentenceDateServiceTest {
         nomisId = licence.nomsId!!,
         licenceStartDate = null,
         isEligible = true,
-        eligibleKind = LicenceKind.PRRD,
+        eligibleKind = EligibleKind.FIXED_TERM,
         isDueToBeReleasedInTheNextTwoWorkingDays = false,
         isEligibleForEarlyRelease = false,
         isInHardStopPeriod = false,
@@ -1266,7 +1266,7 @@ class UpdateSentenceDateServiceTest {
   fun `should update the kind of a PRRD licence to CRD when the PRRD is removed and a CRD is added`() {
     val licence = anInProgressPrrdLicence
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(licenceService.updateLicenceKind(any(), any())).thenReturn(aCrdLicenceEntity)
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(aCrdLicenceEntity)
     val prisoner = aPrisonApiPrisoner().copy(
       sentenceDetail = SentenceDetail(
         conditionalReleaseDate = LocalDate.parse("2025-09-11"),
@@ -1289,7 +1289,7 @@ class UpdateSentenceDateServiceTest {
         nomisId = licence.nomsId!!,
         licenceStartDate = null,
         isEligible = true,
-        eligibleKind = LicenceKind.CRD,
+        eligibleKind = EligibleKind.CRD,
         isDueToBeReleasedInTheNextTwoWorkingDays = false,
         isEligibleForEarlyRelease = false,
         isInHardStopPeriod = false,

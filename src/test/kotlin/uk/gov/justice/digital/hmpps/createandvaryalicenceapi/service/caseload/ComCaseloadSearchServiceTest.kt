@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.C
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -104,7 +105,7 @@ class ComCaseloadSearchServiceTest {
       cvlRecordService.getCvlRecords(
         eq(listOf(aPrisonerSearchResult)),
       ),
-    ).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    ).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -147,7 +148,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(
       cvlRecordService.getCvlRecords(eq(listOf(aPrisonerSearchResult))),
-    ).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    ).thenReturn(listOf(aCvlRecord()))
 
     val request = request.copy(
       sortBy = listOf(
@@ -200,7 +201,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(
       cvlRecordService.getCvlRecords(eq(listOf(aPrisonerSearchResult))),
-    ).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    ).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -270,7 +271,7 @@ class ComCaseloadSearchServiceTest {
       cvlRecordService.getCvlRecords(
         eq(listOf(aPrisonerSearchResult)),
       ),
-    ).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = LocalDate.of(2023, 9, 14))))
+    ).thenReturn(listOf(aCvlRecord(licenceStartDate = LocalDate.of(2023, 9, 14))))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -327,7 +328,6 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.CRD,
           licenceType = LicenceType.PSS,
         ),
       ),
@@ -359,7 +359,7 @@ class ComCaseloadSearchServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -388,7 +388,7 @@ class ComCaseloadSearchServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -420,7 +420,6 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.CRD,
           licenceType = AP_PSS,
         ),
       ),
@@ -446,7 +445,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(kind = LicenceKind.CRD).copy(
+        aCvlRecord().copy(
           isEligible = false,
         ),
       ),
@@ -468,7 +467,6 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2023, 9, 14),
         ),
       ),
@@ -489,7 +487,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(kind = LicenceKind.CRD).copy(
+        aCvlRecord().copy(
           isEligible = false,
         ),
       ),
@@ -519,7 +517,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = null, isEligible = false)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(isEligible = false)))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -547,7 +545,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.HDC)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -567,7 +565,7 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.HDC,
+          eligibleKind = EligibleKind.HDC,
           licenceStartDate = LocalDate.of(2023, 9, 14),
         ),
       ),
@@ -612,7 +610,6 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.CRD,
           isInHardStopPeriod = true,
           hardStopDate = LocalDate.of(2023, 2, 12),
           hardStopWarningDate = LocalDate.of(2023, 3, 10),
@@ -660,7 +657,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(licences)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 2, 12))
@@ -686,7 +683,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(crdLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -706,7 +703,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(hardStopLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -725,7 +722,6 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2023, 9, 14),
         ),
       ),
@@ -757,7 +753,7 @@ class ComCaseloadSearchServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -780,7 +776,6 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.PRRD,
           licenceStartDate = licenceStartDate,
         ),
       ),
@@ -812,7 +807,7 @@ class ComCaseloadSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
     whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(mapOf("A1234AA" to licenceStartDate))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(prrdLicence))
     whenever(workingDaysService.getLastWorkingDay(prisoner.postRecallReleaseDate)).thenReturn(licenceStartDate)
 
@@ -835,7 +830,6 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2023, 9, 14),
         ),
       ),
@@ -864,7 +858,7 @@ class ComCaseloadSearchServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -880,7 +874,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(hardStopLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -897,7 +891,7 @@ class ComCaseloadSearchServiceTest {
     )
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -915,7 +909,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(kind = LicenceKind.CRD),
+        aCvlRecord(),
       ),
     )
 
@@ -937,7 +931,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(kind = LicenceKind.TIME_SERVED),
+        aCvlRecord(),
       ),
     )
 
@@ -956,7 +950,7 @@ class ComCaseloadSearchServiceTest {
     )
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -972,7 +966,6 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.of(2023, 9, 14),
           isInHardStopPeriod = true,
           hardStopDate = LocalDate.of(2023, 9, 10),
@@ -1012,7 +1005,7 @@ class ComCaseloadSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
@@ -1038,7 +1031,6 @@ class ComCaseloadSearchServiceTest {
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
         aCvlRecord(
-          kind = LicenceKind.CRD,
           licenceStartDate = LocalDate.now(clock).minusDays(2),
         ),
       ),
@@ -1070,7 +1062,7 @@ class ComCaseloadSearchServiceTest {
         cvlRecordService.getCvlRecords(
           eq(listOf(aPrisonerSearchResult)),
         ),
-      ).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      ).thenReturn(listOf(aCvlRecord()))
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
         .thenReturn(CaseloadResponse(listOf(caseloadResult())))
 
@@ -1215,7 +1207,7 @@ class ComCaseloadSearchServiceTest {
       )
 
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
-      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),
       )
@@ -1235,7 +1227,7 @@ class ComCaseloadSearchServiceTest {
       )
 
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(timeServedLicence))
-      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.TIME_SERVED)))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),
       )
@@ -1254,7 +1246,7 @@ class ComCaseloadSearchServiceTest {
       )
 
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
-      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(aCaseAccessResponse("A123456", excluded = true, restricted = false)),
       )
@@ -1298,7 +1290,7 @@ class ComCaseloadSearchServiceTest {
         ),
       ).thenReturn(listOf(aLicenceEntity.copy(crn = "A123456")))
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+      whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),
       )
@@ -1319,7 +1311,7 @@ class ComCaseloadSearchServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
         .thenReturn(listOf(aPrisonerSearchResult))
       whenever(cvlRecordService.getCvlRecords(any()))
-        .thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+        .thenReturn(listOf(aCvlRecord()))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any()))
         .thenReturn(listOf(aCaseAccessResponse("A123456", excluded = true, restricted = false)))
 
@@ -1407,7 +1399,7 @@ class ComCaseloadSearchServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
         .thenReturn(listOf(aPrisonerSearchResult))
       whenever(cvlRecordService.getCvlRecords(any()))
-        .thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+        .thenReturn(listOf(aCvlRecord()))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any()))
         .thenReturn(listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)))
 
@@ -1428,7 +1420,7 @@ class ComCaseloadSearchServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
         .thenReturn(listOf(aPrisonerSearchResult))
       whenever(cvlRecordService.getCvlRecords(any()))
-        .thenReturn(listOf(aCvlRecord(kind = LicenceKind.CRD)))
+        .thenReturn(listOf(aCvlRecord()))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any()))
         .thenReturn(listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)))
 
@@ -1462,7 +1454,7 @@ class ComCaseloadSearchServiceTest {
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licenceWithPastDate))
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-        listOf(aCvlRecord(kind = LicenceKind.CRD, licenceStartDate = pastReleaseDate)),
+        listOf(aCvlRecord(licenceStartDate = pastReleaseDate)),
       )
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
         listOf(aCaseAccessResponse("A123456", excluded = false, restricted = true)),

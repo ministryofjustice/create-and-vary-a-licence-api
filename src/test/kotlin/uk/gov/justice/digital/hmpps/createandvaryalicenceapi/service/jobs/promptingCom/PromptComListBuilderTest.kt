@@ -26,8 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffEmail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -68,7 +67,7 @@ class PromptComListBuilderTest {
 
       val result = promptComListBuilder.excludeIneligibleCases(
         mapOf(prisoner to com),
-        listOf(aCvlRecord(kind = null).copy(isEligible = true)),
+        listOf(aCvlRecord().copy(isEligible = true)),
       )
 
       assertThat(result).isEqualTo(mapOf(prisoner to com))
@@ -81,7 +80,7 @@ class PromptComListBuilderTest {
 
       val result = promptComListBuilder.excludeIneligibleCases(
         mapOf(prisoner to com),
-        listOf(aCvlRecord(kind = null).copy(isEligible = false)),
+        listOf(aCvlRecord().copy(isEligible = false)),
       )
 
       assertThat(result).isEmpty()
@@ -204,7 +203,7 @@ class PromptComListBuilderTest {
     @Test
     fun present() {
       val promptCase = promptCase()
-      val cvlRecord = aCvlRecord(kind = CRD, licenceStartDate = LocalDate.of(2022, 1, 2))
+      val cvlRecord = aCvlRecord(licenceStartDate = LocalDate.of(2022, 1, 2))
 
       val result =
         promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
@@ -217,7 +216,7 @@ class PromptComListBuilderTest {
     fun missingStartDate() {
       val promptCase = promptCase()
 
-      val cvlRecord = aCvlRecord(kind = CRD, licenceStartDate = null)
+      val cvlRecord = aCvlRecord(licenceStartDate = null)
 
       val result =
         promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"), listOf(cvlRecord))
@@ -304,7 +303,7 @@ class PromptComListBuilderTest {
       val cvlRecords = listOf(
         CvlRecord(
           nomisId = nomisId1,
-          eligibleKind = PRRD,
+          eligibleKind = EligibleKind.FIXED_TERM,
           isDueToBeReleasedInTheNextTwoWorkingDays = false,
           isInHardStopPeriod = false,
           isEligibleForEarlyRelease = false,
@@ -314,7 +313,7 @@ class PromptComListBuilderTest {
         ),
         CvlRecord(
           nomisId = nomisId2,
-          eligibleKind = CRD,
+          eligibleKind = EligibleKind.CRD,
           isDueToBeReleasedInTheNextTwoWorkingDays = false,
           isInHardStopPeriod = false,
           isEligibleForEarlyRelease = false,
@@ -324,7 +323,7 @@ class PromptComListBuilderTest {
         ),
         CvlRecord(
           nomisId = nomisId3,
-          eligibleKind = CRD,
+          eligibleKind = EligibleKind.CRD,
           isDueToBeReleasedInTheNextTwoWorkingDays = false,
           isInHardStopPeriod = false,
           isEligibleForEarlyRelease = false,
@@ -345,13 +344,13 @@ class PromptComListBuilderTest {
                 crn = "crn-2",
                 name = "A Prisoner",
                 licenceStartDate = LocalDate.of(2022, 1, 1),
-                kind = CRD,
+                kind = EligibleKind.CRD,
               ),
               Case(
                 crn = "crn-1",
                 name = "A Prisoner",
                 licenceStartDate = LocalDate.of(2022, 1, 2),
-                kind = PRRD,
+                kind = EligibleKind.FIXED_TERM,
               ),
             ),
           ),
@@ -363,7 +362,7 @@ class PromptComListBuilderTest {
                 crn = "crn-3",
                 name = "A Prisoner",
                 licenceStartDate = LocalDate.of(2022, 1, 3),
-                kind = CRD,
+                kind = EligibleKind.CRD,
               ),
             ),
           ),

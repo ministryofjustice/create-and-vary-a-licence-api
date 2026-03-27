@@ -39,7 +39,8 @@ class CaseService(
         isEligibleForEarlyRelease = cvlRecord.isEligibleForEarlyRelease,
         isDueToBeReleasedInTheNextTwoWorkingDays = cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
         licenceStartDate = cvlRecord.licenceStartDate,
-        licenceKind = cvlRecord.eligibleKind,
+        licenceKind = cvlRecord.eligibleKind?.licenceKind,
+        eligibleKind = cvlRecord.eligibleKind,
         hardStopKind = cvlRecord.hardStopKind,
       ),
     )

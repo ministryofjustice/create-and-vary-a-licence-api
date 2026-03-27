@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCountsDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.EditedLicenceNotReApproved
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.PrisonNumberAndStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
@@ -214,7 +215,7 @@ interface LicenceRepository :
       WHERE l.id = :id
     """,
   )
-  fun updateLicenceKinds(id: Long, newKind: LicenceKind, newEligibleKind: LicenceKind?)
+  fun updateLicenceKinds(id: Long, newKind: LicenceKind, newEligibleKind: EligibleKind?)
 
   @Query(
     """

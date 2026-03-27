@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -377,12 +378,10 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234E", licenceStartDate = nineDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234F",
-          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(
           nomsId = "AB1234G",
-          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(nomsId = "AB1234H", licenceStartDate = tenDaysFromNow),
@@ -393,7 +392,6 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234M", licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234N",
-          kind = null,
           licenceStartDate = tenDaysFromNow,
         ).copy(isEligible = false),
         aCvlRecord(nomsId = "AB1234P", licenceStartDate = nineDaysFromNow),
@@ -663,7 +661,7 @@ class ComCreateCaseloadServiceTest {
 
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
       listOf(
-        aCvlRecord(nomsId = "AB1234E", kind = LicenceKind.CRD, licenceStartDate = tenDaysFromNow),
+        aCvlRecord(nomsId = "AB1234E", licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234F",
           licenceStartDate = tenDaysFromNow,
@@ -844,7 +842,7 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = prisonerNumber,
-          kind = LicenceKind.PRRD,
+          eligibleKind = EligibleKind.FIXED_TERM,
           licenceStartDate = LocalDate.now(),
         ),
       ),
@@ -877,7 +875,7 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = prisonerNumber,
-          kind = LicenceKind.PRRD,
+          eligibleKind = EligibleKind.FIXED_TERM,
           licenceStartDate = LocalDate.now(),
         ),
       ),

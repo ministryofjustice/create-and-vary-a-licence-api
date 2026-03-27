@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse.Companion.unrestricted
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -56,7 +57,7 @@ class ComCreateCaseloadService(
 
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
     val cases = createComCases(eligibleCases, cvlRecords, isAdminUser = false)
-    val hdcCases = cases.filter { it.cvlRecord.eligibleKind == LicenceKind.HDC }
+    val hdcCases = cases.filter { it.cvlRecord.eligibleKind == EligibleKind.HDC }
 
     return transformToCreateCaseload(hdcCases)
   }
@@ -189,7 +190,7 @@ class ComCreateCaseloadService(
     isRestricted: Boolean,
     isAdminUser: Boolean,
   ): ComCreateCaseloadLicenceDto {
-    val kind = cvlRecord.hardStopKind ?: cvlRecord.eligibleKind!!
+    val kind = cvlRecord.hardStopKind ?: cvlRecord.eligibleKind!!.licenceKind
     val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
     val licenceStatus = if (cvlRecord.isTimedOut) {
       TIMED_OUT

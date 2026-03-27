@@ -31,7 +31,7 @@ insert into licence (kind,
                      licence_version,
                      post_recall_release_date)
 values ('PRRD',
-        'PRRD',
+        'FIXED_TERM',
         'AP',
         '1.0',
         'IN_PROGRESS',
