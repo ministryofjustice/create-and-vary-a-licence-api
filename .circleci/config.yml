@@ -8,7 +8,7 @@ parameters:
     default: the_elephants_devs
   java-version:
     type: string
-    default: "21.0"
+    default: "25.0.1"
   localstack-version:
     type: string
     default: "3.0.2"
@@ -62,7 +62,7 @@ jobs:
           path: build/reports/jacoco
   integration-test:
     docker:
-      - image: cimg/openjdk:<< pipeline.parameters.java-version >>
+      - image: cimg/openjdk:25.0.1
       - image: localstack/localstack:<< pipeline.parameters.localstack-version >>
         environment:
           SERVICES: << pipeline.parameters.services >>
@@ -222,3 +222,4 @@ workflows:
             branches:
               only:
                 - main
+

@@ -1,5 +1,5 @@
 import io.gitlab.arturbosch.detekt.Detekt
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_24
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -120,7 +120,11 @@ detekt {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(25)) // Java runtime
+  }
+  sourceCompatibility = JavaVersion.VERSION_24
+  targetCompatibility = JavaVersion.VERSION_24
 }
 
 configurations {
@@ -141,7 +145,7 @@ configurations {
 tasks {
   withType<KotlinCompile> {
     compilerOptions {
-      jvmTarget = JVM_21
+      jvmTarget = JVM_24
       freeCompilerArgs.addAll(
         "-Xwhen-guards",
         "-Xjvm-default=all",
@@ -155,6 +159,7 @@ tasks {
     reports {
       html.required.set(true) // observe findings in your browser with structure and code snippets
     }
+    jvmTarget = "21"
   }
   named<Test>("test") {
     filter {
