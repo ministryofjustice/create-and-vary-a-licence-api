@@ -94,8 +94,8 @@
   "report": [
     {
       "id": "em-install-at-source",
-      "name": "Electronic Monitoring - Install at Source - Pilot Report",
-      "description": "Licences due for release in the next 14 days that have a status Submitted or Approved and have had any of the Electronic Monitoring Additional Conditions selected",
+      "name": "Electronic monitoring - install at source - pilot report",
+      "description": "Licences due for release in the next 14 days that have a status of submitted or approved and have had any of the electronic monitoring additional conditions selected",
       "version": "1.0.0",
       "render": "HTML",
       "dataset": "$ref:licence-dataset",
