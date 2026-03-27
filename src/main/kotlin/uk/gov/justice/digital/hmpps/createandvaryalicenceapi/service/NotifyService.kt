@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.Un
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -361,7 +361,7 @@ class NotifyService(
       mapOf(
         "comName" to comName,
         "prisonersForRelease" to cases.map { prisoner ->
-          val releaseType = if (prisoner.kind == PRRD) {
+          val releaseType = if (prisoner.kind == FIXED_TERM) {
             "following a fixed-term recall"
           } else {
             "as a standard release"

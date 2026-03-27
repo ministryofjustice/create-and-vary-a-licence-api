@@ -60,6 +60,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.TimeServedExternalRecordService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -141,7 +142,11 @@ class LicenceCreationServiceTest {
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.CRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.CRD,
+        ),
+      )
     }
 
     @Test
@@ -151,7 +156,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
         ),
       )
@@ -167,7 +172,7 @@ class LicenceCreationServiceTest {
         verify(telemetryService).recordLicenceCreatedEvent(capture())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.CRD)
-          assertThat(eligibleKind).isEqualTo(LicenceKind.CRD)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
           assertThat(version).isEqualTo("3.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
@@ -355,7 +360,7 @@ class LicenceCreationServiceTest {
       )
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceType = LicenceType.PSS,
         ),
       )
@@ -391,7 +396,7 @@ class LicenceCreationServiceTest {
       )
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceType = LicenceType.AP_PSS,
         ),
       )
@@ -654,7 +659,7 @@ class LicenceCreationServiceTest {
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.PRRD))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.FIXED_TERM))
     }
 
     @Test
@@ -664,7 +669,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.PRRD,
+          eligibleKind = EligibleKind.FIXED_TERM,
           licenceStartDate = LocalDate.of(2022, 10, 10),
         ),
       )
@@ -679,7 +684,7 @@ class LicenceCreationServiceTest {
         verify(telemetryService).recordLicenceCreatedEvent(capture())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.PRRD)
-          assertThat(eligibleKind).isEqualTo(LicenceKind.PRRD)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.FIXED_TERM)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
           assertThat(version).isEqualTo("3.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
@@ -855,7 +860,7 @@ class LicenceCreationServiceTest {
       )
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.PRRD,
+          eligibleKind = EligibleKind.FIXED_TERM,
           licenceType = LicenceType.PSS,
         ),
       )
@@ -891,7 +896,7 @@ class LicenceCreationServiceTest {
       )
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.PRRD,
+          eligibleKind = EligibleKind.FIXED_TERM,
           licenceType = LicenceType.AP_PSS,
         ),
       )
@@ -1161,7 +1166,7 @@ class LicenceCreationServiceTest {
       whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           hardStopKind = LicenceKind.HARD_STOP,
         ),
       )
@@ -1174,7 +1179,7 @@ class LicenceCreationServiceTest {
       whenever(caseService.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           hardStopKind = LicenceKind.HARD_STOP,
           licenceStartDate = LocalDate.of(2022, 10, 10),
         ),
@@ -1191,7 +1196,7 @@ class LicenceCreationServiceTest {
         verify(telemetryService).recordLicenceCreatedEvent(capture())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
-          assertThat(eligibleKind).isEqualTo(LicenceKind.CRD)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
           assertThat(version).isEqualTo("3.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
@@ -1405,7 +1410,7 @@ class LicenceCreationServiceTest {
       )
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           hardStopKind = LicenceKind.HARD_STOP,
           licenceType = LicenceType.PSS,
         ),
@@ -1443,7 +1448,7 @@ class LicenceCreationServiceTest {
       )
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           hardStopKind = LicenceKind.HARD_STOP,
           licenceType = LicenceType.AP_PSS,
         ),
@@ -1663,7 +1668,7 @@ class LicenceCreationServiceTest {
       whenever(caseService.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
           hardStopKind = null,
         ),
@@ -1691,7 +1696,7 @@ class LicenceCreationServiceTest {
       whenever(caseService.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
           hardStopKind = LicenceKind.TIME_SERVED,
         ),
@@ -1704,7 +1709,7 @@ class LicenceCreationServiceTest {
         verify(telemetryService).recordLicenceCreatedEvent(capture())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
-          assertThat(eligibleKind).isEqualTo(LicenceKind.CRD)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
           assertThat(version).isEqualTo("3.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
@@ -1751,7 +1756,7 @@ class LicenceCreationServiceTest {
       whenever(caseService.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
           hardStopKind = LicenceKind.TIME_SERVED,
         ),
@@ -1774,7 +1779,7 @@ class LicenceCreationServiceTest {
       whenever(caseService.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
           hardStopKind = LicenceKind.TIME_SERVED,
         ),
@@ -1799,7 +1804,7 @@ class LicenceCreationServiceTest {
       whenever(caseService.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
           hardStopKind = LicenceKind.TIME_SERVED,
         ),
@@ -1865,7 +1870,7 @@ class LicenceCreationServiceTest {
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(kind = LicenceKind.HDC))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
     }
 
     @Test
@@ -1875,7 +1880,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.HDC,
+          eligibleKind = EligibleKind.HDC,
           licenceStartDate = LocalDate.of(2022, 10, 10),
         ),
       )
@@ -1887,7 +1892,7 @@ class LicenceCreationServiceTest {
         verify(telemetryService).recordLicenceCreatedEvent(capture())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.HDC)
-          assertThat(eligibleKind).isEqualTo(LicenceKind.HDC)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.HDC)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
           assertThat(version).isEqualTo("3.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
@@ -2075,7 +2080,7 @@ class LicenceCreationServiceTest {
       )
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceType = LicenceType.PSS,
         ),
       )
@@ -2111,7 +2116,7 @@ class LicenceCreationServiceTest {
       )
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
-          kind = LicenceKind.CRD,
+          eligibleKind = EligibleKind.CRD,
           licenceType = LicenceType.AP_PSS,
         ),
       )

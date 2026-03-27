@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 
 data class EligibilityAssessment(
   @field:Schema(description = "A list of reasons the case is ineligible for any kind of CVL licence", example = "['A reason']")
@@ -25,11 +25,11 @@ data class EligibilityAssessment(
       )
 
   @get:Schema(description = "The kind of licence that the case is eligible for. Null if ineligible.", example = "CRD")
-  val eligibleKind: LicenceKind? get() = when {
+  val eligibleKind: EligibleKind? get() = when {
     !isEligible -> null
-    crdIneligibilityReasons.isEmpty() -> LicenceKind.CRD
-    hdcIneligibilityReasons.isEmpty() -> LicenceKind.HDC
-    prrdIneligibilityReasons.isEmpty() -> LicenceKind.PRRD
+    crdIneligibilityReasons.isEmpty() -> EligibleKind.CRD
+    hdcIneligibilityReasons.isEmpty() -> EligibleKind.HDC
+    prrdIneligibilityReasons.isEmpty() -> EligibleKind.FIXED_TERM
     else -> null
   }
 

@@ -36,7 +36,7 @@
         </tr>
         {{#standardLicenceConditions}}
             <tr>
-                <td>{{ optionalValue text }} ({{ optionalValue code }})</td>
+                <td>{{ optionalValue text }}</td>
             </tr>
         {{/standardLicenceConditions}}
         {{^standardLicenceConditions}}
@@ -55,7 +55,7 @@
         </tr>
         {{#standardPssConditions}}
             <tr>
-                <td>{{ optionalValue text }} ({{ optionalValue code }})</td>
+                <td>{{ optionalValue text }}</td>
             </tr>
         {{/standardPssConditions}}
         {{^standardPssConditions}}
@@ -74,7 +74,6 @@
         <br>
         <table class="summary-list">
             <tr><td>Category</td><td>{{ optionalValue category }}</td></tr>
-            <tr><td>Code</td><td>{{ optionalValue code }}</td></tr>
             <tr><td>Condition text</td><td>{{ optionalValue text }}</td></tr>
         </table>
         <h3>Upload summary</h3>
@@ -103,7 +102,6 @@
         <br>
         <table class="summary-list">
             <tr><td>Category</td><td>{{ optionalValue category }}</td></tr>
-            <tr><td>Code</td><td>{{ optionalValue code }}</td></tr>
             <tr><td>Condition text</td><td>{{ optionalValue text }}</td></tr>
         </table>
         <h3>Upload summary</h3>
@@ -142,7 +140,7 @@
 <br>
 {{#timeServedExternalRecords}}
     <table class="summary-list">
-        <tr><td>Prison code</td><td>{{ optionalValue prisonCode }}</td></tr>
+        <tr><td>Prison</td><td>{{ getPrisonName prisonCode }}</td></tr>
         <tr><td>Reason</td><td>{{ optionalValue reason }}</td></tr>
         <tr><td>Date created</td><td>{{ optionalValue (formatDate dateCreated) }}</td></tr>
         <tr><td>Date last updated</td><td>{{ optionalValue (formatDate dateLastUpdated) }}</td></tr>

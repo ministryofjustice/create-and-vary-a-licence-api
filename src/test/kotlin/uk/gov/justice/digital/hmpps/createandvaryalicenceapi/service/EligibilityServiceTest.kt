@@ -23,9 +23,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Book
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.HDC
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -105,7 +106,7 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
       assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
-      assertThat(result.eligibleKind).isEqualTo(CRD)
+      assertThat(result.eligibleKind).isEqualTo(EligibleKind.CRD)
     }
 
     @Test
@@ -528,7 +529,7 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
       assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
-      assertThat(result.eligibleKind).isEqualTo(PRRD)
+      assertThat(result.eligibleKind).isEqualTo(FIXED_TERM)
     }
 
     @Test
@@ -573,7 +574,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(PRRD)
+      assertThat(result.eligibleKind).isEqualTo(FIXED_TERM)
     }
 
     @Test
@@ -633,7 +634,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(PRRD)
+      assertThat(result.eligibleKind).isEqualTo(FIXED_TERM)
     }
 
     @Test
@@ -648,7 +649,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.eligibleKind).isEqualTo(PRRD)
+      assertThat(result.eligibleKind).isEqualTo(FIXED_TERM)
     }
 
     @Test

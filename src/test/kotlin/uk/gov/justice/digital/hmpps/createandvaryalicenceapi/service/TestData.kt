@@ -56,6 +56,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -159,7 +160,7 @@ object TestData {
   fun aCvlRecord(
     nomsId: String = "A1234AA",
     licenceStartDate: LocalDate? = LocalDate.of(2021, 10, 22),
-    kind: LicenceKind? = LicenceKind.CRD,
+    eligibleKind: EligibleKind? = EligibleKind.CRD,
     isEligible: Boolean = true,
     hardStopKind: LicenceKind? = null,
     hardStopDate: LocalDate? = null,
@@ -173,7 +174,7 @@ object TestData {
     nomisId = nomsId,
     licenceStartDate = licenceStartDate,
     isEligible = isEligible,
-    eligibleKind = kind,
+    eligibleKind = eligibleKind,
     ineligibilityReasons = emptyList(),
     hardStopKind = hardStopKind,
     isEligibleForEarlyRelease = isEligibleForEarlyRelease,
@@ -324,7 +325,7 @@ object TestData {
 
   fun createHardStopLicence() = HardStopLicence(
     id = 1,
-    eligibleKind = LicenceKind.CRD,
+    eligibleKind = EligibleKind.CRD,
     typeCode = AP,
     version = "2.1",
     statusCode = LicenceStatus.IN_PROGRESS,
@@ -368,7 +369,7 @@ object TestData {
 
   fun createTimeServedLicence() = TimeServedLicence(
     id = 1,
-    eligibleKind = LicenceKind.CRD,
+    eligibleKind = EligibleKind.CRD,
     typeCode = AP,
     version = "2.1",
     statusCode = LicenceStatus.ACTIVE,
@@ -413,7 +414,7 @@ object TestData {
   fun createVariationLicence() = VariationLicence(
     id = 1,
     typeCode = AP,
-    eligibleKind = LicenceKind.CRD,
+    eligibleKind = EligibleKind.CRD,
     version = "1.1",
     statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
     nomsId = "A1234AA",

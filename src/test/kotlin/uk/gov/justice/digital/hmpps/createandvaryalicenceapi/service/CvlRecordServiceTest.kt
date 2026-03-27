@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
@@ -62,8 +63,8 @@ class CvlRecordServiceTest {
           aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)),
         ),
         mapOf(
-          aPrisonerSearchPrisoner.prisonerNumber to LicenceKind.CRD,
-          "A1234AB" to LicenceKind.PRRD,
+          aPrisonerSearchPrisoner.prisonerNumber to EligibleKind.CRD,
+          "A1234AB" to EligibleKind.FIXED_TERM,
           "A1234AC" to null,
         ),
       ),
@@ -102,7 +103,7 @@ class CvlRecordServiceTest {
         nomisId = aPrisonerSearchPrisoner.prisonerNumber,
         licenceStartDate = LocalDate.of(2021, 10, 22),
         isEligible = true,
-        eligibleKind = LicenceKind.CRD,
+        eligibleKind = EligibleKind.CRD,
         ineligibilityReasons = anEligibilityAssessment().ineligibilityReasons,
         hardStopKind = LicenceKind.HARD_STOP,
         hardStopDate = LocalDate.of(2023, 10, 12),
@@ -118,7 +119,7 @@ class CvlRecordServiceTest {
         nomisId = "A1234AB",
         licenceStartDate = LocalDate.of(2022, 11, 23),
         isEligible = true,
-        eligibleKind = LicenceKind.PRRD,
+        eligibleKind = EligibleKind.FIXED_TERM,
         ineligibilityReasons = prrdEligibilityAssessment.ineligibilityReasons,
         hardStopKind = LicenceKind.HARD_STOP,
         hardStopDate = LocalDate.of(2023, 10, 12),
@@ -172,7 +173,7 @@ class CvlRecordServiceTest {
       releaseDateService.getLicenceStartDates(
         listOf(aPrisonerSearchPrisoner),
         mapOf(
-          aPrisonerSearchPrisoner.prisonerNumber to LicenceKind.CRD,
+          aPrisonerSearchPrisoner.prisonerNumber to EligibleKind.CRD,
         ),
       ),
     ).thenReturn(mapOf(aPrisonerSearchPrisoner.prisonerNumber to LocalDate.of(2021, 10, 22)))
@@ -184,7 +185,7 @@ class CvlRecordServiceTest {
         nomisId = aPrisonerSearchPrisoner.prisonerNumber,
         licenceStartDate = LocalDate.of(2021, 10, 22),
         isEligible = true,
-        eligibleKind = LicenceKind.CRD,
+        eligibleKind = EligibleKind.CRD,
         ineligibilityReasons = anEligibilityAssessment().ineligibilityReasons,
         isEligibleForEarlyRelease = false,
         isInHardStopPeriod = false,

@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -402,7 +403,8 @@ class LicenceOverrideServiceTest {
   fun `Override dates updates licence dates`() {
     val licence = approvedLicenceA
     val request = OverrideLicenceDatesRequest(
-      updatedKind = LicenceKind.CRD,
+      updatedLicenceKind = LicenceKind.CRD,
+      updatedEligibleKind = EligibleKind.CRD,
       conditionalReleaseDate = LocalDate.now(),
       actualReleaseDate = LocalDate.now(),
       sentenceStartDate = LocalDate.now(),
@@ -417,7 +419,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(licence))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(licenceService.updateLicenceKind(licence, request.updatedKind)).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(licence, request.updatedLicenceKind, request.updatedEligibleKind)).thenReturn(licence)
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(newLicenceStartDate)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!))).thenReturn(
       listOf(
@@ -468,7 +470,8 @@ class LicenceOverrideServiceTest {
   fun `Override dates updates HDC licence dates`() {
     val licence = approvedHdcLicenceA
     val request = OverrideLicenceDatesRequest(
-      updatedKind = LicenceKind.HDC,
+      updatedLicenceKind = LicenceKind.HDC,
+      updatedEligibleKind = EligibleKind.HDC,
       conditionalReleaseDate = LocalDate.now(),
       actualReleaseDate = LocalDate.now(),
       sentenceStartDate = LocalDate.now(),
@@ -485,7 +488,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(licence))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(licenceService.updateLicenceKind(licence, request.updatedKind)).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(licence, request.updatedLicenceKind, request.updatedEligibleKind)).thenReturn(licence)
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(newLicenceStartDate)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!))).thenReturn(
       listOf(
@@ -537,7 +540,8 @@ class LicenceOverrideServiceTest {
     val licence = approvedLicenceA.copy(updatedBy = aPreviousUser)
 
     val request = OverrideLicenceDatesRequest(
-      updatedKind = LicenceKind.CRD,
+      updatedLicenceKind = LicenceKind.CRD,
+      updatedEligibleKind = EligibleKind.CRD,
       conditionalReleaseDate = LocalDate.now(),
       actualReleaseDate = LocalDate.now(),
       sentenceStartDate = LocalDate.now(),
@@ -551,7 +555,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(null)
-    whenever(licenceService.updateLicenceKind(licence, request.updatedKind)).thenReturn(licence)
+    whenever(licenceService.updateLicenceKind(licence, request.updatedLicenceKind, request.updatedEligibleKind)).thenReturn(licence)
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.now())
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!))).thenReturn(
       listOf(

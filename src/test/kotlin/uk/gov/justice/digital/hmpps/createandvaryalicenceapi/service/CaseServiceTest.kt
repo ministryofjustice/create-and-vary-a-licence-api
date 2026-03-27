@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -54,7 +55,7 @@ class CaseServiceTest {
     whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager())
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
       aCvlRecord(
-        kind = LicenceKind.CRD,
+        eligibleKind = EligibleKind.CRD,
         hardStopKind = LicenceKind.HARD_STOP,
         licenceStartDate = LocalDate.of(2021, 10, 22),
         hardStopDate = LocalDate.of(2023, 10, 12),
@@ -78,6 +79,7 @@ class CaseServiceTest {
           licenceStartDate = LocalDate.of(2021, 10, 22),
           licenceKind = LicenceKind.CRD,
           hardStopKind = LicenceKind.HARD_STOP,
+          eligibleKind = EligibleKind.CRD,
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",

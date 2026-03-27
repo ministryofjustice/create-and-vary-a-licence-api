@@ -12,6 +12,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -124,7 +125,7 @@ class HdcLicence(
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC,
-  eligibleKind = LicenceKind.HDC,
+  eligibleKind = EligibleKind.HDC,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,

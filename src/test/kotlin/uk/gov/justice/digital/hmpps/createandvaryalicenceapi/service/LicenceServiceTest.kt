@@ -86,6 +86,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -4105,22 +4106,23 @@ class LicenceServiceTest {
   fun `should update the licence kind and eligible kind if different to the current licence values`() {
     val licence = aLicenceEntity
     val updatedKind = LicenceKind.PRRD
+    val updatedEligibleKind = EligibleKind.FIXED_TERM
     val updatedLicence = createPrrdLicence()
     val staff = communityOffenderManager()
 
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(updatedLicence))
 
-    val result = service.updateLicenceKind(licence, updatedKind)
+    val result = service.updateLicenceKind(licence, updatedKind, updatedEligibleKind)
 
     assertThat(result).isEqualTo(updatedLicence)
-    verify(licenceRepository).updateLicenceKinds(licence.id, updatedKind, updatedKind)
+    verify(licenceRepository).updateLicenceKinds(licence.id, updatedKind, updatedEligibleKind)
     verify(auditService).recordAuditEventLicenceKindUpdated(
       licence,
       licence.kind,
       updatedKind,
       licence.eligibleKind,
-      updatedKind,
+      updatedEligibleKind,
       staff,
     )
   }
@@ -4128,13 +4130,13 @@ class LicenceServiceTest {
   @Test
   fun `should not update the licence kind if eligible kind is the same as the current licence kind`() {
     val licence = aLicenceEntity
-    val eligibleKind = licence.kind
+    val eligibleKind = licence.eligibleKind
     val staff = communityOffenderManager()
 
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
 
-    val result = service.updateLicenceKind(licence, eligibleKind)
+    val result = service.updateLicenceKind(licence, licence.kind, eligibleKind)
 
     assertThat(result).isEqualTo(licence)
     verify(licenceRepository, never()).updateLicenceKinds(any(), any(), any())
@@ -4143,15 +4145,16 @@ class LicenceServiceTest {
 
   @Test
   fun `should not update the licence kind for a hard stop licence`() {
-    val licence = createHardStopLicence().copy(eligibleKind = LicenceKind.CRD)
-    val newEligibleKind = LicenceKind.PRRD
+    val licence = createHardStopLicence().copy(eligibleKind = EligibleKind.CRD)
+    val updateKind = licence.kind
+    val newEligibleKind = EligibleKind.FIXED_TERM
     val updatedLicence = licence.copy(eligibleKind = newEligibleKind)
     val staff = communityOffenderManager()
 
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(updatedLicence))
 
-    val result = service.updateLicenceKind(licence, newEligibleKind)
+    val result = service.updateLicenceKind(licence, updateKind, newEligibleKind)
 
     assertThat(result).isEqualTo(updatedLicence)
     verify(licenceRepository).updateLicenceKinds(licence.id, licence.kind, newEligibleKind)
@@ -4167,15 +4170,16 @@ class LicenceServiceTest {
 
   @Test
   fun `should not update the licence kind for a time served licence`() {
-    val licence = createTimeServedLicence().copy(eligibleKind = LicenceKind.CRD)
-    val newEligibleKind = LicenceKind.PRRD
+    val licence = createTimeServedLicence().copy(eligibleKind = EligibleKind.CRD)
+    val updateKind = licence.kind
+    val newEligibleKind = EligibleKind.FIXED_TERM
     val updatedLicence = licence.copy(eligibleKind = newEligibleKind)
     val staff = communityOffenderManager()
 
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(staff)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(updatedLicence))
 
-    val result = service.updateLicenceKind(licence, newEligibleKind)
+    val result = service.updateLicenceKind(licence, updateKind, newEligibleKind)
 
     assertThat(result).isEqualTo(updatedLicence)
     verify(licenceRepository).updateLicenceKinds(licence.id, licence.kind, newEligibleKind)

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -35,11 +36,18 @@ data class CvlFields(
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val licenceStartDate: LocalDate? = null,
 
+  @Deprecated("Use eligibleKind instead")
   @field:Schema(
     description = "The kind of licence this person should have based on their current dates",
     example = "CRD",
   )
   val licenceKind: LicenceKind?,
+
+  @field:Schema(
+    description = "The kind of licence this person is eligible for based on their current dates",
+    example = "CRD",
+  )
+  val eligibleKind: EligibleKind?,
 
   @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.TIME_SERVED)
   val hardStopKind: LicenceKind?,

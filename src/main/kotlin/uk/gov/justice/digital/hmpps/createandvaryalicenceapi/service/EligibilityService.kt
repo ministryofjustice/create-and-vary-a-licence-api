@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
 import java.time.Clock
 import java.time.LocalDate
@@ -231,7 +230,7 @@ class EligibilityService(
     val recallCases = mutableMapOf<String, EligibilityAssessment>()
 
     nomisIdsToEligibilityAssessments.forEach { (nomisId, eligibilityAssessment) ->
-      if (eligibilityAssessment.eligibleKind == LicenceKind.PRRD) {
+      if (eligibilityAssessment.eligibleKind?.isRecall() == true) {
         recallCases[nomisId] = eligibilityAssessment
       } else {
         nonRecallCases[nomisId] = eligibilityAssessment
