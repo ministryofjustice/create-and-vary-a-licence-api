@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.1.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.1.1"
   id("org.owasp.dependencycheck") version "12.2.0"
   kotlin("plugin.spring") version "2.3.10"
   kotlin("plugin.jpa") version "2.3.10"
@@ -25,14 +25,14 @@ dependencies {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
     }
     // FIX: CVE-2026-23907
-    implementation("org.apache.pdfbox:jbig2-imageio:3.0.5") {
-      because("Versions <3.0.5 vulnerable to CVE-2026-23907")
+    implementation("org.apache.pdfbox:pdfbox:3.0.7") {
+      because("Fix CVE-2026-23907")
     }
   }
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.0.1")
 
-  // CVE-2025-67735 - it does not fix all occurrences
-  implementation(enforcedPlatform("io.netty:netty-bom:4.2.8.Final"))
+  // CVE-2026-33871 - it does not fix all occurrences
+  implementation(enforcedPlatform("io.netty:netty-bom:4.2.12.Final"))
   implementation("io.netty:netty-buffer")
   implementation("io.netty:netty-codec-http")
   implementation("io.netty:netty-handler")
@@ -59,7 +59,7 @@ dependencies {
   implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
-  implementation("org.apache.pdfbox:pdfbox:3.0.6")
+  implementation("org.apache.pdfbox:pdfbox:3.0.7")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
