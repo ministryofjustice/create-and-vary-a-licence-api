@@ -101,7 +101,7 @@ jobs:
   - name: isr-licence-progression-job
     enabled: true
     path: /isr-licence-progression-job
-    cron: "30 0 27 3 *" # 00:30 UTC on 25/03/2026
+    cron: "30 0 * * *" # 00:30 UTC on 25/03/2026
     allowRetry: true
 
 #CloudPlatform AlertManager receiver to route prometheus alerts to slack
