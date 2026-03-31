@@ -105,5 +105,5 @@ jobs:
   - name: isr-licence-progression-job
     enabled: true
     path: /isr-licence-progression-job
-    cron: "30 8 27 3 *" # 8:30 UTC on 25/03/2026
+    cron: "30 8 * * *" # 8:30 UTC every day
     allowRetry: true
