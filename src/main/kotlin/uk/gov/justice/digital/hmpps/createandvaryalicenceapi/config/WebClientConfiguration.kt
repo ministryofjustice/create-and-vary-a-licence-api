@@ -13,6 +13,7 @@ import uk.gov.justice.hmpps.kotlin.auth.service.GlobalPrincipalOAuth2AuthorizedC
 
 private const val HMPPS_AUTH = "hmpps-auth"
 private const val MAX_IN_MEMORY_SIZE = 10485760 // 10 MB
+private const val MAX_IN_MEMORY_PRISONER_SEARCH_SIZE = 12582912 // 12 MB
 
 @Configuration
 class WebClientConfiguration(
@@ -66,7 +67,12 @@ class WebClientConfiguration(
   fun oauthPrisonerSearchClient(
     authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(prisonerSearchApiUrl, authorizedClientManagerCvl, builder)
+  ): WebClient = getWebClient(
+    prisonerSearchApiUrl,
+    authorizedClientManagerCvl,
+    builder,
+    maxInMemorySize = MAX_IN_MEMORY_PRISONER_SEARCH_SIZE,
+  )
 
   @Bean
   fun oauthDocumentApiClient(
@@ -117,6 +123,7 @@ class WebClientConfiguration(
     url: String,
     authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
+    maxInMemorySize: Int = MAX_IN_MEMORY_SIZE,
   ): WebClient = builder
     .authorisedWebClient(
       authorizedClientManager = authorizedClientManagerCvl,
@@ -124,6 +131,6 @@ class WebClientConfiguration(
       registrationId = HMPPS_AUTH,
     )
     .mutate()
-    .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE) } // <-- add maxInMemorySize here
+    .codecs { it.defaultCodecs().maxInMemorySize(maxInMemorySize) }
     .build()
 }
