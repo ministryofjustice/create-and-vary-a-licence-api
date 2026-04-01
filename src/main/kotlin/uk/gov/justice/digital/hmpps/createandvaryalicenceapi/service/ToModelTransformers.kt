@@ -1019,6 +1019,7 @@ fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
     ?: this.sentenceDetail.postRecallReleaseDate,
   sentenceExpiryDate = this.sentenceDetail.sentenceExpiryDate,
   licenceExpiryDate = this.sentenceDetail.licenceExpiryDate,
+  sentenceStartDate = this.sentenceDetail.sentenceStartDate,
   prisonId = agencyId,
   status = status,
 )
