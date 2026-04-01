@@ -132,7 +132,7 @@ jobs:
     allowRetry: false
 
   - name: isr-licence-progression-job
-    enabled: false
+    enabled: true
     path: /isr-licence-progression-job
     cron: "30 0 11 5 *" # 00:30 UTC on 11/05/2026
     allowRetry: true
