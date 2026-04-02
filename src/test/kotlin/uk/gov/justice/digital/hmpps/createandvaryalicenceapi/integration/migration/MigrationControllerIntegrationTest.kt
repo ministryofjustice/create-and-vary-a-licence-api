@@ -7,13 +7,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAppointmentAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAppointmentDetails
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAuditDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateCurfewDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateCurfewTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFromHdcToCvlRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateLicenceDetails
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateLicenceLifecycleDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonerDetails
@@ -129,7 +129,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       homeDetentionCurfewEndDate = LocalDate.parse("2025-06-04"),
       licenceExpiryDate = LocalDate.parse("2026-05-04"),
     ),
-    audit = MigrateAuditDetails(
+    lifecycle = MigrateLicenceLifecycleDetails(
       approvedDate = LocalDateTime.parse("2025-11-20T10:00:00"),
       approvedByUsername = "approvedByUsername",
       approvedByName = "approvedByName",
