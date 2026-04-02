@@ -77,13 +77,13 @@ data class MigratePrisonerDetails(
   @field:Schema(description = "Prisoner Number", example = "A1234BC")
   val prisonerNumber: String?,
 
-  @field:Schema(description = "Forename", example = "Dye")
+  @field:Schema(description = "Forename")
   val forename: String?,
 
-  @field:Schema(description = "Middle names", example = "Michael")
+  @field:Schema(description = "Middle Names")
   val middleNames: String?,
 
-  @field:Schema(description = "Surname", example = "Stevens")
+  @field:Schema(description = "Surname")
   val surname: String?,
 
   @field:Schema(description = "Date of birth", example = "1974-05-29")
@@ -143,19 +143,19 @@ data class MigrateAuditDetails(
   @field:Schema(description = "Approved date", example = "2025-11-20T10:00:00")
   val approvedDate: LocalDateTime?,
 
-  @field:Schema(description = "Approved by username", example = "aled.evans")
+  @field:Schema(description = "Approved by username", example = "username")
   val approvedByUsername: String?,
 
-  @field:Schema(description = "Approved by name", example = "Aled Evans")
+  @field:Schema(description = "Approved by name", example = "test lastname")
   val approvedByName: String?,
 
   @field:Schema(description = "Submitted date", example = "2025-11-20T09:00:00")
   val submittedDate: LocalDateTime?,
 
-  @field:Schema(description = "Submitted by", example = "gwyn.jones")
+  @field:Schema(description = "Submitted by", example = "username")
   val submittedByUserName: String?,
 
-  @field:Schema(description = "Created by", example = "gwyn.jones")
+  @field:Schema(description = "Created by", example = "username")
   val createdByUserName: String?,
 
   @field:Schema(description = "Date created", example = "2025-11-20T08:30:00")
@@ -164,7 +164,7 @@ data class MigrateAuditDetails(
   @field:Schema(description = "Date last updated", example = "2025-11-20T10:30:00")
   val dateLastUpdated: LocalDateTime?,
 
-  @field:Schema(description = "Updated by username", example = "aled.evans")
+  @field:Schema(description = "Updated by username", example = "username")
   val updatedByUsername: String?,
 )
 
@@ -179,7 +179,7 @@ data class MigrateConditions(
 
 @Schema(description = "Additional licence condition")
 data class MigrateAdditionalCondition(
-  @field:Schema(description = "Condition text", example = "Do not contact Ifon Envis")
+  @field:Schema(description = "Condition text", example = "Do not contact Test lastname")
   val text: String,
 
   @field:Schema(description = "Condition code", example = "NO_CONTACT_NAMED")
@@ -242,7 +242,7 @@ data class MigrateFirstNight(
 
 @Schema(description = "Appointment details")
 data class MigrateAppointmentDetails(
-  @field:Schema(description = "Person name", example = "Gwyn Jones")
+  @field:Schema(description = "Person name", example = "Test LastName")
   val person: String?,
 
   @field:Schema(description = "Appointment time", example = "2025-05-04T14:00:00")
@@ -257,10 +257,10 @@ data class MigrateAppointmentDetails(
 
 @Schema(description = "Appointment address")
 data class MigrateAppointmentAddress(
-  @field:Schema(description = "First line of address", example = "Sheep Probation Office")
+  @field:Schema(description = "First line of address", example = "Probation Office")
   val firstLine: String?,
 
-  @field:Schema(description = "Second line of address", example = "Sheep Magistrates Court")
+  @field:Schema(description = "Second line of address", example = "Magistrates Court")
   val secondLine: String?,
 
   @field:Schema(description = "Town or city", example = "Cardiff Place")
