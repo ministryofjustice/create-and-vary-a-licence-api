@@ -102,9 +102,9 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     cro = "NNNNNN/YYD",
     prisoner = MigratePrisonerDetails(
       prisonerNumber = "A1234BC",
-      forename = "Dye",
-      middleNames = "Michael",
-      surname = "Stevens",
+      forename = "forename",
+      middleNames = "middleNames",
+      surname = "surname",
       dateOfBirth = LocalDate.parse("1974-05-29"),
     ),
     prison = MigratePrisonDetails(
@@ -131,20 +131,20 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     ),
     audit = MigrateAuditDetails(
       approvedDate = LocalDateTime.parse("2025-11-20T10:00:00"),
-      approvedByUsername = "aled.evans",
-      approvedByName = "Aled Evans",
+      approvedByUsername = "approvedByUsername",
+      approvedByName = "approvedByName",
       submittedDate = LocalDateTime.parse("2025-11-20T09:00:00"),
-      submittedByUserName = "gwyn.jones",
-      createdByUserName = "gwyn.jones",
+      submittedByUserName = "submittedByUserName",
+      createdByUserName = "createdByUserName",
       dateCreated = LocalDateTime.parse("2025-11-20T08:30:00"),
       dateLastUpdated = LocalDateTime.parse("2025-11-20T10:30:00"),
-      updatedByUsername = "aled.evans",
+      updatedByUsername = "userByUsername",
     ),
     conditions = MigrateConditions(
       bespoke = listOf("Licence conditions have been taken from EPF"),
       additional = listOf(
         MigrateAdditionalCondition(
-          text = "Do not contact Ifon Envis",
+          text = "Do not contact Person",
           conditionCode = "NO_CONTACT_NAMED",
           conditionsVersion = 1,
         ),
@@ -172,12 +172,12 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       ),
     ),
     appointment = MigrateAppointmentDetails(
-      person = "Gwyn Jones",
+      person = "Test Person",
       time = LocalDateTime.parse("2025-05-04T14:00:00"),
       telephone = "02038219211",
       address = MigrateAppointmentAddress(
-        firstLine = "Sheep Probation Office",
-        secondLine = "Sheep Magistrates Court",
+        firstLine = "Probation Office",
+        secondLine = "Magistrates Court",
         townOrCity = "Cardiff Place",
         postcode = "SA42 7ND",
       ),
