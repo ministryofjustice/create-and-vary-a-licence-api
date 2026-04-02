@@ -146,7 +146,7 @@ data class MigrateAuditDetails(
   @field:Schema(description = "Approved by username", example = "username")
   val approvedByUsername: String?,
 
-  @field:Schema(description = "Approved by name", example = "test lastname")
+  @field:Schema(description = "Approved by name", example = "Approvedby Name")
   val approvedByName: String?,
 
   @field:Schema(description = "Submitted date", example = "2025-11-20T09:00:00")
@@ -179,7 +179,7 @@ data class MigrateConditions(
 
 @Schema(description = "Additional licence condition")
 data class MigrateAdditionalCondition(
-  @field:Schema(description = "Condition text", example = "Do not contact Test lastname")
+  @field:Schema(description = "Condition text", example = "Do not contact Person")
   val text: String,
 
   @field:Schema(description = "Condition code", example = "NO_CONTACT_NAMED")
@@ -242,7 +242,7 @@ data class MigrateFirstNight(
 
 @Schema(description = "Appointment details")
 data class MigrateAppointmentDetails(
-  @field:Schema(description = "Person name", example = "Test LastName")
+  @field:Schema(description = "Person name", example = "Test Person")
   val person: String?,
 
   @field:Schema(description = "Appointment time", example = "2025-05-04T14:00:00")
