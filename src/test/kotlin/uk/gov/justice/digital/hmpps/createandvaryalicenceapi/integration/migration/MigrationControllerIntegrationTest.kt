@@ -132,7 +132,6 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     lifecycle = MigrateLicenceLifecycleDetails(
       approvedDate = LocalDateTime.parse("2025-11-20T10:00:00"),
       approvedByUsername = "approvedByUsername",
-      approvedByName = "approvedByName",
       submittedDate = LocalDateTime.parse("2025-11-20T09:00:00"),
       submittedByUserName = "submittedByUserName",
       createdByUserName = "createdByUserName",
@@ -163,7 +162,6 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
           fromTime = LocalTime.parse("19:00:00"),
           untilDay = DayOfWeek.TUESDAY,
           untilTime = LocalTime.parse("07:00:00"),
-          createdTimestamp = LocalDateTime.now(),
         ),
       ),
       firstNight = MigrateFirstNight(
