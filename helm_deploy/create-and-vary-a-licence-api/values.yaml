@@ -6,7 +6,7 @@ generic-service:
   replicaCount: 4
 
   image:
-    repository: quay.io/hmpps/create-and-vary-a-licence-api
+    repository: ghcr.io/ministryofjustice/create-and-vary-a-licence-api
     tag: app_version # override at deployment time
     port: 8080
 
