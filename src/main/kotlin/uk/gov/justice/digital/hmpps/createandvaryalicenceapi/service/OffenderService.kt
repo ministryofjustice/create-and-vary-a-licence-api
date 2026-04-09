@@ -12,11 +12,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateOffenderDetailsEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
@@ -200,7 +200,7 @@ OffenderService(
   }
 
   @Transactional
-  fun updateOffenderDetails(nomsId: String, request: UpdateOffenderDetailsRequest) {
+  fun updateOffenderDetails(nomsId: String, request: UpdateOffenderDetailsEvent) {
     val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, IN_FLIGHT_LICENCES)
     val licencesToChange = existingLicences.filter { it.isOffenderDetailUpdated(request) }
     if (licencesToChange.isNotEmpty()) {
@@ -243,7 +243,7 @@ OffenderService(
     }
   }
 
-  private fun Licence.isOffenderDetailUpdated(request: UpdateOffenderDetailsRequest): Boolean = (
+  private fun Licence.isOffenderDetailUpdated(request: UpdateOffenderDetailsEvent): Boolean = (
     this.forename != request.forename ||
       this.middleNames != request.middleNames ||
       this.surname != request.surname ||

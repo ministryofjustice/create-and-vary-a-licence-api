@@ -6,10 +6,10 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateOffenderDetailsEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 
@@ -18,14 +18,14 @@ class PrisonerUpdatedHandlerTest {
   private val offenderService = mock<OffenderService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
 
+  val handler = PrisonerUpdatedHandler(
+    mapper,
+    offenderService,
+    prisonerSearchApiClient,
+  )
+
   @Test
   fun `should process prisoner updated event`() {
-    val handler = PrisonerUpdatedHandler(
-      mapper,
-      offenderService,
-      prisonerSearchApiClient,
-      updateOffenderDetailsHandleEnabled = true,
-    )
     val nomsId = "A1234AA"
 
     val prisoner = prisonerSearchResult().copy(firstName = "ABCDEF", middleNames = null)
@@ -42,7 +42,7 @@ class PrisonerUpdatedHandlerTest {
 
     verify(offenderService).updateOffenderDetails(
       nomsId,
-      UpdateOffenderDetailsRequest(
+      UpdateOffenderDetailsEvent(
         forename = prisoner.firstName.convertToTitleCase(),
         middleNames = "",
         surname = prisoner.lastName.convertToTitleCase(),
@@ -53,39 +53,12 @@ class PrisonerUpdatedHandlerTest {
 
   @Test
   fun `should not update prisoner details when categories do not include person details`() {
-    val handler = PrisonerUpdatedHandler(
-      mapper,
-      offenderService,
-      prisonerSearchApiClient,
-      updateOffenderDetailsHandleEnabled = true,
-    )
     val nomsId = "A1294AC"
 
     handler.handleEvent(
       aPrisonerUpdatedEventMessage(
         nomsId,
         listOf(DiffCategory.PHYSICAL_DETAILS, DiffCategory.INCENTIVE_LEVEL),
-      ),
-    )
-
-    verifyNoInteractions(prisonerSearchApiClient)
-    verifyNoInteractions(offenderService)
-  }
-
-  @Test
-  fun `should not process prisoner updated event if the feature flag is turned off`() {
-    val handler = PrisonerUpdatedHandler(
-      mapper,
-      offenderService,
-      prisonerSearchApiClient,
-      updateOffenderDetailsHandleEnabled = false,
-    )
-    val nomsId = "A1234AA"
-
-    handler.handleEvent(
-      aPrisonerUpdatedEventMessage(
-        nomsId,
-        listOf(DiffCategory.ALERTS, DiffCategory.PERSONAL_DETAILS),
       ),
     )
 
