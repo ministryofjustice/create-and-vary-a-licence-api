@@ -1,0 +1,138 @@
+name: Pipeline [test -> build -> deploy]
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+    inputs:
+      additional_docker_tag:
+        description: Additional docker tag that can be used to specify stable or testing tags
+        required: false
+        default: ''
+        type: string
+      push:
+        description: Push docker image to registry flag
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+jobs:
+  helm_lint:
+    strategy:
+      matrix:
+        environments: [ 'dev', 'preprod', 'prod' ]
+    name: helm lint
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/test_helm_lint.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      environment: ${{ matrix.environments }}
+  app_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.app_version.outputs.version }}
+    steps:
+      - id: app_version
+        name: Application version creators
+        uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/create_app_version@v2 # WORKFLOW_VERSION
+  gradle_verify:
+    name: Run linting and unit tests
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/gradle_verify.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      gradle-command: 'BUILD_NUMBER=${{ needs.app_version.outputs.version}} ./gradlew assemble check'
+      upload-build-artifacts: ${{ github.ref == 'refs/heads/main' }}
+      java-version: "21"
+    needs:
+      - app_version
+  gradle_integration_tests:
+    name: Run integration tests
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/gradle_verify.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      gradle-command: ' ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest'
+      localstack-tag: 'community-archive'
+      postgres-tag: "17.5"
+      upload-build-artifacts: ${{ github.ref == 'refs/heads/main' }}
+      postgres-db: create-and-vary-a-licence-db
+      postgres-username: cvl
+      postgres-password: cvl
+      postgres-port: "5433"
+      java-version: "21"
+      artifact-name: "integration-tests"
+    needs:
+      - app_version
+  build:
+    name: Build docker image from hmpps-github-actions
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/test')
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION
+    needs:
+      - gradle_verify
+      - gradle_integration_tests
+    with:
+      docker_registry: 'ghcr.io'
+      registry_org: 'ministryofjustice'
+      additional_docker_tag: ${{ inputs.additional_docker_tag }}
+      push: ${{ inputs.push || inputs.push == null }}
+      docker_multiplatform: false
+      download_build_artifacts: true
+  deploy_dev:
+    name: Deploy to the dev environment
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build
+      - helm_lint
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
+    secrets: inherit
+    with:
+      environment: 'dev'
+      app_version: '${{ needs.build.outputs.app_version }}'
+  deploy_preprod:
+    name: Deploy to the preprod environment
+    needs:
+      - build
+      - helm_lint
+      - deploy_dev
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
+    secrets: inherit
+    with:
+      environment: 'preprod'
+      app_version: '${{ needs.build.outputs.app_version }}'
+  deploy_prod:
+    name: Deploy to the prod environment
+    needs:
+      - build
+      - helm_lint
+      - deploy_preprod
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
+    secrets: inherit
+    with:
+      environment: 'prod'
+      app_version: '${{ needs.build.outputs.app_version }}'
+      slack_notification: true
+  deploy_test1:
+    name: Deploy to the test1 environment
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build
+      - helm_lint
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
+    secrets: inherit
+    with:
+      environment: 'test1'
+      app_version: '${{ needs.build.outputs.app_version }}'
+  deploy_test2:
+    name: Deploy to the test2 environment
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build
+      - helm_lint
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
+    secrets: inherit
+    with:
+      environment: 'test2'
+      app_version: '${{ needs.build.outputs.app_version }}'
