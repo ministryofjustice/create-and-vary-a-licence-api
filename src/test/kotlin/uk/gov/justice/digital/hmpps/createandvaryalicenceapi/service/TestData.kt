@@ -41,9 +41,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Offe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
@@ -835,12 +835,12 @@ object TestData {
     ),
   )
 
-  fun aSentenceAndRecallType(recallType: RecallType = aRecallType()) = SentenceAndRecallType(
+  fun aSentenceAndRecallType(sentenceRecallType: SentenceRecallType = aRecallType()) = SentenceAndRecallType(
     sentenceType = "A_SENTENCE",
-    recallType,
+    sentenceRecallType,
   )
 
-  fun aRecallType(isStandardRecall: Boolean = false, isFixedTermRecall: Boolean = true) = RecallType(
+  fun aRecallType(isStandardRecall: Boolean = false, isFixedTermRecall: Boolean = true) = SentenceRecallType(
     recallName = "A_RECALL",
     isStandardRecall,
     isFixedTermRecall,
