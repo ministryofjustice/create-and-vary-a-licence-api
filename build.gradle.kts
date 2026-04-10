@@ -1,13 +1,12 @@
-import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+  id("dev.detekt") version "2.0.0-alpha.2"
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.1.2"
   id("org.owasp.dependencycheck") version "12.2.0"
   kotlin("plugin.spring") version "2.3.20"
   kotlin("plugin.jpa") version "2.3.20"
-  id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
 repositories {
@@ -112,6 +111,7 @@ dependencies {
 }
 
 detekt {
+  ignoreFailures.set(false)
   source.setFrom("$projectDir/src/main")
   buildUponDefaultConfig = true // preconfigure defaults
   allRules = false // activate all available (even unstable) rules.
@@ -132,7 +132,7 @@ configurations {
   matching { it.name == "detekt" }.all {
     resolutionStrategy.eachDependency {
       if (requested.group == "org.jetbrains.kotlin") {
-        useVersion("2.0.21")
+        useVersion("2.3.0")
       }
     }
   }
@@ -149,11 +149,6 @@ tasks {
         "-Xtype-enhancement-improvements-strict-mode=false",
         "-Xjspecify-annotations=ignore",
       )
-    }
-  }
-  withType<Detekt> {
-    reports {
-      html.required.set(true) // observe findings in your browser with structure and code snippets
     }
   }
   named<Test>("test") {
