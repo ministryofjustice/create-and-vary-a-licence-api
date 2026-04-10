@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.CRD
@@ -327,7 +327,7 @@ class EligibilityServiceTest {
             listOf(
               SentenceAndRecallType(
                 "type",
-                RecallType(recallName = "standard", isStandardRecall = true, isFixedTermRecall = false),
+                SentenceRecallType(recallName = "standard", isStandardRecall = true, isFixedTermRecall = false),
               ),
             ),
           ),
@@ -707,7 +707,7 @@ class EligibilityServiceTest {
             sentenceTypeRecallTypes = listOf(
               aSentenceAndRecallType(),
               aSentenceAndRecallType(
-                recallType = aRecallType(
+                sentenceRecallType = aRecallType(
                   isStandardRecall = true,
                   isFixedTermRecall = false,
                 ),
@@ -734,7 +734,7 @@ class EligibilityServiceTest {
             bookingId = 123456,
             sentenceTypeRecallTypes = listOf(
               aSentenceAndRecallType(
-                recallType = aRecallType(
+                sentenceRecallType = aRecallType(
                   isStandardRecall = false,
                   isFixedTermRecall = false,
                 ),

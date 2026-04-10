@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.LocalDate
@@ -74,12 +74,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val ftr14Ora =
         SentenceAndRecallType(
           "14FTR_ORA",
-          RecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
+          SentenceRecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
         )
       val lrSopc21 =
         SentenceAndRecallType(
           "LR_SOPC21",
-          RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
+          SentenceRecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
         )
       val accessResponse = """
       {
@@ -162,12 +162,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val ftr14Ora =
         SentenceAndRecallType(
           "14FTR_ORA",
-          RecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
+          SentenceRecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
         )
       val lrSopc21 =
         SentenceAndRecallType(
           "LR_SOPC21",
-          RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
+          SentenceRecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
         )
       val accessResponse = """
       {
@@ -575,12 +575,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val ftr14Ora =
         SentenceAndRecallType(
           "14FTR_ORA",
-          RecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
+          SentenceRecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
         )
       val lrSopc21 =
         SentenceAndRecallType(
           "LR_SOPC21",
-          RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
+          SentenceRecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
         )
       val accessResponse = """
       {
