@@ -35,7 +35,6 @@ generic-service:
     JAVA_OPTS: "-Xmx768m"
     SERVER_PORT: "8080"
     SPRING_PROFILES_ACTIVE: "logstash"
-    APPLICATIONINSIGHTS_CONNECTION_STRING: "InstrumentationKey=$(APPINSIGHTS_INSTRUMENTATIONKEY);IngestionEndpoint=https://northeurope-0.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     DB_SSL_ENABLED: "true"
     HMPPS_GOVUK_API_URL: "https://www.gov.uk"
@@ -53,12 +52,13 @@ generic-service:
 
   namespace_secrets:
     create-and-vary-a-licence-api:
-      APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
       INTERNALEMAILADDRESS: "INTERNAL_EMAIL_ADDRESS"
       NOTIFY_API_KEY: "NOTIFY_API_KEY"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
       OS_PLACES_API_KEY: "OS_PLACES_API_KEY"
+    create-and-vary-a-licence-wiremock-application-insights:
+      APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
     rds-instance-output:
       DB_SERVER: "rds_instance_address"
       DB_NAME: "database_name"
