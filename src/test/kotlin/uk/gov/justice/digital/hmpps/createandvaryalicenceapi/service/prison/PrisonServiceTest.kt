@@ -65,8 +65,8 @@ class PrisonServiceTest {
     val bookingId = 392L
 
     val sentenceAndRecallTypes = listOf(
-      aSentenceAndRecallType(recallType = aRecallType(isStandardRecall = false)),
-      aSentenceAndRecallType(recallType = aRecallType(isStandardRecall = true)),
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isStandardRecall = false)),
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isStandardRecall = true)),
     )
     val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(bookingId, sentenceAndRecallTypes)
 

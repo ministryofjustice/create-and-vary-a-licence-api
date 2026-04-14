@@ -7,10 +7,10 @@ data class BookingSentenceAndRecallTypes(
 
 data class SentenceAndRecallType(
   val sentenceType: String,
-  val recallType: RecallType,
+  val recallType: SentenceRecallType,
 )
 
-data class RecallType(
+data class SentenceRecallType(
   val recallName: String,
   val isStandardRecall: Boolean,
   val isFixedTermRecall: Boolean,
