@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
@@ -110,6 +111,11 @@ class TestRepository(
 
     licence.bespokeConditions = bespokeConditionRepository.findByLicenceId(licenceId = licence.id).toMutableList()
     licence.additionalConditions = additionalConditionRepository.findByLicenceId(licenceId = licence.id).toMutableList()
+    licence.responsibleCom?.id
+    if (licence is HdcLicence) {
+      licence.createdBy?.username
+      licence.submittedBy?.username
+    }
     return licence
   }
 

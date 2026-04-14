@@ -139,6 +139,63 @@ class DeliusMockServer : WireMockServer(8093) {
     )
   }
 
+  fun stubGetUserByUserName(
+    staffIdentifier: Long = 1L,
+    userName: String = "Test User",
+    firstName: String = "firstName",
+    lastName: String = "lastName",
+  ) {
+    stubFor(
+      get(urlEqualTo("/staff/$userName")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """{
+          "id": $staffIdentifier,
+          "code": "AB00001",
+          "name": { "forename": "$firstName", "surname": "$lastName" },
+          "teams": [
+            {
+              "code": "A01B02",
+              "description": "Team description",
+              "telephone": "0123456789",
+              "emailAddress": "first.last@digital.justice.gov.uk",
+              "localDeliveryUnit": {
+                "code": "LBC123",
+                "description": "local description"
+              },
+              "teamType": {
+                "code": "TT123",
+                "description": "Type description"
+              },
+              "district": {
+                "code": "DBC123",
+                "description": "District description"
+              },
+              "borough": {
+                "code": "BC123",
+                "description": "Borough description"
+              },
+              "provider": {
+                "code": "PBC123",
+                "description": "Some Provider"
+              },
+              "startDate": "2023-05-18",
+              "endDate": "2023-05-18"
+            }
+          ],
+          "provider": {
+            "code": "PBC123",
+            "description": "Some Provider"
+          },
+          "username": "$userName",
+          "email": "testUser@test.justice.gov.uk",
+          "telephoneNumber": "0123456789",
+          "unallocated": false
+        }""",
+        ).withStatus(200),
+      ),
+    )
+  }
+
   fun stubGetOffenderManager(
     crn: String = "X12345",
     userName: String = "AZ12345",

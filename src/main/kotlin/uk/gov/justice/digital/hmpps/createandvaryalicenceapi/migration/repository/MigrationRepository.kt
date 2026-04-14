@@ -1,0 +1,31 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository
+
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
+import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+
+@Repository
+interface MigrationRepository : JpaRepository<Licence, Long> {
+
+  @Modifying
+  @Transactional
+  @Query(
+    value = """
+    INSERT INTO hdc_migration_condition_meta_data(
+      condition_id,
+      hdc_condition_code,
+      hdc_condition_version
+    )  
+    VALUES (:conditionId, :hdcConditionCode, :hdcConditionVersion)
+  """,
+    nativeQuery = true,
+  )
+  fun saveConditionMetaData(
+    conditionId: Long,
+    hdcConditionCode: String,
+    hdcConditionVersion: Int?,
+  ): Int
+}

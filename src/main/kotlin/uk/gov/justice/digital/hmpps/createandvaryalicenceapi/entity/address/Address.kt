@@ -11,6 +11,7 @@ import java.time.LocalDateTime
 enum class AddressSource {
   MANUAL,
   OS_PLACES,
+  MANUAL_MIGRATED,
 }
 
 @Entity
