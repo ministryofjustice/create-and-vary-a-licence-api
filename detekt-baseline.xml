@@ -19,6 +19,7 @@
     <ID>LongMethod:LicenceService.kt:LicenceService$fun transform: Licence</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$private fun populateCopyAndAudit: EntityLicence</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$private fun updateLicenceStatus</ID>
+    <ID>LongMethod:MigrationService.kt:MigrationService$fun MigrateFromHdcToCvlRequest.toHdcLicence: HdcLicence</ID>
     <ID>LongMethod:PrrdLicence.kt:PrrdLicence$override fun toString: String</ID>
     <ID>LongMethod:TimeServedLicence.kt:TimeServedLicence$override fun toString: String</ID>
     <ID>LongMethod:ToModelTransformers.kt:fun toCrd</ID>
