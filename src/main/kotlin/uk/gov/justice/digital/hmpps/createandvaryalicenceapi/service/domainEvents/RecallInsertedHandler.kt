@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
 import com.fasterxml.jackson.core.JacksonException
+import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -25,6 +26,7 @@ class RecallInsertedHandler(
     private val log = LoggerFactory.getLogger(PrisonerUpdatedHandler::class.java)
   }
 
+  @Transactional
   fun handleEvent(message: String) {
     if (!standardRecallsEnabled) {
       return
@@ -33,8 +35,8 @@ class RecallInsertedHandler(
     val event = try {
       mapper.readValue(message, HMPPSDomainEvent::class.java)
     } catch (e: JacksonException) {
-      log.error("Failed to parse event message", e)
-      return
+      log.error("Failed to parse recall inserted event message", e)
+      throw e
     }
 
     val nomisId = event.personReference.noms()
