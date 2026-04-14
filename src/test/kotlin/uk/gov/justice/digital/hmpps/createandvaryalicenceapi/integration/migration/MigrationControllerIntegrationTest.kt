@@ -163,7 +163,6 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
     assertThat(licence).isInstanceOf(HdcLicence::class.java)
     if (licence is HdcLicence) {
-      // assertThat(licence.hdcLicenceVersion).isEqualTo(request.licence.hdcLicenceVersion)
       assertThat(licence.submittedBy?.username).isEqualToIgnoringCase(request.lifecycle.submittedByUserName)
       assertThat(licence.createdBy?.username).isEqualToIgnoringCase(request.lifecycle.createdByUserName)
       assertThat(licence.curfewAddress?.addressLine1).isEqualTo(request.curfewAddress?.addressLine1)
