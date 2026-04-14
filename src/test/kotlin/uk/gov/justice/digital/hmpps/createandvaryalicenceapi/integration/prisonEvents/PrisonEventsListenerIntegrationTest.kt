@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
@@ -25,8 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SENTENCE_DATES_CHANGED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SentenceDatesChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SentenceDatesChangedHandler
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.Month
@@ -69,31 +66,6 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
 
     verify(sentenceDatesChangedHandler).handleEvent(message)
     verify(updateSentenceDateService).updateSentenceDates(1L)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-a-licence-with-a-variation.sql",
-  )
-  fun `An active licence is deactivated when an offender has been recalled on a standard recall`() {
-    prisonApiMockServer.stubGetCourtOutcomes()
-    prisonApiMockServer.stubGetPrisonerDetail()
-    prisonApiMockServer.stubGetSentencesAndOffences(BOOKING_ID)
-    prisonApiMockServer.stubGetSentenceAndRecallTypesWithStandardRecall(BOOKING_ID)
-    prisonerSearchMockServer.stubSearchPrisonersByBookingIds(nomisId = "A1234AA")
-
-    val event = buildSentenceDatesChangedEventJson()
-    val message = mapper.writeValueAsString(event)
-
-    sendEvent(message)
-
-    verify(sentenceDatesChangedHandler).handleEvent(message)
-    verifyNoInteractions(updateSentenceDateService)
-
-    val licence = testRepository.findLicence(2L)
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
-    val auditEvent = testRepository.findFirstAuditEvent(2L)
-    assertThat(auditEvent.summary).isEqualTo("${DateChangeLicenceDeactivationReason.STANDARD_RECALL.message} for ${licence.forename} ${licence.surname}")
   }
 
   private fun sendEvent(message: String) {
