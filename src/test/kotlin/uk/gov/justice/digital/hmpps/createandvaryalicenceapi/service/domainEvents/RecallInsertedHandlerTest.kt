@@ -24,7 +24,7 @@ class RecallInsertedHandlerTest {
   private val licenceService = mock<LicenceService>()
   private val prisonService = mock<PrisonService>()
 
-  private val handler = RecallInsertedHandler(mapper, licenceRepository, licenceService, prisonService)
+  private val handler = RecallInsertedHandler(mapper, licenceRepository, licenceService, prisonService, true)
 
   @BeforeEach
   fun reset() {
@@ -78,6 +78,18 @@ class RecallInsertedHandlerTest {
 
     verifyNoInteractions(
       licenceService,
+    )
+  }
+
+  @Test
+  fun `does nothing if standard recalls aren't enabled`() {
+    val recallsDisabledHandler = RecallInsertedHandler(mapper, licenceRepository, licenceService, prisonService, false)
+    recallsDisabledHandler.handleEvent(mapper.writeValueAsString(aRecallInsertedEvent()))
+
+    verifyNoInteractions(
+      licenceService,
+      licenceService,
+      prisonService,
     )
   }
 

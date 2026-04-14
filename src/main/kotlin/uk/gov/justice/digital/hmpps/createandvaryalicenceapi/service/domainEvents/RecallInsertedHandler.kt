@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEven
 
 import com.fasterxml.jackson.core.JacksonException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -18,12 +19,17 @@ class RecallInsertedHandler(
   private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
   private val prisonService: PrisonService,
+  @param:Value("\${feature.toggle.standardRecalls.enabled:false}") private val standardRecallsEnabled: Boolean = false,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(PrisonerUpdatedHandler::class.java)
   }
 
   fun handleEvent(message: String) {
+    if (!standardRecallsEnabled) {
+      return
+    }
+
     val event = try {
       mapper.readValue(message, HMPPSDomainEvent::class.java)
     } catch (e: JacksonException) {
