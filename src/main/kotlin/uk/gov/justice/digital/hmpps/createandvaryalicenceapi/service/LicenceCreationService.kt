@@ -268,7 +268,7 @@ class LicenceCreationService(
     if (staff != null) {
       return staff
     }
-    log.info("Creating com record for staff with identifier: $staffId")
+    log.info("Creating COM record for staff with identifier: $staffId")
     val com = deliusApiClient.getStaffByIdentifier(staffId) ?: missing(staffId, "record in delius")
     return staffRepository.saveAndFlush(
       CommunityOffenderManager(
@@ -287,7 +287,7 @@ class LicenceCreationService(
     if (staff != null) {
       return staff
     }
-    log.info("Creating com record for staff with userName: $userName")
+    log.info("Creating COM record for staff with userName: $userName")
     val user = deliusApiClient.getStaffByUserName(userName) ?: missing(userName, "record in delius")
     return staffRepository.saveAndFlush(
       CommunityOffenderManager(
