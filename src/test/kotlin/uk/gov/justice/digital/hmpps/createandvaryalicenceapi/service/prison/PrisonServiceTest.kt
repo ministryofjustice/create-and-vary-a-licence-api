@@ -77,4 +77,17 @@ class PrisonServiceTest {
     )
     assertTrue(service.hasStandardRecallSentence(bookingId))
   }
+
+  @Test
+  fun `should search prisoners by nomis ids`() {
+    val nomisIds = listOf("A1234AA", "B1234BB")
+    val searchResult = listOf(prisonerSearchResult())
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)).thenReturn(searchResult)
+
+    val result = service.searchPrisonersByNomisIds(nomisIds)
+
+    assertThat(result).isEqualTo(searchResult)
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(nomisIds)
+  }
 }
