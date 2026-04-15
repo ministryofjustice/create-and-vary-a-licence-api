@@ -7,6 +7,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.annotation.DirtiesContext
@@ -17,6 +18,7 @@ import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.WorkFlowMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
@@ -34,7 +36,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_INSERTED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallInsertedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -52,6 +57,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var domainEventListener: DomainEventListener
+
+  @MockitoSpyBean
+  lateinit var recallInsertedHandler: RecallInsertedHandler
 
   @MockitoSpyBean
   lateinit var staffService: StaffService
@@ -87,7 +95,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val message = mapper.writeValueAsString(event)
 
     // When
-    sendEvent(message, event.eventType)
+    sendEventAndVerifyProcessed(message, event.eventType)
 
     // Then
     verifyUpdateComDetails(
@@ -143,7 +151,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val message = mapper.writeValueAsString(event)
 
     // When
-    sendEvent(message, event.eventType)
+    sendEventAndVerifyProcessed(message, event.eventType)
 
     // Then
     verify(comAllocatedHandler).handleEvent(message)
@@ -171,24 +179,26 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     assertComExistsInDb(staffIdentifier, staffCode, userName, emailAddress, firstName, lastName)
   }
 
-  private fun sendEvent(message: String?, eventType: String?) {
-    domainEventsTopicSnsClient.publish(
-      PublishRequest.builder()
-        .topicArn(domainEventsTopicArn)
-        .message(message)
-        .messageAttributes(
-          mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(eventType!!).build(),
-          ),
-        )
-        .build(),
-    )
+  private fun sendEventAndVerifyProcessed(message: String?, eventType: String?) {
+    sendEvent(message, eventType)
 
     awaitAtMost30Secs untilAsserted {
       verify(domainEventListener).finishedEventProcessing(any())
     }
     assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
   }
+
+  private fun sendEvent(message: String?, eventType: String?) = domainEventsTopicSnsClient.publish(
+    PublishRequest.builder()
+      .topicArn(domainEventsTopicArn)
+      .message(message)
+      .messageAttributes(
+        mapOf(
+          "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(eventType!!).build(),
+        ),
+      )
+      .build(),
+  )
 
   @Test
   @Sql(
@@ -211,7 +221,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val message = mapper.writeValueAsString(sentEvent)
 
     // When
-    sendEvent(message, sentEvent.eventType)
+    sendEventAndVerifyProcessed(message, sentEvent.eventType)
 
     // Then
     verify(prisonerUpdatedHandler).handleEvent(message)
@@ -239,6 +249,51 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
         ),
       ),
     )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-3.sql",
+  )
+  fun `A recall inserted event is processed`() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetSentenceAndRecallTypesWithStandardRecall()
+
+    val event = HMPPSDomainEvent(
+      eventType = RECALL_INSERTED_EVENT_TYPE,
+      additionalInformation = mapOf(
+        "source" to "NOMIS",
+        "recallId" to "dfd1e5c2-318c-4f56-b4c8-2d236696e52c",
+        "sentenceIds" to "[c2a7159c-383a-4a98-9f00-7c410b6e1900]",
+      ),
+      detailUrl = "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk/recall/dfd1e5c2-318c-4f56-b4c8-2d236696e52c",
+      version = 1,
+      occurredAt = "2026-03-27T09:27:38.6679417Z",
+      description = "Recall inserted",
+      personReference = PersonReference(
+        identifiers = listOf(Identifiers("NOMS", "A1234AA")),
+      ),
+    )
+
+    val message = mapper.writeValueAsString(event)
+
+    sendEvent(message, event.eventType)
+
+    // wait for two events as a licence deactivation event will be generated by the recall inserted handler
+    awaitAtMost30Secs untilAsserted {
+      verify(domainEventListener, times(2)).finishedEventProcessing(any())
+    }
+
+    verify(recallInsertedHandler).handleEvent(message)
+
+    val licence = testRepository.findLicence(3)
+    assertThat(licence.forename).isEqualTo("Person")
+    assertThat(licence.surname).isEqualTo("One")
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+
+    val auditEvent = testRepository.findFirstAuditEvent(3)
+    assertThat(auditEvent.summary).isEqualTo("Licence inactivated due to the offender returning to custody on a standard recall for Person One")
+    assertThat(auditEvent.changes).isNull()
   }
 
   private fun assertComExistsInDb(
@@ -350,6 +405,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val deliusMockServer = DeliusMockServer()
+    val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val workFlowMockServer = WorkFlowMockServer()
 
@@ -357,6 +413,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       deliusMockServer.start()
+      prisonApiMockServer.start()
       prisonerSearchMockServer.start()
       workFlowMockServer.start()
     }
@@ -365,6 +422,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       deliusMockServer.stop()
+      prisonApiMockServer.stop()
       prisonerSearchMockServer.stop()
       workFlowMockServer.stop()
     }
