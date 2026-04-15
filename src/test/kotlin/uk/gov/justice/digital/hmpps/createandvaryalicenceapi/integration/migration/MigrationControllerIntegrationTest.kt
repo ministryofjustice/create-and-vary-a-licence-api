@@ -30,7 +30,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-private const val MIGRATE_URL = "/licences/migration"
+private const val MIGRATE_URL = "/licences/migrate/active"
 
 class MigrationControllerIntegrationTest : IntegrationTestBase() {
 

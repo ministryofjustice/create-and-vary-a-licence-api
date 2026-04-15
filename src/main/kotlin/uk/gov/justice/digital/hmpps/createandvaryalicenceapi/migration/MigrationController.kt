@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFromHdcToCvlRequest
 
 @RestController
-@RequestMapping("/licences/migration")
+@RequestMapping("/licences/migrate/active")
 @Tag(name = "HDC Licence Migration", description = "Operations related to licence migration from HDC")
 class MigrationController(
   private val migrationService: MigrationService,
@@ -23,7 +23,7 @@ class MigrationController(
   @PostMapping
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Migrate a single licence from HDC to CVL",
+    summary = "Migrate a single active licence from HDC to CVL",
     description = "Triggers migration of the supplied data into CVL",
   )
   @ApiResponses(
