@@ -117,7 +117,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   ) {
     assertThat(licence.typeCode).isEqualTo(request.licence.typeCode)
     assertThat(licence.licenceExpiryDate).isEqualTo(request.licence.licenceExpiryDate)
-    assertThat(licence.licenceActivatedDate).isEqualTo(request.licence.licenceActivationDate)
+    assertThat(licence.licenceActivatedDate?.toLocalDate()).isEqualTo(request.licence.licenceActivationDate)
     assertThat(licence.licenceExpiryDate).isEqualTo(request.licence.licenceExpiryDate)
 
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.APPROVED)
@@ -211,7 +211,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     ),
     licence = MigrateLicenceDetails(
       typeCode = LicenceType.AP,
-      licenceActivationDate = LocalDateTime.parse("2025-05-03T10:00:00"),
+      licenceActivationDate = LocalDate.parse("2025-05-03"),
       homeDetentionCurfewActualDate = LocalDate.parse("2025-05-04"),
       homeDetentionCurfewEndDate = LocalDate.parse("2025-06-05"),
       licenceExpiryDate = LocalDate.parse("2026-05-06"),

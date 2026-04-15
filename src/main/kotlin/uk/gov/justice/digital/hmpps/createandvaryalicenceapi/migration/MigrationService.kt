@@ -106,7 +106,7 @@ class MigrationService(
 
       // License details
       licenceStartDate = licence.homeDetentionCurfewActualDate,
-      licenceActivatedDate = licence.licenceActivationDate,
+      licenceActivatedDate = licence.licenceActivationDate?.atStartOfDay(),
       licenceExpiryDate = licence.licenceExpiryDate,
       licenceVersion = licence.licenceVersion,
 

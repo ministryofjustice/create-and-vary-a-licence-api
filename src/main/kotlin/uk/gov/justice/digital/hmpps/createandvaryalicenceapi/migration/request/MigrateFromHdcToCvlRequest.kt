@@ -118,7 +118,7 @@ data class MigrateLicenceDetails(
   val licenceVersion: String? = "1.0",
 
   @field:Schema(description = "Licence activation date", example = "2025-05-04")
-  val licenceActivationDate: LocalDateTime?,
+  val licenceActivationDate: LocalDate?,
 
   @field:Schema(description = "HDC actual date", example = "2025-05-04")
   val homeDetentionCurfewActualDate: LocalDate?,
