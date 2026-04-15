@@ -192,6 +192,9 @@ object TestData {
     crdIneligibilityReasons = emptyList(),
     prrdIneligibilityReasons = emptyList(),
     hdcIneligibilityReasons = listOf("An HDC reason"),
+    isEligible = true,
+    eligibleKind = EligibleKind.CRD,
+    ineligibilityReasons = emptyList(),
   )
 
   fun anIneligibleEligibilityAssessment() = EligibilityAssessment(
@@ -199,6 +202,9 @@ object TestData {
     crdIneligibilityReasons = listOf("A CRD reason"),
     prrdIneligibilityReasons = listOf("A PRRD reason"),
     hdcIneligibilityReasons = listOf("An HDC reason"),
+    isEligible = false,
+    eligibleKind = null,
+    ineligibilityReasons = listOf("A CRD reason", "A PRRD reason", "A CRD reason", "A PRRD reason"),
   )
 
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
@@ -245,6 +251,7 @@ object TestData {
   fun createPrrdLicence() = PrrdLicence(
     id = 1,
     typeCode = AP,
+    eligibleKind = EligibleKind.FIXED_TERM,
     version = "1.1",
     statusCode = LicenceStatus.IN_PROGRESS,
     nomsId = "A1234AA",

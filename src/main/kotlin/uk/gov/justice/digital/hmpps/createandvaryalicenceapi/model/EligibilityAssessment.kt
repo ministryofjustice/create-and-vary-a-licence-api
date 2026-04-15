@@ -15,24 +15,13 @@ data class EligibilityAssessment(
 
   @field:Schema(description = "A list of reasons the case is ineligible for an HDC licence", example = "['A reason']")
   val hdcIneligibilityReasons: List<String> = emptyList(),
-) {
-  @get:Schema(description = "A boolean denoting eligibility for CVL", example = "true")
-  val isEligible: Boolean get() = genericIneligibilityReasons.isEmpty() &&
-    (
-      crdIneligibilityReasons.isEmpty() ||
-        prrdIneligibilityReasons.isEmpty() ||
-        hdcIneligibilityReasons.isEmpty()
-      )
 
-  @get:Schema(description = "The kind of licence that the case is eligible for. Null if ineligible.", example = "CRD")
-  val eligibleKind: EligibleKind? get() = when {
-    !isEligible -> null
-    crdIneligibilityReasons.isEmpty() -> EligibleKind.CRD
-    hdcIneligibilityReasons.isEmpty() -> EligibleKind.HDC
-    prrdIneligibilityReasons.isEmpty() -> EligibleKind.FIXED_TERM
-    else -> null
-  }
+  @field:Schema(description = "A boolean denoting eligibility for CVL", example = "true")
+  val isEligible: Boolean = false,
 
-  @get:Schema(description = "A combined list of all of the reasons for ineligibility", example = "['A reason']")
-  val ineligibilityReasons: List<String> get() = genericIneligibilityReasons + crdIneligibilityReasons + prrdIneligibilityReasons
-}
+  @field:Schema(description = "The kind of licence that the case is eligible for. Null if ineligible.", example = "CRD")
+  val eligibleKind: EligibleKind? = null,
+
+  @field:Schema(description = "A combined list of all of the reasons for ineligibility", example = "['A reason']")
+  val ineligibilityReasons: List<String> = emptyList(),
+)
