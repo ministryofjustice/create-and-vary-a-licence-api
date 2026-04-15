@@ -108,10 +108,10 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
     val licence = testRepository.findLicence(1)
 
-    assertHdcVariationLicenceMatches(request, licence)
+    assertHdcLicenceMatches(request, licence)
   }
 
-  fun assertHdcVariationLicenceMatches(
+  fun assertHdcLicenceMatches(
     request: MigrateFromHdcToCvlRequest,
     licence: Licence,
   ) {
