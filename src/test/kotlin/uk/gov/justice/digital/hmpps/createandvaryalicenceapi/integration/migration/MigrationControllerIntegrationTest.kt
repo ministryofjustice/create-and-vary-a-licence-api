@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
@@ -85,6 +86,9 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/seed-staff-for-migration.sql",
+  )
   fun `should migrate licence successfully`() {
     // Given
     deliusMockServer.stubGetProbationCase()

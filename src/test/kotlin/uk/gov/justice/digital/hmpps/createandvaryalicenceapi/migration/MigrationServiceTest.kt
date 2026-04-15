@@ -17,6 +17,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateConditions
@@ -186,8 +187,8 @@ class MigrationServiceTest {
       prisonerNumber = prisonerNumber,
       createdByUserName = commonUserName,
       submittedBy = commonUserName,
-      approvedByUsername = commonUserName,
     )
+
     val offenderManager = mock<CommunityManager>()
     whenever(offenderManager.id).thenReturn(staffId)
     val responsibleCom = mock<CommunityOffenderManager>().apply {
@@ -207,7 +208,41 @@ class MigrationServiceTest {
     val savedLicence = licenceCaptor.firstValue
     assertThat(savedLicence.createdBy).isEqualTo(savedLicence.responsibleCom)
     assertThat(savedLicence.submittedBy).isEqualTo(savedLicence.responsibleCom)
-    assertThat(savedLicence.approvedByName).isEqualTo("commonFirstName commonLastName")
+    assertThat(savedLicence.approvedByName).isNull()
+  }
+
+  @Test
+  fun `migrate should get approved by name from then given approvedByUsername`() {
+    // Given
+    val prisonerNumber = "A1234AA"
+    val staffId = 1L
+    val approvedByUsername = "approvedByUsername"
+
+    val request = migrateRequest(
+      prisonerNumber = prisonerNumber,
+      approvedByUsername = approvedByUsername,
+    )
+
+    val offenderManager = mock<CommunityManager>()
+    whenever(offenderManager.id).thenReturn(staffId)
+    whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager)
+    whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
+
+    val approvedByStaff = mock<Staff>().apply {
+      whenever(username).thenReturn(approvedByUsername)
+      whenever(fullName).thenReturn("approvedFirstName approvedLastName")
+    }
+
+    whenever(staffRepository.findByUsernameIgnoreCase(approvedByUsername)).thenReturn(approvedByStaff)
+
+    // When
+    service.migrate(request)
+
+    // Then
+    val licenceCaptor = argumentCaptor<HdcLicence>()
+    verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+    val savedLicence = licenceCaptor.firstValue
+    assertThat(savedLicence.approvedByName).isEqualTo("approvedFirstName approvedLastName")
   }
 
   @Test

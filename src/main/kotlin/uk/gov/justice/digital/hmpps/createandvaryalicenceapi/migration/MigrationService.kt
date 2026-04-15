@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
@@ -69,8 +70,7 @@ class MigrationService(
     val comSet = mutableSetOf(responsibleCom)
     val submittedByCom = comSet.getCommAndAdd(lifecycle.submittedByUserName)
     val createdByCom = comSet.getCommAndAdd(lifecycle.createdByUserName)
-    val approvedByCom = comSet.getCommAndAdd(lifecycle.approvedByUsername)
-
+    val approvedByStaff = lifecycle.approvedByUsername?.let { getStaff(it) }
     val licence = HdcLicence(
       // Hard coded values
       version = "3.0",
@@ -121,7 +121,7 @@ class MigrationService(
       submittedBy = submittedByCom,
       submittedDate = lifecycle.submittedDate,
       approvedByUsername = lifecycle.approvedByUsername,
-      approvedByName = approvedByCom?.fullName,
+      approvedByName = approvedByStaff?.fullName,
       approvedDate = lifecycle.approvedDate,
       firstNightCurfewTimes = curfew?.firstNight?.toCvlDomain(),
     )
@@ -163,6 +163,8 @@ class MigrationService(
 
     return licenceRepository.saveAndFlush(licence)
   }
+
+  private fun getStaff(username: String): Staff? = staffRepository.findByUsernameIgnoreCase(username)
 
   private fun MigrateAppointmentAddress.toSingleLineAddress(): String = listOfNotNull(firstLine, secondLine, townOrCity, postcode)
     .joinToString(", ")
