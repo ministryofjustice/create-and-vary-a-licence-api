@@ -120,7 +120,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     assertThat(licence.licenceActivatedDate?.toLocalDate()).isEqualTo(request.licence.licenceActivationDate)
     assertThat(licence.licenceExpiryDate).isEqualTo(request.licence.licenceExpiryDate)
 
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.APPROVED)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.ACTIVE)
 
     assertThat(licence.bookingNo).isEqualTo(request.bookingNo)
     assertThat(licence.bookingId).isEqualTo(request.bookingId)

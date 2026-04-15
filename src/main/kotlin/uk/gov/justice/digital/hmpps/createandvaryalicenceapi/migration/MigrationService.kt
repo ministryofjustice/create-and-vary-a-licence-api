@@ -77,7 +77,7 @@ class MigrationService(
 
       // Main states
       typeCode = licence.typeCode,
-      statusCode = LicenceStatus.APPROVED,
+      statusCode = LicenceStatus.ACTIVE,
 
       // Prisoner details
       nomsId = prisoner.prisonerNumber,
