@@ -4,9 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.reset
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import tools.jackson.databind.ObjectMapper
@@ -115,61 +113,6 @@ class SentenceDatesChangedHandlerTest {
     verify(licenceService).deactivateLicenceAndVariations(
       activeLicence.id,
       DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RECALLED),
-    )
-  }
-
-  @Test
-  fun `should not deactivate the active if an offender has recalled on a standard recall but standard recalls aren't enabled`() {
-    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
-    whenever(
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(
-        prisoner.prisonerNumber,
-        listOf(
-          ACTIVE,
-        ),
-      ),
-    ).thenReturn(listOf(activeLicence))
-
-    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
-    whenever(prisonService.hasStandardRecallSentence(bookingId)).thenReturn(true)
-
-    sentenceDatesChangedHandler.handleEvent(message)
-
-    verify(licenceService, times(0)).deactivateLicenceAndVariations(
-      anyOrNull(),
-      anyOrNull(),
-    )
-  }
-
-  @Test
-  fun `should deactivate the active licence and any variations if an offender has recalled on a standard recall`() {
-    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
-    whenever(
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(
-        prisoner.prisonerNumber,
-        listOf(
-          ACTIVE,
-        ),
-      ),
-    ).thenReturn(listOf(activeLicence))
-
-    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
-    whenever(prisonService.hasStandardRecallSentence(bookingId)).thenReturn(true)
-
-    val recallsEnabledHandler =
-      SentenceDatesChangedHandler(
-        mapper,
-        licenceRepository,
-        licenceService,
-        prisonService,
-        updateSentenceDateService,
-        areStandardRecallsEnabled = true,
-      )
-    recallsEnabledHandler.handleEvent(message)
-
-    verify(licenceService).deactivateLicenceAndVariations(
-      activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.STANDARD_RECALL),
     )
   }
 
