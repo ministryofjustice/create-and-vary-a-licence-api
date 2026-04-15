@@ -118,7 +118,7 @@ class MigrationServiceTest {
   }
 
   @Test
-  fun `migrate should ask licence service for submitted by com if to staff lookup then creation service`() {
+  fun `migrate should ask licence service for submitted by com if staff lookup needed then creation service`() {
     // Given
     val prisonerNumber = "A1234AA"
     val staffId = 1L
@@ -147,7 +147,7 @@ class MigrationServiceTest {
   }
 
   @Test
-  fun `migrate should ask licence service for created by com if to staff lookup then creation service`() {
+  fun `migrate should ask licence service for created by com if staff lookup needed then creation service`() {
     // Given
     val prisonerNumber = "A1234AA"
     val staffId = 1L
@@ -211,7 +211,7 @@ class MigrationServiceTest {
   }
 
   @Test
-  fun `migrate should throw when prisoner number missing`() {
+  fun `migrate should throw error when prisoner number missing`() {
     // Given
     val request = migrateRequest(prisonerNumber = null)
 
