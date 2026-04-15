@@ -119,6 +119,8 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     assertThat(licence.licenceExpiryDate).isEqualTo(request.licence.licenceExpiryDate)
     assertThat(licence.licenceActivatedDate?.toLocalDate()).isEqualTo(request.licence.licenceActivationDate)
     assertThat(licence.licenceExpiryDate).isEqualTo(request.licence.licenceExpiryDate)
+    assertThat(licence.licenceVersion).isEqualTo("1.0")
+    assertThat(licence.version).isEqualTo("3.0")
 
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.ACTIVE)
 

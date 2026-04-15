@@ -114,9 +114,6 @@ data class MigrateLicenceDetails(
   @field:Schema(description = "Licence type", example = "AP")
   val typeCode: LicenceType,
 
-  @field:Schema(description = "HDC licence version string", example = "1.0")
-  val licenceVersion: String? = "1.0",
-
   @field:Schema(description = "Licence activation date", example = "2025-05-04")
   val licenceActivationDate: LocalDate?,
 

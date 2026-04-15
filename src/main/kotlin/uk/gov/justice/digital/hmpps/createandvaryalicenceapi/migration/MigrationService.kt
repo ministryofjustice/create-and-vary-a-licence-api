@@ -108,7 +108,7 @@ class MigrationService(
       licenceStartDate = licence.homeDetentionCurfewActualDate,
       licenceActivatedDate = licence.licenceActivationDate?.atStartOfDay(),
       licenceExpiryDate = licence.licenceExpiryDate,
-      licenceVersion = licence.licenceVersion,
+      licenceVersion = "1.0",
 
       // HDC fields
       homeDetentionCurfewActualDate = licence.homeDetentionCurfewActualDate,
