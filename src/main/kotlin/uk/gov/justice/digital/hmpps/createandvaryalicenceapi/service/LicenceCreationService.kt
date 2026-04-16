@@ -263,12 +263,12 @@ class LicenceCreationService(
     }
   }
 
-  private fun getOrCreateCom(staffId: Long): CommunityOffenderManager {
+  fun getOrCreateCom(staffId: Long): CommunityOffenderManager {
     val staff = staffRepository.findByStaffIdentifier(staffId)
     if (staff != null) {
       return staff
     }
-    log.info("Creating com record for staff with identifier: $staffId")
+    log.info("Creating COM record for staff with identifier: $staffId")
     val com = deliusApiClient.getStaffByIdentifier(staffId) ?: missing(staffId, "record in delius")
     return staffRepository.saveAndFlush(
       CommunityOffenderManager(
@@ -282,5 +282,26 @@ class LicenceCreationService(
     )
   }
 
+  fun getOrCreateCom(userName: String): CommunityOffenderManager {
+    val staff = staffRepository.findByUsernameIgnoreCase(userName) as CommunityOffenderManager?
+    if (staff != null) {
+      return staff
+    }
+    log.info("Creating COM record for staff with userName: $userName")
+    val user = deliusApiClient.getStaffByUserName(userName) ?: missing(userName, "record in delius")
+    return staffRepository.saveAndFlush(
+      CommunityOffenderManager(
+        staffIdentifier = user.id,
+        staffCode = user.code,
+        username = user.username?.uppercase() ?: missing(userName, "username"),
+        email = user.email,
+        firstName = user.name.forename,
+        lastName = user.name.surname,
+      ),
+    )
+  }
+
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
+
+  private fun missing(username: String, field: String): Nothing = error("staff with staff username: '$username', missing $field")
 }

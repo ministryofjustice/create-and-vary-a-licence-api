@@ -19,3 +19,4 @@ TRUNCATE TABLE appointment_address RESTART IDENTITY CASCADE;
 TRUNCATE TABLE staff_saved_appointment_address RESTART IDENTITY CASCADE;
 TRUNCATE TABLE time_served_external_records RESTART IDENTITY CASCADE;
 TRUNCATE TABLE time_served_probation_confirm_contact RESTART IDENTITY CASCADE;
+TRUNCATE TABLE hdc_migration_condition_meta_data RESTART IDENTITY CASCADE;

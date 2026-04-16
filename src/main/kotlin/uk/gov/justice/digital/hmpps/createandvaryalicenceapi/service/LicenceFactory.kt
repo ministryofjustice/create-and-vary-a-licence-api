@@ -415,7 +415,7 @@ object LicenceFactory {
         appointment = AppointmentMapper.copy(this.appointment),
         responsibleCom = this.getCom(),
         dateCreated = LocalDateTime.now(),
-        licenceVersion = getVariationVersion(this.licenceVersion!!),
+        licenceVersion = "1.0", // This is for Active licenses if we were to migration variations, this would be 2.0
       )
     }
   }
