@@ -184,11 +184,11 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
     assertThat(licence.licenceStartDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
 
-    assertThat(licence.bespokeConditions.map { it.conditionText })
-      .containsAnyElementsOf(request.conditions.additional.map { it.text })
+    val actualConditions = licence.bespokeConditions.map { it.conditionText }
+    val expectedConditions = request.conditions.additional.map { it.text } + request.conditions.bespoke.map { it }
 
-    assertThat(licence.bespokeConditions.map { it.conditionText })
-      .containsAnyElementsOf(request.conditions.bespoke.map { it })
+    assertThat(actualConditions)
+      .containsExactlyElementsOf(expectedConditions)
 
     assertThat(licence).isInstanceOf(HdcLicence::class.java)
     if (licence is HdcLicence) {

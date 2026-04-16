@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 
 private const val GET_PRISONER = "/prisoner-search/nomisid/A1234AA"
 private const val GET_PROBATION_CASE = "/caseload/probation-case/A1234AA"
@@ -68,7 +69,10 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun success() {
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        conditionalReleaseDate = LocalDate.now(),
+        sentenceStartDate = LocalDate.now().plusDays(1),
+      )
       prisonApiMockServer.stubGetCourtOutcomes()
       hdcApiMockServer.stubGetHdcStatuses(
         listOf(
@@ -100,7 +104,10 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun checkDateFormats() {
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        conditionalReleaseDate = LocalDate.now(),
+        sentenceStartDate = LocalDate.now().plusDays(1),
+      )
       prisonApiMockServer.stubGetCourtOutcomes()
       deliusMockServer.stubGetOffenderManagerWithNomsId()
 

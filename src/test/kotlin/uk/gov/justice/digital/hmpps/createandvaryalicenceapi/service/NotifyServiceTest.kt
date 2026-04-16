@@ -36,9 +36,7 @@ class NotifyServiceTest {
     variationReferredTemplateId = TEMPLATE_ID,
     licenceRequiresOmuReApprovalTemplateId = TEMPLATE_ID,
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
-    hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
     editedLicenceTimedOutTemplateId = TEMPLATE_ID,
-    hardStopLicenceReviewOverdueTemplateId = TEMPLATE_ID,
     reviewableLicenceApprovedTemplateId = TEMPLATE_ID,
     licenceReviewOverdueTemplateId = TEMPLATE_ID,
     initialComAllocationTemplateId = TEMPLATE_ID,
@@ -272,9 +270,7 @@ class NotifyServiceTest {
       client = notificationClient,
       internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
       releaseDateService = releaseDateService,
-      hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
       editedLicenceTimedOutTemplateId = TEMPLATE_ID,
-      hardStopLicenceReviewOverdueTemplateId = TEMPLATE_ID,
       reviewableLicenceApprovedTemplateId = TEMPLATE_ID,
       licenceReviewOverdueTemplateId = TEMPLATE_ID,
       initialComAllocationTemplateId = TEMPLATE_ID,
@@ -326,27 +322,6 @@ class NotifyServiceTest {
 
   @Nested
   inner class `approving review needed licences` {
-    @Test
-    fun `send hard stop licence approved email to probation practitioner`() {
-      notifyService.sendHardStopLicenceApprovedEmail(
-        emailAddress = EMAIL_ADDRESS,
-        firstName = "John",
-        lastName = "Doe",
-        crn = "A123456",
-        lsd = LocalDate.of(2024, 4, 17),
-        licenceId = "1",
-      )
-
-      val expectedMap = mapOf(
-        "firstName" to "John",
-        "lastName" to "Doe",
-        "crn" to "A123456",
-        "releaseDate" to "17 April 2024",
-      )
-
-      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
-    }
-
     @Test
     fun `send reviewable licence approved email to probation practitioner`() {
       notifyService.sendReviewableLicenceApprovedEmail(
@@ -484,27 +459,6 @@ class NotifyServiceTest {
 
   @Nested
   inner class `hard stop licence review overdue` {
-    @Test
-    fun `send hard stop licence review overdue email to COM`() {
-      notifyService.sendHardStopLicenceReviewOverdueEmail(
-        emailAddress = EMAIL_ADDRESS,
-        comName = "Joe Bloggs",
-        firstName = "John",
-        lastName = "Doe",
-        crn = "A123456",
-        licenceId = "1",
-      )
-
-      val expectedMap = mapOf(
-        "comName" to "Joe Bloggs",
-        "firstName" to "John",
-        "lastName" to "Doe",
-        "crn" to "A123456",
-      )
-
-      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
-    }
-
     @Test
     fun `send licence review overdue email to COM`() {
       notifyService.sendLicenceReviewOverdueEmail(
