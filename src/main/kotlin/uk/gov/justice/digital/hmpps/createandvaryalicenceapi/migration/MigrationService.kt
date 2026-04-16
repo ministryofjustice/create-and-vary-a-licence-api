@@ -141,7 +141,7 @@ class MigrationService(
       BespokeCondition(conditionText = it.text, licence = licence)
     }
 
-    licence.bespokeConditions.addAll(bespokeConditions + additionalConditions)
+    licence.bespokeConditions.addAll(additionalConditions + bespokeConditions)
 
     appointment?.let {
       licence.appointment = Appointment(
