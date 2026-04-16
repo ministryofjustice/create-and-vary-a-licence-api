@@ -15,6 +15,7 @@ interface MigrationRepository : JpaRepository<Licence, Long> {
   @Query(
     value = """
     INSERT INTO hdc_migration_condition_meta_data(
+          licence_id,
       condition_id,
       hdc_condition_code,
       hdc_condition_version
