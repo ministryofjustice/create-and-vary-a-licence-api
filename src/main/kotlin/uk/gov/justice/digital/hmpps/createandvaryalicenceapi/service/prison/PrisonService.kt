@@ -20,4 +20,6 @@ class PrisonService(val prisonApiClient: PrisonApiClient, val prisonerSearchApi:
     val sentenceAndRecallTypes = bookingsSentenceAndRecallTypes.first()
     return sentenceAndRecallTypes.sentenceTypeRecallTypes.any { it.recallType.isStandardRecall }
   }
+
+  fun searchPrisonersByNomisIds(nomisIds: List<String>) = prisonerSearchApi.searchPrisonersByNomisIds(nomisIds)
 }
