@@ -57,11 +57,18 @@ class MigrationService(
     request.conditions.additional.forEach { hdcCondition ->
       val saveCondition = hdcLicence.bespokeConditions.findLast { it.conditionText == hdcCondition.text }!!
       migrationRepository.saveConditionMetaData(
+        licenceId = hdcLicence.id,
         saveCondition.id!!,
         hdcCondition.conditionCode,
         hdcCondition.conditionsVersion,
       )
     }
+    migrationRepository.saveMetaData(
+      hdcLicence.id,
+      request.licence.licenceId,
+      request.licence.licenceVersion,
+      request.licence.varyVersion,
+    )
   }
 
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
@@ -74,7 +81,8 @@ class MigrationService(
     val licence = HdcLicence(
       // Hard coded values
       version = "3.0",
-
+      // TODO - this should be discussed further with the team,
+      licenceVersion = "1.0",
       // Main states
       typeCode = licence.typeCode,
       statusCode = LicenceStatus.ACTIVE,
@@ -108,7 +116,6 @@ class MigrationService(
       licenceStartDate = licence.homeDetentionCurfewActualDate,
       licenceActivatedDate = licence.licenceActivationDate?.atStartOfDay(),
       licenceExpiryDate = licence.licenceExpiryDate,
-      licenceVersion = "1.0",
 
       // HDC fields
       homeDetentionCurfewActualDate = licence.homeDetentionCurfewActualDate,

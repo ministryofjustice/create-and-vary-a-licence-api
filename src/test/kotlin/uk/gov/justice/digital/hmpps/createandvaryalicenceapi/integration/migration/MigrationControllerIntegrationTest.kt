@@ -36,56 +36,6 @@ private const val MIGRATE_URL = "/licences/migrate/active"
 class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
   @Test
-  fun `should return unauthorized if no token`() {
-    // Given
-    val request = validRequest()
-
-    // When
-    val result = webTestClient.post()
-      .uri(MIGRATE_URL)
-      .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(request)
-      .exchange()
-
-    // Then
-    result.expectStatus().isUnauthorized
-  }
-
-  @Test
-  fun `should return forbidden if no role`() {
-    // Given
-    val request = validRequest()
-
-    // When
-    val result = webTestClient.post()
-      .uri(MIGRATE_URL)
-      .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation())
-      .bodyValue(request)
-      .exchange()
-
-    // Then
-    result.expectStatus().isForbidden
-  }
-
-  @Test
-  fun `should return forbidden if wrong role`() {
-    // Given
-    val request = validRequest()
-
-    // When
-    val result = webTestClient.post()
-      .uri(MIGRATE_URL)
-      .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-      .bodyValue(request)
-      .exchange()
-
-    // Then
-    result.expectStatus().isForbidden
-  }
-
-  @Test
   @Sql(
     "classpath:test_data/seed-staff-for-migration.sql",
   )
@@ -111,8 +61,81 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isOk
 
     val licence = testRepository.findLicence(1)
-
     assertHdcLicenceMatches(request, licence)
+    assertThat(testRepository.hasMetaData()).isTrue
+  }
+
+  @Test
+  fun `should not migrate or save meta data when error is thrown`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(request)
+      .exchange()
+
+    // Then
+    result.expectStatus().isBadRequest
+
+    assertThat(testRepository.doesLicenceExist(1)).isFalse
+    assertThat(testRepository.hasMetaData()).isFalse
+  }
+
+  @Test
+  fun `should return unauthorized if no token`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(request)
+      .exchange()
+
+    // Then
+    result.expectStatus().isUnauthorized
+    assertThat(testRepository.hasMetaData()).isFalse
+  }
+
+  @Test
+  fun `should return forbidden if no role`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation())
+      .bodyValue(request)
+      .exchange()
+
+    // Then
+    result.expectStatus().isForbidden
+    assertThat(testRepository.hasMetaData()).isFalse
+  }
+
+  @Test
+  fun `should return forbidden if wrong role`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+      .bodyValue(request)
+      .exchange()
+
+    // Then
+    result.expectStatus().isForbidden
+    assertThat(testRepository.hasMetaData()).isFalse
   }
 
   fun assertHdcLicenceMatches(
@@ -216,11 +239,14 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       postRecallReleaseDate = LocalDate.parse("2024-08-01"),
     ),
     licence = MigrateLicenceDetails(
+      licenceId = 1,
       typeCode = LicenceType.AP,
       licenceActivationDate = LocalDate.parse("2025-05-03"),
       homeDetentionCurfewActualDate = LocalDate.parse("2025-05-04"),
       homeDetentionCurfewEndDate = LocalDate.parse("2025-06-05"),
       licenceExpiryDate = LocalDate.parse("2026-05-06"),
+      licenceVersion = 1,
+      varyVersion = 2,
     ),
     lifecycle = MigrateLicenceLifecycleDetails(
       approvedDate = LocalDateTime.parse("2025-11-20T10:00:00"),

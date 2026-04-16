@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Repository
@@ -78,6 +79,30 @@ interface TestTimeServedProbationConfirmContactRepository : JpaRepository<TimeSe
   fun findByLicenceId(licenceId: Long): TimeServedProbationConfirmContact?
 }
 
+@Repository
+interface TestMigrationRepository : JpaRepository<Licence, Long> {
+
+  @Query(
+    value = """
+    SELECT EXISTS (
+      SELECT 1 FROM hdc_migration_condition_meta_data
+    )
+  """,
+    nativeQuery = true,
+  )
+  fun hasAnyConditionMetaData(): Boolean
+
+  @Query(
+    value = """
+    SELECT EXISTS (
+      SELECT 1 FROM hdc_migration_meta_data
+    )
+  """,
+    nativeQuery = true,
+  )
+  fun hasAnyMetaData(): Boolean
+}
+
 @Component
 @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
 class TestRepository(
@@ -92,6 +117,7 @@ class TestRepository(
   private val testTimeServedExternalRecordRepository: TestTimeServedExternalRecordRepository,
   private val testTimeServedProbationConfirmContactRepository: TestTimeServedProbationConfirmContactRepository,
   private val testAdditionalConditionUploadRepository: TestAdditionalConditionUploadRepository,
+  private val migrationRepository: TestMigrationRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -206,4 +232,5 @@ class TestRepository(
     assertThat(licences).isNotEmpty
     return licences
   }
+  fun hasMetaData(): Boolean = migrationRepository.hasAnyMetaData() && migrationRepository.hasAnyConditionMetaData()
 }

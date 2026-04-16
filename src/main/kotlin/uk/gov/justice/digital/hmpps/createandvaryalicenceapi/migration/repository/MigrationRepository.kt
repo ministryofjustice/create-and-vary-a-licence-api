@@ -19,13 +19,30 @@ interface MigrationRepository : JpaRepository<Licence, Long> {
       hdc_condition_code,
       hdc_condition_version
     )  
-    VALUES (:conditionId, :hdcConditionCode, :hdcConditionVersion)
+    VALUES (:licenceId, :conditionId, :hdcConditionCode, :hdcConditionVersion)
   """,
     nativeQuery = true,
   )
   fun saveConditionMetaData(
+    licenceId: Long,
     conditionId: Long,
     hdcConditionCode: String,
     hdcConditionVersion: Int?,
   ): Int
+
+  @Modifying
+  @Transactional
+  @Query(
+    value = """
+    INSERT INTO hdc_migration_meta_data(
+      licence_id,
+      hdcLicence_id,
+      licence_version,
+      vary_version
+    )  
+    VALUES (:licenceId, :hdcLicenceId, :licenceVersion, :varyVersion)
+  """,
+    nativeQuery = true,
+  )
+  fun saveMetaData(licenceId: Long, hdcLicenceId: Long, licenceVersion: Int, varyVersion: Int)
 }

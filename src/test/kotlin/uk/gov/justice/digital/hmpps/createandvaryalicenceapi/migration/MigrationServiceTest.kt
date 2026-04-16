@@ -112,9 +112,17 @@ class MigrationServiceTest {
     verify(licenceRepository, atLeastOnce()).saveAndFlush(any())
 
     verify(migrationRepository).saveConditionMetaData(
+      eq(1L),
       eq(10L),
       eq("CODE1"),
       eq(1),
+    )
+
+    verify(migrationRepository).saveMetaData(
+      eq(1L),
+      eq(2L),
+      eq(3),
+      eq(4),
     )
   }
 
@@ -286,11 +294,14 @@ class MigrationServiceTest {
       postRecallReleaseDate = null,
     ),
     licence = MigrateLicenceDetails(
+      licenceId = 2,
       typeCode = LicenceType.AP,
       licenceActivationDate = null,
       homeDetentionCurfewActualDate = LocalDate.now(),
       homeDetentionCurfewEndDate = LocalDate.now(),
       licenceExpiryDate = LocalDate.now(),
+      licenceVersion = 3,
+      varyVersion = 4,
     ),
     lifecycle = MigrateLicenceLifecycleDetails(
       approvedDate = null,
