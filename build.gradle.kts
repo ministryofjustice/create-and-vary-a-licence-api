@@ -188,5 +188,5 @@ allOpen {
 
 dependencyCheck {
   nvd.datafeedUrl = "file:///opt/vulnz/cache"
-  suppressionFiles.add("cvl-suppressions.xml")
+  suppressionFiles.add("cvl-api-suppressions.xml")
 }
