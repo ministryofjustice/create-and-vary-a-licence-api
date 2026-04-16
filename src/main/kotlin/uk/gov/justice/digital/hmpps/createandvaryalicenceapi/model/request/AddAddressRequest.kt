@@ -82,5 +82,6 @@ class AddressWithUprnMustBeFromOsPlacesValidator : ConstraintValidator<AddressWi
     null -> true // Or false, depending on what you want
     AddressSource.OS_PLACES -> !value.uprn.isNullOrBlank()
     AddressSource.MANUAL -> value.uprn.isNullOrBlank()
+    AddressSource.MANUAL_MIGRATED -> value.uprn.isNullOrBlank()
   }
 }

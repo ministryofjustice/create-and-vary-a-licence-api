@@ -2,22 +2,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-
-@Schema(description = "Licence type")
-enum class MigrateLicenceType {
-  AP,
-  PSS,
-  AP_PSS,
-}
-
-enum class MigrateStatus {
-  APPROVED,
-  RISK_CHECKS_COMPLETE,
-}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Request to migrate CVL data")
@@ -98,10 +87,10 @@ data class MigratePrisonerDetails(
 @Schema(description = "Sentence details")
 data class MigrateSentenceDetails(
   @field:Schema(description = "Sentence start date", example = "2024-01-01")
-  val startDate: LocalDate?,
+  val sentenceStartDate: LocalDate?,
 
   @field:Schema(description = "Sentence end date", example = "2025-06-01")
-  val endDate: LocalDate?,
+  val sentenceEndDate: LocalDate?,
 
   @field:Schema(description = "Conditional release date", example = "2025-05-01")
   val conditionalReleaseDate: LocalDate?,
@@ -122,14 +111,12 @@ data class MigrateSentenceDetails(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Licence details")
 data class MigrateLicenceDetails(
+
+  @field:Schema(description = "HDC licence ID", example = "1")
+  val licenceId: Long,
+
   @field:Schema(description = "Licence type", example = "AP")
-  val typeCode: MigrateLicenceType,
-
-  @field:Schema(description = "HDC stage", example = "APPROVED")
-  val statusCode: MigrateStatus,
-
-  @field:Schema(description = "Hdc licence version string", example = "1.0")
-  val hdcLicenceVersion: String? = "1.0",
+  val typeCode: LicenceType,
 
   @field:Schema(description = "Licence activation date", example = "2025-05-04")
   val licenceActivationDate: LocalDate?,
@@ -142,6 +129,12 @@ data class MigrateLicenceDetails(
 
   @field:Schema(description = "Licence expiry date", example = "2026-05-04")
   val licenceExpiryDate: LocalDate?,
+
+  @field:Schema(description = "HDC licence version", example = "1")
+  val licenceVersion: Int,
+
+  @field:Schema(description = "HDC vary version", example = "2")
+  val varyVersion: Int,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -164,12 +157,6 @@ data class MigrateLicenceLifecycleDetails(
 
   @field:Schema(description = "Date created", example = "2025-11-20T08:30:00")
   val dateCreated: LocalDateTime?,
-
-  @field:Schema(description = "Date last updated", example = "2025-11-20T10:30:00")
-  val dateLastUpdated: LocalDateTime?,
-
-  @field:Schema(description = "Updated by username", example = "username")
-  val updatedByUsername: String?,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

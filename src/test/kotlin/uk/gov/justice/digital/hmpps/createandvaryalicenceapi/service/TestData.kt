@@ -501,8 +501,8 @@ object TestData {
     dateLastUpdated = updated,
   )
 
-  fun createHdcLicence() = HdcLicence(
-    id = 1,
+  fun createHdcLicence(id: Long = 1) = HdcLicence(
+    id = id,
     typeCode = AP,
     version = "1.1",
     statusCode = LicenceStatus.IN_PROGRESS,

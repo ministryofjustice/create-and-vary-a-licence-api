@@ -102,7 +102,7 @@ class HdcLicence(
   override var firstNightCurfewTimes: CurfewTimes? = null,
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-  override val curfewAddress: HdcCurfewAddress? = null,
+  override var curfewAddress: HdcCurfewAddress? = null,
 
   @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)

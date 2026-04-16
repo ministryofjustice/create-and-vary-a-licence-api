@@ -72,6 +72,15 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .coerce404ToEmptyOrThrow()
     .block()
 
+  fun getStaffByUserName(userName: String): User? = deliusApiWebClient
+    .get()
+    .uri("/staff/{userName}", userName)
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<User>()
+    .coerce404ToEmptyOrThrow()
+    .block()
+
   fun getOffenderManager(crnOrNomisId: String): CommunityManager? = deliusApiWebClient
     .get()
     .uri("/probation-case/{crnOrNomisId}/responsible-community-manager", crnOrNomisId)

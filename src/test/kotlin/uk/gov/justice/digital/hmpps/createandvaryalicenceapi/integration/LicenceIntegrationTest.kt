@@ -567,7 +567,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val licence = testRepository.findLicence(licenceSummary.licenceId)
 
     with(licence as HdcVariationLicence) {
-      assertThat(licenceVersion).isEqualTo("2.0")
+      assertThat(licenceVersion).isEqualTo("1.0")
       assertThat(typeCode).isEqualTo(AP)
       assertThat(statusCode).isEqualTo(VARIATION_IN_PROGRESS)
       assertThat(appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")

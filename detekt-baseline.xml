@@ -19,6 +19,7 @@
     <ID>LongMethod:LicenceService.kt:LicenceService$fun transform: Licence</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$private fun populateCopyAndAudit: EntityLicence</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$private fun updateLicenceStatus</ID>
+    <ID>LongMethod:MigrationService.kt:MigrationService$fun MigrateFromHdcToCvlRequest.toHdcLicence: HdcLicence</ID>
     <ID>LongMethod:PrrdLicence.kt:PrrdLicence$override fun toString: String</ID>
     <ID>LongMethod:TimeServedLicence.kt:TimeServedLicence$override fun toString: String</ID>
     <ID>LongMethod:ToModelTransformers.kt:fun toCrd</ID>
@@ -44,7 +45,6 @@
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isRecallCase: Boolean</ID>
     <ID>ReturnCount:LsdRecalculationService.kt:LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate: Long</ID>
     <ID>ReturnCount:NotifyService.kt:NotifyService$private fun sendEmail: Boolean</ID>
-    <ID>ReturnCount:RecallInsertedHandler.kt:RecallInsertedHandler$fun handleEvent</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt:ComAllocatedHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:UploadFileConditionsService.kt:UploadFileConditionsService$e: Exception</ID>
     <ID>TooManyFunctions:AuditService.kt:AuditService</ID>
