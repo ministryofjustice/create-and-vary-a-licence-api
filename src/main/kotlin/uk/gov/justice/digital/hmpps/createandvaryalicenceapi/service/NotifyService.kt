@@ -26,10 +26,8 @@ class NotifyService(
   @param:Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String,
   @param:Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String,
   @param:Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
-  @param:Value("\${notify.templates.hardStopLicenceApproved}") private val hardStopLicenceApprovedTemplateId: String,
   @param:Value("\${notify.templates.reviewableLicenceApproved}") private val reviewableLicenceApprovedTemplateId: String,
   @param:Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
-  @param:Value("\${notify.templates.hardStopLicenceReviewOverdue}") private val hardStopLicenceReviewOverdueTemplateId: String,
   @param:Value("\${notify.templates.licenceReviewOverdue}") private val licenceReviewOverdueTemplateId: String,
   @param:Value("\${notify.templates.initialComAllocation}") private val initialComAllocationTemplateId: String,
   @param:Value("\${internalEmailAddress}") private val internalEmailAddress: String,
@@ -238,32 +236,6 @@ class NotifyService(
     }
   }
 
-  @Deprecated(
-    message = "Use sendReviewableLicenceApprovedEmail() instead. This function will be removed once isTimeServedLogicEnabled toggle is retired.",
-  )
-  fun sendHardStopLicenceApprovedEmail(
-    emailAddress: String?,
-    firstName: String,
-    lastName: String,
-    crn: String?,
-    lsd: LocalDate?,
-    licenceId: String,
-  ) {
-    if (emailAddress == null || lsd == null) {
-      log.error("Notification failed (hardStopLicenceApproved) for licence $licenceId - email and CRD must be present")
-      return
-    }
-    val values: Map<String, String> = mapOf(
-      "firstName" to firstName,
-      "lastName" to lastName,
-      "crn" to crn!!,
-      "releaseDate" to lsd.format(dateFormat),
-    )
-    if (sendEmail(hardStopLicenceApprovedTemplateId, emailAddress, values)) {
-      log.info("Notification sent to $emailAddress HARD STOP LICENCE APPROVED for $licenceId $firstName $lastName")
-    }
-  }
-
   fun sendEditedLicenceTimedOutEmail(
     emailAddress: String?,
     comName: String,
@@ -319,32 +291,6 @@ class NotifyService(
     if (sendEmail(licenceReviewOverdueTemplateId, emailAddress, values)) {
       val licenceStatus = if (isTimeServedLicence) "TIME SERVED" else "HARD STOP"
       log.info("Notification sent to $emailAddress $licenceStatus LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
-    }
-  }
-
-  @Deprecated(
-    message = "Use sendLicenceReviewOverdueEmail() instead. This function will be removed once isTimeServedLogicEnabled toggle is retired.",
-  )
-  fun sendHardStopLicenceReviewOverdueEmail(
-    emailAddress: String?,
-    comName: String,
-    firstName: String,
-    lastName: String,
-    crn: String?,
-    licenceId: String,
-  ) {
-    if (emailAddress == null) {
-      log.error("Notification failed (hardStopLicenceReviewOverdue) for licence $licenceId - email and CRD must be present")
-      return
-    }
-    val values: Map<String, String> = mapOf(
-      "comName" to comName,
-      "firstName" to firstName,
-      "lastName" to lastName,
-      "crn" to crn!!,
-    )
-    if (sendEmail(hardStopLicenceReviewOverdueTemplateId, emailAddress, values)) {
-      log.info("Notification sent to $emailAddress HARD STOP LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
     }
   }
 
