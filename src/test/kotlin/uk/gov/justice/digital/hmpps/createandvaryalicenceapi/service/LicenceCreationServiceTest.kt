@@ -105,7 +105,6 @@ class LicenceCreationServiceTest {
     prisonApiClient,
     deliusApiClient,
     cvlRecordService,
-    isTimeServedLogicEnabled = true,
     telemetryService,
     timeServedExternalRecordsService,
     caseService,
