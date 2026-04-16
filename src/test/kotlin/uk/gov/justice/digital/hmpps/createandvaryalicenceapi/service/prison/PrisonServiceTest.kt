@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -61,7 +60,7 @@ class PrisonServiceTest {
   }
 
   @Test
-  fun `should return if a booking has any standard recall sentences`() {
+  fun `should return sentence and recall types`() {
     val bookingId = 392L
 
     val sentenceAndRecallTypes = listOf(
@@ -75,7 +74,7 @@ class PrisonServiceTest {
         bookingSentenceAndRecallTypes,
       ),
     )
-    assertTrue(service.hasStandardRecallSentence(bookingId))
+    assertThat(service.getSentenceAndRecallTypes(bookingId)).isEqualTo(bookingSentenceAndRecallTypes)
   }
 
   @Test

@@ -13,7 +13,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 
@@ -26,19 +29,50 @@ class RecallInsertedHandlerTest {
 
   private val handler = RecallInsertedHandler(mapper, licenceRepository, licenceService, prisonService, true)
 
+  private val nomisId = "A1234AA"
+  private val prisonerSearchResult = prisonerSearchResult()
+  private val bookingId = prisonerSearchResult.bookingId!!.toLong()
+
   @BeforeEach
   fun reset() {
     reset(licenceRepository, licenceService, prisonService)
   }
 
   @Test
-  fun `should deactivate an active licence linked to the offender`() {
+  fun `should deactivate an active licence linked to an offender that has a fixed term recall sentence`() {
     val licence = createCrdLicence()
-    val nomisId = "A1234AA"
-    val prisonerSearchResult = prisonerSearchResult()
 
     whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
-    whenever(prisonService.hasStandardRecallSentence(prisonerSearchResult.bookingId!!.toLong())).thenReturn(true)
+    whenever(prisonService.getSentenceAndRecallTypes(bookingId)).thenReturn(
+      fixedTermRecallSentenceAndRecalls(bookingId),
+    )
+    whenever(
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(
+        nomisId,
+        listOf(
+          ACTIVE,
+        ),
+      ),
+    ).thenReturn(listOf(licence))
+
+    handler.handleEvent(mapper.writeValueAsString(aRecallInsertedEvent()))
+
+    verify(
+      licenceService,
+    ).deactivateLicenceAndVariations(
+      licence.id,
+      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RECALLED),
+    )
+  }
+
+  @Test
+  fun `should deactivate an active licence linked to an offender that has a standard recall sentence`() {
+    val licence = createCrdLicence()
+
+    whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
+    whenever(prisonService.getSentenceAndRecallTypes(bookingId)).thenReturn(
+      standardRecallSentenceAndRecalls(bookingId),
+    )
     whenever(
       licenceRepository.findAllByNomsIdAndStatusCodeIn(
         nomisId,
@@ -60,11 +94,8 @@ class RecallInsertedHandlerTest {
 
   @Test
   fun `does nothing is the offender does not have an active licence`() {
-    val nomisId = "A1234AA"
-    val prisonerSearchResult = prisonerSearchResult()
-
     whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
-    whenever(prisonService.hasStandardRecallSentence(prisonerSearchResult.bookingId!!.toLong())).thenReturn(true)
+    whenever(prisonService.getSentenceAndRecallTypes(bookingId)).thenReturn(fixedTermRecallSentenceAndRecalls(bookingId))
     whenever(
       licenceRepository.findAllByNomsIdAndStatusCodeIn(
         nomisId,
@@ -82,14 +113,25 @@ class RecallInsertedHandlerTest {
   }
 
   @Test
-  fun `does nothing if standard recalls aren't enabled`() {
+  fun `does nothing if an offender has a standard recall sentence but standard recalls aren't enabled`() {
+    val licence = createCrdLicence()
     val recallsDisabledHandler = RecallInsertedHandler(mapper, licenceRepository, licenceService, prisonService, false)
+
+    whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
+    whenever(prisonService.getSentenceAndRecallTypes(bookingId)).thenReturn(standardRecallSentenceAndRecalls(bookingId))
+    whenever(
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(
+        nomisId,
+        listOf(
+          ACTIVE,
+        ),
+      ),
+    ).thenReturn(listOf(licence))
+
     recallsDisabledHandler.handleEvent(mapper.writeValueAsString(aRecallInsertedEvent()))
 
     verifyNoInteractions(
       licenceService,
-      licenceService,
-      prisonService,
     )
   }
 
@@ -106,6 +148,26 @@ class RecallInsertedHandlerTest {
     description = "Recall inserted",
     personReference = PersonReference(
       identifiers = listOf(Identifiers("NOMS", "A1234AA")),
+    ),
+  )
+
+  private fun fixedTermRecallSentenceAndRecalls(bookingId: Long) = BookingSentenceAndRecallTypes(
+    bookingId,
+    listOf(
+      SentenceAndRecallType(
+        "FTR_56ORA",
+        SentenceRecallType("FIXED_TERM_RECALL_56", isStandardRecall = false, isFixedTermRecall = true),
+      ),
+    ),
+  )
+
+  private fun standardRecallSentenceAndRecalls(bookingId: Long) = BookingSentenceAndRecallTypes(
+    bookingId,
+    listOf(
+      SentenceAndRecallType(
+        "FTR_56ORA",
+        SentenceRecallType("STANDARD_RECALL_255", isStandardRecall = true, isFixedTermRecall = false),
+      ),
     ),
   )
 }

@@ -23,15 +23,11 @@ class RecallInsertedHandler(
   @param:Value("\${feature.toggle.standardRecalls.enabled:false}") private val standardRecallsEnabled: Boolean = false,
 ) {
   companion object {
-    private val log = LoggerFactory.getLogger(PrisonerUpdatedHandler::class.java)
+    private val log = LoggerFactory.getLogger(RecallInsertedHandler::class.java)
   }
 
   @Transactional
   fun handleEvent(message: String) {
-    if (!standardRecallsEnabled) {
-      return
-    }
-
     val event = try {
       mapper.readValue(message, HMPPSDomainEvent::class.java)
     } catch (e: JacksonException) {
@@ -50,11 +46,20 @@ class RecallInsertedHandler(
     val activeLicence = getActiveLicence(nomisId)
     if (activeLicence != null) {
       log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
-      val hasStandardRecall = prisonService.hasStandardRecallSentence(nomisRecord.bookingId?.toLong()!!)
-      if (hasStandardRecall) {
+
+      val sentenceAndRecallTypes = prisonService.getSentenceAndRecallTypes(nomisRecord.bookingId?.toLong()!!)
+      val hasStandardRecall = sentenceAndRecallTypes.sentenceTypeRecallTypes.any { it.recallType.isStandardRecall }
+      val hasFixedTermRecall = sentenceAndRecallTypes.sentenceTypeRecallTypes.any { it.recallType.isFixedTermRecall }
+
+      if (hasStandardRecall && standardRecallsEnabled) {
         licenceService.deactivateLicenceAndVariations(
           activeLicence.id,
           DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.STANDARD_RECALL),
+        )
+      } else if (hasFixedTermRecall) {
+        licenceService.deactivateLicenceAndVariations(
+          activeLicence.id,
+          DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RECALLED),
         )
       }
     }
