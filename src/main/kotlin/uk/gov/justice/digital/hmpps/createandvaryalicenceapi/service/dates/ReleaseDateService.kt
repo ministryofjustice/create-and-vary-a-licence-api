@@ -27,10 +27,6 @@ class ReleaseDateService(
   @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
   @param:Value("\${timeserved.max.days.crd.before.today:28}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 28,
-  @param:Value("\${feature.toggle.timeServed.enabled:false}")
-  private val isTimeServedEnabled: Boolean = false,
-  @param:Value("\${feature.toggle.timeServed.prisons}")
-  private val timeServedEnabledPrisons: List<String>? = emptyList(),
 ) {
   fun isInHardStopPeriod(
     licenceStartDate: LocalDate?,
@@ -129,16 +125,12 @@ class ReleaseDateService(
   fun isTimeServed(prisoner: PrisonerSearchPrisoner): Boolean = isTimeServed(
     prisoner.sentenceStartDate,
     prisoner.conditionalReleaseDate,
-    prisoner.prisonId,
   )
 
   private fun isTimeServed(
     sentenceStartDate: LocalDate?,
     conditionalReleaseDate: LocalDate?,
-    prisonCode: String?,
-  ): Boolean = isTimeServedEnabled &&
-    ((timeServedEnabledPrisons?.contains(prisonCode) == true) || (timeServedEnabledPrisons?.contains("ALL_PRISONS") == true)) &&
-    sentenceStartDate == conditionalReleaseDate &&
+  ): Boolean = sentenceStartDate == conditionalReleaseDate &&
     conditionalReleaseDate?.isAfter(LocalDate.now(clock).minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved)) ?: false
 
   private fun calculateCrdLicenceStartDate(

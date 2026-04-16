@@ -60,8 +60,6 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
 # Feature toggles
-export FEATURE_TOGGLE_TIMESERVED_ENABLED=true
-export TIME_SERVED_PRISONS="ALL_PRISONS"
 export HDC_ENABLED=true
 export STANDARD_RECALLS_ENABLED=true
 export USE_CURRENT_HDC_STATUS=false

@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -49,8 +48,6 @@ class LicenceCreationService(
   private val prisonApiClient: PrisonApiClient,
   private val deliusApiClient: DeliusApiClient,
   private val cvlRecordService: CvlRecordService,
-  @param:Value("\${feature.toggle.timeServed.enabled:false}")
-  private val isTimeServedLogicEnabled: Boolean = false,
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
   private val caseService: CaseService,
@@ -152,7 +149,7 @@ class LicenceCreationService(
     val hardStopKind = cvlRecord.hardStopKind
       ?: error("No hardStopKind on CVL record for $prisonNumber - not eligible for hard stop licence")
 
-    val isTimeServedLicenceCreation = isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED
+    val isTimeServedLicenceCreation = hardStopKind == LicenceKind.TIME_SERVED
 
     val licence = if (isTimeServedLicenceCreation) {
       val responsibleCom =

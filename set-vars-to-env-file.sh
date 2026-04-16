@@ -34,8 +34,6 @@ echo "Getting NOTIFY_API_KEY..."
 export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json | jq -r '.data.NOTIFY_API_KEY | @base64d')
 
 # --- Booleans / Flags ---
-export FEATURE_TOGGLE_TIMESERVED_ENABLED=false
-export TIME_SERVED_PRISONS="ALL_PRISONS"
 export HDC_ENABLED=false
 export STANDARD_RECALLS_ENABLED=false
 export ISR_REPEAL_DATE="2026-03-25"
@@ -65,8 +63,6 @@ cat > "$fileToAddVars" <<EOF
   NOTIFY_API_KEY="${NOTIFY_API_KEY}"
 
 # --- Flags ---
-  FEATURE_TOGGLE_TIMESERVED_ENABLED=${FEATURE_TOGGLE_TIMESERVED_ENABLED}
-  TIME_SERVED_PRISONS=${TIME_SERVED_PRISONS}
   HDC_ENABLED=${HDC_ENABLED}
   STANDARD_RECALLS_ENABLED=${STANDARD_RECALLS_ENABLED}
   ISR_REPEAL_DATE=${ISR_REPEAL_DATE}
