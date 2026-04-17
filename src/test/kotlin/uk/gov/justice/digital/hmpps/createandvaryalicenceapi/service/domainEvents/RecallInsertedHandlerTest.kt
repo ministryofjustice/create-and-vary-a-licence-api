@@ -49,7 +49,7 @@ class RecallInsertedHandlerTest {
     ).thenReturn(listOf(licence))
 
     handler.handleEvent(mapper.writeValueAsString(aRecallInsertedEvent()))
-
+// sdafdsafdsafsdaf
     verify(
       licenceService,
     ).deactivateLicenceAndVariations(
