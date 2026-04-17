@@ -21,4 +21,15 @@ class PrisonService(val prisonApiClient: PrisonApiClient, val prisonerSearchApi:
     val bookingsSentenceAndRecallTypes = prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))
     return bookingsSentenceAndRecallTypes.first()
   }
+
+  fun getRecallType(bookingId: Long): RecallType {
+    val sentenceAndRecallTypes = getSentenceAndRecallTypes(bookingId)
+    return if (sentenceAndRecallTypes.sentenceTypeRecallTypes.any { it.recallType.isStandardRecall }) {
+      RecallType.STANDARD
+    } else if (sentenceAndRecallTypes.sentenceTypeRecallTypes.any { it.recallType.isFixedTermRecall }) {
+      RecallType.FIXED_TERM
+    } else {
+      RecallType.NONE
+    }
+  }
 }

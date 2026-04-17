@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Deact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 
@@ -47,16 +48,13 @@ class RecallInsertedHandler(
     if (activeLicence != null) {
       log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
 
-      val sentenceAndRecallTypes = prisonService.getSentenceAndRecallTypes(nomisRecord.bookingId?.toLong()!!)
-      val hasStandardRecall = sentenceAndRecallTypes.sentenceTypeRecallTypes.any { it.recallType.isStandardRecall }
-      val hasFixedTermRecall = sentenceAndRecallTypes.sentenceTypeRecallTypes.any { it.recallType.isFixedTermRecall }
-
-      if (hasStandardRecall && standardRecallsEnabled) {
+      val recallType = prisonService.getRecallType(bookingId = nomisRecord.bookingId?.toLong()!!)
+      if (recallType == RecallType.STANDARD && standardRecallsEnabled) {
         licenceService.deactivateLicenceAndVariations(
           activeLicence.id,
           DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.STANDARD_RECALL),
         )
-      } else if (hasFixedTermRecall) {
+      } else if (recallType == RecallType.FIXED_TERM) {
         licenceService.deactivateLicenceAndVariations(
           activeLicence.id,
           DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RECALLED),

@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
@@ -43,9 +44,7 @@ class RecallInsertedHandlerTest {
     val licence = createCrdLicence()
 
     whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
-    whenever(prisonService.getSentenceAndRecallTypes(bookingId)).thenReturn(
-      fixedTermRecallSentenceAndRecalls(bookingId),
-    )
+    whenever(prisonService.getRecallType(bookingId)).thenReturn(RecallType.FIXED_TERM)
     whenever(
       licenceRepository.findAllByNomsIdAndStatusCodeIn(
         nomisId,
@@ -70,9 +69,7 @@ class RecallInsertedHandlerTest {
     val licence = createCrdLicence()
 
     whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
-    whenever(prisonService.getSentenceAndRecallTypes(bookingId)).thenReturn(
-      standardRecallSentenceAndRecalls(bookingId),
-    )
+    whenever(prisonService.getRecallType(bookingId)).thenReturn(RecallType.STANDARD)
     whenever(
       licenceRepository.findAllByNomsIdAndStatusCodeIn(
         nomisId,

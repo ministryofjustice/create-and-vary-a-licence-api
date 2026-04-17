@@ -89,4 +89,57 @@ class PrisonServiceTest {
     assertThat(result).isEqualTo(searchResult)
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(nomisIds)
   }
+
+  @Test
+  fun `should return recall type as standard if a booking has standard and fixed term recall sentences`() {
+    val bookingId = 90483L
+    val sentenceAndRecallTypes = listOf(
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = true, isStandardRecall = false)),
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = false, isStandardRecall = true)),
+    )
+    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(bookingId, sentenceAndRecallTypes)
+
+    whenever(prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))).thenReturn(
+      listOf(
+        bookingSentenceAndRecallTypes,
+      ),
+    )
+
+    assertThat(service.getRecallType(bookingId)).isEqualTo(RecallType.STANDARD)
+  }
+
+  @Test
+  fun `should return recall type as fixed if a booking has a fixed term recall sentence`() {
+    val bookingId = 90483L
+    val sentenceAndRecallTypes = listOf(
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = false, isStandardRecall = false)),
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = true, isStandardRecall = false)),
+    )
+    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(bookingId, sentenceAndRecallTypes)
+
+    whenever(prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))).thenReturn(
+      listOf(
+        bookingSentenceAndRecallTypes,
+      ),
+    )
+
+    assertThat(service.getRecallType(bookingId)).isEqualTo(RecallType.FIXED_TERM)
+  }
+
+  @Test
+  fun `should return recall type as none if a booking doesn't have any recall sentences`() {
+    val bookingId = 90483L
+    val sentenceAndRecallTypes = listOf(
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = false, isStandardRecall = false)),
+    )
+    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(bookingId, sentenceAndRecallTypes)
+
+    whenever(prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))).thenReturn(
+      listOf(
+        bookingSentenceAndRecallTypes,
+      ),
+    )
+
+    assertThat(service.getRecallType(bookingId)).isEqualTo(RecallType.NONE)
+  }
 }
