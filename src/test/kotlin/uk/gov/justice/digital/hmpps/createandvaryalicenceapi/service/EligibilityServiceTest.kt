@@ -337,11 +337,11 @@ class EligibilityServiceTest {
         aPrisonerSearchResult.copy(postRecallReleaseDate = LocalDate.now(clock).plusDays(2)),
       )
 
-      assertThat(result.isEligible).isFalse()
+      assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is a recall case")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("is on a standard recall")
-      assertThat(result.eligibleKind).isNull()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(EligibleKind.STANDARD)
     }
 
     @Test
@@ -699,7 +699,7 @@ class EligibilityServiceTest {
     }
 
     @Test
-    fun `Case with a standard recall is ineligible`() {
+    fun `Case with a standard recall has the correct EligibleKind`() {
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
           BookingSentenceAndRecallTypes(
@@ -719,11 +719,11 @@ class EligibilityServiceTest {
 
       val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
 
-      assertThat(result.isEligible).isFalse()
+      assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("is on a standard recall")
-      assertThat(result.eligibleKind).isNull()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(EligibleKind.STANDARD)
     }
 
     @Test
