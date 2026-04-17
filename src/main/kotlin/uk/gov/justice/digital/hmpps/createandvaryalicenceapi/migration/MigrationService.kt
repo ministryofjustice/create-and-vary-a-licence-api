@@ -81,7 +81,6 @@ class MigrationService(
     val licence = HdcLicence(
       // Hard coded values
       version = "3.0",
-      // TODO - this should be discussed further with the team,
       licenceVersion = "1.0",
       // Main states
       typeCode = licence.typeCode,
