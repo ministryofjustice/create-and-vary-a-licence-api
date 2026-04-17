@@ -82,7 +82,7 @@ class MigrationService(
       // Hard coded values
       version = "3.0",
       // TODO - this should be discussed further with the team,
-      licenceVersion = "1.0", // test test commit
+      licenceVersion = "1.0", // test test commit 1
       // Main states
       typeCode = licence.typeCode,
       statusCode = LicenceStatus.ACTIVE,
