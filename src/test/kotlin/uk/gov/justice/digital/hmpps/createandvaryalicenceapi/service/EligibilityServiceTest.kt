@@ -319,7 +319,7 @@ class EligibilityServiceTest {
     }
 
     @Test
-    fun `Person is on recall with a post recall release date (PRRD) after CRD - not eligible for CVL `() {
+    fun `Person is on recall with a post recall release date (PRRD) after CRD - standard recall now eligible CVL `() {
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), any())).thenReturn(
         listOf(
           BookingSentenceAndRecallTypes(
