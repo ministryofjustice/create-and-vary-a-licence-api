@@ -211,6 +211,15 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     assertThat(licence.appointment?.address?.secondLine).isEqualTo(request.appointment?.address?.secondLine)
     assertThat(licence.appointment?.address?.townOrCity).isEqualTo(request.appointment?.address?.townOrCity)
     assertThat(licence.appointment?.address?.postcode).isEqualTo(request.appointment?.address?.postcode)
+
+    assertThat(licence.probationAreaCode).isEqualTo("probationArea-code-1")
+    assertThat(licence.probationAreaDescription).isEqualTo("probationArea-description-1")
+    assertThat(licence.probationPduCode).isEqualTo("borough-code-1")
+    assertThat(licence.probationPduDescription).isEqualTo("borough-description-1")
+    assertThat(licence.probationLauCode).isEqualTo("district-code-1")
+    assertThat(licence.probationLauDescription).isEqualTo("district-description-1")
+    assertThat(licence.probationTeamCode).isEqualTo("team-code-1")
+    assertThat(licence.probationTeamDescription).isEqualTo("staff-description-1")
   }
 
   private fun validRequest() = MigrateFromHdcToCvlRequest(
