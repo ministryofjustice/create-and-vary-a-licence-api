@@ -36,6 +36,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
@@ -49,6 +51,14 @@ class MigrationServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
+
+  private val team = TeamDetail(
+    code = "NA01A2-A",
+    description = "Cardiff South Team A",
+    borough = Detail("N01A", "Cardiff"),
+    district = Detail("N01A2", "Cardiff South"),
+    provider = Detail("N01", "Wales"),
+  )
 
   private val service = MigrationService(
     staffRepository,
@@ -87,12 +97,9 @@ class MigrationServiceTest {
       ),
     )
 
-    val offenderManager = mock<CommunityManager>()
-    whenever(offenderManager.id).thenReturn(staffId)
+    mockGetOffenderManager(staffId)
 
     val com = mock<CommunityOffenderManager>()
-
-    whenever(deliusApiClient.getOffenderManager(prisonerNumber)).thenReturn(offenderManager)
     whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(com)
 
     val savedLicence = TestData.createHdcLicence(id = 1L).apply {
@@ -137,14 +144,13 @@ class MigrationServiceTest {
       prisonerNumber = prisonerNumber,
       submittedBy = submittedByUserName,
     )
-    val offenderManager = mock<CommunityManager>()
-    whenever(offenderManager.id).thenReturn(staffId)
+    mockGetOffenderManager(staffId)
+
     val responsibleCom = mock<CommunityOffenderManager>().apply {
       whenever(username).thenReturn("responsible")
     }
     val submittedByCom = mock<CommunityOffenderManager>()
 
-    whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager)
     whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(responsibleCom)
     whenever(licenceCreationService.getOrCreateCom(submittedByUserName)).thenReturn(responsibleCom, submittedByCom)
 
@@ -166,14 +172,13 @@ class MigrationServiceTest {
       prisonerNumber = prisonerNumber,
       createdByUserName = createdByUserName,
     )
-    val offenderManager = mock<CommunityManager>()
-    whenever(offenderManager.id).thenReturn(staffId)
+    mockGetOffenderManager(staffId)
+
     val responsibleCom = mock<CommunityOffenderManager>().apply {
       whenever(username).thenReturn("responsible")
     }
     val submittedByCom = mock<CommunityOffenderManager>()
 
-    whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager)
     whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(responsibleCom)
     whenever(licenceCreationService.getOrCreateCom(createdByUserName)).thenReturn(responsibleCom, submittedByCom)
 
@@ -197,14 +202,13 @@ class MigrationServiceTest {
       submittedBy = commonUserName,
     )
 
-    val offenderManager = mock<CommunityManager>()
-    whenever(offenderManager.id).thenReturn(staffId)
+    mockGetOffenderManager(staffId)
+
     val responsibleCom = mock<CommunityOffenderManager>().apply {
       whenever(username).thenReturn(commonUserName)
       whenever(fullName).thenReturn("commonFirstName commonLastName")
     }
 
-    whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager)
     whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(responsibleCom)
 
     // When
@@ -231,9 +235,7 @@ class MigrationServiceTest {
       approvedByUsername = approvedByUsername,
     )
 
-    val offenderManager = mock<CommunityManager>()
-    whenever(offenderManager.id).thenReturn(staffId)
-    whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager)
+    mockGetOffenderManager(staffId)
     whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
 
     val approvedByStaff = mock<Staff>().apply {
@@ -251,6 +253,13 @@ class MigrationServiceTest {
     verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
     val savedLicence = licenceCaptor.firstValue
     assertThat(savedLicence.approvedByName).isEqualTo("approvedFirstName approvedLastName")
+  }
+
+  private fun mockGetOffenderManager(staffId: Long) {
+    val offenderManager = mock<CommunityManager>()
+    whenever(offenderManager.id).thenReturn(staffId)
+    whenever(offenderManager.team).thenReturn(team)
+    whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager)
   }
 
   @Test
