@@ -48,6 +48,7 @@ class MigrationService(
     val hdcLicence = request.toHdcLicence()
     saveMetaData(request, hdcLicence)
     log.info("Ending migration for bookingId={} cvl licence id ={}", request.bookingId, hdcLicence.id)
+    // commit test
   }
 
   private fun saveMetaData(
