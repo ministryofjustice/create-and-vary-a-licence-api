@@ -47,6 +47,6 @@
        file name: handlebars-4.5.0.jar: We cant configure allowProtoMethods
     ]]></notes>
         <packageUrl regex="true">^pkg:javascript/handlebars@.*$</packageUrl>
-        <vulnerabilityName>protoAccessControl</vulnerabilityName>
+        <vulnerabilityName regex="true">.*4\.6\.0.*protoAccessControl.*</vulnerabilityName>
     </suppress>
 </suppressions>
