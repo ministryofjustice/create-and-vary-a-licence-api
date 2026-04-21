@@ -1,5 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
+enum class RecallType {
+  STANDARD,
+  FIXED_TERM,
+  NONE,
+}
+
 data class BookingSentenceAndRecallTypes(
   val bookingId: Long,
   val sentenceTypeRecallTypes: List<SentenceAndRecallType>,

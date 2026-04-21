@@ -723,6 +723,67 @@ class LicenceCreationServiceTest {
     }
 
     @Test
+    fun `PRRD licence for standard recall is created as expected`() {
+      val aPrisonerSearchResult = prisonerSearchResult(postRecallReleaseDate = LocalDate.now())
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.STANDARD,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+        ),
+      )
+
+      service.createLicence(PRISON_NUMBER)
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      argumentCaptor<PrrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        verify(telemetryService).recordLicenceCreatedEvent(capture())
+        with(firstValue) {
+          assertThat(kind).isEqualTo(LicenceKind.PRRD)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.STANDARD)
+          assertThat(typeCode).isEqualTo(LicenceType.AP)
+          assertThat(version).isEqualTo("3.0")
+          assertThat(statusCode).isEqualTo(IN_PROGRESS)
+          assertThat(versionOfId).isNull()
+          assertThat(licenceVersion).isEqualTo("1.0")
+          assertThat(nomsId).isEqualTo(nomsId)
+          assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
+          assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId!!.toLong())
+          assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
+          assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
+          assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
+          assertThat(surname).isEqualTo(aPrisonerSearchResult.lastName.convertToTitleCase())
+          assertThat(dateOfBirth).isEqualTo(aPrisonerSearchResult.dateOfBirth)
+          assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
+          assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
+          assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
+          assertThat(licenceStartDate).isEqualTo(LocalDate.of(2022, 10, 10))
+          assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
+          assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
+          assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
+          assertThat(postRecallReleaseDate).isEqualTo(LocalDate.now())
+          assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
+          assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
+          assertThat(probationAreaCode).isEqualTo(aCommunityManager.team.provider.code)
+          assertThat(probationAreaDescription).isEqualTo(aCommunityManager.team.provider.description)
+          assertThat(probationPduCode).isEqualTo(aCommunityManager.team.borough.code)
+          assertThat(probationPduDescription).isEqualTo(aCommunityManager.team.borough.description)
+          assertThat(probationLauCode).isEqualTo(aCommunityManager.team.district.code)
+          assertThat(probationLauDescription).isEqualTo(aCommunityManager.team.district.description)
+          assertThat(probationTeamCode).isEqualTo(aCommunityManager.team.code)
+          assertThat(probationTeamDescription).isEqualTo(aCommunityManager.team.description)
+          assertThat(crn).isEqualTo(aProbationCaseResult.crn)
+          assertThat(pnc).isEqualTo(aProbationCaseResult.pncNumber)
+          assertThat(responsibleCom).isEqualTo(com)
+        }
+      }
+    }
+
+    @Test
     fun `Populates licence with CRO from delius when provided`() {
       val croNumber = "943876/52W"
       val offender = aProbationCaseResult.copy(croNumber = croNumber)

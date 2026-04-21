@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Deact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 
@@ -23,15 +24,11 @@ class RecallInsertedHandler(
   @param:Value("\${feature.toggle.standardRecalls.enabled:false}") private val standardRecallsEnabled: Boolean = false,
 ) {
   companion object {
-    private val log = LoggerFactory.getLogger(PrisonerUpdatedHandler::class.java)
+    private val log = LoggerFactory.getLogger(RecallInsertedHandler::class.java)
   }
 
   @Transactional
   fun handleEvent(message: String) {
-    if (!standardRecallsEnabled) {
-      return
-    }
-
     val event = try {
       mapper.readValue(message, HMPPSDomainEvent::class.java)
     } catch (e: JacksonException) {
@@ -50,11 +47,17 @@ class RecallInsertedHandler(
     val activeLicence = getActiveLicence(nomisId)
     if (activeLicence != null) {
       log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
-      val hasStandardRecall = prisonService.hasStandardRecallSentence(nomisRecord.bookingId?.toLong()!!)
-      if (hasStandardRecall) {
+
+      val recallType = prisonService.getRecallType(bookingId = nomisRecord.bookingId?.toLong()!!)
+      if (recallType == RecallType.STANDARD && standardRecallsEnabled) {
         licenceService.deactivateLicenceAndVariations(
           activeLicence.id,
           DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.STANDARD_RECALL),
+        )
+      } else if (recallType == RecallType.FIXED_TERM) {
+        licenceService.deactivateLicenceAndVariations(
+          activeLicence.id,
+          DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RECALLED),
         )
       }
     }

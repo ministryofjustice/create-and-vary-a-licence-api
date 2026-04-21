@@ -28,6 +28,7 @@ object LicenceFactory {
 
   fun createPrrd(
     licenceType: LicenceType,
+    eligibleKind: EligibleKind,
     nomsId: String,
     version: String,
     nomisRecord: PrisonerSearchPrisoner,
@@ -39,6 +40,7 @@ object LicenceFactory {
     licenceStartDate: LocalDate?,
   ) = PrrdLicence(
     typeCode = licenceType,
+    eligibleKind = eligibleKind,
     version = version,
     statusCode = IN_PROGRESS,
     nomsId = nomsId,
