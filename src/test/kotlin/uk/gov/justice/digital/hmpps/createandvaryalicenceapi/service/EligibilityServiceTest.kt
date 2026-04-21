@@ -21,8 +21,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
@@ -319,7 +319,7 @@ class EligibilityServiceTest {
     }
 
     @Test
-    fun `Person is on recall with a post recall release date (PRRD) after CRD - not eligible for CVL `() {
+    fun `Person is on recall with a post recall release date (PRRD) after CRD - standard recall now eligible CVL `() {
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), any())).thenReturn(
         listOf(
           BookingSentenceAndRecallTypes(
@@ -327,7 +327,7 @@ class EligibilityServiceTest {
             listOf(
               SentenceAndRecallType(
                 "type",
-                RecallType(recallName = "standard", isStandardRecall = true, isFixedTermRecall = false),
+                SentenceRecallType(recallName = "standard", isStandardRecall = true, isFixedTermRecall = false),
               ),
             ),
           ),
@@ -337,11 +337,11 @@ class EligibilityServiceTest {
         aPrisonerSearchResult.copy(postRecallReleaseDate = LocalDate.now(clock).plusDays(2)),
       )
 
-      assertThat(result.isEligible).isFalse()
+      assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is a recall case")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("is on a standard recall")
-      assertThat(result.eligibleKind).isNull()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(EligibleKind.STANDARD)
     }
 
     @Test
@@ -699,7 +699,7 @@ class EligibilityServiceTest {
     }
 
     @Test
-    fun `Case with a standard recall is ineligible`() {
+    fun `Case with a standard recall has the correct EligibleKind`() {
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
           BookingSentenceAndRecallTypes(
@@ -707,7 +707,7 @@ class EligibilityServiceTest {
             sentenceTypeRecallTypes = listOf(
               aSentenceAndRecallType(),
               aSentenceAndRecallType(
-                recallType = aRecallType(
+                sentenceRecallType = aRecallType(
                   isStandardRecall = true,
                   isFixedTermRecall = false,
                 ),
@@ -719,11 +719,11 @@ class EligibilityServiceTest {
 
       val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
 
-      assertThat(result.isEligible).isFalse()
+      assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("is on a standard recall")
-      assertThat(result.eligibleKind).isNull()
+      assertThat(result.prrdIneligibilityReasons).isEmpty()
+      assertThat(result.eligibleKind).isEqualTo(EligibleKind.STANDARD)
     }
 
     @Test
@@ -734,7 +734,7 @@ class EligibilityServiceTest {
             bookingId = 123456,
             sentenceTypeRecallTypes = listOf(
               aSentenceAndRecallType(
-                recallType = aRecallType(
+                sentenceRecallType = aRecallType(
                   isStandardRecall = false,
                   isFixedTermRecall = false,
                 ),

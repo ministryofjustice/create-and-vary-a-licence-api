@@ -18,7 +18,7 @@ services:
       retries: 5
 
   localstack-api:
-    image: localstack/localstack:3.0.2
+    image: localstack/localstack:community-archive
     networks:
       - hmpps
     container_name: localstack-api

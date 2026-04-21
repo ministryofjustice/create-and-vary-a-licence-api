@@ -41,9 +41,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Offe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
@@ -192,6 +192,9 @@ object TestData {
     crdIneligibilityReasons = emptyList(),
     prrdIneligibilityReasons = emptyList(),
     hdcIneligibilityReasons = listOf("An HDC reason"),
+    isEligible = true,
+    eligibleKind = EligibleKind.CRD,
+    ineligibilityReasons = emptyList(),
   )
 
   fun anIneligibleEligibilityAssessment() = EligibilityAssessment(
@@ -199,6 +202,9 @@ object TestData {
     crdIneligibilityReasons = listOf("A CRD reason"),
     prrdIneligibilityReasons = listOf("A PRRD reason"),
     hdcIneligibilityReasons = listOf("An HDC reason"),
+    isEligible = false,
+    eligibleKind = null,
+    ineligibilityReasons = listOf("A CRD reason", "A PRRD reason", "A CRD reason", "A PRRD reason"),
   )
 
   private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
@@ -245,6 +251,7 @@ object TestData {
   fun createPrrdLicence() = PrrdLicence(
     id = 1,
     typeCode = AP,
+    eligibleKind = EligibleKind.FIXED_TERM,
     version = "1.1",
     statusCode = LicenceStatus.IN_PROGRESS,
     nomsId = "A1234AA",
@@ -501,8 +508,8 @@ object TestData {
     dateLastUpdated = updated,
   )
 
-  fun createHdcLicence() = HdcLicence(
-    id = 1,
+  fun createHdcLicence(id: Long = 1) = HdcLicence(
+    id = id,
     typeCode = AP,
     version = "1.1",
     statusCode = LicenceStatus.IN_PROGRESS,
@@ -835,12 +842,12 @@ object TestData {
     ),
   )
 
-  fun aSentenceAndRecallType(recallType: RecallType = aRecallType()) = SentenceAndRecallType(
+  fun aSentenceAndRecallType(sentenceRecallType: SentenceRecallType = aRecallType()) = SentenceAndRecallType(
     sentenceType = "A_SENTENCE",
-    recallType,
+    sentenceRecallType,
   )
 
-  fun aRecallType(isStandardRecall: Boolean = false, isFixedTermRecall: Boolean = true) = RecallType(
+  fun aRecallType(isStandardRecall: Boolean = false, isFixedTermRecall: Boolean = true) = SentenceRecallType(
     recallName = "A_RECALL",
     isStandardRecall,
     isFixedTermRecall,

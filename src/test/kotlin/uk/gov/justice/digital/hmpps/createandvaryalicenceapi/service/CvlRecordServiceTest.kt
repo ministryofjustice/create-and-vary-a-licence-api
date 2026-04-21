@@ -424,5 +424,6 @@ class CvlRecordServiceTest {
   private val prrdEligibilityAssessment = anEligibilityAssessment().copy(
     crdIneligibilityReasons = listOf("Some reason"),
     hdcIneligibilityReasons = listOf("Some reason"),
+    eligibleKind = EligibleKind.FIXED_TERM,
   )
 }

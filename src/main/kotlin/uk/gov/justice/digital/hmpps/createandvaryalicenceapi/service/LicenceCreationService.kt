@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -49,8 +48,6 @@ class LicenceCreationService(
   private val prisonApiClient: PrisonApiClient,
   private val deliusApiClient: DeliusApiClient,
   private val cvlRecordService: CvlRecordService,
-  @param:Value("\${feature.toggle.timeServed.enabled:false}")
-  private val isTimeServedLogicEnabled: Boolean = false,
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
   private val caseService: CaseService,
@@ -83,6 +80,21 @@ class LicenceCreationService(
     val licence = when (cvlRecord.eligibleKind) {
       EligibleKind.FIXED_TERM -> LicenceFactory.createPrrd(
         licenceType = cvlRecord.licenceType,
+        eligibleKind = cvlRecord.eligibleKind,
+        nomsId = nomisRecord.prisonerNumber,
+        version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
+        nomisRecord = nomisRecord,
+        prisonInformation = prisonInformation,
+        team = offenderManager.team,
+        deliusRecord = deliusRecord,
+        responsibleCom = responsibleCom,
+        creator = createdBy,
+        licenceStartDate = cvlRecord.licenceStartDate,
+      )
+
+      EligibleKind.STANDARD -> LicenceFactory.createPrrd(
+        licenceType = cvlRecord.licenceType,
+        eligibleKind = cvlRecord.eligibleKind,
         nomsId = nomisRecord.prisonerNumber,
         version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
         nomisRecord = nomisRecord,
@@ -152,7 +164,7 @@ class LicenceCreationService(
     val hardStopKind = cvlRecord.hardStopKind
       ?: error("No hardStopKind on CVL record for $prisonNumber - not eligible for hard stop licence")
 
-    val isTimeServedLicenceCreation = isTimeServedLogicEnabled && hardStopKind == LicenceKind.TIME_SERVED
+    val isTimeServedLicenceCreation = hardStopKind == LicenceKind.TIME_SERVED
 
     val licence = if (isTimeServedLicenceCreation) {
       val responsibleCom =
@@ -263,12 +275,12 @@ class LicenceCreationService(
     }
   }
 
-  private fun getOrCreateCom(staffId: Long): CommunityOffenderManager {
+  fun getOrCreateCom(staffId: Long): CommunityOffenderManager {
     val staff = staffRepository.findByStaffIdentifier(staffId)
     if (staff != null) {
       return staff
     }
-    log.info("Creating com record for staff with identifier: $staffId")
+    log.info("Creating COM record for staff with identifier: $staffId")
     val com = deliusApiClient.getStaffByIdentifier(staffId) ?: missing(staffId, "record in delius")
     return staffRepository.saveAndFlush(
       CommunityOffenderManager(
@@ -282,5 +294,26 @@ class LicenceCreationService(
     )
   }
 
+  fun getOrCreateCom(userName: String): CommunityOffenderManager {
+    val staff = staffRepository.findByUsernameIgnoreCase(userName) as CommunityOffenderManager?
+    if (staff != null) {
+      return staff
+    }
+    log.info("Creating COM record for staff with userName: $userName")
+    val user = deliusApiClient.getStaffByUserName(userName) ?: missing(userName, "record in delius")
+    return staffRepository.saveAndFlush(
+      CommunityOffenderManager(
+        staffIdentifier = user.id,
+        staffCode = user.code,
+        username = user.username?.uppercase() ?: missing(userName, "username"),
+        email = user.email,
+        firstName = user.name.forename,
+        lastName = user.name.surname,
+      ),
+    )
+  }
+
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
+
+  private fun missing(username: String, field: String): Nothing = error("staff with staff username: '$username', missing $field")
 }

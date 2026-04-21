@@ -1,5 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
+enum class RecallType {
+  STANDARD,
+  FIXED_TERM,
+  NONE,
+}
+
 data class BookingSentenceAndRecallTypes(
   val bookingId: Long,
   val sentenceTypeRecallTypes: List<SentenceAndRecallType>,
@@ -7,10 +13,10 @@ data class BookingSentenceAndRecallTypes(
 
 data class SentenceAndRecallType(
   val sentenceType: String,
-  val recallType: RecallType,
+  val recallType: SentenceRecallType,
 )
 
-data class RecallType(
+data class SentenceRecallType(
   val recallName: String,
   val isStandardRecall: Boolean,
   val isFixedTermRecall: Boolean,

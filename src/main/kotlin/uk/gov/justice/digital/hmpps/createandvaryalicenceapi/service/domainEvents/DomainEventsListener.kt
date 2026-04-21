@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -10,12 +9,14 @@ import tools.jackson.databind.ObjectMapper
 
 const val COM_ALLOCATED_EVENT_TYPE = "person.community.manager.allocated"
 const val PRISONER_UPDATED_EVENT_TYPE = "prisoner-offender-search.prisoner.updated"
+const val RECALL_INSERTED_EVENT_TYPE = "recall.inserted"
 
 @ConditionalOnProperty(name = ["domain.event.listener.disabled"], havingValue = "false", matchIfMissing = true)
 @Service
 class DomainEventListener(
   private val comAllocatedHandler: ComAllocatedHandler,
   private val prisonerUpdatedHandler: PrisonerUpdatedHandler,
+  private val recallInsertedHandler: RecallInsertedHandler,
   private val mapper: ObjectMapper,
 ) {
   private companion object {
@@ -35,6 +36,10 @@ class DomainEventListener(
 
       PRISONER_UPDATED_EVENT_TYPE -> {
         prisonerUpdatedHandler.handleEvent(message)
+      }
+
+      RECALL_INSERTED_EVENT_TYPE -> {
+        recallInsertedHandler.handleEvent(message)
       }
 
       else -> {

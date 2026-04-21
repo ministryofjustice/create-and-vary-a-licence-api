@@ -18,7 +18,7 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
   companion object {
     private const val PAGE_SIZE = 2000
     private const val BY_PRISON_NUMBER_BATCH_SIZE = 1000
-    private const val BY_BOOKING_ID_BATCH_SIZE = 1000
+    private const val BY_BOOKING_ID_BATCH_SIZE = 800
   }
 
   fun searchPrisonersByBookingIds(bookingIds: Collection<Long>) = batchRequests(BY_BOOKING_ID_BATCH_SIZE, bookingIds) { batch ->

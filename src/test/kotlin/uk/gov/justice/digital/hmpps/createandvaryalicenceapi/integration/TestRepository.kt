@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Repository
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
@@ -77,6 +79,30 @@ interface TestTimeServedProbationConfirmContactRepository : JpaRepository<TimeSe
   fun findByLicenceId(licenceId: Long): TimeServedProbationConfirmContact?
 }
 
+@Repository
+interface TestMigrationRepository : JpaRepository<Licence, Long> {
+
+  @Query(
+    value = """
+    SELECT EXISTS (
+      SELECT 1 FROM hdc_migration_condition_meta_data
+    )
+  """,
+    nativeQuery = true,
+  )
+  fun hasAnyConditionMetaData(): Boolean
+
+  @Query(
+    value = """
+    SELECT EXISTS (
+      SELECT 1 FROM hdc_migration_meta_data
+    )
+  """,
+    nativeQuery = true,
+  )
+  fun hasAnyMetaData(): Boolean
+}
+
 @Component
 @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
 class TestRepository(
@@ -91,6 +117,7 @@ class TestRepository(
   private val testTimeServedExternalRecordRepository: TestTimeServedExternalRecordRepository,
   private val testTimeServedProbationConfirmContactRepository: TestTimeServedProbationConfirmContactRepository,
   private val testAdditionalConditionUploadRepository: TestAdditionalConditionUploadRepository,
+  private val migrationRepository: TestMigrationRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -110,6 +137,11 @@ class TestRepository(
 
     licence.bespokeConditions = bespokeConditionRepository.findByLicenceId(licenceId = licence.id).toMutableList()
     licence.additionalConditions = additionalConditionRepository.findByLicenceId(licenceId = licence.id).toMutableList()
+    licence.responsibleCom?.id
+    if (licence is HdcLicence) {
+      licence.createdBy?.username
+      licence.submittedBy?.username
+    }
     return licence
   }
 
@@ -200,4 +232,5 @@ class TestRepository(
     assertThat(licences).isNotEmpty
     return licences
   }
+  fun hasMetaData(): Boolean = migrationRepository.hasAnyMetaData() && migrationRepository.hasAnyConditionMetaData()
 }

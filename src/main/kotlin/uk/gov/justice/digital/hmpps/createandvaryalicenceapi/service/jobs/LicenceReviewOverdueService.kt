@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -16,8 +15,6 @@ import java.time.LocalTime
 class LicenceReviewOverdueService(
   private val licenceReviewRepository: LicenceReviewRepository,
   private val notifyService: NotifyService,
-  @param:Value("\${feature.toggle.timeServed.enabled:false}")
-  private val isTimeServedLogicEnabled: Boolean = false,
 ) {
 
   companion object {
@@ -43,26 +40,15 @@ class LicenceReviewOverdueService(
     licences.map {
       val com = it.responsibleCom
       if (com != null) {
-        if (isTimeServedLogicEnabled) {
-          notifyService.sendLicenceReviewOverdueEmail(
-            com.email,
-            com.fullName,
-            it.forename!!,
-            it.surname!!,
-            it.crn,
-            it.id.toString(),
-            it.kind == LicenceKind.TIME_SERVED,
-          )
-        } else {
-          notifyService.sendHardStopLicenceReviewOverdueEmail(
-            com.email,
-            com.fullName,
-            it.forename!!,
-            it.surname!!,
-            it.crn,
-            it.id.toString(),
-          )
-        }
+        notifyService.sendLicenceReviewOverdueEmail(
+          com.email,
+          com.fullName,
+          it.forename!!,
+          it.surname!!,
+          it.crn,
+          it.id.toString(),
+          it.kind == LicenceKind.TIME_SERVED,
+        )
       } else {
         log.info("Notification not sent as no COM is attached to licence ${it.id}")
       }

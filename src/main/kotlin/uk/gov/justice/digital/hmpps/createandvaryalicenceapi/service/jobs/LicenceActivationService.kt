@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -28,6 +29,7 @@ class LicenceActivationService(
   @Transactional
   fun licenceActivation() {
     val potentialLicences = licenceRepository.getApprovedLicencesOnOrPassedReleaseDate().associateBy { it.bookingId!! }
+    log.info("Licence activation job started: found ${potentialLicences.size} approved licences on or past release date")
     if (potentialLicences.isEmpty()) {
       return
     }
@@ -35,6 +37,12 @@ class LicenceActivationService(
       .map { LicenceWithPrisoner(potentialLicences[it.bookingId?.toLong()]!!, it) }
     val (eligibleLicences, ineligibleLicences) = determineActivationEligibility(matchedLicences)
     val (iS91licencesToActivate, standardLicencesToActivate) = findLicencesToActivate(eligibleLicences)
+
+    log.info(
+      "Licence activation job: activating ${iS91licencesToActivate.size} IS91 licences, " +
+        "${standardLicencesToActivate.size} standard licences, " +
+        "inactivating ${ineligibleLicences.size} licences",
+    )
 
     licenceService.activateLicences(iS91licencesToActivate, IS91_LICENCE_ACTIVATION)
     licenceService.activateLicences(standardLicencesToActivate, LICENCE_ACTIVATION)
@@ -72,6 +80,7 @@ class LicenceActivationService(
   private fun isPassedLicenceStartDate(licenceStartDate: LocalDate?): Boolean = licenceStartDate != null && licenceStartDate <= LocalDate.now()
 
   companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
     const val IS91_LICENCE_ACTIVATION = "IS91 licence automatically activated via repeating job"
     const val LICENCE_ACTIVATION = "Licence automatically activated via repeating job"
     const val LICENCE_DEACTIVATION = "Licence automatically deactivated as booking ID has approved HDC licence"

@@ -5,17 +5,20 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.reset
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.NotSecuredWebMvcTest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
 
 @NotSecuredWebMvcTest(controllers = [SupportController::class])
@@ -23,6 +26,9 @@ class SupportControllerTest {
 
   @MockitoBean
   private lateinit var supportService: SupportService
+
+  @MockitoBean
+  private lateinit var comAllocatedHandler: ComAllocatedHandler
 
   @Autowired
   private lateinit var mvc: MockMvc
@@ -35,7 +41,7 @@ class SupportControllerTest {
     reset(supportService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(SupportController(supportService))
+      .standaloneSetup(SupportController(supportService, comAllocatedHandler))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -47,6 +53,7 @@ class SupportControllerTest {
         genericIneligibilityReasons = listOf("A Reason"),
         crdIneligibilityReasons = emptyList(),
         prrdIneligibilityReasons = emptyList(),
+        ineligibilityReasons = listOf("A Reason"),
       ),
     )
 
@@ -75,5 +82,16 @@ class SupportControllerTest {
     val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
 
     assertThat(mapper.readValue(response, String::class.java)).isEqualTo("true")
+  }
+
+  @Test
+  fun `sync allocation`() {
+    val request = put("/offender/sync-com/crn/A123456")
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+
+    mvc.perform(request).andExpect(status().isOk).andReturn()
+
+    verify(comAllocatedHandler).syncComAllocation("A123456")
   }
 }

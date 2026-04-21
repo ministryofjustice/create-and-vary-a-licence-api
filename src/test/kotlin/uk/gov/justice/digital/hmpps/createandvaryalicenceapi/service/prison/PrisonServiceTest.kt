@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -61,12 +60,12 @@ class PrisonServiceTest {
   }
 
   @Test
-  fun `should return if a booking has any standard recall sentences`() {
+  fun `should return sentence and recall types`() {
     val bookingId = 392L
 
     val sentenceAndRecallTypes = listOf(
-      aSentenceAndRecallType(recallType = aRecallType(isStandardRecall = false)),
-      aSentenceAndRecallType(recallType = aRecallType(isStandardRecall = true)),
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isStandardRecall = false)),
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isStandardRecall = true)),
     )
     val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(bookingId, sentenceAndRecallTypes)
 
@@ -75,6 +74,72 @@ class PrisonServiceTest {
         bookingSentenceAndRecallTypes,
       ),
     )
-    assertTrue(service.hasStandardRecallSentence(bookingId))
+    assertThat(service.getSentenceAndRecallTypes(bookingId)).isEqualTo(bookingSentenceAndRecallTypes)
+  }
+
+  @Test
+  fun `should search prisoners by nomis ids`() {
+    val nomisIds = listOf("A1234AA", "B1234BB")
+    val searchResult = listOf(prisonerSearchResult())
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)).thenReturn(searchResult)
+
+    val result = service.searchPrisonersByNomisIds(nomisIds)
+
+    assertThat(result).isEqualTo(searchResult)
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(nomisIds)
+  }
+
+  @Test
+  fun `should return recall type as standard if a booking has standard and fixed term recall sentences`() {
+    val bookingId = 90483L
+    val sentenceAndRecallTypes = listOf(
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = true, isStandardRecall = false)),
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = false, isStandardRecall = true)),
+    )
+    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(bookingId, sentenceAndRecallTypes)
+
+    whenever(prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))).thenReturn(
+      listOf(
+        bookingSentenceAndRecallTypes,
+      ),
+    )
+
+    assertThat(service.getRecallType(bookingId)).isEqualTo(RecallType.STANDARD)
+  }
+
+  @Test
+  fun `should return recall type as fixed if a booking has a fixed term recall sentence`() {
+    val bookingId = 90483L
+    val sentenceAndRecallTypes = listOf(
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = false, isStandardRecall = false)),
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = true, isStandardRecall = false)),
+    )
+    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(bookingId, sentenceAndRecallTypes)
+
+    whenever(prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))).thenReturn(
+      listOf(
+        bookingSentenceAndRecallTypes,
+      ),
+    )
+
+    assertThat(service.getRecallType(bookingId)).isEqualTo(RecallType.FIXED_TERM)
+  }
+
+  @Test
+  fun `should return recall type as none if a booking doesn't have any recall sentences`() {
+    val bookingId = 90483L
+    val sentenceAndRecallTypes = listOf(
+      aSentenceAndRecallType(sentenceRecallType = aRecallType(isFixedTermRecall = false, isStandardRecall = false)),
+    )
+    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(bookingId, sentenceAndRecallTypes)
+
+    whenever(prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))).thenReturn(
+      listOf(
+        bookingSentenceAndRecallTypes,
+      ),
+    )
+
+    assertThat(service.getRecallType(bookingId)).isEqualTo(RecallType.NONE)
   }
 }

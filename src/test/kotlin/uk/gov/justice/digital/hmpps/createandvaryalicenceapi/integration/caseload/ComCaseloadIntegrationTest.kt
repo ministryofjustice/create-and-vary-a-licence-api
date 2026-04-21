@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus.OK
 import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
@@ -24,8 +25,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -74,12 +75,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val ftr14Ora =
         SentenceAndRecallType(
           "14FTR_ORA",
-          RecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
+          SentenceRecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
         )
       val lrSopc21 =
         SentenceAndRecallType(
           "LR_SOPC21",
-          RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
+          SentenceRecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
         )
       val accessResponse = """
       {
@@ -131,13 +132,14 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComCreateCase>>())
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
-      assertThat(caseload).hasSize(4)
+      assertThat(caseload).hasSize(5)
       assertThat(caseload.map { it.prisonerNumber }).containsExactly(
         "AB1234E",
         "AB1234H",
         "AB1234J",
+        "AB1234K",
         "AB1234I",
       )
       with(caseload.first()) {
@@ -162,12 +164,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val ftr14Ora =
         SentenceAndRecallType(
           "14FTR_ORA",
-          RecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
+          SentenceRecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
         )
       val lrSopc21 =
         SentenceAndRecallType(
           "LR_SOPC21",
-          RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
+          SentenceRecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
         )
       val accessResponse = """
       {
@@ -221,13 +223,14 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val caseload = result.expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComCreateCase>>())
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
-      assertThat(caseload).hasSize(4)
+      assertThat(caseload).hasSize(5)
 
       assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
         1,
         2,
+        null,
         null,
         null,
       )
@@ -236,6 +239,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "AB1234H",
         "AB1234I",
         "AB1234J",
+        "AB1234K",
       )
       with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
@@ -268,10 +272,10 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isForbidden
         .expectStatus().isEqualTo(FORBIDDEN.value())
-        .expectBody(ErrorResponse::class.java)
+        .expectBody<ErrorResponse>()
         .returnResult().responseBody
 
-      assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(result.userMessage).contains("Access Denied")
     }
 
     @Test
@@ -330,7 +334,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
       val caseload = result.expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComCreateCase>>())
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
       assertThat(caseload).hasSize(3)
       assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
@@ -352,7 +356,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       }
     }
 
-    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String, hdcad: String = "", hdced: String = "") {
+    private fun stubSearchPrisonersByNomisId(
+      releaseDate: String,
+      sled: String,
+      tused: String,
+      hdcad: String = "",
+      hdced: String = "",
+    ) {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("team-create-case-load-prisoners").replace(
           "\$releaseDate",
@@ -374,10 +384,10 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isForbidden
         .expectStatus().isEqualTo(FORBIDDEN.value())
-        .expectBody(ErrorResponse::class.java)
+        .expectBody<ErrorResponse>()
         .returnResult().responseBody
 
-      assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(result.userMessage).contains("Access Denied")
     }
 
     @Test
@@ -433,7 +443,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComVaryCase>>())
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
       assertThat(caseload).hasSize(2)
 
@@ -464,10 +474,10 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isForbidden
         .expectStatus().isEqualTo(FORBIDDEN.value())
-        .expectBody(ErrorResponse::class.java)
+        .expectBody<ErrorResponse>()
         .returnResult().responseBody
 
-      assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(result.userMessage).contains("Access Denied")
     }
 
     @Test
@@ -523,7 +533,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComVaryCase>>())
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
       assertThat(caseload).hasSize(2)
 
@@ -546,14 +556,14 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
   inner class GetStaffCreateCaseloadHdc {
     @Test
     fun `Get forbidden (403) when incorrect roles are supplied`() {
-      val result = webTestClient.get()
+      webTestClient.get()
         .uri(GET_STAFF_CREATE_CASELOAD_HDC)
         .accept(APPLICATION_JSON)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
         .exchange()
         .expectStatus().isForbidden
         .expectStatus().isEqualTo(FORBIDDEN.value())
-        .expectBody(ErrorResponse::class.java)
+        .expectBody<ErrorResponse>()
         .returnResult().responseBody
     }
 
@@ -575,12 +585,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val ftr14Ora =
         SentenceAndRecallType(
           "14FTR_ORA",
-          RecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
+          SentenceRecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
         )
       val lrSopc21 =
         SentenceAndRecallType(
           "LR_SOPC21",
-          RecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
+          SentenceRecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
         )
       val accessResponse = """
       {
@@ -643,7 +653,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       val caseload = result.expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComCreateCase>>())
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
       assertThat(caseload).hasSize(2)
 
@@ -660,7 +670,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       assertThat(caseload.last().hdcStatus).isEqualTo(HdcStatus.ELIGIBILITY_CHECKS_COMPLETE)
     }
 
-    private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String, hdcad: String, hdced: String) {
+    private fun stubSearchPrisonersByNomisId(
+      releaseDate: String,
+      sled: String,
+      tused: String,
+      hdcad: String,
+      hdced: String,
+    ) {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("team-create-case-load-prisoners")
           .replace("\$releaseDate", releaseDate)
