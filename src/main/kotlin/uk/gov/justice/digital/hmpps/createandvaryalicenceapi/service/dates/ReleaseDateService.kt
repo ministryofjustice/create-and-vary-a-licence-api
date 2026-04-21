@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.STANDARD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
@@ -108,7 +109,7 @@ class ReleaseDateService(
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
     return prisoners.associate {
       it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
-        FIXED_TERM -> calculatePrrdLicenceStartDate(it)
+        FIXED_TERM, STANDARD -> calculatePrrdLicenceStartDate(it)
         CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
         HDC -> it.homeDetentionCurfewActualDate
         else -> null
