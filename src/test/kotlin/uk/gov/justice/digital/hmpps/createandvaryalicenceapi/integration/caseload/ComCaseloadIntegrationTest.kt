@@ -139,8 +139,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         "AB1234E",
         "AB1234H",
         "AB1234J",
-        "AB1234I",
         "AB1234K",
+        "AB1234I",
       )
       with(caseload.first()) {
         assertThat(crnNumber).isEqualTo("X12348")
