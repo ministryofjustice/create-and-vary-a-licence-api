@@ -31,10 +31,6 @@ class RecallUpdatedHandler(
 
   @Transactional
   fun handleEvent(message: String) {
-    if (!standardRecallsEnabled) {
-      return
-    }
-
     val event = try {
       mapper.readValue(message, HMPPSDomainEvent::class.java)
     } catch (e: JacksonException) {
