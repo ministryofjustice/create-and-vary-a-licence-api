@@ -21,6 +21,7 @@ import java.time.LocalDateTime
 class PrrdLicence(
   id: Long? = null,
   typeCode: LicenceType,
+  eligibleKind: EligibleKind?,
   version: String? = null,
   statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
   nomsId: String? = null,
@@ -90,7 +91,7 @@ class PrrdLicence(
 ) : Licence(
   id = id,
   kind = LicenceKind.PRRD,
-  eligibleKind = EligibleKind.FIXED_TERM,
+  eligibleKind = eligibleKind,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,
@@ -148,6 +149,7 @@ class PrrdLicence(
   fun copy(
     id: Long? = this.id,
     typeCode: LicenceType = this.typeCode,
+    eligibleKind: EligibleKind? = this.eligibleKind,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,
     nomsId: String? = this.nomsId,
@@ -203,6 +205,7 @@ class PrrdLicence(
   ): PrrdLicence = PrrdLicence(
     id = id,
     typeCode = typeCode,
+    eligibleKind = eligibleKind,
     version = version,
     statusCode = statusCode,
     nomsId = nomsId,

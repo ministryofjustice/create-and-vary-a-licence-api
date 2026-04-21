@@ -80,6 +80,21 @@ class LicenceCreationService(
     val licence = when (cvlRecord.eligibleKind) {
       EligibleKind.FIXED_TERM -> LicenceFactory.createPrrd(
         licenceType = cvlRecord.licenceType,
+        eligibleKind = cvlRecord.eligibleKind,
+        nomsId = nomisRecord.prisonerNumber,
+        version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
+        nomisRecord = nomisRecord,
+        prisonInformation = prisonInformation,
+        team = offenderManager.team,
+        deliusRecord = deliusRecord,
+        responsibleCom = responsibleCom,
+        creator = createdBy,
+        licenceStartDate = cvlRecord.licenceStartDate,
+      )
+
+      EligibleKind.STANDARD -> LicenceFactory.createPrrd(
+        licenceType = cvlRecord.licenceType,
+        eligibleKind = cvlRecord.eligibleKind,
         nomsId = nomisRecord.prisonerNumber,
         version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version,
         nomisRecord = nomisRecord,

@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordSe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.util.UUID
@@ -73,7 +74,8 @@ class MigrationService(
 
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
     val prisonerNumber = prisoner.prisonerNumber ?: throw EntityNotFoundException("No prisoner number found!")
-    val responsibleCom = getResponsibleCom(prisonerNumber)
+    val (responsibleCom, probationTeam) = getResponsibleComDetails(prisonerNumber)
+
     val comSet = mutableSetOf(responsibleCom)
     val submittedByCom = comSet.getCommAndAdd(lifecycle.submittedByUserName)
     val createdByCom = comSet.getCommAndAdd(lifecycle.createdByUserName)
@@ -102,6 +104,16 @@ class MigrationService(
       prisonCode = prison.prisonCode,
       prisonDescription = prison.prisonDescription,
       prisonTelephone = prison.prisonTelephone,
+
+      // Probation
+      probationAreaCode = probationTeam.provider.code,
+      probationAreaDescription = probationTeam.provider.description,
+      probationPduCode = probationTeam.borough.code,
+      probationPduDescription = probationTeam.borough.description,
+      probationLauCode = probationTeam.district.code,
+      probationLauDescription = probationTeam.district.description,
+      probationTeamCode = probationTeam.code,
+      probationTeamDescription = probationTeam.description,
 
       // Sentence details
       sentenceStartDate = sentence.sentenceStartDate,
@@ -198,13 +210,16 @@ class MigrationService(
     untilTime = firstNightUntil,
   )
 
-  private fun getResponsibleCom(prisonNumber: String?): CommunityOffenderManager {
+  private fun getResponsibleComDetails(prisonNumber: String?): Pair<CommunityOffenderManager, TeamDetail> {
     val prisonNumber = prisonNumber
       ?: throw ValidationException("Prison number must not be null")
 
     val offenderManager = deliusApiClient.getOffenderManager(prisonNumber)
       ?: throw ValidationException("Could not find offender manager for $prisonNumber in delius")
-    return licenceCreationService.getOrCreateCom(offenderManager.id)
+
+    val probationTeam = offenderManager.team
+    val com = licenceCreationService.getOrCreateCom(offenderManager.id)
+    return Pair(com, probationTeam)
   }
 
   private fun MutableSet<CommunityOffenderManager>.getCommAndAdd(
