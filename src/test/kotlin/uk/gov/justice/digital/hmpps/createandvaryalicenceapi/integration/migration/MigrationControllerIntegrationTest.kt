@@ -199,6 +199,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       assertThat(licence.curfewAddress?.townOrCity).isEqualTo(request.curfewAddress?.townOrCity)
       assertThat(licence.curfewAddress?.postcode).isEqualTo(request.curfewAddress?.postcode)
       assertThat(licence.homeDetentionCurfewEndDate).isEqualTo(request.licence.homeDetentionCurfewEndDate)
+      assertThat(licence.homeDetentionCurfewEligibilityDate).isEqualTo(request.licence.homeDetentionCurfewEligibilityDate)
     }
 
     assertThat(licence.homeDetentionCurfewActualDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
@@ -244,6 +245,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       licenceActivationDate = LocalDate.parse("2025-05-03"),
       homeDetentionCurfewActualDate = LocalDate.parse("2025-05-04"),
       homeDetentionCurfewEndDate = LocalDate.parse("2025-06-05"),
+      homeDetentionCurfewEligibilityDate = LocalDate.parse("2025-06-06"),
       licenceExpiryDate = LocalDate.parse("2026-05-06"),
       licenceVersion = 1,
       varyVersion = 2,

@@ -299,6 +299,7 @@ class MigrationServiceTest {
       licenceActivationDate = null,
       homeDetentionCurfewActualDate = LocalDate.now(),
       homeDetentionCurfewEndDate = LocalDate.now(),
+      homeDetentionCurfewEligibilityDate = LocalDate.now(),
       licenceExpiryDate = LocalDate.now(),
       licenceVersion = 3,
       varyVersion = 4,

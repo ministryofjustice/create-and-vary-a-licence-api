@@ -127,6 +127,9 @@ data class MigrateLicenceDetails(
   @field:Schema(description = "HDC end date", example = "2025-06-04")
   val homeDetentionCurfewEndDate: LocalDate?,
 
+  @field:Schema(description = "HDC eligibility date", example = "2025-06-04")
+  val homeDetentionCurfewEligibilityDate: LocalDate?,
+
   @field:Schema(description = "Licence expiry date", example = "2026-05-04")
   val licenceExpiryDate: LocalDate?,
 

@@ -81,7 +81,6 @@ class MigrationService(
     val licence = HdcLicence(
       // Hard coded values
       version = "3.0",
-      // TODO - this should be discussed further with the team,
       licenceVersion = "1.0",
       // Main states
       typeCode = licence.typeCode,
@@ -93,6 +92,7 @@ class MigrationService(
       bookingId = bookingId,
       pnc = pnc,
       cro = cro,
+      crn = null,
       forename = prisoner.forename,
       middleNames = prisoner.middleNames,
       surname = prisoner.surname,
@@ -120,6 +120,7 @@ class MigrationService(
       // HDC fields
       homeDetentionCurfewActualDate = licence.homeDetentionCurfewActualDate,
       homeDetentionCurfewEndDate = licence.homeDetentionCurfewEndDate,
+      homeDetentionCurfewEligibilityDate = licence.homeDetentionCurfewEligibilityDate,
 
       // Lifecycle
       responsibleCom = responsibleCom,
@@ -203,7 +204,6 @@ class MigrationService(
 
     val offenderManager = deliusApiClient.getOffenderManager(prisonNumber)
       ?: throw ValidationException("Could not find offender manager for $prisonNumber in delius")
-
     return licenceCreationService.getOrCreateCom(offenderManager.id)
   }
 
