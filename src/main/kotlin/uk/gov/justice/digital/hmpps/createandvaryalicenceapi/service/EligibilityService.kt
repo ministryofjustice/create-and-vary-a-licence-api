@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
 import java.time.Clock
 import java.time.LocalDate
@@ -32,7 +33,7 @@ class EligibilityService(
     val hdcStatuses = hdcService.getHdcStatus(prisoners)
     val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
       if (prisoner.bookingId == null) {
-        return@map prisoner.prisonerNumber to EligibilityAssessment(
+        return@map prisoner.prisonerNumber to buildAssessment(
           genericIneligibilityReasons = listOf("no active booking"),
         )
       }
@@ -42,7 +43,7 @@ class EligibilityService(
       val prrdIneligibilityReasons = getPrrdIneligibilityReasons(prisoner, isExpectedHdcRelease)
       val hdcIneligibilityReasons = getHdcIneligibilityReasons(prisoner, isExpectedHdcRelease)
 
-      return@map prisoner.prisonerNumber to EligibilityAssessment(
+      return@map prisoner.prisonerNumber to buildAssessment(
         genericIneligibilityReasons,
         crdIneligibilityReasons,
         prrdIneligibilityReasons,
@@ -50,8 +51,8 @@ class EligibilityService(
       )
     }.toMap()
 
-    val standardRecallsExcluded = overrideNonFixedTermRecalls(prisoners, nomisIdsToEligibilityAssessments)
-    return standardRecallsExcluded
+    val unidentifiableRecallsExcluded = overrideUnidentifiableRecalls(prisoners, nomisIdsToEligibilityAssessments)
+    return unidentifiableRecallsExcluded
   }
 
   fun getGenericIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
@@ -222,7 +223,7 @@ class EligibilityService(
   }
 
   // Miscellaneous functions
-  private fun overrideNonFixedTermRecalls(
+  private fun overrideUnidentifiableRecalls(
     prisoners: List<PrisonerSearchPrisoner>,
     nomisIdsToEligibilityAssessments: Map<String, EligibilityAssessment>,
   ): Map<String, EligibilityAssessment> {
@@ -237,12 +238,12 @@ class EligibilityService(
       }
     }
 
-    val overriddenRecallCases = overrideEligibilityForRecalls(prisoners, recallCases)
+    val overriddenRecallCases = overrideEligibilityForUnidentifiableRecalls(prisoners, recallCases)
 
     return nonRecallCases + overriddenRecallCases
   }
 
-  private fun overrideEligibilityForRecalls(
+  private fun overrideEligibilityForUnidentifiableRecalls(
     prisoners: List<PrisonerSearchPrisoner>,
     recallCases: Map<String, EligibilityAssessment>,
   ): Map<String, EligibilityAssessment> {
@@ -255,24 +256,28 @@ class EligibilityService(
       val bookingId = nomisIdsToBookingIds[nomisId]!!
       val case = bookingsSentenceAndRecallTypes.firstOrNull { it.bookingId == bookingId }
       when {
-        case.isStandardRecall() -> {
-          nomisId to EligibilityAssessment(
+        case == null -> {
+          nomisId to buildAssessment(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
-            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on a standard recall",
+            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "does not have any active sentences",
             hdcIneligibilityReasons = eligibilityAssessment.hdcIneligibilityReasons,
           )
         }
 
-        case.isFixedTermRecall() -> nomisId to eligibilityAssessment
+        case.isStandardRecall() || case.isFixedTermRecall() -> nomisId to buildAssessment(
+          genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
+          crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
+          prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons,
+          hdcIneligibilityReasons = eligibilityAssessment.hdcIneligibilityReasons,
+          case = case,
+        )
 
         else -> {
-          val ineligibilityMessage =
-            if (case == null) "does not have any active sentences" else "is on an unidentified non-fixed term recall"
-          nomisId to EligibilityAssessment(
+          nomisId to buildAssessment(
             genericIneligibilityReasons = eligibilityAssessment.genericIneligibilityReasons,
             crdIneligibilityReasons = eligibilityAssessment.crdIneligibilityReasons,
-            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + ineligibilityMessage,
+            prrdIneligibilityReasons = eligibilityAssessment.prrdIneligibilityReasons + "is on an unidentified non-fixed term recall",
             hdcIneligibilityReasons = eligibilityAssessment.hdcIneligibilityReasons,
           )
         }
@@ -283,6 +288,35 @@ class EligibilityService(
   private fun BookingSentenceAndRecallTypes?.isStandardRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isStandardRecall } == true
 
   private fun BookingSentenceAndRecallTypes?.isFixedTermRecall(): Boolean = this?.sentenceTypeRecallTypes?.any { it.recallType.isFixedTermRecall } == true
+
+  private fun buildAssessment(
+    genericIneligibilityReasons: List<String> = emptyList(),
+    crdIneligibilityReasons: List<String> = emptyList(),
+    prrdIneligibilityReasons: List<String> = emptyList(),
+    hdcIneligibilityReasons: List<String> = emptyList(),
+    case: BookingSentenceAndRecallTypes? = null,
+  ): EligibilityAssessment {
+    val isEligible = genericIneligibilityReasons.isEmpty() &&
+      (crdIneligibilityReasons.isEmpty() || prrdIneligibilityReasons.isEmpty() || hdcIneligibilityReasons.isEmpty())
+
+    val eligibleKind = when {
+      !isEligible -> null
+      crdIneligibilityReasons.isEmpty() -> EligibleKind.CRD
+      hdcIneligibilityReasons.isEmpty() -> EligibleKind.HDC
+      prrdIneligibilityReasons.isEmpty() -> if (case.isStandardRecall()) EligibleKind.STANDARD else EligibleKind.FIXED_TERM
+      else -> null
+    }
+
+    return EligibilityAssessment(
+      genericIneligibilityReasons = genericIneligibilityReasons,
+      crdIneligibilityReasons = crdIneligibilityReasons,
+      prrdIneligibilityReasons = prrdIneligibilityReasons,
+      hdcIneligibilityReasons = hdcIneligibilityReasons,
+      isEligible = isEligible,
+      eligibleKind = eligibleKind,
+      ineligibilityReasons = genericIneligibilityReasons + crdIneligibilityReasons + prrdIneligibilityReasons,
+    )
+  }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

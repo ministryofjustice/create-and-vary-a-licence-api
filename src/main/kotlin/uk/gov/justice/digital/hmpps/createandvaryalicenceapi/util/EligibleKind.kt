@@ -6,6 +6,9 @@ enum class EligibleKind(val licenceKind: LicenceKind) {
   FIXED_TERM(LicenceKind.PRRD) {
     override fun isRecall() = true
   },
+  STANDARD(LicenceKind.PRRD) {
+    override fun isRecall() = true
+  },
   ;
 
   open fun isRecall(): Boolean = false
