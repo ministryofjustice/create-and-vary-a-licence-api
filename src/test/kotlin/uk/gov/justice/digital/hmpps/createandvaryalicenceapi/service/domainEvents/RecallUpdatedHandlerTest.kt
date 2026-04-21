@@ -62,6 +62,29 @@ class RecallUpdatedHandlerTest {
   }
 
   @Test
+  fun `should change the eligible kind of a fixed term recall licence to CRD when the offender no longer has a recall sentence`() {
+    val licence = createPrrdLicence()
+
+    whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
+    whenever(prisonService.getRecallType(bookingId)).thenReturn(RecallType.NONE)
+    whenever(
+      licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
+        bookingId,
+        listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
+        listOf(LicenceKind.PRRD),
+      ),
+    ).thenReturn(listOf(licence))
+
+    handler.handleEvent(aRecallUpdatedEventMessage())
+
+    verify(licenceService).updateLicenceKind(
+      licence,
+      LicenceKind.CRD,
+      EligibleKind.CRD,
+    )
+  }
+
+  @Test
   fun `should not process standard recalls if they are not enabled`() {
     val standardRecallNotEnabledHandler =
       RecallUpdatedHandler(mapper, licenceRepository, licenceService, prisonService, false)

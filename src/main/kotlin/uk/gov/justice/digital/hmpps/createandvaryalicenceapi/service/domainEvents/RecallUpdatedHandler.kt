@@ -39,15 +39,13 @@ class RecallUpdatedHandler(
     }
 
     val nomisId = event.personReference.noms()
-    if (nomisId.isNullOrBlank()) {
-      throw IllegalStateException("No nomis id found in recall updated event: $message")
-    }
+    check(!nomisId.isNullOrBlank()) { "No nomis id found in recall updated event: $message" }
 
     log.info("Processing recall updated event for nomis id: $nomisId")
     val nomisRecord = prisonService.searchPrisonersByNomisIds(listOf(nomisId)).first()
     val bookingId = nomisRecord.bookingId?.toLong()!!
     val recallType = prisonService.getRecallType(bookingId)
-    if (recallType == RecallType.NONE || (recallType == RecallType.STANDARD && !standardRecallsEnabled)) {
+    if (recallType == RecallType.STANDARD && !standardRecallsEnabled) {
       return
     }
 
@@ -56,11 +54,18 @@ class RecallUpdatedHandler(
       listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
       listOf(LicenceKind.PRRD),
     )
-    val updatedEligibleKind = if (recallType == RecallType.STANDARD) EligibleKind.STANDARD else EligibleKind.FIXED_TERM
+
+    val updatedLicenceKind = if (recallType == RecallType.NONE) LicenceKind.CRD else LicenceKind.PRRD
+    val updatedEligibleKind = when (recallType) {
+      RecallType.STANDARD -> EligibleKind.STANDARD
+      RecallType.FIXED_TERM -> EligibleKind.FIXED_TERM
+      RecallType.NONE -> EligibleKind.CRD
+    }
+
     licencesToUpdate.forEach { licence ->
       licenceService.updateLicenceKind(
         licence,
-        LicenceKind.PRRD,
+        updatedLicenceKind,
         updatedEligibleKind,
       )
     }
