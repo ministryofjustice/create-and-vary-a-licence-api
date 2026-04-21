@@ -199,6 +199,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       assertThat(licence.curfewAddress?.townOrCity).isEqualTo(request.curfewAddress?.townOrCity)
       assertThat(licence.curfewAddress?.postcode).isEqualTo(request.curfewAddress?.postcode)
       assertThat(licence.homeDetentionCurfewEndDate).isEqualTo(request.licence.homeDetentionCurfewEndDate)
+      assertThat(licence.homeDetentionCurfewEligibilityDate).isEqualTo(request.licence.homeDetentionCurfewEligibilityDate)
     }
 
     assertThat(licence.homeDetentionCurfewActualDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
