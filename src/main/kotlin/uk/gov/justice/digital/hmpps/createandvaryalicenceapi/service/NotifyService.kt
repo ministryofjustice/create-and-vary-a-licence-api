@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.STANDARD
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -309,6 +310,8 @@ class NotifyService(
         "prisonersForRelease" to cases.map { prisoner ->
           val releaseType = if (prisoner.kind == FIXED_TERM) {
             "following a fixed-term recall"
+          } else if (prisoner.kind == STANDARD) {
+            "following a recall"
           } else {
             "as a standard release"
           }
@@ -386,8 +389,11 @@ class NotifyService(
 
   private fun getContacts(creatorEmail: String, creatorName: String, comEmail: String, comName: String): List<Contact> = when {
     creatorEmail.isBlank() && comEmail.isNotBlank() -> listOf(Contact(comEmail, comName))
+
     comEmail.isBlank() && creatorEmail.isNotBlank() -> listOf(Contact(creatorEmail, creatorName))
+
     creatorEmail == comEmail -> listOf(Contact(creatorEmail, creatorName))
+
     else -> listOf(
       Contact(creatorEmail, creatorName),
       Contact(comEmail, comName),
