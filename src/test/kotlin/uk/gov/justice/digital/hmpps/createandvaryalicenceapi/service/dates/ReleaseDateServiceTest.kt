@@ -859,6 +859,18 @@ class ReleaseDateServiceTest {
       }
 
       @Test
+      fun `returns PRRD for a standard recall if ARD is null and PRRD is a working day`() {
+        val prrd = LocalDate.of(2024, 10, 22)
+
+        val nomisRecord = prisonerSearchResult().copy(
+          postRecallReleaseDate = prrd,
+          confirmedReleaseDate = null,
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord, EligibleKind.STANDARD)).isEqualTo(prrd)
+      }
+
+      @Test
       fun `returns the ARD if it is before the PRRD and after the CRD`() {
         val prrd = LocalDate.of(2024, 10, 22)
         val ard = prrd.minusDays(2)
@@ -920,7 +932,12 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = prrd.plusDays(10),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord, EligibleKind.FIXED_TERM)).isEqualTo(lastWorkingDayBeforePrrd)
+        assertThat(
+          service.getLicenceStartDate(
+            nomisRecord,
+            EligibleKind.FIXED_TERM,
+          ),
+        ).isEqualTo(lastWorkingDayBeforePrrd)
       }
 
       // Check to make sure it doesn't return last working day
