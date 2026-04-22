@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
@@ -18,19 +19,17 @@ import java.time.LocalDate
 class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
   private val releaseDateService: ReleaseDateService,
-  private val hdcService: HdcService,
   private val isrPssProgressionService: ISRPssProgressionService,
   private val clock: Clock,
   @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
 ) {
 
-  fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner): EligibilityAssessment {
-    val assessments = getEligibilityAssessments(listOf(prisoner))
+  fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner, hdcStatuses: HdcStatuses): EligibilityAssessment {
+    val assessments = getEligibilityAssessments(listOf(prisoner), hdcStatuses)
     return assessments.values.first()
   }
 
-  fun getEligibilityAssessments(prisoners: List<PrisonerSearchPrisoner>): Map<String, EligibilityAssessment> {
-    val hdcStatuses = hdcService.getHdcStatus(prisoners)
+  fun getEligibilityAssessments(prisoners: List<PrisonerSearchPrisoner>, hdcStatuses: HdcStatuses): Map<String, EligibilityAssessment> {
     val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
       if (prisoner.bookingId == null) {
         return@map prisoner.prisonerNumber to buildAssessment(

@@ -9,6 +9,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
@@ -18,11 +20,13 @@ class SupportServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val eligibilityService = mock<EligibilityService>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
+  private val hdcService = mock<HdcService>()
 
   private val service = SupportService(
     prisonerSearchApiClient,
     eligibilityService,
     iS91DeterminationService,
+    hdcService,
   )
 
   @BeforeEach
@@ -31,6 +35,7 @@ class SupportServiceTest {
       prisonerSearchApiClient,
       eligibilityService,
       iS91DeterminationService,
+      hdcService,
     )
   }
 
@@ -48,9 +53,11 @@ class SupportServiceTest {
   @Test
   fun `get ineligibility reasons for present offender`() {
     val hdcPrisoner = aPrisonerSearchResult.copy(homeDetentionCurfewEligibilityDate = LocalDate.now())
+    val hdcStatuses = HdcStatuses(listOf(hdcPrisonerStatus().copy(bookingId = hdcPrisoner.bookingId?.toLong(), approvalStatus = "APPROVED")))
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(hdcPrisoner))).thenReturn(
+    whenever(hdcService.getHdcStatus(listOf(hdcPrisoner))).thenReturn(hdcStatuses)
+    whenever(eligibilityService.getEligibilityAssessment(eq(hdcPrisoner), eq(hdcStatuses))).thenReturn(
       EligibilityAssessment(
         genericIneligibilityReasons = listOf("A reason", "Approved for HDC"),
         crdIneligibilityReasons = emptyList(),

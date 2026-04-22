@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
@@ -40,6 +41,14 @@ class CvlRecordServiceTest {
 
   @Test
   fun `it builds the CvlRecords for a list of cases`() {
+    val hdcStatuses = HdcStatuses(
+      listOf(
+        hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
+        hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)?.toLong(), approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
+        hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)?.toLong(), approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
+      ),
+    )
+
     whenever(
       eligibilityService.getEligibilityAssessments(
         listOf(
@@ -47,6 +56,7 @@ class CvlRecordServiceTest {
           aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)),
           aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)),
         ),
+        hdcStatuses,
       ),
     ).thenReturn(
       mapOf(
@@ -81,15 +91,7 @@ class CvlRecordServiceTest {
     whenever(releaseDateService.isInHardStopPeriod(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.isEligibleForEarlyRelease(anyOrNull<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(anyOrNull())).thenReturn(true)
-    whenever(hdcService.getHdcStatus(any())).thenReturn(
-      HdcStatuses(
-        listOf(
-          hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
-          hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)?.toLong(), approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
-          hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)?.toLong(), approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
-        ),
-      ),
-    )
+    whenever(hdcService.getHdcStatus(any())).thenReturn(hdcStatuses)
 
     val results = service.getCvlRecords(
       listOf(
@@ -152,22 +154,23 @@ class CvlRecordServiceTest {
 
   @Test
   fun `it builds the CvlRecord for an individual case`() {
-    whenever(
-      eligibilityService.getEligibilityAssessments(
-        listOf(aPrisonerSearchPrisoner),
-      ),
-    ).thenReturn(mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()))
-
-    whenever(hdcService.getHdcStatus(any())).thenReturn(
-      HdcStatuses(
-        listOf(
-          hdcPrisonerStatus().copy(
-            bookingId = aPrisonerSearchPrisoner.bookingId?.toLong(),
-            approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name,
-          ),
+    val hdcStatuses = HdcStatuses(
+      listOf(
+        hdcPrisonerStatus().copy(
+          bookingId = aPrisonerSearchPrisoner.bookingId?.toLong(),
+          approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name,
         ),
       ),
     )
+
+    whenever(
+      eligibilityService.getEligibilityAssessments(
+        listOf(aPrisonerSearchPrisoner),
+        hdcStatuses,
+      ),
+    ).thenReturn(mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()))
+
+    whenever(hdcService.getHdcStatus(any())).thenReturn(hdcStatuses)
 
     whenever(
       releaseDateService.getLicenceStartDates(
@@ -201,17 +204,22 @@ class CvlRecordServiceTest {
   inner class LicenceTypeTest {
     @BeforeEach
     fun reset() {
-      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
+      val hdcStatuses = HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
+        ),
+      )
+
+      whenever(
+        eligibilityService.getEligibilityAssessments(
+          any(),
+          eq(hdcStatuses),
+        ),
+      ).thenReturn(
         mapOf(prisonerSearchResult().prisonerNumber to anEligibilityAssessment()),
       )
       whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
-      whenever(hdcService.getHdcStatus(any())).thenReturn(
-        HdcStatuses(
-          listOf(
-            hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
-          ),
-        ),
-      )
+      whenever(hdcService.getHdcStatus(any())).thenReturn(hdcStatuses)
     }
 
     @Test
@@ -283,7 +291,7 @@ class CvlRecordServiceTest {
 
     @Test
     fun `AP_PSS recall cases are AP-only if Pss repeal date has passed`() {
-      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
+      whenever(eligibilityService.getEligibilityAssessments(any(), any())).thenReturn(
         mapOf(prisonerSearchResult().prisonerNumber to prrdEligibilityAssessment),
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
@@ -303,7 +311,7 @@ class CvlRecordServiceTest {
 
     @Test
     fun `AP_PSS recall cases are PSS-only if the licence start date is equal to the LED`() {
-      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
+      whenever(eligibilityService.getEligibilityAssessments(any(), any())).thenReturn(
         mapOf(prisonerSearchResult().prisonerNumber to prrdEligibilityAssessment),
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
@@ -324,19 +332,19 @@ class CvlRecordServiceTest {
   inner class IsTimedOutTest {
     @BeforeEach
     fun setup() {
-      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
+      val hdcStatuses = HdcStatuses(listOf(hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name)))
+      whenever(
+        eligibilityService.getEligibilityAssessments(
+          any(),
+          eq(hdcStatuses),
+        ),
+      ).thenReturn(
         mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()),
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
         mapOf(aPrisonerSearchPrisoner.prisonerNumber to LocalDate.of(2021, 10, 22)),
       )
-      whenever(hdcService.getHdcStatus(any())).thenReturn(
-        HdcStatuses(
-          listOf(
-            hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
-          ),
-        ),
-      )
+      whenever(hdcService.getHdcStatus(any())).thenReturn(hdcStatuses)
     }
 
     @Test
@@ -374,19 +382,16 @@ class CvlRecordServiceTest {
   inner class HardStopKindTest {
     @BeforeEach
     fun setup() {
-      whenever(eligibilityService.getEligibilityAssessments(any())).thenReturn(
+      val hdcStatuses = HdcStatuses(
+        listOf(hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name)),
+      )
+      whenever(eligibilityService.getEligibilityAssessments(any(), eq(hdcStatuses))).thenReturn(
         mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()),
       )
       whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
         mapOf(aPrisonerSearchPrisoner.prisonerNumber to LocalDate.of(2021, 10, 22)),
       )
-      whenever(hdcService.getHdcStatus(any())).thenReturn(
-        HdcStatuses(
-          listOf(
-            hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
-          ),
-        ),
-      )
+      whenever(hdcService.getHdcStatus(any())).thenReturn(hdcStatuses)
     }
 
     @Test

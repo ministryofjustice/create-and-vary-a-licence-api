@@ -62,9 +62,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anIneligibleEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -114,11 +113,11 @@ class LicenceServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val domainEventsService = mock<DomainEventsService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
-  private val eligibilityService = mock<EligibilityService>()
   private val uploadFileConditionsService = mock<UploadFileConditionsService>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val telemetryService = mock<TelemetryService>()
   private val auditService = mock<AuditService>()
+  private val cvlRecordService = mock<CvlRecordService>()
 
   private val service =
     LicenceService(
@@ -133,11 +132,11 @@ class LicenceServiceTest {
       releaseDateService,
       domainEventsService,
       prisonerSearchApiClient,
-      eligibilityService,
       uploadFileConditionsService,
       deliusApiClient,
       telemetryService,
       auditService,
+      cvlRecordService,
     )
 
   @BeforeEach
@@ -162,7 +161,6 @@ class LicenceServiceTest {
       releaseDateService,
       domainEventsService,
       prisonerSearchApiClient,
-      eligibilityService,
       uploadFileConditionsService,
     )
   }
@@ -1333,11 +1331,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(
-      eligibilityService.getEligibilityAssessment(
-        eq(aPrisonerSearchPrisoner),
-      ),
-    ).thenReturn(anEligibilityAssessment())
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.submitLicence(1L, emptyList())
 
@@ -1397,9 +1391,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardStopLicence))
     whenever(staffRepository.findByUsernameIgnoreCase("tca")).thenReturn(caseAdmin)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.submitLicence(1L, emptyList())
 
@@ -1444,9 +1436,7 @@ class LicenceServiceTest {
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anIneligibleEligibilityAssessment(),
-    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(isEligible = false))
 
     val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
 
@@ -1467,9 +1457,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
 
@@ -2094,9 +2082,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2136,9 +2122,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2174,9 +2158,7 @@ class LicenceServiceTest {
     )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2221,9 +2203,7 @@ class LicenceServiceTest {
   fun `attempting to edit a licence that is ineligible for CVL results in validation exception`() {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anIneligibleEligibilityAssessment(),
-    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(isEligible = false))
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -3504,11 +3484,11 @@ class LicenceServiceTest {
           releaseDateService,
           domainEventsService,
           prisonerSearchApiClient,
-          eligibilityService,
           uploadFileConditionsService,
           deliusApiClient,
           telemetryService,
           auditService,
+          cvlRecordService,
         )
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
@@ -3876,9 +3856,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hdcLicence))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-        anEligibilityAssessment(),
-      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       service.submitLicence(
         1L,
@@ -3930,9 +3908,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-        anEligibilityAssessment(),
-      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       service.submitLicence(
         1L,
@@ -3998,9 +3974,7 @@ class LicenceServiceTest {
         Optional.of(approvedLicence),
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-        anEligibilityAssessment(),
-      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcLicenceEntity)
 
@@ -4045,9 +4019,7 @@ class LicenceServiceTest {
         Optional.of(approvedLicence),
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-        anEligibilityAssessment(),
-      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       whenever(licenceRepository.save(any<Licence>())).thenReturn(approvedLicence)
 

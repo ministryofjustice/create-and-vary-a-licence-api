@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
@@ -268,6 +269,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Submit Crd licence`() {
     // Given
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -299,6 +302,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Submit PRRD licence`() {
     // Given
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -325,6 +330,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Submit Hard Stop licence`() {
     // Given
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -348,6 +355,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Submit VARIATION licence`() {
     // Given
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -371,6 +380,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Submit HDC licence`() {
     // Given
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -394,6 +405,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Submit HDC_VARIATION licence`() {
     // Given
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -615,6 +628,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val uri = "/licence/id/1/edit"
     val roles = listOf("ROLE_CVL_ADMIN")
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = postRequest(uri, roles)
@@ -632,6 +647,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val uri = "/licence/id/1/edit"
     val roles = listOf("ROLE_CVL_ADMIN")
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = postRequest(uri, roles)
@@ -649,6 +666,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val uri = "/licence/id/1/edit"
     val roles = listOf("ROLE_CVL_ADMIN")
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = postRequest(uri, roles)
@@ -1077,6 +1096,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     )
     fun `licence submission should be prevented`() {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(aPrisonerMissingReleaseDate)
+      prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+      prisonApiMockServer.stubGetCourtOutcomes()
 
       webTestClient.put()
         .uri("/licence/id/1/submit")
@@ -1107,6 +1128,8 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     )
     fun `Editing an approved licence should be prevented`() {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(aPrisonerMissingReleaseDate)
+      prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+      prisonApiMockServer.stubGetCourtOutcomes()
 
       webTestClient.post()
         .uri("/licence/id/1/edit")
@@ -1245,6 +1268,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val documentApiMockServer = DocumentApiMockServer()
+    val prisonApiMockServer = PrisonApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -1253,6 +1277,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       prisonerSearchApiMockServer.start()
       deliusMockServer.start()
       documentApiMockServer.start()
+      prisonApiMockServer.start()
     }
 
     @JvmStatic
@@ -1262,6 +1287,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       prisonerSearchApiMockServer.stop()
       deliusMockServer.stop()
       documentApiMockServer.stop()
+      prisonApiMockServer.stop()
     }
   }
 }

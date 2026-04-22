@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Book
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.HDC
@@ -37,11 +36,10 @@ class EligibilityServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
   private val isrPssProgressionService = org.mockito.kotlin.mock<ISRPssProgressionService>()
-  private var service = EligibilityService(prisonApiClient, releaseDateService, hdcService, isrPssProgressionService, clock)
+  private var service = EligibilityService(prisonApiClient, releaseDateService, isrPssProgressionService, clock)
 
   @BeforeEach
   fun reset() {
-    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptyList()))
     whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(false)
   }
 
@@ -66,7 +64,7 @@ class EligibilityServiceTest {
       )
 
       // When
-      val result = service.getEligibilityAssessment(prisonerSearchResult)
+      val result = service.getEligibilityAssessment(prisonerSearchResult, HdcStatuses(emptyList()))
 
       // Then
       assertThat(result.isEligible).isEqualTo(expectedEligible)
@@ -100,19 +98,20 @@ class EligibilityServiceTest {
   inner class CrdCases {
     @Test
     fun `Person is eligible for CVL`() {
-      val result = service.getEligibilityAssessment(aPrisonerSearchResult)
+      val result = service.getEligibilityAssessment(aPrisonerSearchResult, HdcStatuses(emptyList()))
       assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
       assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
-      assertThat(result.eligibleKind).isEqualTo(EligibleKind.CRD)
+      assertThat(result.eligibleKind).isEqualTo(CRD)
     }
 
     @Test
     fun `Person is parole eligible but parole eligibility date is in the past - eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(paroleEligibilityDate = LocalDate.now(clock).minusDays(1)),
+        HdcStatuses(emptyList()),
       )
       assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -125,6 +124,7 @@ class EligibilityServiceTest {
     fun `Person is parole eligible - not eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(paroleEligibilityDate = LocalDate.now(clock).plusYears(1)),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -138,6 +138,7 @@ class EligibilityServiceTest {
     fun `Person has an incorrect legal status - not eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(legalStatus = "DEAD"),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -151,6 +152,7 @@ class EligibilityServiceTest {
     fun `Person is on an indeterminate sentence - not eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(indeterminateSentence = true),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -164,6 +166,7 @@ class EligibilityServiceTest {
     fun `isIndeterminateSentence is null - eligible for CVL`() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(indeterminateSentence = null),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -177,6 +180,7 @@ class EligibilityServiceTest {
     fun `Person does not have a conditional release date - not eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(conditionalReleaseDate = null),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -193,6 +197,7 @@ class EligibilityServiceTest {
           confirmedReleaseDate = LocalDate.now(clock).minusDays(5),
           paroleEligibilityDate = LocalDate.now(clock).minusDays(10),
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -209,6 +214,7 @@ class EligibilityServiceTest {
           paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
           confirmedReleaseDate = LocalDate.now(clock).plusDays(2),
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -225,6 +231,7 @@ class EligibilityServiceTest {
           paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
           actualParoleDate = LocalDate.now(clock).plusDays(1),
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -241,6 +248,7 @@ class EligibilityServiceTest {
           paroleEligibilityDate = LocalDate.now(clock),
           actualParoleDate = LocalDate.now(clock),
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -257,6 +265,7 @@ class EligibilityServiceTest {
           paroleEligibilityDate = LocalDate.now(clock).plusDays(1),
           actualParoleDate = LocalDate.now(clock).plusDays(1),
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -270,6 +279,7 @@ class EligibilityServiceTest {
     fun `Person is an inactive transfer - eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(status = "INACTIVE TRN"),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -283,6 +293,7 @@ class EligibilityServiceTest {
     fun `Person does not have an active prison status - not eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(status = "INACTIVE OUT"),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -296,6 +307,7 @@ class EligibilityServiceTest {
     fun `Person has a conditional release date (CRD) in the past not equal to sentence start date - not eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(conditionalReleaseDate = LocalDate.now(clock).minusDays(1)),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -309,6 +321,7 @@ class EligibilityServiceTest {
     fun `Person is on recall with a post recall release date (PRRD) before CRD - eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(postRecallReleaseDate = LocalDate.now(clock).minusDays(1)),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -335,6 +348,7 @@ class EligibilityServiceTest {
       )
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(postRecallReleaseDate = LocalDate.now(clock).plusDays(2)),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -351,6 +365,7 @@ class EligibilityServiceTest {
           conditionalReleaseDate = null,
           recall = true,
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -367,6 +382,7 @@ class EligibilityServiceTest {
           conditionalReleaseDate = null,
           recall = null,
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -383,6 +399,7 @@ class EligibilityServiceTest {
           confirmedReleaseDate = null,
           conditionalReleaseDate = null,
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -396,6 +413,7 @@ class EligibilityServiceTest {
     fun `Person with imprisonmentStatus ACTIVE IN - eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(imprisonmentStatus = "ACTIVE IN"),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -409,6 +427,7 @@ class EligibilityServiceTest {
     fun `Person with imprisonmentStatus BOTUS - not eligible for CVL `() {
       val result = service.getEligibilityAssessment(
         aPrisonerSearchResult.copy(imprisonmentStatus = "BOTUS"),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -420,14 +439,8 @@ class EligibilityServiceTest {
 
     @Test
     fun `Person with HDC approval - not eligible for CVL`() {
-      whenever(hdcService.getHdcStatus(any())).thenReturn(
-        HdcStatuses(
-          listOf(
-            hdcPrisonerStatus().copy(bookingId = aPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "APPROVED"),
-          ),
-        ),
-      )
-      val result = service.getEligibilityAssessment(aPrisonerSearchResult)
+      val hdcStatuses = HdcStatuses(listOf(hdcPrisonerStatus().copy(bookingId = aPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "APPROVED")))
+      val result = service.getEligibilityAssessment(aPrisonerSearchResult, hdcStatuses)
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -441,6 +454,7 @@ class EligibilityServiceTest {
     fun `returns bulk eligibility`() {
       val result = service.getEligibilityAssessments(
         listOf(aPrisonerSearchResult, aPrisonerSearchResult.copy(prisonerNumber = "A1234AB")),
+        HdcStatuses(emptyList()),
       )
       assertThat(result.size).isEqualTo(2)
       assertThat(result["A1234AA"]!!.isEligible).isTrue()
@@ -454,6 +468,7 @@ class EligibilityServiceTest {
           conditionalReleaseDate = LocalDate.now(clock),
           sentenceStartDate = LocalDate.now(clock),
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -471,6 +486,7 @@ class EligibilityServiceTest {
           conditionalReleaseDate = ssd,
           sentenceStartDate = ssd,
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -487,6 +503,7 @@ class EligibilityServiceTest {
           aPrisonerSearchResult.copy(bookingId = null),
           aPrisonerSearchResult.copy(prisonerNumber = "A1234AB"),
         ),
+        HdcStatuses(emptyList()),
       )
       assertThat(result["A1234AA"]!!.isEligible).isFalse()
       assertThat(result["A1234AA"]!!.genericIneligibilityReasons).containsExactly("no active booking")
@@ -506,7 +523,7 @@ class EligibilityServiceTest {
   inner class PrrdCases {
     @BeforeEach
     fun setup() {
-      service = EligibilityService(prisonApiClient, releaseDateService, hdcService, isrPssProgressionService, clock)
+      service = EligibilityService(prisonApiClient, releaseDateService, isrPssProgressionService, clock)
 
       whenever(prisonApiClient.getSentenceAndRecallTypes(any(), anyOrNull())).thenReturn(
         listOf(
@@ -522,7 +539,7 @@ class EligibilityServiceTest {
 
     @Test
     fun `Person is eligible for CVL`() {
-      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, HdcStatuses(emptyList()))
 
       assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -538,6 +555,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           postRecallReleaseDate = null,
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -553,6 +571,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           postRecallReleaseDate = LocalDate.now(clock).minusDays(1),
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -568,6 +587,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -583,6 +603,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           paroleEligibilityDate = LocalDate.now(clock).plusYears(1),
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -598,6 +619,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           legalStatus = "DEAD",
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -613,6 +635,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           indeterminateSentence = true,
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -628,6 +651,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           indeterminateSentence = null,
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -643,6 +667,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           status = "INACTIVE TRN",
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -658,6 +683,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           status = "INACTIVE OUT",
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -673,6 +699,7 @@ class EligibilityServiceTest {
         aRecallPrisonerSearchResult.copy(
           imprisonmentStatus = "BOTUS",
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isFalse()
@@ -689,6 +716,7 @@ class EligibilityServiceTest {
           conditionalReleaseDate = LocalDate.now(),
           postRecallReleaseDate = null,
         ),
+        HdcStatuses(emptyList()),
       )
 
       assertThat(result.isEligible).isTrue()
@@ -717,7 +745,7 @@ class EligibilityServiceTest {
         ),
       )
 
-      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, HdcStatuses(emptyList()))
 
       assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -744,7 +772,7 @@ class EligibilityServiceTest {
         ),
       )
 
-      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, HdcStatuses(emptyList()))
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -759,7 +787,7 @@ class EligibilityServiceTest {
         emptyList(),
       )
 
-      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, HdcStatuses(emptyList()))
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -771,7 +799,7 @@ class EligibilityServiceTest {
     @Test
     fun `Person who would be on an AP licence being released at SLED - not eligible for CVL`() {
       whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(true)
-      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, HdcStatuses(emptyList()))
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -782,14 +810,12 @@ class EligibilityServiceTest {
 
     @Test
     fun `Person with HDC approval - not eligible for CVL`() {
-      whenever(hdcService.getHdcStatus(any())).thenReturn(
-        HdcStatuses(
-          listOf(
-            hdcPrisonerStatus().copy(bookingId = aRecallPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "APPROVED"),
-          ),
+      val hdcStatuses = HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(bookingId = aRecallPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "APPROVED"),
         ),
       )
-      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult)
+      val result = service.getEligibilityAssessment(aRecallPrisonerSearchResult, hdcStatuses)
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -801,22 +827,19 @@ class EligibilityServiceTest {
 
   @Nested
   inner class HdcCases {
-    private var service = EligibilityService(prisonApiClient, releaseDateService, hdcService, isrPssProgressionService, clock, hdcEnabled = true)
+    private var service = EligibilityService(prisonApiClient, releaseDateService, isrPssProgressionService, clock, hdcEnabled = true)
+    val hdcStatuses = HdcStatuses(listOf(hdcPrisonerStatus().copy(bookingId = anHdcPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "APPROVED")))
 
     @BeforeEach
     fun reset() {
       whenever(hdcService.getHdcStatus(any())).thenReturn(
-        HdcStatuses(
-          listOf(
-            hdcPrisonerStatus().copy(bookingId = anHdcPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "APPROVED"),
-          ),
-        ),
+        hdcStatuses,
       )
     }
 
     @Test
     fun `person is eligible for CVL`() {
-      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult)
+      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult, hdcStatuses)
 
       assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -828,7 +851,7 @@ class EligibilityServiceTest {
 
     @Test
     fun `CRD is missing - ineligible for CVL`() {
-      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult.copy(conditionalReleaseDate = null))
+      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult.copy(conditionalReleaseDate = null), hdcStatuses)
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -840,7 +863,7 @@ class EligibilityServiceTest {
 
     @Test
     fun `HDCAD is missing - ineligible for CVL`() {
-      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult.copy(homeDetentionCurfewActualDate = null))
+      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult.copy(homeDetentionCurfewActualDate = null), hdcStatuses)
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -852,7 +875,7 @@ class EligibilityServiceTest {
 
     @Test
     fun `CRD is under 10 days in the future - ineligible for CVL`() {
-      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult.copy(conditionalReleaseDate = LocalDate.now(clock).plusDays(9)))
+      val result = service.getEligibilityAssessment(anHdcPrisonerSearchResult.copy(conditionalReleaseDate = LocalDate.now(clock).plusDays(9)), hdcStatuses)
 
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
@@ -864,7 +887,10 @@ class EligibilityServiceTest {
 
     @Test
     fun `Case does not have HDC approval - ineligible for CVL`() {
-      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptyList()))
+      val rejectedHdcStatuses = HdcStatuses(listOf(hdcPrisonerStatus().copy(bookingId = anHdcPrisonerSearchResult.bookingId!!.toLong(), approvalStatus = "REJECTED")))
+      whenever(hdcService.getHdcStatus(any())).thenReturn(
+        rejectedHdcStatuses,
+      )
 
       // Also make the case ineligible for a CRD licence
       val result = service.getEligibilityAssessment(
@@ -872,6 +898,7 @@ class EligibilityServiceTest {
           paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
           actualParoleDate = LocalDate.now(clock).plusDays(1),
         ),
+        HdcStatuses(rejectedHdcStatuses),
       )
 
       assertThat(result.isEligible).isFalse()
