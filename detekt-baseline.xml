@@ -64,6 +64,7 @@
     <ID>TooManyFunctions:LicencePolicyService.kt:LicencePolicyService</ID>
     <ID>TooManyFunctions:LicenceRepository.kt:LicenceRepository : JpaRepositoryJpaSpecificationExecutor</ID>
     <ID>TooManyFunctions:LicenceService.kt:LicenceService</ID>
+    <ID>TooManyFunctions:MigrationService.kt:MigrationService</ID>
     <ID>TooManyFunctions:NotifyService.kt:NotifyService</ID>
     <ID>TooManyFunctions:ReleaseDateService.kt:ReleaseDateService</ID>
     <ID>TooManyFunctions:ToEntityTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToEntityTransformers.kt</ID>
