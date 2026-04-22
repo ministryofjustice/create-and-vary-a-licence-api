@@ -156,6 +156,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
     assertThat(licence.pnc).isEqualTo(request.pnc)
     assertThat(licence.cro).isEqualTo(request.cro)
+    assertThat(licence.crn).isEqualTo("X12345")
 
     assertThat(licence.nomsId).isEqualTo(request.prisoner.prisonerNumber)
     assertThat(licence.forename).isEqualTo(request.prisoner.forename)

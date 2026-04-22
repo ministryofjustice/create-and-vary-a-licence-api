@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -259,6 +260,7 @@ class MigrationServiceTest {
     val offenderManager = mock<CommunityManager>()
     whenever(offenderManager.id).thenReturn(staffId)
     whenever(offenderManager.team).thenReturn(team)
+    whenever(offenderManager.case).thenReturn(ProbationCase("A1234BC"))
     whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager)
   }
 
