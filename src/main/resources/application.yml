@@ -172,6 +172,8 @@ feature:
     isr:
       repeal:
         date: ${ISR_REPEAL_DATE:#{null}}
+    restrictedPatients:
+      enabled: ${RESTRICTED_PATIENTS_ENABLED}
 
 hmpps:
   cases:

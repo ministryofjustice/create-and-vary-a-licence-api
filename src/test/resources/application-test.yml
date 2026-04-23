@@ -116,10 +116,9 @@ feature:
   toggle:
     hdc:
       enabled: true
-    timeServed:
-      enabled: true
-      prisons: "MDI, GHI"
     standardRecalls:
+      enabled: true
+    restrictedPatients:
       enabled: true
     isr:
       repeal:
