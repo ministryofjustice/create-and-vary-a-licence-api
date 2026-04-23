@@ -62,7 +62,7 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 # Feature toggles
 export HDC_ENABLED=true
 export STANDARD_RECALLS_ENABLED=true
-expoort RESTRICTED_PATIENTS_ENABLED=true
+export RESTRICTED_PATIENTS_ENABLED=true
 export USE_CURRENT_HDC_STATUS=false
 export ISR_REPEAL_DATE="2026-03-25"
 
