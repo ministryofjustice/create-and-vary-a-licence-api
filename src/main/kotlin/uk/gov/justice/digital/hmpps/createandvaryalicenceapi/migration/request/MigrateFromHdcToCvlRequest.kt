@@ -215,13 +215,13 @@ data class MigrateCurfewDetails(
 @Schema(description = "Individual curfew time block")
 data class MigrateCurfewTime(
   @field:Schema(description = "Start day", example = "MONDAY")
-  val fromDay: DayOfWeek? = null,
+  val fromDay: DayOfWeek,
 
   @field:Schema(description = "Start time", example = "19:00:00")
   val fromTime: LocalTime,
 
   @field:Schema(description = "End day", example = "TUESDAY")
-  val untilDay: DayOfWeek? = null,
+  val untilDay: DayOfWeek,
 
   @field:Schema(description = "End time", example = "07:00:00")
   val untilTime: LocalTime,
