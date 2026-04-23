@@ -141,6 +141,8 @@ class TestRepository(
     if (licence is HdcLicence) {
       licence.createdBy?.username
       licence.submittedBy?.username
+      licence.firstNightCurfewTimes?.untilTime
+      licence.weeklyCurfewTimes.forEach { it.untilTime }
     }
     return licence
   }

@@ -201,6 +201,29 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       assertThat(licence.curfewAddress?.postcode).isEqualTo(request.curfewAddress?.postcode)
       assertThat(licence.homeDetentionCurfewEndDate).isEqualTo(request.licence.homeDetentionCurfewEndDate)
       assertThat(licence.homeDetentionCurfewEligibilityDate).isEqualTo(request.licence.homeDetentionCurfewEligibilityDate)
+      assertThat(licence.weeklyCurfewTimes).hasSize(2)
+      with(licence.weeklyCurfewTimes[0]) {
+        assertThat(curfewTimesSequence).isEqualTo(0)
+        assertThat(fromDay).isEqualTo(DayOfWeek.MONDAY)
+        assertThat(fromTime).isEqualTo("19:00")
+        assertThat(untilTime).isEqualTo("07:00")
+        assertThat(untilDay).isEqualTo(DayOfWeek.TUESDAY)
+        assertThat(createdTimestamp).isNotNull
+      }
+      with(licence.weeklyCurfewTimes[1]) {
+        assertThat(curfewTimesSequence).isEqualTo(1)
+        assertThat(fromDay).isEqualTo(DayOfWeek.FRIDAY)
+        assertThat(fromTime).isEqualTo("19:00")
+        assertThat(untilTime).isEqualTo("07:00")
+        assertThat(untilDay).isEqualTo(DayOfWeek.SATURDAY)
+        assertThat(createdTimestamp).isNotNull
+      }
+
+      assertThat(licence.firstNightCurfewTimes).isNotNull
+      assertThat(licence.firstNightCurfewTimes!!.curfewTimesSequence).isNull()
+      assertThat(licence.firstNightCurfewTimes!!.fromTime).isEqualTo("17:00")
+      assertThat(licence.firstNightCurfewTimes!!.untilTime).isEqualTo("07:00")
+      assertThat(licence.firstNightCurfewTimes!!.createdTimestamp).isNotNull
     }
 
     assertThat(licence.homeDetentionCurfewActualDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
@@ -290,6 +313,12 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
           fromDay = DayOfWeek.MONDAY,
           fromTime = LocalTime.parse("19:00:00"),
           untilDay = DayOfWeek.TUESDAY,
+          untilTime = LocalTime.parse("07:00:00"),
+        ),
+        MigrateCurfewTime(
+          fromDay = DayOfWeek.FRIDAY,
+          fromTime = LocalTime.parse("19:00:00"),
+          untilDay = DayOfWeek.SATURDAY,
           untilTime = LocalTime.parse("07:00:00"),
         ),
       ),
