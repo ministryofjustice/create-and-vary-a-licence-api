@@ -37,8 +37,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_INSERTED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_UPDATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallInsertedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 
@@ -60,6 +63,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var recallInsertedHandler: RecallInsertedHandler
+
+  @MockitoSpyBean
+  lateinit var recallUpdatedHandler: RecallUpdatedHandler
 
   @MockitoSpyBean
   lateinit var staffService: StaffService
@@ -294,6 +300,55 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val auditEvent = testRepository.findFirstAuditEvent(3)
     assertThat(auditEvent.summary).isEqualTo("Licence inactivated due to the offender returning to custody on a standard recall for Person One")
     assertThat(auditEvent.changes).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-prrd-licence-id-1.sql",
+  )
+  fun `A recall updated event is processed and converts a fixed term recall to a standard recall licence`() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetSentenceAndRecallTypesWithStandardRecall()
+
+    val event = HMPPSDomainEvent(
+      eventType = RECALL_UPDATED_EVENT_TYPE,
+      additionalInformation = mapOf(
+        "source" to "NOMIS",
+        "recallId" to "dfd1e5c2-318c-4f56-b4c8-2d236696e52c",
+        "previousRecallId" to "4c1f5640-c278-4682-ba2e-d16ee438bd75",
+        "sentenceIds" to "[c2a7159c-383a-4a98-9f00-7c410b6e1900]",
+      ),
+      detailUrl = "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk/recall/dfd1e5c2-318c-4f56-b4c8-2d236696e52c",
+      version = 1,
+      occurredAt = "2026-03-27T09:27:38.6679417Z",
+      description = "Recall updated",
+      personReference = PersonReference(
+        identifiers = listOf(Identifiers("NOMS", "A1234AA")),
+      ),
+    )
+
+    val message = mapper.writeValueAsString(event)
+
+    sendEventAndVerifyProcessed(message, event.eventType)
+
+    verify(recallUpdatedHandler).handleEvent(message)
+
+    val licence = testRepository.findLicence()
+    assertThat(licence.eligibleKind).isEqualTo(EligibleKind.STANDARD)
+
+    val auditEvent = testRepository.findFirstAuditEvent()
+    assertThat(auditEvent.summary).isEqualTo("Licence kind updated on licence for Person One")
+    assertThat(auditEvent.changes).isEqualTo(
+      mapOf(
+        "type" to "Licence kind updated on licence",
+        "changes" to mapOf(
+          "oldKind" to "PRRD",
+          "newKind" to "PRRD",
+          "oldEligibleKind" to "FIXED_TERM",
+          "newEligibleKind" to "STANDARD",
+        ),
+      ),
+    )
   }
 
   private fun assertComExistsInDb(
