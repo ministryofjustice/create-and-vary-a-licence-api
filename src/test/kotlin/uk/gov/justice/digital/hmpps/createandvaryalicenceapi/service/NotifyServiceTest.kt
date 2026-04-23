@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.STANDARD
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -78,6 +79,7 @@ class NotifyServiceTest {
         Case(name = "Test one", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09"), CRD),
         Case(name = "Test two", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10"), FIXED_TERM),
         Case(name = "Test three", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-11"), CRD),
+        Case(name = "test four", crn = "X12444", licenceStartDate = LocalDate.parse("2025-06-12"), kind = STANDARD),
       ),
     )
     // Test One  (CRN: X12444), who is due to leave to leave prison as a standard release on Wednesday 09 November 2022, Test Two  (CRN: X12444), who is due to leave to leave prison following a fixed-term recall on Thursday 10 November 2022, Test Three  (CRN: X12444), who is due to leave to leave prison as a standard release on Friday 11 November 2022], "createLicenceLink" = "http://somewhere/licence/create/caseload", "isEligibleForEarlyRelease" = "yes"},
@@ -87,6 +89,7 @@ class NotifyServiceTest {
         "Test One (CRN: X12444), who is due to leave prison as a standard release on Wednesday 09 November 2022",
         "Test Two (CRN: X12444), who is due to leave prison following a fixed-term recall on Thursday 10 November 2022",
         "Test Three (CRN: X12444), who is due to leave prison as a standard release on Friday 11 November 2022",
+        "Test Four (CRN: X12444), who is due to leave prison following a recall on Thursday 12 June 2025",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "yes",
@@ -106,6 +109,7 @@ class NotifyServiceTest {
         Case(name = "test one", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-09"), kind = FIXED_TERM),
         Case(name = "test two", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-10"), kind = CRD),
         Case(name = "test three", crn = "X12444", licenceStartDate = LocalDate.parse("2022-11-24"), kind = CRD),
+        Case(name = "test four", crn = "X12444", licenceStartDate = LocalDate.parse("2025-06-12"), kind = STANDARD),
       ),
     )
     val expectedMap = mapOf(
@@ -114,6 +118,7 @@ class NotifyServiceTest {
         "Test One (CRN: X12444), who is due to leave prison following a fixed-term recall on Wednesday 09 November 2022",
         "Test Two (CRN: X12444), who is due to leave prison as a standard release on Thursday 10 November 2022",
         "Test Three (CRN: X12444), who is due to leave prison as a standard release on Thursday 24 November 2022",
+        "Test Four (CRN: X12444), who is due to leave prison following a recall on Thursday 12 June 2025",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "no",

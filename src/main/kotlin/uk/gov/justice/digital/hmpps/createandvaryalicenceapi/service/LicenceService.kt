@@ -1150,7 +1150,11 @@ class LicenceService(
   }
 
   @Transactional
-  fun updateLicenceKind(licence: EntityLicence, updatedLicenceKind: LicenceKind, updatedEligibleKind: EligibleKind?): EntityLicence {
+  fun updateLicenceKind(
+    licence: EntityLicence,
+    updatedLicenceKind: LicenceKind,
+    updatedEligibleKind: EligibleKind?,
+  ): EntityLicence {
     if (licence.kind == HDC) return licence
 
     val isKindUpdated =
@@ -1171,7 +1175,7 @@ class LicenceService(
       }
 
       val userUpdating =
-        staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication?.name!!)
+        staffRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER)
       auditService.recordAuditEventLicenceKindUpdated(
         licence,
         licence.kind,

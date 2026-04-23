@@ -26,9 +26,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCrea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -181,9 +181,8 @@ class MigrationService(
     }
 
     licence.weeklyCurfewTimes.addAll(
-      curfew?.curfewTimes?.map { it.toCvlDomain() }.orEmpty(),
+      curfew?.curfewTimes?.mapIndexed { index, curfewTime -> curfewTime.toCvlDomain(index) }.orEmpty(),
     )
-
     return licenceRepository.saveAndFlush(licence)
   }
 
@@ -201,25 +200,20 @@ class MigrationService(
     source = AddressSource.MANUAL_MIGRATED,
   )
 
-  private fun MigrateCurfewTime.toCvlDomain(): CurfewTimes = CurfewTimes(
+  private fun MigrateCurfewTime.toCvlDomain(index: Int): CurfewTimes = CurfewTimes(
+    curfewTimesSequence = index,
     fromDay = fromDay,
     fromTime = fromTime,
     untilDay = untilDay,
     untilTime = untilTime,
+    createdTimestamp = LocalDateTime.now(),
   )
 
   private fun MigrateFirstNight.toCvlDomain(): CurfewTimes = CurfewTimes(
     fromTime = firstNightFrom,
     untilTime = firstNightUntil,
+    createdTimestamp = LocalDateTime.now(),
   )
-
-  private fun getResponsibleComDetails(prisonNumber: String?): Pair<CommunityOffenderManager, TeamDetail> {
-    val offenderManager = getOffenderManager(prisonNumber)
-
-    val probationTeam = offenderManager.team
-    val com = licenceCreationService.getOrCreateCom(offenderManager.id)
-    return Pair(com, probationTeam)
-  }
 
   private fun getOffenderManager(prisonNumber: String?): CommunityManager {
     prisonNumber ?: throw ValidationException("Prison number must not be null")
