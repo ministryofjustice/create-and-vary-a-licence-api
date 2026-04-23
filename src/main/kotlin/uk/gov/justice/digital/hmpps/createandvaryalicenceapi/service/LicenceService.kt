@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -95,11 +94,11 @@ class LicenceService(
   private val releaseDateService: ReleaseDateService,
   private val domainEventsService: DomainEventsService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val eligibilityService: EligibilityService,
   private val uploadFileConditionsService: UploadFileConditionsService,
   private val deliusApiClient: DeliusApiClient,
   private val telemetryService: TelemetryService,
   private val auditService: AuditService,
+  private val cvlRecordService: CvlRecordService,
 ) {
 
   @Transactional(readOnly = true)
@@ -439,17 +438,16 @@ class LicenceService(
       ?: throw ValidationException("Staff with username $username not found")
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licenceEntity.nomsId!!)).first()
-    val eligibilityAssessment =
-      eligibilityService.getEligibilityAssessment(nomisRecord)
+    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
     when (licenceEntity) {
       is PrrdLicence -> {
-        assertCaseIsEligible(eligibilityAssessment, licenceId)
+        assertCaseIsEligible(cvlRecord, licenceId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
       is CrdLicence -> {
-        assertCaseIsEligible(eligibilityAssessment, licenceId)
+        assertCaseIsEligible(cvlRecord, licenceId)
         licenceEntity
           .submit(submitter as CommunityOffenderManager)
       }
@@ -457,19 +455,19 @@ class LicenceService(
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
 
       is HardStopLicence -> {
-        assertCaseIsEligible(eligibilityAssessment, licenceId)
+        assertCaseIsEligible(cvlRecord, licenceId)
         licenceEntity.submit(submitter as PrisonUser)
       }
 
       is HdcLicence -> {
-        assertCaseIsEligible(eligibilityAssessment, licenceId)
+        assertCaseIsEligible(cvlRecord, licenceId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
       is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
 
       is TimeServedLicence -> {
-        assertCaseIsEligible(eligibilityAssessment, licenceId)
+        assertCaseIsEligible(cvlRecord, licenceId)
         licenceEntity.submit(submitter as PrisonUser)
       }
 
@@ -656,9 +654,9 @@ class LicenceService(
     }
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)).first()
-    val eligibilityAssessment = eligibilityService.getEligibilityAssessment(nomisRecord)
+    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
-    assertCaseIsEligible(eligibilityAssessment, licenceId)
+    assertCaseIsEligible(cvlRecord, licenceId)
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
@@ -1203,8 +1201,8 @@ class LicenceService(
     ),
   )
 
-  private fun assertCaseIsEligible(eligibilityAssessment: EligibilityAssessment, licenceId: Long) {
-    if (!eligibilityAssessment.isEligible) {
+  private fun assertCaseIsEligible(cvlRecord: CvlRecord, licenceId: Long) {
+    if (!cvlRecord.isEligible) {
       throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
     }
   }
