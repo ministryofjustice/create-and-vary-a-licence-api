@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Book
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.HDC
