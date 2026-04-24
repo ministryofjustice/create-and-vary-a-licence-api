@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports
 
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicenceStatusResponse
@@ -22,6 +23,7 @@ class LicenceStatusReportService(
   private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
   private val licenceRepository: LicenceRepository,
+  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
 
   fun getCases(): List<LicenceStatusResponse> {
@@ -71,7 +73,7 @@ class LicenceStatusReportService(
     return notStartedCases + casesWithLicence
   }
 
-  private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE)
+  private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE, includeRestrictedPatients = restrictedPatientsEnabled)
 
   private fun enrichWithDeliusData(candidates: List<PrisonerSearchPrisoner>): Map<PrisonerSearchPrisoner, CommunityManager> {
     val coms = deliusApiClient.getOffenderManagers(candidates.map { it.prisonerNumber }).filter { it.case.nomisId != null }.associateBy { it.case.nomisId!! }
