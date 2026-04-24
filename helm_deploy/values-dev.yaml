@@ -29,6 +29,7 @@ generic-service:
     PRISON_EVENT_LISTENER_ENABLED: true
     ISR_REPEAL_DATE: "2026-03-26"
     STANDARD_RECALLS_ENABLED: true
+    RESTRICTED_PATIENTS_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
