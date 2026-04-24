@@ -27,7 +27,7 @@ class TimeServedCaseloadService(
         today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
         today.plusDays(CASELOAD_WINDOW),
         setOf(prisonCode),
-        includeRestrictedPatients = true,
+        includeRestrictedPatients = restrictedPatientsEnabled,
       )
     } else {
       prisonerSearchApiClient.searchPrisonersByReleaseDate(

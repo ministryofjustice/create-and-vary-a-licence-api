@@ -65,7 +65,7 @@ class NotStartedCaseloadService(
         todayPlusFourWeeks,
         prisonCaseload,
         page = 0,
-        includeRestrictedPatients = true,
+        includeRestrictedPatients = restrictedPatientsEnabled,
       ).toList()
     } else {
       prisonerSearchApiClient.searchPrisonersByReleaseDate(

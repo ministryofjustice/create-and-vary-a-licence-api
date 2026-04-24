@@ -40,7 +40,7 @@ class PromptComService(
     log.info("Gathering prisoners with release dates between {} and {}", earliestReleaseDate, latestReleaseDate)
 
     val candidates = if (restrictedPatientsEnabled) {
-      prisonerSearchApiClient.getAllByReleaseDate(earliestReleaseDate, latestReleaseDate, includeRestrictedPatients = true)
+      prisonerSearchApiClient.getAllByReleaseDate(earliestReleaseDate, latestReleaseDate, includeRestrictedPatients = restrictedPatientsEnabled)
     } else {
       prisonerSearchApiClient.getAllByReleaseDate(earliestReleaseDate, latestReleaseDate)
     }

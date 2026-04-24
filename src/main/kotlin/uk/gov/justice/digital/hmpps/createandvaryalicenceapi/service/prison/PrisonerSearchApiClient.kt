@@ -77,7 +77,7 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
     prisonIds: Set<String>,
     pageSize: Int,
     pageNumber: Int,
-    includeRestrictedPatients: Boolean = false,
+    includeRestrictedPatients: Boolean,
   ): Page<PrisonerSearchPrisoner> {
     val page = prisonerSearchApiWebClient
       .post()

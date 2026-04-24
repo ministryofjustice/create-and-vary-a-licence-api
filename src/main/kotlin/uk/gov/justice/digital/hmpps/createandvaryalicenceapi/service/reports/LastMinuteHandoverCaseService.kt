@@ -50,7 +50,7 @@ class LastMinuteHandoverCaseService(
     val today = LocalDate.now(clock)
     val nextWeek = today.plusWeeks(1)
     val prisoners = if (restrictedPatientsEnabled) {
-      prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek, lastMinutePrisonCodes, includeRestrictedPatients = true)
+      prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek, lastMinutePrisonCodes, includeRestrictedPatients = restrictedPatientsEnabled)
     } else {
       prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek)
     }

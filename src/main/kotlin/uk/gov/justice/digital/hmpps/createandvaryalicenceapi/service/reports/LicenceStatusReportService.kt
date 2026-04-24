@@ -74,7 +74,7 @@ class LicenceStatusReportService(
   }
 
   private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = if (restrictedPatientsEnabled) {
-    prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE, includeRestrictedPatients = true)
+    prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE, includeRestrictedPatients = restrictedPatientsEnabled)
   } else {
     prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE)
   }
