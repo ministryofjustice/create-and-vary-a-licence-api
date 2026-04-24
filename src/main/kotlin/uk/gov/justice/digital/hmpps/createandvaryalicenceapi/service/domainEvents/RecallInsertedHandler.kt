@@ -49,6 +49,7 @@ class RecallInsertedHandler(
       log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
 
       val recallType = prisonService.getRecallType(bookingId = nomisRecord.bookingId?.toLong()!!)
+      log.info("nomisId: $nomisId, has recall type: $recallType, standard recalls enabled: $standardRecallsEnabled")
       if (recallType == RecallType.STANDARD && standardRecallsEnabled) {
         licenceService.deactivateLicenceAndVariations(
           activeLicence.id,
