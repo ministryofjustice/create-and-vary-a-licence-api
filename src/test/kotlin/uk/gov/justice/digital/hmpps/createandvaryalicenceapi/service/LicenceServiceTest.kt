@@ -84,8 +84,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -2908,7 +2908,7 @@ class LicenceServiceTest {
 
     service.deactivateLicenceAndVariations(
       aLicenceEntity.id,
-      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RESENTENCED),
+      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RESENTENCED),
     )
     verify(
       licenceRepository,
@@ -2938,7 +2938,7 @@ class LicenceServiceTest {
 
     service.deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RESENTENCED),
+      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RESENTENCED),
     )
 
     verify(
@@ -2991,7 +2991,7 @@ class LicenceServiceTest {
 
     service.deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RECALLED),
+      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RECALLED),
     )
 
     verify(
