@@ -46,7 +46,7 @@ class CaseServiceTest {
         any(),
         any(),
         anyOrNull(),
-        anyOrNull(),
+        any(),
       ),
     ).thenReturn(PageImpl(listOf(prisonerSearchResult())))
   }

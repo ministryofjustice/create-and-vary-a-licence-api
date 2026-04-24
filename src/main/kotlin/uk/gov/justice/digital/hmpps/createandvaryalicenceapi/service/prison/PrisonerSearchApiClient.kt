@@ -48,7 +48,7 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
     latestReleaseDate: LocalDate,
     prisonIds: Set<String>,
     page: Int = 0,
-    includeRestrictedPatients: Boolean = false,
+    includeRestrictedPatients: Boolean,
   ): Page<PrisonerSearchPrisoner> {
     if (prisonIds.isEmpty()) return Page.empty()
     return searchForPrisoners(earliestReleaseDate, latestReleaseDate, prisonIds, PAGE_SIZE, page, includeRestrictedPatients)
@@ -59,7 +59,7 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
     to: LocalDate,
     prisonIds: Set<String> = emptySet(),
     pageSize: Int = PAGE_SIZE,
-    includeRestrictedPatients: Boolean = false,
+    includeRestrictedPatients: Boolean,
   ): List<PrisonerSearchPrisoner> {
     val result = mutableListOf<PrisonerSearchPrisoner>()
     var pageNumber = 0

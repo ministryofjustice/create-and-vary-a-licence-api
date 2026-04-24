@@ -22,20 +22,12 @@ class TimeServedCaseloadService(
   fun getCases(prisonCode: String): TimeServedCaseload {
     val today = LocalDate.now(clock)
 
-    val cases = if (restrictedPatientsEnabled) {
-      prisonerSearchApiClient.searchPrisonersByReleaseDate(
-        today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
-        today.plusDays(CASELOAD_WINDOW),
-        setOf(prisonCode),
-        includeRestrictedPatients = restrictedPatientsEnabled,
-      )
-    } else {
-      prisonerSearchApiClient.searchPrisonersByReleaseDate(
-        today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
-        today.plusDays(CASELOAD_WINDOW),
-        setOf(prisonCode),
-      )
-    }
+    val cases = prisonerSearchApiClient.searchPrisonersByReleaseDate(
+      today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
+      today.plusDays(CASELOAD_WINDOW),
+      setOf(prisonCode),
+      includeRestrictedPatients = restrictedPatientsEnabled,
+    )
 
     val (timeServedCases, nonTimeServedCases) = cases.map {
       TimeServedCase(

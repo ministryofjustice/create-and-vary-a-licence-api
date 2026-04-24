@@ -49,11 +49,7 @@ class LastMinuteHandoverCaseService(
     log.info("Getting prisoner data for $lastMinutePrisonCodes")
     val today = LocalDate.now(clock)
     val nextWeek = today.plusWeeks(1)
-    val prisoners = if (restrictedPatientsEnabled) {
-      prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek, lastMinutePrisonCodes, includeRestrictedPatients = restrictedPatientsEnabled)
-    } else {
-      prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek)
-    }
+    val prisoners = prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek, lastMinutePrisonCodes, includeRestrictedPatients = restrictedPatientsEnabled)
     log.info("Found ${prisoners.size} prisoners")
     return prisoners.associateBy { it.prisonerNumber }
   }

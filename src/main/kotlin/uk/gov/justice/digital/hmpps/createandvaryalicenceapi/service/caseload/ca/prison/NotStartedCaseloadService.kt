@@ -59,22 +59,13 @@ class NotStartedCaseloadService(
     val now = overrideClock ?: clock
     val today = LocalDate.now(now)
     val todayPlusFourWeeks = LocalDate.now(now).plusWeeks(FOUR_WEEKS)
-    return if (restrictedPatientsEnabled) {
-      prisonerSearchApiClient.searchPrisonersByReleaseDate(
-        today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
-        todayPlusFourWeeks,
-        prisonCaseload,
-        page = 0,
-        includeRestrictedPatients = restrictedPatientsEnabled,
-      ).toList()
-    } else {
-      prisonerSearchApiClient.searchPrisonersByReleaseDate(
-        today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
-        todayPlusFourWeeks,
-        prisonCaseload,
-        page = 0,
-      ).toList()
-    }
+    return prisonerSearchApiClient.searchPrisonersByReleaseDate(
+      today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
+      todayPlusFourWeeks,
+      prisonCaseload,
+      page = 0,
+      includeRestrictedPatients = restrictedPatientsEnabled,
+    ).toList()
   }
 
   private fun buildManagedCaseDto(prisoners: List<PrisonerSearchPrisoner>): List<ManagedCaseDto> {
