@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import java.time.LocalDate
@@ -63,7 +63,7 @@ class SentenceDatesChangedHandler(
 
     log.info("Checking if prisoner resentenced, ssd: {}, lsd: {}", ssd, lsd)
     if (ssd != null && lsd != null && ssd.isAfter(lsd)) {
-      deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeactivationReason.RESENTENCED)
+      deactivateLicenceAndVariations(licence.id, LicenceDeactivationReason.RESENTENCED)
     }
   }
 
@@ -76,12 +76,12 @@ class SentenceDatesChangedHandler(
         return
       }
       if (prrd.isAfter(LocalDate.now())) {
-        deactivateLicenceAndVariations(licence.id, DateChangeLicenceDeactivationReason.RECALLED)
+        deactivateLicenceAndVariations(licence.id, LicenceDeactivationReason.RECALLED)
       }
     }
   }
 
-  private fun deactivateLicenceAndVariations(licenceId: Long, reason: DateChangeLicenceDeactivationReason) {
+  private fun deactivateLicenceAndVariations(licenceId: Long, reason: LicenceDeactivationReason) {
     licenceService.deactivateLicenceAndVariations(
       licenceId,
       DeactivateLicenceAndVariationsRequest(reason),

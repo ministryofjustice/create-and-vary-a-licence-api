@@ -149,12 +149,14 @@ class MigrationService(
       firstNightCurfewTimes = curfew?.firstNight?.toCvlDomain(),
     )
 
-    val bespokeConditions = conditions.bespoke.map { text ->
-      BespokeCondition(conditionText = text, licence = licence)
+    val additionalConditions = conditions.additional.mapIndexed { index, condition ->
+      BespokeCondition(conditionText = condition.text, licence = licence, conditionSequence = index)
     }
 
-    val additionalConditions = conditions.additional.map {
-      BespokeCondition(conditionText = it.text, licence = licence)
+    val lastIndex = additionalConditions.lastOrNull()?.conditionSequence?.plus(1) ?: 0
+
+    val bespokeConditions = conditions.bespoke.mapIndexed { index, text ->
+      BespokeCondition(conditionText = text, licence = licence, conditionSequence = index + lastIndex)
     }
 
     licence.bespokeConditions.addAll(additionalConditions + bespokeConditions)

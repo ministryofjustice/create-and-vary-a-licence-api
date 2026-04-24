@@ -185,6 +185,8 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
     assertThat(licence.licenceStartDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
 
+    assertThat(licence.bespokeConditions).extracting<Int> { it.conditionSequence }.containsExactly(0, 1)
+
     val actualConditions = licence.bespokeConditions.map { it.conditionText }
     val expectedConditions = request.conditions.additional.map { it.text } + request.conditions.bespoke.map { it }
 

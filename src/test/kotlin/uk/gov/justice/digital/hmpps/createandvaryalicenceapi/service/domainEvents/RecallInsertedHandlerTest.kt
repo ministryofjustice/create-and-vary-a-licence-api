@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 
 class RecallInsertedHandlerTest {
@@ -60,7 +60,7 @@ class RecallInsertedHandlerTest {
       licenceService,
     ).deactivateLicenceAndVariations(
       licence.id,
-      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RECALLED),
+      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.FIXED_TERM),
     )
   }
 
@@ -85,7 +85,7 @@ class RecallInsertedHandlerTest {
       licenceService,
     ).deactivateLicenceAndVariations(
       licence.id,
-      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.STANDARD_RECALL),
+      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.STANDARD_RECALL),
     )
   }
 
