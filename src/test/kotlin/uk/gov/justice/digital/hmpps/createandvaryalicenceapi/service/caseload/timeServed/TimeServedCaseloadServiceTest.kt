@@ -41,7 +41,7 @@ class TimeServedCaseloadServiceTest {
       conditionalReleaseDate = today,
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
 
     val result = service.getCases("ABC")
@@ -64,7 +64,7 @@ class TimeServedCaseloadServiceTest {
       conditionalReleaseDateOverrideDate = today,
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
 
     val result = service.getCases("XYZ")
@@ -87,7 +87,7 @@ class TimeServedCaseloadServiceTest {
       conditionalReleaseDateOverrideDate = today,
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
 
     val result = service.getCases("MDI")
@@ -109,7 +109,7 @@ class TimeServedCaseloadServiceTest {
       conditionalReleaseDate = today,
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
 
     val result = service.getCases("MDI")
@@ -131,7 +131,7 @@ class TimeServedCaseloadServiceTest {
       conditionalReleaseDate = today,
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
 
     val result = service.getCases("MDI")
@@ -155,7 +155,7 @@ class TimeServedCaseloadServiceTest {
       conditionalReleaseDate = today,
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
     whenever(releaseDateService.isTimeServed(prisoner)).thenReturn(true)
 
@@ -178,7 +178,7 @@ class TimeServedCaseloadServiceTest {
       conditionalReleaseDateOverrideDate = today,
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
     whenever(releaseDateService.isTimeServed(prisoner)).thenReturn(true)
 
@@ -201,7 +201,7 @@ class TimeServedCaseloadServiceTest {
       conditionalReleaseDate = today,
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull()))
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), anyOrNull()))
       .thenReturn(PageImpl(listOf(prisoner)))
 
     val result = service.getCases("MDI")

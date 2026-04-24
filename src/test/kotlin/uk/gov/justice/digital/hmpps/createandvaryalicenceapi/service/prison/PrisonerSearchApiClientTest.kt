@@ -48,7 +48,7 @@ class PrisonerSearchApiClientTest {
     val foundResults =
       List(foundRecordsOnThisPage) { i -> prisonerSearchResult().copy(bookingId = "$pageNumber-$i") }
     wiremock.stubFor(
-      post("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber")
+      post("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber&includeSupportedByPrisons=false")
         .willReturn(
           aResponse().withHeader("Content-Type", "application/json").withBody(
             """

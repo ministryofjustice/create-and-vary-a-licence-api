@@ -21,6 +21,7 @@ class LastMinuteHandoverCaseService(
   private val lastMinutePrisonCodes: Set<String>,
   private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
+  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -48,7 +49,11 @@ class LastMinuteHandoverCaseService(
     log.info("Getting prisoner data for $lastMinutePrisonCodes")
     val today = LocalDate.now(clock)
     val nextWeek = today.plusWeeks(1)
-    val prisoners = prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek, lastMinutePrisonCodes)
+    val prisoners = if (restrictedPatientsEnabled) {
+      prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek, lastMinutePrisonCodes, includeRestrictedPatients = true)
+    } else {
+      prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek)
+    }
     log.info("Found ${prisoners.size} prisoners")
     return prisoners.associateBy { it.prisonerNumber }
   }

@@ -33,6 +33,7 @@ class NotStartedCaseloadService(
   private val cvlRecordService: CvlRecordService,
   private val licenceRepository: TimeServedExternalRecordsRepository,
   @param:Value("\${timeserved.max.days.crd.before.today:28}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 28,
+  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
   fun findNotStartedCases(
     licences: List<LicenceCaCase>,
@@ -58,12 +59,22 @@ class NotStartedCaseloadService(
     val now = overrideClock ?: clock
     val today = LocalDate.now(now)
     val todayPlusFourWeeks = LocalDate.now(now).plusWeeks(FOUR_WEEKS)
-    return prisonerSearchApiClient.searchPrisonersByReleaseDate(
-      today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
-      todayPlusFourWeeks,
-      prisonCaseload,
-      page = 0,
-    ).toList()
+    return if (restrictedPatientsEnabled) {
+      prisonerSearchApiClient.searchPrisonersByReleaseDate(
+        today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
+        todayPlusFourWeeks,
+        prisonCaseload,
+        page = 0,
+        includeRestrictedPatients = true,
+      ).toList()
+    } else {
+      prisonerSearchApiClient.searchPrisonersByReleaseDate(
+        today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
+        todayPlusFourWeeks,
+        prisonCaseload,
+        page = 0,
+      ).toList()
+    }
   }
 
   private fun buildManagedCaseDto(prisoners: List<PrisonerSearchPrisoner>): List<ManagedCaseDto> {

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom
 
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -19,6 +20,7 @@ class PromptComService(
   private val notifyService: NotifyService,
   private val cvlRecordService: CvlRecordService,
   private val telemetryService: TelemetryService,
+  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
 
   @Async
@@ -37,7 +39,11 @@ class PromptComService(
     val (earliestReleaseDate, latestReleaseDate) = fromNowToTheNext4Weeks(clock)
     log.info("Gathering prisoners with release dates between {} and {}", earliestReleaseDate, latestReleaseDate)
 
-    val candidates = prisonerSearchApiClient.getAllByReleaseDate(earliestReleaseDate, latestReleaseDate)
+    val candidates = if (restrictedPatientsEnabled) {
+      prisonerSearchApiClient.getAllByReleaseDate(earliestReleaseDate, latestReleaseDate, includeRestrictedPatients = true)
+    } else {
+      prisonerSearchApiClient.getAllByReleaseDate(earliestReleaseDate, latestReleaseDate)
+    }
 
     log.info("Found {} prisoners with release dates within the next 4 weeks ", candidates.size)
     return promptComListBuilder.gatherEmails(candidates, earliestReleaseDate, latestReleaseDate)
