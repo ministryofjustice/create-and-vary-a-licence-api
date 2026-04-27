@@ -2,7 +2,6 @@ import org.apache.pdfbox.Loader
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.awt.image.BufferedImage
 import java.io.File
 
 class JBIG2ImageReaderTest {
@@ -28,22 +27,22 @@ class JBIG2ImageReaderTest {
    */
   @Test
   fun shouldRenderPdfWithoutThrowing() {
-    // Given
-    val url =
-      requireNotNull(
-        javaClass.getResource("/test_data/jbig2.pdf"),
+      // Given
+      val file = requireNotNull(
+          javaClass.getResource("/test_data/jbig2.pdf")
       ) { "Test PDF not found on classpath" }
+          .toURI()
+          .let(::File)
 
-    val file = File(url.toURI())
-
-    // When
-    Loader.loadPDF(file).use { document ->
-      val renderer = PDFRenderer(document)
-      val image: BufferedImage = renderer.renderImageWithDPI(0, 150f)
+      // When
+      val image = Loader.loadPDF(file).use { document ->
+          PDFRenderer(document).renderImageWithDPI(0, 150f)
+      }
 
       // Then
-      assertThat(image.width).isGreaterThan(0)
-      assertThat(image.height).isGreaterThan(0)
-    }
+      assertThat(image).satisfies({
+          assertThat(it.width).isEqualTo(1275)
+          assertThat(it.height).isEqualTo(1649)
+      })
   }
 }
