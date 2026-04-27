@@ -27,19 +27,19 @@ class JBIG2ImageReaderTest {
    */
   @Test
   fun shouldRenderPdfWithoutThrowing() {
-      // Given
-      val file = requireNotNull(
-          javaClass.getResource("/test_data/jbig2.pdf")
-      ) { "Test PDF not found on classpath" }
-          .toURI()
-          .let(::File)
+    // Given
+    val file = requireNotNull(
+      javaClass.getResource("/test_data/jbig2.pdf"),
+    ) { "Test PDF not found on classpath" }
+      .toURI()
+      .let(::File)
 
-      // When
-      val image = Loader.loadPDF(file).use { document ->
-          PDFRenderer(document).renderImageWithDPI(0, 150f)
-      }
+    // When
+    val image = Loader.loadPDF(file).use { document ->
+      PDFRenderer(document).renderImageWithDPI(0, 150f)
+    }
 
-      // Then
-      assertThat(image.width).isGreaterThan(0)
+    // Then
+    assertThat(image.width).isGreaterThan(0)
   }
 }
