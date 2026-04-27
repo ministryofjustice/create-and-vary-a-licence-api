@@ -46,7 +46,7 @@ class MigrationService(
 
   @Transactional
   fun migrate(request: MigrateFromHdcToCvlRequest) {
-    if (validate(request)) return
+    if (isNotValid(request)) return
 
     log.info("Starting migration for bookingId={}", request.bookingId)
     val hdcLicence = request.toHdcLicence()
@@ -54,7 +54,7 @@ class MigrationService(
     log.info("Ending migration for bookingId={} cvl licence id ={}", request.bookingId, hdcLicence.id)
   }
 
-  private fun validate(request: MigrateFromHdcToCvlRequest): Boolean {
+  private fun isNotValid(request: MigrateFromHdcToCvlRequest): Boolean {
     request.prisoner.prisonerNumber ?: throw EntityNotFoundException("No prisoner given found!")
 
     if (migrationRepository.hasBeenAlreadyMigrated(request.licence.licenceId)) {
