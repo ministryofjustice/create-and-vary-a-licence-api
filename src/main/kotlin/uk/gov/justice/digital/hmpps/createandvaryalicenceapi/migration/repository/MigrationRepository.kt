@@ -50,9 +50,7 @@ interface MigrationRepository : JpaRepository<Licence, Long> {
   @Query(
     value = """
         SELECT EXISTS (
-            SELECT 1 
-            FROM hdc_migration_meta_data 
-            WHERE hdcLicence_id = :hdcLicenceId
+            SELECT 1 FROM hdc_migration_meta_data WHERE hdcLicence_id = :hdcLicenceId
         )
     """,
     nativeQuery = true,
@@ -62,9 +60,7 @@ interface MigrationRepository : JpaRepository<Licence, Long> {
   @Query(
     value = """
         SELECT EXISTS (
-            SELECT 1 
-            FROM licence l
-            WHERE l.noms_id = :nomsId and l.status_code != 'INACTIVE'
+            SELECT 1 FROM licence l WHERE l.noms_id = :nomsId and l.status_code != 'INACTIVE'
         )
     """,
     nativeQuery = true,
