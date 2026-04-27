@@ -29,6 +29,7 @@ generic-service:
     DPR_MANAGE_USERS_HOST: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
+    STANDARD_RECALLS_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
