@@ -390,7 +390,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     )
   }
 
-  fun stubSearchPrisonersByReleaseDate(page: Int, inHardStop: Boolean = true, includeRecall: Boolean = false) {
+  fun stubSearchPrisonersByReleaseDate(page: Int, inHardStop: Boolean = true, includeRecall: Boolean = false, includeRestrictedPatients: Boolean = false) {
     val releaseDate = if (inHardStop) LocalDate.now().plusDays(1) else nextWorkingDates().drop(4).first()
     var jsonBody = """{ "content": [
                 {
@@ -589,7 +589,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
               "empty": false
             }
     """.trimIndent()
-    stubSearchPrisonersByReleaseDate(jsonBody, page)
+    stubSearchPrisonersByReleaseDate(jsonBody, page, includeRestrictedPatients)
   }
 
   fun stubSearchPrisonersByReleaseDate(prisoners: List<PrisonerSearchPrisoner>) {
@@ -598,9 +598,9 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     stubSearchPrisonersByReleaseDate(mapper.writeValueAsString(prisonerPage), 0)
   }
 
-  fun stubSearchPrisonersByReleaseDate(jsonBody: String, page: Int) {
+  fun stubSearchPrisonersByReleaseDate(jsonBody: String, page: Int, includeRestrictedPatients: Boolean = false) {
     stubFor(
-      post(urlEqualTo("/api/prisoner-search/release-date-by-prison?size=2000&page=$page"))
+      post(urlEqualTo("/api/prisoner-search/release-date-by-prison?size=2000&page=$page&includeSupportedByPrisons=$includeRestrictedPatients"))
         .willReturn(
           aResponse().withHeader(
             "Content-Type",

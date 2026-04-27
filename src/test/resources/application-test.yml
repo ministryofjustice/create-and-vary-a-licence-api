@@ -119,7 +119,7 @@ feature:
     standardRecalls:
       enabled: true
     restrictedPatients:
-      enabled: true
+      enabled: false
     isr:
       repeal:
         date: "2026-05-16"

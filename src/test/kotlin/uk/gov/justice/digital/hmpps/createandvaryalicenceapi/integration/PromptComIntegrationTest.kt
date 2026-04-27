@@ -91,7 +91,7 @@ class PromptComIntegrationTest : IntegrationTestBase() {
       govUkApiMockServer.start()
       govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
       prisonSearchServer.start()
-      prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false, includeRecall = true)
+      prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false, includeRecall = true, includeRestrictedPatients = false)
       deliusMockServer.start()
       deliusMockServer.stubGetManagersForPromptComJob()
       prisonMockServer.start()
