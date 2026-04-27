@@ -16,6 +16,8 @@ class TimeServedCaseloadService(
   private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
   @param:Value("\${timeserved.max.days.crd.before.today:28}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 28,
+  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
+
 ) {
   fun getCases(prisonCode: String): TimeServedCaseload {
     val today = LocalDate.now(clock)
@@ -24,6 +26,7 @@ class TimeServedCaseloadService(
       today.minusDays(maxNumberOfDaysBeforeTodayForCrdTimeserved - 1),
       today.plusDays(CASELOAD_WINDOW),
       setOf(prisonCode),
+      includeRestrictedPatients = restrictedPatientsEnabled,
     )
 
     val (timeServedCases, nonTimeServedCases) = cases.map {

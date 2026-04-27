@@ -186,7 +186,7 @@ class CaCaseloadServiceTest {
       ),
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
       PageImpl(
         listOf(
           aPrisonerSearchPrisoner,
@@ -263,7 +263,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -293,7 +293,7 @@ class CaCaseloadServiceTest {
           PrisonQuery.prisonCodes,
         )
         verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber))
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
+        verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), anyOrNull())
       }
     }
 
@@ -360,7 +360,7 @@ class CaCaseloadServiceTest {
           listOf(licenceCase1, licenceCase2),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(emptyList()),
         )
 
@@ -425,7 +425,7 @@ class CaCaseloadServiceTest {
         ),
       )
 
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
         PageImpl(
           listOf(
             aPrisonerSearchPrisoner.copy(
@@ -454,6 +454,7 @@ class CaCaseloadServiceTest {
         LocalDate.now(clock).plusWeeks(4),
         setOf("BAI"),
         0,
+        includeRestrictedPatients = false,
       )
     }
 
@@ -495,7 +496,7 @@ class CaCaseloadServiceTest {
         ),
       )
 
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
         PageImpl(
           listOf(
             aPrisonerSearchPrisoner.copy(
@@ -641,7 +642,7 @@ class CaCaseloadServiceTest {
           PrisonQuery.prisonCodes,
         ),
       ).thenReturn(listOf(licenceCase))
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
         PageImpl(
           listOf(prisonerSearchResult()),
         ),
@@ -682,7 +683,7 @@ class CaCaseloadServiceTest {
         ),
       ).thenReturn(listOf(licenceCase))
 
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
         PageImpl(
           listOf(prisonerSearchResult()),
         ),
@@ -725,7 +726,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -750,7 +751,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `Should filter out cases with a legal status of DEAD`() {
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(
             emptyList(),
           ),
@@ -791,7 +792,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should filter out ineligible cases`() {
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(listOf(aPrisonerSearchPrisoner.copy(conditionalReleaseDate = null))),
         )
 
@@ -833,7 +834,7 @@ class CaCaseloadServiceTest {
           bookingId = "1234",
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(listOf(prisoner)),
         )
 
@@ -889,7 +890,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -956,7 +957,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -1022,7 +1023,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -1090,7 +1091,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -1431,7 +1432,7 @@ class CaCaseloadServiceTest {
       }
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(prisoners)
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
         PageImpl(emptyList()),
       )
 
@@ -1648,7 +1649,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should successfully search by probation practitioner name for offender on probation`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
         PageImpl(emptyList()),
       )
       whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, ProbationQuery.prisonCodes)).thenReturn(
@@ -2036,7 +2037,7 @@ class CaCaseloadServiceTest {
       }
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(prisoners)
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull(), any())).thenReturn(
         PageImpl(emptyList()),
       )
 

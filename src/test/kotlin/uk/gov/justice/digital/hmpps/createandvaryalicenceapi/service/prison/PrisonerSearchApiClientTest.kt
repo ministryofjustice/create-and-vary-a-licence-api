@@ -32,23 +32,23 @@ class PrisonerSearchApiClientTest {
 
   @Test
   fun `search by teams endpoint not called if no teams`() {
-    stubPage(pageNumber = 0, foundRecordsOnThisPage = 4, pageSize = 4, totalElements = 10)
-    stubPage(pageNumber = 1, foundRecordsOnThisPage = 4, pageSize = 4, totalElements = 10)
-    stubPage(pageNumber = 2, foundRecordsOnThisPage = 2, pageSize = 4, totalElements = 10)
+    stubPage(pageNumber = 0, foundRecordsOnThisPage = 4, pageSize = 4, totalElements = 10, includeRestrictedPatients = false)
+    stubPage(pageNumber = 1, foundRecordsOnThisPage = 4, pageSize = 4, totalElements = 10, includeRestrictedPatients = false)
+    stubPage(pageNumber = 2, foundRecordsOnThisPage = 2, pageSize = 4, totalElements = 10, includeRestrictedPatients = false)
 
     val response =
-      prisonerSearchApiClient.getAllByReleaseDate(LocalDate.now(), LocalDate.now().plusWeeks(4), pageSize = 4)
+      prisonerSearchApiClient.getAllByReleaseDate(LocalDate.now(), LocalDate.now().plusWeeks(4), pageSize = 4, includeRestrictedPatients = false)
 
     assertThat(response).hasSize(10)
     assertThat(response).extracting<String> { it.bookingId }
       .isEqualTo(listOf("0-0", "0-1", "0-2", "0-3", "1-0", "1-1", "1-2", "1-3", "2-0", "2-1"))
   }
 
-  private fun stubPage(pageNumber: Int, foundRecordsOnThisPage: Int, pageSize: Int, totalElements: Int) {
+  private fun stubPage(pageNumber: Int, foundRecordsOnThisPage: Int, pageSize: Int, totalElements: Int, includeRestrictedPatients: Boolean) {
     val foundResults =
       List(foundRecordsOnThisPage) { i -> prisonerSearchResult().copy(bookingId = "$pageNumber-$i") }
     wiremock.stubFor(
-      post("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber")
+      post("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber&includeSupportedByPrisons=$includeRestrictedPatients")
         .willReturn(
           aResponse().withHeader("Content-Type", "application/json").withBody(
             """

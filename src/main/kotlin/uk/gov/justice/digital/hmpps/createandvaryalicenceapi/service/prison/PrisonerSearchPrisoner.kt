@@ -87,7 +87,12 @@ data class PrisonerSearchPrisoner(
 
   val croNumber: String? = null,
 
+  val supportingPrisonId: String? = null,
+
+  val restrictedPatient: Boolean? = null,
+
 ) {
 
   fun fullName() = listOfNotNull(firstName, middleNames, lastName).filter { it.isNotBlank() }.joinToString(" ")
+  fun isRestrictedPatient() = supportingPrisonId != null && restrictedPatient == true
 }
