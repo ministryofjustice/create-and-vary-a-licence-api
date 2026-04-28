@@ -94,5 +94,5 @@ data class PrisonerSearchPrisoner(
 ) {
 
   fun fullName() = listOfNotNull(firstName, middleNames, lastName).filter { it.isNotBlank() }.joinToString(" ")
-  fun isRestrictedPatient() = supportingPrisonId != null && restrictedPatient == true
+  fun isRestrictedPatient() = restrictedPatient == true && status == "INACTIVE OUT"
 }
