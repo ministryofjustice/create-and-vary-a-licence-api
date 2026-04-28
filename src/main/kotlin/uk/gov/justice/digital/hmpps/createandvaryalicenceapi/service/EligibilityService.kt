@@ -211,12 +211,10 @@ class EligibilityService(
     return prisoner.indeterminateSentence ?: false
   }
 
-  private fun hasEligiblePrisonStatus(prisoner: PrisonerSearchPrisoner): Boolean = if (restrictedPatientsEnabled) {
-    prisoner.isRestrictedPatient() || prisoner.status?.let { it.startsWith("ACTIVE") || it == "INACTIVE TRN" } ?: false
-  } else {
-    prisoner.status?.let {
-      it.startsWith("ACTIVE") || it == "INACTIVE TRN"
-    } ?: false
+  private fun hasEligiblePrisonStatus(prisoner: PrisonerSearchPrisoner): Boolean {
+    val isRestrictedPatient = restrictedPatientsEnabled && prisoner.isRestrictedPatient()
+    val isEligibleStatus = prisoner.status?.let { it.startsWith("ACTIVE") || it == "INACTIVE TRN" } ?: false
+    return isRestrictedPatient || isEligibleStatus
   }
 
   private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.imprisonmentStatus == "BOTUS"
