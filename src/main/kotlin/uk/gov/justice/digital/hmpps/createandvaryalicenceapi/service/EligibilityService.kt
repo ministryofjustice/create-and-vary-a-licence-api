@@ -22,6 +22,7 @@ class EligibilityService(
   private val isrPssProgressionService: ISRPssProgressionService,
   private val clock: Clock,
   @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
+  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
 
   fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner, hdcStatuses: HdcStatuses): EligibilityAssessment {
@@ -59,7 +60,7 @@ class EligibilityService(
       !isPersonParoleEligible(prisoner) to "is eligible for parole",
       !isDead(prisoner) to "has died",
       !isOnIndeterminateSentence(prisoner) to "is on indeterminate sentence",
-      hasActivePrisonStatus(prisoner) to "is not active in prison",
+      hasEligiblePrisonStatus(prisoner) to "does not have eligible prison status",
       !isBreachOfTopUpSupervision(prisoner) to "is breach of top up supervision case",
       isPssTypeStillEligible(prisoner) to "PSS licences no longer supported",
     )
@@ -210,9 +211,11 @@ class EligibilityService(
     return prisoner.indeterminateSentence ?: false
   }
 
-  private fun hasActivePrisonStatus(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.status?.let {
-    it.startsWith("ACTIVE") || it == "INACTIVE TRN"
-  } ?: false
+  private fun hasEligiblePrisonStatus(prisoner: PrisonerSearchPrisoner): Boolean {
+    val isRestrictedPatient = restrictedPatientsEnabled && prisoner.isRestrictedPatient()
+    val isEligibleStatus = prisoner.status?.let { it.startsWith("ACTIVE") || it == "INACTIVE TRN" } ?: false
+    return isRestrictedPatient || isEligibleStatus
+  }
 
   private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.imprisonmentStatus == "BOTUS"
 
