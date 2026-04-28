@@ -31,6 +31,7 @@ generic-service:
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-01-14
     HDC_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
+    STANDARD_RECALLS_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
