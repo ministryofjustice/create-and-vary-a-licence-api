@@ -46,12 +46,27 @@ class MigrationService(
 
   @Transactional
   fun migrate(request: MigrateFromHdcToCvlRequest) {
+    if (isNotValid(request)) return
+
     log.info("Starting migration for bookingId={}", request.bookingId)
     val hdcLicence = request.toHdcLicence()
     saveMetaData(request, hdcLicence)
     log.info("Ending migration for bookingId={} cvl licence id ={}", request.bookingId, hdcLicence.id)
   }
 
+  private fun isNotValid(request: MigrateFromHdcToCvlRequest): Boolean {
+    request.prisoner.prisonerNumber ?: throw EntityNotFoundException("No prisoner given found!")
+
+    if (migrationRepository.hasBeenAlreadyMigrated(request.licence.licenceId)) {
+      log.info("Licence {} has already been migrated", request.licence.licenceId)
+      return true
+    }
+    if (migrationRepository.hasExistingLicence(request.prisoner.prisonerNumber)) {
+      log.info("Licence for prisoner {} already exists", request.prisoner.prisonerNumber)
+      return true
+    }
+    return false
+  }
   private fun saveMetaData(
     request: MigrateFromHdcToCvlRequest,
     hdcLicence: HdcLicence,
@@ -74,8 +89,7 @@ class MigrationService(
   }
 
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
-    val prisonerNumber = prisoner.prisonerNumber ?: throw EntityNotFoundException("No prisoner number found!")
-    val offenderManager = getOffenderManager(prisonerNumber)
+    val offenderManager = getOffenderManager(prisoner.prisonerNumber!!)
     val probationTeam = offenderManager.team
     val responsibleCom = licenceCreationService.getOrCreateCom(offenderManager.id)
 
@@ -217,11 +231,8 @@ class MigrationService(
     createdTimestamp = LocalDateTime.now(),
   )
 
-  private fun getOffenderManager(prisonNumber: String?): CommunityManager {
-    prisonNumber ?: throw ValidationException("Prison number must not be null")
-    return deliusApiClient.getOffenderManager(prisonNumber)
-      ?: throw ValidationException("Could not find offender manager for $prisonNumber in delius")
-  }
+  private fun getOffenderManager(prisonNumber: String): CommunityManager = deliusApiClient.getOffenderManager(prisonNumber)
+    ?: throw ValidationException("Could not find offender manager for $prisonNumber in delius")
 
   private fun MutableSet<CommunityOffenderManager>.getCommAndAdd(
     userName: String?,

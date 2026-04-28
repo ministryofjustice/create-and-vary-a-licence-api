@@ -46,4 +46,24 @@ interface MigrationRepository : JpaRepository<Licence, Long> {
     nativeQuery = true,
   )
   fun saveMetaData(licenceId: Long, hdcLicenceId: Long, licenceVersion: Int, varyVersion: Int)
+
+  @Query(
+    value = """
+        SELECT EXISTS (
+            SELECT 1 FROM hdc_migration_meta_data WHERE hdcLicence_id = :hdcLicenceId
+        )
+    """,
+    nativeQuery = true,
+  )
+  fun hasBeenAlreadyMigrated(hdcLicenceId: Long): Boolean
+
+  @Query(
+    value = """
+        SELECT EXISTS (
+            SELECT 1 FROM licence l WHERE l.noms_id = :nomsId and l.status_code != 'INACTIVE'
+        )
+    """,
+    nativeQuery = true,
+  )
+  fun hasExistingLicence(nomsId: String): Boolean
 }
