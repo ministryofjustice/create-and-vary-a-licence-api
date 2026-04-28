@@ -17,13 +17,14 @@ class PrisonService(val prisonApiClient: PrisonApiClient, val prisonerSearchApi:
 
   fun searchPrisonersByNomisIds(nomisIds: List<String>) = prisonerSearchApi.searchPrisonersByNomisIds(nomisIds)
 
-  fun getSentenceAndRecallTypes(bookingId: Long): BookingSentenceAndRecallTypes {
+  fun getSentenceAndRecallTypes(bookingId: Long): BookingSentenceAndRecallTypes? {
     val bookingsSentenceAndRecallTypes = prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))
-    return bookingsSentenceAndRecallTypes.first()
+    return bookingsSentenceAndRecallTypes.firstOrNull()
   }
 
   fun getRecallType(bookingId: Long): RecallType {
-    val sentenceAndRecallTypes = getSentenceAndRecallTypes(bookingId)
+    val sentenceAndRecallTypes = getSentenceAndRecallTypes(bookingId) ?: return RecallType.NONE
+
     return if (sentenceAndRecallTypes.sentenceTypeRecallTypes.any { it.recallType.isStandardRecall }) {
       RecallType.STANDARD
     } else if (sentenceAndRecallTypes.sentenceTypeRecallTypes.any { it.recallType.isFixedTermRecall }) {

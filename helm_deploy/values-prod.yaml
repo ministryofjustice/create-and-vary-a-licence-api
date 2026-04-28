@@ -28,7 +28,7 @@ generic-service:
     DPR_MANAGE_USERS_HOST: "https://manage-users-api.hmpps.service.justice.gov.uk"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     ISR_REPEAL_DATE: "2026-05-11"
-
+    STANDARD_RECALLS_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:

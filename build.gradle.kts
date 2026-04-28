@@ -28,6 +28,7 @@ dependencies {
       because("Fix CVE-2026-23907")
     }
   }
+
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.1.0")
 
   // CVE-2026-33871 - it does not fix all occurrences
@@ -59,6 +60,7 @@ dependencies {
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:3.0.7")
+  implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
