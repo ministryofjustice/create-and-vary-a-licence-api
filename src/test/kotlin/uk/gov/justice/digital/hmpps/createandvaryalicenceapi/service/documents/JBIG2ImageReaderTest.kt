@@ -1,8 +1,5 @@
-import org.apache.pdfbox.Loader
-import org.apache.pdfbox.rendering.PDFRenderer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.io.File
 
 class JBIG2ImageReaderTest {
 
@@ -17,5 +14,4 @@ class JBIG2ImageReaderTest {
     // Then
     assertThat(clazz).isNotNull
   }
-
 }
