@@ -42,7 +42,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   fun `should migrate licence successfully`() {
     // Given
     deliusMockServer.stubGetProbationCase()
-    deliusMockServer.stubGetOffenderManagerWithNomsId("A1234BC")
+    deliusMockServer.stubGetOffenderManagerWithNomsId("A1234AA")
     deliusMockServer.stubGetUserByUserName(2L, userName = "submittedByUserName", firstName = "submittedByFirstName", lastName = "submittedByLastName")
     deliusMockServer.stubGetUserByUserName(3L, userName = "createdByUserName", firstName = "createdByFirstName", lastName = "createdByLastName")
     deliusMockServer.stubGetUserByUserName(4L, userName = "approvedByUsername", firstName = "approvedByFirstName", lastName = "approvedByLastName")
@@ -82,6 +82,48 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isBadRequest
 
     assertThat(testRepository.doesLicenceExist(1)).isFalse
+    assertThat(testRepository.hasMetaData()).isFalse
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-migration-meta-data-migration.sql",
+  )
+  fun `should not migrate if licence has already been migrated`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(request)
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    assertThat(testRepository.doesLicenceExist(1)).isFalse
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `should not migrate if prisoner has an existing licence in process`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(request)
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
     assertThat(testRepository.hasMetaData()).isFalse
   }
 
@@ -254,7 +296,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     pnc = "YYYY/NNNNNNND",
     cro = "NNNNNN/YYD",
     prisoner = MigratePrisonerDetails(
-      prisonerNumber = "A1234BC",
+      prisonerNumber = "A1234AA",
       forename = "forename",
       middleNames = "middleNames",
       surname = "surname",

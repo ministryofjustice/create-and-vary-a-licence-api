@@ -83,6 +83,8 @@ class MigrationServiceTest {
     )
 
     whenever(licenceRepository.saveAndFlush(any<HdcLicence>())).thenAnswer { it.arguments[0] }
+    whenever(migrationRepository.hasBeenAlreadyMigrated(any<Long>())).thenReturn(false)
+    whenever(migrationRepository.hasExistingLicence(any<String>())).thenReturn(false)
   }
 
   @Test
