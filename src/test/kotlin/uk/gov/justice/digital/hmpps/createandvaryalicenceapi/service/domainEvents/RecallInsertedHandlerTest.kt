@@ -90,6 +90,28 @@ class RecallInsertedHandlerTest {
   }
 
   @Test
+  fun `does not deactivate active licence if the offender does not have any recall sentence`() {
+    val licence = createCrdLicence()
+
+    whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
+    whenever(prisonService.getRecallType(bookingId)).thenReturn(null)
+    whenever(
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(
+        nomisId,
+        listOf(
+          ACTIVE,
+        ),
+      ),
+    ).thenReturn(listOf(licence))
+
+    handler.handleEvent(mapper.writeValueAsString(aRecallInsertedEvent()))
+
+    verifyNoInteractions(
+      licenceService,
+    )
+  }
+
+  @Test
   fun `does nothing is the offender does not have an active licence`() {
     whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
     whenever(prisonService.getSentenceAndRecallTypes(bookingId)).thenReturn(fixedTermRecallSentenceAndRecalls(bookingId))
