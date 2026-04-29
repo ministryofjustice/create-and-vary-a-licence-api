@@ -18,7 +18,7 @@ data class CvlRecord(
   val hardStopWarningDate: LocalDate? = null,
   val hardStopDate: LocalDate? = null,
   val isInHardStopPeriod: Boolean,
-  val hardStopKind: LicenceKind? = null,
+  val creationKind: LicenceKind? = null,
   val licenceType: LicenceType,
   val isTimedOut: Boolean = false,
   val hdcStatus: HdcStatus,

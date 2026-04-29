@@ -543,7 +543,7 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(nomsId = "AB1234F", licenceStartDate = tenDaysFromNow),
         aCvlRecord(
           nomsId = "AB1234G",
-          hardStopKind = LicenceKind.TIME_SERVED,
+          creationKind = LicenceKind.TIME_SERVED,
           licenceStartDate = fiveDaysAgo,
         ),
       ),
@@ -1158,7 +1158,7 @@ class ComCreateCaseloadServiceTest {
       listOf(
         aCvlRecord(
           nomsId = prisonerNumber,
-          hardStopKind = LicenceKind.TIME_SERVED,
+          creationKind = LicenceKind.TIME_SERVED,
           licenceStartDate = LocalDate.now(),
           isInHardStopPeriod = true,
         ),
@@ -1678,14 +1678,14 @@ class ComCreateCaseloadServiceTest {
             licenceStartDate = twoDaysAgo,
             hardStopDate = yesterday,
             hardStopWarningDate = twoDaysAgo,
-            hardStopKind = LicenceKind.TIME_SERVED,
+            creationKind = LicenceKind.TIME_SERVED,
           ),
           aCvlRecord(
             nomsId = "AB1234F",
             licenceStartDate = twoDaysAgo,
             hardStopDate = yesterday,
             hardStopWarningDate = twoDaysAgo,
-            hardStopKind = LicenceKind.TIME_SERVED,
+            creationKind = LicenceKind.TIME_SERVED,
           ),
         ),
       )

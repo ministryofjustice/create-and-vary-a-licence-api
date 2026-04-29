@@ -1227,7 +1227,7 @@ class LicenceCreationServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
-          hardStopKind = LicenceKind.HARD_STOP,
+          creationKind = LicenceKind.HARD_STOP,
         ),
       )
     }
@@ -1240,7 +1240,7 @@ class LicenceCreationServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
-          hardStopKind = LicenceKind.HARD_STOP,
+          creationKind = LicenceKind.HARD_STOP,
           licenceStartDate = LocalDate.of(2022, 10, 10),
         ),
       )
@@ -1471,7 +1471,7 @@ class LicenceCreationServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
-          hardStopKind = LicenceKind.HARD_STOP,
+          creationKind = LicenceKind.HARD_STOP,
           licenceType = LicenceType.PSS,
         ),
       )
@@ -1509,7 +1509,7 @@ class LicenceCreationServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
-          hardStopKind = LicenceKind.HARD_STOP,
+          creationKind = LicenceKind.HARD_STOP,
           licenceType = LicenceType.AP_PSS,
         ),
       )
@@ -1730,7 +1730,7 @@ class LicenceCreationServiceTest {
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
-          hardStopKind = null,
+          creationKind = null,
         ),
       )
 
@@ -1758,7 +1758,7 @@ class LicenceCreationServiceTest {
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
-          hardStopKind = LicenceKind.TIME_SERVED,
+          creationKind = LicenceKind.TIME_SERVED,
         ),
       )
 
@@ -1818,7 +1818,7 @@ class LicenceCreationServiceTest {
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
-          hardStopKind = LicenceKind.TIME_SERVED,
+          creationKind = LicenceKind.TIME_SERVED,
         ),
       )
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager.copy(unallocated = true))
@@ -1841,7 +1841,7 @@ class LicenceCreationServiceTest {
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
-          hardStopKind = LicenceKind.TIME_SERVED,
+          creationKind = LicenceKind.TIME_SERVED,
         ),
       )
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
@@ -1866,7 +1866,7 @@ class LicenceCreationServiceTest {
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
           licenceStartDate = LocalDate.of(2022, 10, 10),
-          hardStopKind = LicenceKind.TIME_SERVED,
+          creationKind = LicenceKind.TIME_SERVED,
         ),
       )
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager.copy(unallocated = true))

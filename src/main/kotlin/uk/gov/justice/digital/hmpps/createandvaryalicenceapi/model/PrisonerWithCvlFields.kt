@@ -49,8 +49,12 @@ data class CvlFields(
   )
   val eligibleKind: EligibleKind?,
 
+  @Deprecated(message = "Use creationKind instead")
   @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.TIME_SERVED)
   val hardStopKind: LicenceKind?,
+
+  @field:Schema(description = "The kind of licence that will be created", example = LicenceKinds.TIME_SERVED)
+  val creationKind: LicenceKind?,
 )
 
 @Schema(description = "A combination of the NOMIS prisoner record and additional CVL fields")

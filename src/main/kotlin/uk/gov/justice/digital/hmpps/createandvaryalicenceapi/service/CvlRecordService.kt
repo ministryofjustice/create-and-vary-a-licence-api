@@ -38,12 +38,12 @@ class CvlRecordService(
     return prisoners.map { prisoner ->
       val eligibility = nomisIdsToEligibility[prisoner.prisonerNumber]!!
       val licenceStartDate = nomisIdsToLicenceStartDates[prisoner.prisonerNumber]
-      val hardStopKind = when {
+      val creationKind = when {
         releaseDateService.isTimeServed(prisoner) -> TIME_SERVED
         releaseDateService.isInHardStopPeriod(licenceStartDate) -> HARD_STOP
-        else -> null
+        else -> eligibility.eligibleKind?.licenceKind
       }
-      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate, hardStopKind)
+      val isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceStartDate, creationKind)
 
       CvlRecord(
         nomisId = prisoner.prisonerNumber,
@@ -51,10 +51,10 @@ class CvlRecordService(
         isEligible = eligibility.isEligible,
         eligibleKind = eligibility.eligibleKind,
         ineligibilityReasons = eligibility.ineligibilityReasons,
-        hardStopKind = hardStopKind,
+        creationKind = creationKind,
         isInHardStopPeriod = isInHardStopPeriod,
-        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate, hardStopKind),
-        hardStopDate = releaseDateService.getHardStopDate(licenceStartDate, hardStopKind),
+        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licenceStartDate, creationKind),
+        hardStopDate = releaseDateService.getHardStopDate(licenceStartDate, creationKind),
         isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(
           prisoner.toSentenceDateHolder(
             licenceStartDate,
@@ -64,7 +64,7 @@ class CvlRecordService(
           licenceStartDate,
         ),
         licenceType = getLicenceType(prisoner, licenceStartDate, eligibility.eligibleKind),
-        isTimedOut = isInHardStopPeriod || hardStopKind == TIME_SERVED,
+        isTimedOut = isInHardStopPeriod || creationKind == TIME_SERVED,
         hdcStatus = bookingIdsToHdcStatus.get(prisoner.bookingId?.toLong()) ?: HdcStatus.NOT_A_HDC_RELEASE,
       )
     }
