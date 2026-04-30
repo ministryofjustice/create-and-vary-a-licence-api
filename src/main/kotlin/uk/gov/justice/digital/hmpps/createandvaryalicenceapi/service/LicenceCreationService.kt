@@ -96,7 +96,6 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = cvlRecord.licenceStartDate,
-        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
 
       EligibleKind.STANDARD -> LicenceFactory.createPrrd(
@@ -111,7 +110,6 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = cvlRecord.licenceStartDate,
-        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
 
       EligibleKind.CRD -> LicenceFactory.createCrd(
@@ -125,7 +123,6 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = cvlRecord.licenceStartDate,
-        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
 
       EligibleKind.HDC -> LicenceFactory.createHdc(
@@ -139,7 +136,6 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = cvlRecord.licenceStartDate,
-        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
 
       else -> throw ValidationException("Generic licence creation route not suitable for $prisonNumber - eligibleKind was ${cvlRecord.eligibleKind}.")
@@ -196,7 +192,6 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = licenceStartDate,
-        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
     } else {
       require(offenderManager != null) { "Offender manager for ${deliusRecord.crn} not found" }
@@ -221,7 +216,6 @@ class LicenceCreationService(
         timedOutLicence = timedOutLicence,
         licenceStartDate = licenceStartDate,
         eligibleKind = cvlRecord.eligibleKind,
-        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
     }
 

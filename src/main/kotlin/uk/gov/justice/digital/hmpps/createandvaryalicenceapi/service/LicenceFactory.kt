@@ -38,7 +38,6 @@ object LicenceFactory {
     creator: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
     licenceStartDate: LocalDate?,
-    restrictedPatientsEnabled: Boolean,
   ) = PrrdLicence(
     typeCode = licenceType,
     eligibleKind = eligibleKind,
@@ -50,7 +49,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = getPrisonCode(nomisRecord, restrictedPatientsEnabled),
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -90,7 +89,6 @@ object LicenceFactory {
     creator: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
     licenceStartDate: LocalDate?,
-    restrictedPatientsEnabled: Boolean,
   ) = CrdLicence(
     typeCode = licenceType,
     version = version,
@@ -101,7 +99,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = getPrisonCode(nomisRecord, restrictedPatientsEnabled),
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -143,7 +141,6 @@ object LicenceFactory {
     timedOutLicence: CrdLicence?,
     licenceStartDate: LocalDate?,
     eligibleKind: EligibleKind?,
-    restrictedPatientsEnabled: Boolean,
   ) = HardStopLicence(
     typeCode = licenceType,
     version = version,
@@ -154,7 +151,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = getPrisonCode(nomisRecord, restrictedPatientsEnabled),
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -197,7 +194,6 @@ object LicenceFactory {
     responsibleCom: CommunityOffenderManager?,
     creator: PrisonUser,
     licenceStartDate: LocalDate?,
-    restrictedPatientsEnabled: Boolean,
   ) = TimeServedLicence(
     typeCode = licenceType,
     eligibleKind = eligibleKind,
@@ -209,7 +205,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = getPrisonCode(nomisRecord, restrictedPatientsEnabled),
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -335,7 +331,6 @@ object LicenceFactory {
     creator: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
     licenceStartDate: LocalDate?,
-    restrictedPatientsEnabled: Boolean,
   ) = HdcLicence(
     typeCode = licenceType,
     version = version,
@@ -346,7 +341,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = getPrisonCode(nomisRecord, restrictedPatientsEnabled),
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -464,11 +459,5 @@ object LicenceFactory {
   private fun getVersionParts(version: String): Pair<Int, Int> {
     val parts = version.split(".")
     return parts[0].toInt() to parts[1].toInt()
-  }
-
-  private fun getPrisonCode(nomisRecord: PrisonerSearchPrisoner, restrictedPatientsEnabled: Boolean): String? = if (restrictedPatientsEnabled && nomisRecord.isRestrictedPatient()) {
-    nomisRecord.supportingPrisonId
-  } else {
-    nomisRecord.prisonId
   }
 }
