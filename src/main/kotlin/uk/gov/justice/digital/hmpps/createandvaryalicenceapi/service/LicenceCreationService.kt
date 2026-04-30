@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,8 +22,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.TimeServedExternalRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
@@ -51,6 +54,7 @@ class LicenceCreationService(
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
   private val caseService: CaseService,
+  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -65,7 +69,9 @@ class LicenceCreationService(
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
 
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
-    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
+
+    val prisonInformation = getPrisonInformation(nomisRecord)
+
     val offenderManager =
       deliusApiClient.getOffenderManager(deliusRecord!!.crn) ?: error("Offender manager for $prisonNumber not found")
 
@@ -90,6 +96,7 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = cvlRecord.licenceStartDate,
+        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
 
       EligibleKind.STANDARD -> LicenceFactory.createPrrd(
@@ -104,6 +111,7 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = cvlRecord.licenceStartDate,
+        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
 
       EligibleKind.CRD -> LicenceFactory.createCrd(
@@ -117,6 +125,7 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = cvlRecord.licenceStartDate,
+        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
 
       EligibleKind.HDC -> LicenceFactory.createHdc(
@@ -130,6 +139,7 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = cvlRecord.licenceStartDate,
+        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
 
       else -> throw ValidationException("Generic licence creation route not suitable for $prisonNumber - eligibleKind was ${cvlRecord.eligibleKind}.")
@@ -140,7 +150,7 @@ class LicenceCreationService(
     val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
     standardConditionRepository.saveAllAndFlush(standardConditions)
 
-    recordLicenceCreation(createdBy, createdLicence)
+    recordLicenceCreation(createdBy, createdLicence, nomisRecord)
 
     return CreateLicenceResponse(createdLicence.id)
   }
@@ -152,7 +162,7 @@ class LicenceCreationService(
     val username = SecurityContextHolder.getContext().authentication?.name!!
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
     val deliusRecord = caseService.getProbationCase(prisonNumber)
-    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
+    val prisonInformation = getPrisonInformation(nomisRecord)
     val offenderManager = deliusApiClient.getOffenderManager(deliusRecord.crn)
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
@@ -186,6 +196,7 @@ class LicenceCreationService(
         responsibleCom = responsibleCom,
         creator = createdBy,
         licenceStartDate = licenceStartDate,
+        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
     } else {
       require(offenderManager != null) { "Offender manager for ${deliusRecord.crn} not found" }
@@ -210,6 +221,7 @@ class LicenceCreationService(
         timedOutLicence = timedOutLicence,
         licenceStartDate = licenceStartDate,
         eligibleKind = cvlRecord.eligibleKind,
+        restrictedPatientsEnabled = restrictedPatientsEnabled,
       )
     }
 
@@ -221,7 +233,7 @@ class LicenceCreationService(
     val additionalConditions = licencePolicyService.getHardStopAdditionalConditions(createdLicence)
     additionalConditionRepository.saveAllAndFlush(additionalConditions)
 
-    recordLicenceCreation(createdBy, createdLicence)
+    recordLicenceCreation(createdBy, createdLicence, nomisRecord)
 
     if (isTimeServedLicenceCreation) {
       val nomisId = nomisRecord.prisonerNumber
@@ -235,6 +247,7 @@ class LicenceCreationService(
   private fun recordLicenceCreation(
     creator: Creator,
     licence: Licence,
+    nomisRecord: PrisonerSearchPrisoner,
   ) {
     auditEventRepository.saveAndFlush(
       AuditEvent(
@@ -256,7 +269,7 @@ class LicenceCreationService(
         eventDescription = "Licence created for ${licence.forename} ${licence.surname}",
       ),
     )
-    telemetryService.recordLicenceCreatedEvent(licence)
+    telemetryService.recordLicenceCreatedEvent(licence, nomisRecord)
   }
 
   private fun verifyNoInFlightLicence(nomsId: String) {
@@ -316,4 +329,13 @@ class LicenceCreationService(
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
 
   private fun missing(username: String, field: String): Nothing = error("staff with staff username: '$username', missing $field")
+
+  private fun getPrisonInformation(nomisRecord: PrisonerSearchPrisoner): Prison {
+    val prisonCode = if (restrictedPatientsEnabled && nomisRecord.isRestrictedPatient()) {
+      nomisRecord.supportingPrisonId!!
+    } else {
+      nomisRecord.prisonId!!
+    }
+    return prisonApiClient.getPrisonInformation(prisonCode)
+  }
 }
