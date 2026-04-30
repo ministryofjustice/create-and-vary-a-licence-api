@@ -826,19 +826,6 @@
         "requiresElectronicMonitoringResponse": false
       },
       {
-        "code": "79ac033f-9d7a-4dab-8344-475106e58b71",
-        "category": "Disclosure of information",
-        "text": "To notify your supervising officer of the details of any passport that you possess (including passport number), and of any intention to apply for a new passport.",
-        "tpl": null,
-        "requiresInput": false,
-        "inputs": null,
-        "categoryShort": null,
-        "subtext": null,
-        "type": null,
-        "skippable": false,
-        "requiresElectronicMonitoringResponse": false
-      },
-      {
         "code": "8686a815-b7f0-43b6-9886-f01df6a48773",
         "category": "Disclosure of information",
         "text": "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
@@ -1287,19 +1274,6 @@
         "code": "be16ee0b-a916-43ef-9319-b42a1dd418a3",
         "category": "Freedom of movement",
         "text": "DRINKING ESTABLISHMENT PLACEHOLDER",
-        "tpl": null,
-        "requiresInput": false,
-        "inputs": null,
-        "categoryShort": null,
-        "subtext": null,
-        "type": null,
-        "skippable": false,
-        "requiresElectronicMonitoringResponse": false
-      },
-      {
-        "code": "344a87e0-677a-49be-9adc-1f1891b1bd50",
-        "category": "Freedom of movement",
-        "text": "FOREIGN TRAVEL RESTRICTION PLACEHOLDER",
         "tpl": null,
         "requiresInput": false,
         "inputs": null,

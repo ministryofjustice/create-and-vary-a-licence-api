@@ -45,6 +45,7 @@
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isEligibleIfOnAnExtendedDeterminateSentence: Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isRecallCase: Boolean</ID>
     <ID>ReturnCount:LsdRecalculationService.kt:LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate: Long</ID>
+    <ID>ReturnCount:MigrationService.kt:MigrationService$private fun isNotValid: Boolean</ID>
     <ID>ReturnCount:NotifyService.kt:NotifyService$private fun sendEmail: Boolean</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt:ComAllocatedHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:UploadFileConditionsService.kt:UploadFileConditionsService$e: Exception</ID>
@@ -64,6 +65,7 @@
     <ID>TooManyFunctions:LicencePolicyService.kt:LicencePolicyService</ID>
     <ID>TooManyFunctions:LicenceRepository.kt:LicenceRepository : JpaRepositoryJpaSpecificationExecutor</ID>
     <ID>TooManyFunctions:LicenceService.kt:LicenceService</ID>
+    <ID>TooManyFunctions:MigrationService.kt:MigrationService</ID>
     <ID>TooManyFunctions:NotifyService.kt:NotifyService</ID>
     <ID>TooManyFunctions:ReleaseDateService.kt:ReleaseDateService</ID>
     <ID>TooManyFunctions:ToEntityTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToEntityTransformers.kt</ID>

@@ -483,12 +483,6 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Disclosure of information",
-        code = "79ac033f-9d7a-4dab-8344-475106e58b71",
-        requiresInput = false,
-        text = "To notify your supervising officer of the details of any passport that you possess (including passport number), and of any intention to apply for a new passport.",
-      ),
-      AdditionalConditionAp(
-        category = "Disclosure of information",
         code = "8686a815-b7f0-43b6-9886-f01df6a48773",
         inputs = listOf(
           Input(
@@ -773,12 +767,6 @@ val POLICY_V4_0 = LicencePolicy(
         code = "be16ee0b-a916-43ef-9319-b42a1dd418a3",
         requiresInput = false,
         text = "DRINKING ESTABLISHMENT PLACEHOLDER",
-      ),
-      AdditionalConditionAp(
-        category = "Freedom of movement",
-        code = "344a87e0-677a-49be-9adc-1f1891b1bd50",
-        requiresInput = false,
-        text = "FOREIGN TRAVEL RESTRICTION PLACEHOLDER",
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
