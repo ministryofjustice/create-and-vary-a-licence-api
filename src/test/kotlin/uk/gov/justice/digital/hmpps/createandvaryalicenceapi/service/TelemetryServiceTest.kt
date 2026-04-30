@@ -111,4 +111,68 @@ class TelemetryServiceTest {
     assertThat(props).containsEntry("CASES_HARD_STOP_STARTED", "2")
     assertThat(props).containsEntry("CASES_HARD_STOP_UNSTARTED", "2")
   }
+
+  @Test
+  fun `recordLicenceCreatedEvent with prisoner tracks restrictedPatient property when true`() {
+    val licence = createCrdLicence()
+    val prisoner = TestData.prisonerSearchResult().copy(
+      prisonId = "OUT",
+      status = "INACTIVE OUT",
+      restrictedPatient = true,
+      supportingPrisonId = "BMI",
+    )
+
+    service.recordLicenceCreatedEvent(licence, prisoner)
+
+    verify(telemetryClient).trackEvent(
+      eq("LicenceCreated"),
+      eq(
+        mapOf(
+          "kind" to licence.kind.name,
+          "licenceId" to licence.id.toString(),
+          "bookingId" to licence.bookingId.toString(),
+          "nomsId" to licence.nomsId,
+          "crn" to licence.crn,
+          "prisonCode" to licence.prisonCode,
+          "probationTeamCode" to licence.probationTeamCode,
+          "probationAreaCode" to licence.probationAreaCode,
+          "probationLauCode" to licence.probationLauCode,
+          "probationPduCode" to licence.probationPduCode,
+          "restrictedPatient" to "true",
+        ),
+      ),
+      eq(null),
+    )
+  }
+
+  @Test
+  fun `recordLicenceCreatedEvent with prisoner tracks restrictedPatient property when false`() {
+    val licence = createCrdLicence()
+    val prisoner = TestData.prisonerSearchResult().copy(
+      restrictedPatient = false,
+      status = "ACTIVE IN",
+    )
+
+    service.recordLicenceCreatedEvent(licence, prisoner)
+
+    verify(telemetryClient).trackEvent(
+      eq("LicenceCreated"),
+      eq(
+        mapOf(
+          "kind" to licence.kind.name,
+          "licenceId" to licence.id.toString(),
+          "bookingId" to licence.bookingId.toString(),
+          "nomsId" to licence.nomsId,
+          "crn" to licence.crn,
+          "prisonCode" to licence.prisonCode,
+          "probationTeamCode" to licence.probationTeamCode,
+          "probationAreaCode" to licence.probationAreaCode,
+          "probationLauCode" to licence.probationLauCode,
+          "probationPduCode" to licence.probationPduCode,
+          "restrictedPatient" to "false",
+        ),
+      ),
+      eq(null),
+    )
+  }
 }
