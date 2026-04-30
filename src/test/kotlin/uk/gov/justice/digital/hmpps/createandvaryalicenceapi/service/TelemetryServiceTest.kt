@@ -116,8 +116,9 @@ class TelemetryServiceTest {
   fun `recordLicenceCreatedEvent with prisoner tracks restrictedPatient property when true`() {
     val licence = createCrdLicence()
     val prisoner = TestData.prisonerSearchResult().copy(
+      prisonId = "OUT",
+      status = "INACTIVE OUT",
       restrictedPatient = true,
-      status = "OUT",
       supportingPrisonId = "BMI",
     )
 
