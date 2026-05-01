@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration
 
-import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.atLeastOnce
@@ -12,7 +10,6 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
@@ -266,20 +263,8 @@ class MigrationServiceTest {
     whenever(deliusApiClient.getOffenderManager(any())).thenReturn(offenderManager)
   }
 
-  @Test
-  fun `migrate should throw error when prisoner number missing`() {
-    // Given
-    val request = migrateRequest(prisonerNumber = null)
-
-    // When / Then
-    assertThatThrownBy { service.migrate(request) }
-      .isInstanceOf(EntityNotFoundException::class.java)
-
-    verifyNoInteractions(licenceRepository, migrationRepository)
-  }
-
   private fun migrateRequest(
-    prisonerNumber: String? = "A1234AA",
+    prisonerNumber: String = "A1234AA",
     submittedBy: String? = null,
     createdByUserName: String? = null,
     approvedByUsername: String? = null,

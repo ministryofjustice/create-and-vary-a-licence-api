@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration
 
-import jakarta.persistence.EntityNotFoundException
-import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,6 +12,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAppointmentAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateCurfewTime
@@ -46,7 +47,7 @@ class MigrationService(
 
   @Transactional
   fun migrate(request: MigrateFromHdcToCvlRequest) {
-    if (isNotValid(request)) return
+    checkForNoRetryExceptions(request)
 
     log.info("Starting migration for bookingId={}", request.bookingId)
     val hdcLicence = request.toHdcLicence()
@@ -54,19 +55,16 @@ class MigrationService(
     log.info("Ending migration for bookingId={} cvl licence id ={}", request.bookingId, hdcLicence.id)
   }
 
-  private fun isNotValid(request: MigrateFromHdcToCvlRequest): Boolean {
-    request.prisoner.prisonerNumber ?: throw EntityNotFoundException("No prisoner given found!")
-
+  private fun checkForNoRetryExceptions(request: MigrateFromHdcToCvlRequest) {
     if (migrationRepository.hasBeenAlreadyMigrated(request.licence.licenceId)) {
-      log.info("Licence {} has already been migrated", request.licence.licenceId)
-      return true
+      throw LicenceAlreadyMigratedException(request.licence.licenceId)
     }
     if (migrationRepository.hasExistingLicence(request.prisoner.prisonerNumber)) {
-      log.info("Licence for prisoner {} already exists", request.prisoner.prisonerNumber)
-      return true
+      throw ExistingCvlLicenceException(request.prisoner.prisonerNumber)
     }
-    return false
+    return
   }
+
   private fun saveMetaData(
     request: MigrateFromHdcToCvlRequest,
     hdcLicence: HdcLicence,
@@ -232,7 +230,7 @@ class MigrationService(
   )
 
   private fun getOffenderManager(prisonNumber: String): CommunityManager = deliusApiClient.getOffenderManager(prisonNumber)
-    ?: throw ValidationException("Could not find offender manager for $prisonNumber in delius")
+    ?: throw OffenderManagerNotFoundException(prisonNumber)
 
   private fun MutableSet<CommunityOffenderManager>.getCommAndAdd(
     userName: String?,
