@@ -18,7 +18,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.NotSecuredWebMvcTest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RecallSupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
 
 @NotSecuredWebMvcTest(controllers = [SupportController::class])
@@ -82,6 +84,32 @@ class SupportControllerTest {
     val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
 
     assertThat(mapper.readValue(response, String::class.java)).isEqualTo("true")
+  }
+
+  @Test
+  fun `get recall info`() {
+    whenever(supportService.getRecallInfo("A1234AA")).thenReturn(
+      RecallSupportInfo(
+        recallType = RecallType.STANDARD,
+        recallName = "Standard Recall",
+        fixTermSentenceTypes = listOf("FTR_ORA"),
+        standardRecallSentenceTypes = listOf("LR"),
+        otherSentenceTypes = listOf("ADIMP_ORA"),
+      ),
+    )
+
+    val request = get("/offender/nomisid/A1234AA/recall-info")
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+
+    val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
+    val result = mapper.readValue(response, RecallSupportInfo::class.java)
+
+    assertThat(result.recallType).isEqualTo(RecallType.STANDARD)
+    assertThat(result.recallName).isEqualTo("Standard Recall")
+    assertThat(result.fixTermSentenceTypes).isEqualTo(listOf("FTR_ORA"))
+    assertThat(result.standardRecallSentenceTypes).isEqualTo(listOf("LR"))
+    assertThat(result.otherSentenceTypes).isEqualTo(listOf("ADIMP_ORA"))
   }
 
   @Test

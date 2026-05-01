@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("dev.detekt") version "2.0.0-alpha.2"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.2.1"
-  id("org.owasp.dependencycheck") version "12.2.0"
-  kotlin("plugin.spring") version "2.3.20"
-  kotlin("plugin.jpa") version "2.3.20"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.2.3"
+  id("org.owasp.dependencycheck") version "12.2.1"
+  kotlin("plugin.spring") version "2.3.21"
+  kotlin("plugin.jpa") version "2.3.21"
 }
 
 repositories {
@@ -29,11 +29,9 @@ dependencies {
     }
   }
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.1.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.2.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.1")
 
-  // CVE-2026-33871 - it does not fix all occurrences
-  implementation(enforcedPlatform("io.netty:netty-bom:4.2.12.Final"))
-  implementation("io.netty:netty-buffer")
   implementation("io.netty:netty-codec-http")
   implementation("io.netty:netty-handler")
   implementation("io.netty:netty-transport")
@@ -41,11 +39,6 @@ dependencies {
 
   // Fix for CVE-2025-48924
   implementation("org.apache.commons:commons-lang3:3.20.0")
-
-  // Fix for CVE-2025-68161 -  () - maven/org.apache.logging.log4j/log4j-api@2.25.0
-  implementation(enforcedPlatform("org.apache.logging.log4j:log4j-bom:2.25.4"))
-  implementation("org.apache.logging.log4j:log4j-api")
-  // End of CVE-2025-68161 remove when not needed.
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -64,22 +57,19 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.10")
+  runtimeOnly("org.postgresql:postgresql:42.7.11")
   implementation("com.google.code.gson:gson:2.13.2")
   implementation("io.arrow-kt:arrow-core:2.2.2.1")
 
-  // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.0")
-
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
   // Digital prison reporting
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:12.0.0")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.1.4")
-  implementation("org.jsoup:jsoup:1.22.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.3.0")
+  implementation("org.jsoup:jsoup:1.22.2")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
   implementation("org.springframework.boot:spring-boot-starter-webclient")
@@ -100,8 +90,8 @@ dependencies {
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.1.2")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.2")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.3.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.1.1")
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
