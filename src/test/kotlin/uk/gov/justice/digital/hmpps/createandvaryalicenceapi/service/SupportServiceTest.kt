@@ -11,19 +11,26 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
 import java.time.LocalDate
 
 class SupportServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
+  private val prisonService = mock<PrisonService>()
   private val eligibilityService = mock<EligibilityService>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
   private val hdcService = mock<HdcService>()
 
   private val service = SupportService(
     prisonerSearchApiClient,
+    prisonService,
     eligibilityService,
     iS91DeterminationService,
     hdcService,
@@ -33,6 +40,7 @@ class SupportServiceTest {
   fun reset() {
     reset(
       prisonerSearchApiClient,
+      prisonService,
       eligibilityService,
       iS91DeterminationService,
       hdcService,
@@ -108,6 +116,66 @@ class SupportServiceTest {
 
     val status = service.getIS91Status("A1234AA")
     assertThat(status).isFalse()
+  }
+
+  @Test
+  fun `get recall info errors when prisoner has no booking id`() {
+    val prisoner = aPrisonerSearchResult.copy(bookingId = null)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
+
+    val exception = assertThrows<IllegalStateException> {
+      service.getRecallInfo("A1234AA")
+    }
+
+    assertThat(exception.message).isEqualTo("Prison number A1234AA has no booking id")
+  }
+
+  @Test
+  fun `get recall info returns standard recall`() {
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(aPrisonerSearchResult))
+
+    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(
+      bookingId = 123456L,
+      sentenceTypeRecallTypes = listOf(
+        SentenceAndRecallType("LR", SentenceRecallType("Standard Recall", isStandardRecall = true, isFixedTermRecall = false)),
+        SentenceAndRecallType("ADIMP_ORA", SentenceRecallType("Other", isStandardRecall = false, isFixedTermRecall = false)),
+        SentenceAndRecallType("ADIMP_ORA", SentenceRecallType("None", isStandardRecall = false, isFixedTermRecall = false)),
+      ),
+    )
+
+    whenever(prisonService.getSentenceAndRecallTypes(123456L)).thenReturn(bookingSentenceAndRecallTypes)
+    whenever(prisonService.getRecallType(bookingSentenceAndRecallTypes)).thenReturn(RecallType.STANDARD)
+
+    val result = service.getRecallInfo("A1234AA")
+
+    assertThat(result.recallType).isEqualTo(RecallType.STANDARD)
+    assertThat(result.recallName).isEqualTo("Standard Recall")
+    assertThat(result.standardRecallSentenceTypes).containsExactly("LR")
+    assertThat(result.fixTermSentenceTypes).isEmpty()
+    assertThat(result.otherSentenceTypes).containsExactly("ADIMP_ORA")
+  }
+
+  @Test
+  fun `get recall info returns fixed term recall`() {
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(aPrisonerSearchResult))
+
+    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(
+      bookingId = 123456L,
+      sentenceTypeRecallTypes = listOf(
+        SentenceAndRecallType("FTR_ORA", SentenceRecallType("14 Day Fixed Term Recall", isStandardRecall = false, isFixedTermRecall = true)),
+      ),
+    )
+
+    whenever(prisonService.getSentenceAndRecallTypes(123456L)).thenReturn(bookingSentenceAndRecallTypes)
+    whenever(prisonService.getRecallType(bookingSentenceAndRecallTypes)).thenReturn(RecallType.FIXED_TERM)
+
+    val result = service.getRecallInfo("A1234AA")
+
+    assertThat(result.recallType).isEqualTo(RecallType.FIXED_TERM)
+    assertThat(result.recallName).isEqualTo("14 Day Fixed Term Recall")
+    assertThat(result.fixTermSentenceTypes).containsExactly("FTR_ORA")
+    assertThat(result.standardRecallSentenceTypes).isEmpty()
+    assertThat(result.otherSentenceTypes).isEmpty()
   }
 
   private companion object {
