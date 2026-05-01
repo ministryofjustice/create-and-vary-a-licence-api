@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
