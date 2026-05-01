@@ -2029,7 +2029,7 @@ class LicenceCreationServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
-          hardStopKind = LicenceKind.HARD_STOP,
+          creationKind = LicenceKind.HARD_STOP,
           licenceStartDate = LocalDate.of(2022, 10, 10),
         ),
       )
@@ -2084,7 +2084,7 @@ class LicenceCreationServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
         aCvlRecord(
           eligibleKind = EligibleKind.CRD,
-          hardStopKind = LicenceKind.TIME_SERVED,
+          creationKind = LicenceKind.TIME_SERVED,
           licenceStartDate = LocalDate.of(2022, 10, 10),
         ),
       )
