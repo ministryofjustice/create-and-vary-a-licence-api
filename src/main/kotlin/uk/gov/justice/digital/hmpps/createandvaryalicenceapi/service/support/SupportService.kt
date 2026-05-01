@@ -39,9 +39,8 @@ class SupportService(
 
     val sentenceRecallTypes = bookingSentenceAndRecallTypes?.sentenceTypeRecallTypes.orEmpty()
 
-    val fixedTermRecalls = sentenceRecallTypes.filter { it.recallType.isFixedTermRecall }
-    val standardRecalls = sentenceRecallTypes.filter { it.recallType.isStandardRecall }
-    val otherSentences = sentenceRecallTypes.filter { !it.recallType.isFixedTermRecall && !it.recallType.isStandardRecall }
+    val (fixedTermRecalls, rest) = sentenceRecallTypes.partition { it.recallType.isFixedTermRecall }
+    val (standardRecalls, otherSentences) = rest.partition { it.recallType.isStandardRecall }
     val recallName = (fixedTermRecalls + standardRecalls).firstOrNull()?.recallType?.recallName ?: "None"
 
     return RecallSupportInfo(
