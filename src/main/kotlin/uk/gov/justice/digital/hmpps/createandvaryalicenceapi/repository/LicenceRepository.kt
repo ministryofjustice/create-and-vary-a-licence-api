@@ -125,7 +125,10 @@ interface LicenceRepository :
     SELECT l
         FROM Licence l
         WHERE l.statusCode != uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
-        AND COALESCE(l.topupSupervisionExpiryDate, l.licenceExpiryDate) < CURRENT_DATE
+        AND (
+            (l.typeCode = 'AP' AND l.licenceExpiryDate < CURRENT_DATE)
+         OR (l.typeCode IN ('AP_PSS', 'PSS') AND l.topupSupervisionExpiryDate < CURRENT_DATE)
+       )
     """,
   )
   fun getLicencesPassedExpiryDate(): List<Licence>
