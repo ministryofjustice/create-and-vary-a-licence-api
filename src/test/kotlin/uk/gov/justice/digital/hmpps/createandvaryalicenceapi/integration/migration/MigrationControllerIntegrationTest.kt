@@ -102,7 +102,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       .exchange()
 
     // Then
-    result.expectStatus().isOk
+    result.expectStatus().isBadRequest
     assertThat(testRepository.doesLicenceExist(1)).isFalse
   }
 
@@ -123,7 +123,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       .exchange()
 
     // Then
-    result.expectStatus().isOk
+    result.expectStatus().isBadRequest
     assertThat(testRepository.hasMetaData()).isFalse
   }
 
