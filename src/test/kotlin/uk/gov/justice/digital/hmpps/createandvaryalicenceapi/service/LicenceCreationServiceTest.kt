@@ -162,13 +162,9 @@ class LicenceCreationServiceTest {
 
       service.createLicence(PRISON_NUMBER)
 
-      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(telemetryService).recordLicenceCreatedEvent(licenceCaptor.value)
-
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        verify(telemetryService).recordLicenceCreatedEvent(capture())
+        verify(telemetryService).recordLicenceCreatedEvent(capture(), any())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.CRD)
           assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
@@ -626,6 +622,58 @@ class LicenceCreationServiceTest {
       verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
       verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
+
+    @Test
+    fun `should use supporting prison for restricted patient for CRD licence`() {
+      val serviceWithFeatureEnabled = LicenceCreationService(
+        licenceRepository,
+        crdLicenceRepository,
+        staffRepository,
+        standardConditionRepository,
+        additionalConditionRepository,
+        licenceEventRepository,
+        licencePolicyService,
+        auditEventRepository,
+        prisonerSearchApiClient,
+        prisonApiClient,
+        deliusApiClient,
+        cvlRecordService,
+        telemetryService,
+        timeServedExternalRecordsService,
+        caseService,
+        restrictedPatientsEnabled = true,
+      )
+      val supportingPrisonId = "BMI"
+      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+
+      val restrictedPatient = prisonerSearchResult().copy(
+        prisonId = "OUT",
+        status = "INACTIVE OUT",
+        restrictedPatient = true,
+        supportingPrisonId = supportingPrisonId,
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(restrictedPatient))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(prisonApiClient.getPrisonInformation(supportingPrisonId)).thenReturn(supportingPrisonInfo)
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.CRD,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+        ),
+      )
+
+      serviceWithFeatureEnabled.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(prisonApiClient).getPrisonInformation(supportingPrisonId)
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        with(firstValue) {
+          assertThat(prisonCode).isEqualTo(supportingPrisonId)
+          assertThat(prisonDescription).isEqualTo(supportingPrisonInfo.description)
+        }
+      }
+    }
   }
 
   @Nested
@@ -675,12 +723,9 @@ class LicenceCreationServiceTest {
 
       service.createLicence(PRISON_NUMBER)
 
-      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        verify(telemetryService).recordLicenceCreatedEvent(capture())
+        verify(telemetryService).recordLicenceCreatedEvent(capture(), any())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.PRRD)
           assertThat(eligibleKind).isEqualTo(EligibleKind.FIXED_TERM)
@@ -736,12 +781,9 @@ class LicenceCreationServiceTest {
 
       service.createLicence(PRISON_NUMBER)
 
-      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
       argumentCaptor<PrrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        verify(telemetryService).recordLicenceCreatedEvent(capture())
+        verify(telemetryService).recordLicenceCreatedEvent(capture(), any())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.PRRD)
           assertThat(eligibleKind).isEqualTo(EligibleKind.STANDARD)
@@ -1193,6 +1235,61 @@ class LicenceCreationServiceTest {
       verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
       verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
     }
+
+    @Test
+    fun `should use supporting prison for restricted patient for PRRD licence`() {
+      val serviceWithFeatureEnabled = LicenceCreationService(
+        licenceRepository,
+        crdLicenceRepository,
+        staffRepository,
+        standardConditionRepository,
+        additionalConditionRepository,
+        licenceEventRepository,
+        licencePolicyService,
+        auditEventRepository,
+        prisonerSearchApiClient,
+        prisonApiClient,
+        deliusApiClient,
+        cvlRecordService,
+        telemetryService,
+        timeServedExternalRecordsService,
+        caseService,
+        restrictedPatientsEnabled = true,
+      )
+      val supportingPrisonId = "BMI"
+      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+
+      val restrictedPatient = prisonerSearchResult().copy(
+        postRecallReleaseDate = LocalDate.now(),
+        prisonId = "OUT",
+        status = "INACTIVE OUT",
+        restrictedPatient = true,
+        supportingPrisonId = supportingPrisonId,
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(restrictedPatient))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(prisonApiClient.getPrisonInformation(supportingPrisonId)).thenReturn(supportingPrisonInfo)
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.FIXED_TERM,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+        ),
+      )
+
+      serviceWithFeatureEnabled.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<PrrdLicence>().apply {
+        verify(prisonApiClient).getPrisonInformation(supportingPrisonId)
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        with(firstValue) {
+          assertThat(kind).isEqualTo(LicenceKind.PRRD)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.FIXED_TERM)
+          assertThat(prisonCode).isEqualTo(supportingPrisonId)
+          assertThat(prisonDescription).isEqualTo(supportingPrisonInfo.description)
+        }
+      }
+    }
   }
 
   @Nested
@@ -1247,13 +1344,9 @@ class LicenceCreationServiceTest {
 
       service.createHardStopLicence(PRISON_NUMBER)
 
-      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(telemetryService).recordLicenceCreatedEvent(licenceCaptor.value)
-
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        verify(telemetryService).recordLicenceCreatedEvent(capture())
+        verify(telemetryService).recordLicenceCreatedEvent(capture(), any())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
           assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
@@ -1766,7 +1859,7 @@ class LicenceCreationServiceTest {
 
       argumentCaptor<TimeServedLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        verify(telemetryService).recordLicenceCreatedEvent(capture())
+        verify(telemetryService).recordLicenceCreatedEvent(capture(), any())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
           assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
@@ -1899,6 +1992,116 @@ class LicenceCreationServiceTest {
         .isInstanceOf(InvalidStateException::class.java)
         .withFailMessage("Could not find a probation case in Delius for nomis id $PRISON_NUMBER")
     }
+
+    @Test
+    fun `should use supporting prison for restricted patient for hard stop licence`() {
+      val serviceWithFeatureEnabled = LicenceCreationService(
+        licenceRepository,
+        crdLicenceRepository,
+        staffRepository,
+        standardConditionRepository,
+        additionalConditionRepository,
+        licenceEventRepository,
+        licencePolicyService,
+        auditEventRepository,
+        prisonerSearchApiClient,
+        prisonApiClient,
+        deliusApiClient,
+        cvlRecordService,
+        telemetryService,
+        timeServedExternalRecordsService,
+        caseService,
+        restrictedPatientsEnabled = true,
+      )
+      val supportingPrisonId = "BMI"
+      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+
+      val restrictedPatient = prisonerSearchResult().copy(
+        prisonId = "OUT",
+        status = "INACTIVE OUT",
+        restrictedPatient = true,
+        supportingPrisonId = supportingPrisonId,
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(restrictedPatient))
+      whenever(caseService.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(prisonApiClient.getPrisonInformation(supportingPrisonId)).thenReturn(supportingPrisonInfo)
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.CRD,
+          hardStopKind = LicenceKind.HARD_STOP,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+        ),
+      )
+
+      serviceWithFeatureEnabled.createHardStopLicence(PRISON_NUMBER)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(prisonApiClient).getPrisonInformation(supportingPrisonId)
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        with(firstValue) {
+          assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
+          assertThat(prisonCode).isEqualTo(supportingPrisonId)
+          assertThat(prisonDescription).isEqualTo(supportingPrisonInfo.description)
+        }
+      }
+    }
+
+    @Test
+    fun `should use supporting prison for restricted patient for time served licence`() {
+      val serviceWithFeatureEnabled = LicenceCreationService(
+        licenceRepository,
+        crdLicenceRepository,
+        staffRepository,
+        standardConditionRepository,
+        additionalConditionRepository,
+        licenceEventRepository,
+        licencePolicyService,
+        auditEventRepository,
+        prisonerSearchApiClient,
+        prisonApiClient,
+        deliusApiClient,
+        cvlRecordService,
+        telemetryService,
+        timeServedExternalRecordsService,
+        caseService,
+        restrictedPatientsEnabled = true,
+      )
+      val supportingPrisonId = "BMI"
+      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+
+      val restrictedPatient = prisonerSearchResult().copy(
+        prisonId = "OUT",
+        status = "INACTIVE OUT",
+        restrictedPatient = true,
+        supportingPrisonId = supportingPrisonId,
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(restrictedPatient))
+      whenever(caseService.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(prisonApiClient.getPrisonInformation(supportingPrisonId)).thenReturn(supportingPrisonInfo)
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.CRD,
+          hardStopKind = LicenceKind.TIME_SERVED,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+        ),
+      )
+
+      serviceWithFeatureEnabled.createHardStopLicence(PRISON_NUMBER)
+
+      argumentCaptor<TimeServedLicence>().apply {
+        verify(prisonApiClient).getPrisonInformation(supportingPrisonId)
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        with(firstValue) {
+          assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
+          assertThat(prisonCode).isEqualTo(supportingPrisonId)
+          assertThat(prisonDescription).isEqualTo(supportingPrisonInfo.description)
+        }
+      }
+    }
   }
 
   @Nested
@@ -1949,7 +2152,7 @@ class LicenceCreationServiceTest {
 
       argumentCaptor<HdcLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
-        verify(telemetryService).recordLicenceCreatedEvent(capture())
+        verify(telemetryService).recordLicenceCreatedEvent(capture(), any())
         with(firstValue) {
           assertThat(kind).isEqualTo(LicenceKind.HDC)
           assertThat(eligibleKind).isEqualTo(EligibleKind.HDC)
@@ -2406,6 +2609,61 @@ class LicenceCreationServiceTest {
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
       verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
       verify(licenceEventRepository, times(0)).saveAndFlush(any<LicenceEvent>())
+    }
+
+    @Test
+    fun `should use supporting prison for restricted patient for HDC licence`() {
+      val serviceWithFeatureEnabled = LicenceCreationService(
+        licenceRepository,
+        crdLicenceRepository,
+        staffRepository,
+        standardConditionRepository,
+        additionalConditionRepository,
+        licenceEventRepository,
+        licencePolicyService,
+        auditEventRepository,
+        prisonerSearchApiClient,
+        prisonApiClient,
+        deliusApiClient,
+        cvlRecordService,
+        telemetryService,
+        timeServedExternalRecordsService,
+        caseService,
+        restrictedPatientsEnabled = true,
+      )
+      val supportingPrisonId = "BMI"
+      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+
+      val restrictedPatient = prisonerSearchResult().copy(
+        prisonId = "OUT",
+        status = "INACTIVE OUT",
+        restrictedPatient = true,
+        supportingPrisonId = supportingPrisonId,
+        homeDetentionCurfewEndDate = LocalDate.now(),
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(restrictedPatient))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+      whenever(prisonApiClient.getPrisonInformation(supportingPrisonId)).thenReturn(supportingPrisonInfo)
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.HDC,
+          licenceStartDate = LocalDate.of(2022, 10, 10),
+        ),
+      )
+
+      serviceWithFeatureEnabled.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<HdcLicence>().apply {
+        verify(prisonApiClient).getPrisonInformation(supportingPrisonId)
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        with(firstValue) {
+          assertThat(kind).isEqualTo(LicenceKind.HDC)
+          assertThat(eligibleKind).isEqualTo(EligibleKind.HDC)
+          assertThat(prisonCode).isEqualTo(supportingPrisonId)
+          assertThat(prisonDescription).isEqualTo(supportingPrisonInfo.description)
+        }
+      }
     }
   }
 

@@ -68,7 +68,7 @@ data class MigratePrisonDetails(
 @Schema(description = "Prisoner personal details")
 data class MigratePrisonerDetails(
   @field:Schema(description = "Prisoner Number", example = "A1234BC")
-  val prisonerNumber: String?,
+  val prisonerNumber: String,
 
   @field:Schema(description = "Forename")
   val forename: String?,
