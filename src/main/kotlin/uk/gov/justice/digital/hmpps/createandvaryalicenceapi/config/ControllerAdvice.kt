@@ -215,37 +215,13 @@ class ControllerAdvice {
       )
   }
 
-  @ExceptionHandler(ExistingCvlLicenceException::class)
-  fun handleExistingCvlLicenceException(e: ExistingCvlLicenceException): ResponseEntity<ErrorResponse> {
-    log.info("ExistingCvlLicenceException: {}", e.message)
-    return ResponseEntity
-      .status(BAD_REQUEST)
-      .body(
-        ErrorResponse(
-          status = BAD_REQUEST.value(),
-          userMessage = "Unexpected error: ${e.message}",
-          developerMessage = e.message,
-        ),
-      )
-  }
-
-  @ExceptionHandler(LicenceAlreadyMigratedException::class)
-  fun handleLicenceAlreadyMigratedException(e: LicenceAlreadyMigratedException): ResponseEntity<ErrorResponse> {
-    log.info("LicenceAlreadyMigratedException: {}", e.message)
-    return ResponseEntity
-      .status(BAD_REQUEST)
-      .body(
-        ErrorResponse(
-          status = BAD_REQUEST.value(),
-          userMessage = "Unexpected error: ${e.message}",
-          developerMessage = e.message,
-        ),
-      )
-  }
-
-  @ExceptionHandler(OffenderManagerNotFoundException::class)
-  fun handleOffenderManagerNotFoundException(e: OffenderManagerNotFoundException): ResponseEntity<ErrorResponse> {
-    log.info("OffenderManagerNotFoundException: {}", e.message)
+  @ExceptionHandler(
+    ExistingCvlLicenceException::class,
+    LicenceAlreadyMigratedException::class,
+    OffenderManagerNotFoundException::class,
+  )
+  fun handleNoRetryMigrationLicenceException(e: Exception): ResponseEntity<ErrorResponse> {
+    log.info("NoRetryMigrationLicenceException: {}", e.message)
     return ResponseEntity
       .status(BAD_REQUEST)
       .body(

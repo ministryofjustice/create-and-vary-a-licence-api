@@ -62,7 +62,6 @@ class MigrationService(
     if (migrationRepository.hasExistingLicence(request.prisoner.prisonerNumber)) {
       throw ExistingCvlLicenceException(request.prisoner.prisonerNumber)
     }
-    return
   }
 
   private fun saveMetaData(

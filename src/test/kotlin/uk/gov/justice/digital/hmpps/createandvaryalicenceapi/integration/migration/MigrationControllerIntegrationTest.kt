@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
@@ -100,10 +101,12 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .bodyValue(request)
       .exchange()
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
 
     // Then
     result.expectStatus().isBadRequest
     assertThat(testRepository.doesLicenceExist(1)).isFalse
+    assertThat(errorResponse.userMessage).contains("Unexpected error: Licence 1 has already been migrated")
   }
 
   @Test
@@ -121,10 +124,35 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .bodyValue(request)
       .exchange()
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
 
     // Then
     result.expectStatus().isBadRequest
     assertThat(testRepository.hasMetaData()).isFalse
+    assertThat(errorResponse.userMessage).contains("Unexpected error: Licence for prisoner A1234AA already exists")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-staff-offender-manager-not-found.sql",
+  )
+  fun `should not migrate if offender manager not found`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(request)
+      .exchange()
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+
+    // Then
+    result.expectStatus().isBadRequest
+    assertThat(testRepository.hasMetaData()).isFalse
+    assertThat(errorResponse.userMessage).contains("Unexpected error: Could not find offender manager for A1234AA in delius")
   }
 
   @Test

@@ -31,7 +31,7 @@ class ControllerAdviceTest {
   fun handleExistingCvlLicenceException() {
     val exception = ExistingCvlLicenceException("A2345BC")
 
-    val response = controllerAdvice.handleExistingCvlLicenceException(exception)
+    val response = controllerAdvice.handleNoRetryMigrationLicenceException(exception)
 
     assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
     assertThat(response.body).isEqualTo(
@@ -47,7 +47,7 @@ class ControllerAdviceTest {
   fun handleLicenceAlreadyMigratedException() {
     val exception = LicenceAlreadyMigratedException(123)
 
-    val response = controllerAdvice.handleLicenceAlreadyMigratedException(exception)
+    val response = controllerAdvice.handleNoRetryMigrationLicenceException(exception)
 
     assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
     assertThat(response.body).isEqualTo(
@@ -63,7 +63,7 @@ class ControllerAdviceTest {
   fun handleOffenderManagerNotFoundException() {
     val exception = OffenderManagerNotFoundException("A2345BC")
 
-    val response = controllerAdvice.handleOffenderManagerNotFoundException(exception)
+    val response = controllerAdvice.handleNoRetryMigrationLicenceException(exception)
 
     assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
     assertThat(response.body).isEqualTo(
