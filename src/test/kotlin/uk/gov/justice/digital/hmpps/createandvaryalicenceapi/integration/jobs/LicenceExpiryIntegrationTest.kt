@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.web.reactive.server.expectBodyList
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
@@ -43,10 +44,10 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectBodyList(LicenceSummary::class.java)
+      .expectBodyList<LicenceSummary>()
       .returnResult().responseBody
 
-    assertThat(inactiveLicences?.size).isEqualTo(6)
+    assertThat(inactiveLicences.size).isEqualTo(6)
     assertThat(inactiveLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -66,10 +67,10 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectBodyList(LicenceSummary::class.java)
+      .expectBodyList<LicenceSummary>()
       .returnResult().responseBody
 
-    assertThat(remainingLicences?.size).isEqualTo(3)
+    assertThat(remainingLicences.size).isEqualTo(3)
     assertThat(remainingLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
