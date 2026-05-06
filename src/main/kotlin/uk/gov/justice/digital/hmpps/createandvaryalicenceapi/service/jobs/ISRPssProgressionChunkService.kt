@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
@@ -42,6 +43,11 @@ class ISRPssProgressionChunkService(
       licence.typeCode = LicenceType.AP
       licence.additionalConditions.removeIf { it.conditionType == "PSS" }
       licence.standardConditions.removeIf { it.conditionType == "PSS" }
+
+      if (licence.licenceExpiryDate?.isBefore(LocalDate.now()) == true) {
+        licence.statusCode = LicenceStatus.INACTIVE
+        audits.add(createApExpiredAuditEvent(licence, licenceIds))
+      }
     }
     if (audits.isNotEmpty()) {
       auditEventRepository.saveAll(audits)
@@ -63,6 +69,15 @@ class ISRPssProgressionChunkService(
       auditEventRepository.saveAll(audits)
     }
     log.info("ISR PSS repealed licence chunk completed. size={} batch {} to {}", licenceIds.size, licenceIds.first(), licenceIds.last())
+  }
+
+  private fun createApExpiredAuditEvent(
+    licence: Licence,
+    licenceIds: List<Long>,
+  ): AuditEvent {
+    val summary = "ISR ${LicenceType.AP.name} licence for ${licence.forename} ${licence.surname} has expired as the LED is in the past"
+    val changes = mapOf("type" to summary, "changes" to mapOf("statusCode" to licence.statusCode.name))
+    return createAudit(licence, licenceIds, summary, changes)
   }
 
   private fun createApPssAuditEvent(

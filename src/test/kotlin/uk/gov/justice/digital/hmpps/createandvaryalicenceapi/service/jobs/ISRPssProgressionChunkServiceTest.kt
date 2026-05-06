@@ -22,6 +22,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
+
 class ISRPssProgressionChunkServiceTest {
 
   private val repository = mock<LicenceRepository>()
@@ -98,6 +100,32 @@ class ISRPssProgressionChunkServiceTest {
 
       verify(auditEventRepository).saveAll(captor.capture())
       assertThat(captor.firstValue).hasSize(1)
+    }
+
+    @Test
+    fun `should process AP_PSS and make it inactive if LED is in the past`() {
+      // Given
+      val apPss = createLicence(id = 1, typeCode = LicenceType.AP_PSS).apply {
+        licenceExpiryDate = LocalDate.of(2020, 1, 1)
+        forename = "John"
+        surname = "Smith"
+      }
+
+      whenever(repository.findAllById(listOf(1L)))
+        .thenReturn(listOf(apPss))
+
+      val captor = argumentCaptor<List<AuditEvent>>()
+
+      // When
+      chunkService.processApPssLicenceChunk(listOf(1L))
+
+      // Then
+      assertThat(apPss.typeCode).isEqualTo(LicenceType.AP)
+      assertThat(apPss.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+
+      verify(auditEventRepository).saveAll(captor.capture())
+      assertThat(captor.firstValue).hasSize(2)
+      assertThat(captor.firstValue.last().summary).contains("ISR AP licence for John Smith has expired as the LED is in the past")
     }
 
     @Test

@@ -52,10 +52,12 @@ class ISRPssProgressionJobIntegrationTest : IntegrationTestBase() {
 
     // Check audit events
     val events = testRepository.findAllAuditEvents().sortedBy { it.id }
-    assertThat(events).size().isEqualTo(3)
+    assertThat(events).size().isEqualTo(5)
     assertThat(events[0].summary).contains("ISR PSS licence changed to INACTIVE for Test3 Tester3 due to PSS repeal")
     assertThat(events[1].summary).contains("ISR AP_PSS licence to AP for Test1 Tester1 due to PSS repeal")
-    assertThat(events[2].summary).contains("ISR AP_PSS licence to AP for Test2 Tester2 due to PSS repeal")
+    assertThat(events[2].summary).contains("ISR AP licence for Test1 Tester1 has expired as the LED is in the past")
+    assertThat(events[3].summary).contains("ISR AP_PSS licence to AP for Test2 Tester2 due to PSS repeal")
+    assertThat(events[4].summary).contains("ISR AP licence for Test2 Tester2 has expired as the LED is in the past")
   }
 
   private fun postRequest(uri: String, roles: List<String> = listOf("ROLE_CVL_ADMIN")): WebTestClient.ResponseSpec = webTestClient.post()
