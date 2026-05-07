@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateComService
 
 @NotSecuredWebMvcTest(controllers = [StaffController::class])
 class StaffControllerTest {
@@ -30,6 +31,9 @@ class StaffControllerTest {
 
   @MockitoBean
   private lateinit var staffService: StaffService
+
+  @MockitoBean
+  private lateinit var updateComService: UpdateComService
 
   @Autowired
   private lateinit var mvc: MockMvc
@@ -42,7 +46,7 @@ class StaffControllerTest {
     reset(notifyService, staffService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(StaffController(staffService))
+      .standaloneSetup(StaffController(staffService, updateComService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -59,7 +63,7 @@ class StaffControllerTest {
     )
 
     val expectedCom = communityOffenderManager()
-    whenever(staffService.updateComDetails(any())).thenReturn(expectedCom)
+    whenever(updateComService.updateComDetails(any())).thenReturn(expectedCom)
 
     val request = put("/com/update")
       .accept(MediaType.APPLICATION_JSON)
@@ -71,6 +75,6 @@ class StaffControllerTest {
 
     // Then
     mvcResult.andExpect(status().isOk)
-    verify(staffService, times(1)).updateComDetails(body)
+    verify(updateComService, times(1)).updateComDetails(body)
   }
 }

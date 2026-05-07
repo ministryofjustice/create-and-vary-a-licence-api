@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -20,10 +19,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
+import java.util.Collections
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 class StaffIntegrationTest : IntegrationTestBase() {
 
@@ -97,41 +95,39 @@ class StaffIntegrationTest : IntegrationTestBase() {
     assertComDetails(staff!!, request)
   }
 
-  // This will fail randomly due more than one thread finding no existing COM and so
-  // attempting to create one, any threads attempting to save a COM after the first
+  // This tests the behaviour where it would fail randomly due more than one thread finding no
+  // existing COM and so attempting to create one, any threads attempting to save a COM after the first
   // will cause a Unique index or primary key violation
-  @Disabled
   @Test
-  fun `Test adding the same COM in multiple threads`() {
+  fun `Test adding the same COM in multiple threads, the exception should be handled elegantly`() {
     val numberOfThreads = 5
-    val executor = Executors.newFixedThreadPool(numberOfThreads)
-    val countdownLatch = CountDownLatch(numberOfThreads)
+    val startLatch = CountDownLatch(1)
+    val doneLatch = CountDownLatch(numberOfThreads)
+    val statuses = Collections.synchronizedList(mutableListOf<Int>())
 
-    val futures = mutableListOf<Future<*>>()
-    for (i in 1..numberOfThreads) {
-      futures.add(
-        executor.submit {
-          try {
-            doUpdate("/com/update", updateCom)
-          } finally {
-            countdownLatch.countDown()
-          }
-        },
-      )
-    }
-    countdownLatch.await()
-    futures.forEach {
-      try {
-        it.get()
-      } catch (e: ExecutionException) {
-        fail("Update com failed: $e")
-      }
+    repeat(numberOfThreads) {
+      Thread {
+        startLatch.await()
+        try {
+          statuses += doUpdateAndGetStatus("/com/update", updateCom.copy(staffIdentifier = 1999))
+        } finally {
+          doneLatch.countDown()
+        }
+      }.start()
     }
 
-    assertThat(staffRepository.count()).isEqualTo(1)
+    startLatch.countDown()
+    doneLatch.await(30, TimeUnit.SECONDS)
 
-    with(staffRepository.findAll().first() as CommunityOffenderManager) {
-      assertThat(staffIdentifier).isEqualTo(updateCom.staffIdentifier)
+    // All requests should succeed (no 500s from duplicate key)
+    assertThat(statuses).hasSize(numberOfThreads)
+    assertThat(statuses).allMatch { it == 200 }
+
+    val expectedCOM =
+      staffRepository.findByStaffIdentifier(1999) ?: fail("Expected to find a staff record with staffIdentifier=1999")
+
+    with(expectedCOM) {
+      assertThat(staffIdentifier).isEqualTo(1999)
       assertThat(username).isEqualTo(updateCom.staffUsername.uppercase())
       assertThat(email).isEqualTo(updateCom.staffEmail)
       assertThat(firstName).isEqualTo(updateCom.firstName)
@@ -278,14 +274,17 @@ class StaffIntegrationTest : IntegrationTestBase() {
   }
 
   private fun doUpdate(uri: String, body: Any) {
-    webTestClient.put()
-      .uri(uri)
-      .bodyValue(body)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
+    assertThat(doUpdateAndGetStatus(uri, body)).isEqualTo(200)
   }
+
+  private fun doUpdateAndGetStatus(uri: String, body: Any): Int = webTestClient.put()
+    .uri(uri)
+    .bodyValue(body)
+    .accept(MediaType.APPLICATION_JSON)
+    .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+    .exchange()
+    .returnResult(String::class.java)
+    .status.value()
 
   private fun assertComDetails(
     staff: Staff,
