@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.PolicyUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -390,7 +391,7 @@ class LicenceConditionService(
   }
 
   @Transactional
-  fun updateLicencePolicy(licenceId: Long) {
+  fun updateLicencePolicy(licenceId: Long): PolicyUpdateResponse {
     val licence = getLicence(licenceId)
     val currentPolicyVersion = if (licence is Variation) {
       getLicence(licence.variationOfId!!).version
@@ -398,10 +399,12 @@ class LicenceConditionService(
       licence.version
     }
 
-    val policyVersionAvailable = licencePolicyService.currentPolicy(licence.licenceStartDate)
-    if (currentPolicyVersion != policyVersionAvailable.version) {
+    val policyVersionAvailable = licencePolicyService.currentPolicy(licence.licenceStartDate).version
+    if (currentPolicyVersion != policyVersionAvailable) {
       updateStandardConditions(licence)
+      return PolicyUpdateResponse(policyUpdated = true, policyVersion = policyVersionAvailable)
     }
+    return PolicyUpdateResponse(policyUpdated = false, policyVersion = policyVersionAvailable)
   }
 
   private fun getCurrentUserName(): String = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER

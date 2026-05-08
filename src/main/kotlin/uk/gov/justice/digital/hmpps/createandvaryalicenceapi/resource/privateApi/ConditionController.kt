@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.PolicyUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
 
@@ -495,6 +496,12 @@ class ConditionController(
       ApiResponse(
         responseCode = "200",
         description = "Standard conditions on the licence have been updated if required",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = PolicyUpdateResponse::class),
+          ),
+        ],
       ),
       ApiResponse(
         responseCode = "401",
@@ -515,7 +522,5 @@ class ConditionController(
   )
   fun updateLicencePolicy(
     @PathVariable("licenceId") licenceId: Long,
-  ) {
-    licenceConditionService.updateLicencePolicy(licenceId)
-  }
+  ): PolicyUpdateResponse = licenceConditionService.updateLicencePolicy(licenceId)
 }

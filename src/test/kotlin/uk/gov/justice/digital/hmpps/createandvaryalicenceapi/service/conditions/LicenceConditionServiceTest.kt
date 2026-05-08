@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.PolicyUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -783,8 +784,9 @@ class LicenceConditionServiceTest {
       )
       whenever(policyService.currentPolicy(any())).thenReturn(aPolicy)
 
-      service.updateLicencePolicy(licence.id)
+      val response = service.updateLicencePolicy(licence.id)
 
+      assertThat(response).isEqualTo(PolicyUpdateResponse(false, aPolicy.version))
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(auditService, times(0)).recordAuditEventUpdateBespokeConditions(any(), any(), any(), anyOrNull())
     }
@@ -802,8 +804,9 @@ class LicenceConditionServiceTest {
       )
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
-      service.updateLicencePolicy(licence.id)
+      val response = service.updateLicencePolicy(licence.id)
 
+      assertThat(response).isEqualTo(PolicyUpdateResponse(true, aPolicy.version))
       verify(licenceRepository).saveAndFlush(licence)
       verify(auditService).recordAuditEventUpdateStandardCondition(licence, aPolicy.version, aCom)
     }
@@ -823,8 +826,9 @@ class LicenceConditionServiceTest {
       )
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
-      service.updateLicencePolicy(variationLicence.id)
+      val response = service.updateLicencePolicy(variationLicence.id)
 
+      assertThat(response).isEqualTo(PolicyUpdateResponse(true, aPolicy.version))
       verify(licenceRepository).saveAndFlush(variationLicence)
       verify(auditService).recordAuditEventUpdateStandardCondition(variationLicence, aPolicy.version, aCom)
     }

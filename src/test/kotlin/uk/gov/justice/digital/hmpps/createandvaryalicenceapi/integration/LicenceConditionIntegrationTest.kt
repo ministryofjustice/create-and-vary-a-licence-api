@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.PolicyUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V4_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -311,13 +312,16 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the policy version of a licence`() {
-    webTestClient.post()
+    val response = webTestClient.post()
       .uri("/licence/id/1/update-policy")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
+      .expectBody<PolicyUpdateResponse>()
+      .returnResult().responseBody
 
+    assertThat(response).isEqualTo(PolicyUpdateResponse(true, "4.0"))
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
