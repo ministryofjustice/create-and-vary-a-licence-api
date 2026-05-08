@@ -124,8 +124,17 @@ class ISRPssProgressionChunkServiceTest {
       assertThat(apPss.statusCode).isEqualTo(LicenceStatus.INACTIVE)
 
       verify(auditEventRepository).saveAll(captor.capture())
+
       assertThat(captor.firstValue).hasSize(2)
+
+      val audit = captor.firstValue.last()
       assertThat(captor.firstValue.last().summary).contains("ISR AP licence for John Smith has expired as the LED is in the past")
+
+      assertThat(audit.changes).isNotNull
+      val changes = audit.changes!!["changes"] as Map<*, *>
+
+      assertThat(changes["oldStatusCode"]).isEqualTo(LicenceStatus.IN_PROGRESS.name)
+      assertThat(changes["statusCode"]).isEqualTo(LicenceStatus.INACTIVE.name)
     }
 
     @Test

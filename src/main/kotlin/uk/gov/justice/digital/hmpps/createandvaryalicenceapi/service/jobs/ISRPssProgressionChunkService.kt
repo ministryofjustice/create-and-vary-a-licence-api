@@ -45,8 +45,8 @@ class ISRPssProgressionChunkService(
       licence.standardConditions.removeIf { it.conditionType == "PSS" }
 
       if (licence.licenceExpiryDate?.isBefore(LocalDate.now()) == true) {
-        licence.statusCode = LicenceStatus.INACTIVE
         audits.add(createApExpiredAuditEvent(licence, licenceIds))
+        licence.statusCode = LicenceStatus.INACTIVE
       }
     }
     if (audits.isNotEmpty()) {
@@ -75,8 +75,15 @@ class ISRPssProgressionChunkService(
     licence: Licence,
     licenceIds: List<Long>,
   ): AuditEvent {
-    val summary = "ISR ${LicenceType.AP.name} licence for ${licence.forename} ${licence.surname} has expired as the LED is in the past"
-    val changes = mapOf("type" to summary, "changes" to mapOf("statusCode" to licence.statusCode.name))
+    val summary =
+      "ISR ${LicenceType.AP.name} licence for ${licence.forename} ${licence.surname} has expired as the LED is in the past"
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to mapOf(
+        "oldStatusCode" to licence.statusCode.name,
+        "statusCode" to LicenceStatus.INACTIVE.name,
+      ),
+    )
     return createAudit(licence, licenceIds, summary, changes)
   }
 
