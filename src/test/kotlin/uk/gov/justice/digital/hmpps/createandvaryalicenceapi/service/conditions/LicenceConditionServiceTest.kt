@@ -41,10 +41,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someEntityStandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
@@ -377,7 +380,9 @@ class LicenceConditionServiceTest {
         )
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
       val deletedUUIDS = listOf(UUID.randomUUID())
-      whenever(uploadFileConditionsService.getDeletableDocumentUuids(listOf(expectedToBeRemoved))).thenReturn(deletedUUIDS)
+      whenever(uploadFileConditionsService.getDeletableDocumentUuids(listOf(expectedToBeRemoved))).thenReturn(
+        deletedUUIDS,
+      )
 
       val request = AdditionalConditionsRequest(
         additionalConditions = listOf(
@@ -421,9 +426,9 @@ class LicenceConditionServiceTest {
 
     @Test
     fun `handleUpdatedConditionsIfEnabled is called only for CRD and HDC licences`() {
-      val crdLicence = TestData.createCrdLicence()
-      val hdcLicence = TestData.createHdcLicence()
-      val variationLicence = TestData.createVariationLicence()
+      val crdLicence = createCrdLicence()
+      val hdcLicence = createHdcLicence()
+      val variationLicence = createVariationLicence()
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(crdLicence))
       whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(hdcLicence))
@@ -767,10 +772,68 @@ class LicenceConditionServiceTest {
     }
   }
 
+  @Nested
+  inner class `update licence policy` {
+    @Test
+    fun `does not update standard conditions if licence is already on latest version`() {
+      val licence = aLicenceEntity.copy(updatedBy = aPreviousUser, version = aPolicy.version)
+
+      whenever(licenceRepository.findById(licence.id)).thenReturn(
+        Optional.of(licence),
+      )
+      whenever(policyService.currentPolicy(any())).thenReturn(aPolicy)
+
+      service.updateLicencePolicy(licence.id)
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(auditService, times(0)).recordAuditEventUpdateBespokeConditions(any(), any(), any(), anyOrNull())
+    }
+
+    @Test
+    fun `updates the standard conditions of a licence that is not variation`() {
+      val licence = aLicenceEntity.copy(updatedBy = aPreviousUser)
+
+      whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
+      whenever(policyService.currentPolicy(any())).thenReturn(aPolicy)
+      whenever(policyService.getStandardConditionsForLicence(licence)).thenReturn(
+        someEntityStandardConditions(
+          licence,
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+
+      service.updateLicencePolicy(licence.id)
+
+      verify(licenceRepository).saveAndFlush(licence)
+      verify(auditService).recordAuditEventUpdateStandardCondition(licence, aPolicy.version, aCom)
+    }
+
+    @Test
+    fun `updates the standard conditions of a variation licence where the parent version is out of date`() {
+      val originalLicence = aLicenceEntity.copy(updatedBy = aPreviousUser, version = "1.0")
+      val variationLicence = createVariationLicence().copy(id = 2)
+
+      whenever(licenceRepository.findById(originalLicence.id)).thenReturn(Optional.of(originalLicence))
+      whenever(licenceRepository.findById(variationLicence.id)).thenReturn(Optional.of(variationLicence))
+      whenever(policyService.currentPolicy(any())).thenReturn(aPolicy)
+      whenever(policyService.getStandardConditionsForLicence(variationLicence)).thenReturn(
+        someEntityStandardConditions(
+          variationLicence,
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+
+      service.updateLicencePolicy(variationLicence.id)
+
+      verify(licenceRepository).saveAndFlush(variationLicence)
+      verify(auditService).recordAuditEventUpdateStandardCondition(variationLicence, aPolicy.version, aCom)
+    }
+  }
+
   private companion object {
     val CONDITION_CONFIG = POLICY_V2_1.allAdditionalConditions().first()
 
-    val aLicenceEntity = TestData.createCrdLicence()
+    val aLicenceEntity = createCrdLicence()
 
     val someAdditionalConditionData = mutableListOf(
       EntityAdditionalConditionData(

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
@@ -43,7 +44,6 @@ class LicenceConditionService(
   private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService,
   private val uploadFileConditionsService: UploadFileConditionsService,
 ) {
-
   @Transactional
   fun updateStandardConditions(licenceId: Long, request: UpdateStandardConditionDataRequest) {
     val licenceEntity = getLicence(licenceId)
@@ -65,6 +65,23 @@ class LicenceConditionService(
 
     licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventUpdateStandardCondition(licenceEntity, currentPolicyVersion, staffMember)
+  }
+
+  @Transactional
+  fun updateStandardConditions(licence: Licence) {
+    val username = getCurrentUserName()
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    val newConditions = licencePolicyService.getStandardConditionsForLicence(licence)
+    licence.updateConditions(
+      updatedStandardConditions = newConditions,
+      staffMember = staffMember,
+    )
+
+    val currentPolicyVersion = licencePolicyService.currentPolicy(licence.licenceStartDate).version
+
+    licenceRepository.saveAndFlush(licence)
+    auditService.recordAuditEventUpdateStandardCondition(licence, currentPolicyVersion, staffMember)
   }
 
   /**
@@ -370,6 +387,21 @@ class LicenceConditionService(
 
     // Delete Documents after all above work is done, just encase exception is thrown before now!
     uploadFileConditionsService.deleteDocuments(deletableDocumentUuids)
+  }
+
+  @Transactional
+  fun updateLicencePolicy(licenceId: Long) {
+    val licence = getLicence(licenceId)
+    val currentPolicyVersion = if (licence is Variation) {
+      getLicence(licence.variationOfId!!).version
+    } else {
+      licence.version
+    }
+
+    val policyVersionAvailable = licencePolicyService.currentPolicy(licence.licenceStartDate)
+    if (currentPolicyVersion != policyVersionAvailable.version) {
+      updateStandardConditions(licence)
+    }
   }
 
   private fun getCurrentUserName(): String = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER
