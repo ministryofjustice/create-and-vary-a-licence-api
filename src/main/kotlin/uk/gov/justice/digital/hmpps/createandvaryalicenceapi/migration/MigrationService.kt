@@ -69,6 +69,14 @@ class MigrationService(
     hdcLicence: HdcLicence,
   ) {
     request.conditions.additional.forEach { hdcCondition ->
+
+      migrationRepository.saveMetaData(
+        hdcLicence.id,
+        request.licence.licenceId,
+        request.licence.licenceVersion,
+        request.licence.varyVersion,
+      )
+
       val saveCondition = hdcLicence.bespokeConditions.findLast { it.conditionText == hdcCondition.text }!!
       migrationRepository.saveConditionMetaData(
         licenceId = hdcLicence.id,
@@ -77,12 +85,6 @@ class MigrationService(
         hdcCondition.conditionsVersion,
       )
     }
-    migrationRepository.saveMetaData(
-      hdcLicence.id,
-      request.licence.licenceId,
-      request.licence.licenceVersion,
-      request.licence.varyVersion,
-    )
   }
 
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
