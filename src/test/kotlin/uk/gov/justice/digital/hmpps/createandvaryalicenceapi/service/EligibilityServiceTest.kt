@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
@@ -36,13 +35,7 @@ class EligibilityServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
-  private val isrPssProgressionService = org.mockito.kotlin.mock<ISRPssProgressionService>()
   private var service = EligibilityService(prisonApiClient, releaseDateService, clock)
-
-  @BeforeEach
-  fun reset() {
-    whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(false)
-  }
 
   @Nested
   @TestInstance(TestInstance.Lifecycle.PER_CLASS)

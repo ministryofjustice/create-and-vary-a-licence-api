@@ -85,7 +85,7 @@ class EligibilityService(
     val eligibilityCriteria = listOf(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
-      !isBeingReleaseAtSled(prisoner) to "is being released at SLED",
+      !isBeingReleasedAtSled(prisoner) to "is being released at SLED",
       !isExpectedHdcRelease to "is expected to be released on HDC",
     )
 
@@ -160,7 +160,7 @@ class EligibilityService(
 
   private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
 
-  private fun isBeingReleaseAtSled(prisoner: PrisonerSearchPrisoner): Boolean = when {
+  private fun isBeingReleasedAtSled(prisoner: PrisonerSearchPrisoner): Boolean = when {
     prisoner.postRecallReleaseDate == null -> false
     prisoner.licenceExpiryDate == null -> false
 
