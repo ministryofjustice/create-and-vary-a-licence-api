@@ -78,7 +78,7 @@ class MigrationService(
         request.licence.varyVersion,
       )
     } catch (e: DataIntegrityViolationException) {
-      val message = "Licence ${request.licence.licenceId} has already been migrated, due to data integrity violation"
+      val message = "Licence ${request.licence.licenceId} has already been migrated, ${e.message}"
       throw LicenceAlreadyMigratedException(message)
     }
 
