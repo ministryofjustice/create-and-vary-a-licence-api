@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration
 
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
@@ -68,12 +70,17 @@ class MigrationService(
     request: MigrateFromHdcToCvlRequest,
     hdcLicence: HdcLicence,
   ) {
-    migrationRepository.saveMetaData(
-      hdcLicence.id,
-      request.licence.licenceId,
-      request.licence.licenceVersion,
-      request.licence.varyVersion,
-    )
+    try {
+      migrationRepository.saveMetaData(
+        hdcLicence.id,
+        request.licence.licenceId,
+        request.licence.licenceVersion,
+        request.licence.varyVersion,
+      )
+    } catch (e: DataIntegrityViolationException) {
+      val message = "Licence ${request.licence.licenceId} has already been migrated, due to data integrity violation"
+      throw LicenceAlreadyMigratedException(message)
+    }
 
     request.conditions.additional.forEach { hdcCondition ->
       val saveCondition = hdcLicence.bespokeConditions.findLast { it.conditionText == hdcCondition.text }!!
@@ -243,4 +250,8 @@ class MigrationService(
     coms: Set<CommunityOffenderManager>,
   ): CommunityOffenderManager = coms.firstOrNull { it.username == userName }
     ?: licenceCreationService.getOrCreateCom(userName)
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 }
