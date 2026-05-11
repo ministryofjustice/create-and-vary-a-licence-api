@@ -25,11 +25,13 @@
     <ID>LongMethod:HdcVariationLicence.kt:HdcVariationLicence$fun copy: HdcVariationLicence</ID>
     <ID>LongMethod:HdcVariationLicence.kt:HdcVariationLicence$override fun toString: String</ID>
     <ID>LongMethod:LicenceCreationService.kt:LicenceCreationService$@Transactional fun createHardStopLicence: CreateLicenceResponse</ID>
+    <ID>LongMethod:LicenceCreationService.kt:LicenceCreationService$@Transactional fun createLicence: CreateLicenceResponse</ID>
     <ID>LongMethod:LicenceOverrideService.kt:LicenceOverrideService$@Transactional fun changeDates</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$@Transactional fun submitLicence</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$fun transform: Licence</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$private fun populateCopyAndAudit: EntityLicence</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$private fun updateLicenceStatus</ID>
+    <ID>LongMethod:MigrationService.kt:MigrationService$fun MigrateFromHdcToCvlRequest.toHdcLicence: HdcLicence</ID>
     <ID>LongMethod:PrrdLicence.kt:PrrdLicence$override fun toString: String</ID>
     <ID>LongMethod:TimeServedLicence.kt:TimeServedLicence$override fun toString: String</ID>
     <ID>LongMethod:ToModelTransformers.kt:fun toCrd</ID>
@@ -61,6 +63,7 @@
     <ID>LongParameterList:HdcLicence.kt:HdcLicence$fun copy: HdcLicence</ID>
     <ID>LongParameterList:HdcVariationLicence.kt:HdcVariationLicence</ID>
     <ID>LongParameterList:HdcVariationLicence.kt:HdcVariationLicence$fun copy: HdcVariationLicence</ID>
+    <ID>LongParameterList:LastMinuteHandoverCaseService.kt:LastMinuteHandoverCaseService</ID>
     <ID>LongParameterList:Licence.kt:Licence</ID>
     <ID>LongParameterList:Licence.kt:Licence$fun updateLicenceDates</ID>
     <ID>LongParameterList:Licence.kt:Licence$fun updateProbationTeam</ID>
@@ -77,10 +80,9 @@
     <ID>LongParameterList:LicenceOverrideService.kt:LicenceOverrideService</ID>
     <ID>LongParameterList:LicenceService.kt:LicenceService</ID>
     <ID>LongParameterList:LicenceVaryApproverCase.kt:LicenceVaryApproverCase</ID>
+    <ID>LongParameterList:MigrationService.kt:MigrationService</ID>
     <ID>LongParameterList:NotStartedCaseloadService.kt:NotStartedCaseloadService</ID>
     <ID>LongParameterList:NotifyService.kt:NotifyService</ID>
-    <ID>LongParameterList:NotifyService.kt:NotifyService$@Deprecated( message = "Use sendLicenceReviewOverdueEmail() instead. This function will be removed once isTimeServedLogicEnabled toggle is retired.", ) fun sendHardStopLicenceReviewOverdueEmail</ID>
-    <ID>LongParameterList:NotifyService.kt:NotifyService$@Deprecated( message = "Use sendReviewableLicenceApprovedEmail() instead. This function will be removed once isTimeServedLogicEnabled toggle is retired.", ) fun sendHardStopLicenceApprovedEmail</ID>
     <ID>LongParameterList:NotifyService.kt:NotifyService$fun sendDatesChangedEmail</ID>
     <ID>LongParameterList:NotifyService.kt:NotifyService$fun sendEditedLicenceTimedOutEmail</ID>
     <ID>LongParameterList:NotifyService.kt:NotifyService$fun sendLicenceReviewOverdueEmail</ID>
@@ -91,9 +93,9 @@
     <ID>LongParameterList:NotifyService.kt:NotifyService$fun sendVariationReferredEmail</ID>
     <ID>LongParameterList:OffenderService.kt:OffenderService</ID>
     <ID>LongParameterList:PrisonUser.kt:PrisonUser$fun copy</ID>
+    <ID>LongParameterList:PrisonerSearchApiClient.kt:PrisonerSearchApiClient$private fun searchForPrisoners: Page&lt;PrisonerSearchPrisoner&gt;</ID>
     <ID>LongParameterList:PrrdLicence.kt:PrrdLicence</ID>
     <ID>LongParameterList:PrrdLicence.kt:PrrdLicence$fun copy: PrrdLicence</ID>
-    <ID>LongParameterList:ReleaseDateService.kt:ReleaseDateService</ID>
     <ID>LongParameterList:Staff.kt:Staff</ID>
     <ID>LongParameterList:TimeServedExternalRecord.kt:TimeServedExternalRecord</ID>
     <ID>LongParameterList:TimeServedLicence.kt:TimeServedLicence</ID>
@@ -121,6 +123,7 @@
     <ID>MatchingDeclarationName:EventSpecifications.kt:EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt:LicenceQueryObject</ID>
     <ID>NoNameShadowing:FormattingHelpers.kt:{ it.groupValues[1].trim() }</ID>
+    <ID>NoNameShadowing:PrisonService.kt:PrisonService$sentenceAndRecallTypes</ID>
     <ID>NoNameShadowing:PromptComListBuilder.kt:PromptComListBuilder$cases</ID>
     <ID>NoNameShadowing:SentenceDateHolderAdapter.kt:SentenceDateHolderAdapter.&lt;no name provided&gt;$licenceStartDate</ID>
     <ID>ReturnCount:AllRepositoryUnproxyAspect.kt:AllRepositoryUnproxyAspect$fun unProxy: Any?</ID>
@@ -130,6 +133,7 @@
     <ID>ReturnCount:LsdRecalculationService.kt:LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate: Long</ID>
     <ID>ReturnCount:NotifyService.kt:NotifyService$private fun sendEmail: Boolean</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt:(*args)</ID>
+    <ID>SwallowedException:MigrationService.kt:MigrationService$e: DataIntegrityViolationException</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt:ComAllocatedHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:UploadFileConditionsService.kt:UploadFileConditionsService$e: Exception</ID>
     <ID>TooManyFunctions:AuditService.kt:AuditService</ID>
@@ -148,6 +152,7 @@
     <ID>TooManyFunctions:LicencePolicyService.kt:LicencePolicyService</ID>
     <ID>TooManyFunctions:LicenceRepository.kt:LicenceRepository : JpaRepositoryJpaSpecificationExecutor</ID>
     <ID>TooManyFunctions:LicenceService.kt:LicenceService</ID>
+    <ID>TooManyFunctions:MigrationService.kt:MigrationService</ID>
     <ID>TooManyFunctions:NotifyService.kt:NotifyService</ID>
     <ID>TooManyFunctions:ReleaseDateService.kt:ReleaseDateService</ID>
     <ID>TooManyFunctions:ToEntityTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToEntityTransformers.kt</ID>
@@ -156,19 +161,12 @@
     <ID>TooManyFunctions:WebClientConfiguration.kt:WebClientConfiguration</ID>
     <ID>UnnecessaryFilter:NotifyService.kt:NotifyService$filter { it.initialPromptCases.isNotEmpty() }</ID>
     <ID>UnnecessaryNotNullOperator:InactivateHardstopLicencesTask.kt:InactivateHardstopLicencesTask$licence.bookingId!!</ID>
-    <ID>UnnecessarySafeCall:ExternalUserPermissionProvider.kt:ExternalUserPermissionProvider$manageUsersWebClient.get() .uri("/users/$username/roles") .header("Content-Type", "application/json") .retrieve() .bodyToMono(typeReference&lt;List&lt;RolesResponse&gt;&gt;()) .block()?.map { it.roleCode }</ID>
-    <ID>UnnecessarySafeCall:PrisonerSearchApiClient.kt:PrisonerSearchApiClient$prisonerSearchApiWebClient .post() .uri("/prisoner-search/release-date-by-prison?size=$pageSize&amp;page=$pageNumber") .accept(MediaType.APPLICATION_JSON) .bodyValue( ReleaseDateSearch( earliestReleaseDate = earliestReleaseDate, latestReleaseDate = latestReleaseDate, prisonIds = prisonIds, ), ) .retrieve() .bodyToMono(typeReference&lt;PageResponse&lt;PrisonerSearchPrisoner&gt;&gt;()) .block()?.toPage()</ID>
+    <ID>UnnecessaryNotNullOperator:MigrationService.kt:MigrationService$prisoner.prisonerNumber!!</ID>
     <ID>UnreachableCode:CorePersonRecordApiClient.kt:CorePersonRecordApiClient$corePersonRecordApiClient .get() .uri("/person/prison/$prisonNumber") .accept(MediaType.APPLICATION_JSON) .retrieve() .bodyToMono&lt;PrisonCanonicalRecord&gt;() .block() ?: error("null response while getting core person record for $prisonNumber")</ID>
-    <ID>UnreachableCode:DeliusApiClient.kt:DeliusApiClient$deliusApiWebClient .get() .uri("/staff/byid/{staffIdentifier}/caseload/managed-offenders", staffIdentifier) .accept(MediaType.APPLICATION_JSON) .retrieve() .bodyToMono(typeReference&lt;List&lt;ManagedOffenderCrn&gt;&gt;()) .block() ?: error("Unexpected null response from Delius staff caseload")</ID>
-    <ID>UnreachableCode:DeliusApiClient.kt:DeliusApiClient$deliusApiWebClient .get() .uri("/team/$teamCode/caseload/managed-offenders") .accept(MediaType.APPLICATION_JSON) .retrieve() .bodyToMono(typeReference&lt;List&lt;ManagedOffenderCrn&gt;&gt;()) .block() ?: error("Unexpected null response from Delius staff caseload")</ID>
-    <ID>UnreachableCode:DeliusApiClient.kt:DeliusApiClient$deliusApiWebClient .get() .uri("/users/$username/access/$crn") .accept(MediaType.APPLICATION_JSON) .retrieve() .bodyToMono(typeReference&lt;CaseAccessResponse&gt;()) .block() ?: error("Unexpected null response while checking user access for user: $username and CRN: $crn")</ID>
-    <ID>UnreachableCode:DeliusApiClient.kt:DeliusApiClient$deliusApiWebClient .post() .uri { it.path("/staff/byid/{staffIdentifier}/caseload/team-managed-offenders") .apply { with(page) { queryParam("page", pageNumber) queryParam("size", pageSize) sort.forEach { order -&gt; queryParam("sort", "${order.property},${order.direction.name}") } } } .build(staffIdentifier) } .bodyValue(SearchQueryRequest(query)) .accept(MediaType.APPLICATION_JSON) .retrieve() .bodyToMono(typeReference&lt;CaseloadResponse&gt;()) .block() ?: error("Unexpected null response from Delius staff caseload")</ID>
-    <ID>UnreachableCode:DeliusApiClient.kt:DeliusApiClient$deliusApiWebClient .post() .uri("/users/$username/access") .bodyValue(batch) .accept(MediaType.APPLICATION_JSON) .retrieve() .bodyToMono(typeReference&lt;UserAccessResponse&gt;()) .block() ?: error("Unexpected null response from Delius check user access for user: $username")</ID>
     <ID>UnreachableCode:DeliusApiClient.kt:DeliusApiClient$deliusApiWebClient.put() .uri("/users/$username/roles") .accept(MediaType.APPLICATION_JSON) .retrieve() .toBodilessEntity() .block() ?: error("Unexpected response while assigning delius role for user: $username")</ID>
     <ID>UnreachableCode:PrisonApiClient.kt:PrisonApiClient$prisonApiResponse ?: error("Unexpected null response from Prison API for nomsId $nomsId")</ID>
     <ID>UnreachableCode:PrisonApiClient.kt:PrisonApiClient$prisonerApiResponse ?: error("Unexpected null response from Prison API")</ID>
     <ID>UnreachableCode:PrisonApiClient.kt:PrisonApiClient$prisonerApiWebClient .get() .uri("/offender-sentences/booking/{bookingId}/home-detention-curfews/latest", bookingId) .accept(MediaType.APPLICATION_JSON) .retrieve() .bodyToMono&lt;PrisonerHdcStatus&gt;() .coerce404ToEmptyOrThrow() .block() ?: PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN")</ID>
-    <ID>UnreachableCode:PrisonApiClient.kt:PrisonApiClient$sentencesAndOffences ?: error("Unexpected null response from Prison API while getting sentences and offences for bookingId $bookingId")</ID>
     <ID>UnsafeCallOnNullableType:AdditionalConditionWithConfig.kt:getLicenceConditionPolicyData(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!</ID>
     <ID>UnsafeCallOnNullableType:AppointmentService.kt:AppointmentService$SecurityContextHolder.getContext().authentication?.name!!</ID>
     <ID>UnsafeCallOnNullableType:AppointmentService.kt:AppointmentService$licence.appointment!!</ID>
@@ -220,6 +218,7 @@
     <ID>UnsafeCallOnNullableType:LicenceCreationService.kt:LicenceCreationService$deliusRecord!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceCreationService.kt:LicenceCreationService$nomisRecord.bookingId!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceCreationService.kt:LicenceCreationService$nomisRecord.prisonId!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceCreationService.kt:LicenceCreationService$nomisRecord.supportingPrisonId!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceDetailTransformer.kt:this.statusCode!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceFactory.kt:LicenceFactory$nomisRecord.postRecallReleaseDate!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceFactory.kt:LicenceFactory$this.licenceVersion!!</ID>
@@ -243,6 +242,8 @@
     <ID>UnsafeCallOnNullableType:LicenceStatusReportService.kt:LicenceStatusReportService$it.nomsId!!</ID>
     <ID>UnsafeCallOnNullableType:LicenceTypeOverrideService.kt:LicenceTypeOverrideService$SecurityContextHolder.getContext().authentication?.name!!</ID>
     <ID>UnsafeCallOnNullableType:LsdRecalculationService.kt:LsdRecalculationService$licences.find { licence -&gt; prisoner.prisonerNumber == licence.nomsId }!!</ID>
+    <ID>UnsafeCallOnNullableType:MigrationService.kt:MigrationService$hdcLicence.bespokeConditions.findLast { it.conditionText == hdcCondition.text }!!</ID>
+    <ID>UnsafeCallOnNullableType:MigrationService.kt:MigrationService$saveCondition.id!!</ID>
     <ID>UnsafeCallOnNullableType:NotStartedCaseloadService.kt:NotStartedCaseloadService$it.case.nomisId!!</ID>
     <ID>UnsafeCallOnNullableType:NotifyService.kt:NotifyService$crn!!</ID>
     <ID>UnsafeCallOnNullableType:OffenderService.kt:OffenderService$currentLicence.variationOfId!!</ID>
@@ -258,6 +259,8 @@
     <ID>UnsafeCallOnNullableType:PromptComListBuilder.kt:PromptComListBuilder$it.case.nomisId!!</ID>
     <ID>UnsafeCallOnNullableType:PrrdLicence.kt:PrrdLicence$this.postRecallReleaseDate!!</ID>
     <ID>UnsafeCallOnNullableType:PrrdLicence.kt:PrrdLicence$this.responsibleCom!!</ID>
+    <ID>UnsafeCallOnNullableType:RecallInsertedHandler.kt:RecallInsertedHandler$nomisRecord.bookingId?.toLong()!!</ID>
+    <ID>UnsafeCallOnNullableType:RecallUpdatedHandler.kt:RecallUpdatedHandler$nomisRecord.bookingId?.toLong()!!</ID>
     <ID>UnsafeCallOnNullableType:RelevantLicenceFinder.kt:RelevantLicenceFinder$licences.find { it.kind == kind }!!</ID>
     <ID>UnsafeCallOnNullableType:RelevantLicenceFinder.kt:RelevantLicenceFinder$licences.find { it.licenceStatus == TIMED_OUT }!!</ID>
     <ID>UnsafeCallOnNullableType:RelevantLicenceFinder.kt:RelevantLicenceFinder$licences.find { licence -&gt; licence.licenceStatus !== APPROVED }!!</ID>
@@ -306,6 +309,11 @@
     <ID>UseOrEmpty:LicencePolicy.kt:HasInputs$this.getConditionInputs() ?: emptyList()</ID>
     <ID>UseOrEmpty:LicenceService.kt:LicenceService$reason ?: ""</ID>
     <ID>UseOrEmpty:LicenceSubmitName.kt:LicenceSubmitName$firstName?.let { "$it $lastName" } ?: ""</ID>
+    <ID>UseOrEmpty:MigrationService.kt:MigrationService$firstLine ?: ""</ID>
+    <ID>UseOrEmpty:MigrationService.kt:MigrationService$it.addressLine1 ?: ""</ID>
+    <ID>UseOrEmpty:MigrationService.kt:MigrationService$it.townOrCity ?: ""</ID>
+    <ID>UseOrEmpty:MigrationService.kt:MigrationService$postcode ?: ""</ID>
+    <ID>UseOrEmpty:MigrationService.kt:MigrationService$townOrCity ?: ""</ID>
     <ID>UseOrEmpty:NotifyService.kt:NotifyService$crd?.format(dateFormat) ?: ""</ID>
     <ID>UseOrEmpty:NotifyService.kt:NotifyService$crn ?: ""</ID>
     <ID>UseOrEmpty:OffenderManagerMapper.kt:OffenderManagerMapper$team?.borough?.code ?: ""</ID>
