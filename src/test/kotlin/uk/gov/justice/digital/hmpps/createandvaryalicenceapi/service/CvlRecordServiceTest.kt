@@ -18,10 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.pr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.LocalDate
 
@@ -29,23 +27,30 @@ class CvlRecordServiceTest {
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
-  private val isrPssProgressionService = mock<ISRPssProgressionService>()
 
-  private val service = CvlRecordService(eligibilityService, releaseDateService, hdcService, isrPssProgressionService)
+  private val service = CvlRecordService(eligibilityService, releaseDateService, hdcService)
 
   @BeforeEach
   fun reset() {
     reset(eligibilityService, releaseDateService)
-    whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(false)
   }
 
   @Test
   fun `it builds the CvlRecords for a list of cases`() {
     val hdcStatuses = HdcStatuses(
       listOf(
-        hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
-        hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)?.toLong(), approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
-        hdcPrisonerStatus().copy(bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)?.toLong(), approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
+        hdcPrisonerStatus().copy(
+          bookingId = aPrisonerSearchPrisoner.bookingId?.toLong(),
+          approvalStatus = HdcStatus.APPROVED.name,
+        ),
+        hdcPrisonerStatus().copy(
+          bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)?.toLong(),
+          approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name,
+        ),
+        hdcPrisonerStatus().copy(
+          bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)?.toLong(),
+          approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name,
+        ),
       ),
     )
 
@@ -53,8 +58,14 @@ class CvlRecordServiceTest {
       eligibilityService.getEligibilityAssessments(
         listOf(
           aPrisonerSearchPrisoner,
-          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)),
-          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)),
+          aPrisonerSearchPrisoner.copy(
+            prisonerNumber = "A1234AB",
+            bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1),
+          ),
+          aPrisonerSearchPrisoner.copy(
+            prisonerNumber = "A1234AC",
+            bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2),
+          ),
         ),
         hdcStatuses,
       ),
@@ -69,8 +80,14 @@ class CvlRecordServiceTest {
       releaseDateService.getLicenceStartDates(
         listOf(
           aPrisonerSearchPrisoner,
-          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)),
-          aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)),
+          aPrisonerSearchPrisoner.copy(
+            prisonerNumber = "A1234AB",
+            bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1),
+          ),
+          aPrisonerSearchPrisoner.copy(
+            prisonerNumber = "A1234AC",
+            bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2),
+          ),
         ),
         mapOf(
           aPrisonerSearchPrisoner.prisonerNumber to EligibleKind.CRD,
@@ -96,8 +113,14 @@ class CvlRecordServiceTest {
     val results = service.getCvlRecords(
       listOf(
         aPrisonerSearchPrisoner,
-        aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1)),
-        aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AC", bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2)),
+        aPrisonerSearchPrisoner.copy(
+          prisonerNumber = "A1234AB",
+          bookingId = aPrisonerSearchPrisoner.bookingId?.plus(1),
+        ),
+        aPrisonerSearchPrisoner.copy(
+          prisonerNumber = "A1234AC",
+          bookingId = aPrisonerSearchPrisoner.bookingId?.plus(2),
+        ),
       ),
     )
     assertThat(results).containsExactlyInAnyOrder(
@@ -201,138 +224,17 @@ class CvlRecordServiceTest {
   }
 
   @Nested
-  inner class LicenceTypeTest {
-    @BeforeEach
-    fun reset() {
-      val hdcStatuses = HdcStatuses(
-        listOf(
-          hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name),
-        ),
-      )
-
-      whenever(
-        eligibilityService.getEligibilityAssessments(
-          any(),
-          eq(hdcStatuses),
-        ),
-      ).thenReturn(
-        mapOf(prisonerSearchResult().prisonerNumber to anEligibilityAssessment()),
-      )
-      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
-      whenever(hdcService.getHdcStatus(any())).thenReturn(hdcStatuses)
-    }
-
-    @Test
-    fun `should default to AP`() {
-      val nomisRecord =
-        prisonerSearchResult().copy(licenceExpiryDate = null, topupSupervisionExpiryDate = null)
-      val cvlRecord = service.getCvlRecord(nomisRecord)
-      assertThat(cvlRecord.licenceType).isEqualTo(AP)
-    }
-
-    @Test
-    fun `should be PSS when TUSED is defined and LED is undefined`() {
-      val nomisRecord = prisonerSearchResult()
-        .copy(licenceExpiryDate = null, topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22))
-      val cvlRecord = service.getCvlRecord(nomisRecord)
-      assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.PSS)
-    }
-
-    @Test
-    fun `should be AP when LED is defined and TUSED is undefined`() {
-      val nomisRecord = prisonerSearchResult()
-        .copy(licenceExpiryDate = LocalDate.of(2021, 10, 22), topupSupervisionExpiryDate = null)
-      val cvlRecord = service.getCvlRecord(nomisRecord)
-      assertThat(cvlRecord.licenceType).isEqualTo(AP)
-    }
-
-    @Test
-    fun `should be AP when TUSED is before LED`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        licenceExpiryDate = LocalDate.of(2021, 10, 22),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 21),
-      )
-      val cvlRecord = service.getCvlRecord(nomisRecord)
-      assertThat(cvlRecord.licenceType).isEqualTo(AP)
-    }
-
-    @Test
-    fun `should be AP when TUSED is equal to LED`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        licenceExpiryDate = LocalDate.of(2021, 10, 22),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      )
-      val cvlRecord = service.getCvlRecord(nomisRecord)
-      assertThat(cvlRecord.licenceType).isEqualTo(AP)
-    }
-
-    @Test
-    fun `should be AP_PSS when TUSED is after LED`() {
-      val nomisRecord = prisonerSearchResult().copy(
-        licenceExpiryDate = LocalDate.of(2021, 10, 22),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
-      )
-      val cvlRecord = service.getCvlRecord(nomisRecord)
-      assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.AP_PSS)
-    }
-
-    @Test
-    fun `should be AP when TUSED is after LED and Pss repeal date has passed`() {
-      whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(true)
-
-      val nomisRecord = prisonerSearchResult().copy(
-        licenceExpiryDate = LocalDate.of(2021, 10, 22),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
-      )
-
-      val cvlRecord = service.getCvlRecord(nomisRecord)
-      assertThat(cvlRecord.licenceType).isEqualTo(AP)
-    }
-
-    @Test
-    fun `AP_PSS recall cases are AP-only if Pss repeal date has passed`() {
-      whenever(eligibilityService.getEligibilityAssessments(any(), any())).thenReturn(
-        mapOf(prisonerSearchResult().prisonerNumber to prrdEligibilityAssessment),
-      )
-      whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
-        mapOf(prisonerSearchResult().prisonerNumber to LocalDate.of(2021, 10, 22)),
-      )
-      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(false)
-      whenever(isrPssProgressionService.isPssNowRepealed()).thenReturn(true)
-
-      val nomisRecord = prisonerSearchResult().copy(
-        licenceExpiryDate = LocalDate.of(2021, 10, 22),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
-      )
-
-      val cvlRecord = service.getCvlRecord(nomisRecord)
-      assertThat(cvlRecord.licenceType).isEqualTo(AP)
-    }
-
-    @Test
-    fun `AP_PSS recall cases are PSS-only if the licence start date is equal to the LED`() {
-      whenever(eligibilityService.getEligibilityAssessments(any(), any())).thenReturn(
-        mapOf(prisonerSearchResult().prisonerNumber to prrdEligibilityAssessment),
-      )
-      whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
-        mapOf(prisonerSearchResult().prisonerNumber to LocalDate.of(2021, 10, 22)),
-      )
-      whenever(releaseDateService.isReleaseAtLed(any(), any())).thenReturn(true)
-
-      val nomisRecord = prisonerSearchResult().copy(
-        licenceExpiryDate = LocalDate.of(2021, 10, 22),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
-      )
-      val cvlRecord = service.getCvlRecord(nomisRecord)
-      assertThat(cvlRecord.licenceType).isEqualTo(LicenceType.PSS)
-    }
-  }
-
-  @Nested
   inner class IsTimedOutTest {
     @BeforeEach
     fun setup() {
-      val hdcStatuses = HdcStatuses(listOf(hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name)))
+      val hdcStatuses = HdcStatuses(
+        listOf(
+          hdcPrisonerStatus().copy(
+            bookingId = prisonerSearchResult().bookingId?.toLong(),
+            approvalStatus = HdcStatus.APPROVED.name,
+          ),
+        ),
+      )
       whenever(
         eligibilityService.getEligibilityAssessments(
           any(),
@@ -383,7 +285,12 @@ class CvlRecordServiceTest {
     @BeforeEach
     fun setup() {
       val hdcStatuses = HdcStatuses(
-        listOf(hdcPrisonerStatus().copy(bookingId = prisonerSearchResult().bookingId?.toLong(), approvalStatus = HdcStatus.APPROVED.name)),
+        listOf(
+          hdcPrisonerStatus().copy(
+            bookingId = prisonerSearchResult().bookingId?.toLong(),
+            approvalStatus = HdcStatus.APPROVED.name,
+          ),
+        ),
       )
       whenever(eligibilityService.getEligibilityAssessments(any(), eq(hdcStatuses))).thenReturn(
         mapOf(aPrisonerSearchPrisoner.prisonerNumber to anEligibilityAssessment()),

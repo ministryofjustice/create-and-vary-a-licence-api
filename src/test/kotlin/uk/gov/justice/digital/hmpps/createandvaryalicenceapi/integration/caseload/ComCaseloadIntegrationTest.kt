@@ -134,10 +134,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody
 
-      assertThat(caseload).hasSize(5)
       assertThat(caseload.map { it.prisonerNumber }).containsExactly(
         "AB1234E",
-        "AB1234H",
         "AB1234J",
         "AB1234K",
         "AB1234I",
@@ -225,21 +223,18 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody
 
-      assertThat(caseload).hasSize(5)
-
-      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
-        1,
-        2,
-        null,
-        null,
-        null,
-      )
       assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
         "A1234AA",
-        "AB1234H",
         "AB1234I",
         "AB1234J",
         "AB1234K",
+      )
+
+      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
+        1,
+        null,
+        null,
+        null,
       )
       with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
@@ -336,7 +331,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody
 
-      assertThat(caseload).hasSize(3)
       assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
         "AB1234E",
         "AB1234F",
@@ -654,8 +648,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody
-
-      assertThat(caseload).hasSize(2)
 
       assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
         1,
