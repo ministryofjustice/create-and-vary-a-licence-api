@@ -69,7 +69,7 @@ class LicenceConditionService(
   }
 
   @Transactional
-  fun updateStandardConditions(licence: Licence) {
+  fun updateStandardConditions(licence: Licence, newVersion: String) {
     val username = getCurrentUserName()
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
@@ -78,6 +78,7 @@ class LicenceConditionService(
       updatedStandardConditions = newConditions,
       staffMember = staffMember,
     )
+    licence.version = newVersion
 
     val currentPolicyVersion = licencePolicyService.currentPolicy(licence.licenceStartDate).version
 
@@ -401,7 +402,7 @@ class LicenceConditionService(
 
     val policyVersionAvailable = licencePolicyService.currentPolicy(licence.licenceStartDate).version
     if (currentPolicyVersion != policyVersionAvailable) {
-      updateStandardConditions(licence)
+      updateStandardConditions(licence, policyVersionAvailable)
       return PolicyUpdateResponse(policyUpdated = true, policyVersion = policyVersionAvailable)
     }
     return PolicyUpdateResponse(policyUpdated = false, policyVersion = policyVersionAvailable)

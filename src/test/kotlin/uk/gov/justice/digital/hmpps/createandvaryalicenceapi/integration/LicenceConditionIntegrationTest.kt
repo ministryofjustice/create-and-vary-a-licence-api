@@ -335,6 +335,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     assertThat(result.standardLicenceConditions?.size).isEqualTo(POLICY_V4_0.standardConditions.standardConditionsAp.size)
     assertThat(result.standardLicenceConditions?.get(0)?.text).isEqualTo(POLICY_V4_0.standardConditions.standardConditionsAp[0].text)
     assertThat(result.updatedByUsername).isEqualTo("test-client")
+    assertThat(result.version).isEqualTo("4.0")
   }
 
   private companion object {
