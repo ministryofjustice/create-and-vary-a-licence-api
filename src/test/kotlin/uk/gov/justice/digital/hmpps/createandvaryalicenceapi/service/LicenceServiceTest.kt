@@ -1990,11 +1990,8 @@ class LicenceServiceTest {
       assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
-      assertThat(weeklyCurfewTimes)
-        .usingRecursiveComparison()
-        .ignoringFields("id")
-        .isEqualTo(aSetOfweeklyCurfewTimes())
-      assertThat(firstNightCurfewTimes).isEqualTo(anHdcVariationLicence.firstNightCurfewTimes)
+      assertThat(weeklyCurfewTimes).isEqualTo(aSetOfweeklyCurfewTimes())
+      assertThat(firstNightCurfewTimes).isEqualTo(firstNightCurfewTimes())
       assertThat(variationOfId).isEqualTo(1)
       assertThat(licenceVersion).isEqualTo("1.0")
     }
