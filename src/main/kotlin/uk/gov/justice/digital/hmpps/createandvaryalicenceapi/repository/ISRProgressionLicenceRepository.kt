@@ -13,7 +13,7 @@ interface ISRProgressionLicenceRepository : JpaRepository<Licence, Long> {
     value = """
             SELECT l.id
             FROM licence l
-            WHERE l.status_code IN ('IN_PROGRESS','SUBMITTED','APPROVED','ACTIVE')
+            WHERE l.status_code IN ('IN_PROGRESS','SUBMITTED','APPROVED','ACTIVE','VARIATION_IN_PROGRESS','VARIATION_SUBMITTED','VARIATION_REJECTED','VARIATION_APPROVED','VARIATION_REJECTED')
               AND l.type_code = :typeCode ORDER BY l.id
               """,
     nativeQuery = true,

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -19,7 +18,6 @@ import java.time.LocalDate
 class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
   private val releaseDateService: ReleaseDateService,
-  private val isrPssProgressionService: ISRPssProgressionService,
   private val clock: Clock,
   @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
   @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
@@ -30,7 +28,10 @@ class EligibilityService(
     return assessments.values.first()
   }
 
-  fun getEligibilityAssessments(prisoners: List<PrisonerSearchPrisoner>, hdcStatuses: HdcStatuses): Map<String, EligibilityAssessment> {
+  fun getEligibilityAssessments(
+    prisoners: List<PrisonerSearchPrisoner>,
+    hdcStatuses: HdcStatuses,
+  ): Map<String, EligibilityAssessment> {
     val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
       if (prisoner.bookingId == null) {
         return@map prisoner.prisonerNumber to buildAssessment(
@@ -62,7 +63,7 @@ class EligibilityService(
       !isOnIndeterminateSentence(prisoner) to "is on indeterminate sentence",
       hasEligiblePrisonStatus(prisoner) to "does not have eligible prison status",
       !isBreachOfTopUpSupervision(prisoner) to "is breach of top up supervision case",
-      isPssTypeStillEligible(prisoner) to "PSS licences no longer supported",
+      !isPssOnly(prisoner) to "PSS licences no longer supported",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
@@ -84,7 +85,7 @@ class EligibilityService(
     val eligibilityCriteria = listOf(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
-      !isApSledRelease(prisoner) to "is AP-only being released at SLED",
+      !isBeingReleasedAtSled(prisoner) to "is being released at SLED",
       !isExpectedHdcRelease to "is expected to be released on HDC",
     )
 
@@ -159,12 +160,9 @@ class EligibilityService(
 
   private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
 
-  private fun isApSledRelease(prisoner: PrisonerSearchPrisoner): Boolean = when {
+  private fun isBeingReleasedAtSled(prisoner: PrisonerSearchPrisoner): Boolean = when {
     prisoner.postRecallReleaseDate == null -> false
-
     prisoner.licenceExpiryDate == null -> false
-
-    prisoner.topupSupervisionExpiryDate != null && prisoner.topupSupervisionExpiryDate.isAfter(prisoner.licenceExpiryDate) -> false
 
     else -> {
       val releaseDate = releaseDateService.calculatePrrdLicenceStartDate(prisoner)
@@ -192,15 +190,7 @@ class EligibilityService(
     return false
   }
 
-  private fun isPssTypeStillEligible(prisoner: PrisonerSearchPrisoner): Boolean {
-    if (prisoner.licenceExpiryDate == null &&
-      prisoner.topupSupervisionExpiryDate != null &&
-      isrPssProgressionService.isPssNowRepealed()
-    ) {
-      return false
-    }
-    return true
-  }
+  private fun isPssOnly(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.licenceExpiryDate == null && prisoner.topupSupervisionExpiryDate != null
 
   private fun isDead(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.legalStatus == "DEAD"
 
