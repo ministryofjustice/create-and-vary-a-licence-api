@@ -73,6 +73,5 @@
     <ID>TooManyFunctions:WebClientConfiguration.kt:WebClientConfiguration</ID>
     <ID>UnusedParameter:ConditionController.kt:ConditionController$@PathVariable conditionType: String</ID>
     <ID>UtilityClassWithPublicConstructor:AppointmentMapper.kt:AppointmentMapper</ID>
-    <ID>UtilityClassWithPublicConstructor:CurfewTimesMapper.kt:CurfewTimesMapper</ID>
   </CurrentIssues>
 </SmellBaseline>
