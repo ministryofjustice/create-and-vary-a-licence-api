@@ -31,7 +31,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
@@ -93,16 +92,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.DayOfWeek.FRIDAY
-import java.time.DayOfWeek.MONDAY
-import java.time.DayOfWeek.SATURDAY
-import java.time.DayOfWeek.SUNDAY
-import java.time.DayOfWeek.THURSDAY
-import java.time.DayOfWeek.TUESDAY
-import java.time.DayOfWeek.WEDNESDAY
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
