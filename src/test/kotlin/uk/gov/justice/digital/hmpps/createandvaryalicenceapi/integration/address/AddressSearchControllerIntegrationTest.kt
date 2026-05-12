@@ -117,7 +117,7 @@ class AddressSearchControllerIntegrationTest : IntegrationTestBase() {
         .isBadRequest
         .expectBody()
         .jsonPath("$.developerMessage").value<String> {
-          assert(it.contains("Search query length must be more than 0 and no more than 100")) {
+          assert(it.contains("Search query length must be more than 0 and no more than 200")) {
             "Expected developerMessage to contain validation error, but was: $it"
           }
         }
@@ -125,17 +125,18 @@ class AddressSearchControllerIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `should return bad request with search query that is too long`() {
+      val longQuery = "a".repeat(201)
       webTestClient.post()
         .uri(urlToTest)
         .contentType(MediaType.APPLICATION_JSON)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .bodyValue("""{"searchQuery": "Search query that is way too long and exceeds the maximum allowed length of one hundred characters which is not acceptable"}""")
+        .bodyValue("""{"searchQuery": "$longQuery"}""")
         .exchange()
         .expectStatus()
         .isBadRequest
         .expectBody()
         .jsonPath("$.developerMessage").value<String> {
-          assert(it.contains("Search query length must be more than 0 and no more than 100")) {
+          assert(it.contains("Search query length must be more than 0 and no more than 200")) {
             "Expected developerMessage to contain validation error, but was: $it"
           }
         }
