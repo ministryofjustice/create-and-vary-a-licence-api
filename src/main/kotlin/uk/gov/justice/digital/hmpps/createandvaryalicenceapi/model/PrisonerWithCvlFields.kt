@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIgnore
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -49,8 +50,15 @@ data class CvlFields(
   )
   val eligibleKind: EligibleKind?,
 
+  @Deprecated(message = "Use creationKind instead")
   @field:Schema(description = "Type of hardstop licence", example = LicenceKinds.TIME_SERVED)
   val hardStopKind: LicenceKind?,
+
+  @JsonIgnore
+  val creationKind: LicenceKind?,
+
+  @field:Schema(description = "A boolean flag denoting whether the licence is for a time served case")
+  val isTimeServed: Boolean = creationKind == LicenceKind.TIME_SERVED,
 )
 
 @Schema(description = "A combination of the NOMIS prisoner record and additional CVL fields")

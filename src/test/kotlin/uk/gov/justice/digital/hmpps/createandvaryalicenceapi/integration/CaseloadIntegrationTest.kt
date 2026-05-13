@@ -98,6 +98,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
           assertThat(hardStopDate).isNotNull
           assertThat(hardStopWarningDate).isNotNull
           assertThat(licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
+          assertThat(isTimeServed).isEqualTo(false)
         }
       }
     }

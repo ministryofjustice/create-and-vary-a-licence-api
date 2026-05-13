@@ -41,7 +41,8 @@ class CaseService(
         licenceStartDate = cvlRecord.licenceStartDate,
         licenceKind = cvlRecord.eligibleKind?.licenceKind,
         eligibleKind = cvlRecord.eligibleKind,
-        hardStopKind = cvlRecord.hardStopKind,
+        hardStopKind = cvlRecord.creationKind,
+        creationKind = cvlRecord.creationKind,
       ),
     )
   }
