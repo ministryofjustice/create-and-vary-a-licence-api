@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.CurfewTimesMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
@@ -415,6 +416,8 @@ object LicenceFactory {
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
         appointment = AppointmentMapper.copy(this.appointment),
+        weeklyCurfewTimes = CurfewTimesMapper.copyList(this.weeklyCurfewTimes),
+        firstNightCurfewTimes = CurfewTimesMapper.copy(this.firstNightCurfewTimes),
         responsibleCom = this.getCom(),
         dateCreated = LocalDateTime.now(),
         licenceVersion = "1.0", // This is for Active licenses if we were to migration variations, this would be 2.0

@@ -63,6 +63,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSetOfweeklyCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
@@ -73,6 +74,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.firstNightCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
@@ -1977,7 +1979,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(anHdcLicenceEntity),
     )
-    whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcLicenceEntity)
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcVariationLicence)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
@@ -1988,6 +1990,8 @@ class LicenceServiceTest {
       assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+      assertThat(weeklyCurfewTimes).isEqualTo(aSetOfweeklyCurfewTimes())
+      assertThat(firstNightCurfewTimes).isEqualTo(firstNightCurfewTimes())
       assertThat(variationOfId).isEqualTo(1)
       assertThat(licenceVersion).isEqualTo("1.0")
     }
@@ -4280,6 +4284,8 @@ class LicenceServiceTest {
     standardConditions = emptyList(),
     responsibleCom = aCom,
     createdBy = aCom,
+    weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
+    firstNightCurfewTimes = firstNightCurfewTimes(),
     approvedByName = "jim smith",
     approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
   ).let {

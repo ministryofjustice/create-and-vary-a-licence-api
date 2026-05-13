@@ -14,12 +14,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedProbationConfirmContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.CurfewTimesMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.util.Optional
@@ -138,12 +140,21 @@ class TestRepository(
     licence.bespokeConditions = bespokeConditionRepository.findByLicenceId(licenceId = licence.id).toMutableList()
     licence.additionalConditions = additionalConditionRepository.findByLicenceId(licenceId = licence.id).toMutableList()
     licence.responsibleCom?.id
-    if (licence is HdcLicence) {
-      licence.createdBy?.username
-      licence.submittedBy?.username
-      licence.firstNightCurfewTimes?.untilTime
-      licence.weeklyCurfewTimes.forEach { it.untilTime }
+    when (licence) {
+      is HdcLicence -> {
+        licence.createdBy?.username
+        licence.submittedBy?.username
+        CurfewTimesMapper.copy(licence.firstNightCurfewTimes)
+        CurfewTimesMapper.copyList(licence.weeklyCurfewTimes)
+      }
+      is HdcVariationLicence -> {
+        licence.createdBy?.username
+        licence.submittedBy?.username
+        CurfewTimesMapper.copy(licence.firstNightCurfewTimes)
+        CurfewTimesMapper.copyList(licence.weeklyCurfewTimes)
+      }
     }
+
     return licence
   }
 

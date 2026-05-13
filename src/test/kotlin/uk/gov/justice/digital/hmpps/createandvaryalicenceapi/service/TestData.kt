@@ -61,6 +61,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import java.time.DayOfWeek.FRIDAY
+import java.time.DayOfWeek.MONDAY
+import java.time.DayOfWeek.SATURDAY
+import java.time.DayOfWeek.SUNDAY
+import java.time.DayOfWeek.THURSDAY
+import java.time.DayOfWeek.TUESDAY
+import java.time.DayOfWeek.WEDNESDAY
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -546,10 +553,7 @@ object TestData {
     standardConditions = emptyList(),
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
-    firstNightCurfewTimes = CurfewTimes(
-      fromTime = LocalTime.of(12, 0),
-      untilTime = LocalTime.of(13, 0),
-    ),
+    firstNightCurfewTimes = firstNightCurfewTimes(),
   ).let {
     it.copy(
       standardConditions = someEntityStandardConditions(it),
@@ -594,6 +598,8 @@ object TestData {
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
     appointment = createAppointment(),
+    firstNightCurfewTimes = firstNightCurfewTimes(),
+    weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
   ).let {
@@ -1202,5 +1208,62 @@ object TestData {
       pncs = listOf("12/394773H"),
       cros = listOf("29906/12J"),
     ),
+  )
+
+  fun aSetOfweeklyCurfewTimes() = mutableListOf(
+    CurfewTimes(
+      curfewTimesSequence = 1,
+      fromDay = MONDAY,
+      fromTime = LocalTime.of(21, 0),
+      untilDay = TUESDAY,
+      untilTime = LocalTime.of(9, 0),
+    ),
+    CurfewTimes(
+      curfewTimesSequence = 2,
+      fromDay = TUESDAY,
+      fromTime = LocalTime.of(21, 0),
+      untilDay = WEDNESDAY,
+      untilTime = LocalTime.of(9, 0),
+    ),
+    CurfewTimes(
+      curfewTimesSequence = 3,
+      fromDay = WEDNESDAY,
+      fromTime = LocalTime.of(21, 0),
+      untilDay = THURSDAY,
+      untilTime = LocalTime.of(9, 0),
+    ),
+    CurfewTimes(
+      curfewTimesSequence = 4,
+      fromDay = THURSDAY,
+      fromTime = LocalTime.of(21, 0),
+      untilDay = FRIDAY,
+      untilTime = LocalTime.of(9, 0),
+    ),
+    CurfewTimes(
+      curfewTimesSequence = 5,
+      fromDay = FRIDAY,
+      fromTime = LocalTime.of(21, 0),
+      untilDay = SATURDAY,
+      untilTime = LocalTime.of(9, 0),
+    ),
+    CurfewTimes(
+      curfewTimesSequence = 6,
+      fromDay = SATURDAY,
+      fromTime = LocalTime.of(21, 0),
+      untilDay = SUNDAY,
+      untilTime = LocalTime.of(9, 0),
+    ),
+    CurfewTimes(
+      curfewTimesSequence = 7,
+      fromDay = SUNDAY,
+      fromTime = LocalTime.of(21, 0),
+      untilDay = MONDAY,
+      untilTime = LocalTime.of(9, 0),
+    ),
+  )
+
+  fun firstNightCurfewTimes() = CurfewTimes(
+    fromTime = LocalTime.of(12, 0),
+    untilTime = LocalTime.of(13, 0),
   )
 }

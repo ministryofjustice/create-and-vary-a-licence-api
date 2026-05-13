@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.method.annotation.HandlerMethodValidationException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
@@ -206,6 +209,24 @@ class ControllerAdvice {
       .body(
         ErrorResponse(
           status = HttpStatus.INTERNAL_SERVER_ERROR,
+          userMessage = "Unexpected error: ${e.message}",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(
+    ExistingCvlLicenceException::class,
+    LicenceAlreadyMigratedException::class,
+    OffenderManagerNotFoundException::class,
+  )
+  fun handleNoRetryMigrationLicenceException(e: Exception): ResponseEntity<ErrorResponse> {
+    log.info("NoRetryMigrationLicenceException: {}", e.message)
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST.value(),
           userMessage = "Unexpected error: ${e.message}",
           developerMessage = e.message,
         ),
