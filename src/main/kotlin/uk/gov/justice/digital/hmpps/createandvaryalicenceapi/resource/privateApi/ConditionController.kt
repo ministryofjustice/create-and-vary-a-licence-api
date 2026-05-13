@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
@@ -27,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.PolicyUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
 
@@ -479,4 +481,46 @@ class ConditionController(
     @Valid @RequestBody
     request: UpdateAdditionalConditionDataRequest,
   ) = licenceConditionService.updateAdditionalConditionData(licenceId, conditionId, request)
+
+  @Tag(name = Tags.LICENCE_CONDITIONS)
+  @PostMapping(value = ["/id/{licenceId}/update-policy"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @ResponseBody
+  @Operation(
+    summary = "Updates the standard conditions on a licence to the latest policy available for the licence",
+    description = "Updates the standard conditions on a licence to the latest policy available for the licence. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Standard conditions on the licence have been updated if required",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = PolicyUpdateResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The licence for this ID was not found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun updateLicencePolicy(
+    @PathVariable("licenceId") licenceId: Long,
+  ): PolicyUpdateResponse = licenceConditionService.updateLicencePolicy(licenceId)
 }

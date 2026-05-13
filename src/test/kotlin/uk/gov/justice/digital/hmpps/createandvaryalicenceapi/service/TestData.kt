@@ -228,7 +228,7 @@ object TestData {
     conditionCategory = HARD_STOP_CONDITION.categoryShort!!,
   )
 
-  private fun someEntityStandardConditions(licence: Licence) = listOf(
+  fun someEntityStandardConditions(licence: Licence) = listOf(
     StandardCondition(
       id = 1,
       conditionCode = "goodBehaviour",
@@ -463,6 +463,7 @@ object TestData {
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
     appointment = createAppointment(),
+    variationOfId = 1L,
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }
