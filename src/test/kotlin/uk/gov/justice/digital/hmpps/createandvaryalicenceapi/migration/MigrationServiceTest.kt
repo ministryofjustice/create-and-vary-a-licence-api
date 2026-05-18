@@ -292,7 +292,7 @@ class MigrationServiceTest {
       postRecallReleaseDate = null,
     ),
     licence = MigrateLicenceDetails(
-      licenceId = 2,
+      licenceVersionId = 2,
       typeCode = LicenceType.AP,
       licenceActivationDate = null,
       homeDetentionCurfewActualDate = LocalDate.now(),
