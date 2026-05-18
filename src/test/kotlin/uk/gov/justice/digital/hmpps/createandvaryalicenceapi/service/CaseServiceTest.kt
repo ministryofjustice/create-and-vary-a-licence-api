@@ -57,7 +57,7 @@ class CaseServiceTest {
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
       aCvlRecord(
         eligibleKind = EligibleKind.CRD,
-        hardStopKind = LicenceKind.HARD_STOP,
+        creationKind = LicenceKind.HARD_STOP,
         licenceStartDate = LocalDate.of(2021, 10, 22),
         hardStopDate = LocalDate.of(2023, 10, 12),
         hardStopWarningDate = LocalDate.of(2023, 10, 11),
@@ -81,6 +81,7 @@ class CaseServiceTest {
           licenceKind = LicenceKind.CRD,
           hardStopKind = LicenceKind.HARD_STOP,
           eligibleKind = EligibleKind.CRD,
+          creationKind = LicenceKind.HARD_STOP,
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",

@@ -54,6 +54,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import java.time.DayOfWeek.MONDAY
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceDto
@@ -557,6 +558,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-hdc-licence-id-1-with-address.sql",
+    "classpath:test_data/seed-hdc-curfew-hours.sql",
   )
   fun `Create licence HDC variation`() {
     // Given
@@ -577,11 +579,24 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(testRepository.countLicence()).isEqualTo(2)
 
-    val licence = testRepository.findLicence(licenceSummary.licenceId)
+    val licence = testRepository.findLicence(licenceSummary.licenceId) as HdcVariationLicence
 
-    with(licence as HdcVariationLicence) {
+    with(licence) {
       assertThat(licenceVersion).isEqualTo("1.0")
       assertThat(typeCode).isEqualTo(AP)
+      assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
+
+      val weekly = weeklyCurfewTimes.toList()
+
+      assertThat(weekly).hasSize(7)
+      assertThat(weekly[0].fromDay).isEqualTo(MONDAY)
+      assertThat(weekly[0].fromTime).isEqualTo("19:00")
+
+      val firstNight = firstNightCurfewTimes
+
+      assertThat(firstNight?.fromDay).isEqualTo(MONDAY)
+      assertThat(firstNight?.fromTime).isEqualTo("18:00")
+
       assertThat(statusCode).isEqualTo(VARIATION_IN_PROGRESS)
       assertThat(appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
       assertThat(variationOfId).isEqualTo(1)

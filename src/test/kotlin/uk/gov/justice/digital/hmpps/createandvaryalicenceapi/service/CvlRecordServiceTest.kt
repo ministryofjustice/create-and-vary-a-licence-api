@@ -130,7 +130,7 @@ class CvlRecordServiceTest {
         isEligible = true,
         eligibleKind = EligibleKind.CRD,
         ineligibilityReasons = anEligibilityAssessment().ineligibilityReasons,
-        hardStopKind = LicenceKind.HARD_STOP,
+        creationKind = LicenceKind.HARD_STOP,
         hardStopDate = LocalDate.of(2023, 10, 12),
         hardStopWarningDate = LocalDate.of(2023, 10, 11),
         isEligibleForEarlyRelease = true,
@@ -146,7 +146,7 @@ class CvlRecordServiceTest {
         isEligible = true,
         eligibleKind = EligibleKind.FIXED_TERM,
         ineligibilityReasons = prrdEligibilityAssessment.ineligibilityReasons,
-        hardStopKind = LicenceKind.HARD_STOP,
+        creationKind = LicenceKind.HARD_STOP,
         hardStopDate = LocalDate.of(2023, 10, 12),
         hardStopWarningDate = LocalDate.of(2023, 10, 11),
         isEligibleForEarlyRelease = true,
@@ -162,7 +162,7 @@ class CvlRecordServiceTest {
         isEligible = false,
         eligibleKind = null,
         ineligibilityReasons = anIneligibleEligibilityAssessment().ineligibilityReasons,
-        hardStopKind = LicenceKind.HARD_STOP,
+        creationKind = LicenceKind.HARD_STOP,
         hardStopDate = LocalDate.of(2023, 10, 12),
         hardStopWarningDate = LocalDate.of(2023, 10, 11),
         isEligibleForEarlyRelease = true,
@@ -212,6 +212,7 @@ class CvlRecordServiceTest {
         licenceStartDate = LocalDate.of(2021, 10, 22),
         isEligible = true,
         eligibleKind = EligibleKind.CRD,
+        creationKind = LicenceKind.CRD,
         ineligibilityReasons = anEligibilityAssessment().ineligibilityReasons,
         isEligibleForEarlyRelease = false,
         isInHardStopPeriod = false,
@@ -281,7 +282,7 @@ class CvlRecordServiceTest {
   }
 
   @Nested
-  inner class HardStopKindTest {
+  inner class CreationKindTest {
     @BeforeEach
     fun setup() {
       val hdcStatuses = HdcStatuses(
@@ -308,7 +309,7 @@ class CvlRecordServiceTest {
 
       val cvlRecord = service.getCvlRecord(aPrisonerSearchPrisoner)
 
-      assertThat(cvlRecord.hardStopKind).isEqualTo(LicenceKind.TIME_SERVED)
+      assertThat(cvlRecord.creationKind).isEqualTo(LicenceKind.TIME_SERVED)
     }
 
     @Test
@@ -318,17 +319,17 @@ class CvlRecordServiceTest {
 
       val cvlRecord = service.getCvlRecord(aPrisonerSearchPrisoner)
 
-      assertThat(cvlRecord.hardStopKind).isEqualTo(LicenceKind.HARD_STOP)
+      assertThat(cvlRecord.creationKind).isEqualTo(LicenceKind.HARD_STOP)
     }
 
     @Test
-    fun `should return null when not time served and not in hard stop period`() {
+    fun `should return eligibleKind when not time served and not in hard stop period`() {
       whenever(releaseDateService.isTimeServed(any())).thenReturn(false)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(false)
 
       val cvlRecord = service.getCvlRecord(aPrisonerSearchPrisoner)
 
-      assertThat(cvlRecord.hardStopKind).isNull()
+      assertThat(cvlRecord.creationKind).isEqualTo(cvlRecord.eligibleKind?.licenceKind)
     }
   }
 

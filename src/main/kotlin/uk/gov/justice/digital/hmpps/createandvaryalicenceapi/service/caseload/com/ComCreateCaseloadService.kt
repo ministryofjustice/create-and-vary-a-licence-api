@@ -190,7 +190,7 @@ class ComCreateCaseloadService(
     isRestricted: Boolean,
     isAdminUser: Boolean,
   ): ComCreateCaseloadLicenceDto {
-    val kind = cvlRecord.hardStopKind ?: cvlRecord.eligibleKind!!.licenceKind
+    val kind = cvlRecord.creationKind!!
     val name = "${nomisRecord.firstName} ${nomisRecord.lastName}".trim().convertToTitleCase()
     val licenceStatus = if (cvlRecord.isTimedOut) {
       TIMED_OUT
@@ -229,7 +229,7 @@ class ComCreateCaseloadService(
   private fun filterFutureOrTimeservedReleases(
     cases: List<Case>,
   ): List<Case> = cases.filter {
-    it.comLicenceCaseDto.releaseDate.isTodayOrInTheFuture() || it.cvlRecord.hardStopKind == LicenceKind.TIME_SERVED
+    it.comLicenceCaseDto.releaseDate.isTodayOrInTheFuture() || it.cvlRecord.creationKind == LicenceKind.TIME_SERVED
   }
 
   private fun transformToCreateCaseload(cases: List<Case>): List<ComCreateCase> = cases.map {

@@ -566,6 +566,7 @@ class ComCaseloadSearchServiceTest {
       listOf(
         aCvlRecord(
           eligibleKind = EligibleKind.HDC,
+          creationKind = LicenceKind.HDC,
           licenceStartDate = LocalDate.of(2023, 9, 14),
         ),
       ),

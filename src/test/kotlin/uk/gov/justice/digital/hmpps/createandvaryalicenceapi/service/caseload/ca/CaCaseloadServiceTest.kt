@@ -255,7 +255,7 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
-              hardStopKind = LicenceKind.HARD_STOP,
+              creationKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               isTimedOut = true,
@@ -544,19 +544,19 @@ class CaCaseloadServiceTest {
         listOf(
           aCvlRecord(
             nomsId = "A1234AA",
-            hardStopKind = LicenceKind.HARD_STOP,
+            creationKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
           ),
           aCvlRecord(
             nomsId = "A1234AB",
-            hardStopKind = LicenceKind.HARD_STOP,
+            creationKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
           ),
           aCvlRecord(
             nomsId = "A1234AC",
-            hardStopKind = LicenceKind.HARD_STOP,
+            creationKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
             isEligible = false,
@@ -663,7 +663,7 @@ class CaCaseloadServiceTest {
         listOf(
           aCvlRecord(
             nomsId = "A1234AA",
-            hardStopKind = LicenceKind.HARD_STOP,
+            creationKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
           ),
@@ -884,7 +884,7 @@ class CaCaseloadServiceTest {
               nomsId = licenceCase.prisonNumber!!,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.TIME_SERVED,
+              creationKind = LicenceKind.TIME_SERVED,
               isTimedOut = true,
             ),
           ),
@@ -952,7 +952,7 @@ class CaCaseloadServiceTest {
               nomsId = licenceCase.prisonNumber!!,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.TIME_SERVED,
+              creationKind = LicenceKind.TIME_SERVED,
             ),
           ),
         )
@@ -1015,7 +1015,7 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
-              hardStopKind = LicenceKind.HARD_STOP,
+              creationKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               isTimedOut = true,
@@ -1085,7 +1085,7 @@ class CaCaseloadServiceTest {
               nomsId = licenceCase.prisonNumber!!,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.TIME_SERVED,
+              creationKind = LicenceKind.TIME_SERVED,
               isTimedOut = true,
             ),
           ),
