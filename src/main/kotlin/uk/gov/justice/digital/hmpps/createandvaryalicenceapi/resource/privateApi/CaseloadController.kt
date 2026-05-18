@@ -166,15 +166,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getProbationCase(@Parameter(required = true) @PathVariable nomsId: String): ProbationCase {
-    val deliusRecord = caseService.getProbationCase(nomsId)
-    return ProbationCase(
-      crn = deliusRecord.crn,
-      prisonNumber = deliusRecord.nomisId,
-      croNumber = deliusRecord.croNumber,
-      pncNumber = deliusRecord.pncNumber,
-    )
-  }
+  fun getProbationCase(@Parameter(required = true) @PathVariable nomsId: String) = caseService.getProbationAndAllocationInfo(nomsId)
 
   @PostMapping("/caseload/prison-approver/approval-needed")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

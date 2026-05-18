@@ -42,7 +42,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody<ErrorResponse>()
         .returnResult().responseBody
 
-      assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(result.userMessage).contains("Access Denied")
     }
 
     @Test
@@ -89,7 +89,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody<PrisonerWithCvlFields>()
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
       with(caseloadItem) {
         assertThat(prisoner).isNotNull
@@ -139,7 +139,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody<ErrorResponse>()
         .returnResult().responseBody
 
-      assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(result.userMessage).contains("Access Denied")
     }
 
     @Test
@@ -153,7 +153,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun success() {
-      deliusMockServer.stubGetProbationCase()
+      deliusMockServer.stubGetOffenderManager()
 
       val probationCase = webTestClient.get()
         .uri(GET_PROBATION_CASE)
@@ -163,9 +163,9 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody<ProbationCase>()
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
-      assertThat(probationCase).isEqualTo(ProbationCase(crn = "X12345", prisonNumber = "A1234AA"))
+      assertThat(probationCase).isEqualTo(ProbationCase(crn = "X12345", comAllocated = true, prisonNumber = "A1234AA"))
     }
   }
 
