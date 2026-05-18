@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase as ProbationCaseModel
 
 @Service
 class CaseService(
@@ -58,6 +59,18 @@ class CaseService(
       nomisId = deliusRecord.nomisId,
       croNumber = deliusRecord.croNumber,
       pncNumber = deliusRecord.pncNumber,
+    )
+  }
+
+  fun getProbationAndAllocationInfo(prisonNumber: String): ProbationCaseModel {
+    val probationCase = getProbationCase(prisonNumber)
+    val offenderManager = deliusApiClient.getOffenderManager(probationCase.crn)
+    return ProbationCaseModel(
+      crn = probationCase.crn,
+      comAllocated = offenderManager?.unallocated == false,
+      prisonNumber = probationCase.nomisId,
+      croNumber = probationCase.croNumber,
+      pncNumber = probationCase.pncNumber,
     )
   }
 

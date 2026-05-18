@@ -143,4 +143,16 @@ class CaseServiceTest {
     val probationCase = service.getProbationCase(prisonNumber)
     assertThat(probationCase).isEqualTo(deliusRecord)
   }
+
+  @Test
+  fun `should get a when there is no offender manager`() {
+    val prisonNumber = "A1234AA"
+    val deliusRecord =
+      ProbationCase(crn = "X123456", nomisId = prisonNumber, croNumber = "43792/24M", pncNumber = "2019/123445")
+
+    whenever(deliusApiClient.getProbationCase(prisonNumber)).thenReturn(deliusRecord)
+
+    val probationCase = service.getProbationCase(prisonNumber)
+    assertThat(probationCase).isEqualTo(deliusRecord)
+  }
 }
