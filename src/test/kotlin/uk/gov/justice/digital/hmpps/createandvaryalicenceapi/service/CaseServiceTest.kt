@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase as ProbationAndAllocationInfo
 
 class CaseServiceTest {
   private val corePersonRecordApiClient = mock<CorePersonRecordApiClient>()
@@ -145,7 +146,7 @@ class CaseServiceTest {
   }
 
   @Test
-  fun `should get a when there is no offender manager`() {
+  fun `should get a probation case when there is no offender manager`() {
     val prisonNumber = "A1234AA"
     val deliusRecord =
       ProbationCase(crn = "X123456", nomisId = prisonNumber, croNumber = "43792/24M", pncNumber = "2019/123445")
@@ -154,5 +155,24 @@ class CaseServiceTest {
 
     val probationCase = service.getProbationCase(prisonNumber)
     assertThat(probationCase).isEqualTo(deliusRecord)
+  }
+
+  @Test
+  fun `should get a probation case and allocation info`() {
+    val prisonNumber = "A1234AA"
+    val communityManager = offenderManager()
+
+    whenever(deliusApiClient.getOffenderManager(prisonNumber)).thenReturn(communityManager)
+
+    val probationCase = service.getProbationAndAllocationInfo(prisonNumber)
+    assertThat(probationCase).isEqualTo(
+      ProbationAndAllocationInfo(
+        crn = communityManager.case.crn,
+        comAllocated = !communityManager.unallocated,
+        prisonNumber = communityManager.case.nomisId,
+        croNumber = communityManager.case.croNumber,
+        pncNumber = communityManager.case.pncNumber,
+      ),
+    )
   }
 }

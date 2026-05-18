@@ -153,7 +153,6 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun success() {
-      deliusMockServer.stubGetProbationCase()
       deliusMockServer.stubGetOffenderManager()
 
       val probationCase = webTestClient.get()

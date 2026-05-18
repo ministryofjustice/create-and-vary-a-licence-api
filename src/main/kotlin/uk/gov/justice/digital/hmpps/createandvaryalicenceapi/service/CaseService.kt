@@ -63,14 +63,16 @@ class CaseService(
   }
 
   fun getProbationAndAllocationInfo(prisonNumber: String): ProbationCaseModel {
-    val probationCase = getProbationCase(prisonNumber)
-    val offenderManager = deliusApiClient.getOffenderManager(probationCase.crn)
+    val offenderManager = deliusApiClient.getOffenderManager(prisonNumber)
+    if (offenderManager == null) {
+      throw InvalidStateException("Could not find a delius record for nomis id: $prisonNumber")
+    }
     return ProbationCaseModel(
-      crn = probationCase.crn,
-      comAllocated = offenderManager?.unallocated == false,
-      prisonNumber = probationCase.nomisId,
-      croNumber = probationCase.croNumber,
-      pncNumber = probationCase.pncNumber,
+      crn = offenderManager.case.crn,
+      comAllocated = !offenderManager.unallocated,
+      prisonNumber = offenderManager.case.nomisId,
+      croNumber = offenderManager.case.croNumber,
+      pncNumber = offenderManager.case.pncNumber,
     )
   }
 
