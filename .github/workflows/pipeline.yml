@@ -46,7 +46,7 @@ jobs:
     with:
       gradle-command: 'BUILD_NUMBER=${{ needs.app_version.outputs.version}} ./gradlew assemble check'
       upload-build-artifacts: ${{ github.ref == 'refs/heads/main' }}
-      java-version: "21"
+      java-version: "25"
     needs:
       - app_version
   gradle_integration_tests:
@@ -62,7 +62,7 @@ jobs:
       postgres-username: cvl
       postgres-password: cvl
       postgres-port: "5433"
-      java-version: "21"
+      java-version: "25"
       artifact-name: "integration-tests"
     needs:
       - app_version
