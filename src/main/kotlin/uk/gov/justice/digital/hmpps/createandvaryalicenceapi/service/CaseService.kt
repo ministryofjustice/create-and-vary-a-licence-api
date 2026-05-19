@@ -65,6 +65,7 @@ class CaseService(
   fun getProbationAndAllocationInfo(prisonNumber: String): ProbationCaseModel {
     val offenderManager = deliusApiClient.getOffenderManager(prisonNumber)
     if (offenderManager == null) {
+      logCorePersonRecord(prisonNumber)
       throw InvalidStateException("Could not find a delius record for nomis id: $prisonNumber")
     }
     return ProbationCaseModel(
