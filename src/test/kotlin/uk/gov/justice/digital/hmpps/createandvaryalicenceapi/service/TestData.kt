@@ -463,7 +463,7 @@ object TestData {
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
     appointment = createAppointment(),
-    variationOfId = 1L,
+    variationOfId = 2L,
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }

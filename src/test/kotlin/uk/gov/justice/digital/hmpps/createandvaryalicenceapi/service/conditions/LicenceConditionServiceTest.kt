@@ -788,7 +788,7 @@ class LicenceConditionServiceTest {
 
       assertThat(response).isEqualTo(PolicyUpdateResponse(false, aPolicy.version))
       verify(licenceRepository, times(0)).saveAndFlush(any())
-      verify(auditService, times(0)).recordAuditEventUpdateBespokeConditions(any(), any(), any(), anyOrNull())
+      verify(auditService, times(0)).recordAuditEventUpdateStandardCondition(any(), any(), any())
     }
 
     @Test
