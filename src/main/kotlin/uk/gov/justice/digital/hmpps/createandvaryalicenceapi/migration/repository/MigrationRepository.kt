@@ -37,25 +37,25 @@ interface MigrationRepository : JpaRepository<Licence, Long> {
     value = """
     INSERT INTO hdc_migration_meta_data(
       licence_id,
-      hdcLicence_id,
+      hdc_licence_version_id,
       licence_version,
       vary_version
     )  
-    VALUES (:licenceId, :hdcLicenceId, :licenceVersion, :varyVersion)
+    VALUES (:licenceId, :hdcLicenceVersionId, :licenceVersion, :varyVersion)
   """,
     nativeQuery = true,
   )
-  fun saveMetaData(licenceId: Long, hdcLicenceId: Long, licenceVersion: Int, varyVersion: Int)
+  fun saveMetaData(licenceId: Long, hdcLicenceVersionId: Long, licenceVersion: Int, varyVersion: Int)
 
   @Query(
     value = """
         SELECT EXISTS (
-            SELECT 1 FROM hdc_migration_meta_data WHERE hdcLicence_id = :hdcLicenceId
+            SELECT 1 FROM hdc_migration_meta_data WHERE hdc_licence_version_id = :hdcLicenceVersionId
         )
     """,
     nativeQuery = true,
   )
-  fun hasBeenAlreadyMigrated(hdcLicenceId: Long): Boolean
+  fun hasBeenAlreadyMigrated(hdcLicenceVersionId: Long): Boolean
 
   @Query(
     value = """
