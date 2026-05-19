@@ -1,8 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("dev.detekt") version "2.0.0-alpha.2"
+  id("dev.detekt") version "2.0.0-alpha.3"
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.3.1"
   id("org.owasp.dependencycheck") version "12.2.1"
   kotlin("plugin.spring") version "2.3.21"
@@ -112,7 +112,7 @@ detekt {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+  toolchain.languageVersion.set(JavaLanguageVersion.of(25))
 }
 
 configurations {
@@ -124,7 +124,7 @@ configurations {
   matching { it.name == "detekt" }.all {
     resolutionStrategy.eachDependency {
       if (requested.group == "org.jetbrains.kotlin") {
-        useVersion("2.3.0")
+        useVersion(dev.detekt.gradle.plugin.getSupportedKotlinVersion())
       }
     }
   }
@@ -133,7 +133,7 @@ configurations {
 tasks {
   withType<KotlinCompile> {
     compilerOptions {
-      jvmTarget = JVM_21
+      jvmTarget = JVM_25
       freeCompilerArgs.addAll(
         "-Xwhen-guards",
         "-Xjvm-default=all",
