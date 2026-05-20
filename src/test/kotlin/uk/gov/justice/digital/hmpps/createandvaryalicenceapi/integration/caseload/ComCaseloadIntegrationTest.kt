@@ -216,7 +216,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           licenceStartDate = releaseDate,
           conditionalReleaseDate = releaseDate,
           homeDetentionCurfewActualDate = null,
-          postRecallReleaseDate = null
+          postRecallReleaseDate = null,
         ),
         "AB1234J" to PrisonerTestDateScenario(
           prisonerNumber = "AB1234J",
@@ -225,7 +225,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           sentenceStartDate = sled,
           homeDetentionCurfewActualDate = hdcad,
           homeDetentionCurfewEligibilityDate = hdcad,
-          postRecallReleaseDate = null
+          postRecallReleaseDate = null,
         ),
         "AB1234K" to PrisonerTestDateScenario(
           prisonerNumber = "AB1234K",
@@ -234,15 +234,15 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           sentenceStartDate = sled,
           homeDetentionCurfewActualDate = null,
           homeDetentionCurfewEligibilityDate = hdcad,
-          postRecallReleaseDate = null
+          postRecallReleaseDate = null,
         ),
         "AB1234L" to PrisonerTestDateScenario(
           prisonerNumber = "AB1234L",
           licenceStartDate = releaseDate,
           conditionalReleaseDate = releaseDate,
           sentenceStartDate = sled,
-          postRecallReleaseDate = releaseDate
-        )
+          postRecallReleaseDate = releaseDate,
+        ),
       )
       stubSearchPrisonersByNomisIdWithAllScenarios(scenarios)
       hdcApiMockServer.stubGetHdcStatuses(
@@ -331,8 +331,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         ),
       )
     }
-
-
 
     private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String) {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
