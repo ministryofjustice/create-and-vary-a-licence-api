@@ -248,9 +248,9 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       hdcApiMockServer.stubGetHdcStatuses(
         listOf(
           CurrentPrisonerHdcStatus(1, HdcStatus.NOT_A_HDC_RELEASE),
-          CurrentPrisonerHdcStatus(2, HdcStatus.NOT_A_HDC_RELEASE),
-          CurrentPrisonerHdcStatus(3, HdcStatus.NOT_A_HDC_RELEASE),
-          CurrentPrisonerHdcStatus(4, HdcStatus.NOT_A_HDC_RELEASE),
+          CurrentPrisonerHdcStatus(6, HdcStatus.NOT_STARTED),
+          CurrentPrisonerHdcStatus(7, HdcStatus.NOT_STARTED),
+          CurrentPrisonerHdcStatus(8, HdcStatus.NOT_A_HDC_RELEASE),
         ),
       )
       stubCommonDependencies()

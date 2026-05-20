@@ -171,7 +171,7 @@ class EligibilityService(
   }
 
   // HDC-specific eligibility rules
-  private fun hasHomeDetentionCurfewActualDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.homeDetentionCurfewActualDate != null
+  private fun hasHomeDetentionCurfewActualDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.homeDetentionCurfewActualDate != null || prisoner.homeDetentionCurfewEligibilityDate != null
 
   private fun isTenOrMoreDaysToCrd(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
     prisoner.conditionalReleaseDate.isOnOrAfter(
