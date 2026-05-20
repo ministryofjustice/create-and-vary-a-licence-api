@@ -58,8 +58,8 @@ class MigrationService(
   }
 
   private fun checkForNoRetryExceptions(request: MigrateFromHdcToCvlRequest) {
-    if (migrationRepository.hasBeenAlreadyMigrated(request.licence.licenceId)) {
-      throw LicenceAlreadyMigratedException(request.licence.licenceId)
+    if (migrationRepository.hasBeenAlreadyMigrated(request.licence.licenceVersionId)) {
+      throw LicenceAlreadyMigratedException(request.licence.licenceVersionId)
     }
     if (migrationRepository.hasExistingLicence(request.prisoner.prisonerNumber)) {
       throw ExistingCvlLicenceException(request.prisoner.prisonerNumber)
@@ -73,12 +73,12 @@ class MigrationService(
     try {
       migrationRepository.saveMetaData(
         hdcLicence.id,
-        request.licence.licenceId,
+        request.licence.licenceVersionId,
         request.licence.licenceVersion,
         request.licence.varyVersion,
       )
     } catch (e: DataIntegrityViolationException) {
-      val message = "Licence ${request.licence.licenceId} has already been migrated, ${e.message}"
+      val message = "Licence ${request.licence.licenceVersionId} has already been migrated, ${e.message}"
       throw LicenceAlreadyMigratedException(message)
     }
 
