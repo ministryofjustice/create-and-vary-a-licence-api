@@ -6,7 +6,8 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_CONFIRMED_RELEASE_DATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_CRD_RELEASE_DATE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_HDC_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_HDC_ACTUAL_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_HDC_ELIGIBLE_DATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.LABEL_FOR_PRRD_RELEASE_DATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -22,16 +23,17 @@ class ReleaseDateLabelFactoryTest {
     val today = LocalDate.now()
     val tomorrow = today.plusDays(1)
 
-    assertThat(factory.getLabel(null, null, null, null)).isEqualTo(LABEL_FOR_CRD_RELEASE_DATE)
-    assertThat(factory.getLabel(today, today, null, null)).isEqualTo(LABEL_FOR_CONFIRMED_RELEASE_DATE)
-    assertThat(factory.getLabel(tomorrow, tomorrow, null, null)).isEqualTo(
+    assertThat(factory.getLabel(null, null, null, null, null)).isEqualTo(LABEL_FOR_CRD_RELEASE_DATE)
+    assertThat(factory.getLabel(today, today, null, null, null)).isEqualTo(LABEL_FOR_CONFIRMED_RELEASE_DATE)
+    assertThat(factory.getLabel(tomorrow, tomorrow, null, null, null)).isEqualTo(
       LABEL_FOR_CONFIRMED_RELEASE_DATE,
     )
-    assertThat(factory.getLabel(tomorrow, null, null, tomorrow)).isEqualTo(LABEL_FOR_HDC_RELEASE_DATE)
-    assertThat(factory.getLabel(tomorrow, tomorrow, null, tomorrow)).isEqualTo(LABEL_FOR_CONFIRMED_RELEASE_DATE)
+    assertThat(factory.getLabel(tomorrow, null, null, tomorrow, null)).isEqualTo(LABEL_FOR_HDC_ACTUAL_DATE)
+    assertThat(factory.getLabel(tomorrow, null, null, null, tomorrow)).isEqualTo(LABEL_FOR_HDC_ELIGIBLE_DATE)
+    assertThat(factory.getLabel(tomorrow, tomorrow, null, tomorrow, null)).isEqualTo(LABEL_FOR_CONFIRMED_RELEASE_DATE)
     // for PRRDs, LSD is the last working day before PRRD
     whenever(workingDaysService.getLastWorkingDay(tomorrow)).thenReturn(today)
-    assertThat(factory.getLabel(today, null, tomorrow, null)).isEqualTo(LABEL_FOR_PRRD_RELEASE_DATE)
-    assertThat(factory.getLabel(today, today, tomorrow, null)).isEqualTo(LABEL_FOR_CONFIRMED_RELEASE_DATE)
+    assertThat(factory.getLabel(today, null, tomorrow, null, null)).isEqualTo(LABEL_FOR_PRRD_RELEASE_DATE)
+    assertThat(factory.getLabel(today, today, tomorrow, null, null)).isEqualTo(LABEL_FOR_CONFIRMED_RELEASE_DATE)
   }
 }

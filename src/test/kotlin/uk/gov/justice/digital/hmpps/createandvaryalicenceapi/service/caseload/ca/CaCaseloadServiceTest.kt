@@ -2068,7 +2068,7 @@ class CaCaseloadServiceTest {
     }
 
     @Test
-    fun `should use HDCAD as release label where a HDCAD is set`() {
+    fun `should use HDC actual date as release label where a HDCAD is set`() {
       whenever(licenceCaseRepository.findLicenceCases(any(), any())).thenReturn(
         listOf(
           createLicenceCase(
@@ -2092,7 +2092,7 @@ class CaCaseloadServiceTest {
             nomisLegalStatus = null,
             probationPractitioner = probationPractitionerFor(comUser01),
             lastWorkedOnBy = "X Y",
-            releaseDateLabel = "HDCAD",
+            releaseDateLabel = "HDC actual date",
             prisonCode = "BAI",
             prisonDescription = "Moorland (HMP)",
           ),

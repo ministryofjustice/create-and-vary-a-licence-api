@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderCrnTransformer.toProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.RelevantLicenceFinder.findRelevantLicencePerCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
@@ -36,6 +37,7 @@ class ComCreateCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceCaseRepository: LicenceCaseRepository,
   private val cvlRecordService: CvlRecordService,
+  private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val telemetryService: TelemetryService,
 ) {
   companion object {
@@ -177,6 +179,7 @@ class ComCreateCaseloadService(
     name = case.fullName,
     licenceType = case.typeCode,
     releaseDate = case.licenceStartDate,
+    releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(case),
     isReviewNeeded = case.isReviewNeeded(),
     // populated by findRelevantLicencePerCase
     licenceCreationType = null,
@@ -218,6 +221,7 @@ class ComCreateCaseloadService(
       nomisId = nomisRecord.prisonerNumber,
       name = name,
       releaseDate = cvlRecord.licenceStartDate,
+      releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(cvlRecord.licenceStartDate, nomisRecord),
       kind = kind,
       isReviewNeeded = false,
       licenceCreationType = null,
@@ -242,6 +246,7 @@ class ComCreateCaseloadService(
         crnNumber = crn,
         prisonerNumber = nomisId,
         releaseDate = releaseDate,
+        releaseDateLabel = releaseDateLabel,
         probationPractitioner = it.probationPractitioner,
         hardStopDate = it.cvlRecord.hardStopDate,
         hardStopWarningDate = it.cvlRecord.hardStopWarningDate,

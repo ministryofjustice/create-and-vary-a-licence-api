@@ -12,5 +12,7 @@ interface SentenceDateHolder {
   // For PrisonerSearchPrisoner entity this is overridden to provide the actual value (this may not mean the case is a HDC licence)
   val homeDetentionCurfewActualDate: LocalDate?
     get() = null
+  val homeDetentionCurfewEligibilityDate: LocalDate?
+   get() = null
   val postRecallReleaseDate: LocalDate?
 }

@@ -48,7 +48,7 @@ class HdcLicence(
   licenceActivatedDate: LocalDateTime? = null,
   override var homeDetentionCurfewActualDate: LocalDate? = null,
   var homeDetentionCurfewEndDate: LocalDate? = null,
-  var homeDetentionCurfewEligibilityDate: LocalDate? = null,
+  override var homeDetentionCurfewEligibilityDate: LocalDate? = null,
   topupSupervisionStartDate: LocalDate? = null,
   topupSupervisionExpiryDate: LocalDate? = null,
   postRecallReleaseDate: LocalDate? = null,

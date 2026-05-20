@@ -159,6 +159,130 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun `Successfully retrieve a caseload with licences`() {
       // Given
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
+      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
+      stubCommonDependencies()
+
+      // When
+      val result = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      val caseload = result.expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCreateCase>>())
+        .returnResult().responseBody
+
+      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
+        "A1234AA",
+        "AB1234I",
+        "AB1234J",
+        "AB1234K",
+      )
+
+      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
+        1,
+        null,
+        null,
+        null,
+      )
+      with(caseload.last()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12352")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDateLabel).isEqualTo("Restricted")
+        assertThat(isRestricted).isTrue()
+      }
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-licences-with-e_m_providers.sql",
+    )
+    fun `Successfully retrieve a caseload and verify all release date label possibilities`() {
+      // Given
+      val now = LocalDate.now()
+      val releaseDate = now.plusDays(10)
+      val sled = now.plusDays(11)
+      val hdcad = now.plusDays(10)
+      val scenarios = mapOf(
+        "AB1234E" to PrisonerTestDateScenario(
+          prisonerNumber = "AB1234E",
+          licenceStartDate = releaseDate,
+          conditionalReleaseDate = releaseDate,
+          homeDetentionCurfewActualDate = null,
+          postRecallReleaseDate = null
+        ),
+        "AB1234J" to PrisonerTestDateScenario(
+          prisonerNumber = "AB1234J",
+          licenceStartDate = releaseDate,
+          conditionalReleaseDate = releaseDate,
+          sentenceStartDate = sled,
+          homeDetentionCurfewActualDate = hdcad,
+          homeDetentionCurfewEligibilityDate = hdcad,
+          postRecallReleaseDate = null
+        ),
+        "AB1234K" to PrisonerTestDateScenario(
+          prisonerNumber = "AB1234K",
+          licenceStartDate = releaseDate,
+          conditionalReleaseDate = releaseDate,
+          sentenceStartDate = sled,
+          homeDetentionCurfewActualDate = null,
+          homeDetentionCurfewEligibilityDate = hdcad,
+          postRecallReleaseDate = null
+        ),
+        "AB1234L" to PrisonerTestDateScenario(
+          prisonerNumber = "AB1234L",
+          licenceStartDate = releaseDate,
+          conditionalReleaseDate = releaseDate,
+          sentenceStartDate = sled,
+          postRecallReleaseDate = releaseDate
+        )
+      )
+      stubSearchPrisonersByNomisIdWithAllScenarios(scenarios)
+      hdcApiMockServer.stubGetHdcStatuses(
+        listOf(
+          CurrentPrisonerHdcStatus(1, HdcStatus.NOT_A_HDC_RELEASE),
+          CurrentPrisonerHdcStatus(2, HdcStatus.NOT_A_HDC_RELEASE),
+          CurrentPrisonerHdcStatus(3, HdcStatus.NOT_A_HDC_RELEASE),
+          CurrentPrisonerHdcStatus(4, HdcStatus.NOT_A_HDC_RELEASE),
+        ),
+      )
+      stubCommonDependencies()
+
+      // When
+      val result = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      val caseload = result.expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCreateCase>>())
+        .returnResult().responseBody
+
+      assertThat(caseload).hasSize(4)
+
+      assertThat(caseload.find { it.prisonerNumber == "A1234AA" }!!.releaseDateLabel)
+        .isEqualTo("CRD")
+
+      assertThat(caseload.find { it.prisonerNumber == "AB1234L" }!!.releaseDateLabel)
+        .isEqualTo("Post-recall release date (PRRD)")
+
+      assertThat(caseload.find { it.prisonerNumber == "AB1234J" }!!.releaseDateLabel)
+        .isEqualTo("HDC actual date")
+
+      assertThat(caseload.find { it.prisonerNumber == "AB1234K" }!!.releaseDateLabel)
+        .isEqualTo("HDC eligible date")
+    }
+
+    private fun stubCommonDependencies() {
       val ftr14Ora =
         SentenceAndRecallType(
           "14FTR_ORA",
@@ -199,10 +323,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       deliusMockServer.stubGetCheckUserAccess(accessResponse)
-      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
-      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
-      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
-      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
       prisonApiMockServer.stubGetCourtOutcomes()
       prisonApiMockServer.stubGetSentenceAndRecallTypes(
         listOf(
@@ -210,40 +330,9 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           BookingSentenceAndRecallTypes(7, listOf(lrSopc21)),
         ),
       )
-
-      // When
-      val result = webTestClient.get()
-        .uri(GET_STAFF_CREATE_CASELOAD)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-
-      // Then
-      val caseload = result.expectStatus().isEqualTo(OK.value())
-        .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCreateCase>>())
-        .returnResult().responseBody
-
-      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
-        "A1234AA",
-        "AB1234I",
-        "AB1234J",
-        "AB1234K",
-      )
-
-      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
-        1,
-        null,
-        null,
-        null,
-      )
-      with(caseload.last()) {
-        assertThat(name).isEqualTo("Access restricted on NDelius")
-        assertThat(crnNumber).isEqualTo("X12352")
-        assertThat(probationPractitioner.name).isEqualTo("Restricted")
-        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(isRestricted).isTrue()
-      }
     }
+
+
 
     private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String) {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
@@ -252,6 +341,23 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           releaseDate,
         ).replace("\$sled", sled).replace("\$tused", tused),
       )
+    }
+
+    private fun stubSearchPrisonersByNomisIdWithAllScenarios(scenarios: Map<String, PrisonerTestDateScenario>) {
+      var jsonContent = readFile("staff-create-case-load-prisoners-all-scenarios")
+
+      scenarios.forEach { (_, scenario) ->
+        val suffix = scenario.prisonerNumber.takeLast(1)
+        jsonContent = jsonContent
+          .replace("\$releaseDate$suffix", scenario.conditionalReleaseDate?.toString() ?: "")
+          .replace("\$sled$suffix", scenario.sentenceStartDate?.toString() ?: "")
+          .replace("\$tused$suffix", scenario.sentenceStartDate?.toString() ?: "")
+          .replace("\$hdcad$suffix", scenario.homeDetentionCurfewActualDate?.toString() ?: "")
+          .replace("\$hdced$suffix", scenario.homeDetentionCurfewEligibilityDate?.toString() ?: "")
+          .replace("\$prrd$suffix", scenario.postRecallReleaseDate?.toString() ?: "")
+      }
+
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(jsonContent)
     }
   }
 
@@ -677,6 +783,17 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       )
     }
   }
+
+  data class PrisonerTestDateScenario(
+    val prisonerNumber: String,
+    val licenceStartDate: LocalDate?,
+    val sentenceStartDate: LocalDate? = null,
+    val conditionalReleaseDate: LocalDate?,
+    val actualReleaseDate: LocalDate? = null,
+    val homeDetentionCurfewActualDate: LocalDate? = null,
+    val homeDetentionCurfewEligibilityDate: LocalDate? = null,
+    val postRecallReleaseDate: LocalDate? = null,
+  )
 
   private companion object {
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
