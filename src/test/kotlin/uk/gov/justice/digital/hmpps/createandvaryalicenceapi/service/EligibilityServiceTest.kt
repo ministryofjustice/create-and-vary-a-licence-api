@@ -969,9 +969,9 @@ class EligibilityServiceTest {
     }
 
     @Test
-    fun `HDCAD is missing - ineligible for CVL`() {
+    fun `HDCAD & HDC Eligibility date is missing - ineligible for CVL`() {
       val result = service.getEligibilityAssessment(
-        anHdcPrisonerSearchResult.copy(homeDetentionCurfewActualDate = null),
+        anHdcPrisonerSearchResult.copy(homeDetentionCurfewActualDate = null, homeDetentionCurfewEligibilityDate = null),
         hdcStatuses,
       )
 
