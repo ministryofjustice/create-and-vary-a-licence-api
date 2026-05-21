@@ -1509,7 +1509,7 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       StandardConditionAp(
         code = "2cbfc6ef-576e-482d-97c1-f6f937a34de8",
-        text = "Provide a sample of pee or spit so it can be tested for specified Class A or Class B drugs. Cooperate fully with this test.",
+        text = "Provide a sample so it can be tested for specified Class A or Class B drugs. Cooperate fully with this test.",
       ),
     ),
     standardConditionsPss = listOf(
