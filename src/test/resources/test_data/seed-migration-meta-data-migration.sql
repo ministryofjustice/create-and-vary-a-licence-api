@@ -1,6 +1,6 @@
 INSERT INTO hdc_migration_meta_data(
 	licence_id,
-	hdcLicence_id,
+    hdc_licence_version_id,
 	licence_version,
 	vary_version
 )

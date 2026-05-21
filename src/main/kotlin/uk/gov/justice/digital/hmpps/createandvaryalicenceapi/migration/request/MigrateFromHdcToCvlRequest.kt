@@ -112,8 +112,8 @@ data class MigrateSentenceDetails(
 @Schema(description = "Licence details")
 data class MigrateLicenceDetails(
 
-  @field:Schema(description = "HDC licence ID", example = "1")
-  val licenceId: Long,
+  @field:Schema(description = "HDC licence version ID", example = "1")
+  val licenceVersionId: Long,
 
   @field:Schema(description = "Licence type", example = "AP")
   val typeCode: LicenceType,

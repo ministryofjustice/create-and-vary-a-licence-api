@@ -345,7 +345,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       postRecallReleaseDate = LocalDate.parse("2024-08-01"),
     ),
     licence = MigrateLicenceDetails(
-      licenceId = 1,
+      licenceVersionId = 1,
       typeCode = LicenceType.AP,
       licenceActivationDate = LocalDate.parse("2025-05-03"),
       homeDetentionCurfewActualDate = LocalDate.parse("2025-05-04"),
