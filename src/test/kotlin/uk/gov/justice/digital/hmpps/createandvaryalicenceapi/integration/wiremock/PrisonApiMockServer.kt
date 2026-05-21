@@ -43,13 +43,13 @@ class PrisonApiMockServer : WireMockServer(8091) {
     )
   }
 
-  fun stubGetPrison(prisonId: String = "ABC") {
+  fun stubGetPrison(prisonId: String = "ABC", prisonDescription: String = "ABC (HMP)") {
     stubFor(
       get(urlEqualTo("/api/agencies/prison/$prisonId")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
-            "agencyId": "MDI",
-            "formattedDescription": "Moorland",
+            "agencyId": "$prisonId",
+            "formattedDescription": "$prisonDescription",
             "phones": []
             }
           """.trimMargin(),

@@ -11,6 +11,7 @@ const val COM_ALLOCATED_EVENT_TYPE = "person.community.manager.allocated"
 const val PRISONER_UPDATED_EVENT_TYPE = "prisoner-offender-search.prisoner.updated"
 const val RECALL_INSERTED_EVENT_TYPE = "recall.inserted"
 const val RECALL_UPDATED_EVENT_TYPE = "recall.updated"
+const val SUPPORTING_PRISON_UPDATED_EVENT_TYPE = "restricted-patients.patient.supporting-prison-changed"
 
 @ConditionalOnProperty(name = ["domain.event.listener.disabled"], havingValue = "false", matchIfMissing = true)
 @Service
@@ -19,6 +20,7 @@ class DomainEventListener(
   private val prisonerUpdatedHandler: PrisonerUpdatedHandler,
   private val recallInsertedHandler: RecallInsertedHandler,
   private val recallUpdatedHandler: RecallUpdatedHandler,
+  private val supportingPrisonUpdatedHandler: SupportingPrisonUpdatedHandler,
   private val mapper: ObjectMapper,
 ) {
   private companion object {
@@ -46,6 +48,10 @@ class DomainEventListener(
 
       RECALL_UPDATED_EVENT_TYPE -> {
         recallUpdatedHandler.handleEvent(message)
+      }
+
+      SUPPORTING_PRISON_UPDATED_EVENT_TYPE -> {
+        supportingPrisonUpdatedHandler.handleEvent(message)
       }
 
       else -> {

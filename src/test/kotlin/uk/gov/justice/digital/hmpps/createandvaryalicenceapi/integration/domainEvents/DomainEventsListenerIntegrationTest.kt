@@ -40,10 +40,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_UPDATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallInsertedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallUpdatedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.SUPPORTING_PRISON_UPDATED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.SupportingPrisonUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Duration
+import java.time.LocalDate
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = ["domain.event.listener.disabled=false"])
@@ -66,6 +70,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var recallUpdatedHandler: RecallUpdatedHandler
+
+  @MockitoSpyBean
+  lateinit var supportingPrisonUpdatedHandler: SupportingPrisonUpdatedHandler
 
   @MockitoSpyBean
   lateinit var staffService: StaffService
@@ -351,6 +358,43 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     )
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `A supporting prison changed event is processed`() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(aRestrictedPatientRecord)
+    prisonApiMockServer.stubGetPrison()
+
+    val currentLicence = testRepository.findLicence()
+
+    val event = HMPPSDomainEvent(
+      eventType = SUPPORTING_PRISON_UPDATED_EVENT_TYPE,
+      additionalInformation = mapOf(
+        "prisonerNumber" to "A1234AA",
+      ),
+      version = 1,
+      occurredAt = "2026-05-18T00:00:00.0000000Z",
+      description = "Supporting prisoner changed for restricted patient",
+      personReference = PersonReference(
+        identifiers = listOf(Identifiers("NOMS", "A1234AA")),
+      ),
+    )
+
+    val message = mapper.writeValueAsString(event)
+
+    sendEventAndVerifyProcessed(message, event.eventType)
+
+    verify(supportingPrisonUpdatedHandler).handleEvent(message)
+
+    val updatedLicence = testRepository.findLicence()
+    assertThat(currentLicence.prisonCode).isEqualTo("MDI")
+    assertThat(updatedLicence.prisonCode).isEqualTo("ABC")
+
+    val auditEvent = testRepository.findFirstAuditEvent()
+    assertThat(auditEvent.summary).isEqualTo("Supporting prison information changed for Person One")
+  }
+
   private fun assertComExistsInDb(
     staffIdentifier: Long,
     staffCode: String,
@@ -463,6 +507,32 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val workFlowMockServer = WorkFlowMockServer()
+
+    val aRestrictedPatientRecord = """[{
+      "prisonerNumber": "A1234AA",
+      "bookingId": "123",
+      "status": "INACTIVE OUT",
+      "mostSeriousOffence": "Robbery",
+      "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+      "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+      "homeDetentionCurfewEligibilityDate": null,
+      "releaseDate": null,
+      "confirmedReleaseDate": null,
+      "conditionalReleaseDate": null,
+      "paroleEligibilityDate": null,
+      "actualParoleDate" : null,
+      "postRecallReleaseDate": null,
+      "legalStatus": "SENTENCED",
+      "indeterminateSentence": false,
+      "recall": false,
+      "restrictedPatient": true,
+      "prisonId": "OUT",
+      "bookNumber": "12345A",
+      "firstName": "Test1",
+      "lastName": "Person1",
+      "dateOfBirth": "1985-01-01",
+      "supportingPrisonId": "ABC"
+    }]"""
 
     @JvmStatic
     @BeforeAll

@@ -529,8 +529,6 @@ class EligibilityServiceTest {
 
       val result = service.getEligibilityAssessment(prisoner, HdcStatuses(emptyList()))
 
-      println(result)
-
       assertThat(result.isEligible).isTrue()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).isEmpty()
