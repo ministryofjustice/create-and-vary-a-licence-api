@@ -548,6 +548,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       with(caseload.first()) {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
+        assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
       }
 
       with(caseload.last()) {
@@ -555,6 +556,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12352")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDateLabel).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
       }
     }

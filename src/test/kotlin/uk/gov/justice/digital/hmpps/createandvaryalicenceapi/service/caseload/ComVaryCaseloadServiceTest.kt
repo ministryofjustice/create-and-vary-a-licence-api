@@ -36,10 +36,11 @@ import java.time.LocalDateTime
 class ComVaryCaseloadServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
+  private val releaseDateLabelFactory = mock<ReleaseDateLabelFactory>()
   private val telemetryService = mock<TelemetryService>()
 
   private val service =
-    ComVaryCaseloadService(deliusApiClient, licenceCaseRepository, telemetryService)
+    ComVaryCaseloadService(deliusApiClient, licenceCaseRepository, releaseDateLabelFactory, telemetryService)
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
   private val tenDaysFromNow = LocalDate.now().plusDays(10)
@@ -594,6 +595,7 @@ class ComVaryCaseloadServiceTest {
     val service = ComVaryCaseloadService(
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
       telemetryService,
     )
 
