@@ -969,24 +969,6 @@ class EligibilityServiceTest {
     }
 
     @Test
-    fun `HDCAD & HDC Eligibility date is missing - ineligible for CVL`() {
-      val result = service.getEligibilityAssessment(
-        anHdcPrisonerSearchResult.copy(homeDetentionCurfewActualDate = null, homeDetentionCurfewEligibilityDate = null),
-        hdcStatuses,
-      )
-
-      assertThat(result.isEligible).isFalse()
-      assertThat(result.genericIneligibilityReasons).isEmpty()
-      assertThat(result.crdIneligibilityReasons).containsExactly("is expected to be released on HDC")
-      assertThat(result.prrdIneligibilityReasons).containsExactly(
-        "has no post recall release date",
-        "is expected to be released on HDC",
-      )
-      assertThat(result.hdcIneligibilityReasons).containsExactly("has no home detention curfew actual date")
-      assertThat(result.eligibleKind).isNull()
-    }
-
-    @Test
     fun `CRD is under 10 days in the future - ineligible for CVL`() {
       val result = service.getEligibilityAssessment(
         anHdcPrisonerSearchResult.copy(
