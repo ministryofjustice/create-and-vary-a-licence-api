@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -17,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 
 @Service
 class SupportingPrisonUpdatedHandler(
@@ -33,6 +33,7 @@ class SupportingPrisonUpdatedHandler(
     private val log = LoggerFactory.getLogger(PrisonerUpdatedHandler::class.java)
   }
 
+  @Transactional
   fun handleEvent(message: String) {
     if (restrictedPatientsEnabled) {
       val event = readEvent(message)
@@ -51,8 +52,7 @@ class SupportingPrisonUpdatedHandler(
         return
       }
 
-      val relevantLicenceStatuses = LicenceStatus.PRE_RELEASE_STATUSES.toList() - NOT_STARTED
-      val licences = getLicences(nomisId, relevantLicenceStatuses)
+      val licences = getLicences(nomisId, LicenceStatus.PRE_RELEASE_STATUSES.toList())
 
       if (licences.isEmpty()) {
         log.info("No in-flight licences found for nomisId: $nomisId, skipping update of supporting prison")
@@ -80,6 +80,7 @@ class SupportingPrisonUpdatedHandler(
 
   private fun updateLicences(licences: List<Licence>, prisonInformation: Prison) {
     licences.map { licence ->
+      val previousPrisonCode = licence.prisonCode
       val user =
         staffRepository.findByUsernameIgnoreCase(
           SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER,
@@ -102,6 +103,11 @@ class SupportingPrisonUpdatedHandler(
           eventType = AuditEventType.SYSTEM_EVENT,
           summary = "Supporting prison information changed for ${licence.forename} ${licence.surname}",
           detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
+          changes = mapOf(
+            "field" to "prisonCode",
+            "previousValue" to (previousPrisonCode ?: ""),
+            "newValue" to (licence.prisonCode ?: ""),
+          ),
         ),
       )
     }
