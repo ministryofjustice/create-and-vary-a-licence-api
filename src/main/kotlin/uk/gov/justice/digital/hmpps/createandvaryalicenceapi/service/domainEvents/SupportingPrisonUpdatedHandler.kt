@@ -53,8 +53,7 @@ class SupportingPrisonUpdatedHandler(
         return
       }
 
-      val relevantLicenceStatuses = LicenceStatus.PRE_RELEASE_STATUSES.toList() - NOT_STARTED
-      val licences = getLicences(nomisId, relevantLicenceStatuses)
+      val licences = getLicences(nomisId, LicenceStatus.PRE_RELEASE_STATUSES.toList())
 
       if (licences.isEmpty()) {
         log.info("No in-flight licences found for nomisId: $nomisId, skipping update of supporting prison")
