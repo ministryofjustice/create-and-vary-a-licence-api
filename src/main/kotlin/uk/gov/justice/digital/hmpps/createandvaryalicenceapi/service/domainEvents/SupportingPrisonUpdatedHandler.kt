@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -33,6 +34,7 @@ class SupportingPrisonUpdatedHandler(
     private val log = LoggerFactory.getLogger(PrisonerUpdatedHandler::class.java)
   }
 
+  @Transactional
   fun handleEvent(message: String) {
     if (restrictedPatientsEnabled) {
       val event = readEvent(message)
@@ -80,6 +82,7 @@ class SupportingPrisonUpdatedHandler(
 
   private fun updateLicences(licences: List<Licence>, prisonInformation: Prison) {
     licences.map { licence ->
+      val previousPrisonCode = licence.prisonCode
       val user =
         staffRepository.findByUsernameIgnoreCase(
           SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER,
@@ -102,6 +105,11 @@ class SupportingPrisonUpdatedHandler(
           eventType = AuditEventType.SYSTEM_EVENT,
           summary = "Supporting prison information changed for ${licence.forename} ${licence.surname}",
           detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
+          changes = mapOf(
+            "field" to "prisonCode",
+            "previousValue" to (previousPrisonCode ?: ""),
+            "newValue" to (licence.prisonCode ?: ""),
+          ),
         ),
       )
     }

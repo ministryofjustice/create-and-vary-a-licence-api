@@ -44,7 +44,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.SupportingPrisonUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Duration
 import java.time.LocalDate
@@ -302,7 +301,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val licence = testRepository.findLicence(3)
     assertThat(licence.forename).isEqualTo("Person")
     assertThat(licence.surname).isEqualTo("One")
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licence.statusCode).isEqualTo(INACTIVE)
 
     val auditEvent = testRepository.findFirstAuditEvent(3)
     assertThat(auditEvent.summary).isEqualTo("Licence inactivated due to the offender returning to custody on a standard recall for Person One")
@@ -393,6 +392,10 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     val auditEvent = testRepository.findFirstAuditEvent()
     assertThat(auditEvent.summary).isEqualTo("Supporting prison information changed for Person One")
+    assertThat(auditEvent.changes)
+      .containsEntry("field", "prisonCode")
+      .containsEntry("previousValue", "MDI")
+      .containsEntry("newValue", "ABC")
   }
 
   private fun assertComExistsInDb(
