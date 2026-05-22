@@ -34,14 +34,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSPrisonerUpdatedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISONER_UPDATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_INSERTED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_UPDATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallInsertedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallUpdatedHandler
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.SUPPORTING_PRISON_UPDATED_EVENT_TYPE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.SupportingPrisonUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -69,9 +68,6 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var recallUpdatedHandler: RecallUpdatedHandler
-
-  @MockitoSpyBean
-  lateinit var supportingPrisonUpdatedHandler: SupportingPrisonUpdatedHandler
 
   @MockitoSpyBean
   lateinit var staffService: StaffService
@@ -367,24 +363,22 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     val currentLicence = testRepository.findLicence()
 
-    val event = HMPPSDomainEvent(
-      eventType = SUPPORTING_PRISON_UPDATED_EVENT_TYPE,
-      additionalInformation = mapOf(
-        "prisonerNumber" to "A1234AA",
+    val event = HMPPSPrisonerUpdatedEvent(
+      eventType = PRISONER_UPDATED_EVENT_TYPE,
+      additionalInformation = AdditionalInformationPrisonerUpdated(
+        nomsNumber = "A1234AA",
+        categoriesChanged = listOf(DiffCategory.RESTRICTED_PATIENT),
       ),
       version = 1,
-      occurredAt = "2026-05-18T00:00:00.0000000Z",
-      description = "Supporting prisoner changed for restricted patient",
-      personReference = PersonReference(
-        identifiers = listOf(Identifiers("NOMS", "A1234AA")),
-      ),
+      occurredAt = "2026-05-22T00:00:00Z",
+      description = "A prisoner record has been updated",
     )
 
     val message = mapper.writeValueAsString(event)
 
     sendEventAndVerifyProcessed(message, event.eventType)
 
-    verify(supportingPrisonUpdatedHandler).handleEvent(message)
+    verify(prisonerUpdatedHandler).handleEvent(message)
 
     val updatedLicence = testRepository.findLicence()
     assertThat(currentLicence.prisonCode).isEqualTo("MDI")
