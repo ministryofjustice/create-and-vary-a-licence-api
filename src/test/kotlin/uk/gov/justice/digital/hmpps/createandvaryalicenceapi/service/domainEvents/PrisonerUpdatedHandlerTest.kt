@@ -218,6 +218,35 @@ class PrisonerUpdatedHandlerTest {
     verifyNoMoreInteractions(licenceRepository)
   }
 
+  @Test
+  fun `should not update licence when prison code has not changed`() {
+    val existingPrisonCode = "ABC"
+    val licence = createCrdLicence().copy(
+      nomsId = "A1234BC",
+      prisonCode = existingPrisonCode,
+    )
+
+    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any()))
+      .thenReturn(listOf(licence))
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+      .thenReturn(listOf(aPrisoner))
+
+    whenever(prisonApiClient.getPrisonInformation(any()))
+      .thenReturn(somePrisonInformation.copy(prisonId = existingPrisonCode)) // Same prison code
+
+    handler.handleEvent(
+      aPrisonerUpdatedEventMessage(
+        aPrisoner.prisonerNumber,
+        PRISONER_UPDATED_EVENT_TYPE,
+        listOf(DiffCategory.RESTRICTED_PATIENT),
+      ),
+    )
+
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+  }
+
   private fun aPrisonerUpdatedEventMessage(nomsId: String, eventType: String, categories: List<DiffCategory>) = mapper
     .writeValueAsString(
       HMPPSPrisonerUpdatedEvent(
