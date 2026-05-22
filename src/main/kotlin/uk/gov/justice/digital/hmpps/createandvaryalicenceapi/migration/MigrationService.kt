@@ -101,7 +101,7 @@ class MigrationService(
     val comSet = mutableSetOf(responsibleCom)
     val submittedByCom = comSet.getCommAndAdd(lifecycle.submittedByUserName)
     val createdByCom = comSet.getCommAndAdd(lifecycle.createdByUserName)
-    val approvedByStaff = lifecycle.approvedByUsername?.let { getStaff(it) }
+    val approvedByStaff = lifecycle.approvedByUsername?.let { getPrisonUser(it) }
     val licence = HdcLicence(
       // Hard coded values
       version = "3.0",
@@ -207,7 +207,7 @@ class MigrationService(
     return licenceRepository.saveAndFlush(licence)
   }
 
-  private fun getStaff(username: String): Staff? = staffRepository.findByUsernameIgnoreCase(username)
+  private fun getPrisonUser(username: String): Staff? = staffRepository.findAPrisonUserIgnoreCase(username)
 
   private fun MigrateAppointmentAddress.toSingleLineAddress(): String = listOfNotNull(firstLine, secondLine, townOrCity, postcode)
     .joinToString(", ")
