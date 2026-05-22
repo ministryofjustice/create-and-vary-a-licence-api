@@ -14,7 +14,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateConditions
@@ -238,12 +238,12 @@ class MigrationServiceTest {
     mockGetOffenderManager(staffId)
     whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
 
-    val approvedByStaff = mock<Staff>().apply {
+    val approvedByStaff = mock<PrisonUser>().apply {
       whenever(username).thenReturn(approvedByUsername)
       whenever(fullName).thenReturn("approvedFirstName approvedLastName")
     }
 
-    whenever(staffRepository.findByUsernameIgnoreCase(approvedByUsername)).thenReturn(approvedByStaff)
+    whenever(staffRepository.findAPrisonUserIgnoreCase(approvedByUsername)).thenReturn(approvedByStaff)
 
     // When
     service.migrate(request)
