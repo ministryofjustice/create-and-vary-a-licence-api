@@ -37,6 +37,7 @@ class PrisonerUpdatedHandler(
     private val log = LoggerFactory.getLogger(PrisonerUpdatedHandler::class.java)
   }
 
+  @Transactional
   fun handleEvent(message: String) {
     val event = mapper.readValue(message, HMPPSPrisonerUpdatedEvent::class.java)
     val categoriesChanged = event.additionalInformation.categoriesChanged
@@ -64,7 +65,6 @@ class PrisonerUpdatedHandler(
     )
   }
 
-  @Transactional
   fun updateSupportingPrisonId(nomsId: String) {
     if (restrictedPatientsEnabled) {
       log.info("Processing prisoner updated event received for nomis id: $nomsId")
