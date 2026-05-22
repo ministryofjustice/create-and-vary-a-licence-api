@@ -303,7 +303,7 @@ class LicenceCreationService(
 
   fun getOrCreateCom(userName: String): CommunityOffenderManager {
     log.info("Searching for persisted COM with userName: $userName")
-    val staff = staffRepository.findByUsernameIgnoreCase(userName) as CommunityOffenderManager?
+    val staff = staffRepository.findACommunityOffenderManagerIgnoreCase(userName)
     if (staff != null) {
       return staff
     }
