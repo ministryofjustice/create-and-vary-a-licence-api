@@ -84,8 +84,6 @@ class PrisonerUpdatedHandler(
 
       val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.supportingPrisonId!!)
 
-      log.info("Updating supporting prison information for ${licences.size} licences for nomisId: $nomsId with prison code: ${prisonInformation.prisonId}, description: ${prisonInformation.description}, telephone: ${prisonInformation.getPrisonContactNumber()}")
-
       updateLicences(licences, prisonInformation)
 
       log.info("Processed prisoner updated event for nomis id: $nomsId")
