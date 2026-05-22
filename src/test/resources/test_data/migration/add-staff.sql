@@ -7,4 +7,3 @@ values
 	( 'COMMUNITY_OFFENDER_MANAGER', 2, 'createdByUserName', 'testClient@prison.gov.uk', 'Prison', 'User',NOW()),
 	( 'PRISON_USER', null, 'ApprovedByUsername', 'testClient@prison.gov.uk', 'Approvedbyfirstname', 'Approvedbylastname',NOW()),
 	( 'COMMUNITY_OFFENDER_MANAGER', 3, 'approvedByUsername', 'testClient@prison.gov.uk', 'Prison', 'User',NOW());
-
