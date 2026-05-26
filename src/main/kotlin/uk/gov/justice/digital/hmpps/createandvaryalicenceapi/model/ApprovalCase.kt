@@ -25,6 +25,9 @@ data class ApprovalCase(
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate? = null,
 
+  @field:Schema(description = "Label for release date", example = "Confirmed release date")
+  val releaseDateLabel: String? = null,
+
   @field:Schema(description = "Whether an urgent approval is needed for this person", example = "false")
   val urgentApproval: Boolean? = null,
 

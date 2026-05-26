@@ -50,6 +50,9 @@ data class VaryApproverCase(
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate?,
 
+  @field:Schema(description = "Label for release date", example = "Confirmed release date")
+  val releaseDateLabel: String? = null,
+
   @field:Schema(description = "The details for the active supervising probation officer", requiredMode = NOT_REQUIRED)
   val probationPractitioner: ProbationPractitioner,
 
@@ -64,6 +67,7 @@ data class VaryApproverCase(
       licenceType = null,
       variationRequestDate = null,
       releaseDate = null,
+      releaseDateLabel = "Restricted",
       probationPractitioner = ProbationPractitioner.restrictedView(),
       isRestricted = true,
     )

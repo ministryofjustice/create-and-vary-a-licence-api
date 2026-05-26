@@ -326,6 +326,8 @@ class HardStopLicence(
     "reviewDate=$reviewDate, " +
     "licenceVersion=$licenceVersion, " +
     "updatedBy = $updatedBy" +
+    "homeDetentionCurfewActualDate=$homeDetentionCurfewActualDate, " +
+    "homeDetentionCurfewEligibilityDate=$homeDetentionCurfewEligibilityDate" +
     ")"
 
   override fun getCom(): CommunityOffenderManager = this.responsibleCom!!

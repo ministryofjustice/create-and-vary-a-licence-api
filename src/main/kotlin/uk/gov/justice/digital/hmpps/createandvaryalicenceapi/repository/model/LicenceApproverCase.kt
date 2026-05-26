@@ -26,6 +26,8 @@ class LicenceApproverCase(
   val prisonCode: String?,
   val prisonDescription: String?,
   var variationOfId: Long?,
+  override var homeDetentionCurfewActualDate: LocalDate?,
+  override var homeDetentionCurfewEligibilityDate: LocalDate?,
 ) : LicenceCase {
   var submittedByFullName: String? = null
 }

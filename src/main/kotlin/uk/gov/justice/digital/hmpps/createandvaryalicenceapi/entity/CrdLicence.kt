@@ -200,6 +200,8 @@ class CrdLicence(
     licenceVersion: String? = this.licenceVersion,
     updatedBy: Staff? = this.updatedBy,
     electronicMonitoringProvider: ElectronicMonitoringProvider? = this.electronicMonitoringProvider,
+    homeDetentionCurfewActualDate: LocalDate? = this.homeDetentionCurfewActualDate,
+    homeDetentionCurfewEligibilityDate: LocalDate? = this.homeDetentionCurfewEligibilityDate,
   ): CrdLicence = CrdLicence(
     id = id,
     typeCode = typeCode,
@@ -336,6 +338,8 @@ class CrdLicence(
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy, " +
     "electronicMonitoringProvider=$electronicMonitoringProvider" +
+    "homeDetentionCurfewActualDate=$homeDetentionCurfewActualDate" +
+    "homeDetentionCurfewEligibilityDate=$homeDetentionCurfewEligibilityDate" +
     ")"
 
   override fun getCom(): CommunityOffenderManager = responsibleCom!!

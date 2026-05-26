@@ -89,7 +89,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetProbationCases()
       deliusMockServer.stubGetManagersWithoutUserDetails()
       deliusMockServer.stubGetCheckUserAccess(accessResponse)
-      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val releaseDate = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("vary-approver-case-load-prisoners").replace(
           "\$releaseDate",
@@ -113,6 +113,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
       with(caseload.first()) {
         assertThat(crnNumber).isEqualTo("X12349")
         assertThat(name).isEqualTo("Test2 Person2")
+        assertThat(releaseDateLabel).isEqualTo("HDC actual date")
       }
 
       with(caseload.last()) {
@@ -120,6 +121,7 @@ class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12350")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDateLabel).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
       }
     }
