@@ -14,5 +14,6 @@ interface SentenceDateHolder {
     get() = null
   val homeDetentionCurfewEligibilityDate: LocalDate?
     get() = null
+
   val postRecallReleaseDate: LocalDate?
 }
