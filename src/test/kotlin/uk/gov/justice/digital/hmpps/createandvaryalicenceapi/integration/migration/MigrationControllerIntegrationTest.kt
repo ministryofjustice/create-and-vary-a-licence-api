@@ -67,6 +67,33 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/migration/add-staff.sql",
+  )
+  fun `should create licence successfully with correct staff and user kinds`() {
+    // Given
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManagerWithNomsId("A1234AA")
+
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(request)
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+
+    val licence = testRepository.findLicence(1)
+    assertHdcLicenceMatches(request, licence)
+    assertThat(testRepository.hasMetaData()).isTrue
+  }
+
+  @Test
   fun `should not migrate or save meta data when error is thrown`() {
     // Given
     val request = validRequest()
