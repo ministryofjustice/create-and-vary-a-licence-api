@@ -28,8 +28,9 @@ class ApproverCaseloadServiceTest {
   private val prisonApproverService = mock<PrisonApproverService>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val releaseDateLabelFactory = mock<ReleaseDateLabelFactory>()
 
-  private val service = ApproverCaseloadService(prisonApproverService, deliusApiClient, releaseDateService)
+  private val service = ApproverCaseloadService(prisonApproverService, deliusApiClient, releaseDateService, releaseDateLabelFactory)
 
   @BeforeEach
   fun reset() {
@@ -593,6 +594,8 @@ class ApproverCaseloadServiceTest {
     prisonCode: String? = "MDI",
     prisonDescription: String? = "Moorland (HMP)",
     variationOfId: Long? = null,
+    homeDetentionCurfewActualDate: LocalDate? = null,
+    homeDetentionCurfewEligibilityDate: LocalDate? = null,
   ): LicenceApproverCase {
     val licenceApproverCase = LicenceApproverCase(
       licenceStartDate = licenceStartDate,
@@ -615,6 +618,8 @@ class ApproverCaseloadServiceTest {
       prisonCode = prisonCode,
       prisonDescription = prisonDescription,
       variationOfId = variationOfId,
+      homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
+      homeDetentionCurfewEligibilityDate = homeDetentionCurfewEligibilityDate,
     )
     licenceApproverCase.submittedByFullName = submittedByFullName
     return licenceApproverCase

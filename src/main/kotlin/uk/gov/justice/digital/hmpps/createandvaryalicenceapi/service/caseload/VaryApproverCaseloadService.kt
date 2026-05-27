@@ -20,6 +20,7 @@ class VaryApproverCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val deliusApiClient: DeliusApiClient,
   private val licenceCaseRepository: LicenceCaseRepository,
+  private val releaseDateLabelFactory: ReleaseDateLabelFactory,
 ) {
 
   fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
@@ -93,6 +94,10 @@ class VaryApproverCaseloadService(
           licenceType = licence.typeCode,
           variationRequestDate = licence.dateCreated?.toLocalDate(),
           releaseDate = licence.licenceStartDate,
+          releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(
+            licence.licenceStartDate,
+            nomisRecord,
+          ),
           probationPractitioner = probationPractitioner,
           isRestricted = false,
         )

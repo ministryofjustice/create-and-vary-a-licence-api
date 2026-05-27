@@ -47,7 +47,7 @@ class HdcVariationLicence(
   licenceActivatedDate: LocalDateTime? = null,
   override val homeDetentionCurfewActualDate: LocalDate? = null,
   val homeDetentionCurfewEndDate: LocalDate? = null,
-  val homeDetentionCurfewEligibilityDate: LocalDate? = null,
+  override val homeDetentionCurfewEligibilityDate: LocalDate? = null,
   topupSupervisionStartDate: LocalDate? = null,
   topupSupervisionExpiryDate: LocalDate? = null,
   postRecallReleaseDate: LocalDate? = null,

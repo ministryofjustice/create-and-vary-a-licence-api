@@ -51,7 +51,7 @@ class VariationLicenceTest {
 
     VariationLicence::class.memberProperties.forEach {
       // HDCAD will always be null for non-HDC licences
-      if (it.name != "homeDetentionCurfewActualDate") {
+      if (it.name != "homeDetentionCurfewActualDate" && it.name != "homeDetentionCurfewEligibilityDate") {
         it.isAccessible = true
         val value = it.get(variationLicence)
           ?: fail { "${it.name} does not have a value set - needs to be set to test copy" }

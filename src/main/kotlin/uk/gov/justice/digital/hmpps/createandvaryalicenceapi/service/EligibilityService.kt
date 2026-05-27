@@ -97,7 +97,6 @@ class EligibilityService(
 
     val eligibilityCriteria = listOf(
       hasConditionalReleaseDate(prisoner) to "has no conditional release date",
-      hasHomeDetentionCurfewActualDate(prisoner) to "has no home detention curfew actual date",
       isTenOrMoreDaysToCrd(prisoner) to "has CRD fewer than 10 days in the future",
       isExpectedHdcRelease to "is not expected to be released on HDC",
     )
@@ -169,9 +168,6 @@ class EligibilityService(
       releaseDateService.isReleaseAtLed(releaseDate, prisoner.licenceExpiryDate)
     }
   }
-
-  // HDC-specific eligibility rules
-  private fun hasHomeDetentionCurfewActualDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.homeDetentionCurfewActualDate != null
 
   private fun isTenOrMoreDaysToCrd(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
     prisoner.conditionalReleaseDate.isOnOrAfter(

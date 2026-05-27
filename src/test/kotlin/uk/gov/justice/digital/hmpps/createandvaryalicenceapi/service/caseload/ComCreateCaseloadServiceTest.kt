@@ -48,6 +48,7 @@ class ComCreateCaseloadServiceTest {
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
   private val eligibilityService = mock<EligibilityService>()
   private val cvlRecordService = mock<CvlRecordService>()
+  private val releaseDateLabelFactory = mock<ReleaseDateLabelFactory>()
   private val telemetryService = mock<TelemetryService>()
 
   private var service = ComCreateCaseloadService(
@@ -55,6 +56,7 @@ class ComCreateCaseloadServiceTest {
     deliusApiClient,
     licenceCaseRepository,
     cvlRecordService,
+    releaseDateLabelFactory,
     telemetryService,
   )
 
@@ -1407,6 +1409,7 @@ class ComCreateCaseloadServiceTest {
         deliusApiClient,
         licenceCaseRepository,
         cvlRecordService,
+        releaseDateLabelFactory,
         telemetryService,
       )
       val managedOffenders = listOf(

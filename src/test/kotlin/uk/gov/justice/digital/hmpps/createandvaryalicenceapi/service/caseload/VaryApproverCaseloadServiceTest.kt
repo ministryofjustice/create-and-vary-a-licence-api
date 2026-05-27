@@ -33,11 +33,13 @@ class VaryApproverCaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
+  private val releaseDateLabelFactory = mock<ReleaseDateLabelFactory>()
 
   private var service = VaryApproverCaseloadService(
     prisonerSearchApiClient,
     deliusApiClient,
     licenceCaseRepository,
+    releaseDateLabelFactory,
   )
 
   @BeforeEach
@@ -436,6 +438,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -471,6 +474,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -506,6 +510,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -549,6 +554,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -583,6 +589,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -626,6 +633,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -677,6 +685,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"

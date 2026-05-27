@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryStaffCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComVaryTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderCrnTransformer.toProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 class ComVaryCaseloadService(
   private val deliusApiClient: DeliusApiClient,
   private val licenceCaseRepository: LicenceCaseRepository,
+  private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val telemetryService: TelemetryService,
 ) {
   companion object {
@@ -85,6 +87,7 @@ class ComVaryCaseloadService(
             kind = licence.kind,
             name = "${licence.forename} ${licence.surname}".trim().convertToTitleCase(),
             releaseDate = licence.licenceStartDate,
+            releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(licence),
             probationPractitioner = probationPractitioner,
             isReviewNeeded = licence.isReviewNeeded(),
             isRestricted = false,
