@@ -30,6 +30,7 @@ generic-service:
     ISR_REPEAL_DATE: "2026-03-26"
     STANDARD_RECALLS_ENABLED: true
     RESTRICTED_PATIENTS_ENABLED: true
+    REMAND_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
