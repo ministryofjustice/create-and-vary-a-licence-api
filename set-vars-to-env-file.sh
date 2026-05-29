@@ -36,7 +36,7 @@ export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets
 # --- Booleans / Flags ---
 export HDC_ENABLED=false
 export STANDARD_RECALLS_ENABLED=false
-export RESTRICTED_PATIENTS_ENABLED=false
+export RESTRICTED_PATIENTS_ENABLED=true
 export ISR_REPEAL_DATE="2026-03-25"
 
 # --- Write to .env file ---
