@@ -54,7 +54,7 @@ hmpps:
       prisons:
 
 notify:
-  enabled: false
+  enabled: true
 
 hmpps.sqs:
   provider: localstack
