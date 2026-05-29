@@ -437,7 +437,7 @@ class LicenceService(
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licenceEntity.nomsId!!)).first()
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licenceEntity.bookingId!!)).first()
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
     when (licenceEntity) {
@@ -653,7 +653,7 @@ class LicenceService(
       return EditLicenceResponse(inProgressVersions[0].id)
     }
 
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)).first()
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licence.bookingId!!)).first()
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
     assertCaseIsEligible(cvlRecord, licenceId)
@@ -1031,6 +1031,7 @@ class LicenceService(
     val licencesToDeactivate =
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(licenceIds, listOf(IN_PROGRESS, SUBMITTED))
     if (licencesToDeactivate.isNotEmpty()) {
+      println(licencesToDeactivate.map { it.id })
       inactivateLicences(licencesToDeactivate, reason, deactivateInProgressVersions = false)
     }
   }

@@ -269,7 +269,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit Crd licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -302,7 +302,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit PRRD licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -330,7 +330,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit Hard Stop licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -355,7 +355,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit VARIATION licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -380,7 +380,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit HDC licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
     prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -405,7 +405,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit HDC_VARIATION licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
     prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -642,7 +642,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     // Given
     val uri = "/licence/id/1/edit"
     val roles = listOf("ROLE_CVL_ADMIN")
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -661,7 +661,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     // Given
     val uri = "/licence/id/1/edit"
     val roles = listOf("ROLE_CVL_ADMIN")
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -680,7 +680,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     // Given
     val uri = "/licence/id/1/edit"
     val roles = listOf("ROLE_CVL_ADMIN")
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
     prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -1110,7 +1110,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-licence-id-1.sql",
     )
     fun `licence submission should be prevented`() {
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(aPrisonerMissingReleaseDate)
+      prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds(aPrisonerMissingReleaseDate)
       prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
       prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -1142,7 +1142,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-approved-licence-1.sql",
     )
     fun `Editing an approved licence should be prevented`() {
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(aPrisonerMissingReleaseDate)
+      prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds(aPrisonerMissingReleaseDate)
       prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
       prisonApiMockServer.stubGetCourtOutcomes()
 
