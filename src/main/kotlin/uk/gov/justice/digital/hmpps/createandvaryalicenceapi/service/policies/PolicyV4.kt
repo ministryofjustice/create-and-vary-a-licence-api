@@ -765,8 +765,48 @@ val POLICY_V4_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "be16ee0b-a916-43ef-9319-b42a1dd418a3",
-        requiresInput = false,
-        text = "DRINKING ESTABLISHMENT PLACEHOLDER",
+        inputs = listOf(
+          Input(
+            label = "Select a time restriction",
+            name = "timeRestriction",
+            options = listOf(
+              Option(
+                value = "At any time",
+              ),
+              Option(
+                value = "Between specified times",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter first start time",
+                      name = "firstCurfewStart",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Enter first end time",
+                      name = "firstCurfewEnd",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second start time (optional)",
+                      name = "secondCurfewStart",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second end time (optional)",
+                      name = "secondCurfewEnd",
+                      type = TIME_PICKER,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to enter a drinking establishment [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
+        type = "DrinkingEstablishment",
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
