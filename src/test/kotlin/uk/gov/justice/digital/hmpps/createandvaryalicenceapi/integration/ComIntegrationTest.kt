@@ -289,7 +289,8 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from team caseload`() {
-    deliusMockServer.stubGetTeamManagedCases("""{
+    deliusMockServer.stubGetTeamManagedCases(
+      """{
       "content": [],
       "page": {
         "number": 0,
@@ -298,7 +299,8 @@ class ComIntegrationTest : IntegrationTestBase() {
         "totalElements": 0
       }
     }
-    """)
+    """,
+    )
     deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonApiMockServer.stubGetSentenceAndRecallTypes()

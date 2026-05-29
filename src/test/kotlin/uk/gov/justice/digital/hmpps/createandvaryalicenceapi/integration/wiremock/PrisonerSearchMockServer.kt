@@ -124,7 +124,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           lastName = "Person5",
           dateOfBirth = LocalDate.parse("1987-01-01"),
           postRecallReleaseDate = null,
-          homeDetentionCurfewEligibilityDate = nextWorkingDate()
+          homeDetentionCurfewEligibilityDate = nextWorkingDate(),
         ),
         PrisonerSearchPrisoner(
           prisonerNumber = "A1234AF",
@@ -146,7 +146,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           lastName = "Person6",
           dateOfBirth = LocalDate.parse("1987-01-01"),
           postRecallReleaseDate = nextWorkingDate(),
-        )
+        ),
       )
       jsonString = mapper.writeValueAsString(prisoners)
     } else {
@@ -280,7 +280,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           lastName = "Person5",
           dateOfBirth = LocalDate.parse("1987-01-01"),
           postRecallReleaseDate = postRecallReleaseDate,
-          homeDetentionCurfewEligibilityDate = nextWorkingDate()
+          homeDetentionCurfewEligibilityDate = nextWorkingDate(),
         ),
         PrisonerSearchPrisoner(
           prisonerNumber = "A1234AF",
@@ -302,7 +302,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
           lastName = "Person6",
           dateOfBirth = LocalDate.parse("1987-01-01"),
           postRecallReleaseDate = LocalDate.now().plusDays(1),
-        )
+        ),
       )
       jsonString = mapper.writeValueAsString(prisoners)
     } else {
