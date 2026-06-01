@@ -1,17 +1,24 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import tools.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderSentencesAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenderSentenceAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import java.time.LocalDate
 
-class PrisonApiMockServer : WireMockServer(8091) {
+class PrisonApiMockServer :
+  WireMockExtension(
+    extensionOptions()
+      .options(wireMockConfig().port(8091)),
+  ) {
 
   companion object {
     private val mapper: ObjectMapper = createTestMapper()
@@ -172,6 +179,19 @@ class PrisonApiMockServer : WireMockServer(8091) {
       post(urlEqualTo("/api/offender-sentences/bookings/sentence-and-recall-types")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           mapper.writeValueAsString(sentenceAndRecallTypes),
+        ).withStatus(200),
+      ),
+    )
+  }
+
+  fun stubGetSentencesAndOffences(
+    bookingId: Long,
+    sentencesAndOffences: List<OffenderSentenceAndOffences> = offenderSentencesAndOffences(bookingId),
+  ) {
+    stubFor(
+      get(urlEqualTo("/api/offender-sentences/booking/$bookingId/sentences-and-offences")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          mapper.writeValueAsString(sentencesAndOffences),
         ).withStatus(200),
       ),
     )

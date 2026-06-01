@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -11,7 +10,6 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.http.ProblemDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
@@ -39,11 +37,6 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
-
-  @BeforeEach
-  fun reset() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   fun `Change licence type`() {
@@ -210,7 +203,6 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
@@ -219,7 +211,6 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       prisonApiMockServer.start()
-      govUkApiMockServer.start()
       prisonerSearchMockServer.start()
       deliusMockServer.start()
     }
@@ -228,7 +219,6 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       prisonApiMockServer.stop()
-      govUkApiMockServer.stop()
       prisonerSearchMockServer.stop()
       deliusMockServer.stop()
     }
