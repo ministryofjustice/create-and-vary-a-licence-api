@@ -200,7 +200,6 @@ class MigrationService(
         licence = licence,
         reference = UUID.randomUUID().toString(),
         source = AddressSource.MANUAL_MIGRATED,
-        uprn = null,
       )
     }
 
