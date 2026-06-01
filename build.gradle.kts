@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
   id("dev.detekt") version "2.0.0-alpha.3"
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.3.1"
-  id("org.owasp.dependencycheck") version "12.2.1"
+  id("org.owasp.dependencycheck") version "12.2.2"
   kotlin("plugin.spring") version "2.3.21"
   kotlin("plugin.jpa") version "2.3.21"
 }
@@ -29,8 +29,8 @@ dependencies {
     }
   }
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.2.0")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.5.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.2")
 
   implementation("io.netty:netty-codec-http")
   implementation("io.netty:netty-handler")
@@ -58,7 +58,7 @@ dependencies {
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.11")
-  implementation("com.google.code.gson:gson:2.13.2")
+  implementation("com.google.code.gson:gson:2.14.0")
   implementation("io.arrow-kt:arrow-core:2.2.2.1")
 
   // OpenAPI
@@ -68,7 +68,7 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:12.0.0")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.3.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.5.0")
   implementation("org.jsoup:jsoup:1.22.2")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
