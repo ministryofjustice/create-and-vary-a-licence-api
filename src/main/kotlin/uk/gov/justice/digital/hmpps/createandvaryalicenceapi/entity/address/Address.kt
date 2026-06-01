@@ -16,8 +16,8 @@ class Address(
   county: String? = null,
   postcode: String,
   source: AddressSource,
-  val createdTimestamp: LocalDateTime = LocalDateTime.now(),
-  var lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
+  createdTimestamp: LocalDateTime = LocalDateTime.now(),
+  lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
 ) : AbstractAddress(
   id = id,
   reference = reference,
@@ -28,4 +28,6 @@ class Address(
   county = county,
   postcode = postcode,
   source = source,
+  createdTimestamp = createdTimestamp,
+  lastUpdatedTimestamp = lastUpdatedTimestamp,
 )

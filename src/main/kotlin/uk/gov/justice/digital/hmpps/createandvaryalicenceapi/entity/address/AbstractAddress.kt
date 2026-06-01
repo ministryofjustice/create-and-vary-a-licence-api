@@ -5,6 +5,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.MappedSuperclass
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AbstractIdEntity
+import java.time.LocalDateTime
 
 @MappedSuperclass
 abstract class AbstractAddress(
@@ -34,6 +35,10 @@ abstract class AbstractAddress(
   @Enumerated(EnumType.STRING)
   @Column(name = "source", nullable = false)
   open var source: AddressSource,
+  @Column(name = "created_timestamp", nullable = false)
+  open val createdTimestamp: LocalDateTime = LocalDateTime.now(),
+  @Column(name = "last_updated_timestamp", nullable = false)
+  open var lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
 ) : AbstractIdEntity(id) {
 
   fun isSame(other: AbstractAddress): Boolean = firstLine == other.firstLine &&
