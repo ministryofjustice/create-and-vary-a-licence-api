@@ -1,54 +1,35 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address
 
-import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AbstractIdEntity
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AbstractAddress
 import java.time.LocalDateTime
-
-enum class AddressSource {
-  MANUAL,
-  OS_PLACES,
-  MANUAL_MIGRATED,
-}
 
 @Entity
 @Table(name = "address")
 class Address(
   id: Long? = null,
-
-  @Column(nullable = false, unique = true)
-  val reference: String,
-
-  // Unique Property Reference Number
-  @Column(nullable = true, unique = false)
-  var uprn: String? = null,
-
-  @Column(name = "first_line", nullable = false)
-  var firstLine: String,
-
-  @Column(name = "second_line")
-  var secondLine: String? = null,
-
-  @Column(name = "town_or_city", nullable = false)
-  var townOrCity: String,
-
-  @Column
-  var county: String? = null,
-
-  @Column(nullable = false)
-  var postcode: String,
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "source", nullable = false)
-  var source: AddressSource,
-
+  reference: String,
+  uprn: String? = null,
+  firstLine: String,
+  secondLine: String? = null,
+  townOrCity: String,
+  county: String? = null,
+  postcode: String,
+  source: AddressSource,
   val createdTimestamp: LocalDateTime = LocalDateTime.now(),
-
   var lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
-) : AbstractIdEntity(idInternal = id) {
+): AbstractAddress(
+  id = id,
+  reference = reference,
+  uprn = uprn,
+  firstLine = firstLine,
+  secondLine = secondLine,
+  townOrCity = townOrCity,
+  county = county,
+  postcode = postcode,
+  source = source,
+) {
 
   override fun toString(): String = listOf(
     reference,

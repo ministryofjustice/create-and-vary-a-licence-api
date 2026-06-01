@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
@@ -193,11 +193,14 @@ class MigrationService(
 
     curfewAddress?.let {
       licence.curfewAddress = HdcCurfewAddress(
-        addressLine1 = it.addressLine1 ?: "",
-        addressLine2 = it.addressLine2,
+        firstLine = it.addressLine1 ?: "",
+        secondLine = it.addressLine2,
         townOrCity = it.townOrCity ?: "",
-        postcode = it.postcode,
+        postcode = it.postcode ?: "",
         licence = licence,
+        reference = UUID.randomUUID().toString(),
+        source = AddressSource.MANUAL_MIGRATED,
+        uprn = null,
       )
     }
 

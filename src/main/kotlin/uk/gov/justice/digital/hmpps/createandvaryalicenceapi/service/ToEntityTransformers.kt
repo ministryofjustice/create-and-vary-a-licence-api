@@ -1,14 +1,16 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import java.time.LocalDateTime
+import java.util.UUID
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes as EntityCurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
@@ -82,11 +84,13 @@ fun transform(model: ModelAuditEvent): EntityAuditEvent = EntityAuditEvent(
 
 fun transform(model: ModelHdcCurfewAddress, licence: EntityLicence): EntityHdcCurfewAddress = EntityHdcCurfewAddress(
   licence = licence,
-  addressLine1 = model.addressLine1,
-  addressLine2 = model.addressLine2,
-  townOrCity = model.townOrCity,
+  firstLine = model.addressLine1 ?: "",
+  secondLine = model.addressLine2,
+  townOrCity = model.townOrCity ?: "",
   county = model.county,
-  postcode = model.postcode,
+  postcode = model.postcode ?: "",
+  reference = UUID.randomUUID().toString(),
+  source = AddressSource.MANUAL_MIGRATED,
 )
 
 // Transform a list of model hdc curfew times to a list of entity hdc curfew times, setting the licenceId
