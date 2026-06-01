@@ -9,11 +9,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException

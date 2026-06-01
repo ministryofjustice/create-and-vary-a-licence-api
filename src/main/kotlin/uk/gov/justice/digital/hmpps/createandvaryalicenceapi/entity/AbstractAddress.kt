@@ -7,7 +7,7 @@ import jakarta.persistence.MappedSuperclass
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 
 @MappedSuperclass
-abstract class AbstractAddress (
+abstract class AbstractAddress(
   id: Long? = null,
   val reference: String,
   @Column(nullable = true, unique = false)

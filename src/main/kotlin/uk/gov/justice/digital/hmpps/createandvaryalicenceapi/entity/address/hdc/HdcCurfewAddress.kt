@@ -11,36 +11,36 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AbstractAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 
 @Entity
 @Table(name = "hdc_curfew_address")
 class HdcCurfewAddress(
-    id: Long? = null,
+  id: Long? = null,
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REFRESH])
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REFRESH])
   @JoinColumn(name = "licence_id", nullable = false)
   var licence: Licence,
 
-    @Column(name = "accommodation_type")
+  @Column(name = "accommodation_type")
   @Enumerated(EnumType.STRING)
   var accommodationType: AccommodationType? = null,
 
-    @Column(name = "residential_checks_completed")
+  @Column(name = "residential_checks_completed")
   var residentialChecksCompleted: Boolean? = null,
 
-    @Column(name = "residential_checks_not_completed_reason")
+  @Column(name = "residential_checks_not_completed_reason")
   var residentialChecksNotCompletedReason: String? = null,
 
-    reference: String,
-    uprn: String? = null,
-    firstLine: String,
-    secondLine: String? = null,
-    townOrCity: String,
-    county: String? = null,
-    postcode: String,
-    source: AddressSource,
+  reference: String,
+  uprn: String? = null,
+  firstLine: String,
+  secondLine: String? = null,
+  townOrCity: String,
+  county: String? = null,
+  postcode: String,
+  source: AddressSource,
 ) : AbstractAddress(
   id = id,
   reference = reference,

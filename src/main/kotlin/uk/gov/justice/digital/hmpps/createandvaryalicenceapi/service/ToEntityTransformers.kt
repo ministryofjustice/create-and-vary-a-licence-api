@@ -10,9 +10,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes as EntityCurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes as ModelCurfewTimes

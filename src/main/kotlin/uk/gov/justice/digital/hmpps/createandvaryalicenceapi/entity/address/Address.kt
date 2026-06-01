@@ -19,7 +19,7 @@ class Address(
   source: AddressSource,
   val createdTimestamp: LocalDateTime = LocalDateTime.now(),
   var lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
-): AbstractAddress(
+) : AbstractAddress(
   id = id,
   reference = reference,
   uprn = uprn,
