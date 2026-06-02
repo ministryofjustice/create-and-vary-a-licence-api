@@ -222,13 +222,21 @@
     "version": "String"
   },
   "HdcCurfewAddress": {
-    "addressLine1": "String",
-    "addressLine2": "String",
+    "accommodationType": "AccommodationType",
     "county": "String",
-    "id": "Long",
+    "firstLine": "String",
+    "idInternal": "Long",
     "licence": "Licence",
     "postcode": "String",
-    "townOrCity": "String"
+    "reference": "String",
+    "postReleaseResidentialChecksCompleted": "Boolean",
+    "postReleaseResidentialChecksNotCompletedReason": "String",
+    "secondLine": "String",
+    "source": "AddressSource",
+    "townOrCity": "String",
+    "uprn": "String",
+    "lastUpdatedTimestamp": "LocalDateTime",
+    "createdTimestamp": "LocalDateTime"
   },
   "HdcLicence": {
     "actualReleaseDate": "LocalDate",

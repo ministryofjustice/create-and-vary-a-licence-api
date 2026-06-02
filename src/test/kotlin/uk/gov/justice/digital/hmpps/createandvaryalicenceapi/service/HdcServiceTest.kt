@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
@@ -49,7 +50,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes as EntityCurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes as ModelCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
 
@@ -191,7 +192,7 @@ class HdcServiceTest {
   @Test
   fun `getHdcLicenceData returns address details in HDC licence data successfully when the second line is not set`() {
     val anAddress = aModelCurfewAddress.copy(
-      addressLine2 = null,
+      secondLine = null,
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
@@ -544,13 +545,16 @@ class HdcServiceTest {
     val aCom = communityOffenderManager()
 
     val anEntityCurfewAddress = EntityHdcCurfewAddress(
-      1L,
-      aLicenceEntity,
-      "1 Test Street",
-      "Test Area",
-      "Test Town",
-      null,
-      "AB1 2CD",
+      id = 1L,
+      licence = aLicenceEntity,
+      firstLine = "1 Test Street",
+      secondLine = "Test Area",
+      townOrCity = "Test Town",
+      county = null,
+      postcode = "AB1 2CD",
+      reference = "ref-123",
+      uprn = "uprn-123",
+      source = AddressSource.MANUAL_MIGRATED,
     )
 
     val aModelCurfewAddress = ModelHdcCurfewAddress(
