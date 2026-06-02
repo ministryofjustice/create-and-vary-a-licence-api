@@ -1290,18 +1290,145 @@
         "category": "Freedom of movement",
         "text": "Notify your supervising officer of any travel outside of your home county, including on public transport, prior to any such journey taking place unless otherwise specified by your supervising officer.",
         "tpl": null,
-        "requiresInput": false,
-        "inputs": null,
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "radio",
+            "label": "Vehicle types",
+            "name": "vehicleTypes",
+            "listType": null,
+            "options": [
+              {
+                "value": "Any motor vehicle",
+                "conditional": null
+              },
+              {
+                "value": "Types of motor vehicle",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter one or more types of motor vehicle",
+                      "name": "typesOfMotorVehicle",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null
+          },
+          {
+            "type": "radio",
+            "label": "Time restriction",
+            "name": "timeRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any time",
+                "conditional": null
+              },
+              {
+                "value": "Between specified times",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first start time",
+                      "name": "firstCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first end time",
+                      "name": "firstCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second start time (optional)",
+                      "name": "secondCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second end time (optional)",
+                      "name": "secondCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null
+          },
+          {
+            "type": "radio",
+            "label": "Location restriction",
+            "name": "locationRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any location",
+                "conditional": null
+              },
+              {
+                "value": "In specified locations",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter one or more locations",
+                      "name": "locations",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null
+          }
+        ],
         "categoryShort": null,
         "subtext": null,
-        "type": null,
+        "type": "VehicleRestrictions",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false
       },
       {
         "code": "d523d711-9975-4a9a-a37e-a17bd611140f",
         "category": "Freedom of movement",
-        "text": "DRIVING PROHIBITION PLACEHOLDER",
+        "text": "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
         "tpl": null,
         "requiresInput": false,
         "inputs": null,
