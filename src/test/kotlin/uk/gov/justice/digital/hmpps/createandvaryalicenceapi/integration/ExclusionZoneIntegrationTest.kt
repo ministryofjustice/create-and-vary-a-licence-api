@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.UPLOAD_FILE_CONDITION_ENDPOINT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf.UploadPdfExtract
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf.UploadPdfExtractBuilder
@@ -28,7 +27,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun setupClient() {
     webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     documentApiMockServer.resetAll()
     documentApiMockServer.stubUploadDocument()
   }
@@ -236,20 +234,17 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     .replace("{conditionId}", conditionId.toString())
 
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
     val documentApiMockServer = DocumentApiMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      govUkApiMockServer.start()
       documentApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      govUkApiMockServer.stop()
       documentApiMockServer.stop()
     }
   }

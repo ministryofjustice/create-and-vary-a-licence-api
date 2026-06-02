@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -52,22 +51,18 @@ class InactivateHardstopLicencesTaskIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      govUkApiMockServer.start()
       prisonerSearchMockServer.start()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-      govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      govUkApiMockServer.stop()
       prisonerSearchMockServer.stop()
     }
   }

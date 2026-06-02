@@ -14,7 +14,6 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
@@ -297,21 +296,17 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val deliusMockServer = DeliusMockServer()
-    val govUkMockServer = GovUkMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       deliusMockServer.start()
-      govUkMockServer.start()
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       deliusMockServer.stop()
-      govUkMockServer.stop()
     }
   }
 }

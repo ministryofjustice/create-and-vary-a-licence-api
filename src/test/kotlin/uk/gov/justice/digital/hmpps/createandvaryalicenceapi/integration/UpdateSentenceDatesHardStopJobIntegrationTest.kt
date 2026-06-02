@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,7 +12,6 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -48,11 +46,6 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var workingDaysService: WorkingDaysService
-
-  @BeforeEach
-  fun setup() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   @Sql(
@@ -155,21 +148,18 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val prisonApiMockServer = PrisonApiMockServer()
-    val govUkApiMockServer = GovUkMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       prisonApiMockServer.start()
       prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
-      govUkApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       prisonApiMockServer.stop()
-      govUkApiMockServer.stop()
     }
   }
 }

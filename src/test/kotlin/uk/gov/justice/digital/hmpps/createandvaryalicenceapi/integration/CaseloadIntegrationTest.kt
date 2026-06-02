@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.HttpStatus.OK
@@ -13,10 +14,9 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
@@ -170,9 +170,10 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val prisonerSearchApiMockServer = PrisonerSearchMockServer()
-    val govUkMockServer = GovUkMockServer()
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val hdcApiMockServer = HdcApiMockServer()
 
@@ -180,9 +181,6 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       prisonerSearchApiMockServer.start()
-      govUkMockServer.start()
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
-      prisonApiMockServer.start()
       deliusMockServer.start()
       hdcApiMockServer.start()
     }
@@ -191,8 +189,6 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       prisonerSearchApiMockServer.stop()
-      govUkMockServer.stop()
-      prisonApiMockServer.stop()
       deliusMockServer.stop()
       hdcApiMockServer.stop()
     }

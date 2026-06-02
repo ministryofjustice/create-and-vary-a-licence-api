@@ -14,7 +14,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
@@ -112,7 +111,6 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
   private companion object {
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
-    val govUkMockServer = GovUkMockServer()
     val hdcApiMockServer = HdcApiMockServer()
 
     @JvmStatic
@@ -120,7 +118,6 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
     fun startMocks() {
       prisonApiMockServer.start()
       prisonerSearchMockServer.start()
-      govUkMockServer.start()
       hdcApiMockServer.start()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
@@ -130,7 +127,6 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
           CurrentPrisonerHdcStatus(123, HdcStatus.APPROVED),
         ),
       )
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
     @JvmStatic
@@ -138,7 +134,6 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       prisonApiMockServer.stop()
       prisonerSearchMockServer.stop()
-      govUkMockServer.stop()
       hdcApiMockServer.stop()
     }
   }
