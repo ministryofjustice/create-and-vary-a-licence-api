@@ -178,6 +178,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
+        assertThat(releaseDateLabel).isEqualTo("CRD")
       }
       with(caseload[1]) {
         assertThat(name).isEqualTo("Person A")
@@ -186,6 +187,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
+        assertThat(releaseDateLabel).isEqualTo("HDC eligible date")
       }
       with(caseload[2]) {
         assertThat(name).isEqualTo("Person Z")
@@ -194,6 +196,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
+        assertThat(releaseDateLabel).isEqualTo("HDC actual date")
       }
     }
   }
