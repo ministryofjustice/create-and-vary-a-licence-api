@@ -294,8 +294,8 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     if (licence is HdcLicence) {
       assertThat(licence.submittedBy?.username).isEqualToIgnoringCase(request.lifecycle.submittedByUserName)
       assertThat(licence.createdBy?.username).isEqualToIgnoringCase(request.lifecycle.createdByUserName)
-      assertThat(licence.curfewAddress?.addressLine1).isEqualTo(request.curfewAddress?.addressLine1)
-      assertThat(licence.curfewAddress?.addressLine2).isEqualTo(request.curfewAddress?.addressLine2)
+      assertThat(licence.curfewAddress?.firstLine).isEqualTo(request.curfewAddress?.addressLine1)
+      assertThat(licence.curfewAddress?.secondLine).isEqualTo(request.curfewAddress?.addressLine2)
       assertThat(licence.curfewAddress?.townOrCity).isEqualTo(request.curfewAddress?.townOrCity)
       assertThat(licence.curfewAddress?.postcode).isEqualTo(request.curfewAddress?.postcode)
       assertThat(licence.homeDetentionCurfewEndDate).isEqualTo(request.licence.homeDetentionCurfewEndDate)

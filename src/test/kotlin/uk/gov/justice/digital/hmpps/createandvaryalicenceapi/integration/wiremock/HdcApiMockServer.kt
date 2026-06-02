@@ -15,8 +15,8 @@ class HdcApiMockServer : WireMockServer(8100) {
           """{
             "licenceId": "1",
             "curfewAddress": {
-              "addressLine1": "123 Test Street",
-              "addressLine2": null,
+              "firstLine": "123 Test Street",
+              "secondLine": null,
               "townOrCity": "Test Area",
               "county": null,
               "postcode": "AB1 2CD"

@@ -182,7 +182,9 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.approvedDate,
           l.prisonCode,
           l.prisonDescription,
-          l.variationOfId
+          l.variationOfId,
+          l.homeDetentionCurfewActualDate,
+          l.homeDetentionCurfewEligibilityDate
         FROM Licence l
           LEFT JOIN l.responsibleCom com
           LEFT JOIN l.updatedBy updatedBy
