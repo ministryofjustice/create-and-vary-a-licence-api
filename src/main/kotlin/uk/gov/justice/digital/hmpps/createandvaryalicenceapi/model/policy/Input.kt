@@ -40,6 +40,7 @@ data class Input(
   val addAnother: AddAnother? = null,
   override val includeBefore: String? = null,
   val subtext: String? = null,
+  val defaultValue: String? = null,
 ) : FormattingRule {
 
   @JsonIgnore
