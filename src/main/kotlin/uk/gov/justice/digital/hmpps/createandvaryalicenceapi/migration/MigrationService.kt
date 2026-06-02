@@ -94,7 +94,7 @@ class MigrationService(
   }
 
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
-    val offenderManager = getOffenderManager(prisoner.prisonerNumber!!)
+    val offenderManager = getOffenderManager(prisoner.prisonerNumber)
     val probationTeam = offenderManager.team
     val responsibleCom = licenceCreationService.getOrCreateCom(offenderManager.id)
 
@@ -200,6 +200,7 @@ class MigrationService(
         licence = licence,
         reference = UUID.randomUUID().toString(),
         source = AddressSource.MANUAL_MIGRATED,
+        accommodationType = it.addressType,
       )
     }
 
