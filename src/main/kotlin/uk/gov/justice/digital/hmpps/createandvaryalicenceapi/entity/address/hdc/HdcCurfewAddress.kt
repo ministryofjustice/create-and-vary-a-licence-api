@@ -9,10 +9,10 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AbstractAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AbstractAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "hdc_curfew_address")
@@ -27,11 +27,11 @@ class HdcCurfewAddress(
   @Enumerated(EnumType.STRING)
   var accommodationType: AccommodationType? = null,
 
-  @Column(name = "residential_checks_completed")
-  var residentialChecksCompleted: Boolean? = null,
+  @Column(name = "post_release_residential_checks_completed")
+  var postReleaseResidentialChecksCompleted: Boolean? = null,
 
-  @Column(name = "residential_checks_not_completed_reason")
-  var residentialChecksNotCompletedReason: String? = null,
+  @Column(name = "post_release_residential_checks_not_completed_reason")
+  var postReleaseResidentialChecksNotCompletedReason: String? = null,
 
   reference: String,
   uprn: String? = null,
@@ -41,6 +41,8 @@ class HdcCurfewAddress(
   county: String? = null,
   postcode: String,
   source: AddressSource,
+  createdTimestamp: LocalDateTime = LocalDateTime.now(),
+  lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
 ) : AbstractAddress(
   id = id,
   reference = reference,
@@ -51,4 +53,6 @@ class HdcCurfewAddress(
   county = county,
   postcode = postcode,
   source = source,
+  createdTimestamp = createdTimestamp,
+  lastUpdatedTimestamp = lastUpdatedTimestamp,
 )

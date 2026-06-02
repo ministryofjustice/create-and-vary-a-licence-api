@@ -192,7 +192,7 @@ class HdcServiceTest {
   @Test
   fun `getHdcLicenceData returns address details in HDC licence data successfully when the second line is not set`() {
     val anAddress = aModelCurfewAddress.copy(
-      addressLine2 = null,
+      secondLine = null,
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(

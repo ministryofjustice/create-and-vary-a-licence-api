@@ -229,12 +229,14 @@
     "licence": "Licence",
     "postcode": "String",
     "reference": "String",
-    "residentialChecksCompleted": "Boolean",
-    "residentialChecksNotCompletedReason": "String",
+    "postReleaseResidentialChecksCompleted": "Boolean",
+    "postReleaseResidentialChecksNotCompletedReason": "String",
     "secondLine": "String",
     "source": "AddressSource",
     "townOrCity": "String",
-    "uprn": "String"
+    "uprn": "String",
+    "lastUpdatedTimestamp": "LocalDateTime",
+    "createdTimestamp": "LocalDateTime"
   },
   "HdcLicence": {
     "actualReleaseDate": "LocalDate",

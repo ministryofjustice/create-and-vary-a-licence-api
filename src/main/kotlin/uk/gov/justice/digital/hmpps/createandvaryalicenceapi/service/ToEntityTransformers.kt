@@ -84,11 +84,11 @@ fun transform(model: ModelAuditEvent): EntityAuditEvent = EntityAuditEvent(
 
 fun transform(model: ModelHdcCurfewAddress, licence: EntityLicence): EntityHdcCurfewAddress = EntityHdcCurfewAddress(
   licence = licence,
-  firstLine = model.addressLine1 ?: "",
-  secondLine = model.addressLine2,
-  townOrCity = model.townOrCity ?: "",
+  firstLine = model.firstLine,
+  secondLine = model.secondLine,
+  townOrCity = model.townOrCity,
   county = model.county,
-  postcode = model.postcode ?: "",
+  postcode = model.postcode,
   reference = UUID.randomUUID().toString(),
   source = AddressSource.MANUAL_MIGRATED,
 )

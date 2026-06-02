@@ -1026,8 +1026,8 @@ fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
 
 fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCurfewAddress = ModelHdcCurfewAddress(
   id = entity.id,
-  addressLine1 = entity.firstLine,
-  addressLine2 = entity.secondLine,
+  firstLine = entity.firstLine,
+  secondLine = entity.secondLine,
   townOrCity = entity.townOrCity,
   county = entity.county,
   postcode = entity.postcode,
