@@ -1,9 +1,20 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import org.junit.jupiter.api.extension.ExtensionContext
 
-class GovUkMockServer : WireMockServer(8095) {
+class GovUkMockServer :
+  WireMockExtension(
+    extensionOptions()
+      .options(wireMockConfig().port(8095)),
+  ) {
+  override fun onBeforeEach(extensionContext: ExtensionContext?, wireMockRuntimeInfo: WireMockRuntimeInfo?) {
+    super.onBeforeEach(extensionContext, wireMockRuntimeInfo)
+    stubGetBankHolidaysForEnglandAndWales()
+  }
 
   fun stubGetBankHolidaysForEnglandAndWales() {
     stubFor(

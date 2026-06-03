@@ -36,7 +36,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.setPostgresContainerProperties
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.OAuthExtension
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
 import uk.gov.justice.hmpps.sqs.MissingQueueException
@@ -57,7 +58,7 @@ import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 **     - A logger.
 */
 
-@ExtendWith(OAuthExtension::class)
+@ExtendWith(OAuthExtension::class, GovUkMockServer::class)
 @ActiveProfiles("test")
 @SpringBootTest(
   webEnvironment = RANDOM_PORT,
