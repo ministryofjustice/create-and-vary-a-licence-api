@@ -41,6 +41,7 @@ data class Input(
   override val includeBefore: String? = null,
   val subtext: String? = null,
   val defaultValue: String? = null,
+  val hideHintText: Boolean = false,
 ) : FormattingRule {
 
   @JsonIgnore
