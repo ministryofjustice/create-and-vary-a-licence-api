@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,7 +15,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
@@ -47,11 +45,6 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var hdcCurfewAddressRepository: HdcCurfewAddressRepository
-
-  @BeforeEach
-  fun reset() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   @Tag("deprecated")
@@ -805,7 +798,6 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
@@ -815,7 +807,6 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       prisonApiMockServer.start()
-      govUkApiMockServer.start()
       prisonerSearchMockServer.start()
       deliusMockServer.start()
       hdcApiMockServer.start()
@@ -825,7 +816,6 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       prisonApiMockServer.stop()
-      govUkApiMockServer.stop()
       prisonerSearchMockServer.stop()
       deliusMockServer.stop()
       hdcApiMockServer.stop()

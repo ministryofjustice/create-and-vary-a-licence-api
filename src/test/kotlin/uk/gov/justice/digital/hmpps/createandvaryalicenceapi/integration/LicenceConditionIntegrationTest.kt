@@ -3,16 +3,12 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -32,12 +28,6 @@ private const val CONDITION_CODE = "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02"
 private const val EM_CONDITION_CODE = "fd129172-bdd3-4d97-a4a0-efd7b47a49d4"
 
 class LicenceConditionIntegrationTest : IntegrationTestBase() {
-
-  @BeforeEach
-  fun reset() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
-
   @Autowired
   lateinit var additionalConditionRepository: AdditionalConditionRepository
 
@@ -232,7 +222,6 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the bespoke conditions`() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     webTestClient.put()
       .uri("/licence/id/1/bespoke-conditions")
       .bodyValue(aBespokeConditionRequest)
@@ -374,19 +363,5 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
         AdditionalConditionData(id = 1, field = "gender", value = "women or men", sequence = 0),
       ),
     )
-
-    val govUkApiMockServer = GovUkMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-    }
   }
 }

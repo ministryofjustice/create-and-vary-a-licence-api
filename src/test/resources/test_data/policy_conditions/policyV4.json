@@ -1418,6 +1418,120 @@
         "requiresElectronicMonitoringResponse": false
       },
       {
+        "code": "3f96ac05-ef71-43e3-ac07-1219aa26b5f3",
+        "category": "Freedom of movement",
+        "text": "Not to attend [ANY PUBLIC EVENT / TYPES OF PUBLIC EVENT] [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer.",
+        "tpl": "Not to attend {publicEventType}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer.",
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "radio",
+            "label": "Event type",
+            "name": "eventType",
+            "listType": null,
+            "options": [
+              {
+                "value": "Any public event",
+                "conditional": null
+              },
+              {
+                "value": "Types of public event",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter one or more types of public event",
+                      "name": "publicEventType",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": "any public event"
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null
+          },
+          {
+            "type": "radio",
+            "label": "Time restriction",
+            "name": "timeRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any time",
+                "conditional": null
+              },
+              {
+                "value": "Between specified times",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first start time",
+                      "name": "firstCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " between ",
+                      "subtext": null,
+                      "defaultValue": " at any time"
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first end time",
+                      "name": "firstCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second start time (optional)",
+                      "name": "secondCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " or between ",
+                      "subtext": null,
+                      "defaultValue": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second end time (optional)",
+                      "name": "secondCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null
+          }
+        ],
+        "categoryShort": null,
+        "subtext": null,
+        "type": "PublicEvent",
+        "skippable": false,
+        "requiresElectronicMonitoringResponse": false
+      },
+      {
         "code": "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
         "text": "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",

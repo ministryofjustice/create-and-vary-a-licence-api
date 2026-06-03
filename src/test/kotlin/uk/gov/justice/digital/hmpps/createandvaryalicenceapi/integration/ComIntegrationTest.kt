@@ -5,13 +5,13 @@ import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -747,10 +747,10 @@ class ComIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    @RegisterExtension
+    val prisonApiMockServer = PrisonApiMockServer()
     val deliusMockServer = DeliusMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
-    val prisonApiMockServer = PrisonApiMockServer()
-    val govUkMockServer = GovUkMockServer()
 
     val aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",
@@ -765,10 +765,6 @@ class ComIntegrationTest : IntegrationTestBase() {
     fun startMocks() {
       deliusMockServer.start()
       prisonerSearchApiMockServer.start()
-      prisonApiMockServer.start()
-
-      govUkMockServer.start()
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
     @JvmStatic
@@ -776,8 +772,6 @@ class ComIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       deliusMockServer.stop()
       prisonerSearchApiMockServer.stop()
-      prisonApiMockServer.stop()
-      govUkMockServer.stop()
     }
   }
 }

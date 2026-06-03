@@ -3,14 +3,12 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 
@@ -18,11 +16,6 @@ class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
-
-  @BeforeEach
-  fun reset() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   @Sql(
@@ -177,20 +170,17 @@ class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
     .returnResult().responseBody!!
 
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
     val documentApiMockServer = DocumentApiMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      govUkApiMockServer.start()
       documentApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      govUkApiMockServer.stop()
       documentApiMockServer.stop()
     }
   }

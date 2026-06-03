@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
@@ -27,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
@@ -64,11 +62,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
-
-  @BeforeEach
-  fun reset() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   @Sql(
@@ -1279,7 +1272,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       "dateOfBirth": "1985-01-01"
     }]"""
 
-    val govUkApiMockServer = GovUkMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val documentApiMockServer = DocumentApiMockServer()
@@ -1288,7 +1280,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      govUkApiMockServer.start()
       prisonerSearchApiMockServer.start()
       deliusMockServer.start()
       documentApiMockServer.start()
@@ -1298,7 +1289,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      govUkApiMockServer.stop()
       prisonerSearchApiMockServer.stop()
       deliusMockServer.stop()
       documentApiMockServer.stop()

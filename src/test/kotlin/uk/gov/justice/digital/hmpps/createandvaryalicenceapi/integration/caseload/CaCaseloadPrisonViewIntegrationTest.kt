@@ -13,7 +13,6 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
@@ -42,7 +41,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun setupClient() {
     webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
-    govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
   }
 
   @Test
@@ -303,7 +301,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val govUkMockServer = GovUkMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
@@ -311,7 +308,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      govUkMockServer.start()
       prisonerSearchMockServer.start()
       deliusMockServer.start()
       prisonApiMockServer.start()
@@ -322,7 +318,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       prisonerSearchMockServer.stop()
       deliusMockServer.stop()
-      govUkMockServer.stop()
       prisonApiMockServer.stop()
     }
   }
