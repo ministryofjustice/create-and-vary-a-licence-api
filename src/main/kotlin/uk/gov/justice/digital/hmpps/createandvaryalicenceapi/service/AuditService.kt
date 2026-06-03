@@ -261,6 +261,12 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
+  fun recordAuditEventHdcCurfewAddressUpdate(licence: HdcLicence, changes: Map<String, Any>, staffMember: Staff?) {
+    val summary = "Updated HDC curfew address"
+
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
+  }
+
   fun recordAuditEventUpdateHdcWeeklyCurfewTimes(
     licence: Licence,
     updatedWeeklyCurfewTimes: List<CurfewTimes>,

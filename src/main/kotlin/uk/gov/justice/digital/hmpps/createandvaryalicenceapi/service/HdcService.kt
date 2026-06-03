@@ -1,12 +1,17 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import jakarta.transaction.Transactional
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -18,6 +23,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
 
 @Service
 class HdcService(
@@ -28,6 +35,10 @@ class HdcService(
   private val auditService: AuditService,
   @param:Value("\${feature.toggle.hdc.enabled}") private val useCurrentHdcStatus: Boolean = false,
 ) {
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
 
   fun getHdcStatus(records: List<PrisonerSearchPrisoner>) = getHdcStatus(records, { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
 
@@ -155,4 +166,130 @@ class HdcService(
 
     licenceRepository.saveAndFlush(licenceEntity)
   }
+
+  @Transactional
+  fun addHdcCurfewAddress(licenceId: Long, request: AddHdcCurfewAddressRequest) {
+    val licence = licenceRepository.findById(licenceId)
+      .orElseThrow { EntityNotFoundException("Hdc Licence $licenceId not found") } as HdcLicence
+
+    val staff = getStaffUser()
+
+    val existingAddress = licence.curfewAddress
+
+    val auditData = if (existingAddress == null) {
+      createHdcCurfewAddress(licence, request, staff)
+    } else {
+      updateHdcCurfewAddress(existingAddress, request, staff)
+    }
+
+    licence.dateLastUpdated = LocalDateTime.now()
+    licence.updatedByUsername = getUserName(staff)
+    licence.updatedBy = staff
+
+    auditService.recordAuditEventHdcCurfewAddressUpdate(
+      licence,
+      auditData,
+      staff,
+    )
+  }
+
+  private fun createHdcCurfewAddress(
+    licence: HdcLicence,
+    request: AddHdcCurfewAddressRequest,
+    staff: Staff?,
+  ): Map<String, String> {
+    val addressReq = request.address
+
+    log.info(
+      "Creating HDC curfew address for licenceId={}, uprn={}, postcode={}, staffId={}",
+      licence.id,
+      addressReq.uprn,
+      addressReq.postcode,
+      staff?.id ?: "none",
+    )
+
+    val reference = UUID.randomUUID().toString()
+    val addressString = addressReq.toString()
+
+    val entity = HdcCurfewAddress(
+      licence = licence,
+      reference = reference,
+      uprn = addressReq.uprn,
+      firstLine = addressReq.firstLine,
+      secondLine = addressReq.secondLine,
+      townOrCity = addressReq.townOrCity,
+      county = addressReq.county,
+      postcode = addressReq.postcode,
+      source = addressReq.source,
+      postReleaseResidentialChecksCompleted = request.postReleaseResidentialChecksCompleted,
+      postReleaseResidentialChecksNotCompletedReason = request.postReleaseResidentialChecksNotCompletedReason,
+    )
+
+    licence.curfewAddress = entity
+
+    return buildAuditDetails(
+      field = "createHdcCurfewAddress",
+      value = addressString,
+    )
+  }
+
+  private fun updateHdcCurfewAddress(
+    entity: HdcCurfewAddress,
+    request: AddHdcCurfewAddressRequest,
+    staff: Staff?,
+  ): Map<String, String> {
+    val addressReq = request.address
+
+    log.info(
+      "Updating HDC curfew address for licenceId={}, uprn={}, postcode={}, staffId={}",
+      entity.licence.id,
+      addressReq.uprn,
+      addressReq.postcode,
+      staff?.id ?: "none",
+    )
+
+    val previousAddress = entity.toString()
+    val newAddressString = addressReq.toString()
+
+    entity.uprn = addressReq.uprn
+    entity.firstLine = addressReq.firstLine
+    entity.secondLine = addressReq.secondLine
+    entity.townOrCity = addressReq.townOrCity
+    entity.county = addressReq.county
+    entity.postcode = addressReq.postcode
+    entity.source = addressReq.source
+
+    entity.postReleaseResidentialChecksCompleted =
+      request.postReleaseResidentialChecksCompleted
+
+    entity.postReleaseResidentialChecksNotCompletedReason =
+      request.postReleaseResidentialChecksNotCompletedReason
+
+    entity.lastUpdatedTimestamp = LocalDateTime.now()
+
+    return buildAuditDetails(
+      field = "updateHdcCurfewAddress",
+      value = newAddressString,
+      previousValue = previousAddress,
+    )
+  }
+
+  private fun buildAuditDetails(
+    field: String,
+    value: String? = null,
+    previousValue: String? = null,
+  ): MutableMap<String, String> {
+    val details = mutableMapOf<String, String>()
+    details["field"] = field
+    value?.let { details["value"] = it }
+    previousValue?.let { details["previousValue"] = it }
+    return details
+  }
+
+  private fun getStaffUser(): Staff? {
+    val username = SecurityContextHolder.getContext().authentication?.name!!
+    return staffRepository.findByUsernameIgnoreCase(username)
+  }
+
+  private fun getUserName(staff: Staff?) = staff?.username ?: SYSTEM_USER
 }
