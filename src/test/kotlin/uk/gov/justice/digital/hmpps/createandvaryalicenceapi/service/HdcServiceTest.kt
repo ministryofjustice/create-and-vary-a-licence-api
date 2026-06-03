@@ -22,6 +22,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
@@ -563,6 +564,7 @@ class HdcServiceTest {
           source = AddressSource.MANUAL,
           isPreferredAddress = false,
         ),
+        accommodationType = AccommodationType.CAS,
         postReleaseResidentialChecksCompleted = true,
         postReleaseResidentialChecksNotCompletedReason = null,
       )
@@ -578,6 +580,7 @@ class HdcServiceTest {
       assertThat(licence.curfewAddress?.firstLine).isEqualTo("10 Downing Street")
       assertThat(licence.curfewAddress?.postcode).isEqualTo("SW1A 2AA")
       assertThat(licence.curfewAddress?.postReleaseResidentialChecksCompleted).isTrue
+      assertThat(licence.curfewAddress?.accommodationType).isEqualTo(AccommodationType.CAS)
 
       assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
       assertThat(licence.updatedBy).isEqualTo(aCom)
@@ -602,6 +605,7 @@ class HdcServiceTest {
           source = AddressSource.OS_PLACES,
           isPreferredAddress = true,
         ),
+        accommodationType = AccommodationType.RESIDENTIAL,
         postReleaseResidentialChecksCompleted = false,
         postReleaseResidentialChecksNotCompletedReason = "Awaiting checks",
       )
@@ -623,6 +627,7 @@ class HdcServiceTest {
 
       assertThat(updated.postReleaseResidentialChecksCompleted).isFalse
       assertThat(updated.postReleaseResidentialChecksNotCompletedReason).isEqualTo("Awaiting checks")
+      assertThat(updated.accommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
     }
 
     @Test

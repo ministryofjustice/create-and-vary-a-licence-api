@@ -221,6 +221,7 @@ class HdcService(
       county = addressReq.county,
       postcode = addressReq.postcode,
       source = addressReq.source,
+      accommodationType = request.accommodationType,
       postReleaseResidentialChecksCompleted = request.postReleaseResidentialChecksCompleted,
       postReleaseResidentialChecksNotCompletedReason = request.postReleaseResidentialChecksNotCompletedReason,
     )
@@ -258,6 +259,8 @@ class HdcService(
     entity.county = addressReq.county
     entity.postcode = addressReq.postcode
     entity.source = addressReq.source
+
+    entity.accommodationType = request.accommodationType
 
     entity.postReleaseResidentialChecksCompleted =
       request.postReleaseResidentialChecksCompleted
