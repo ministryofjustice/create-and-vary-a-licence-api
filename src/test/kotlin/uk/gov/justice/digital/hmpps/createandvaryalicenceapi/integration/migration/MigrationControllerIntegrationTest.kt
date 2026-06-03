@@ -9,6 +9,8 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAdditionalCondition
@@ -298,6 +300,9 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       assertThat(licence.curfewAddress?.secondLine).isEqualTo(request.curfewAddress?.addressLine2)
       assertThat(licence.curfewAddress?.townOrCity).isEqualTo(request.curfewAddress?.townOrCity)
       assertThat(licence.curfewAddress?.postcode).isEqualTo(request.curfewAddress?.postcode)
+      assertThat(licence.curfewAddress?.accommodationType).isEqualTo(request.curfewAddress?.addressType)
+      assertThat(licence.curfewAddress?.reference).isNotNull
+      assertThat(licence.curfewAddress?.source).isEqualTo(AddressSource.MANUAL_MIGRATED)
       assertThat(licence.homeDetentionCurfewEndDate).isEqualTo(request.licence.homeDetentionCurfewEndDate)
       assertThat(licence.homeDetentionCurfewEligibilityDate).isEqualTo(request.licence.homeDetentionCurfewEligibilityDate)
       assertThat(licence.weeklyCurfewTimes).hasSize(2)
@@ -405,6 +410,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       addressLine2 = "Flat 1",
       townOrCity = "Newport",
       postcode = "SA42 1DQ",
+      addressType = AccommodationType.CAS,
     ),
     curfew = MigrateCurfewDetails(
       curfewTimes = listOf(
