@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -51,11 +49,6 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var workingDaysService: WorkingDaysService
-
-  @BeforeEach
-  fun setup() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   @Sql(
@@ -207,7 +200,6 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   }
 
   fun updateHardStopDateScenarios(): List<Arguments> {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     val workingDays = workingDaysService.workingDaysAfter(LocalDate.now())
 
     val tests = mutableListOf<Arguments>()
@@ -523,21 +515,18 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val prisonApiMockServer = PrisonApiMockServer()
-    val govUkApiMockServer = GovUkMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       prisonApiMockServer.start()
       prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
-      govUkApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       prisonApiMockServer.stop()
-      govUkApiMockServer.stop()
     }
   }
 }

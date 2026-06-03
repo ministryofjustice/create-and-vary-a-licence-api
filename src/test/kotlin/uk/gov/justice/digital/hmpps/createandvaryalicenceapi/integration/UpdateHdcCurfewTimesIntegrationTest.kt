@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
@@ -162,20 +161,17 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
       ),
     )
 
-    val govUkApiMockServer = GovUkMockServer()
     val hdcApiMockServer = HdcApiMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      govUkApiMockServer.start()
       hdcApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      govUkApiMockServer.stop()
       hdcApiMockServer.stop()
     }
   }

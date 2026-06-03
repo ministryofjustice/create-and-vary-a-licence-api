@@ -908,6 +908,81 @@ val POLICY_V4_0 = LicencePolicy(
         type = "InBoundsRegion",
       ),
       AdditionalConditionAp(
+        category = "Freedom of movement",
+        code = "3f96ac05-ef71-43e3-ac07-1219aa26b5f3",
+        inputs = listOf(
+          Input(
+            label = "Event type",
+            name = "eventType",
+            options = listOf(
+              Option(
+                value = "Any public event",
+              ),
+              Option(
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter one or more types of public event",
+                      name = "publicEventType",
+                      type = TEXT,
+                      defaultValue = "any public event",
+                    ),
+                  ),
+                ),
+                value = "Types of public event",
+              ),
+            ),
+            type = RADIO,
+          ),
+          Input(
+            label = "Time restriction",
+            name = "timeRestriction",
+            options = listOf(
+              Option(
+                value = "At any time",
+              ),
+              Option(
+                value = "Between specified times",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter first start time",
+                      name = "firstCurfewStart",
+                      type = TIME_PICKER,
+                      includeBefore = " between ",
+                      defaultValue = " at any time",
+                    ),
+                    ConditionalInput(
+                      label = "Enter first end time",
+                      name = "firstCurfewEnd",
+                      type = TIME_PICKER,
+                      includeBefore = " and ",
+                    ),
+                    ConditionalInput(
+                      label = "Enter second start time (optional)",
+                      name = "secondCurfewStart",
+                      type = TIME_PICKER,
+                      includeBefore = " or between ",
+                    ),
+                    ConditionalInput(
+                      label = "Enter second end time (optional)",
+                      name = "secondCurfewEnd",
+                      type = TIME_PICKER,
+                      includeBefore = " and ",
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to attend [ANY PUBLIC EVENT / TYPES OF PUBLIC EVENT] [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer.",
+        tpl = "Not to attend {publicEventType}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer.",
+        type = "PublicEvent",
+      ),
+      AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
         categoryShort = "Supervision in the community",
         code = "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
