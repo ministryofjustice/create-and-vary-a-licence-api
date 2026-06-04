@@ -18,9 +18,9 @@ import org.springframework.test.context.jdbc.Sql
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.WorkFlowMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -501,6 +501,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
 
     @RegisterExtension
@@ -537,7 +538,6 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      deliusMockServer.start()
       prisonerSearchMockServer.start()
       workFlowMockServer.start()
     }
@@ -545,7 +545,6 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      deliusMockServer.stop()
       prisonerSearchMockServer.stop()
       workFlowMockServer.stop()
     }
