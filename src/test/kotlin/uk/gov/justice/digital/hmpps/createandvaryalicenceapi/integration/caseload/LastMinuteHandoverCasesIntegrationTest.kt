@@ -12,9 +12,9 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
@@ -344,6 +344,8 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
 
   companion object {
     val prisonerSearchMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
 
     @RegisterExtension
@@ -354,7 +356,6 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       prisonerSearchMockServer.start()
-      deliusMockServer.start()
       hdcApiMockServer.start()
     }
 
@@ -362,7 +363,6 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       prisonerSearchMockServer.stop()
-      deliusMockServer.stop()
       hdcApiMockServer.stop()
     }
   }

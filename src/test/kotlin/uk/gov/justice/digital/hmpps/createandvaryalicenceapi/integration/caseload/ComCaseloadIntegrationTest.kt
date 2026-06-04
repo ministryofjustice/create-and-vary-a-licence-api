@@ -14,9 +14,9 @@ import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
@@ -797,6 +797,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
 
     @RegisterExtension
@@ -807,7 +809,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       prisonerSearchApiMockServer.start()
-      deliusMockServer.start()
       hdcApiMockServer.start()
     }
 
@@ -815,7 +816,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       prisonerSearchApiMockServer.stop()
-      deliusMockServer.stop()
       hdcApiMockServer.stop()
     }
   }

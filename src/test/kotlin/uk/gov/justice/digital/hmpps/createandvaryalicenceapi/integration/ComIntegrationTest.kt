@@ -9,8 +9,8 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
@@ -276,6 +276,8 @@ class ComIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from team caseload`() {
     prisonApiMockServer.stubGetCourtOutcomes()
+    deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
 
     val resultList = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -749,6 +751,8 @@ class ComIntegrationTest : IntegrationTestBase() {
   private companion object {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
 
@@ -763,14 +767,12 @@ class ComIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      deliusMockServer.start()
       prisonerSearchApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      deliusMockServer.stop()
       prisonerSearchApiMockServer.stop()
     }
   }

@@ -13,8 +13,8 @@ import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.json.JsonCompareMode.STRICT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import java.nio.charset.StandardCharsets.UTF_8
 
@@ -78,6 +78,8 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
 
   companion object {
     val prisonerSearchMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
 
     @RegisterExtension
@@ -87,14 +89,12 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
     @BeforeAll
     fun startMocks() {
       prisonerSearchMockServer.start()
-      deliusMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       prisonerSearchMockServer.stop()
-      deliusMockServer.stop()
     }
   }
 }

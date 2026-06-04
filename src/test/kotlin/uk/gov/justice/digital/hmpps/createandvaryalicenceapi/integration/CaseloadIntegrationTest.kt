@@ -13,9 +13,9 @@ import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase
@@ -154,6 +154,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     @Test
     fun success() {
       deliusMockServer.stubGetOffenderManager()
+      deliusMockServer.stubGetOffenderManagerWithNomsId()
 
       val probationCase = webTestClient.get()
         .uri(GET_PROBATION_CASE)
@@ -174,6 +175,8 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     val prisonApiMockServer = PrisonApiMockServer()
 
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
     val hdcApiMockServer = HdcApiMockServer()
 
@@ -181,7 +184,6 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       prisonerSearchApiMockServer.start()
-      deliusMockServer.start()
       hdcApiMockServer.start()
     }
 
@@ -189,7 +191,6 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       prisonerSearchApiMockServer.stop()
-      deliusMockServer.stop()
       hdcApiMockServer.stop()
     }
   }
