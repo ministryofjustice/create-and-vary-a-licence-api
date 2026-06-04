@@ -1403,9 +1403,9 @@
                       "name": "firstCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " between ",
                       "subtext": null,
-                      "defaultValue": null,
+                      "defaultValue": " at any time",
                       "hideHintText": true
                     },
                     {
@@ -1414,7 +1414,7 @@
                       "name": "firstCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
                       "hideHintText": true
@@ -1425,7 +1425,7 @@
                       "name": "secondCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " or between ",
                       "subtext": null,
                       "defaultValue": null,
                       "hideHintText": true
@@ -1436,7 +1436,7 @@
                       "name": "secondCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
                       "hideHintText": true
@@ -1501,7 +1501,7 @@
         "code": "be16ee0b-a916-43ef-9319-b42a1dd418a3",
         "category": "Freedom of movement",
         "text": "Not to enter a drinking establishment [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
-        "tpl": null,
+        "tpl": "Not to enter a drinking establishment {firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
         "requiresInput": true,
         "inputs": [
           {
@@ -1524,9 +1524,9 @@
                       "name": "firstCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " between ",
                       "subtext": null,
-                      "defaultValue": null,
+                      "defaultValue": " at any time",
                       "hideHintText": true
                     },
                     {
@@ -1535,7 +1535,7 @@
                       "name": "firstCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
                       "hideHintText": true
@@ -1546,7 +1546,7 @@
                       "name": "secondCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " or between ",
                       "subtext": null,
                       "defaultValue": null,
                       "hideHintText": true
@@ -1557,7 +1557,7 @@
                       "name": "secondCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
                       "hideHintText": true
