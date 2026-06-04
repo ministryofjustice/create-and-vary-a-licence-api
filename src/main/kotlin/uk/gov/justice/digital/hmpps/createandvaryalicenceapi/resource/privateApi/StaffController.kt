@@ -27,11 +27,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonU
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateComService
 
 @RestController
 @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
 class StaffController(
   private val staffService: StaffService,
+  private val updateComService: UpdateComService,
 ) {
   @Tag(name = Tags.COM)
   @PutMapping(
@@ -72,7 +74,7 @@ class StaffController(
     @RequestBody
     body: UpdateComRequest,
   ) {
-    this.staffService.updateComDetails(body)
+    this.updateComService.updateComDetails(body)
   }
 
   @Tag(name = Tags.COM)
