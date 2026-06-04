@@ -1,4 +1,3 @@
--- 1. Insert the licence
 INSERT INTO licence (
     id,
 	kind,
@@ -67,7 +66,6 @@ INSERT INTO licence (
 			 '1.0'
 		 );
 
--- 4. Insert the address
 INSERT INTO hdc_curfew_address (id,licence_id, reference, first_line, second_line, town_or_city, county, postcode, source) VALUES (
 			 1,
 			 1,
