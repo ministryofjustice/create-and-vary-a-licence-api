@@ -30,37 +30,10 @@ ALTER TABLE hdc_curfew_address
     ALTER COLUMN postcode SET NOT NULL,
     ALTER COLUMN accommodation_type SET NOT NULL;
 
-DO $$
-    BEGIN
-        IF NOT EXISTS (
-            SELECT 1 FROM pg_constraint
-            WHERE conname = 'uk_hdc_curfew_address_reference'
-        ) THEN
-            ALTER TABLE hdc_curfew_address
-                ADD CONSTRAINT uk_hdc_curfew_address_reference UNIQUE (reference);
-        END IF;
-    END$$;
+ALTER TABLE hdc_curfew_address
+    ADD CONSTRAINT chk_hdc_curfew_address_source_valid
+        CHECK (source IN ('MANUAL', 'OS_PLACES', 'MANUAL_MIGRATED'));
 
-DO $$
-    BEGIN
-        IF NOT EXISTS (
-            SELECT 1 FROM pg_constraint
-            WHERE conname = 'chk_hdc_curfew_address_source_valid'
-        ) THEN
-            ALTER TABLE hdc_curfew_address
-                ADD CONSTRAINT chk_hdc_curfew_address_source_valid
-                    CHECK (source IN ('MANUAL', 'OS_PLACES', 'MANUAL_MIGRATED'));
-        END IF;
-    END$$;
-
-DO $$
-    BEGIN
-        IF NOT EXISTS (
-            SELECT 1 FROM pg_constraint
-            WHERE conname = 'chk_hdc_curfew_address_accommodation_type_valid'
-        ) THEN
-            ALTER TABLE hdc_curfew_address
-                ADD CONSTRAINT chk_hdc_curfew_address_accommodation_type_valid
-                    CHECK (accommodation_type IN ('CAS', 'RESIDENTIAL'));
-        END IF;
-    END$$;
+ALTER TABLE hdc_curfew_address
+    ADD CONSTRAINT chk_hdc_curfew_address_accommodation_type_valid
+        CHECK (accommodation_type IN ('CAS', 'RESIDENTIAL'));
