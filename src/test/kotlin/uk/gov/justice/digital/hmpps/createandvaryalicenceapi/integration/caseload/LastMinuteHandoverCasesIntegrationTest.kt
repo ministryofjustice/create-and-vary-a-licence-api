@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -13,8 +14,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
@@ -344,6 +345,8 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
   companion object {
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
     val hdcApiMockServer = HdcApiMockServer()
 
@@ -352,7 +355,6 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     fun startMocks() {
       prisonerSearchMockServer.start()
       deliusMockServer.start()
-      prisonApiMockServer.start()
       hdcApiMockServer.start()
     }
 
@@ -361,7 +363,6 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       prisonerSearchMockServer.stop()
       deliusMockServer.stop()
-      prisonApiMockServer.stop()
       hdcApiMockServer.stop()
     }
   }
