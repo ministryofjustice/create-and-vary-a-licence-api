@@ -645,6 +645,7 @@ class HdcServiceTest {
           source = AddressSource.MANUAL,
           isPreferredAddress = false,
         ),
+        accommodationType = AccommodationType.RESIDENTIAL,
         postReleaseResidentialChecksCompleted = true,
         postReleaseResidentialChecksNotCompletedReason = null,
       )

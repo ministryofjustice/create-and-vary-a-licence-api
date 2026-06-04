@@ -66,7 +66,7 @@ INSERT INTO licence (
 			 '1.0'
 		 );
 
-INSERT INTO hdc_curfew_address (id,licence_id, reference, first_line, second_line, town_or_city, county, postcode, source) VALUES (
+INSERT INTO hdc_curfew_address (id,licence_id, reference, first_line, second_line, town_or_city, county, postcode, source, accommodation_type) VALUES (
 			 1,
 			 1,
 			 'REF-123456',
@@ -75,5 +75,6 @@ INSERT INTO hdc_curfew_address (id,licence_id, reference, first_line, second_lin
 			 'Testville',
 			 'Testshire',
 			 'TE5 7AA',
-			 'MANUAL'
+			 'MANUAL',
+             'RESIDENTIAL'
 		 );

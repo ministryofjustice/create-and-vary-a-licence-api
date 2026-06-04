@@ -13,10 +13,10 @@ data class AddHdcCurfewAddressRequest(
   @Schema(description = "The address to be added as the HDC curfew address", required = true)
   val address: AddAddressRequest,
 
-  @field:Schema(description = "The type of accommodation for the HDC curfew address", example = "RESIDENTIAL")
-  val accommodationType: AccommodationType? = null,
+  @field:NotNull(message = "Accommodation type must not be null")
+  @field:Schema(description = "The type of accommodation for the HDC curfew address", example = "RESIDENTIAL", required = true)
+  val accommodationType: AccommodationType,
 
-  @field:NotNull
   @Schema(description = "Flag to indicate if post release residential checks have been completed", example = "true")
   val postReleaseResidentialChecksCompleted: Boolean? = null,
 
