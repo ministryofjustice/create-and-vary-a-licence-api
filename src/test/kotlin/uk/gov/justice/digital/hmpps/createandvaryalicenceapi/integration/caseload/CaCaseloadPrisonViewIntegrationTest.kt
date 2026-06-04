@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.UNAUTHORIZED
@@ -13,8 +14,8 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
@@ -303,6 +304,8 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
   private companion object {
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
 
     @JvmStatic
@@ -310,7 +313,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     fun startMocks() {
       prisonerSearchMockServer.start()
       deliusMockServer.start()
-      prisonApiMockServer.start()
     }
 
     @JvmStatic
@@ -318,7 +320,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       prisonerSearchMockServer.stop()
       deliusMockServer.stop()
-      prisonApiMockServer.stop()
     }
   }
 }
