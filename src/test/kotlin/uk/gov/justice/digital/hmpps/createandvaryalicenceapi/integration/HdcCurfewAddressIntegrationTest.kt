@@ -171,7 +171,6 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
       county = county,
       postcode = postcode,
       source = source,
-      isPreferredAddress = false,
     ),
     postReleaseResidentialChecksCompleted = postReleaseResidentialChecksCompleted,
     postReleaseResidentialChecksNotCompletedReason = postReleaseResidentialChecksNotCompletedReason,

@@ -55,7 +55,7 @@ data class AddAddressRequest(
     example = "true",
     required = false,
   )
-  val isPreferredAddress: Boolean,
+  val isPreferredAddress: Boolean = false,
 ) {
 
   override fun toString(): String = listOf(
