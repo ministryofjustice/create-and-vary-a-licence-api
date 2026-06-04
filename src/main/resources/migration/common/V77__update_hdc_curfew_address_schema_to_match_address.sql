@@ -27,8 +27,14 @@ ALTER TABLE hdc_curfew_address
 
 ALTER TABLE hdc_curfew_address
     ADD CONSTRAINT chk_hdc_curfew_address_source_valid
-        CHECK (source IN ('MANUAL', 'OS_PLACES', 'MANUAL_MIGRATED'));
+        CHECK (source IN ('MANUAL', 'OS_PLACES', 'MANUAL_MIGRATED')),
 
-ALTER TABLE hdc_curfew_address
     ADD CONSTRAINT chk_hdc_curfew_address_accommodation_type_valid
-        CHECK (accommodation_type IN ('CAS', 'RESIDENTIAL'));
+        CHECK (accommodation_type IN ('CAS', 'RESIDENTIAL')),
+
+    ADD CONSTRAINT chk_hdc_curfew_address_source_uprn_valid
+        CHECK (
+            (source = 'OS_PLACES' AND uprn IS NOT NULL)
+                OR
+            (source <> 'OS_PLACES' AND uprn IS NULL)
+            );
