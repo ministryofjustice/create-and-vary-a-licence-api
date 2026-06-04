@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -13,8 +14,8 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceStatusRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -244,20 +245,19 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    @RegisterExtension
     val prisonApiClient = PrisonApiMockServer()
     val prisonerSearchApiClient = PrisonerSearchMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      prisonApiClient.start()
       prisonerSearchApiClient.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      prisonApiClient.stop()
       prisonerSearchApiClient.stop()
     }
   }

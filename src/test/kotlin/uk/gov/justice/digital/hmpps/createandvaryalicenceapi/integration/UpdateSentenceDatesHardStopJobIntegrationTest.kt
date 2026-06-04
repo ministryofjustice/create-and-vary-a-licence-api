@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
@@ -12,7 +12,7 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -147,19 +147,12 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
 
-    @JvmStatic
-    @BeforeAll
+    @BeforeEach
     fun startMocks() {
-      prisonApiMockServer.start()
       prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonApiMockServer.stop()
     }
   }
 }
