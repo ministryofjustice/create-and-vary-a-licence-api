@@ -759,8 +759,96 @@ val POLICY_V4_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "d523d711-9975-4a9a-a37e-a17bd611140f",
-        requiresInput = false,
-        text = "DRIVING PROHIBITION PLACEHOLDER",
+        inputs = listOf(
+          Input(
+            label = "Vehicle types",
+            name = "vehicleTypes",
+            options = listOf(
+              Option(
+                value = "Any motor vehicle",
+              ),
+              Option(
+                value = "Types of motor vehicle",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter one or more types of motor vehicle",
+                      name = "typesOfMotorVehicle",
+                      type = TEXT,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+          Input(
+            label = "Time restriction",
+            name = "timeRestriction",
+            options = listOf(
+              Option(
+                value = "At any time",
+              ),
+              Option(
+                value = "Between specified times",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter first start time",
+                      name = "firstCurfewStart",
+                      type = TIME_PICKER,
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter first end time",
+                      name = "firstCurfewEnd",
+                      type = TIME_PICKER,
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second start time (optional)",
+                      name = "secondCurfewStart",
+                      type = TIME_PICKER,
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second end time (optional)",
+                      name = "secondCurfewEnd",
+                      type = TIME_PICKER,
+                      hideHintText = true,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+          Input(
+            label = "Location restriction",
+            name = "locationRestriction",
+            options = listOf(
+              Option(
+                value = "At any location",
+              ),
+              Option(
+                value = "In specified locations",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter one or more locations",
+                      name = "locations",
+                      type = TEXT,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
+        type = "VehicleRestrictions",
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
@@ -781,21 +869,25 @@ val POLICY_V4_0 = LicencePolicy(
                       label = "Enter first start time",
                       name = "firstCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter first end time",
                       name = "firstCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter second start time (optional)",
                       name = "secondCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter second end time (optional)",
                       name = "secondCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
@@ -867,24 +959,28 @@ val POLICY_V4_0 = LicencePolicy(
                       type = TIME_PICKER,
                       includeBefore = " between ",
                       defaultValue = " at any time",
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter first end time",
                       name = "firstCurfewEnd",
                       type = TIME_PICKER,
                       includeBefore = " and ",
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter second start time (optional)",
                       name = "secondCurfewStart",
                       type = TIME_PICKER,
                       includeBefore = " or between ",
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter second end time (optional)",
                       name = "secondCurfewEnd",
                       type = TIME_PICKER,
                       includeBefore = " and ",
+                      hideHintText = true,
                     ),
                   ),
                 ),

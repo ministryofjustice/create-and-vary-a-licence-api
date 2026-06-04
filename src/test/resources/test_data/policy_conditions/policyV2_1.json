@@ -160,7 +160,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -200,7 +201,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -222,7 +224,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -303,7 +306,8 @@
             },
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "text",
@@ -316,7 +320,8 @@
             "addAnother": null,
             "includeBefore": " and / or ",
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
@@ -356,7 +361,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -378,7 +384,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "text",
@@ -391,7 +398,8 @@
             "addAnother": null,
             "includeBefore": " and / or ",
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
@@ -420,7 +428,8 @@
             },
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
@@ -475,7 +484,8 @@
             },
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
@@ -556,7 +566,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Programmes or activities",
@@ -592,7 +603,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Programmes or activities",
@@ -725,7 +737,8 @@
             },
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Items and documents",
@@ -824,7 +837,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -834,7 +848,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -851,7 +866,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -861,7 +877,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -871,7 +888,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -881,7 +899,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -898,7 +917,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -908,7 +928,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -918,7 +939,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -928,7 +950,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -938,7 +961,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -948,7 +972,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -959,7 +984,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -987,7 +1013,8 @@
                       "handleIndefiniteArticle": true,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -998,7 +1025,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1025,7 +1053,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "fileUpload",
@@ -1038,7 +1067,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1072,7 +1102,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1089,7 +1120,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1106,7 +1138,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "address",
@@ -1116,7 +1149,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1127,7 +1161,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1154,7 +1189,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1207,7 +1243,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1235,7 +1272,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1246,7 +1284,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1266,7 +1305,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1283,7 +1323,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -1293,7 +1334,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": " and ",
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1304,7 +1346,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": "If you want to add more than 2 reporting times per day, this must be done as a bespoke condition approved by PPCS.",
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1332,7 +1375,8 @@
                       "handleIndefiniteArticle": true,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1343,7 +1387,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Supervision in the community",
@@ -1370,7 +1415,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1398,7 +1444,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1409,7 +1456,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1429,7 +1477,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1446,7 +1495,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -1456,7 +1506,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": " and ",
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1467,7 +1518,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": "If you want to add more than 2 reporting times per day, this must be done as a bespoke condition approved by PPCS.",
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1495,7 +1547,8 @@
                       "handleIndefiniteArticle": true,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1506,7 +1559,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Supervision in the community",
@@ -1662,7 +1716,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1689,7 +1744,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1716,7 +1772,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1743,7 +1800,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1770,7 +1828,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1814,7 +1873,8 @@
             "addAnother": null,
             "includeBefore": " at ",
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "datePicker",
@@ -1827,7 +1887,8 @@
             "addAnother": null,
             "includeBefore": " on ",
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "address",
@@ -1840,7 +1901,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "type": "AppointmentTimeAndPlaceDuringPss",
@@ -1866,7 +1928,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "address",
@@ -1879,7 +1942,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "type": "DrugTestLocation",

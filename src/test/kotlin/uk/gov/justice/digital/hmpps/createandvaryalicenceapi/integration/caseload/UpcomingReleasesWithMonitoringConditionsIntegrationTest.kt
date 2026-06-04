@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -13,8 +14,8 @@ import org.springframework.test.json.JsonCompareMode.STRICT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import java.nio.charset.StandardCharsets.UTF_8
 
 private const val GET_CASES = "/cvl-report/upcoming-releases-with-monitoring"
@@ -78,6 +79,8 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
   companion object {
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
 
     @JvmStatic
@@ -85,7 +88,6 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
     fun startMocks() {
       prisonerSearchMockServer.start()
       deliusMockServer.start()
-      prisonApiMockServer.start()
     }
 
     @JvmStatic
@@ -93,7 +95,6 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
     fun stopMocks() {
       prisonerSearchMockServer.stop()
       deliusMockServer.stop()
-      prisonApiMockServer.stop()
     }
   }
 }

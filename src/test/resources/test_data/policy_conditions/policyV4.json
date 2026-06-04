@@ -165,7 +165,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -205,7 +206,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "text",
@@ -218,7 +220,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -258,7 +261,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
@@ -313,7 +317,8 @@
             },
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "text",
@@ -326,7 +331,8 @@
             "addAnother": null,
             "includeBefore": " and / or ",
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
@@ -366,7 +372,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "text",
@@ -379,7 +386,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "text",
@@ -392,7 +400,8 @@
             "addAnother": null,
             "includeBefore": " and / or ",
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
@@ -421,7 +430,8 @@
             },
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
@@ -476,7 +486,8 @@
             },
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
@@ -576,7 +587,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Programmes or activities",
@@ -603,7 +615,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Programmes or activities",
@@ -668,7 +681,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Programmes or activities",
@@ -764,7 +778,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Items and documents",
@@ -793,7 +808,8 @@
             },
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Items and documents",
@@ -872,7 +888,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -906,7 +923,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -916,7 +934,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -933,7 +952,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -943,7 +963,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -953,7 +974,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -963,7 +985,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -980,7 +1003,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -990,7 +1014,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -1000,7 +1025,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -1010,7 +1036,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -1020,7 +1047,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -1030,7 +1058,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1041,7 +1070,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1069,7 +1099,8 @@
                       "handleIndefiniteArticle": true,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1080,7 +1111,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1107,7 +1139,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1141,7 +1174,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1158,7 +1192,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1175,7 +1210,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "address",
@@ -1185,7 +1221,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1196,7 +1233,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1223,7 +1261,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1263,7 +1302,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "fileUpload",
@@ -1276,7 +1316,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1301,13 +1342,158 @@
       {
         "code": "d523d711-9975-4a9a-a37e-a17bd611140f",
         "category": "Freedom of movement",
-        "text": "DRIVING PROHIBITION PLACEHOLDER",
+        "text": "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
         "tpl": null,
-        "requiresInput": false,
-        "inputs": null,
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "radio",
+            "label": "Vehicle types",
+            "name": "vehicleTypes",
+            "listType": null,
+            "options": [
+              {
+                "value": "Any motor vehicle",
+                "conditional": null
+              },
+              {
+                "value": "Types of motor vehicle",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter one or more types of motor vehicle",
+                      "name": "typesOfMotorVehicle",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          },
+          {
+            "type": "radio",
+            "label": "Time restriction",
+            "name": "timeRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any time",
+                "conditional": null
+              },
+              {
+                "value": "Between specified times",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first start time",
+                      "name": "firstCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first end time",
+                      "name": "firstCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second start time (optional)",
+                      "name": "secondCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second end time (optional)",
+                      "name": "secondCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          },
+          {
+            "type": "radio",
+            "label": "Location restriction",
+            "name": "locationRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any location",
+                "conditional": null
+              },
+              {
+                "value": "In specified locations",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter one or more locations",
+                      "name": "locations",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          }
+        ],
         "categoryShort": null,
         "subtext": null,
-        "type": null,
+        "type": "VehicleRestrictions",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false
       },
@@ -1340,7 +1526,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
@@ -1350,7 +1537,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
@@ -1360,7 +1548,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
@@ -1370,7 +1559,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": true
                     }
                   ]
                 }
@@ -1381,7 +1571,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1408,7 +1599,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1446,7 +1638,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": "any public event"
+                      "defaultValue": "any public event",
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1457,7 +1650,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1481,7 +1675,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": " between ",
                       "subtext": null,
-                      "defaultValue": " at any time"
+                      "defaultValue": " at any time",
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
@@ -1491,7 +1686,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": " and ",
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
@@ -1501,7 +1697,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": " or between ",
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
@@ -1511,7 +1708,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": " and ",
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": true
                     }
                   ]
                 }
@@ -1522,7 +1720,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -1560,7 +1759,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1571,7 +1771,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1599,7 +1800,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1610,7 +1812,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1630,7 +1833,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1647,7 +1851,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -1657,7 +1862,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": " and ",
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1668,7 +1874,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": "If you want to add more than 2 reporting times per day, this must be done as a bespoke condition approved by PPCS.",
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1696,7 +1903,8 @@
                       "handleIndefiniteArticle": true,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1707,7 +1915,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Supervision in the community",
@@ -1734,7 +1943,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1762,7 +1972,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1773,7 +1984,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1793,7 +2005,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1810,7 +2023,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     },
                     {
                       "type": "timePicker",
@@ -1820,7 +2034,8 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": " and ",
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1831,7 +2046,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": "If you want to add more than 2 reporting times per day, this must be done as a bespoke condition approved by PPCS.",
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "radio",
@@ -1859,7 +2075,8 @@
                       "handleIndefiniteArticle": true,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null
+                      "defaultValue": null,
+                      "hideHintText": false
                     }
                   ]
                 }
@@ -1870,7 +2087,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Supervision in the community",
@@ -1932,7 +2150,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "check",
@@ -1962,7 +2181,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Restriction of conduct or acts",
@@ -1989,7 +2209,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Restriction of conduct or acts",
@@ -2033,7 +2254,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": "Restriction of conduct or acts",
@@ -2151,7 +2373,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -2203,7 +2426,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -2230,7 +2454,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -2257,7 +2482,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -2284,7 +2510,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -2311,7 +2538,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -2351,7 +2579,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -2378,7 +2607,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -2418,7 +2648,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "categoryShort": null,
@@ -2475,7 +2706,8 @@
             "addAnother": null,
             "includeBefore": " at ",
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "datePicker",
@@ -2488,7 +2720,8 @@
             "addAnother": null,
             "includeBefore": " on ",
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "address",
@@ -2501,7 +2734,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "type": "AppointmentTimeAndPlaceDuringPss",
@@ -2527,7 +2761,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           },
           {
             "type": "address",
@@ -2540,7 +2775,8 @@
             "addAnother": null,
             "includeBefore": null,
             "subtext": null,
-            "defaultValue": null
+            "defaultValue": null,
+            "hideHintText": false
           }
         ],
         "type": "DrugTestLocation",
