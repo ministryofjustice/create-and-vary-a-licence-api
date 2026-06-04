@@ -11,8 +11,8 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.verify
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import java.time.Duration
@@ -83,10 +83,13 @@ class PromptComIntegrationTest : IntegrationTestBase() {
   fun beforeEach() {
     prisonMockServer.stubGetCourtOutcomes()
     prisonMockServer.stubGetSentenceAndRecallTypes(124)
+    deliusMockServer.stubGetManagersForPromptComJob()
   }
 
   private companion object {
     val prisonSearchServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
 
     @RegisterExtension
@@ -96,8 +99,6 @@ class PromptComIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       prisonSearchServer.start()
-      deliusMockServer.start()
-      deliusMockServer.stubGetManagersForPromptComJob()
       prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false, includeRecall = true)
     }
 
@@ -105,7 +106,6 @@ class PromptComIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       prisonSearchServer.stop()
-      deliusMockServer.stop()
     }
   }
 }
