@@ -16,33 +16,6 @@ WHERE source IS NULL
    OR source NOT IN ('MANUAL', 'OS_PLACES', 'MANUAL_MIGRATED');
 
 UPDATE hdc_curfew_address
-SET accommodation_type = UPPER(accommodation_type)
-WHERE accommodation_type IS NOT NULL;
-
-DO $$
-    BEGIN
-        IF EXISTS (SELECT 1 FROM hdc_curfew_address WHERE first_line IS NULL) THEN
-            RAISE EXCEPTION 'first_line contains NULL values';
-        END IF;
-
-        IF EXISTS (SELECT 1 FROM hdc_curfew_address WHERE town_or_city IS NULL) THEN
-            RAISE EXCEPTION 'town_or_city contains NULL values';
-        END IF;
-
-        IF EXISTS (SELECT 1 FROM hdc_curfew_address WHERE postcode IS NULL) THEN
-            RAISE EXCEPTION 'postcode contains NULL values';
-        END IF;
-
-        IF EXISTS (SELECT 1 FROM hdc_curfew_address WHERE reference IS NULL) THEN
-            RAISE EXCEPTION 'reference contains NULL values';
-        END IF;
-
-        IF EXISTS (SELECT 1 FROM hdc_curfew_address WHERE accommodation_type IS NULL) THEN
-            RAISE EXCEPTION 'accommodation_type contains NULL values';
-        END IF;
-    END$$;
-
-UPDATE hdc_curfew_address
 SET created_timestamp = CURRENT_TIMESTAMP
 WHERE created_timestamp IS NULL;
 
