@@ -795,26 +795,31 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "Enter first start time",
-                      name = "firstCurfewStart",
                       type = TIME_PICKER,
+                      name = "firstCurfewStart",
+                      defaultValue = " at any time",
+                      includeBefore = " between ",
                       hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter first end time",
                       name = "firstCurfewEnd",
                       type = TIME_PICKER,
+                      includeBefore = " and ",
                       hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter second start time (optional)",
                       name = "secondCurfewStart",
                       type = TIME_PICKER,
+                      includeBefore = " or between ",
                       hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter second end time (optional)",
                       name = "secondCurfewEnd",
                       type = TIME_PICKER,
+                      includeBefore = " and ",
                       hideHintText = true,
                     ),
                   ),
@@ -867,25 +872,30 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "Enter first start time",
-                      name = "firstCurfewStart",
                       type = TIME_PICKER,
+                      name = "firstCurfewStart",
+                      includeBefore = " between ",
+                      defaultValue = " at any time",
                       hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter first end time",
                       name = "firstCurfewEnd",
                       type = TIME_PICKER,
+                      includeBefore = " and ",
                       hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter second start time (optional)",
                       name = "secondCurfewStart",
                       type = TIME_PICKER,
+                      includeBefore = " or between ",
                       hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter second end time (optional)",
                       name = "secondCurfewEnd",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
                       hideHintText = true,
                     ),
@@ -898,6 +908,7 @@ val POLICY_V4_0 = LicencePolicy(
         ),
         requiresInput = true,
         text = "Not to enter a drinking establishment [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
+        tpl = "Not to enter a drinking establishment {firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
         type = "DrinkingEstablishment",
       ),
       AdditionalConditionAp(
