@@ -15,14 +15,6 @@ SET source = 'MANUAL'
 WHERE source IS NULL
    OR source NOT IN ('MANUAL', 'OS_PLACES', 'MANUAL_MIGRATED');
 
-UPDATE hdc_curfew_address
-SET created_timestamp = CURRENT_TIMESTAMP
-WHERE created_timestamp IS NULL;
-
-UPDATE hdc_curfew_address
-SET last_updated_timestamp = CURRENT_TIMESTAMP
-WHERE last_updated_timestamp IS NULL;
-
 ALTER TABLE hdc_curfew_address
     ALTER COLUMN source SET DEFAULT 'MANUAL',
     ALTER COLUMN created_timestamp SET DEFAULT CURRENT_TIMESTAMP,
