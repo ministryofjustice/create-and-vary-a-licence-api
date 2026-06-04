@@ -10,11 +10,6 @@ ALTER TABLE hdc_curfew_address
     ALTER COLUMN county TYPE TEXT,
     ALTER COLUMN postcode TYPE TEXT;
 
-UPDATE hdc_curfew_address
-SET source = 'MANUAL'
-WHERE source IS NULL
-   OR source NOT IN ('MANUAL', 'OS_PLACES', 'MANUAL_MIGRATED');
-
 ALTER TABLE hdc_curfew_address
     ALTER COLUMN source SET DEFAULT 'MANUAL',
     ALTER COLUMN created_timestamp SET DEFAULT CURRENT_TIMESTAMP,
