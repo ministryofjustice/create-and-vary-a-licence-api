@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -20,7 +22,10 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -539,6 +544,118 @@ class HdcServiceTest {
     }
   }
 
+  @Nested
+  inner class `add HDC curfew address` {
+
+    @Test
+    fun `should create new HDC curfew address when none exists`() {
+      val licence = aLicenceEntity.copy(curfewAddress = null)
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+
+      val request = AddHdcCurfewAddressRequest(
+        address = AddAddressRequest(
+          uprn = "uprn-123",
+          firstLine = "10 Downing Street",
+          secondLine = null,
+          townOrCity = "London",
+          county = null,
+          postcode = "SW1A 2AA",
+          source = AddressSource.MANUAL,
+          isPreferredAddress = false,
+        ),
+        accommodationType = AccommodationType.CAS,
+        postReleaseResidentialChecksCompleted = true,
+        postReleaseResidentialChecksNotCompletedReason = null,
+      )
+
+      service.addHdcCurfewAddress(1L, request)
+
+      val captor = argumentCaptor<Map<String, String>>()
+
+      verify(auditService).recordAuditEventHdcCurfewAddressUpdate(any(), captor.capture(), any())
+
+      assertThat(captor.firstValue["field"]).isEqualTo("createHdcCurfewAddress")
+      assertThat(licence.curfewAddress).isNotNull
+      assertThat(licence.curfewAddress?.firstLine).isEqualTo("10 Downing Street")
+      assertThat(licence.curfewAddress?.postcode).isEqualTo("SW1A 2AA")
+      assertThat(licence.curfewAddress?.postReleaseResidentialChecksCompleted).isTrue
+      assertThat(licence.curfewAddress?.accommodationType).isEqualTo(AccommodationType.CAS)
+
+      assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
+      assertThat(licence.updatedBy).isEqualTo(aCom)
+    }
+
+    @Test
+    fun `should update existing HDC curfew address`() {
+      val existingAddress = anEntityCurfewAddress
+
+      val licence = aLicenceEntity.copy(curfewAddress = existingAddress)
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+
+      val request = AddHdcCurfewAddressRequest(
+        address = AddAddressRequest(
+          uprn = "uprn-999",
+          firstLine = "221B Baker Street",
+          secondLine = "Marylebone",
+          townOrCity = "London",
+          county = null,
+          postcode = "NW1 6XE",
+          source = AddressSource.OS_PLACES,
+          isPreferredAddress = true,
+        ),
+        accommodationType = AccommodationType.RESIDENTIAL,
+        postReleaseResidentialChecksCompleted = false,
+        postReleaseResidentialChecksNotCompletedReason = "Awaiting checks",
+      )
+
+      service.addHdcCurfewAddress(1L, request)
+
+      val captor = argumentCaptor<Map<String, String>>()
+
+      verify(auditService).recordAuditEventHdcCurfewAddressUpdate(any(), captor.capture(), any())
+
+      assertThat(captor.firstValue["field"]).isEqualTo("updateHdcCurfewAddress")
+
+      val updated = licence.curfewAddress!!
+
+      assertThat(updated.firstLine).isEqualTo("221B Baker Street")
+      assertThat(updated.secondLine).isEqualTo("Marylebone")
+      assertThat(updated.postcode).isEqualTo("NW1 6XE")
+      assertThat(updated.uprn).isEqualTo("uprn-999")
+
+      assertThat(updated.postReleaseResidentialChecksCompleted).isFalse
+      assertThat(updated.postReleaseResidentialChecksNotCompletedReason).isEqualTo("Awaiting checks")
+      assertThat(updated.accommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    }
+
+    @Test
+    fun `should throw exception when licence not found`() {
+      whenever(licenceRepository.findById(99L)).thenReturn(Optional.empty())
+
+      val request = AddHdcCurfewAddressRequest(
+        address = AddAddressRequest(
+          uprn = null,
+          firstLine = "Test",
+          secondLine = null,
+          townOrCity = "Test City",
+          county = null,
+          postcode = "AB1 2CD",
+          source = AddressSource.MANUAL,
+          isPreferredAddress = false,
+        ),
+        accommodationType = AccommodationType.RESIDENTIAL,
+        postReleaseResidentialChecksCompleted = true,
+        postReleaseResidentialChecksNotCompletedReason = null,
+      )
+
+      assertThrows<EntityNotFoundException> {
+        service.addHdcCurfewAddress(99L, request)
+      }
+    }
+  }
+
   private companion object {
     val aLicenceEntity = createHdcLicence()
 
@@ -555,6 +672,8 @@ class HdcServiceTest {
       reference = "ref-123",
       uprn = "uprn-123",
       source = AddressSource.MANUAL_MIGRATED,
+      postReleaseResidentialChecksCompleted = false,
+      postReleaseResidentialChecksNotCompletedReason = "Old reason",
     )
 
     val aModelCurfewAddress = ModelHdcCurfewAddress(

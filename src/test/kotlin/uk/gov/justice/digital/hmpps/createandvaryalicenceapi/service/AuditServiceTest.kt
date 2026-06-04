@@ -178,6 +178,62 @@ class AuditServiceTest {
     )
   }
 
+  @Test
+  fun `records an event when hdc curfew address is created`() {
+    service.recordAuditEventHdcCurfewAddressUpdate(
+      aHdcLicenceEntity,
+      mapOf(
+        "field" to "createHdcCurfewAddress",
+        "value" to "New Address",
+      ),
+      aCom,
+    )
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo(aCom.username)
+    assertThat(captured.summary).isEqualTo("Updated HDC curfew address for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
+
+    assertThat(captured.changes).isEqualTo(
+      mapOf(
+        "field" to "createHdcCurfewAddress",
+        "value" to "New Address",
+      ),
+    )
+  }
+
+  @Test
+  fun `records an event when hdc curfew address are updated`() {
+    service.recordAuditEventHdcCurfewAddressUpdate(
+      aHdcLicenceEntity,
+      mapOf(
+        "field" to "updateHdcCurfewAddress",
+        "previousValue" to "Old Address",
+        "newValue" to "New Address",
+      ),
+      aCom,
+    )
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo(aCom.username)
+    assertThat(captured.summary).isEqualTo("Updated HDC curfew address for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
+
+    assertThat(captured.changes).isEqualTo(
+      mapOf(
+        "field" to "updateHdcCurfewAddress",
+        "previousValue" to "Old Address",
+        "newValue" to "New Address",
+      ),
+    )
+  }
+
   @Nested
   inner class `audit events for licence conditions` {
     @Test

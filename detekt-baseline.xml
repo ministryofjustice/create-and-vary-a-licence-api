@@ -55,6 +55,7 @@
     <ID>TooManyFunctions:ControllerAdvice.kt:ControllerAdvice</ID>
     <ID>TooManyFunctions:DeliusApiClient.kt:DeliusApiClient</ID>
     <ID>TooManyFunctions:EligibilityService.kt:EligibilityService</ID>
+    <ID>TooManyFunctions:HdcService.kt:HdcService</ID>
     <ID>TooManyFunctions:JPASpecificationDSL.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.JPASpecificationDSL.kt</ID>
     <ID>TooManyFunctions:Licence.kt:Licence : AbstractIdEntitySentenceDateHolder</ID>
     <ID>TooManyFunctions:LicenceConditionService.kt:LicenceConditionService</ID>
