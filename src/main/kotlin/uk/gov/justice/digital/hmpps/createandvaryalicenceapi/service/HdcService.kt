@@ -7,24 +7,27 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.HdcLicenceDataResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatusHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence as HdcLicenceEntity
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
 
 @Service
 class HdcService(
@@ -59,42 +62,53 @@ class HdcService(
   fun isApprovedForHdc(bookingId: Long, hdced: LocalDate?) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
 
   @Transactional
-  fun getHdcLicenceDataByBookingId(bookingId: Long): HdcLicenceData? {
-    val licenceData = this.hdcApiClient.getByBookingId(bookingId)
-    return licenceData
-  }
+  fun getHdcLicenceDataByBookingId(bookingId: Long): HdcLicence = this.hdcApiClient.getByBookingId(bookingId)
 
   @Transactional
-  fun getHdcLicenceData(licenceId: Long): HdcLicenceData? {
+  fun getHdcLicenceData(licenceId: Long): HdcLicenceDataResponse? {
     val licence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("No licence data found for $licenceId") } as HdcCase
 
-    val licenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
+    val hdcLicenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
 
     val weeklyCurfewTimes = if (licence.weeklyCurfewTimes.isNotEmpty()) {
       licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes()
     } else {
-      licenceData.weeklyCurfewTimes
+      hdcLicenceData.curfewTimes?.map {
+        CurfewTimes(
+          fromDay = it.fromDay,
+          fromTime = it.fromTime,
+          untilDay = it.untilDay,
+          untilTime = it.untilTime,
+        )
+      }
     }
 
     val curfewAddress = if (licence.curfewAddress != null) {
       transformToModelHdcCurfewAddress(licence.curfewAddress!!)
     } else {
-      licenceData.curfewAddress
+      hdcLicenceData.curfewAddress?.let {
+        ModelHdcCurfewAddress(
+          firstLine = it.addressLine1 ?: "",
+          secondLine = it.addressLine2,
+          townOrCity = it.townOrCity ?: "",
+          postcode = it.postcode ?: "",
+        )
+      }
     }
 
     val firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes()
 
-    return HdcLicenceData(
-      licenceId = licenceData.licenceId,
+    return HdcLicenceDataResponse(
+      licenceId = hdcLicenceData.licenceId,
       curfewAddress = curfewAddress,
       firstNightCurfewTimes = firstNightCurfewTimes,
       weeklyCurfewTimes = weeklyCurfewTimes,
     )
   }
 
-  fun checkEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner, hdcLicenceData: HdcLicenceData?) {
+  fun checkEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner, hdcLicenceData: HdcLicence?) {
     if (nomisRecord.homeDetentionCurfewActualDate == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCAD")
     }
@@ -111,7 +125,7 @@ class HdcService(
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as there is no curfew address")
     }
 
-    if (hdcLicenceData.weeklyCurfewTimes == null) {
+    if (hdcLicenceData.curfewTimes == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as curfew times are missing")
     }
   }
@@ -120,7 +134,7 @@ class HdcService(
   fun updateWeeklyCurfewTimes(licenceId: Long, request: UpdateWeeklyCurfewTimesRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicence
+      .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicenceEntity
 
     val username = SecurityContextHolder.getContext().authentication?.name!!
 
@@ -145,7 +159,7 @@ class HdcService(
   ) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicence
+      .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicenceEntity
 
     val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
@@ -170,7 +184,7 @@ class HdcService(
   @Transactional
   fun addHdcCurfewAddress(licenceId: Long, request: AddHdcCurfewAddressRequest) {
     val licence = licenceRepository.findById(licenceId)
-      .orElseThrow { EntityNotFoundException("Hdc Licence $licenceId not found") } as HdcLicence
+      .orElseThrow { EntityNotFoundException("Hdc Licence $licenceId not found") } as HdcLicenceEntity
 
     val staff = getStaffUser()
 
@@ -194,7 +208,7 @@ class HdcService(
   }
 
   private fun createHdcCurfewAddress(
-    licence: HdcLicence,
+    licence: HdcLicenceEntity,
     request: AddHdcCurfewAddressRequest,
     staff: Staff?,
   ): Map<String, String> {

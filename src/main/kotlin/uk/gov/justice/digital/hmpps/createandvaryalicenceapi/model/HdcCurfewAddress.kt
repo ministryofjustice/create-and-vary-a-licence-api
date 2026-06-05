@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "Describes a curfew address on a HDC licence")
@@ -10,11 +9,9 @@ data class HdcCurfewAddress(
   val id: Long? = null,
 
   @field:Schema(description = "The first line of the curfew address", example = "1 Some Street")
-  @field:JsonProperty("addressLine1")
   val firstLine: String,
 
   @field:Schema(description = "The second line of the curfew address", example = "Off Some Road")
-  @field:JsonProperty("addressLine2")
   val secondLine: String? = null,
 
   @field:Schema(description = "The town or city associated with the curfew address", example = "Some Town or City")
