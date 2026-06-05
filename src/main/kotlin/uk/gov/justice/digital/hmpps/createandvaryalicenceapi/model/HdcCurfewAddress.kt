@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "Describes a curfew address on a HDC licence")
