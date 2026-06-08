@@ -44,8 +44,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.Clock
@@ -121,7 +119,6 @@ class ComCaseloadSearchServiceTest {
       assertThat(teamName).isEqualTo("Test Team")
       assertThat(releaseDate).isEqualTo(LocalDate.parse("2021-10-22"))
       assertThat(licenceId).isEqualTo(1L)
-      assertThat(licenceType).isEqualTo(LicenceType.AP)
       assertThat(licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
       assertThat(isOnProbation).isEqualTo(false)
     }
@@ -217,7 +214,6 @@ class ComCaseloadSearchServiceTest {
       assertThat(teamName).isEqualTo("Test Team")
       assertThat(releaseDate).isEqualTo(LocalDate.parse("2021-10-22"))
       assertThat(licenceId).isEqualTo(2L)
-      assertThat(licenceType).isEqualTo(LicenceType.AP)
       assertThat(licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
       assertThat(isOnProbation).isEqualTo(false)
     }
@@ -257,7 +253,6 @@ class ComCaseloadSearchServiceTest {
       assertThat(teamName).isEqualTo("Test Team")
       assertThat(releaseDate).isEqualTo(LocalDate.parse("2021-10-22"))
       assertThat(licenceId).isEqualTo(2L)
-      assertThat(licenceType).isEqualTo(LicenceType.AP)
       assertThat(licenceStatus).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
       assertThat(isOnProbation).isEqualTo(true)
     }
@@ -287,7 +282,6 @@ class ComCaseloadSearchServiceTest {
       assertThat(teamName).isEqualTo("Test Team")
       assertThat(releaseDate).isEqualTo(LocalDate.parse("2023-09-14"))
       assertThat(licenceId).isNull()
-      assertThat(licenceType).isEqualTo(LicenceType.AP)
       assertThat(licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
       assertThat(isOnProbation).isEqualTo(false)
     }
@@ -308,130 +302,6 @@ class ComCaseloadSearchServiceTest {
     assertThat(result.results.size).isEqualTo(0)
     assertThat(result.inPrisonCount).isEqualTo(0)
     assertThat(result.onProbationCount).isEqualTo(0)
-  }
-
-  @Test
-  fun `search for offenders in prison without a licence sets PSS licence type correctly `() {
-    val prisoner = aPrisonerSearchResult.copy(licenceExpiryDate = null)
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
-      mapOf(
-        "A1234AA" to LocalDate.of(
-          2023,
-          9,
-          14,
-        ),
-      ),
-    )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-      listOf(
-        aCvlRecord(
-          licenceType = LicenceType.PSS,
-        ),
-      ),
-    )
-
-    val result = service.searchForOffenderOnProbationUserCaseload(request)
-
-    assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.inPrisonCount).isEqualTo(1)
-    assertThat(result.onProbationCount).isEqualTo(0)
-
-    assertThat(result.results.first().licenceType).isEqualTo(LicenceType.PSS)
-  }
-
-  @Test
-  fun `search for offenders in prison without a licence sets AP licence type correctly where there is no TUSED`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      topupSupervisionExpiryDate = null,
-    )
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
-      mapOf(
-        "A1234AA" to LocalDate.of(
-          2023,
-          9,
-          14,
-        ),
-      ),
-    )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
-
-    val result = service.searchForOffenderOnProbationUserCaseload(request)
-
-    assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.inPrisonCount).isEqualTo(1)
-    assertThat(result.onProbationCount).isEqualTo(0)
-
-    assertThat(result.results.first().licenceType).isEqualTo(LicenceType.AP)
-  }
-
-  @Test
-  fun `search for offenders in prison without a licence sets AP licence type correctly where TUSED before LED`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      licenceExpiryDate = LocalDate.parse("2024-09-15"),
-      topupSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
-    )
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
-      mapOf(
-        "A1234AA" to LocalDate.of(
-          2023,
-          9,
-          14,
-        ),
-      ),
-    )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
-
-    val result = service.searchForOffenderOnProbationUserCaseload(request)
-
-    assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.inPrisonCount).isEqualTo(1)
-    assertThat(result.onProbationCount).isEqualTo(0)
-
-    assertThat(result.results.first().licenceType).isEqualTo(LicenceType.AP)
-  }
-
-  @Test
-  fun `search for offenders in prison without a licence sets AP_PSS licence type correctly`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      licenceExpiryDate = LocalDate.parse("2024-09-15"),
-      topupSupervisionExpiryDate = LocalDate.parse("2024-10-14"),
-    )
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
-    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(
-      mapOf(
-        "A1234AA" to LocalDate.of(
-          2023,
-          9,
-          14,
-        ),
-      ),
-    )
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-      listOf(
-        aCvlRecord(
-          licenceType = AP_PSS,
-        ),
-      ),
-    )
-
-    val result = service.searchForOffenderOnProbationUserCaseload(request)
-
-    assertThat(result.results.size).isEqualTo(1)
-    assertThat(result.inPrisonCount).isEqualTo(1)
-    assertThat(result.onProbationCount).isEqualTo(0)
-
-    assertThat(result.results.first().licenceType).isEqualTo(AP_PSS)
   }
 
   @Test
