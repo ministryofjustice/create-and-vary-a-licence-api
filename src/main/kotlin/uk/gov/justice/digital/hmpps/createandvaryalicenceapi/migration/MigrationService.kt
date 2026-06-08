@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -43,6 +44,7 @@ class MigrationService(
   val migrationRepository: MigrationRepository,
   val cvlRecordService: CvlRecordService,
   val prisonerSearchApiClient: PrisonerSearchApiClient,
+  val prisonService: PrisonService,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -98,6 +100,8 @@ class MigrationService(
     val probationTeam = offenderManager.team
     val responsibleCom = licenceCreationService.getOrCreateCom(offenderManager.id)
 
+    val prisonInformation = prisonService.getPrisonInformation(prison.prisonCode)
+
     val comSet = mutableSetOf(responsibleCom)
     val submittedByCom = comSet.getCommAndAdd(lifecycle.submittedByUserName)
     val createdByCom = comSet.getCommAndAdd(lifecycle.createdByUserName)
@@ -123,9 +127,9 @@ class MigrationService(
       dateOfBirth = prisoner.dateOfBirth,
 
       // Prison details
-      prisonCode = prison.prisonCode,
-      prisonDescription = prison.prisonDescription,
-      prisonTelephone = prison.prisonTelephone,
+      prisonCode = prisonInformation.prisonId,
+      prisonDescription = prisonInformation.description,
+      prisonTelephone = prisonInformation.getPrisonContactNumber(),
 
       // Probation
       probationAreaCode = probationTeam.provider.code,

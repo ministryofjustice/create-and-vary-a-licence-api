@@ -35,4 +35,6 @@ class PrisonService(val prisonApiClient: PrisonApiClient, val prisonerSearchApi:
       RecallType.NONE
     }
   }
+
+  fun getPrisonInformation(prisonCode: String): Prison = prisonApiClient.getPrisonInformation(prisonCode)
 }
