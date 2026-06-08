@@ -2,16 +2,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -29,6 +27,12 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+      prisonId = "MDI",
+      sentenceStartDate = LocalDate.now(),
+      confirmedReleaseDate = LocalDate.now(),
+      conditionalReleaseDate = LocalDate.now(),
+    )
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -273,6 +277,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
 
     val resultList = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -747,6 +752,8 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
 
     val aProbationUserSearchRequest = ProbationUserSearchRequest(
@@ -756,17 +763,5 @@ class ComIntegrationTest : IntegrationTestBase() {
         ProbationSearchSortBy(SearchField.FORENAME, Sort.Direction.ASC),
       ),
     )
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonerSearchApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonerSearchApiMockServer.stop()
-    }
   }
 }
