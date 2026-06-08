@@ -17,8 +17,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -113,21 +113,22 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun beforeEach() {
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
   }
 
   private companion object {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val hdcApiMockServer = HdcApiMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      prisonerSearchMockServer.start()
       hdcApiMockServer.start()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-      prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
       hdcApiMockServer.stubGetHdcStatuses(
         listOf(
           CurrentPrisonerHdcStatus(123, HdcStatus.APPROVED),
@@ -138,7 +139,6 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      prisonerSearchMockServer.stop()
       hdcApiMockServer.stop()
     }
   }
