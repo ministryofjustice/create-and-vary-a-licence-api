@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL_MIGRATED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
@@ -51,6 +53,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "Test Area",
           null,
           "AB1 2CD",
+          MANUAL_MIGRATED,
         ),
       )
       assertThat(result.firstNightCurfewTimes).isEqualTo(
@@ -150,6 +153,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "Some Town",
           "Some County",
           "AB1 2CD",
+          MANUAL
         ),
       )
       assertThat(result.firstNightCurfewTimes).isEqualTo(
