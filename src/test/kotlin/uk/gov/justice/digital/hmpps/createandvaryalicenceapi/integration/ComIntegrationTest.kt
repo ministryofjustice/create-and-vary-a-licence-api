@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.LocalDate
@@ -51,8 +50,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId,
-          it?.licenceType, it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(
@@ -65,7 +63,6 @@ class ComIntegrationTest : IntegrationTestBase() {
           "Test Team",
           LocalDate.now(),
           1L,
-          LicenceType.AP,
           LicenceStatus.IN_PROGRESS,
           false,
         ),
@@ -103,8 +100,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId,
-          it?.licenceType, it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(
@@ -117,7 +113,6 @@ class ComIntegrationTest : IntegrationTestBase() {
           "Test Team",
           prisonerSearchApiMockServer.nextWorkingDate(),
           null,
-          LicenceType.AP,
           LicenceStatus.TIMED_OUT,
           false,
         ),
@@ -342,8 +337,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId,
-          it?.licenceType, it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(
@@ -356,7 +350,6 @@ class ComIntegrationTest : IntegrationTestBase() {
           "Test Team",
           prisonerSearchApiMockServer.nextWorkingDate(),
           null,
-          LicenceType.AP,
           LicenceStatus.TIMED_OUT,
           false,
         ),
