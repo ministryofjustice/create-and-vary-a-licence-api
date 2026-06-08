@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL_MIGRATED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.OS_PLACES
@@ -145,7 +146,7 @@ class HdcServiceTest {
     whenever(hdcApiClient.getByBookingId(54321)).thenReturn(someHdcLicenceData)
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(source = MANUAL_MIGRATED))
     assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
@@ -194,7 +195,7 @@ class HdcServiceTest {
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(source = MANUAL_MIGRATED))
     assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
     assertThat(result?.weeklyCurfewTimes).isNull()
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
@@ -213,7 +214,7 @@ class HdcServiceTest {
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(secondLine = null))
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(secondLine = null, source = MANUAL_MIGRATED))
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
@@ -224,7 +225,7 @@ class HdcServiceTest {
       someHdcLicenceData,
     )
     val result = service.getHdcLicenceData(1)
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(source = MANUAL_MIGRATED))
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes)
   }
 
