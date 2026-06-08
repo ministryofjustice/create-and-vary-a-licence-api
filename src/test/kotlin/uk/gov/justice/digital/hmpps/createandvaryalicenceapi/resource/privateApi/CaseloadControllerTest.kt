@@ -39,7 +39,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.VaryApproverCaseloadSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
 @NotSecuredWebMvcTest(controllers = [CaseloadController::class])
@@ -292,7 +291,6 @@ class CaseloadControllerTest {
           teamName = "Test Team",
           releaseDate = LocalDate.of(2021, 10, 22),
           licenceId = 1L,
-          licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.IN_PROGRESS,
           isOnProbation = false,
           isRestricted = false,
