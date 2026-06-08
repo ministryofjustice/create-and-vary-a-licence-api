@@ -48,16 +48,27 @@ class PrisonApiMockServer :
     )
   }
 
-  fun stubGetPrison(prisonId: String = "ABC", prisonDescription: String = "ABC (HMP)") {
+  fun stubGetPrison(
+    prisonId: String = "ABC",
+    prisonDescription: String = "ABC (HMP)",
+  ) {
     stubFor(
       get(urlEqualTo("/api/agencies/prison/$prisonId")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
-          """{
+          """
+          {
             "agencyId": "$prisonId",
             "formattedDescription": "$prisonDescription",
-            "phones": []
-            }
-          """.trimMargin(),
+            "phones": [
+              {
+                "phoneId": 1,
+                "number": "01234567890",
+                "type": "BUS",
+                "ext": "123"
+              }
+            ]
+          }
+          """.trimIndent(),
         ).withStatus(200),
       ),
     )

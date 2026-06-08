@@ -38,6 +38,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HA
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenderSentenceAndOffences
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -1266,5 +1268,18 @@ object TestData {
   fun firstNightCurfewTimes() = CurfewTimes(
     fromTime = LocalTime.of(12, 0),
     untilTime = LocalTime.of(13, 0),
+  )
+
+  fun prisonInformation(): Prison = Prison(
+    prisonId = "MDI",
+    description = "Moorland (HMP)",
+    phoneDetails = listOf(
+      PhoneDetail(
+        number = "01234567890",
+        type = "BUS",
+        phoneId = 1,
+        ext = "1234",
+      ),
+    ),
   )
 }
