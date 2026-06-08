@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordSe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -49,6 +50,7 @@ class MigrationServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val prisonService = mock<PrisonService>()
 
   private val team = TeamDetail(
     code = "NA01A2-A",
@@ -66,6 +68,7 @@ class MigrationServiceTest {
     migrationRepository,
     cvlRecordService,
     prisonerSearchApiClient,
+    prisonService,
   )
 
   @BeforeEach
@@ -82,6 +85,7 @@ class MigrationServiceTest {
     whenever(licenceRepository.saveAndFlush(any<HdcLicence>())).thenAnswer { it.arguments[0] }
     whenever(migrationRepository.hasBeenAlreadyMigrated(any<Long>())).thenReturn(false)
     whenever(migrationRepository.hasExistingLicence(any<String>())).thenReturn(false)
+    whenever(prisonService.getPrisonInformation(any<String>())).thenReturn(TestData.prisonInformation())
   }
 
   @Test
@@ -281,7 +285,7 @@ class MigrationServiceTest {
       surname = "Smith",
       dateOfBirth = LocalDate.now(),
     ),
-    prison = MigratePrisonDetails("MDI", "Moorland", "123"),
+    prison = MigratePrisonDetails("MDI"),
     sentence = MigrateSentenceDetails(
       sentenceStartDate = LocalDate.now(),
       sentenceEndDate = LocalDate.now(),
