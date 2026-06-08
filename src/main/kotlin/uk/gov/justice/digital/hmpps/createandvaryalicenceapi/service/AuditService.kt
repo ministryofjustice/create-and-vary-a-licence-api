@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
@@ -261,7 +262,7 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
-  fun recordAuditEventHdcCurfewAddressUpdate(licence: HdcLicence, changes: Map<String, Any>, staffMember: Staff?) {
+  fun recordAuditEventHdcCurfewAddressUpdate(licence: HdcVariationLicence, changes: Map<String, Any>, staffMember: Staff?) {
     val summary = "Updated HDC curfew address"
 
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))

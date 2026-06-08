@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
@@ -57,7 +57,7 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-hdc-licence-id-1.sql",
+    "classpath:test_data/seed-hdc-variation-licence-id-1.sql",
   )
   fun `When adding a new HDC curfew address Then everything saves as expected`() {
     assertThat(testRepository.findAllHdcCurfewAddresses().size).isEqualTo(0)
@@ -145,8 +145,8 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
     .accept(MediaType.APPLICATION_JSON)
     .exchange()
 
-  fun getHdcLicence(id: Long = 1): HdcLicence {
-    val licence = testRepository.findLicence(id) as HdcLicence
+  fun getHdcLicence(id: Long = 1): HdcVariationLicence {
+    val licence = testRepository.findLicence(id) as HdcVariationLicence
     assertThat(licence).isNotNull
     return licence
   }

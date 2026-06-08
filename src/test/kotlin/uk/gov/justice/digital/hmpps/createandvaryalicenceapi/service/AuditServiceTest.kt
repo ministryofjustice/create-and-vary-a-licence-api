@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.an
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -181,7 +182,7 @@ class AuditServiceTest {
   @Test
   fun `records an event when hdc curfew address is created`() {
     service.recordAuditEventHdcCurfewAddressUpdate(
-      aHdcLicenceEntity,
+      aHdcVariationLicenceEntity,
       mapOf(
         "field" to "createHdcCurfewAddress",
         "value" to "New Address",
@@ -208,7 +209,7 @@ class AuditServiceTest {
   @Test
   fun `records an event when hdc curfew address are updated`() {
     service.recordAuditEventHdcCurfewAddressUpdate(
-      aHdcLicenceEntity,
+      aHdcVariationLicenceEntity,
       mapOf(
         "field" to "updateHdcCurfewAddress",
         "previousValue" to "Old Address",
@@ -1095,6 +1096,8 @@ class AuditServiceTest {
     val aLicenceEntity = createCrdLicence()
 
     val aHdcLicenceEntity = createHdcLicence()
+
+    val aHdcVariationLicenceEntity = createHdcVariationLicence()
 
     val someAdditionalConditionData = mutableListOf(
       AdditionalConditionData(
