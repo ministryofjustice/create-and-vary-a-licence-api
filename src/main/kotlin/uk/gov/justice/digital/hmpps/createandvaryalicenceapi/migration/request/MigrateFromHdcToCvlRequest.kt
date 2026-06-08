@@ -56,13 +56,7 @@ data class MigrateFromHdcToCvlRequest(
 @Schema(description = "Prison details")
 data class MigratePrisonDetails(
   @field:Schema(description = "Prison code", example = "MDI")
-  val prisonCode: String?,
-
-  @field:Schema(description = "Prison description", example = "HMP Example")
-  val prisonDescription: String?,
-
-  @field:Schema(description = "Prison telephone number", example = "02038219211")
-  val prisonTelephone: String?,
+  val prisonCode: String,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

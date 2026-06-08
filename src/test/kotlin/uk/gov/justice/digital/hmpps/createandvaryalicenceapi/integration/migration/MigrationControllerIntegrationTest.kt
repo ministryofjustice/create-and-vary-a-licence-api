@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAppointmentAddress
@@ -50,6 +51,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetUserByUserName(4L, userName = "approvedByUsername", firstName = "approvedByFirstName", lastName = "approvedByLastName")
 
     val request = validRequest()
+    prisonApiMockServer.stubGetPrison(prisonId = request.prison.prisonCode)
 
     // When
     val result = webTestClient.post()
@@ -77,6 +79,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetOffenderManagerWithNomsId("A1234AA")
 
     val request = validRequest()
+    prisonApiMockServer.stubGetPrison(request.prison.prisonCode)
 
     // When
     val result = webTestClient.post()
@@ -263,8 +266,8 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     assertThat(licence.dateOfBirth).isEqualTo(request.prisoner.dateOfBirth)
 
     assertThat(licence.prisonCode).isEqualTo(request.prison.prisonCode)
-    assertThat(licence.prisonDescription).isEqualTo(request.prison.prisonDescription)
-    assertThat(licence.prisonTelephone).isEqualTo(request.prison.prisonTelephone)
+    assertThat(licence.prisonDescription).isEqualTo("ABC (HMP)")
+    assertThat(licence.prisonTelephone).isEqualTo("01234567890123")
 
     assertThat(licence.sentenceStartDate).isEqualTo(request.sentence.sentenceStartDate)
     assertThat(licence.sentenceEndDate).isEqualTo(request.sentence.sentenceEndDate)
@@ -363,8 +366,6 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     ),
     prison = MigratePrisonDetails(
       prisonCode = "MDI",
-      prisonDescription = "HMP Example",
-      prisonTelephone = "02038219211",
     ),
     sentence = MigrateSentenceDetails(
       sentenceStartDate = LocalDate.parse("2024-01-01"),
@@ -447,5 +448,8 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   private companion object {
     @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
+    val prisonApiMockServer = PrisonApiMockServer()
   }
 }
