@@ -1,44 +1,24 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.http.HttpHeader
 import com.github.tomakehurst.wiremock.http.HttpHeaders
-import org.junit.jupiter.api.extension.AfterAllCallback
-import org.junit.jupiter.api.extension.BeforeAllCallback
-import org.junit.jupiter.api.extension.BeforeEachCallback
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
 import org.junit.jupiter.api.extension.ExtensionContext
 
-class OAuthExtension :
-  BeforeAllCallback,
-  AfterAllCallback,
-  BeforeEachCallback {
+class OAuthMockServer :
+  WireMockExtension(
+    extensionOptions()
+      .options(wireMockConfig().port(8090)),
+  ) {
 
-  companion object {
-    @JvmField
-    val oAuthApi = OAuthMockServer()
-  }
-
-  override fun beforeAll(context: ExtensionContext) {
-    oAuthApi.start()
-    oAuthApi.stubGrantToken()
-  }
-
-  override fun beforeEach(context: ExtensionContext) {
-    oAuthApi.resetRequests()
-    oAuthApi.stubGrantToken()
-  }
-
-  override fun afterAll(context: ExtensionContext) {
-    oAuthApi.stop()
-  }
-}
-
-class OAuthMockServer : WireMockServer(WIREMOCK_PORT) {
-  companion object {
-    private const val WIREMOCK_PORT = 8090
+  override fun onBeforeEach(extensionContext: ExtensionContext?, wireMockRuntimeInfo: WireMockRuntimeInfo?) {
+    super.onBeforeEach(extensionContext, wireMockRuntimeInfo)
+    stubGrantToken()
   }
 
   fun stubGrantToken() {
