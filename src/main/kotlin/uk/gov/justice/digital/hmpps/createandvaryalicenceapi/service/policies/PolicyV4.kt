@@ -513,7 +513,7 @@ val POLICY_V4_0 = LicencePolicy(
         code = "52faefcf-15f0-42c5-b908-621b4a7ecdb9",
         inputs = listOf(
           Input(
-            label = "Select the number of curfews required",
+            label = "Select the number of curfews needed",
             name = "numberOfCurfews",
             options = listOf(
               Option(

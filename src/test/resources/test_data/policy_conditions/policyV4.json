@@ -907,7 +907,7 @@
         "inputs": [
           {
             "type": "radio",
-            "label": "Select the number of curfews required",
+            "label": "Select the number of curfews needed",
             "name": "numberOfCurfews",
             "listType": null,
             "options": [
