@@ -21,8 +21,11 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL_MIGRATED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.OS_PLACES
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.CAS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.RESIDENTIAL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
@@ -142,7 +145,7 @@ class HdcServiceTest {
     whenever(hdcApiClient.getByBookingId(54321)).thenReturn(someHdcLicenceData)
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(source = MANUAL_MIGRATED))
     assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
@@ -159,7 +162,7 @@ class HdcServiceTest {
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(id = 1, postcode = "AB1 2CD"))
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(id = 1, postcode = "AB1 2CD", source = MANUAL_MIGRATED))
     assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntityWithCurfewDetails.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes.mapIndexed { index, times -> times.copy(id = 1, index + 1) })
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
@@ -191,7 +194,7 @@ class HdcServiceTest {
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(source = MANUAL_MIGRATED))
     assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
     assertThat(result?.weeklyCurfewTimes).isNull()
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
@@ -210,7 +213,7 @@ class HdcServiceTest {
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(secondLine = null))
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(secondLine = null, source = MANUAL_MIGRATED))
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
@@ -221,7 +224,7 @@ class HdcServiceTest {
       someHdcLicenceData,
     )
     val result = service.getHdcLicenceData(1)
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(source = MANUAL_MIGRATED))
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes)
   }
 
@@ -552,7 +555,7 @@ class HdcServiceTest {
 
     @Test
     fun `should create new HDC curfew address when none exists`() {
-      val licence = aLicenceEntity.copy(curfewAddress = null)
+      val licence = aLicenceVariationEntity.copy(curfewAddress = null)
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
@@ -564,10 +567,10 @@ class HdcServiceTest {
           townOrCity = "London",
           county = null,
           postcode = "SW1A 2AA",
-          source = AddressSource.MANUAL,
+          source = MANUAL,
           isPreferredAddress = false,
         ),
-        accommodationType = AccommodationType.CAS,
+        accommodationType = CAS,
         postReleaseResidentialChecksCompleted = true,
         postReleaseResidentialChecksNotCompletedReason = null,
       )
@@ -583,7 +586,7 @@ class HdcServiceTest {
       assertThat(licence.curfewAddress?.firstLine).isEqualTo("10 Downing Street")
       assertThat(licence.curfewAddress?.postcode).isEqualTo("SW1A 2AA")
       assertThat(licence.curfewAddress?.postReleaseResidentialChecksCompleted).isTrue
-      assertThat(licence.curfewAddress?.accommodationType).isEqualTo(AccommodationType.CAS)
+      assertThat(licence.curfewAddress?.accommodationType).isEqualTo(CAS)
 
       assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
       assertThat(licence.updatedBy).isEqualTo(aCom)
@@ -593,7 +596,7 @@ class HdcServiceTest {
     fun `should update existing HDC curfew address`() {
       val existingAddress = anEntityCurfewAddress
 
-      val licence = aLicenceEntity.copy(curfewAddress = existingAddress)
+      val licence = aLicenceVariationEntity.copy(curfewAddress = existingAddress)
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
@@ -605,10 +608,10 @@ class HdcServiceTest {
           townOrCity = "London",
           county = null,
           postcode = "NW1 6XE",
-          source = AddressSource.OS_PLACES,
+          source = OS_PLACES,
           isPreferredAddress = true,
         ),
-        accommodationType = AccommodationType.RESIDENTIAL,
+        accommodationType = RESIDENTIAL,
         postReleaseResidentialChecksCompleted = false,
         postReleaseResidentialChecksNotCompletedReason = "Awaiting checks",
       )
@@ -630,7 +633,7 @@ class HdcServiceTest {
 
       assertThat(updated.postReleaseResidentialChecksCompleted).isFalse
       assertThat(updated.postReleaseResidentialChecksNotCompletedReason).isEqualTo("Awaiting checks")
-      assertThat(updated.accommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+      assertThat(updated.accommodationType).isEqualTo(RESIDENTIAL)
     }
 
     @Test
@@ -645,10 +648,10 @@ class HdcServiceTest {
           townOrCity = "Test City",
           county = null,
           postcode = "AB1 2CD",
-          source = AddressSource.MANUAL,
+          source = MANUAL,
           isPreferredAddress = false,
         ),
-        accommodationType = AccommodationType.RESIDENTIAL,
+        accommodationType = RESIDENTIAL,
         postReleaseResidentialChecksCompleted = true,
         postReleaseResidentialChecksNotCompletedReason = null,
       )
@@ -662,6 +665,8 @@ class HdcServiceTest {
   private companion object {
     val aLicenceEntity = createHdcLicence()
 
+    val aLicenceVariationEntity = createHdcVariationLicence()
+
     val aCom = communityOffenderManager()
 
     val anEntityCurfewAddress = EntityHdcCurfewAddress(
@@ -674,7 +679,7 @@ class HdcServiceTest {
       postcode = "AB1 2CD",
       reference = "ref-123",
       uprn = "uprn-123",
-      source = AddressSource.MANUAL_MIGRATED,
+      source = MANUAL_MIGRATED,
       postReleaseResidentialChecksCompleted = false,
       postReleaseResidentialChecksNotCompletedReason = "Old reason",
     )
@@ -684,7 +689,7 @@ class HdcServiceTest {
       "Test Area",
       "Test Town",
       null,
-      AccommodationType.RESIDENTIAL,
+      RESIDENTIAL,
     )
 
     val aModelCurfewAddress = HdcCurfewAddress(
@@ -692,6 +697,7 @@ class HdcServiceTest {
       secondLine = "Test Area",
       townOrCity = "Test Town",
       postcode = "",
+      source = MANUAL,
     )
 
     val aSetOfFirstNightCurfewTimes = FirstNight(

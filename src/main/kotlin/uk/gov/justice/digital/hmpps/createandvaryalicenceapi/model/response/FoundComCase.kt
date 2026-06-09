@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
 @Schema(description = "Describes a com search result which has been found and enriched")
@@ -71,9 +70,6 @@ data class FoundComCase(
 
   @field:Schema(description = "The licence Id which this licence is a version of", example = "86")
   val versionOf: Long? = null,
-
-  @field:Schema(description = "The type of licence")
-  val licenceType: LicenceType? = null,
 
   @field:Schema(description = "The status of the licence")
   val licenceStatus: LicenceStatus? = null,

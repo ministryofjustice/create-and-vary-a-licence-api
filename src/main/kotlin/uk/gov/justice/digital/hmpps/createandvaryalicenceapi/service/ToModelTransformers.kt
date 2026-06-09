@@ -877,7 +877,6 @@ fun CaseloadResult.transformToUnstartedRecord(
   kind: LicenceKind,
   bookingId: Long?,
   releaseDate: LocalDate?,
-  licenceType: LicenceType?,
   licenceStatus: LicenceStatus?,
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
@@ -912,7 +911,6 @@ fun CaseloadResult.transformToUnstartedRecord(
     teamName = team.description,
     releaseDate = releaseDate,
     licenceId = null,
-    licenceType = licenceType,
     licenceStatus = licenceStatus,
     isOnProbation = false,
     hardStopDate = hardStopDate,
@@ -1031,6 +1029,7 @@ fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCu
   townOrCity = entity.townOrCity,
   county = entity.county,
   postcode = entity.postcode,
+  source = entity.source,
 )
 
 fun transformToModelElectronicMonitoringProvider(entity: EntityElectronicMonitoringProvider): ElectronicMonitoringProvider = ElectronicMonitoringProvider(

@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -15,10 +13,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
@@ -801,24 +799,14 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   private companion object {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
 
     @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonerSearchMockServer.start()
-      hdcApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonerSearchMockServer.stop()
-      hdcApiMockServer.stop()
-    }
   }
 }

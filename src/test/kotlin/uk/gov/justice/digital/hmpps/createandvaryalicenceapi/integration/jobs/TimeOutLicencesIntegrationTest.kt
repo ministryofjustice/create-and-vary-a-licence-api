@@ -3,15 +3,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -35,6 +34,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun setupClient() {
     webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
   }
 
   @Test
@@ -80,19 +80,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonerSearchMockServer.start()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonerSearchMockServer.stop()
-    }
   }
 }

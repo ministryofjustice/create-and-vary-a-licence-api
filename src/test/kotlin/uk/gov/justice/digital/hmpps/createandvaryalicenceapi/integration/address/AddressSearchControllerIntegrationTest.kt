@@ -1,15 +1,14 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.address
 
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.test.json.JsonCompareMode
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OsPlacesMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.OsPlacesMockServer
 import java.nio.charset.StandardCharsets
 
 private const val SEARCH_STRING = "Glan-y-mor"
@@ -21,19 +20,8 @@ private const val OS_API_KEY = "os-places-api-key"
 class AddressSearchControllerIntegrationTest : IntegrationTestBase() {
 
   private companion object {
+    @RegisterExtension
     val osPlacesMockServer = OsPlacesMockServer(OS_API_KEY)
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      osPlacesMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      osPlacesMockServer.stop()
-    }
   }
 
   abstract inner class BaseAddressSearchTest(private val urlToTest: String) {

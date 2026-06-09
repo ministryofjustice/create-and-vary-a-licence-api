@@ -3,8 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -16,9 +14,9 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -113,33 +111,23 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun beforeEach() {
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
+    hdcApiMockServer.stubGetHdcStatuses(
+      listOf(
+        CurrentPrisonerHdcStatus(123, HdcStatus.APPROVED),
+      ),
+    )
   }
 
   private companion object {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonerSearchMockServer.start()
-      hdcApiMockServer.start()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-      prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
-      hdcApiMockServer.stubGetHdcStatuses(
-        listOf(
-          CurrentPrisonerHdcStatus(123, HdcStatus.APPROVED),
-        ),
-      )
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonerSearchMockServer.stop()
-      hdcApiMockServer.stop()
-    }
   }
 }

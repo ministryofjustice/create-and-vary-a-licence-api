@@ -3,10 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.io.RandomAccessReadBuffer
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -16,7 +15,7 @@ import org.springframework.test.context.jdbc.Sql
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.UPLOAD_FILE_CONDITION_ENDPOINT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf.UploadPdfExtract
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf.UploadPdfExtractBuilder
@@ -27,7 +26,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun setupClient() {
     webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
-    documentApiMockServer.resetAll()
     documentApiMockServer.stubUploadDocument()
   }
 
@@ -234,19 +232,8 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     .replace("{conditionId}", conditionId.toString())
 
   private companion object {
+    @RegisterExtension
     val documentApiMockServer = DocumentApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      documentApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      documentApiMockServer.stop()
-    }
   }
 
   fun fromMultipartFile(file: MultipartFile): UploadPdfExtract {
