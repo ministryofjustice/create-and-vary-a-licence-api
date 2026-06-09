@@ -899,10 +899,10 @@
         "requiresElectronicMonitoringResponse": false
       },
       {
-        "code": "0a370862-5426-49c1-b6d4-3d074d78a81a",
+        "code": "52faefcf-15f0-42c5-b908-621b4a7ecdb9",
         "category": "Curfew arrangement",
-        "text": "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-        "tpl": "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
+        "text": "Your curfew hours are between [TIME] and [TIME] daily.",
+        "tpl": "Your curfew hours are between {oneCurfewStart}{twoCurfewStart}{threeCurfewStart} and {oneCurfewEnd}{twoCurfewEnd}{threeCurfewEnd}{twoCurfewStart2}{twoCurfewEnd2}{threeCurfewStart2}{threeCurfewEnd2}{threeCurfewStart3}{threeCurfewEnd3} daily.",
         "requiresInput": true,
         "inputs": [
           {
@@ -918,24 +918,24 @@
                     {
                       "type": "timePicker",
                       "label": "Enter the curfew start time",
-                      "name": "curfewStart",
+                      "name": "oneCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Enter the curfew end time",
-                      "name": "curfewEnd",
+                      "name": "oneCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     }
                   ]
                 }
@@ -947,46 +947,46 @@
                     {
                       "type": "timePicker",
                       "label": "First curfew – enter the start time",
-                      "name": "curfewStart",
+                      "name": "twoCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "First curfew – enter the end time",
-                      "name": "curfewEnd",
+                      "name": "twoCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Second curfew – enter the start time",
-                      "name": "curfewStart2",
+                      "name": "twoCurfewStart2",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Second curfew – enter the end time",
-                      "name": "curfewEnd2",
+                      "name": "twoCurfewEnd2",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     }
                   ]
                 }
@@ -998,68 +998,68 @@
                     {
                       "type": "timePicker",
                       "label": "First curfew – enter the start time",
-                      "name": "curfewStart",
+                      "name": "threeCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "First curfew – enter the end time",
-                      "name": "curfewEnd",
+                      "name": "threeCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Second curfew – enter the start time",
-                      "name": "curfewStart2",
+                      "name": "threeCurfewStart2",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": ", ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Second curfew – enter the end time",
-                      "name": "curfewEnd2",
+                      "name": "threeCurfewEnd2",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Third curfew – enter the start time",
-                      "name": "curfewStart3",
+                      "name": "threeCurfewStart3",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": ", and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Third curfew – enter the end time",
-                      "name": "curfewEnd3",
+                      "name": "threeCurfewEnd3",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     }
                   ]
                 }
@@ -1072,52 +1072,11 @@
             "subtext": null,
             "defaultValue": null,
             "hideHintText": false
-          },
-          {
-            "type": "radio",
-            "label": "Select a review period",
-            "name": "reviewPeriod",
-            "listType": null,
-            "options": [
-              {
-                "value": "Weekly",
-                "conditional": null
-              },
-              {
-                "value": "Monthly",
-                "conditional": null
-              },
-              {
-                "value": "Other",
-                "conditional": {
-                  "inputs": [
-                    {
-                      "type": "text",
-                      "label": "Enter a review period",
-                      "name": "alternativeReviewPeriod",
-                      "case": "lower",
-                      "handleIndefiniteArticle": true,
-                      "includeBefore": null,
-                      "subtext": null,
-                      "defaultValue": null,
-                      "hideHintText": false
-                    }
-                  ]
-                }
-              }
-            ],
-            "case": "lower",
-            "handleIndefiniteArticle": true,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
           }
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "CurfewTerms",
+        "type": "CurfewTermsV4",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false
       },
