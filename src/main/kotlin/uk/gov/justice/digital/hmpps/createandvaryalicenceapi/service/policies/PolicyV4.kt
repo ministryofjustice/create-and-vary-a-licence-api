@@ -510,10 +510,10 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Curfew arrangement",
-        code = "0a370862-5426-49c1-b6d4-3d074d78a81a",
+        code = "52faefcf-15f0-42c5-b908-621b4a7ecdb9",
         inputs = listOf(
           Input(
-            label = "Select the number of curfews needed",
+            label = "Select the number of curfews required",
             name = "numberOfCurfews",
             options = listOf(
               Option(
@@ -522,13 +522,15 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "Enter the curfew start time",
-                      name = "curfewStart",
+                      name = "oneCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter the curfew end time",
-                      name = "curfewEnd",
+                      name = "oneCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
@@ -539,23 +541,29 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "First curfew – enter the start time",
-                      name = "curfewStart",
+                      name = "twoCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "First curfew – enter the end time",
-                      name = "curfewEnd",
+                      name = "twoCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the start time",
-                      name = "curfewStart2",
+                      name = "twoCurfewStart2",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the end time",
-                      name = "curfewEnd2",
+                      name = "twoCurfewEnd2",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
@@ -566,74 +574,55 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "First curfew – enter the start time",
-                      name = "curfewStart",
+                      name = "threeCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "First curfew – enter the end time",
-                      name = "curfewEnd",
+                      name = "threeCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the start time",
-                      name = "curfewStart2",
+                      name = "threeCurfewStart2",
+                      includeBefore = ", ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the end time",
-                      name = "curfewEnd2",
+                      name = "threeCurfewEnd2",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Third curfew – enter the start time",
-                      name = "curfewStart3",
+                      name = "threeCurfewStart3",
+                      includeBefore = ", and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Third curfew – enter the end time",
-                      name = "curfewEnd3",
+                      name = "threeCurfewEnd3",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
-              ),
-            ),
-            type = RADIO,
-          ),
-          Input(
-            case = LOWER,
-            handleIndefiniteArticle = true,
-            label = "Select a review period",
-            name = "reviewPeriod",
-            options = listOf(
-              Option(
-                value = "Weekly",
-              ),
-              Option(
-                value = "Monthly",
-              ),
-              Option(
-                conditional = Conditional(
-                  inputs = listOf(
-                    ConditionalInput(
-                      case = LOWER,
-                      handleIndefiniteArticle = true,
-                      label = "Enter a review period",
-                      name = "alternativeReviewPeriod",
-                      type = TEXT,
-                    ),
-                  ),
-                ),
-                value = "Other",
               ),
             ),
             type = RADIO,
           ),
         ),
         requiresInput = true,
-        text = "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-        tpl = "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-        type = "CurfewTerms",
+        text = "Your curfew hours are between [TIME] and [TIME] daily.",
+        tpl = "Your curfew hours are between {oneCurfewStart}{twoCurfewStart}{threeCurfewStart} and {oneCurfewEnd}{twoCurfewEnd}{threeCurfewEnd}{twoCurfewStart2}{twoCurfewEnd2}{threeCurfewStart2}{threeCurfewEnd2}{threeCurfewStart3}{threeCurfewEnd3} daily.",
+        type = "CurfewTermsV4",
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
