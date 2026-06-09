@@ -707,7 +707,7 @@
       {
         "code": "8e52e16e-1abf-4251-baca-2fabfcb243d0",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "text": "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+        "text": "Not to own or possess more than one mobile phone or SIM card, or install an e-sim, without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
         "tpl": null,
         "requiresInput": false,
         "inputs": null,
@@ -2345,8 +2345,8 @@
       {
         "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
         "category": "Electronic monitoring",
-        "text": "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
-        "tpl": "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your {electronicMonitoringTypes} licence condition(s) unless otherwise authorised by your supervising officer.",
+        "text": "Your electronic monitoring tag will check [CONDITIONS TO BE MONITORED]. You must wear the tag until [END DATE].",
+        "tpl": "Your electronic monitoring tag will check {electronicMonitoringTypes}. You must wear the tag until {endDate}.",
         "requiresInput": true,
         "inputs": [
           {
@@ -2356,30 +2356,48 @@
             "listType": "AND",
             "options": [
               {
-                "value": "exclusion zone",
+                "value": "that you do not go to areas you must not enter (exclusion zones)",
                 "conditional": null
               },
               {
-                "value": "curfew",
+                "value": "that you do not leave areas you must stay in (restriction zones)",
                 "conditional": null
               },
               {
-                "value": "location monitoring",
+                "value": "that you comply with your curfew",
                 "conditional": null
               },
               {
-                "value": "attendance at appointments",
+                "value": "that you do not drink any alcohol",
                 "conditional": null
               },
               {
-                "value": "alcohol monitoring",
+                "value": "that you attend appointments",
                 "conditional": null
               },
               {
-                "value": "alcohol abstinence",
+                "value": "your alcohol consumption",
+                "conditional": null
+              },
+              {
+                "value": "your location",
                 "conditional": null
               }
             ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          },
+          {
+            "type": "datePicker",
+            "label": "Enter the end date",
+            "name": "endDate",
+            "listType": null,
+            "options": null,
             "case": null,
             "handleIndefiniteArticle": null,
             "addAnother": null,
@@ -2391,7 +2409,7 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "ElectronicMonitoringTypes",
+        "type": "ElectronicMonitoringTypesV4",
         "skippable": false,
         "requiresElectronicMonitoringResponse": true
       },
