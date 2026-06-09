@@ -1418,31 +1418,39 @@ val POLICY_V4_0 = LicencePolicy(
             name = "electronicMonitoringTypes",
             options = listOf(
               Option(
-                value = "exclusion zone",
+                value = "that you do not go to areas you must not enter (exclusion zones)",
               ),
               Option(
-                value = "curfew",
+                value = "that you do not leave areas you must stay in (restriction zones)",
               ),
               Option(
-                value = "location monitoring",
+                value = "that you comply with your curfew",
               ),
               Option(
-                value = "attendance at appointments",
+                value = "that you do not drink any alcohol",
               ),
               Option(
-                value = "alcohol monitoring",
+                value = "that you attend appointments",
               ),
               Option(
-                value = "alcohol abstinence",
+                value = "your alcohol consumption",
+              ),
+              Option(
+                value = "your location",
               ),
             ),
             type = CHECK,
           ),
+          Input(
+            label = "Enter the end date",
+            name = "endDate",
+            type = DATE_PICKER,
+          ),
         ),
         requiresInput = true,
-        text = "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
-        tpl = "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your {electronicMonitoringTypes} licence condition(s) unless otherwise authorised by your supervising officer.",
-        type = "ElectronicMonitoringTypes",
+        text = "Your electronic monitoring tag will check [CONDITIONS TO BE MONITORED]. You must wear the tag until [END DATE].",
+        tpl = "Your electronic monitoring tag will check {electronicMonitoringTypes}. You must wear the tag until {endDate}.",
+        type = "ElectronicMonitoringTypesV4",
         requiresElectronicMonitoringResponse = true,
       ),
       AdditionalConditionAp(
