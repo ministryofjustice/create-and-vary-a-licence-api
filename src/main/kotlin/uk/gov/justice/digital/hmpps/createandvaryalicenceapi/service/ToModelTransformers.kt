@@ -1029,6 +1029,7 @@ fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCu
   townOrCity = entity.townOrCity,
   county = entity.county,
   postcode = entity.postcode,
+  source = entity.source,
 )
 
 fun transformToModelElectronicMonitoringProvider(entity: EntityElectronicMonitoringProvider): ElectronicMonitoringProvider = ElectronicMonitoringProvider(

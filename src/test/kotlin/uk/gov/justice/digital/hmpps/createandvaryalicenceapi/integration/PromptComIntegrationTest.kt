@@ -3,17 +3,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.verify
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import java.time.Duration
 
@@ -84,9 +82,11 @@ class PromptComIntegrationTest : IntegrationTestBase() {
     prisonMockServer.stubGetCourtOutcomes()
     prisonMockServer.stubGetSentenceAndRecallTypes(124)
     deliusMockServer.stubGetManagersForPromptComJob()
+    prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false, includeRecall = true)
   }
 
   private companion object {
+    @RegisterExtension
     val prisonSearchServer = PrisonerSearchMockServer()
 
     @RegisterExtension
@@ -94,18 +94,5 @@ class PromptComIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val prisonMockServer = PrisonApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonSearchServer.start()
-      prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false, includeRecall = true)
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonSearchServer.stop()
-    }
   }
 }

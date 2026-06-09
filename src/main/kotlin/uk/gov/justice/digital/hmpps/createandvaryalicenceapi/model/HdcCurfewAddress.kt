@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 
 @Schema(description = "Describes a curfew address on a HDC licence")
 data class HdcCurfewAddress(
@@ -22,4 +23,7 @@ data class HdcCurfewAddress(
 
   @field:Schema(description = "The postcode for the curfew address", example = "SO30 2UH")
   val postcode: String,
+
+  @field:Schema(description = "Source of the address", example = "MANUAL")
+  val source: AddressSource,
 )

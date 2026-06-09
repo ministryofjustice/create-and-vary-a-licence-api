@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
@@ -94,6 +96,7 @@ class HdcService(
           secondLine = it.addressLine2,
           townOrCity = it.townOrCity ?: "",
           postcode = it.postcode ?: "",
+          source = AddressSource.MANUAL_MIGRATED,
         )
       }
     }
@@ -184,7 +187,7 @@ class HdcService(
   @Transactional
   fun addHdcCurfewAddress(licenceId: Long, request: AddHdcCurfewAddressRequest) {
     val licence = licenceRepository.findById(licenceId)
-      .orElseThrow { EntityNotFoundException("Hdc Licence $licenceId not found") } as HdcLicenceEntity
+      .orElseThrow { EntityNotFoundException("Hdc Licence $licenceId not found") } as HdcVariationLicence
 
     val staff = getStaffUser()
 
@@ -208,7 +211,7 @@ class HdcService(
   }
 
   private fun createHdcCurfewAddress(
-    licence: HdcLicenceEntity,
+    licence: HdcVariationLicence,
     request: AddHdcCurfewAddressRequest,
     staff: Staff?,
   ): Map<String, String> {

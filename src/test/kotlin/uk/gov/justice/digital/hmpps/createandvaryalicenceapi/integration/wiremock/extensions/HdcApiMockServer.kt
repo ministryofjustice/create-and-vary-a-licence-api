@@ -1,17 +1,19 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
-import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
-import com.github.tomakehurst.wiremock.client.WireMock.post
-import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 
-class HdcApiMockServer : WireMockServer(8100) {
+class HdcApiMockServer :
+  WireMockExtension(
+    extensionOptions()
+      .options(wireMockConfig().port(8100)),
+  ) {
   fun stubGetHdcLicenceData(bookingId: Long = 54321) {
     stubFor(
-      get(urlEqualTo("/licence/hdc/$bookingId")).willReturn(
-        aResponse().withHeader("Content-Type", "application/json").withBody(
+      WireMock.get(WireMock.urlEqualTo("/licence/hdc/$bookingId")).willReturn(
+        WireMock.aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
             "licenceId": "1",
             "curfewAddress": {
@@ -79,8 +81,8 @@ class HdcApiMockServer : WireMockServer(8100) {
 
   fun stubGetHdcLicenceDataNotFound(bookingId: Long = 54321) {
     stubFor(
-      get(urlEqualTo("/licence/hdc/$bookingId"))
-        .willReturn(aResponse().withStatus(404)),
+      WireMock.get(WireMock.urlEqualTo("/licence/hdc/$bookingId"))
+        .willReturn(WireMock.aResponse().withStatus(404)),
     )
   }
 
@@ -99,9 +101,9 @@ class HdcApiMockServer : WireMockServer(8100) {
     }
 
     stubFor(
-      post(urlEqualTo("/licence/hdc/status"))
+      WireMock.post(WireMock.urlEqualTo("/licence/hdc/status"))
         .willReturn(
-          aResponse()
+          WireMock.aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(jsonArray)
             .withStatus(200),

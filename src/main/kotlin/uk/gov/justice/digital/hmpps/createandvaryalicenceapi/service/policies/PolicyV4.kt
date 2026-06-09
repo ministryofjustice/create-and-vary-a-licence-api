@@ -397,7 +397,7 @@ val POLICY_V4_0 = LicencePolicy(
         categoryShort = "Items and documents",
         code = "8e52e16e-1abf-4251-baca-2fabfcb243d0",
         requiresInput = false,
-        text = "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+        text = "Not to own or possess more than one mobile phone or SIM card, or install an e-sim, without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
       ),
       AdditionalConditionAp(
         category = "Possession, ownership, control or inspection of specified items or documents",
@@ -510,7 +510,7 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Curfew arrangement",
-        code = "0a370862-5426-49c1-b6d4-3d074d78a81a",
+        code = "52faefcf-15f0-42c5-b908-621b4a7ecdb9",
         inputs = listOf(
           Input(
             label = "Select the number of curfews needed",
@@ -522,13 +522,15 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "Enter the curfew start time",
-                      name = "curfewStart",
+                      name = "oneCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter the curfew end time",
-                      name = "curfewEnd",
+                      name = "oneCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
@@ -539,23 +541,29 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "First curfew – enter the start time",
-                      name = "curfewStart",
+                      name = "twoCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "First curfew – enter the end time",
-                      name = "curfewEnd",
+                      name = "twoCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the start time",
-                      name = "curfewStart2",
+                      name = "twoCurfewStart2",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the end time",
-                      name = "curfewEnd2",
+                      name = "twoCurfewEnd2",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
@@ -566,74 +574,55 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "First curfew – enter the start time",
-                      name = "curfewStart",
+                      name = "threeCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "First curfew – enter the end time",
-                      name = "curfewEnd",
+                      name = "threeCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the start time",
-                      name = "curfewStart2",
+                      name = "threeCurfewStart2",
+                      includeBefore = ", ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the end time",
-                      name = "curfewEnd2",
+                      name = "threeCurfewEnd2",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Third curfew – enter the start time",
-                      name = "curfewStart3",
+                      name = "threeCurfewStart3",
+                      includeBefore = ", and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Third curfew – enter the end time",
-                      name = "curfewEnd3",
+                      name = "threeCurfewEnd3",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
-              ),
-            ),
-            type = RADIO,
-          ),
-          Input(
-            case = LOWER,
-            handleIndefiniteArticle = true,
-            label = "Select a review period",
-            name = "reviewPeriod",
-            options = listOf(
-              Option(
-                value = "Weekly",
-              ),
-              Option(
-                value = "Monthly",
-              ),
-              Option(
-                conditional = Conditional(
-                  inputs = listOf(
-                    ConditionalInput(
-                      case = LOWER,
-                      handleIndefiniteArticle = true,
-                      label = "Enter a review period",
-                      name = "alternativeReviewPeriod",
-                      type = TEXT,
-                    ),
-                  ),
-                ),
-                value = "Other",
               ),
             ),
             type = RADIO,
           ),
         ),
         requiresInput = true,
-        text = "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-        tpl = "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-        type = "CurfewTerms",
+        text = "Your curfew hours are between [TIME] and [TIME] daily.",
+        tpl = "Your curfew hours are between {oneCurfewStart}{twoCurfewStart}{threeCurfewStart} and {oneCurfewEnd}{twoCurfewEnd}{threeCurfewEnd}{twoCurfewStart2}{twoCurfewEnd2}{threeCurfewStart2}{threeCurfewEnd2}{threeCurfewStart3}{threeCurfewEnd3} daily.",
+        type = "CurfewTermsV4",
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
@@ -774,6 +763,7 @@ val POLICY_V4_0 = LicencePolicy(
                     ConditionalInput(
                       label = "Enter one or more types of motor vehicle",
                       name = "typesOfMotorVehicle",
+                      defaultValue = "any motor vehicle",
                       type = TEXT,
                     ),
                   ),
@@ -842,6 +832,7 @@ val POLICY_V4_0 = LicencePolicy(
                     ConditionalInput(
                       label = "Enter one or more locations",
                       name = "locations",
+                      defaultValue = " at any location",
                       type = TEXT,
                     ),
                   ),
@@ -853,6 +844,7 @@ val POLICY_V4_0 = LicencePolicy(
         ),
         requiresInput = true,
         text = "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
+        tpl = "Not to use {typesOfMotorVehicle}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} {locations} without the prior approval of your supervising officer.",
         type = "VehicleRestrictions",
       ),
       AdditionalConditionAp(
@@ -1418,31 +1410,39 @@ val POLICY_V4_0 = LicencePolicy(
             name = "electronicMonitoringTypes",
             options = listOf(
               Option(
-                value = "exclusion zone",
+                value = "that you do not go to areas you must not enter (exclusion zones)",
               ),
               Option(
-                value = "curfew",
+                value = "that you do not leave areas you must stay in (restriction zones)",
               ),
               Option(
-                value = "location monitoring",
+                value = "that you comply with your curfew",
               ),
               Option(
-                value = "attendance at appointments",
+                value = "that you do not drink any alcohol",
               ),
               Option(
-                value = "alcohol monitoring",
+                value = "that you attend appointments",
               ),
               Option(
-                value = "alcohol abstinence",
+                value = "your alcohol consumption",
+              ),
+              Option(
+                value = "your location",
               ),
             ),
             type = CHECK,
           ),
+          Input(
+            label = "Enter the end date",
+            name = "endDate",
+            type = DATE_PICKER,
+          ),
         ),
         requiresInput = true,
-        text = "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
-        tpl = "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your {electronicMonitoringTypes} licence condition(s) unless otherwise authorised by your supervising officer.",
-        type = "ElectronicMonitoringTypes",
+        text = "Your electronic monitoring tag will check [CONDITIONS TO BE MONITORED]. You must wear the tag until [END DATE].",
+        tpl = "Your electronic monitoring tag will check {electronicMonitoringTypes}. You must wear the tag until {endDate}.",
+        type = "ElectronicMonitoringTypesV4",
         requiresElectronicMonitoringResponse = true,
       ),
       AdditionalConditionAp(

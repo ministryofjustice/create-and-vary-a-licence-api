@@ -33,7 +33,7 @@ INSERT INTO licence (
 	licence_version
 ) VALUES (
                 1,
-			 'HDC',
+			 'HDC_VARIATION',
 			 'AP',
 			 '1.0',
 			 'IN_PROGRESS',
