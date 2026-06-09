@@ -82,7 +82,7 @@ class HdcService(
           untilDay = it.untilDay,
           untilTime = it.untilTime,
         )
-      }
+      } ?: emptyList()
     }
 
     val curfewAddress = if (licence.curfewAddress != null) {

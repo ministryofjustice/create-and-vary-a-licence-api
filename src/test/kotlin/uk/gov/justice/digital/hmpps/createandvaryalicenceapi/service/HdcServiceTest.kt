@@ -193,7 +193,7 @@ class HdcServiceTest {
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress)
     assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
-    assertThat(result?.weeklyCurfewTimes).isNull()
+    assertThat(result?.weeklyCurfewTimes).isEmpty()
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
