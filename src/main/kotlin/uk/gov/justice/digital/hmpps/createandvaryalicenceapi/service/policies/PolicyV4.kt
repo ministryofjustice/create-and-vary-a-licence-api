@@ -763,6 +763,7 @@ val POLICY_V4_0 = LicencePolicy(
                     ConditionalInput(
                       label = "Enter one or more types of motor vehicle",
                       name = "typesOfMotorVehicle",
+                      defaultValue = "any motor vehicle",
                       type = TEXT,
                     ),
                   ),
@@ -831,6 +832,7 @@ val POLICY_V4_0 = LicencePolicy(
                     ConditionalInput(
                       label = "Enter one or more locations",
                       name = "locations",
+                      defaultValue = " at any location",
                       type = TEXT,
                     ),
                   ),
@@ -842,6 +844,7 @@ val POLICY_V4_0 = LicencePolicy(
         ),
         requiresInput = true,
         text = "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
+        tpl = "Not to use {typesOfMotorVehicle}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} {locations} without the prior approval of your supervising officer.",
         type = "VehicleRestrictions",
       ),
       AdditionalConditionAp(

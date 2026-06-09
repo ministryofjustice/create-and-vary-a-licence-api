@@ -1302,7 +1302,7 @@
         "code": "d523d711-9975-4a9a-a37e-a17bd611140f",
         "category": "Freedom of movement",
         "text": "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
-        "tpl": null,
+        "tpl": "Not to use {typesOfMotorVehicle}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} {locations} without the prior approval of your supervising officer.",
         "requiresInput": true,
         "inputs": [
           {
@@ -1327,7 +1327,7 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null,
+                      "defaultValue": "any motor vehicle",
                       "hideHintText": false
                     }
                   ]
@@ -1434,7 +1434,7 @@
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null,
+                      "defaultValue": " at any location",
                       "hideHintText": false
                     }
                   ]
