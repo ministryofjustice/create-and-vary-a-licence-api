@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedProbationConfirmContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -45,6 +46,9 @@ interface TestAuditEventRepository : JpaRepository<AuditEvent, Long> {
   fun findAllByLicenceIdIn(licenceIds: List<Long>): List<AuditEvent>
   fun findAllByLicenceIdNull(): List<AuditEvent>
 }
+
+@Repository
+interface TestHdcCurfewAddressRepository : JpaRepository<HdcCurfewAddress, Long>
 
 @Repository
 interface TestStaffRepository : JpaRepository<Staff, Long> {
@@ -120,6 +124,7 @@ class TestRepository(
   private val testTimeServedProbationConfirmContactRepository: TestTimeServedProbationConfirmContactRepository,
   private val testAdditionalConditionUploadRepository: TestAdditionalConditionUploadRepository,
   private val migrationRepository: TestMigrationRepository,
+  private val hdcCurfewAddressRepository: TestHdcCurfewAddressRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -180,6 +185,8 @@ class TestRepository(
     assertThat(events).isNotEmpty
     return events
   }
+
+  fun findAllHdcCurfewAddresses(): List<HdcCurfewAddress> = hdcCurfewAddressRepository.findAll()
 
   fun getAuditEventCount(): Long = auditEventRepository.count()
 

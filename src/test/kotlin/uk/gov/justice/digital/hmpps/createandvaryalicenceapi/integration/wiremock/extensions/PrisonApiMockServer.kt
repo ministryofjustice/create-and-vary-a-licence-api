@@ -1,10 +1,11 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderSentencesAndOffences
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
@@ -13,7 +14,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Sent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import java.time.LocalDate
 
-class PrisonApiMockServer : WireMockServer(8091) {
+class PrisonApiMockServer :
+  WireMockExtension(
+    extensionOptions()
+      .options(wireMockConfig().port(8091)),
+  ) {
 
   companion object {
     private val mapper: ObjectMapper = createTestMapper()
@@ -43,16 +48,27 @@ class PrisonApiMockServer : WireMockServer(8091) {
     )
   }
 
-  fun stubGetPrison(prisonId: String = "ABC", prisonDescription: String = "ABC (HMP)") {
+  fun stubGetPrison(
+    prisonId: String = "ABC",
+    prisonDescription: String = "ABC (HMP)",
+  ) {
     stubFor(
       get(urlEqualTo("/api/agencies/prison/$prisonId")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
-          """{
+          """
+          {
             "agencyId": "$prisonId",
             "formattedDescription": "$prisonDescription",
-            "phones": []
-            }
-          """.trimMargin(),
+            "phones": [
+              {
+                "phoneId": 1,
+                "number": "01234567890",
+                "type": "BUS",
+                "ext": "123"
+              }
+            ]
+          }
+          """.trimIndent(),
         ).withStatus(200),
       ),
     )

@@ -1,21 +1,19 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.caseload
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
@@ -266,7 +264,6 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
     deliusMockServer.stubGetManagers(managers)
-    govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
   }
 
   fun createCommunityManager(id: Long, nomisId: String): CommunityManager = CommunityManager(
@@ -344,30 +341,16 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
   )
 
   companion object {
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
-    val govUkMockServer = GovUkMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonerSearchMockServer.start()
-      deliusMockServer.start()
-      prisonApiMockServer.start()
-      hdcApiMockServer.start()
-      govUkMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonerSearchMockServer.stop()
-      deliusMockServer.stop()
-      prisonApiMockServer.stop()
-      hdcApiMockServer.stop()
-      govUkMockServer.stop()
-    }
   }
 }

@@ -9,11 +9,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException
@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -43,6 +44,7 @@ class MigrationService(
   val migrationRepository: MigrationRepository,
   val cvlRecordService: CvlRecordService,
   val prisonerSearchApiClient: PrisonerSearchApiClient,
+  val prisonService: PrisonService,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -94,9 +96,11 @@ class MigrationService(
   }
 
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
-    val offenderManager = getOffenderManager(prisoner.prisonerNumber!!)
+    val offenderManager = getOffenderManager(prisoner.prisonerNumber)
     val probationTeam = offenderManager.team
     val responsibleCom = licenceCreationService.getOrCreateCom(offenderManager.id)
+
+    val prisonInformation = prisonService.getPrisonInformation(prison.prisonCode)
 
     val comSet = mutableSetOf(responsibleCom)
     val submittedByCom = comSet.getCommAndAdd(lifecycle.submittedByUserName)
@@ -123,9 +127,9 @@ class MigrationService(
       dateOfBirth = prisoner.dateOfBirth,
 
       // Prison details
-      prisonCode = prison.prisonCode,
-      prisonDescription = prison.prisonDescription,
-      prisonTelephone = prison.prisonTelephone,
+      prisonCode = prisonInformation.prisonId,
+      prisonDescription = prisonInformation.description,
+      prisonTelephone = prisonInformation.getPrisonContactNumber(),
 
       // Probation
       probationAreaCode = probationTeam.provider.code,
@@ -193,11 +197,14 @@ class MigrationService(
 
     curfewAddress?.let {
       licence.curfewAddress = HdcCurfewAddress(
-        addressLine1 = it.addressLine1 ?: "",
-        addressLine2 = it.addressLine2,
+        firstLine = it.addressLine1 ?: "",
+        secondLine = it.addressLine2,
         townOrCity = it.townOrCity ?: "",
-        postcode = it.postcode,
+        postcode = it.postcode ?: "",
         licence = licence,
+        reference = UUID.randomUUID().toString(),
+        source = AddressSource.MANUAL_MIGRATED,
+        accommodationType = it.addressType,
       )
     }
 

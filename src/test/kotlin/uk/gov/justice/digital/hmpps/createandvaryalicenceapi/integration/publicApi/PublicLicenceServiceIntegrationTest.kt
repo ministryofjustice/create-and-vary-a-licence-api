@@ -1,11 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.publicApi
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,8 +13,7 @@ import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
@@ -107,7 +104,8 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     @Sql("classpath:test_data/seed-licence-id-1.sql")
     fun `Get licences by prisoner number is role protected`() {
       // Given
-      val request = buildGetRequest(uri = "/public/licence-summaries/prison-number/A1234AA", role = "ROLE_CVL_VERY_WRONG")
+      val request =
+        buildGetRequest(uri = "/public/licence-summaries/prison-number/A1234AA", role = "ROLE_CVL_VERY_WRONG")
 
       // When
       val response = request.exchange()
@@ -183,11 +181,6 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
   @Nested
   inner class `Transform additional conditions` {
 
-    @BeforeEach
-    fun reset() {
-      govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-    }
-
     @Test
     @Sql(
       "classpath:test_data/seed-licence-id-2.sql",
@@ -215,8 +208,26 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       assertThat(additionalConditions).hasSize(2)
       assertThat(additionalConditions[0]).isInstanceOf(MultipleExclusionZoneAdditionalCondition::class.java)
       assertThat(additionalConditions[1]).isInstanceOf(MultipleUploadAdditionalCondition::class.java)
-      assertUploadCondition(additionalConditions[0], "MULTIPLE_EXCLUSION_ZONE", setOf("MULTIPLE_EXCLUSION_ZONE"), 1, "Freedom of movement", "0f9a20f4-35c7-4c77-8af8-f200f153fa11", "c1t", true)
-      assertUploadCondition(additionalConditions[1], "MULTIPLE_UPLOADS", setOf("MULTIPLE_UPLOADS"), 2, "restricted area", "005d70e4-a247-4f82-b8b3-6d294a0f5051", "c2t", true)
+      assertUploadCondition(
+        additionalConditions[0],
+        "MULTIPLE_EXCLUSION_ZONE",
+        setOf("MULTIPLE_EXCLUSION_ZONE"),
+        1,
+        "Freedom of movement",
+        "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
+        "c1t",
+        true,
+      )
+      assertUploadCondition(
+        additionalConditions[1],
+        "MULTIPLE_UPLOADS",
+        setOf("MULTIPLE_UPLOADS"),
+        2,
+        "restricted area",
+        "005d70e4-a247-4f82-b8b3-6d294a0f5051",
+        "c2t",
+        true,
+      )
     }
 
     fun assertUploadCondition(
@@ -245,7 +256,12 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     }
   }
 
-  private fun assertLicenceSummary(result: PublicLicenceSummary, id: Long = 1L, crn: String = "CRN1", prisonNumber: String = "A1234AA") {
+  private fun assertLicenceSummary(
+    result: PublicLicenceSummary,
+    id: Long = 1L,
+    crn: String = "CRN1",
+    prisonNumber: String = "A1234AA",
+  ) {
     assertThat(result.id).isEqualTo(id)
     assertThat(result.kind).isEqualTo(LicenceKind.CRD)
     assertThat(result.licenceType).isEqualTo(LicenceType.AP)
@@ -268,21 +284,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     .headers(setAuthorisation(roles = listOf(role)))
 
   private companion object {
+    @RegisterExtension
     val documentApiMockServer = DocumentApiMockServer()
-    val govUkApiMockServer = GovUkMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      documentApiMockServer.start()
-      govUkApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      documentApiMockServer.stop()
-      govUkApiMockServer.stop()
-    }
   }
 }

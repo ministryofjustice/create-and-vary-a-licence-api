@@ -3,9 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.within
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -17,7 +14,6 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
@@ -32,11 +28,6 @@ import java.util.stream.Stream
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as LicenceEntity
 
 class AppointmentIntegrationTest : IntegrationTestBase() {
-
-  @BeforeEach
-  fun reset() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   @Sql(
@@ -679,21 +670,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
       telephoneAlternative = "07700 900000",
     )
 
-    val govUkApiMockServer = GovUkMockServer()
-
     @JvmStatic
     fun invalidReferencesWhenSourceOSPlaces(): Stream<String?> = Stream.of(null, "", " ", "   ")
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-    }
   }
 }

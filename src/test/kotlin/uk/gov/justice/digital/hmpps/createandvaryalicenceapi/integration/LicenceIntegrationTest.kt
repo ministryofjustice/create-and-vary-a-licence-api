@@ -1,11 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus.FORBIDDEN
@@ -25,11 +23,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DocumentApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
@@ -64,11 +61,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
-
-  @BeforeEach
-  fun reset() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   @Sql(
@@ -1279,30 +1271,16 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       "dateOfBirth": "1985-01-01"
     }]"""
 
-    val govUkApiMockServer = GovUkMockServer()
+    @RegisterExtension
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val documentApiMockServer = DocumentApiMockServer()
+
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-      prisonerSearchApiMockServer.start()
-      deliusMockServer.start()
-      documentApiMockServer.start()
-      prisonApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-      prisonerSearchApiMockServer.stop()
-      deliusMockServer.stop()
-      documentApiMockServer.stop()
-      prisonApiMockServer.stop()
-    }
   }
 }

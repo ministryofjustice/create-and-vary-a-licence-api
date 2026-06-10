@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.an
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -174,6 +175,62 @@ class AuditServiceTest {
         "field" to "appointmentPerson",
         "previousValue" to "Joe Bloggs",
         "newValue" to "John Doe",
+      ),
+    )
+  }
+
+  @Test
+  fun `records an event when hdc curfew address is created`() {
+    service.recordAuditEventHdcCurfewAddressUpdate(
+      aHdcVariationLicenceEntity,
+      mapOf(
+        "field" to "createHdcCurfewAddress",
+        "value" to "New Address",
+      ),
+      aCom,
+    )
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo(aCom.username)
+    assertThat(captured.summary).isEqualTo("Updated HDC curfew address for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
+
+    assertThat(captured.changes).isEqualTo(
+      mapOf(
+        "field" to "createHdcCurfewAddress",
+        "value" to "New Address",
+      ),
+    )
+  }
+
+  @Test
+  fun `records an event when hdc curfew address are updated`() {
+    service.recordAuditEventHdcCurfewAddressUpdate(
+      aHdcVariationLicenceEntity,
+      mapOf(
+        "field" to "updateHdcCurfewAddress",
+        "previousValue" to "Old Address",
+        "newValue" to "New Address",
+      ),
+      aCom,
+    )
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo(aCom.username)
+    assertThat(captured.summary).isEqualTo("Updated HDC curfew address for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
+
+    assertThat(captured.changes).isEqualTo(
+      mapOf(
+        "field" to "updateHdcCurfewAddress",
+        "previousValue" to "Old Address",
+        "newValue" to "New Address",
       ),
     )
   }
@@ -1039,6 +1096,8 @@ class AuditServiceTest {
     val aLicenceEntity = createCrdLicence()
 
     val aHdcLicenceEntity = createHdcLicence()
+
+    val aHdcVariationLicenceEntity = createHdcVariationLicence()
 
     val someAdditionalConditionData = mutableListOf(
       AdditionalConditionData(

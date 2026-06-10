@@ -1,2 +1,2 @@
-insert into hdc_curfew_address (id, licence_id, address_line1, address_line2, town_or_city, county, postcode)
-values (1, 1, '1 Some Address', 'Off Some Road', 'Some Town', 'Some County', 'AB1 2CD');
+insert into hdc_curfew_address (id, licence_id, first_line, second_line, town_or_city, county, postcode, reference, uprn, source, accommodation_type, post_release_residential_checks_completed, post_release_residential_checks_not_completed_reason, created_timestamp, last_updated_timestamp)
+values (1, 1, '1 Some Address', 'Off Some Road', 'Some Town', 'Some County', 'AB1 2CD', '123e4567-e89b-12d3-a456-426614174000', null, 'MANUAL', 'RESIDENTIAL', true, null, current_timestamp, current_timestamp);

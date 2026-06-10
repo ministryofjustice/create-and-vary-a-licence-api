@@ -3,10 +3,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.prison
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.springframework.test.annotation.DirtiesContext
@@ -16,9 +14,8 @@ import org.springframework.test.context.jdbc.Sql
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.PrisonEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SENTENCE_DATES_CHANGED_EVENT_TYPE
@@ -44,11 +41,6 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
 
   private val awaitAtMost30Secs
     get() = await.atMost(Duration.ofSeconds(30))
-
-  @BeforeEach
-  fun setupClient() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   @Sql(
@@ -95,24 +87,10 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
   )
 
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-      prisonApiMockServer.start()
-      prisonerSearchMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-      prisonApiMockServer.stop()
-      prisonerSearchMockServer.stop()
-    }
   }
 }

@@ -1,15 +1,14 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.task
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -51,24 +50,13 @@ class InactivateHardstopLicencesTaskIntegrationTest : IntegrationTestBase() {
     assertThat(potentialHardstopCase.status).isEqualTo(PotentialHardstopCaseStatus.PROCESSED)
   }
 
+  @BeforeEach
+  fun startMocks() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+  }
+
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-      prisonerSearchMockServer.start()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-      govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-      prisonerSearchMockServer.stop()
-    }
   }
 }

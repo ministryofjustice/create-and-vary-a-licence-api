@@ -3,17 +3,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.verify
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import java.time.Duration
 
@@ -79,33 +77,22 @@ class PromptComIntegrationTest : IntegrationTestBase() {
     await untilAsserted { verify(telemetryClient).trackEvent("PromptComJob", mapOf("cases" to "1"), null) }
   }
 
+  @BeforeEach
+  fun beforeEach() {
+    prisonMockServer.stubGetCourtOutcomes()
+    prisonMockServer.stubGetSentenceAndRecallTypes(124)
+    deliusMockServer.stubGetManagersForPromptComJob()
+    prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false, includeRecall = true)
+  }
+
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
+    @RegisterExtension
     val prisonSearchServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val prisonMockServer = PrisonApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-      govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-      prisonSearchServer.start()
-      prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false, includeRecall = true)
-      deliusMockServer.start()
-      deliusMockServer.stubGetManagersForPromptComJob()
-      prisonMockServer.start()
-      prisonMockServer.stubGetCourtOutcomes()
-      prisonMockServer.stubGetSentenceAndRecallTypes(124)
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-      prisonSearchServer.stop()
-      deliusMockServer.stop()
-      prisonMockServer.stop()
-    }
   }
 }

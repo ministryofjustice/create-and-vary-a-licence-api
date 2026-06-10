@@ -10,6 +10,8 @@ data class ConditionalInput(
   val handleIndefiniteArticle: Boolean? = null,
   val includeBefore: String? = null,
   val subtext: String? = null,
+  val defaultValue: String? = null,
+  val hideHintText: Boolean = false,
 ) {
   fun toInput() = Input(
     type = type,
@@ -21,5 +23,7 @@ data class ConditionalInput(
     handleIndefiniteArticle = handleIndefiniteArticle,
     includeBefore = includeBefore,
     subtext = subtext,
+    defaultValue = defaultValue,
+    hideHintText = hideHintText,
   )
 }

@@ -3,9 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -15,10 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -113,10 +112,26 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       )
   }
 
+  @BeforeEach
+  fun beforeEach() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(mockPrisoners)
+    prisonerSearchMockServer.stubSearchPrisonersByBookingIds(mockPrisoners)
+    prisonApiMockServer.stubGetCourtOutcomes()
+    hdcApiMockServer.stubGetHdcStatuses(
+      listOf(
+        CurrentPrisonerHdcStatus(345, HdcStatus.APPROVED),
+      ),
+    )
+  }
+
   private companion object {
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
-    val govUkMockServer = GovUkMockServer()
+
+    @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
 
     private val mapper: ObjectMapper = createTestMapper()
@@ -245,32 +260,5 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         ),
       ),
     )
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonApiMockServer.start()
-      prisonerSearchMockServer.start()
-      govUkMockServer.start()
-      hdcApiMockServer.start()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIds(mockPrisoners)
-      prisonerSearchMockServer.stubSearchPrisonersByBookingIds(mockPrisoners)
-      prisonApiMockServer.stubGetCourtOutcomes()
-      hdcApiMockServer.stubGetHdcStatuses(
-        listOf(
-          CurrentPrisonerHdcStatus(345, HdcStatus.APPROVED),
-        ),
-      )
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonApiMockServer.stop()
-      prisonerSearchMockServer.stop()
-      govUkMockServer.stop()
-      hdcApiMockServer.stop()
-    }
   }
 }

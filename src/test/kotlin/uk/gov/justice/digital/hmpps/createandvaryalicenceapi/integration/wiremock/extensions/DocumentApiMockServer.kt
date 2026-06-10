@@ -1,6 +1,5 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aMultipart
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.binaryEqualTo
@@ -12,23 +11,17 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import net.minidev.json.JSONObject
-import org.junit.jupiter.api.extension.AfterAllCallback
-import org.junit.jupiter.api.extension.BeforeAllCallback
-import org.junit.jupiter.api.extension.ExtensionContext
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentType
 import java.util.UUID
 
-class DocumentApiMockServer : WireMockServer(8097) {
-  class Extension :
-    AfterAllCallback,
-    BeforeAllCallback {
-    val documentMockServer = DocumentApiMockServer()
-
-    override fun beforeAll(context: ExtensionContext?) = documentMockServer.start()
-
-    override fun afterAll(context: ExtensionContext?) = documentMockServer.stop()
-  }
+class DocumentApiMockServer :
+  WireMockExtension(
+    extensionOptions()
+      .options(wireMockConfig().port(8097)),
+  ) {
 
   fun stubUploadDocument() {
     stubFor(

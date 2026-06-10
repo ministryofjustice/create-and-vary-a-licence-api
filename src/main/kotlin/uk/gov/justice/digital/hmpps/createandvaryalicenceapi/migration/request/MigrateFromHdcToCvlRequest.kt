@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -55,13 +56,7 @@ data class MigrateFromHdcToCvlRequest(
 @Schema(description = "Prison details")
 data class MigratePrisonDetails(
   @field:Schema(description = "Prison code", example = "MDI")
-  val prisonCode: String?,
-
-  @field:Schema(description = "Prison description", example = "HMP Example")
-  val prisonDescription: String?,
-
-  @field:Schema(description = "Prison telephone number", example = "02038219211")
-  val prisonTelephone: String?,
+  val prisonCode: String,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -199,6 +194,9 @@ data class MigrateAddress(
 
   @field:Schema(description = "Postcode", example = "SA42 1DQ")
   val postcode: String?,
+
+  @field:Schema(description = "Address type", example = "RESIDENTIAL")
+  val addressType: AccommodationType,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

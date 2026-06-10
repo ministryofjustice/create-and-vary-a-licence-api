@@ -3,9 +3,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.domain
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -17,10 +16,10 @@ import org.springframework.test.context.jdbc.Sql
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.WorkFlowMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.WorkFlowMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
@@ -500,9 +499,16 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val workFlowMockServer = WorkFlowMockServer()
 
     val aRestrictedPatientRecord = """[{
@@ -530,23 +536,5 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       "dateOfBirth": "1985-01-01",
       "supportingPrisonId": "ABC"
     }]"""
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      deliusMockServer.start()
-      prisonApiMockServer.start()
-      prisonerSearchMockServer.start()
-      workFlowMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      deliusMockServer.stop()
-      prisonApiMockServer.stop()
-      prisonerSearchMockServer.stop()
-      workFlowMockServer.stop()
-    }
   }
 }

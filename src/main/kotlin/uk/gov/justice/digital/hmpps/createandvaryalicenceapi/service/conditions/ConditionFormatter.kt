@@ -19,7 +19,12 @@ class ConditionFormatter {
     return placeholders.fold(condition.tpl ?: "") { conditionText, placeholder ->
       val fieldName = data.findFieldNameToUse(placeholder)
       val conditionData = data.getProvidedDataFor(fieldName)
-      val value = (rules.find { it.name == fieldName } ?: FormattingRule.DEFAULT).format(conditionData)
+      val rule = rules.find { it.name == fieldName }
+      val value = if (conditionData.isEmpty() && rule?.defaultValue != null) {
+        rule.defaultValue
+      } else {
+        (rule ?: FormattingRule.DEFAULT).format(conditionData)
+      }
       conditionText.replacePlaceholder(placeholder, value)
     }
   }

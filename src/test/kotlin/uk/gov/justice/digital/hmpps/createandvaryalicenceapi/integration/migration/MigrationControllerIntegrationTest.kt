@@ -1,16 +1,18 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.migration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAppointmentAddress
@@ -49,6 +51,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetUserByUserName(4L, userName = "approvedByUsername", firstName = "approvedByFirstName", lastName = "approvedByLastName")
 
     val request = validRequest()
+    prisonApiMockServer.stubGetPrison(prisonId = request.prison.prisonCode)
 
     // When
     val result = webTestClient.post()
@@ -76,6 +79,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetOffenderManagerWithNomsId("A1234AA")
 
     val request = validRequest()
+    prisonApiMockServer.stubGetPrison(request.prison.prisonCode)
 
     // When
     val result = webTestClient.post()
@@ -262,8 +266,8 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     assertThat(licence.dateOfBirth).isEqualTo(request.prisoner.dateOfBirth)
 
     assertThat(licence.prisonCode).isEqualTo(request.prison.prisonCode)
-    assertThat(licence.prisonDescription).isEqualTo(request.prison.prisonDescription)
-    assertThat(licence.prisonTelephone).isEqualTo(request.prison.prisonTelephone)
+    assertThat(licence.prisonDescription).isEqualTo("ABC (HMP)")
+    assertThat(licence.prisonTelephone).isEqualTo("01234567890123")
 
     assertThat(licence.sentenceStartDate).isEqualTo(request.sentence.sentenceStartDate)
     assertThat(licence.sentenceEndDate).isEqualTo(request.sentence.sentenceEndDate)
@@ -294,10 +298,13 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     if (licence is HdcLicence) {
       assertThat(licence.submittedBy?.username).isEqualToIgnoringCase(request.lifecycle.submittedByUserName)
       assertThat(licence.createdBy?.username).isEqualToIgnoringCase(request.lifecycle.createdByUserName)
-      assertThat(licence.curfewAddress?.addressLine1).isEqualTo(request.curfewAddress?.addressLine1)
-      assertThat(licence.curfewAddress?.addressLine2).isEqualTo(request.curfewAddress?.addressLine2)
+      assertThat(licence.curfewAddress?.firstLine).isEqualTo(request.curfewAddress?.addressLine1)
+      assertThat(licence.curfewAddress?.secondLine).isEqualTo(request.curfewAddress?.addressLine2)
       assertThat(licence.curfewAddress?.townOrCity).isEqualTo(request.curfewAddress?.townOrCity)
       assertThat(licence.curfewAddress?.postcode).isEqualTo(request.curfewAddress?.postcode)
+      assertThat(licence.curfewAddress?.accommodationType).isEqualTo(request.curfewAddress?.addressType)
+      assertThat(licence.curfewAddress?.reference).isNotNull
+      assertThat(licence.curfewAddress?.source).isEqualTo(AddressSource.MANUAL_MIGRATED)
       assertThat(licence.homeDetentionCurfewEndDate).isEqualTo(request.licence.homeDetentionCurfewEndDate)
       assertThat(licence.homeDetentionCurfewEligibilityDate).isEqualTo(request.licence.homeDetentionCurfewEligibilityDate)
       assertThat(licence.weeklyCurfewTimes).hasSize(2)
@@ -359,8 +366,6 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     ),
     prison = MigratePrisonDetails(
       prisonCode = "MDI",
-      prisonDescription = "HMP Example",
-      prisonTelephone = "02038219211",
     ),
     sentence = MigrateSentenceDetails(
       sentenceStartDate = LocalDate.parse("2024-01-01"),
@@ -405,6 +410,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       addressLine2 = "Flat 1",
       townOrCity = "Newport",
       postcode = "SA42 1DQ",
+      addressType = AccommodationType.CAS,
     ),
     curfew = MigrateCurfewDetails(
       curfewTimes = listOf(
@@ -440,18 +446,10 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   )
 
   private companion object {
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
 
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      deliusMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      deliusMockServer.stop()
-    }
+    @RegisterExtension
+    val prisonApiMockServer = PrisonApiMockServer()
   }
 }

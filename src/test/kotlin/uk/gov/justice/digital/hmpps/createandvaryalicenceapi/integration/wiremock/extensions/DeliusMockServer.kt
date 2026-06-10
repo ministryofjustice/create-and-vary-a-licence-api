@@ -1,16 +1,21 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 
-class DeliusMockServer : WireMockServer(8093) {
+class DeliusMockServer :
+  WireMockExtension(
+    extensionOptions()
+      .options(wireMockConfig().port(8093)),
+  ) {
 
   private val mapper: ObjectMapper = createTestMapper()
 

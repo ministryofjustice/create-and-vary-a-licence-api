@@ -1,88 +1,77 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
-import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
-import com.github.tomakehurst.wiremock.client.WireMock.post
-import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 
-class HdcApiMockServer : WireMockServer(8100) {
+class HdcApiMockServer :
+  WireMockExtension(
+    extensionOptions()
+      .options(wireMockConfig().port(8100)),
+  ) {
   fun stubGetHdcLicenceData(bookingId: Long = 54321) {
     stubFor(
-      get(urlEqualTo("/licence/hdc/$bookingId")).willReturn(
-        aResponse().withHeader("Content-Type", "application/json").withBody(
+      WireMock.get(WireMock.urlEqualTo("/licence/hdc/$bookingId")).willReturn(
+        WireMock.aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
             "licenceId": "1",
             "curfewAddress": {
               "addressLine1": "123 Test Street",
               "addressLine2": null,
               "townOrCity": "Test Area",
-              "county": null,
-              "postcode": "AB1 2CD"
+              "postcode": "AB1 2CD",
+              "curfewAddressType": "RESIDENTIAL"
             },
-            "firstNightCurfewTimes": {
-              "fromTime": "15:00",
-              "untilTime": "07:00"
+            "firstNightCurfewHours": {
+              "firstNightFrom": "15:00",
+              "firstNightUntil": "07:00"
             },
-            "weeklyCurfewTimes": [
+            "curfewTimes": [
               {
-                "id": "1",
-                "curfewTimesSequence": "1",
                 "fromDay": "MONDAY",
                 "fromTime": "19:00",
                 "untilDay": "TUESDAY",
                 "untilTime": "07:00"
               },
               {
-                "id": "1",
-                "curfewTimesSequence": "2",
                 "fromDay": "TUESDAY",
                 "fromTime": "19:00",
                 "untilDay": "WEDNESDAY",
                 "untilTime": "07:00"
               },
               {
-                "id": "1",
-                "curfewTimesSequence": "3",
                 "fromDay": "WEDNESDAY",
                 "fromTime": "19:00",
                 "untilDay": "THURSDAY",
                 "untilTime": "07:00"
               },
               {
-                "id": "1",
-                "curfewTimesSequence": "4",
                 "fromDay": "THURSDAY",
                 "fromTime": "19:00",
                 "untilDay": "FRIDAY",
                 "untilTime": "07:00"
               },
               {
-                "id": "1",
-                "curfewTimesSequence": "5",
                 "fromDay": "FRIDAY",
                 "fromTime": "19:00",
                 "untilDay": "SATURDAY",
                 "untilTime": "07:00"
               },
               {
-                "id": "1",
-                "curfewTimesSequence": "6",
                 "fromDay": "SATURDAY",
                 "fromTime": "19:00",
                 "untilDay": "SUNDAY",
                 "untilTime": "07:00"
               },
               {
-                "id": "1",
-                "curfewTimesSequence": "7",
                 "fromDay": "SUNDAY",
                 "fromTime": "19:00",
                 "untilDay": "MONDAY",
                 "untilTime": "07:00"
               }
-            ]
+            ],
+            "status": "APPROVED"
           }
           """.trimMargin(),
         ).withStatus(200),
@@ -92,8 +81,8 @@ class HdcApiMockServer : WireMockServer(8100) {
 
   fun stubGetHdcLicenceDataNotFound(bookingId: Long = 54321) {
     stubFor(
-      get(urlEqualTo("/licence/hdc/$bookingId"))
-        .willReturn(aResponse().withStatus(404)),
+      WireMock.get(WireMock.urlEqualTo("/licence/hdc/$bookingId"))
+        .willReturn(WireMock.aResponse().withStatus(404)),
     )
   }
 
@@ -112,9 +101,9 @@ class HdcApiMockServer : WireMockServer(8100) {
     }
 
     stubFor(
-      post(urlEqualTo("/licence/hdc/status"))
+      WireMock.post(WireMock.urlEqualTo("/licence/hdc/status"))
         .willReturn(
-          aResponse()
+          WireMock.aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(jsonArray)
             .withStatus(200),

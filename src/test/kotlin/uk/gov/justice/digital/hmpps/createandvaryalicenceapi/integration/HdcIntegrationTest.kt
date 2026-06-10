@@ -1,20 +1,21 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL_MIGRATED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.HdcLicenceDataResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import java.time.DayOfWeek
 import java.time.LocalTime
 
@@ -40,7 +41,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody(HdcLicenceData::class.java)
+        .expectBody(HdcLicenceDataResponse::class.java)
         .returnResult().responseBody
 
       assertThat(result!!.curfewAddress).isEqualTo(
@@ -51,6 +52,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "Test Area",
           null,
           "AB1 2CD",
+          MANUAL_MIGRATED,
         ),
       )
       assertThat(result.firstNightCurfewTimes).isEqualTo(
@@ -139,7 +141,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody(HdcLicenceData::class.java)
+        .expectBody(HdcLicenceDataResponse::class.java)
         .returnResult().responseBody
 
       assertThat(result!!.curfewAddress).isEqualTo(
@@ -150,6 +152,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "Some Town",
           "Some County",
           "AB1 2CD",
+          MANUAL,
         ),
       )
       assertThat(result.firstNightCurfewTimes).isEqualTo(
@@ -264,18 +267,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      hdcApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      hdcApiMockServer.stop()
-    }
   }
 }
