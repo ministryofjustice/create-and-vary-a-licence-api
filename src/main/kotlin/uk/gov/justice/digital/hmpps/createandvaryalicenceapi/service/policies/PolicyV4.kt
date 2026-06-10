@@ -914,8 +914,8 @@ val POLICY_V4_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "RESTRICTION ZONES PLACEHOLDER",
-        tpl = "RESTRICTION ZONES PLACEHOLDER",
+        text = "Not to leave the area as defined by the attached map without the prior approval of your supervising officer.",
+        tpl = "Not to leave the area as defined by the attached map without the prior approval of your supervising officer.",
         type = "InBoundsRegion",
       ),
       AdditionalConditionAp(
