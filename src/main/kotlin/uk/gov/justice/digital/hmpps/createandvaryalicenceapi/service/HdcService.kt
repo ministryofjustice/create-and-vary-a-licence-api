@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
@@ -216,6 +217,7 @@ class HdcService(
     staff: Staff?,
   ): Map<String, String> {
     val addressReq = request.address
+      ?: throw ValidationException("Address must be provided when creating HDC curfew address")
 
     log.info(
       "Creating HDC curfew address for licenceId={}, uprn={}, postcode={}, staffId={}",
@@ -256,32 +258,38 @@ class HdcService(
     request: AddHdcCurfewAddressRequest,
     staff: Staff?,
   ): Map<String, String> {
-    val addressReq = request.address
+    val previousAddress = entity.toString()
+
+    request.address?.let { addressReq ->
+
+      log.info(
+        "Updating address for licenceId={}, uprn={}, postcode={}, staffId={}",
+        entity.licence.id,
+        addressReq.uprn,
+        addressReq.postcode,
+        staff?.id ?: "none",
+      )
+
+      entity.uprn = addressReq.uprn
+      entity.firstLine = addressReq.firstLine
+      entity.secondLine = addressReq.secondLine
+      entity.townOrCity = addressReq.townOrCity
+      entity.county = addressReq.county
+      entity.postcode = addressReq.postcode
+      entity.source = addressReq.source
+    }
 
     log.info(
-      "Updating HDC curfew address for licenceId={}, uprn={}, postcode={}, staffId={}",
+      "Updating residential checks for licenceId={}, completed={}, reason='{}', staffId={}",
       entity.licence.id,
-      addressReq.uprn,
-      addressReq.postcode,
+      request.postReleaseResidentialChecksCompleted,
+      request.postReleaseResidentialChecksNotCompletedReason,
       staff?.id ?: "none",
     )
 
-    val previousAddress = entity.toString()
-    val newAddressString = addressReq.toString()
-
-    entity.uprn = addressReq.uprn
-    entity.firstLine = addressReq.firstLine
-    entity.secondLine = addressReq.secondLine
-    entity.townOrCity = addressReq.townOrCity
-    entity.county = addressReq.county
-    entity.postcode = addressReq.postcode
-    entity.source = addressReq.source
-
     entity.accommodationType = request.accommodationType
-
     entity.postReleaseResidentialChecksCompleted =
       request.postReleaseResidentialChecksCompleted
-
     entity.postReleaseResidentialChecksNotCompletedReason =
       request.postReleaseResidentialChecksNotCompletedReason
 
@@ -289,7 +297,7 @@ class HdcService(
 
     return buildAuditDetails(
       field = "updateHdcCurfewAddress",
-      value = newAddressString,
+      value = request.address?.toString() ?: "No address change",
       previousValue = previousAddress,
     )
   }
