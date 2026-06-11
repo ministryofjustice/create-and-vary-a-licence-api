@@ -9,9 +9,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.
 data class AddHdcCurfewAddressRequest(
 
   @field:Valid
-  @field:NotNull
-  @Schema(description = "The address to be added as the HDC curfew address", required = true)
-  val address: AddAddressRequest,
+  @Schema(description = "The address to be added as the HDC curfew address")
+  val address: AddAddressRequest? = null,
 
   @field:NotNull(message = "Accommodation type must not be null")
   @field:Schema(description = "The type of accommodation for the HDC curfew address", example = "RESIDENTIAL", required = true)
