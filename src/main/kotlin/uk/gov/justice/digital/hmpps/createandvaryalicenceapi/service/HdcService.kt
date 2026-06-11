@@ -258,7 +258,6 @@ class HdcService(
     request: AddHdcCurfewAddressRequest,
     staff: Staff?,
   ): Map<String, String> {
-
     val previousAddress = entity.toString()
 
     request.address?.let { addressReq ->

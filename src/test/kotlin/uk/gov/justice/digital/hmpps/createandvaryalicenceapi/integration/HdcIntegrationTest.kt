@@ -158,7 +158,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
           MANUAL,
           AccommodationType.RESIDENTIAL,
           true,
-          null
+          null,
         ),
       )
       assertThat(result.firstNightCurfewTimes).isEqualTo(

@@ -138,7 +138,6 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-hdc-licence-id-1-with-curfew-address.sql",
   )
   fun `When updating residential checks without address Then address remains unchanged`() {
-
     assertThat(testRepository.findAllHdcCurfewAddresses().size).isEqualTo(1)
 
     val previous = testRepository.findAllHdcCurfewAddresses()[0]
@@ -184,7 +183,6 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql("classpath:test_data/seed-hdc-variation-licence-id-1.sql")
   fun `When creating address with null address Then validation error`() {
-
     val uri = "/licence/id/1/hdc/curfew/address"
 
     val request = AddHdcCurfewAddressRequest(
