@@ -26,5 +26,5 @@ data class HdcLicenceDataResponse(
   @field:Schema(
     description = "Weekly curfew schedule for the licence",
   )
-  val weeklyCurfewTimes: List<CurfewTimes>? = null,
+  val weeklyCurfewTimes: List<CurfewTimes> = emptyList(),
 )
