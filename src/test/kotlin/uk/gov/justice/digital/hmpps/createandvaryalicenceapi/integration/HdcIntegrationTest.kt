@@ -11,6 +11,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL_MIGRATED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
@@ -46,6 +47,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
 
       assertThat(result!!.curfewAddress).isEqualTo(
         HdcCurfewAddress(
+          null,
           null,
           "123 Test Street",
           null,
@@ -147,12 +149,16 @@ class HdcIntegrationTest : IntegrationTestBase() {
       assertThat(result!!.curfewAddress).isEqualTo(
         HdcCurfewAddress(
           1,
+          null,
           "1 Some Address",
           "Off Some Road",
           "Some Town",
           "Some County",
           "AB1 2CD",
           MANUAL,
+          AccommodationType.RESIDENTIAL,
+          true,
+          null
         ),
       )
       assertThat(result.firstNightCurfewTimes).isEqualTo(

@@ -75,7 +75,7 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
     val savedAddress = licence.curfewAddress!!
 
     assertThat(savedAddress.id).isNotNull()
-    assertThat(savedAddress.uprn).isEqualTo(request.address.uprn)
+    assertThat(savedAddress.uprn).isEqualTo(request.address!!.uprn)
     assertThat(savedAddress.postcode).isEqualTo(request.address.postcode)
 
     assertThat(savedAddress.postReleaseResidentialChecksCompleted)
@@ -115,7 +115,7 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
 
     assertThat(updatedAddress.id).isEqualTo(1L)
 
-    assertThat(updatedAddress.uprn).isEqualTo(request.address.uprn)
+    assertThat(updatedAddress.uprn).isEqualTo(request.address!!.uprn)
     assertThat(updatedAddress.postcode).isEqualTo(request.address.postcode)
 
     assertThat(updatedAddress.postReleaseResidentialChecksCompleted)
@@ -131,6 +131,77 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
       .containsEntry("field", "updateHdcCurfewAddress")
       .containsEntry("previousValue", previousValue.toString())
       .containsEntry("value", request.address.toString())
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-hdc-licence-id-1-with-curfew-address.sql",
+  )
+  fun `When updating residential checks without address Then address remains unchanged`() {
+
+    assertThat(testRepository.findAllHdcCurfewAddresses().size).isEqualTo(1)
+
+    val previous = testRepository.findAllHdcCurfewAddresses()[0]
+
+    // Given
+    val uri = "/licence/id/1/hdc/curfew/address"
+    val request = AddHdcCurfewAddressRequest(
+      address = null,
+      accommodationType = AccommodationType.RESIDENTIAL,
+      postReleaseResidentialChecksCompleted = false,
+      postReleaseResidentialChecksNotCompletedReason = "Checks pending",
+    )
+
+    // When
+    val result = putRequest(uri, request)
+
+    // Then
+    result.expectStatus().isOk
+
+    val licence = getHdcLicence()
+    val updated = licence.curfewAddress!!
+
+    assertThat(updated.uprn).isEqualTo(previous.uprn)
+    assertThat(updated.postcode).isEqualTo(previous.postcode)
+    assertThat(updated.firstLine).isEqualTo(previous.firstLine)
+
+    assertThat(updated.postReleaseResidentialChecksCompleted).isFalse
+    assertThat(updated.postReleaseResidentialChecksNotCompletedReason)
+      .isEqualTo("Checks pending")
+
+    assertThat(updated.accommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+
+    assertThat(testRepository.findAllHdcCurfewAddresses().size).isEqualTo(1)
+
+    val auditEvent = testRepository.findFirstAuditEvent(licence.id)
+
+    assertThat(auditEvent.changes)
+      .containsEntry("field", "updateHdcCurfewAddress")
+      .containsEntry("previousValue", previous.toString())
+      .containsEntry("value", "No address change")
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-hdc-variation-licence-id-1.sql")
+  fun `When creating address with null address Then validation error`() {
+
+    val uri = "/licence/id/1/hdc/curfew/address"
+
+    val request = AddHdcCurfewAddressRequest(
+      address = null,
+      accommodationType = AccommodationType.RESIDENTIAL,
+      postReleaseResidentialChecksCompleted = true,
+      postReleaseResidentialChecksNotCompletedReason = null,
+    )
+
+    val result = putRequest(uri, request)
+
+    result.expectStatus().isBadRequest
+      .expectBody()
+      .consumeWith { response ->
+        val responseString = response.responseBody?.toString(Charsets.UTF_8)
+        assertThat(responseString).contains("Address must be provided when creating HDC curfew address")
+      }
   }
 
   private fun putRequest(

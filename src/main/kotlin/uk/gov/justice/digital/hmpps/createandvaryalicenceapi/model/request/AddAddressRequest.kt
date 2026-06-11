@@ -71,7 +71,7 @@ data class AddAddressRequest(
 @Retention(AnnotationRetention.RUNTIME)
 @Constraint(validatedBy = [AddressWithUprnMustBeFromOsPlacesValidator::class])
 @MustBeDocumented
-annotation class AddressWithUprnMustBeFromOsPlaces(
+  annotation class AddressWithUprnMustBeFromOsPlaces(
   val message: String = "Unique Property Reference Number must be provided only with source OS_PLACES",
   val groups: Array<KClass<*>> = [],
   val payload: Array<KClass<out Payload>> = [],
