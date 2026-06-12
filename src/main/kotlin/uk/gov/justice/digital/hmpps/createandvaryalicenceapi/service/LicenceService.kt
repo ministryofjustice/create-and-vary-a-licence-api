@@ -1031,7 +1031,6 @@ class LicenceService(
     val licencesToDeactivate =
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(licenceIds, listOf(IN_PROGRESS, SUBMITTED))
     if (licencesToDeactivate.isNotEmpty()) {
-      println(licencesToDeactivate.map { it.id })
       inactivateLicences(licencesToDeactivate, reason, deactivateInProgressVersions = false)
     }
   }
