@@ -747,108 +747,6 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
-        code = "d523d711-9975-4a9a-a37e-a17bd611140f",
-        inputs = listOf(
-          Input(
-            label = "Vehicle types",
-            name = "vehicleTypes",
-            options = listOf(
-              Option(
-                value = "Any motor vehicle",
-              ),
-              Option(
-                value = "Types of motor vehicle",
-                conditional = Conditional(
-                  inputs = listOf(
-                    ConditionalInput(
-                      label = "Enter one or more types of motor vehicle",
-                      name = "typesOfMotorVehicle",
-                      defaultValue = "any motor vehicle",
-                      type = TEXT,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            type = RADIO,
-          ),
-          Input(
-            label = "Time restriction",
-            name = "timeRestriction",
-            options = listOf(
-              Option(
-                value = "At any time",
-              ),
-              Option(
-                value = "Between specified times",
-                conditional = Conditional(
-                  inputs = listOf(
-                    ConditionalInput(
-                      label = "Enter first start time",
-                      type = TIME_PICKER,
-                      name = "firstCurfewStart",
-                      defaultValue = " at any time",
-                      includeBefore = " between ",
-                      hideHintText = true,
-                    ),
-                    ConditionalInput(
-                      label = "Enter first end time",
-                      name = "firstCurfewEnd",
-                      type = TIME_PICKER,
-                      includeBefore = " and ",
-                      hideHintText = true,
-                    ),
-                    ConditionalInput(
-                      label = "Enter second start time (optional)",
-                      name = "secondCurfewStart",
-                      type = TIME_PICKER,
-                      includeBefore = " or between ",
-                      hideHintText = true,
-                    ),
-                    ConditionalInput(
-                      label = "Enter second end time (optional)",
-                      name = "secondCurfewEnd",
-                      type = TIME_PICKER,
-                      includeBefore = " and ",
-                      hideHintText = true,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            type = RADIO,
-          ),
-          Input(
-            label = "Location restriction",
-            name = "locationRestriction",
-            options = listOf(
-              Option(
-                value = "At any location",
-              ),
-              Option(
-                value = "In specified locations",
-                conditional = Conditional(
-                  inputs = listOf(
-                    ConditionalInput(
-                      label = "Enter one or more locations",
-                      name = "locations",
-                      defaultValue = " at any location",
-                      type = TEXT,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            type = RADIO,
-          ),
-        ),
-        requiresInput = true,
-        text = "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
-        tpl = "Not to use {typesOfMotorVehicle}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} {locations} without the prior approval of your supervising officer.",
-        type = "VehicleRestrictions",
-      ),
-      AdditionalConditionAp(
-        category = "Freedom of movement",
         code = "be16ee0b-a916-43ef-9319-b42a1dd418a3",
         inputs = listOf(
           Input(
@@ -1336,6 +1234,108 @@ val POLICY_V4_0 = LicencePolicy(
         text = "Not to use or install software or permit installation of software on any of your approved devices related to [VIRTUAL PRIVATE NETWORKS (VPNs) / CLOUD STORAGE / VIRTUAL DESKTOPS / AUTOMATIC DELETION OF CONTENT], without the prior permission of your supervising officer.",
         tpl = "Not to use or install software or permit installation of software on any of your approved devices related to {services}, without the prior permission of your supervising officer.",
         type = "DigitalServices",
+      ),
+      AdditionalConditionAp(
+        category = "Restriction of specified conduct or specified acts",
+        code = "d523d711-9975-4a9a-a37e-a17bd611140f",
+        inputs = listOf(
+          Input(
+            label = "Vehicle types",
+            name = "vehicleTypes",
+            options = listOf(
+              Option(
+                value = "Any motor vehicle",
+              ),
+              Option(
+                value = "Types of motor vehicle",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter one or more types of motor vehicle",
+                      name = "typesOfMotorVehicle",
+                      defaultValue = "any motor vehicle",
+                      type = TEXT,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+          Input(
+            label = "Time restriction",
+            name = "timeRestriction",
+            options = listOf(
+              Option(
+                value = "At any time",
+              ),
+              Option(
+                value = "Between specified times",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter first start time",
+                      type = TIME_PICKER,
+                      name = "firstCurfewStart",
+                      defaultValue = " at any time",
+                      includeBefore = " between ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter first end time",
+                      name = "firstCurfewEnd",
+                      type = TIME_PICKER,
+                      includeBefore = " and ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second start time (optional)",
+                      name = "secondCurfewStart",
+                      type = TIME_PICKER,
+                      includeBefore = " or between ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second end time (optional)",
+                      name = "secondCurfewEnd",
+                      type = TIME_PICKER,
+                      includeBefore = " and ",
+                      hideHintText = true,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+          Input(
+            label = "Location restriction",
+            name = "locationRestriction",
+            options = listOf(
+              Option(
+                value = "At any location",
+              ),
+              Option(
+                value = "In specified locations",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter one or more locations",
+                      name = "locations",
+                      defaultValue = " at any location",
+                      type = TEXT,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
+        tpl = "Not to use {typesOfMotorVehicle}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} {locations} without the prior approval of your supervising officer.",
+        type = "VehicleRestrictions",
       ),
       AdditionalConditionAp(
         category = "Extremism",
