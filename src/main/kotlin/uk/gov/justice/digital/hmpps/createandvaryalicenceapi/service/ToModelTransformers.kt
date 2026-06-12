@@ -1024,12 +1024,16 @@ fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
 
 fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCurfewAddress = ModelHdcCurfewAddress(
   id = entity.id,
+  uprn = entity.uprn,
   firstLine = entity.firstLine,
   secondLine = entity.secondLine,
   townOrCity = entity.townOrCity,
   county = entity.county,
   postcode = entity.postcode,
   source = entity.source,
+  accommodationType = entity.accommodationType,
+  postReleaseResidentialChecksCompleted = entity.postReleaseResidentialChecksCompleted,
+  postReleaseResidentialChecksNotCompletedReason = entity.postReleaseResidentialChecksNotCompletedReason,
 )
 
 fun transformToModelElectronicMonitoringProvider(entity: EntityElectronicMonitoringProvider): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
