@@ -1299,164 +1299,6 @@
         "requiresElectronicMonitoringResponse": false
       },
       {
-        "code": "d523d711-9975-4a9a-a37e-a17bd611140f",
-        "category": "Freedom of movement",
-        "text": "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
-        "tpl": "Not to use {typesOfMotorVehicle}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} {locations} without the prior approval of your supervising officer.",
-        "requiresInput": true,
-        "inputs": [
-          {
-            "type": "radio",
-            "label": "Vehicle types",
-            "name": "vehicleTypes",
-            "listType": null,
-            "options": [
-              {
-                "value": "Any motor vehicle",
-                "conditional": null
-              },
-              {
-                "value": "Types of motor vehicle",
-                "conditional": {
-                  "inputs": [
-                    {
-                      "type": "text",
-                      "label": "Enter one or more types of motor vehicle",
-                      "name": "typesOfMotorVehicle",
-                      "case": null,
-                      "handleIndefiniteArticle": null,
-                      "includeBefore": null,
-                      "subtext": null,
-                      "defaultValue": "any motor vehicle",
-                      "hideHintText": false
-                    }
-                  ]
-                }
-              }
-            ],
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
-          },
-          {
-            "type": "radio",
-            "label": "Time restriction",
-            "name": "timeRestriction",
-            "listType": null,
-            "options": [
-              {
-                "value": "At any time",
-                "conditional": null
-              },
-              {
-                "value": "Between specified times",
-                "conditional": {
-                  "inputs": [
-                    {
-                      "type": "timePicker",
-                      "label": "Enter first start time",
-                      "name": "firstCurfewStart",
-                      "case": null,
-                      "handleIndefiniteArticle": null,
-                      "includeBefore": " between ",
-                      "subtext": null,
-                      "defaultValue": " at any time",
-                      "hideHintText": true
-                    },
-                    {
-                      "type": "timePicker",
-                      "label": "Enter first end time",
-                      "name": "firstCurfewEnd",
-                      "case": null,
-                      "handleIndefiniteArticle": null,
-                      "includeBefore": " and ",
-                      "subtext": null,
-                      "defaultValue": null,
-                      "hideHintText": true
-                    },
-                    {
-                      "type": "timePicker",
-                      "label": "Enter second start time (optional)",
-                      "name": "secondCurfewStart",
-                      "case": null,
-                      "handleIndefiniteArticle": null,
-                      "includeBefore": " or between ",
-                      "subtext": null,
-                      "defaultValue": null,
-                      "hideHintText": true
-                    },
-                    {
-                      "type": "timePicker",
-                      "label": "Enter second end time (optional)",
-                      "name": "secondCurfewEnd",
-                      "case": null,
-                      "handleIndefiniteArticle": null,
-                      "includeBefore": " and ",
-                      "subtext": null,
-                      "defaultValue": null,
-                      "hideHintText": true
-                    }
-                  ]
-                }
-              }
-            ],
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
-          },
-          {
-            "type": "radio",
-            "label": "Location restriction",
-            "name": "locationRestriction",
-            "listType": null,
-            "options": [
-              {
-                "value": "At any location",
-                "conditional": null
-              },
-              {
-                "value": "In specified locations",
-                "conditional": {
-                  "inputs": [
-                    {
-                      "type": "text",
-                      "label": "Enter one or more locations",
-                      "name": "locations",
-                      "case": null,
-                      "handleIndefiniteArticle": null,
-                      "includeBefore": null,
-                      "subtext": null,
-                      "defaultValue": " at any location",
-                      "hideHintText": false
-                    }
-                  ]
-                }
-              }
-            ],
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
-          }
-        ],
-        "categoryShort": null,
-        "subtext": null,
-        "type": "VehicleRestrictions",
-        "skippable": false,
-        "requiresElectronicMonitoringResponse": false
-      },
-      {
         "code": "be16ee0b-a916-43ef-9319-b42a1dd418a3",
         "category": "Freedom of movement",
         "text": "Not to enter a drinking establishment [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
@@ -2220,6 +2062,164 @@
         "categoryShort": "Restriction of conduct or acts",
         "subtext": null,
         "type": "DigitalServices",
+        "skippable": false,
+        "requiresElectronicMonitoringResponse": false
+      },
+      {
+        "code": "d523d711-9975-4a9a-a37e-a17bd611140f",
+        "category": "Restriction of specified conduct or specified acts",
+        "text": "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
+        "tpl": "Not to use {typesOfMotorVehicle}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} {locations} without the prior approval of your supervising officer.",
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "radio",
+            "label": "Vehicle types",
+            "name": "vehicleTypes",
+            "listType": null,
+            "options": [
+              {
+                "value": "Any motor vehicle",
+                "conditional": null
+              },
+              {
+                "value": "Types of motor vehicle",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter one or more types of motor vehicle",
+                      "name": "typesOfMotorVehicle",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": "any motor vehicle",
+                      "hideHintText": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          },
+          {
+            "type": "radio",
+            "label": "Time restriction",
+            "name": "timeRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any time",
+                "conditional": null
+              },
+              {
+                "value": "Between specified times",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first start time",
+                      "name": "firstCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " between ",
+                      "subtext": null,
+                      "defaultValue": " at any time",
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first end time",
+                      "name": "firstCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second start time (optional)",
+                      "name": "secondCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " or between ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second end time (optional)",
+                      "name": "secondCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          },
+          {
+            "type": "radio",
+            "label": "Location restriction",
+            "name": "locationRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any location",
+                "conditional": null
+              },
+              {
+                "value": "In specified locations",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter one or more locations",
+                      "name": "locations",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": " at any location",
+                      "hideHintText": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          }
+        ],
+        "categoryShort": null,
+        "subtext": null,
+        "type": "VehicleRestrictions",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false
       },

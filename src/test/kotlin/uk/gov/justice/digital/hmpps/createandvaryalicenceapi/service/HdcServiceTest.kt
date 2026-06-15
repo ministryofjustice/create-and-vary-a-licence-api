@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
@@ -162,7 +163,7 @@ class HdcServiceTest {
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(id = 1, postcode = "AB1 2CD", source = MANUAL_MIGRATED))
+    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(id = 1, uprn = "uprn-123", postcode = "AB1 2CD", source = MANUAL_MIGRATED, postReleaseResidentialChecksCompleted = false, postReleaseResidentialChecksNotCompletedReason = "Old reason"))
     assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntityWithCurfewDetails.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
     assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes.mapIndexed { index, times -> times.copy(id = 1, index + 1) })
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
@@ -582,6 +583,7 @@ class HdcServiceTest {
       verify(auditService).recordAuditEventHdcCurfewAddressUpdate(any(), captor.capture(), any())
 
       assertThat(captor.firstValue["field"]).isEqualTo("createHdcCurfewAddress")
+      assertThat(captor.firstValue["value"]).contains("10 Downing Street")
       assertThat(licence.curfewAddress).isNotNull
       assertThat(licence.curfewAddress?.firstLine).isEqualTo("10 Downing Street")
       assertThat(licence.curfewAddress?.postcode).isEqualTo("SW1A 2AA")
@@ -623,6 +625,7 @@ class HdcServiceTest {
       verify(auditService).recordAuditEventHdcCurfewAddressUpdate(any(), captor.capture(), any())
 
       assertThat(captor.firstValue["field"]).isEqualTo("updateHdcCurfewAddress")
+      assertThat(captor.firstValue["value"]).contains("221B Baker Street")
 
       val updated = licence.curfewAddress!!
 
@@ -634,6 +637,60 @@ class HdcServiceTest {
       assertThat(updated.postReleaseResidentialChecksCompleted).isFalse
       assertThat(updated.postReleaseResidentialChecksNotCompletedReason).isEqualTo("Awaiting checks")
       assertThat(updated.accommodationType).isEqualTo(RESIDENTIAL)
+    }
+
+    @Test
+    fun `should update only residential checks when address is null`() {
+      val existingAddress = anEntityCurfewAddress
+
+      val licence = aLicenceVariationEntity.copy(curfewAddress = existingAddress)
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+
+      val originalFirstLine = existingAddress.firstLine
+      val originalPostcode = existingAddress.postcode
+
+      val request = AddHdcCurfewAddressRequest(
+        address = null,
+        accommodationType = RESIDENTIAL,
+        postReleaseResidentialChecksCompleted = false,
+        postReleaseResidentialChecksNotCompletedReason = "Checks pending",
+      )
+
+      service.addHdcCurfewAddress(1L, request)
+
+      val captor = argumentCaptor<Map<String, String>>()
+      verify(auditService).recordAuditEventHdcCurfewAddressUpdate(any(), captor.capture(), any())
+
+      val updated = licence.curfewAddress!!
+
+      assertThat(updated.firstLine).isEqualTo(originalFirstLine)
+      assertThat(updated.postcode).isEqualTo(originalPostcode)
+
+      assertThat(updated.postReleaseResidentialChecksCompleted).isFalse
+      assertThat(updated.postReleaseResidentialChecksNotCompletedReason).isEqualTo("Checks pending")
+
+      assertThat(captor.firstValue["field"]).isEqualTo("updateHdcCurfewAddress")
+      assertThat(captor.firstValue["value"]).isEqualTo("No address change")
+    }
+
+    @Test
+    fun `should throw exception when creating without address`() {
+      val licence = aLicenceVariationEntity.copy(curfewAddress = null)
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+
+      val request = AddHdcCurfewAddressRequest(
+        address = null,
+        accommodationType = RESIDENTIAL,
+        postReleaseResidentialChecksCompleted = true,
+        postReleaseResidentialChecksNotCompletedReason = null,
+      )
+
+      val ex = assertThrows<ValidationException> {
+        service.addHdcCurfewAddress(1L, request)
+      }
+
+      assertThat(ex.message).contains("Address must be provided")
     }
 
     @Test
