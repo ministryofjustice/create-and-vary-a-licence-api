@@ -230,6 +230,16 @@ object TestData {
     conditionCategory = HARD_STOP_CONDITION.categoryShort!!,
   )
 
+  fun aStandardConditionEntity(licence: Licence) = StandardCondition(
+    id = 1,
+    conditionCode = "goodBehaviour",
+    conditionSequence = 1,
+    conditionText = "Be of good behaviour",
+    conditionType = "AP",
+    licence = licence,
+    conditionVersion = licence.version,
+  )
+
   fun someEntityStandardConditions(licence: Licence) = listOf(
     StandardCondition(
       id = 1,
@@ -238,6 +248,7 @@ object TestData {
       conditionText = "Be of good behaviour",
       conditionType = "AP",
       licence = licence,
+      conditionVersion = licence.version,
     ),
     StandardCondition(
       id = 2,
@@ -246,6 +257,7 @@ object TestData {
       conditionText = "Do not break any law",
       conditionType = "AP",
       licence = licence,
+      conditionVersion = licence.version,
     ),
     StandardCondition(
       id = 3,
@@ -254,6 +266,7 @@ object TestData {
       conditionText = "Attend meetings",
       conditionType = "AP",
       licence = licence,
+      conditionVersion = licence.version,
     ),
   )
 

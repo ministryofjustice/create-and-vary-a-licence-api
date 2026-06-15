@@ -547,7 +547,8 @@
     "conditionText": "String",
     "conditionType": "String",
     "id": "Long",
-    "licence": "Licence"
+    "licence": "Licence",
+    "conditionVersion": "String"
   },
   "TimeServedExternalRecord": {
     "bookingId": "long",
