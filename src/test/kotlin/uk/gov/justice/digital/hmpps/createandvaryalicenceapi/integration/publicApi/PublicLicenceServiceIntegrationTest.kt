@@ -268,7 +268,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     assertThat(result.policyVersion).isEqualTo(PolicyVersion.V1_0)
     assertThat(result.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(result.prisonNumber).isEqualTo(prisonNumber)
-    assertThat(result.bookingId).isEqualTo(12345L)
+    assertThat(result.bookingId).isEqualTo(123L)
     assertThat(result.crn).isEqualTo(crn)
     assertThat(result.createdByUsername).isEqualTo("test-client")
     assertThat(result.version).isEqualTo("1.0")

@@ -1335,7 +1335,7 @@ class LicenceServiceTest {
   fun `submit a CRD licence saves new fields to the licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.submitLicence(1L, emptyList())
@@ -1395,7 +1395,7 @@ class LicenceServiceTest {
     val hardStopLicence = createHardStopLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardStopLicence))
     whenever(staffRepository.findByUsernameIgnoreCase("tca")).thenReturn(caseAdmin)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.submitLicence(1L, emptyList())
@@ -1439,7 +1439,7 @@ class LicenceServiceTest {
   fun `attempting to submit a licence for an ineligible case results in validation exception `() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(isEligible = false))
 
@@ -1461,7 +1461,7 @@ class LicenceServiceTest {
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
@@ -2088,7 +2088,7 @@ class LicenceServiceTest {
       ),
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
@@ -2128,7 +2128,7 @@ class LicenceServiceTest {
       ),
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(
@@ -2164,7 +2164,7 @@ class LicenceServiceTest {
       ),
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(
@@ -2208,7 +2208,7 @@ class LicenceServiceTest {
 
   @Test
   fun `attempting to edit a licence that is ineligible for CVL results in validation exception`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(isEligible = false))
 
@@ -3878,7 +3878,7 @@ class LicenceServiceTest {
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hdcLicence))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       service.submitLicence(
@@ -3930,7 +3930,7 @@ class LicenceServiceTest {
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       service.submitLicence(
@@ -3996,7 +3996,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(
         Optional.of(approvedLicence),
       )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcLicenceEntity)
@@ -4041,7 +4041,7 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(
         Optional.of(approvedLicence),
       )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       whenever(licenceRepository.save(any<Licence>())).thenReturn(approvedLicence)
