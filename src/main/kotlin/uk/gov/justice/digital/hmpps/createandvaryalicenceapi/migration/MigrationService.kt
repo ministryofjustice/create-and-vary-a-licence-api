@@ -59,6 +59,8 @@ class MigrationService(
     log.info("Ending migration for bookingId={} cvl licence id ={}", request.bookingId, hdcLicence.id)
   }
 
+  fun isAMigratedLicence(licenceId: Long): Boolean = migrationRepository.isAMigratedLicence(licenceId)
+
   private fun checkForNoRetryExceptions(request: MigrateFromHdcToCvlRequest) {
     if (migrationRepository.hasBeenAlreadyMigrated(request.licence.licenceVersionId)) {
       throw LicenceAlreadyMigratedException(request.licence.licenceVersionId)

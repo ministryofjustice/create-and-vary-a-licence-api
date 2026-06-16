@@ -363,5 +363,8 @@ data class HdcLicence(
 
   @field:Schema(description = "The status of the electronic monitoring provider", example = "COMPLETE")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
+
+  @field:Schema(description = "Has this licence been migrated from the HDC service?", example = "false")
+  val isHdcMigration: Boolean = false,
 ) : Licence,
   SupportsElectronicMonitoring

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.mock
@@ -81,182 +82,205 @@ class MigrationServiceTest {
       migrationRepository,
       releaseDateService,
     )
-
-    whenever(licenceRepository.saveAndFlush(any<HdcLicence>())).thenAnswer { it.arguments[0] }
-    whenever(migrationRepository.hasBeenAlreadyMigrated(any<Long>())).thenReturn(false)
-    whenever(migrationRepository.hasExistingLicence(any<String>())).thenReturn(false)
-    whenever(prisonService.getPrisonInformation(any<String>())).thenReturn(TestData.prisonInformation())
   }
 
-  @Test
-  fun `migrate should orchestrate creation and save metadata`() {
-    // Given
-    val prisonerNumber = "A1234AA"
-    val staffId = 1L
+  @Nested
+  inner class Migrate {
+    @BeforeEach
+    fun reset() {
+      whenever(licenceRepository.saveAndFlush(any<HdcLicence>())).thenAnswer { it.arguments[0] }
+      whenever(migrationRepository.hasBeenAlreadyMigrated(any<Long>())).thenReturn(false)
+      whenever(migrationRepository.hasExistingLicence(any<String>())).thenReturn(false)
+      whenever(prisonService.getPrisonInformation(any<String>())).thenReturn(TestData.prisonInformation())
+    }
 
-    val request = migrateRequest(
-      prisonerNumber = prisonerNumber,
-      additionalConditions = listOf(
-        MigrateAdditionalCondition("cond1", "CODE1", 1),
-      ),
-    )
+    @Test
+    fun `migrate should orchestrate creation and save metadata`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
 
-    mockGetOffenderManager(staffId)
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        additionalConditions = listOf(
+          MigrateAdditionalCondition("cond1", "CODE1", 1),
+        ),
+      )
 
-    val com = mock<CommunityOffenderManager>()
-    whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(com)
+      mockGetOffenderManager(staffId)
 
-    val savedLicence = TestData.createHdcLicence(id = 1L).apply {
-      bespokeConditions.add(
-        BespokeCondition(id = 10L, conditionText = "cond1", licence = this),
+      val com = mock<CommunityOffenderManager>()
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(com)
+
+      val savedLicence = TestData.createHdcLicence(id = 1L).apply {
+        bespokeConditions.add(
+          BespokeCondition(id = 10L, conditionText = "cond1", licence = this),
+        )
+      }
+
+      whenever(licenceRepository.saveAndFlush(any<HdcLicence>())).thenReturn(savedLicence)
+
+      // When
+      service.migrate(request)
+
+      // Then
+      verify(deliusApiClient).getOffenderManager(any())
+      verify(licenceCreationService).getOrCreateCom(staffId)
+      verify(licenceRepository, atLeastOnce()).saveAndFlush(any())
+
+      verify(migrationRepository).saveConditionMetaData(
+        eq(1L),
+        eq(10L),
+        eq("CODE1"),
+        eq(1),
+      )
+
+      verify(migrationRepository).saveMetaData(
+        eq(1L),
+        eq(2L),
+        eq(3),
+        eq(4),
       )
     }
 
-    whenever(licenceRepository.saveAndFlush(any<HdcLicence>())).thenReturn(savedLicence)
+    @Test
+    fun `migrate should ask licence service for submitted by com if staff lookup needed then creation service`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val submittedByUserName = "NewSubmittedByUserName"
 
-    // When
-    service.migrate(request)
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        submittedBy = submittedByUserName,
+      )
+      mockGetOffenderManager(staffId)
 
-    // Then
-    verify(deliusApiClient).getOffenderManager(any())
-    verify(licenceCreationService).getOrCreateCom(staffId)
-    verify(licenceRepository, atLeastOnce()).saveAndFlush(any())
+      val responsibleCom = mock<CommunityOffenderManager>().apply {
+        whenever(username).thenReturn("responsible")
+      }
+      val submittedByCom = mock<CommunityOffenderManager>()
 
-    verify(migrationRepository).saveConditionMetaData(
-      eq(1L),
-      eq(10L),
-      eq("CODE1"),
-      eq(1),
-    )
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(responsibleCom)
+      whenever(licenceCreationService.getOrCreateCom(submittedByUserName)).thenReturn(responsibleCom, submittedByCom)
 
-    verify(migrationRepository).saveMetaData(
-      eq(1L),
-      eq(2L),
-      eq(3),
-      eq(4),
-    )
-  }
+      // When
+      service.migrate(request)
 
-  @Test
-  fun `migrate should ask licence service for submitted by com if staff lookup needed then creation service`() {
-    // Given
-    val prisonerNumber = "A1234AA"
-    val staffId = 1L
-    val submittedByUserName = "NewSubmittedByUserName"
-
-    val request = migrateRequest(
-      prisonerNumber = prisonerNumber,
-      submittedBy = submittedByUserName,
-    )
-    mockGetOffenderManager(staffId)
-
-    val responsibleCom = mock<CommunityOffenderManager>().apply {
-      whenever(username).thenReturn("responsible")
-    }
-    val submittedByCom = mock<CommunityOffenderManager>()
-
-    whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(responsibleCom)
-    whenever(licenceCreationService.getOrCreateCom(submittedByUserName)).thenReturn(responsibleCom, submittedByCom)
-
-    // When
-    service.migrate(request)
-
-    // Then
-    verify(licenceCreationService).getOrCreateCom(submittedByUserName)
-  }
-
-  @Test
-  fun `migrate should ask licence service for created by com if staff lookup needed then creation service`() {
-    // Given
-    val prisonerNumber = "A1234AA"
-    val staffId = 1L
-    val createdByUserName = "NewCreatedBy"
-
-    val request = migrateRequest(
-      prisonerNumber = prisonerNumber,
-      createdByUserName = createdByUserName,
-    )
-    mockGetOffenderManager(staffId)
-
-    val responsibleCom = mock<CommunityOffenderManager>().apply {
-      whenever(username).thenReturn("responsible")
-    }
-    val submittedByCom = mock<CommunityOffenderManager>()
-
-    whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(responsibleCom)
-    whenever(licenceCreationService.getOrCreateCom(createdByUserName)).thenReturn(responsibleCom, submittedByCom)
-
-    // When
-    service.migrate(request)
-
-    // Then
-    verify(licenceCreationService).getOrCreateCom(createdByUserName)
-  }
-
-  @Test
-  fun `migrate should reuse responsibleCom for other coms if user names match`() {
-    // Given
-    val prisonerNumber = "A1234AA"
-    val staffId = 1L
-    val commonUserName = "commonUserName"
-
-    val request = migrateRequest(
-      prisonerNumber = prisonerNumber,
-      createdByUserName = commonUserName,
-      submittedBy = commonUserName,
-    )
-
-    mockGetOffenderManager(staffId)
-
-    val responsibleCom = mock<CommunityOffenderManager>().apply {
-      whenever(username).thenReturn(commonUserName)
-      whenever(fullName).thenReturn("commonFirstName commonLastName")
+      // Then
+      verify(licenceCreationService).getOrCreateCom(submittedByUserName)
     }
 
-    whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(responsibleCom)
+    @Test
+    fun `migrate should ask licence service for created by com if staff lookup needed then creation service`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val createdByUserName = "NewCreatedBy"
 
-    // When
-    service.migrate(request)
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        createdByUserName = createdByUserName,
+      )
+      mockGetOffenderManager(staffId)
 
-    // Then
-    val licenceCaptor = argumentCaptor<HdcLicence>()
-    verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
-    val savedLicence = licenceCaptor.firstValue
-    assertThat(savedLicence.createdBy).isEqualTo(savedLicence.responsibleCom)
-    assertThat(savedLicence.submittedBy).isEqualTo(savedLicence.responsibleCom)
-    assertThat(savedLicence.approvedByName).isNull()
-  }
+      val responsibleCom = mock<CommunityOffenderManager>().apply {
+        whenever(username).thenReturn("responsible")
+      }
+      val submittedByCom = mock<CommunityOffenderManager>()
 
-  @Test
-  fun `migrate should get approved by name from then given approvedByUsername`() {
-    // Given
-    val prisonerNumber = "A1234AA"
-    val staffId = 1L
-    val approvedByUsername = "approvedByUsername"
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(responsibleCom)
+      whenever(licenceCreationService.getOrCreateCom(createdByUserName)).thenReturn(responsibleCom, submittedByCom)
 
-    val request = migrateRequest(
-      prisonerNumber = prisonerNumber,
-      approvedByUsername = approvedByUsername,
-    )
+      // When
+      service.migrate(request)
 
-    mockGetOffenderManager(staffId)
-    whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
-
-    val approvedByStaff = mock<PrisonUser>().apply {
-      whenever(username).thenReturn(approvedByUsername)
-      whenever(fullName).thenReturn("approvedFirstName approvedLastName")
+      // Then
+      verify(licenceCreationService).getOrCreateCom(createdByUserName)
     }
 
-    whenever(staffRepository.findAPrisonUserIgnoreCase(approvedByUsername)).thenReturn(approvedByStaff)
+    @Test
+    fun `migrate should reuse responsibleCom for other coms if user names match`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val commonUserName = "commonUserName"
 
-    // When
-    service.migrate(request)
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        createdByUserName = commonUserName,
+        submittedBy = commonUserName,
+      )
 
-    // Then
-    val licenceCaptor = argumentCaptor<HdcLicence>()
-    verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
-    val savedLicence = licenceCaptor.firstValue
-    assertThat(savedLicence.approvedByName).isEqualTo("approvedFirstName approvedLastName")
+      mockGetOffenderManager(staffId)
+
+      val responsibleCom = mock<CommunityOffenderManager>().apply {
+        whenever(username).thenReturn(commonUserName)
+        whenever(fullName).thenReturn("commonFirstName commonLastName")
+      }
+
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(responsibleCom)
+
+      // When
+      service.migrate(request)
+
+      // Then
+      val licenceCaptor = argumentCaptor<HdcLicence>()
+      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+      val savedLicence = licenceCaptor.firstValue
+      assertThat(savedLicence.createdBy).isEqualTo(savedLicence.responsibleCom)
+      assertThat(savedLicence.submittedBy).isEqualTo(savedLicence.responsibleCom)
+      assertThat(savedLicence.approvedByName).isNull()
+    }
+
+    @Test
+    fun `migrate should get approved by name from then given approvedByUsername`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val approvedByUsername = "approvedByUsername"
+
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        approvedByUsername = approvedByUsername,
+      )
+
+      mockGetOffenderManager(staffId)
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
+
+      val approvedByStaff = mock<PrisonUser>().apply {
+        whenever(username).thenReturn(approvedByUsername)
+        whenever(fullName).thenReturn("approvedFirstName approvedLastName")
+      }
+
+      whenever(staffRepository.findAPrisonUserIgnoreCase(approvedByUsername)).thenReturn(approvedByStaff)
+
+      // When
+      service.migrate(request)
+
+      // Then
+      val licenceCaptor = argumentCaptor<HdcLicence>()
+      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+      val savedLicence = licenceCaptor.firstValue
+      assertThat(savedLicence.approvedByName).isEqualTo("approvedFirstName approvedLastName")
+    }
+  }
+
+  @Nested
+  inner class IsAMigratedLicence {
+    @Test
+    fun `returns true if the licence was migrated from HDC`() {
+      whenever(migrationRepository.isAMigratedLicence(123L)).thenReturn(true)
+
+      assertThat(service.isAMigratedLicence(123L)).isTrue()
+    }
+
+    @Test
+    fun `returns false if the licence was not migrated from HDC`() {
+      whenever(migrationRepository.isAMigratedLicence(123L)).thenReturn(false)
+
+      assertThat(service.isAMigratedLicence(123L)).isFalse()
+    }
   }
 
   private fun mockGetOffenderManager(staffId: Long) {

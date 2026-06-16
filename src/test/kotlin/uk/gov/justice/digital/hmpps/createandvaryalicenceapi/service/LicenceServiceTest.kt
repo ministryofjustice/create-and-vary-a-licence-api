@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.MigrationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -120,6 +121,7 @@ class LicenceServiceTest {
   private val telemetryService = mock<TelemetryService>()
   private val auditService = mock<AuditService>()
   private val cvlRecordService = mock<CvlRecordService>()
+  private val migrationService = mock<MigrationService>()
 
   private val service =
     LicenceService(
@@ -139,6 +141,7 @@ class LicenceServiceTest {
       telemetryService,
       auditService,
       cvlRecordService,
+      migrationService,
     )
 
   @BeforeEach
@@ -3493,6 +3496,7 @@ class LicenceServiceTest {
           telemetryService,
           auditService,
           cvlRecordService,
+          migrationService,
         )
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
@@ -3837,6 +3841,21 @@ class LicenceServiceTest {
       assertThat(licence).isExactlyInstanceOf(HdcLicenceModel::class.java)
 
       verify(licenceRepository, times(1)).findById(1L)
+    }
+
+    @Test
+    fun `populates isHdcMigration field`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
+      whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+        AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+      )
+      whenever(migrationService.isAMigratedLicence(1L)).thenReturn(true)
+
+      val licence = service.getLicenceById(1L)
+
+      with(licence as HdcLicenceModel) {
+        assertThat(licence.isHdcMigration).isTrue()
+      }
     }
 
     @Test
