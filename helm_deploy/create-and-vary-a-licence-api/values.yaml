@@ -41,7 +41,6 @@ generic-service:
     HMPPS_SQS_USE_WEB_TOKEN: true
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
     HDC_ENABLED: false
-    STANDARD_RECALLS_ENABLED: false
     RESTRICTED_PATIENTS_ENABLED: true
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
