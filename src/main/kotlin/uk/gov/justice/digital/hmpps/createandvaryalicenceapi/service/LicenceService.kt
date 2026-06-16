@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.MigrationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -99,6 +100,7 @@ class LicenceService(
   private val telemetryService: TelemetryService,
   private val auditService: AuditService,
   private val cvlRecordService: CvlRecordService,
+  private val migrationService: MigrationService,
 ) {
 
   @Transactional(readOnly = true)
@@ -184,6 +186,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
+      isHdcMigration = migrationService.isAMigratedLicence(licence.id),
     )
 
     is HdcVariationLicence -> toHdcVariation(
