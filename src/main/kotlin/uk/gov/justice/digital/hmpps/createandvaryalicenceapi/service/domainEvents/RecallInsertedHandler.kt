@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEven
 import com.fasterxml.jackson.core.JacksonException
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -21,7 +20,6 @@ class RecallInsertedHandler(
   private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
   private val prisonService: PrisonService,
-  @param:Value("\${feature.toggle.standardRecalls.enabled:false}") private val standardRecallsEnabled: Boolean = false,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(RecallInsertedHandler::class.java)
@@ -49,7 +47,7 @@ class RecallInsertedHandler(
       log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
 
       val recallType = prisonService.getRecallType(bookingId = nomisRecord.bookingId?.toLong()!!)
-      if (recallType == RecallType.STANDARD && standardRecallsEnabled) {
+      if (recallType == RecallType.STANDARD) {
         log.info("deactivating licence: ${activeLicence.id} due to STANDARD recall, reason ${LicenceDeactivationReason.STANDARD_RECALL.message}")
         licenceService.deactivateLicenceAndVariations(
           activeLicence.id,
