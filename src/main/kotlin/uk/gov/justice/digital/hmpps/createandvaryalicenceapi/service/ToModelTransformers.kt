@@ -655,6 +655,7 @@ fun toHdc(
   weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
   firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
+  allCurfewTimesEqual = licence.isCurfewSameTimeEachDay(),
   electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
     transformToModelElectronicMonitoringProvider(
       it,
@@ -749,6 +750,7 @@ fun toHdcVariation(
   isReviewNeeded = false,
   submittedByFullName = licence.getSubmittedByFullName(),
   weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
+  allCurfewTimesEqual = licence.isCurfewSameTimeEachDay(),
   firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
 )
