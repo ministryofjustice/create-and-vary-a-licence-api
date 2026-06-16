@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.MigrationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -99,6 +100,7 @@ class LicenceService(
   private val telemetryService: TelemetryService,
   private val auditService: AuditService,
   private val cvlRecordService: CvlRecordService,
+  private val migrationService: MigrationService,
 ) {
 
   @Transactional(readOnly = true)
@@ -184,6 +186,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
+      isHdcMigration = migrationService.isAMigratedLicence(licence.id),
     )
 
     is HdcVariationLicence -> toHdcVariation(
@@ -437,7 +440,7 @@ class LicenceService(
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licenceEntity.nomsId!!)).first()
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licenceEntity.bookingId!!)).first()
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
     when (licenceEntity) {
@@ -653,7 +656,7 @@ class LicenceService(
       return EditLicenceResponse(inProgressVersions[0].id)
     }
 
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)).first()
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licence.bookingId!!)).first()
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
     assertCaseIsEligible(cvlRecord, licenceId)

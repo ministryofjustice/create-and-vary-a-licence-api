@@ -49,7 +49,7 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
   fun `A sentence dates changed event is processed`() {
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonApiMockServer.stubGetPrisonerDetail()
-    prisonerSearchMockServer.stubSearchPrisonersByBookingIds(nomisId = "A1234AA")
+    prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
 
     val event = buildSentenceDatesChangedEventJson()
     val message = mapper.writeValueAsString(event)
