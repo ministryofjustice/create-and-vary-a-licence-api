@@ -34,6 +34,7 @@ object LicenceKinds {
     DiscriminatorMapping(value = LicenceKinds.HARD_STOP, schema = HardStopLicence::class),
     DiscriminatorMapping(value = LicenceKinds.HDC, schema = HdcLicence::class),
     DiscriminatorMapping(value = LicenceKinds.TIME_SERVED, schema = TimeServedLicence::class),
+    DiscriminatorMapping(value = LicenceKinds.HDC_VARIATION, schema = HdcVariationLicence::class),
   ],
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "kind")
