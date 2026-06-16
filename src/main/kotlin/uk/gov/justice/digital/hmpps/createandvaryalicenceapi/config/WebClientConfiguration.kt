@@ -71,7 +71,7 @@ class WebClientConfiguration(
     prisonerSearchApiUrl,
     authorizedClientManagerCvl,
     builder,
-    maxInMemorySize = MAX_IN_MEMORY_SIZE_EXTENDED
+    maxInMemorySize = MAX_IN_MEMORY_SIZE_EXTENDED,
   )
 
   @Bean
