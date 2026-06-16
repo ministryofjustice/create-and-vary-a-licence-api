@@ -132,7 +132,6 @@ data class PrrdLicenceResponse(
   @field:Schema(
     description = "The release date after being recalled",
     example = "06/06/2023",
-    requiredMode = Schema.RequiredMode.AUTO,
   )
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   override val postRecallReleaseDate: LocalDate?,
