@@ -572,6 +572,7 @@ fun toHdc(
   isInHardStopPeriod: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
+  isHdcMigration: Boolean,
 ) = ModelHdcLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -661,6 +662,7 @@ fun toHdc(
     )
   },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
+  isHdcMigration = isHdcMigration,
 )
 
 fun toHdcVariation(

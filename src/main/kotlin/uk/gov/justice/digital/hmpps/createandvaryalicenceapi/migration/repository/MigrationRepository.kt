@@ -66,4 +66,14 @@ interface MigrationRepository : JpaRepository<Licence, Long> {
     nativeQuery = true,
   )
   fun hasExistingLicence(nomsId: String): Boolean
+
+  @Query(
+    value = """
+        SELECT EXISTS (
+            SELECT 1 FROM hdc_migration_meta_data WHERE licence_id = :licenceId
+        )
+    """,
+    nativeQuery = true,
+  )
+  fun isAMigratedLicence(licenceId: Long): Boolean
 }
