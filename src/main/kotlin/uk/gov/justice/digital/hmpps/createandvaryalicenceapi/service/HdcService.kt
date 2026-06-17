@@ -161,7 +161,7 @@ class HdcService(
     auditService.recordAuditEventUpdateHdcWeeklyCurfewTimes(
       licence,
       weeklyCurfewTimes,
-      staff
+      staff,
     )
   }
 
