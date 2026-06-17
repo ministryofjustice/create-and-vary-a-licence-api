@@ -140,6 +140,7 @@ class LicenceConditionServiceTest {
           conditionText = "Be of good behaviour",
           conditionType = "AP",
           licence = aLicenceEntity,
+          conditionVersion = aLicenceEntity.version,
         ),
         uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
           conditionCode = "goodBehaviour",
@@ -147,6 +148,7 @@ class LicenceConditionServiceTest {
           conditionText = "Be of good behaviour",
           conditionType = "PSS",
           licence = aLicenceEntity,
+          conditionVersion = aLicenceEntity.version,
         ),
         uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
           conditionCode = "doNotBreakLaw",
@@ -154,6 +156,7 @@ class LicenceConditionServiceTest {
           conditionText = "Do not break any law",
           conditionType = "PSS",
           licence = aLicenceEntity,
+          conditionVersion = aLicenceEntity.version,
         ),
       )
     }
@@ -886,5 +889,6 @@ class LicenceConditionServiceTest {
     conditionText = "Be of good behaviour",
     conditionType = "AP",
     licence = aLicenceEntity,
+    conditionVersion = "4.0",
   )
 }

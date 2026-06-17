@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+
 class ISRPssProgressionChunkServiceTest {
 
   private val repository = mock<LicenceRepository>()
@@ -268,6 +269,7 @@ class ISRPssProgressionChunkServiceTest {
         conditionText = "PSS condition",
         conditionCode = "PSS_CODE",
         conditionSequence = 1,
+        conditionVersion = licence.version,
       ),
     )
 

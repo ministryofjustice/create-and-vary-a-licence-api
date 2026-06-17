@@ -78,6 +78,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.firstNightCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someEntityStandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
@@ -4246,6 +4247,7 @@ class LicenceServiceTest {
           conditionText = "Be of good behaviour",
           conditionType = "AP",
           licence = it,
+          conditionVersion = it.version,
         ),
         EntityStandardCondition(
           id = 2,
@@ -4254,6 +4256,7 @@ class LicenceServiceTest {
           conditionText = "Do not break any law",
           conditionType = "AP",
           licence = it,
+          conditionVersion = it.version,
         ),
         EntityStandardCondition(
           id = 3,
@@ -4262,6 +4265,7 @@ class LicenceServiceTest {
           conditionText = "Attend meetings",
           conditionType = "AP",
           licence = it,
+          conditionVersion = it.version,
         ),
       ),
     )
@@ -4308,34 +4312,7 @@ class LicenceServiceTest {
     approvedByName = "jim smith",
     approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
   ).let {
-    it.copy(
-      standardConditions = listOf(
-        EntityStandardCondition(
-          id = 1,
-          conditionCode = "goodBehaviour",
-          conditionSequence = 1,
-          conditionText = "Be of good behaviour",
-          conditionType = "AP",
-          licence = it,
-        ),
-        EntityStandardCondition(
-          id = 2,
-          conditionCode = "notBreakLaw",
-          conditionSequence = 2,
-          conditionText = "Do not break any law",
-          conditionType = "AP",
-          licence = it,
-        ),
-        EntityStandardCondition(
-          id = 3,
-          conditionCode = "attendMeetings",
-          conditionSequence = 3,
-          conditionText = "Attend meetings",
-          conditionType = "AP",
-          licence = it,
-        ),
-      ),
-    )
+    it.copy(standardConditions = someEntityStandardConditions(it))
   }
 
   private val aVariationLicence = createVariationLicence()
