@@ -184,6 +184,15 @@ class LicencePolicyService(
     return standardConditions + pssRequirements
   }
 
+  fun getStandardConditionsForLicence(licence: Licence, policyVersion: String): List<StandardCondition> {
+    val policy = allPolicies().find { it.version == policyVersion }
+    if (policy == null) {
+      throw IllegalStateException("Policy version $policyVersion not found")
+    }
+    val standardConditions = policy.standardConditions.standardConditionsAp
+    return standardConditions.mapIndexed(toEntityStandardCondition(licence, "AP", policyVersion))
+  }
+
   fun getAllAdditionalConditions(): AllAdditionalConditions = AllAdditionalConditions(
     policies.associate {
       it.version to it.allAdditionalConditions().associateBy { condition -> condition.code }
