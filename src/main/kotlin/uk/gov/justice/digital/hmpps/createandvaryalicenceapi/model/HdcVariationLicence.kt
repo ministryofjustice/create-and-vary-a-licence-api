@@ -357,6 +357,9 @@ data class HdcVariationLicence(
   @field:Schema(description = "The curfew address for this licence")
   val curfewAddress: HdcCurfewAddress? = null,
 
+  @field:Schema(description = "Are all curfew times equal across the week")
+  val allCurfewTimesEqual: Boolean? = null,
+
   @field:Schema(description = "The status of the electronic monitoring provider", example = "NOT_STARTED")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
 ) : Licence,

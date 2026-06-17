@@ -28,7 +28,7 @@ class RecallInsertedHandlerTest {
   private val licenceService = mock<LicenceService>()
   private val prisonService = mock<PrisonService>()
 
-  private val handler = RecallInsertedHandler(mapper, licenceRepository, licenceService, prisonService, true)
+  private val handler = RecallInsertedHandler(mapper, licenceRepository, licenceService, prisonService)
 
   private val nomisId = "A1234AA"
   private val prisonerSearchResult = prisonerSearchResult()
@@ -125,29 +125,6 @@ class RecallInsertedHandlerTest {
     ).thenReturn(emptyList())
 
     handler.handleEvent(mapper.writeValueAsString(aRecallInsertedEvent()))
-
-    verifyNoInteractions(
-      licenceService,
-    )
-  }
-
-  @Test
-  fun `does nothing if an offender has a standard recall sentence but standard recalls aren't enabled`() {
-    val licence = createCrdLicence()
-    val recallsDisabledHandler = RecallInsertedHandler(mapper, licenceRepository, licenceService, prisonService, false)
-
-    whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
-    whenever(prisonService.getSentenceAndRecallTypes(bookingId)).thenReturn(standardRecallSentenceAndRecalls(bookingId))
-    whenever(
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(
-        nomisId,
-        listOf(
-          ACTIVE,
-        ),
-      ),
-    ).thenReturn(listOf(licence))
-
-    recallsDisabledHandler.handleEvent(mapper.writeValueAsString(aRecallInsertedEvent()))
 
     verifyNoInteractions(
       licenceService,

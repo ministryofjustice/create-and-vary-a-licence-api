@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -31,7 +30,7 @@ class RecallUpdatedHandlerTest {
   private val prisonerSearchResult = prisonerSearchResult()
   private val bookingId = prisonerSearchResult.bookingId!!.toLong()
 
-  private val handler = RecallUpdatedHandler(mapper, licenceRepository, licenceService, prisonService, true)
+  private val handler = RecallUpdatedHandler(mapper, licenceRepository, licenceService, prisonService)
 
   @BeforeEach
   fun reset() {
@@ -82,28 +81,6 @@ class RecallUpdatedHandlerTest {
       LicenceKind.CRD,
       EligibleKind.CRD,
     )
-  }
-
-  @Test
-  fun `should not process standard recalls if they are not enabled`() {
-    val standardRecallNotEnabledHandler =
-      RecallUpdatedHandler(mapper, licenceRepository, licenceService, prisonService, false)
-
-    val licence = createPrrdLicence()
-
-    whenever(prisonService.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(prisonerSearchResult))
-    whenever(prisonService.getRecallType(bookingId)).thenReturn(RecallType.STANDARD)
-    whenever(
-      licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
-        bookingId,
-        listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
-        listOf(LicenceKind.PRRD),
-      ),
-    ).thenReturn(listOf(licence))
-
-    standardRecallNotEnabledHandler.handleEvent(aRecallUpdatedEventMessage())
-
-    verifyNoInteractions(licenceService)
   }
 
   fun aRecallUpdatedEventMessage(): String = mapper.writeValueAsString(
