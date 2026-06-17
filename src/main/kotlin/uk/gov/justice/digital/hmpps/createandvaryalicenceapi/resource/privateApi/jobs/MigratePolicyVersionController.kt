@@ -24,8 +24,8 @@ class MigratePolicyVersionController(
   @ProtectedByIngress
   @PostMapping(value = ["/jobs/migrate-standard-conditions"])
   @Operation(
-    summary = "Migrates in flight licences in policy version 4.",
-    description = "Updates the standard conditions for in flight licences to the policy version 4 conditions",
+    summary = "Migrates standard conditions on in flight licences the requested policy version.",
+    description = "Updates the standard conditions for in flight licences to the requested policy version conditions",
   )
   @ApiResponses(
     value = [
