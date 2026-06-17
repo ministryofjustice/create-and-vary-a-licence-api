@@ -572,6 +572,7 @@ fun toHdc(
   isInHardStopPeriod: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
+  isHdcMigration: Boolean,
 ) = ModelHdcLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -655,12 +656,14 @@ fun toHdc(
   weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
   firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
+  allCurfewTimesEqual = licence.isCurfewSameTimeEachDay(),
   electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
     transformToModelElectronicMonitoringProvider(
       it,
     )
   },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
+  isHdcMigration = isHdcMigration,
 )
 
 fun toHdcVariation(
@@ -749,6 +752,7 @@ fun toHdcVariation(
   isReviewNeeded = false,
   submittedByFullName = licence.getSubmittedByFullName(),
   weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
+  allCurfewTimesEqual = licence.isCurfewSameTimeEachDay(),
   firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
 )

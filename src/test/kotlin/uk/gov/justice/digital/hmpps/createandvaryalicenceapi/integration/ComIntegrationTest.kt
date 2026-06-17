@@ -8,10 +8,13 @@ import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
@@ -33,6 +36,8 @@ class ComIntegrationTest : IntegrationTestBase() {
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -81,8 +86,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -137,8 +143,9 @@ class ComIntegrationTest : IntegrationTestBase() {
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     // When
     val result = webTestClient.post()
@@ -168,12 +175,14 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedUnallocatedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
       prisonId = "MDI",
       sentenceStartDate = LocalDate.now(),
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     // When
     val result = webTestClient.post()
@@ -206,12 +215,14 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
       prisonId = "MDI",
       sentenceStartDate = LocalDate.now(),
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     // When
     val result = webTestClient.post()
@@ -249,6 +260,8 @@ class ComIntegrationTest : IntegrationTestBase() {
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     // When
     val result = webTestClient.post()
@@ -274,10 +287,12 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from team caseload`() {
-    prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultList = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -319,8 +334,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -369,8 +385,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -391,8 +408,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -511,8 +529,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases(managedCasesResponse)
     deliusMockServer.stubGetCheckUserAccess(accessResponse)
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -661,8 +680,9 @@ class ComIntegrationTest : IntegrationTestBase() {
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -721,8 +741,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess(accessResponse)
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -755,6 +776,9 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
+    val hdcApiMockServer = HdcApiMockServer()
 
     val aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",

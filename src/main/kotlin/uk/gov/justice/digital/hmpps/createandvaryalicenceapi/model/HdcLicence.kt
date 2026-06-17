@@ -358,7 +358,13 @@ data class HdcLicence(
   @field:Schema(description = "Describes a electronic monitoring provider on a licence")
   override val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 
+  @field:Schema(description = "Are all curfew times equal across the week")
+  val allCurfewTimesEqual: Boolean? = null,
+
   @field:Schema(description = "The status of the electronic monitoring provider", example = "COMPLETE")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
+
+  @field:Schema(description = "Has this licence been migrated from the HDC service?", example = "false")
+  val isHdcMigration: Boolean = false,
 ) : Licence,
   SupportsElectronicMonitoring
