@@ -27,7 +27,7 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-hdc-licence-id-1.sql",
     "classpath:test_data/seed-hdc-curfew-hours.sql",
   )
-  fun `Update the curfew times`() {
+  fun `Update the weekly curfew times`() {
     hdcApiMockServer.stubGetHdcLicenceData(54321L)
 
     webTestClient.put()
@@ -61,6 +61,71 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
           tuple(DayOfWeek.SUNDAY, LocalTime.of(20, 0), DayOfWeek.MONDAY, LocalTime.of(8, 0)),
         ),
       )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-hdc-variation-licence-id-1.sql",
+    "classpath:test_data/seed-hdc-curfew-hours.sql",
+  )
+  fun `Update curfew times for HdcVariationLicence`() {
+    hdcApiMockServer.stubGetHdcLicenceData(54321L)
+
+    webTestClient.put()
+      .uri("/licence/id/1/hdc-weekly-curfew-times")
+      .bodyValue(anUpdateWeeklyCurfewTimesRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/hdc/curfew/licenceId/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(HdcLicenceDataResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.weeklyCurfewTimes)
+      .extracting<Tuple> { tuple(it.fromDay, it.fromTime, it.untilDay, it.untilTime) }
+      .containsAll(
+        listOf(
+          tuple(DayOfWeek.MONDAY, LocalTime.of(20, 0), DayOfWeek.TUESDAY, LocalTime.of(8, 0)),
+          tuple(DayOfWeek.TUESDAY, LocalTime.of(20, 0), DayOfWeek.WEDNESDAY, LocalTime.of(8, 0)),
+          tuple(DayOfWeek.WEDNESDAY, LocalTime.of(20, 0), DayOfWeek.THURSDAY, LocalTime.of(8, 0)),
+          tuple(DayOfWeek.THURSDAY, LocalTime.of(20, 0), DayOfWeek.FRIDAY, LocalTime.of(8, 0)),
+          tuple(DayOfWeek.FRIDAY, LocalTime.of(20, 0), DayOfWeek.SATURDAY, LocalTime.of(8, 0)),
+          tuple(DayOfWeek.SATURDAY, LocalTime.of(20, 0), DayOfWeek.SUNDAY, LocalTime.of(8, 0)),
+          tuple(DayOfWeek.SUNDAY, LocalTime.of(20, 0), DayOfWeek.MONDAY, LocalTime.of(8, 0)),
+        ),
+      )
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-licence-id-1.sql")
+  fun `Should return 500 with error message when licence does not support curfew updates`() {
+    webTestClient.put()
+      .uri("/licence/id/1/hdc-weekly-curfew-times")
+      .bodyValue(anUpdateWeeklyCurfewTimesRequest)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().is5xxServerError
+      .expectBody()
+      .jsonPath("$.userMessage")
+      .value<String> { assertThat(it).isEqualTo("Unexpected error: Licence CrdLicence does not support weekly curfew updates") }
+  }
+
+  @Test
+  fun `Should return 404 when licence not found`() {
+    webTestClient.put()
+      .uri("/licence/id/9999/hdc-weekly-curfew-times")
+      .bodyValue(anUpdateWeeklyCurfewTimesRequest)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isNotFound
   }
 
   @Test
