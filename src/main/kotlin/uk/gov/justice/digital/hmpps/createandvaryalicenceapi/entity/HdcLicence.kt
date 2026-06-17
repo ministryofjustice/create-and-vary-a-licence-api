@@ -179,8 +179,7 @@ class HdcLicence(
 ),
   HasElectronicMonitoringResponseProvider,
   HdcCase,
-  AlwaysHasCom,
-  HdcCurfewUpdatable {
+  AlwaysHasCom{
 
   fun copy(
     id: Long? = this.id,

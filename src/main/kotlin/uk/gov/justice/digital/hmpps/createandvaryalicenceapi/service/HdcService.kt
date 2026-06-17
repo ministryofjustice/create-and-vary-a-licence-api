@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewUpdatable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
@@ -143,7 +142,7 @@ class HdcService(
     val licence = licenceRepository.findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val curfewUpdatable = requireNotNull(licence as? HdcCurfewUpdatable) {
+    val curfewUpdatable = requireNotNull(licence as? HdcCase) {
       "Licence ${licence::class.simpleName} does not support weekly curfew updates"
     }
 
