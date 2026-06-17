@@ -179,7 +179,8 @@ class HdcLicence(
 ),
   HasElectronicMonitoringResponseProvider,
   HdcCase,
-  AlwaysHasCom {
+  AlwaysHasCom,
+  HdcCurfewUpdatable {
 
   fun copy(
     id: Long? = this.id,
@@ -312,16 +313,6 @@ class HdcLicence(
     submittedDate = LocalDateTime.now()
     dateLastUpdated = LocalDateTime.now()
     updatedBy = submittedBy
-  }
-
-  fun updateWeeklyCurfewTimes(
-    updatedWeeklyCurfewTimes: List<CurfewTimes>,
-    staffMember: Staff?,
-  ) {
-    this.weeklyCurfewTimes.clear()
-    this.weeklyCurfewTimes.addAll(updatedWeeklyCurfewTimes)
-    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
-    this.updatedBy = staffMember ?: this.updatedBy
   }
 
   fun updateFirstNightCurfewTimes(updatedFirstNightCurfewTimes: CurfewTimes, staffMember: Staff?) {

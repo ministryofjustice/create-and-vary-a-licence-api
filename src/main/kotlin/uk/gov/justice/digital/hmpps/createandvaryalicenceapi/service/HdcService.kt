@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewUpdatable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
@@ -135,25 +136,33 @@ class HdcService(
   }
 
   @Transactional
-  fun updateWeeklyCurfewTimes(licenceId: Long, request: UpdateWeeklyCurfewTimesRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicenceEntity
+  fun updateWeeklyCurfewTimes(
+    licenceId: Long,
+    request: UpdateWeeklyCurfewTimesRequest,
+  ) {
+    val licence = licenceRepository.findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val curfewUpdatable = requireNotNull(licence as? HdcCurfewUpdatable) {
+      "Licence ${licence::class.simpleName} does not support weekly curfew updates"
+    }
 
     val username = SecurityContextHolder.getContext().authentication?.name!!
 
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+    val staff = staffRepository.findByUsernameIgnoreCase(username)
 
-    val entityWeeklyCurfewTimes =
-      request.weeklyCurfewTimes.transformToEntityWeeklyCurfewTimes()
+    val weeklyCurfewTimes = request.weeklyCurfewTimes
+      .transformToEntityWeeklyCurfewTimes()
 
-    licenceEntity.updateWeeklyCurfewTimes(
-      updatedWeeklyCurfewTimes = entityWeeklyCurfewTimes,
-      staffMember = staffMember,
+    curfewUpdatable.updateWeeklyCurfewTimes(weeklyCurfewTimes, staff)
+
+    licenceRepository.saveAndFlush(licence)
+
+    auditService.recordAuditEventUpdateHdcWeeklyCurfewTimes(
+      licence,
+      weeklyCurfewTimes,
+      staff
     )
-
-    licenceRepository.saveAndFlush(licenceEntity)
-    auditService.recordAuditEventUpdateHdcWeeklyCurfewTimes(licenceEntity, entityWeeklyCurfewTimes, staffMember)
   }
 
   @Transactional

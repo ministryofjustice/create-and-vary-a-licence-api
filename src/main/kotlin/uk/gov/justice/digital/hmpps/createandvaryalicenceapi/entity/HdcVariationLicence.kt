@@ -171,7 +171,8 @@ class HdcVariationLicence(
 ),
   Variation,
   HdcCase,
-  AlwaysHasCom {
+  AlwaysHasCom,
+  HdcCurfewUpdatable {
 
   fun copy(
     id: Long? = this.id,
