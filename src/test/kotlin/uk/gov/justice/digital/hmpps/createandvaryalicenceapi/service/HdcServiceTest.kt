@@ -427,9 +427,9 @@ class HdcServiceTest {
   }
 
   @Nested
-  inner class `update curfew times` {
+  inner class `update weekly curfew times` {
     @Test
-    fun `update curfew times for a licence`() {
+    fun `update weekly curfew times for a licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 

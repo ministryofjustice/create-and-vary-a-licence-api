@@ -314,16 +314,6 @@ class HdcLicence(
     updatedBy = submittedBy
   }
 
-  fun updateWeeklyCurfewTimes(
-    updatedWeeklyCurfewTimes: List<CurfewTimes>,
-    staffMember: Staff?,
-  ) {
-    this.weeklyCurfewTimes.clear()
-    this.weeklyCurfewTimes.addAll(updatedWeeklyCurfewTimes)
-    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
-    this.updatedBy = staffMember ?: this.updatedBy
-  }
-
   fun updateFirstNightCurfewTimes(updatedFirstNightCurfewTimes: CurfewTimes, staffMember: Staff?) {
     this.firstNightCurfewTimes = updatedFirstNightCurfewTimes
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
