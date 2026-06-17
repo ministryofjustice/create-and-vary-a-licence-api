@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.HdcLicenceDataResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -38,17 +37,9 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val result = webTestClient.get()
-      .uri("/hdc/curfew/licenceId/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(HdcLicenceDataResponse::class.java)
-      .returnResult().responseBody
+    val result = testRepository.findWeeklyCurfewTimes(1)
 
-    assertThat(result?.weeklyCurfewTimes)
+    assertThat(result)
       .extracting<Tuple> { tuple(it.fromDay, it.fromTime, it.untilDay, it.untilTime) }
       .containsAll(
         listOf(
@@ -79,17 +70,9 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val result = webTestClient.get()
-      .uri("/hdc/curfew/licenceId/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(HdcLicenceDataResponse::class.java)
-      .returnResult().responseBody
+    val result = testRepository.findWeeklyCurfewTimes(1)
 
-    assertThat(result?.weeklyCurfewTimes)
+    assertThat(result)
       .extracting<Tuple> { tuple(it.fromDay, it.fromTime, it.untilDay, it.untilTime) }
       .containsAll(
         listOf(
@@ -145,17 +128,9 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val result = webTestClient.get()
-      .uri("/hdc/curfew/licenceId/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(HdcLicenceDataResponse::class.java)
-      .returnResult().responseBody
+    val result = testRepository.findFirstNightCurfewTimes(1)
 
-    assertThat(result.firstNightCurfewTimes)
+    assertThat(result!!)
       .extracting("fromTime", "untilTime")
       .containsExactly(LocalTime.of(20, 0), LocalTime.of(8, 0))
   }
