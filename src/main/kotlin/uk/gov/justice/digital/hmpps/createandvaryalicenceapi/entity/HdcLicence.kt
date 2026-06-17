@@ -179,7 +179,7 @@ class HdcLicence(
 ),
   HasElectronicMonitoringResponseProvider,
   HdcCase,
-  AlwaysHasCom{
+  AlwaysHasCom {
 
   fun copy(
     id: Long? = this.id,
