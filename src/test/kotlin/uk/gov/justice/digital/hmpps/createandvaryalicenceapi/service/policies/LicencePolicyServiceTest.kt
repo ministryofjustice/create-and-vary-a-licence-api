@@ -58,6 +58,29 @@ class LicencePolicyServiceTest {
   }
 
   @Nested
+  inner class `Get the standard conditions for a licence and policy version` {
+    @Test
+    fun `Gets the standard conditions for a licence and policy version`() {
+      val licence = createCrdLicence()
+      val version = "4.0"
+
+      val response = licencePolicyService.getStandardConditionsForLicence(licence, version)
+      assertThat(response).hasSize(10)
+      assertThat(response.all { it.conditionVersion == version })
+      assertThat(response.all { it.licence == licence })
+    }
+
+    @Test
+    fun `Throws an exception for a invalid policy version`() {
+      val version = "x.y"
+
+      assertThrows<IllegalStateException> {
+        licencePolicyService.getStandardConditionsForLicence(createCrdLicence(), version)
+      }
+    }
+  }
+
+  @Nested
   inner class `get config for condition` {
     @Test
     fun `can find config for condition`() {
