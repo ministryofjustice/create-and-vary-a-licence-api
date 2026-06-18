@@ -5,10 +5,12 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ProtectedByIngress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
@@ -30,8 +32,8 @@ class MigratePolicyVersionController(
   @ApiResponses(
     value = [
       ApiResponse(
-        responseCode = "200",
-        description = "Expiry job executed.",
+        responseCode = "204",
+        description = "The job ran successfully",
       ),
       ApiResponse(
         responseCode = "401",
@@ -40,6 +42,7 @@ class MigratePolicyVersionController(
       ),
     ],
   )
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   fun migrateStandardConditions(
     @RequestParam(name = "policyVersion") policyVersion: String,
   ) = migrateStandardConditionsService.migrateStandardConditions(policyVersion)

@@ -24,7 +24,7 @@ class MigratePolicyVersionIntegrationTest : IntegrationTestBase() {
       .uri("/jobs/migrate-standard-conditions?policyVersion=4.0")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
-      .expectStatus().isOk
+      .expectStatus().isNoContent
 
     getLicence(1).run {
       assertThat(standardLicenceConditions).isNotEmpty()
