@@ -105,3 +105,9 @@ jobs:
     path: /notify-probation-of-unapproved-licences
     cron: "0 11 * * 1-5" # 11am UTC, Monday - Friday
     allowRetry: false
+
+  - name: migrate-standard-conditions-v4-job
+    enabled: true
+    path: /migrate-standard-conditions?policyVersion=4.0
+    cron: "30 11 20 12 *" # 11:30 UTC on 20/12/2026
+    allowRetry: true
