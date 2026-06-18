@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 
-import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -9,6 +11,7 @@ import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.MigrateStandardConditionsService
+import java.time.Duration
 
 class MigratePolicyVersionIntegrationTest : IntegrationTestBase() {
 
@@ -26,10 +29,10 @@ class MigratePolicyVersionIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isNoContent
 
-    getLicence(1).run {
-      assertThat(standardLicenceConditions).isNotEmpty()
-      assertThat(standardLicenceConditions).hasSize(10)
-    }
+    await.atMost(Duration.ofSeconds(30)) untilCallTo {
+      val licence = getLicence(1)
+      licence.standardLicenceConditions?.size
+    } matches { size -> size == 10 }
   }
 
   private fun getLicence(id: Long) = webTestClient.get()
