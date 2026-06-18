@@ -141,95 +141,6 @@ class HdcServiceTest {
   }
 
   @Test
-  fun `getHdcLicenceData returns HDC licence data successfully from hdcApiClient`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(hdcApiClient.getByBookingId(54321)).thenReturn(someHdcLicenceData)
-    val result = service.getHdcLicenceData(1)
-    assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(source = MANUAL_MIGRATED))
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
-    assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes)
-    verify(hdcApiClient, times(1)).getByBookingId(54321L)
-  }
-
-  @Test
-  fun `getHdcLicenceData returns HDC licence data successfully from licenceRepository`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntityWithCurfewDetails))
-    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
-      someHdcLicenceData.copy(
-        curfewTimes = emptyList(),
-        curfewAddress = null,
-      ),
-    )
-    val result = service.getHdcLicenceData(1)
-    assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(id = 1, uprn = "uprn-123", postcode = "AB1 2CD", source = MANUAL_MIGRATED, postReleaseResidentialChecksCompleted = false, postReleaseResidentialChecksNotCompletedReason = "Old reason"))
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntityWithCurfewDetails.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
-    assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes.mapIndexed { index, times -> times.copy(id = 1, index + 1) })
-    verify(hdcApiClient, times(1)).getByBookingId(54321L)
-  }
-
-  @Test
-  fun `getHdcLicenceData returns HDC licence data successfully when there is no curfew address`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
-      someHdcLicenceData.copy(
-        curfewAddress = null,
-      ),
-    )
-    val result = service.getHdcLicenceData(1)
-    assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isNull()
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
-    assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes)
-    verify(hdcApiClient, times(1)).getByBookingId(54321L)
-  }
-
-  @Test
-  fun `getHdcLicenceData returns HDC licence data successfully when no recorded curfew times`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
-      someHdcLicenceData.copy(
-        curfewTimes = null,
-      ),
-    )
-    val result = service.getHdcLicenceData(1)
-    assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(source = MANUAL_MIGRATED))
-    assertThat(result?.firstNightCurfewTimes).isEqualTo(aLicenceEntity.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes())
-    assertThat(result?.weeklyCurfewTimes).isEmpty()
-    verify(hdcApiClient, times(1)).getByBookingId(54321L)
-  }
-
-  @Test
-  fun `getHdcLicenceData returns address details in HDC licence data successfully when the second line is not set`() {
-    val anAddress = aClientCurfewAddress.copy(
-      addressLine2 = null,
-    )
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
-      someHdcLicenceData.copy(
-        curfewAddress = anAddress,
-      ),
-    )
-    val result = service.getHdcLicenceData(1)
-    assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(secondLine = null, source = MANUAL_MIGRATED))
-    verify(hdcApiClient, times(1)).getByBookingId(54321L)
-  }
-
-  @Test
-  fun `getHdcLicenceData returns curfew information for HDC variations`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcVariationLicence()))
-    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
-      someHdcLicenceData,
-    )
-    val result = service.getHdcLicenceData(1)
-    assertThat(result?.curfewAddress).isEqualTo(aModelCurfewAddress.copy(source = MANUAL_MIGRATED))
-    assertThat(result?.weeklyCurfewTimes).isEqualTo(aModelClientSetOfCurfewTimes)
-  }
-
-  @Test
   fun getHdcStatuses() {
     whenever(prisonApiClient.getHdcStatuses(listOf(1L, 3L, 4L))).thenReturn(
       listOf(
@@ -492,7 +403,11 @@ class HdcServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(HdcLicence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateHdcFirstNightCurfewTimes(aLicenceEntity, request.firstNightCurfewTimes.transformToEntityFirstNightCurfewTimes(), aCom)
+      verify(auditService, times(1)).recordAuditEventUpdateHdcFirstNightCurfewTimes(
+        aLicenceEntity,
+        request.firstNightCurfewTimes.transformToEntityFirstNightCurfewTimes(),
+        aCom,
+      )
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
         .isEqualTo(listOf(aCom.username, aCom))

@@ -11,13 +11,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.HdcLicenceDataResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
@@ -30,7 +27,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence as HdcLicenceEntity
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
 
 @Service
 class HdcService(
@@ -66,51 +62,6 @@ class HdcService(
 
   @Transactional
   fun getHdcLicenceDataByBookingId(bookingId: Long): HdcLicence = this.hdcApiClient.getByBookingId(bookingId)
-
-  @Transactional
-  fun getHdcLicenceData(licenceId: Long): HdcLicenceDataResponse? {
-    val licence = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("No licence data found for $licenceId") } as HdcCase
-
-    val hdcLicenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
-
-    val weeklyCurfewTimes = if (licence.weeklyCurfewTimes.isNotEmpty()) {
-      licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes()
-    } else {
-      hdcLicenceData.curfewTimes?.map {
-        CurfewTimes(
-          fromDay = it.fromDay,
-          fromTime = it.fromTime,
-          untilDay = it.untilDay,
-          untilTime = it.untilTime,
-        )
-      } ?: emptyList()
-    }
-
-    val curfewAddress = if (licence.curfewAddress != null) {
-      transformToModelHdcCurfewAddress(licence.curfewAddress!!)
-    } else {
-      hdcLicenceData.curfewAddress?.let {
-        ModelHdcCurfewAddress(
-          firstLine = it.addressLine1 ?: "",
-          secondLine = it.addressLine2,
-          townOrCity = it.townOrCity ?: "",
-          postcode = it.postcode ?: "",
-          source = AddressSource.MANUAL_MIGRATED,
-        )
-      }
-    }
-
-    val firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes()
-
-    return HdcLicenceDataResponse(
-      licenceId = hdcLicenceData.licenceId,
-      curfewAddress = curfewAddress,
-      firstNightCurfewTimes = firstNightCurfewTimes,
-      weeklyCurfewTimes = weeklyCurfewTimes,
-    )
-  }
 
   fun checkEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner, hdcLicenceData: HdcLicence?) {
     if (nomisRecord.homeDetentionCurfewActualDate == null) {

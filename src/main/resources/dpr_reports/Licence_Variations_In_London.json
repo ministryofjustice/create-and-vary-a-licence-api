@@ -1,6 +1,6 @@
 {
   "id": "approved-licences-varied-london",
-  "name": "Approved licences variations in London (N07)" ,
+  "name": "Approved licences variations in London (N07)",
   "description": "Data products for Create and Vary a licence ",
   "metadata": {
     "author": "Caija Addai",
@@ -13,7 +13,6 @@
       "id": "cvl",
       "name": "cvl"
     }
-
   ],
   "dataset": [
     {
@@ -85,16 +84,15 @@
           {
             "name": "$ref:licence_start_date",
             "display": "Release date",
-
             "formula": "format_date(${licence_start_date}, 'dd/MM/yyyy')",
             "visible": "true",
             "sortable": true,
             "defaultsort": false,
             "filter": {
-          "type": "daterange",
-          "interactive":true,
-          "default": "today(-1,months) - today()"
-          }
+              "type": "daterange",
+              "interactive": true,
+              "default": "today(-1,months) - today()"
+            }
           },
           {
             "name": "$ref:probation_pdu_code",
