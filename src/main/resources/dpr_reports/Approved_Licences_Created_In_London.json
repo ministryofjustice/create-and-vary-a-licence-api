@@ -25,11 +25,6 @@
           {
             "name": "licence_start_date",
             "type": "date",
-            "display": "Licence start date"
-          },
-          {
-            "name": "licence_start_date",
-            "type": "date",
             "display": "Release date"
           },
           {
