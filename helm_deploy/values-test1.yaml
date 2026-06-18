@@ -110,4 +110,4 @@ jobs:
     enabled: true
     path: /migrate-standard-conditions?policyVersion=4.0
     cron: "30 11 20 12 *" # 11:30 UTC on 20/12/2026
-    allowRetry: true
+    allowRetry: false
