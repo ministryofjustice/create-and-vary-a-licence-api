@@ -19,7 +19,7 @@
       "id": "licence-dataset",
       "name": "licence-dataset",
       "datasource": "cvl",
-      "query": "SELECT l.noms_id AS nomis_number, concat(l.forename, ' ', l.surname) AS prisoner_name, l.crn, l.status_code FROM licence l WHERE l.status_code IN ('SUBMITTED', 'APPROVED') AND l.date_created >= '2026-06-15'",
+      "query": "SELECT l.noms_id AS nomis_number, concat(l.forename, ' ', l.surname) AS prisoner_name, l.crn, l.status_code FROM licence l WHERE l.status_code IN ('SUBMITTED', 'APPROVED') AND l.date_created >= '2026-06-15' AND (l.licence_start_date IS NOT NULL AND l.licence_start_Date >= CURRENT_DATE)'",
       "schema": {
         "field": [
           {
