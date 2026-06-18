@@ -314,7 +314,7 @@ class HdcLicence(
     updatedBy = submittedBy
   }
 
-  fun updateWeeklyCurfewTimes(
+  override fun updateWeeklyCurfewTimes(
     updatedWeeklyCurfewTimes: List<CurfewTimes>,
     staffMember: Staff?,
   ) {

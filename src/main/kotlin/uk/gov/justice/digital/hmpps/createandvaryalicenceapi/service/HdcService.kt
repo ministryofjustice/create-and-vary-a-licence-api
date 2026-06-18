@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
@@ -138,7 +139,7 @@ class HdcService(
   fun updateWeeklyCurfewTimes(licenceId: Long, request: UpdateWeeklyCurfewTimesRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicenceEntity
+      .orElseThrow { EntityNotFoundException("$licenceId") } as HdcCase
 
     val username = SecurityContextHolder.getContext().authentication?.name!!
 
@@ -152,7 +153,7 @@ class HdcService(
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(licenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity as Licence)
     auditService.recordAuditEventUpdateHdcWeeklyCurfewTimes(licenceEntity, entityWeeklyCurfewTimes, staffMember)
   }
 

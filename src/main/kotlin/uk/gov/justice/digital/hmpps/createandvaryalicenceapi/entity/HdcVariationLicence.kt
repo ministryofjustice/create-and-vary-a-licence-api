@@ -313,6 +313,16 @@ class HdcVariationLicence(
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
+  override fun updateWeeklyCurfewTimes(
+    updatedWeeklyCurfewTimes: List<CurfewTimes>,
+    staffMember: Staff?,
+  ) {
+    this.weeklyCurfewTimes.clear()
+    this.weeklyCurfewTimes.addAll(updatedWeeklyCurfewTimes)
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
+
   override fun toString(): String = "HdcVariationLicence(" +
     "id=$id, " +
     "kind=$kind, " +

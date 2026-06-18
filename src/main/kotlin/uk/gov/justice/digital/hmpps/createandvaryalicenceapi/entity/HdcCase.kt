@@ -14,4 +14,6 @@ interface HdcCase {
     it.fromTime == weeklyCurfewTimes[0].fromTime &&
       it.untilTime == weeklyCurfewTimes[0].untilTime
   }
+
+  fun updateWeeklyCurfewTimes(updatedWeeklyCurfewTimes: List<CurfewTimes>, staffMember: Staff?)
 }
