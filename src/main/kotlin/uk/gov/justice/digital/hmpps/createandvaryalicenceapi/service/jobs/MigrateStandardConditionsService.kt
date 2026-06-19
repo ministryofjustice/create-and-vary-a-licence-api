@@ -2,8 +2,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ISRProgressionLicenceRepository
 
 @Service
@@ -12,7 +12,7 @@ class MigrateStandardConditionsService(
   private val migrateStandardConditionsChunkService: MigrateStandardConditionsChunkService,
 ) {
 
-  @Transactional
+  @Async
   fun migrateStandardConditions(policyVersion: String) {
     log.info("Migrating standard conditions on in flight licences to version $policyVersion")
     val inflightLicenceIds =

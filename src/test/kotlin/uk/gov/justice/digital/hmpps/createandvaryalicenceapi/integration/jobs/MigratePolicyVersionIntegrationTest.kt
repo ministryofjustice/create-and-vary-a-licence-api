@@ -1,14 +1,15 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 
-import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.MigrateStandardConditionsService
+import java.time.Duration
 
 class MigratePolicyVersionIntegrationTest : IntegrationTestBase() {
 
@@ -24,21 +25,11 @@ class MigratePolicyVersionIntegrationTest : IntegrationTestBase() {
       .uri("/jobs/migrate-standard-conditions?policyVersion=4.0")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
-      .expectStatus().isOk
+      .expectStatus().isNoContent
 
-    getLicence(1).run {
-      assertThat(standardLicenceConditions).isNotEmpty()
-      assertThat(standardLicenceConditions).hasSize(10)
-    }
+    await.atMost(Duration.ofSeconds(30)) untilCallTo {
+      val licence = testRepository.findLicence(1L)
+      licence.standardConditions.size
+    } matches { size -> size == 10 }
   }
-
-  private fun getLicence(id: Long) = webTestClient.get()
-    .uri("/licence/id/$id")
-    .accept(MediaType.APPLICATION_JSON)
-    .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-    .exchange()
-    .expectStatus().isOk
-    .expectHeader().contentType(MediaType.APPLICATION_JSON)
-    .expectBody<Licence>()
-    .returnResult().responseBody
 }
