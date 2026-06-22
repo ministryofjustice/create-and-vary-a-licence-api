@@ -926,37 +926,37 @@ class LicenceService(
 
   private fun populateCopyAndAudit(
     kind: LicenceKind,
-    licence: EntityLicence,
-    licenceCopy: EntityLicence,
+    original: EntityLicence,
+    copy: EntityLicence,
     creator: CommunityOffenderManager,
   ): EntityLicence {
     val newStatus = kind.initialStatus()
 
-    licenceCopy.bespokeConditions.clear()
-    licenceCopy.standardConditions.clear()
-    licenceCopy.additionalConditions.clear()
+    copy.bespokeConditions.clear()
+    copy.standardConditions.clear()
+    copy.additionalConditions.clear()
 
-    licenceCopy.version = licencePolicyService.currentPolicy(licence.licenceStartDate).version
-    licenceCopy.standardConditions.addAll(
-      licence.standardConditions.map { it.copy(id = null, licence = licenceCopy) },
+    copy.version = licencePolicyService.currentPolicy(original.licenceStartDate).version
+    copy.standardConditions.addAll(
+      original.standardConditions.map { it.copy(id = null, licence = copy) },
     )
 
     val isNowInPssPeriod =
-      licence.kind.isVariation() && licence.typeCode == AP_PSS && licence.isInPssPeriod()
+      original.kind.isVariation() && original.typeCode == AP_PSS && original.isInPssPeriod()
 
     if (!isNowInPssPeriod) {
-      licenceCopy.bespokeConditions.addAll(
-        licence.bespokeConditions.map { it.copy(id = null, licence = licenceCopy) },
+      copy.bespokeConditions.addAll(
+        original.bespokeConditions.map { it.copy(id = null, licence = copy) },
       )
     }
 
-    val copiedAdditionalConditions = licence.additionalConditions
+    val copiedAdditionalConditions = original.additionalConditions
       .run { if (isNowInPssPeriod) filter { it.isNotAp() } else this }
       .map { condition ->
 
         val copiedCondition = condition.copy(
           id = null,
-          licence = licenceCopy,
+          licence = copy,
           additionalConditionData = mutableListOf(),
           additionalConditionUpload = mutableListOf(),
         )
@@ -974,17 +974,17 @@ class LicenceService(
       }
 
     // This needs to be saved here before the below code uses the condition.id
-    licenceCopy.additionalConditions.addAll(copiedAdditionalConditions)
-    licenceRepository.saveAndFlush(licenceCopy)
+    copy.additionalConditions.addAll(copiedAdditionalConditions)
+    licenceRepository.saveAndFlush(copy)
 
-    val licenceEventMessage = when (licenceCopy.statusCode) {
-      VARIATION_IN_PROGRESS -> "A variation was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"
-      IN_PROGRESS -> "A new licence version was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"
-      else -> error("Invalid new licence status of ${licenceCopy.statusCode} when creating a licence copy ")
+    val licenceEventMessage = when (copy.statusCode) {
+      VARIATION_IN_PROGRESS -> "A variation was created for ${copy.forename} ${copy.surname} from ID ${original.id}"
+      IN_PROGRESS -> "A new licence version was created for ${copy.forename} ${copy.surname} from ID ${original.id}"
+      else -> error("Invalid new licence status of ${copy.statusCode} when creating a licence copy ")
     }
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
-        licenceId = licenceCopy.id,
+        licenceId = copy.id,
         eventType = kind.copyEventType(),
         username = creator.username,
         forenames = creator.firstName,
@@ -994,21 +994,21 @@ class LicenceService(
     )
 
     val auditEventSummary = when (newStatus) {
-      VARIATION_IN_PROGRESS -> "Licence varied for ${licenceCopy.forename} ${licenceCopy.surname}"
-      IN_PROGRESS -> "New licence version created for ${licenceCopy.forename} ${licenceCopy.surname}"
+      VARIATION_IN_PROGRESS -> "Licence varied for ${copy.forename} ${copy.surname}"
+      IN_PROGRESS -> "New licence version created for ${copy.forename} ${copy.surname}"
       else -> error("Invalid new licence status of $newStatus when creating a licence copy ")
     }
     auditEventRepository.saveAndFlush(
       AuditEvent(
-        licenceId = licence.id,
+        licenceId = original.id,
         username = creator.username,
         fullName = "${creator.firstName} ${creator.lastName}",
         summary = auditEventSummary,
-        detail = "Old ID ${licence.id}, new ID ${licenceCopy.id} type ${licenceCopy.typeCode} status ${licenceCopy.statusCode.name} version ${licenceCopy.version}",
+        detail = "Old ID ${original.id}, new ID ${copy.id} type ${copy.typeCode} status ${copy.statusCode.name} version ${copy.version}",
       ),
     )
 
-    return licenceCopy
+    return copy
   }
 
   private fun getCommunityOffenderManagerForCurrentUser(): CommunityOffenderManager {
