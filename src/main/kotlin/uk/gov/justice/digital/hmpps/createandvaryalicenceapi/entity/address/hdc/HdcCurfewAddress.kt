@@ -55,4 +55,22 @@ class HdcCurfewAddress(
   source = source,
   createdTimestamp = createdTimestamp,
   lastUpdatedTimestamp = lastUpdatedTimestamp,
-)
+) {
+
+  fun copy(licence: Licence) = HdcCurfewAddress(
+    id = id,
+    reference = reference,
+    uprn = uprn,
+    firstLine = firstLine,
+    secondLine = secondLine,
+    townOrCity = townOrCity,
+    county = county,
+    postcode = postcode,
+    source = source,
+    createdTimestamp = createdTimestamp,
+    lastUpdatedTimestamp = lastUpdatedTimestamp,
+    licence = licence,
+    accommodationType = accommodationType,
+    postReleaseResidentialChecksCompleted = postReleaseResidentialChecksCompleted,
+  )
+}

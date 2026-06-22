@@ -15,6 +15,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCond
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
@@ -490,7 +492,7 @@ object TestData {
     townOrCity: String = "Testville",
     county: String? = "Testshire",
     postcode: String = "TE5 7AA",
-    source: AddressSource = AddressSource.MANUAL,
+    source: AddressSource = MANUAL,
     created: LocalDateTime = LocalDateTime.now(),
     updated: LocalDateTime = created,
   ): Address = Address(
@@ -574,6 +576,7 @@ object TestData {
     it.copy(
       standardConditions = someEntityStandardConditions(it),
       weeklyCurfewTimes = emptyList(),
+      curfewAddress = curfewAddress(it),
     )
   }
 
@@ -619,7 +622,11 @@ object TestData {
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
   ).let {
-    it.copy(standardConditions = someEntityStandardConditions(it), weeklyCurfewTimes = mutableListOf())
+    it.copy(
+      standardConditions = someEntityStandardConditions(it),
+      weeklyCurfewTimes = mutableListOf(),
+      curfewAddress = curfewAddress(it),
+    )
   }
 
   fun prisonerSearchResult(
@@ -827,6 +834,21 @@ object TestData {
     releaseDate = LocalDate.of(2021, 10, 22),
     probationPractitioner = ProbationPractitioner(allocated = true),
     isRestricted = false,
+  )
+
+  fun curfewAddress(licence: Licence) = HdcCurfewAddress(
+    id = 1,
+    licence = licence,
+    firstLine = "1 Test Street",
+    secondLine = "Test Area",
+    townOrCity = "Test Town",
+    county = null,
+    postcode = "AB1 2CD",
+    reference = "ref-123",
+    uprn = "uprn-123",
+    source = MANUAL,
+    postReleaseResidentialChecksCompleted = false,
+    postReleaseResidentialChecksNotCompletedReason = "Old reason",
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
