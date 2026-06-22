@@ -40,12 +40,12 @@ enum class ElectronicMonitoringType(val text: Map<Version, String?>) {
 
   ALCOHOL_MONITORING(
     V1 to "alcohol monitoring",
-    V2 to "that you do not drink any alcohol",
+    V2 to "your alcohol consumption",
   ),
 
   ALCOHOL_ABSTINENCE(
     V1 to "alcohol abstinence",
-    V2 to "your alcohol consumption",
+    V2 to "that you do not drink any alcohol",
   ),
 
   RESTRICTION_ZONE(
