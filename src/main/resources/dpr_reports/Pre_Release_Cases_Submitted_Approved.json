@@ -62,7 +62,8 @@
             {
               "match": [
                 "${role}",
-                "ROLE_NOMIS_BATCHLOAD"
+                "ROLE_NOMIS_BATCHLOAD",
+                "ROLE_CVL_REPORTS"
               ]
             }
           ]
