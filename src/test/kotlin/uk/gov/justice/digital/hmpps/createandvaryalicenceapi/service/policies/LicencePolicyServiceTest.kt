@@ -19,6 +19,13 @@ class LicencePolicyServiceTest {
     LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
 
   @Test
+  fun `Check all policy versions are mapped`() {
+    val policyServiceVersions = LicencePolicyService().allPolicies().map { it.version }.toSet()
+    val apiRepresentationVersions = PolicyVersion.entries.map { it.version }.toSet()
+    assertThat(policyServiceVersions).isEqualTo(apiRepresentationVersions)
+  }
+
+  @Test
   fun `Policy version 3 is returned if licence start date is not provided`() {
     val policy = licencePolicyService.currentPolicy(null)
     assertThat(policy.version).isEqualTo("3.0")
