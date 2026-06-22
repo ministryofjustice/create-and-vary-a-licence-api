@@ -276,10 +276,10 @@ class PublicLicenceServiceTest {
                   sequence = 2,
                 ),
                 AdditionalConditionData(
-                  id = 2,
+                  id = 3,
                   field = "electronicMonitoringTypes",
                   value = "that you do not leave areas you must stay in (restriction zones)",
-                  sequence = 2,
+                  sequence = 3,
                 ),
               ),
               readyToSubmit = true,
