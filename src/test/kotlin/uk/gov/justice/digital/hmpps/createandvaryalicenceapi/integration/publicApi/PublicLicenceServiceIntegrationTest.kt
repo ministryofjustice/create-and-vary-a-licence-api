@@ -54,7 +54,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody
 
       assertThat(resultList).hasSize(1)
-      assertLicenceSummary(resultList!!.first())
+      assertLicenceSummary(resultList.first())
     }
 
     @Test
