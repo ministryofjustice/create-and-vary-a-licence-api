@@ -84,7 +84,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(releaseDate).isNull()
         assertThat(name).isEqualTo("Person Seven")
         assertThat(prisonerNumber).isEqualTo("A1234BC")
-        assertThat(releaseDateLabel).isEqualTo("CRD")
+        assertThat(releaseDateLabel).isEqualTo("Conditional release date")
         assertThat(approvedBy).isNull()
         assertThat(approvedOn).isNull()
       }
@@ -92,7 +92,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(releaseDate).isEqualTo(LocalDate.of(2022, 1, 1))
         assertThat(name).isEqualTo("Person Two")
         assertThat(prisonerNumber).isEqualTo("A1234AB")
-        assertThat(releaseDateLabel).isEqualTo("CRD")
+        assertThat(releaseDateLabel).isEqualTo("Conditional release date")
         assertThat(approvedBy).isNull()
         assertThat(approvedOn).isNull()
       }
@@ -176,7 +176,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
-        assertThat(releaseDateLabel).isEqualTo("CRD")
+        assertThat(releaseDateLabel).isEqualTo("Conditional release date")
       }
       with(caseload[1]) {
         assertThat(name).isEqualTo("Person A")

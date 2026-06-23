@@ -268,7 +268,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       assertThat(caseload).hasSize(4)
 
       assertThat(caseload.find { it.prisonerNumber == "A1234AA" }!!.releaseDateLabel)
-        .isEqualTo("CRD")
+        .isEqualTo("Conditional release date")
 
       assertThat(caseload.find { it.prisonerNumber == "AB1234L" }!!.releaseDateLabel)
         .isEqualTo("Post-recall release date (PRRD)")
