@@ -76,7 +76,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
       assertThat(isInHardStopPeriod).isFalse()
       assertThat(kind).isEqualTo(LicenceKind.CRD)
       assertThat(releaseDate).isEqualTo("2022-01-01")
-      assertThat(releaseDateLabel).isEqualTo("CRD")
+      assertThat(releaseDateLabel).isEqualTo("Conditional release date")
     }
     with(caseload[1]) {
       assertThat(name).isEqualTo("Person One")
@@ -86,7 +86,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
       assertThat(isInHardStopPeriod).isFalse()
       assertThat(kind).isEqualTo(LicenceKind.CRD)
       assertThat(releaseDate).isEqualTo("2022-09-29")
-      assertThat(releaseDateLabel).isEqualTo("CRD")
+      assertThat(releaseDateLabel).isEqualTo("Conditional release date")
     }
     with(caseload[3]) {
       assertThat(name).isEqualTo("Person Three")
@@ -96,7 +96,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
       assertThat(isInHardStopPeriod).isTrue()
       assertThat(kind).isEqualTo(LicenceKind.CRD)
       assertThat(releaseDate).isToday()
-      assertThat(releaseDateLabel).isEqualTo("CRD")
+      assertThat(releaseDateLabel).isEqualTo("Conditional release date")
     }
   }
 
@@ -157,7 +157,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
       assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
       assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
       assertThat(isInHardStopPeriod).isTrue()
-      assertThat(releaseDateLabel).isEqualTo("CRD")
+      assertThat(releaseDateLabel).isEqualTo("Conditional release date")
       assertThat(releaseDate).isEqualTo(test1.conditionalReleaseDate)
     }
     with(caseload[1]) {

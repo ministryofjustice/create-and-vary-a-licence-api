@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import java.time.LocalDate
 
-const val LABEL_FOR_CRD_RELEASE_DATE = "CRD"
+const val LABEL_FOR_CRD_RELEASE_DATE = "Conditional release date"
 const val LABEL_FOR_CONFIRMED_RELEASE_DATE = "Confirmed release date"
 const val LABEL_FOR_HDC_ACTUAL_DATE = "HDC actual date"
 const val LABEL_FOR_HDC_ELIGIBLE_DATE = "HDC eligible date"
