@@ -19,6 +19,13 @@ class LicencePolicyServiceTest {
     LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
 
   @Test
+  fun `Check all policy versions are mapped`() {
+    val policyServiceVersions = LicencePolicyService().allPolicies().map { it.version }.toSet()
+    val apiRepresentationVersions = PolicyVersion.entries.map { it.version }.toSet()
+    assertThat(policyServiceVersions).isEqualTo(apiRepresentationVersions)
+  }
+
+  @Test
   fun `Policy version 3 is returned if licence start date is not provided`() {
     val policy = licencePolicyService.currentPolicy(null)
     assertThat(policy.version).isEqualTo("3.0")
@@ -54,6 +61,29 @@ class LicencePolicyServiceTest {
     licencePolicyService.allPolicies().forEach { policy ->
       assertThat(policy.allAdditionalConditions().map { it.code }).doesNotHaveDuplicates()
       assertThat(policy.allStandardConditions().map { it.code }).doesNotHaveDuplicates()
+    }
+  }
+
+  @Nested
+  inner class `Get the standard conditions for a licence and policy version` {
+    @Test
+    fun `Gets the standard conditions for a licence and policy version`() {
+      val licence = createCrdLicence()
+      val version = "4.0"
+
+      val response = licencePolicyService.getStandardConditionsForLicence(licence, version)
+      assertThat(response).hasSize(10)
+      assertThat(response.all { it.conditionVersion == version })
+      assertThat(response.all { it.licence == licence })
+    }
+
+    @Test
+    fun `Throws an exception for a invalid policy version`() {
+      val version = "x.y"
+
+      assertThrows<IllegalStateException> {
+        licencePolicyService.getStandardConditionsForLicence(createCrdLicence(), version)
+      }
     }
   }
 

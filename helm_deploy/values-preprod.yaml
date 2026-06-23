@@ -103,6 +103,12 @@ jobs:
     cron: "30 0 * * *" # 00:30 UTC every day
     allowRetry: true
 
+  - name: migrate-standard-conditions-v4-job
+    enabled: true
+    path: /migrate-standard-conditions?policyVersion=4.0
+    cron: "30 11 20 12 *" # 11:30 UTC on 20/12/2026
+    allowRetry: false
+
 #CloudPlatform AlertManager receiver to route prometheus alerts to slack
 #See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:

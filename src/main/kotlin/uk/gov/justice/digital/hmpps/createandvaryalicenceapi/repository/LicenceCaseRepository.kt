@@ -68,6 +68,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.licenceStartDate,
           l.postRecallReleaseDate,
           l.homeDetentionCurfewActualDate,
+          l.homeDetentionCurfewEligibilityDate,
           updatedBy.firstName,
           updatedBy.lastName,
           com.username,

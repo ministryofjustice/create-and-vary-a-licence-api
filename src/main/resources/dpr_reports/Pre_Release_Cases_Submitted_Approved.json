@@ -1,6 +1,6 @@
 {
-  "id": "approved-licences-varied-london",
-  "name": "Approved licences variations in London (N07)",
+  "id": "pre-release-cases-submitted-approved",
+  "name": "Pre release cases that are submitted or approved",
   "description": "Data products for Create and Vary a licence ",
   "metadata": {
     "author": "Caija Addai",
@@ -19,28 +19,33 @@
       "id": "licence-dataset",
       "name": "licence-dataset",
       "datasource": "cvl",
-      "query": "SELECT l.licence_start_date, l.probation_pdu_code, l.probation_pdu_description, l.crn FROM licence l WHERE kind = 'VARIATION' AND l.approved_date IS NOT NULL AND l.probation_area_code = 'N07' AND l.status_code = 'VARIATION_APPROVED'",
+      "query": "SELECT l.noms_id AS nomis_number, concat(l.forename, ' ', l.surname) AS prisoner_name, l.crn, l.status_code FROM licence l WHERE l.status_code IN ('SUBMITTED', 'APPROVED') AND (l.licence_start_date IS NOT NULL AND l.licence_start_date >= CURRENT_DATE)",
       "schema": {
         "field": [
           {
             "name": "licence_start_date",
             "type": "date",
-            "display": "Release date"
+            "display": "Licence start date"
           },
           {
-            "name": "probation_pdu_code",
+            "name": "nomis_number",
             "type": "string",
-            "display": "Probation PDU code"
+            "display": "NOMIS/Prison Number"
           },
           {
-            "name": "probation_pdu_description",
+            "name": "prisoner_name",
             "type": "string",
-            "display": "Probation PDU"
+            "display": "Name"
           },
           {
             "name": "crn",
             "type": "string",
             "display": "CRN"
+          },
+          {
+            "name": "status_code",
+            "type": "string",
+            "display": "Licence Status"
           }
         ]
       }
@@ -68,9 +73,9 @@
   ],
   "report": [
     {
-      "id": "approved-licences-varied-london",
-      "name": "Approved licence variations in London (N07)",
-      "description": "Number of CVL licence variations approved in London",
+      "id": "pre-release-cases-submitted-approved",
+      "name": "Pre release cases submitted or approved",
+      "description": "Number of pre release CVL licences which are submitted or approved",
       "version": "1.0.0",
       "render": "HTML",
       "dataset": "$ref:licence-dataset",
@@ -83,28 +88,15 @@
         "template": "list",
         "field": [
           {
-            "name": "$ref:licence_start_date",
-            "display": "Release date",
-            "formula": "format_date(${licence_start_date}, 'dd/MM/yyyy')",
+            "name": "$ref:nomis_number",
+            "display": "NOMIS/Prison Number",
             "visible": "true",
             "sortable": true,
-            "defaultsort": false,
-            "filter": {
-              "type": "daterange",
-              "interactive": true,
-              "default": "today(-1,months) - today()"
-            }
+            "defaultsort": false
           },
           {
-            "name": "$ref:probation_pdu_code",
-            "display": "Probation PDU code",
-            "visible": "true",
-            "sortable": true,
-            "defaultsort": true
-          },
-          {
-            "name": "$ref:probation_pdu_description",
-            "display": "Probation PDU",
+            "name": "$ref:prisoner_name",
+            "display": "Name",
             "visible": "true",
             "sortable": true,
             "defaultsort": false
@@ -112,6 +104,13 @@
           {
             "name": "$ref:crn",
             "display": "CRN",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:status_code",
+            "display": "Licence Status",
             "visible": "true",
             "sortable": true,
             "defaultsort": false

@@ -76,6 +76,8 @@ class LicencePolicyService(
     return POLICY_V3_0
   }
 
+  fun currentPolicyVersion(licenceStartDate: LocalDate? = null): String = currentPolicy(licenceStartDate).version
+
   fun policyByVersion(version: String): LicencePolicy = policies.find { it.version == version }
     ?: throw EntityNotFoundException("policy version $version not found")
 
@@ -147,13 +149,14 @@ class LicencePolicyService(
     currentPolicy(licence.licenceStartDate).standardConditions.standardConditionsPss
   }
 
-  private fun toEntityStandardCondition(licence: Licence, type: String) = { i: Int, condition: ILicenceCondition ->
+  private fun toEntityStandardCondition(licence: Licence, type: String, policyVersion: String) = { i: Int, condition: ILicenceCondition ->
     StandardCondition(
       licence = licence,
       conditionType = type,
       conditionSequence = i,
       conditionCode = condition.code,
       conditionText = condition.text,
+      conditionVersion = policyVersion,
     )
   }
 
@@ -171,12 +174,23 @@ class LicencePolicyService(
   }
 
   fun getStandardConditionsForLicence(licence: Licence): List<StandardCondition> {
+    val policyVersion = currentPolicyVersion(licence.licenceStartDate)
+
     val standardConditions =
-      getCurrentStandardConditions(licence).mapIndexed(toEntityStandardCondition(licence, "AP"))
+      getCurrentStandardConditions(licence).mapIndexed(toEntityStandardCondition(licence, "AP", policyVersion))
     val pssRequirements =
-      getCurrentPssRequirements(licence).mapIndexed(toEntityStandardCondition(licence, "PSS"))
+      getCurrentPssRequirements(licence).mapIndexed(toEntityStandardCondition(licence, "PSS", policyVersion))
 
     return standardConditions + pssRequirements
+  }
+
+  fun getStandardConditionsForLicence(licence: Licence, policyVersion: String): List<StandardCondition> {
+    val policy = allPolicies().find { it.version == policyVersion }
+    if (policy == null) {
+      throw IllegalStateException("Policy version $policyVersion not found")
+    }
+    val standardConditions = policy.standardConditions.standardConditionsAp
+    return standardConditions.mapIndexed(toEntityStandardCondition(licence, "AP", policyVersion))
   }
 
   fun getAllAdditionalConditions(): AllAdditionalConditions = AllAdditionalConditions(

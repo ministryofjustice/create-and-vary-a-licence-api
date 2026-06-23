@@ -1903,6 +1903,7 @@ class ComCreateCaseloadServiceTest {
     versionOfId = versionOfId,
     postRecallReleaseDate = LocalDate.now(),
     homeDetentionCurfewActualDate = LocalDate.now(),
+    homeDetentionCurfewEligibilityDate = LocalDate.now(),
     updatedByFirstName = "firstName",
     updatedByLastName = "lastName",
     reviewDate = reviewDate,

@@ -24,10 +24,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionPss
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicenceCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aStandardConditionEntity
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -509,27 +509,13 @@ class LicenceTypeOverrideServiceTest {
       )
     }
 
-    private fun standardConditions(licence: CrdLicence): List<StandardCondition> = currentPolicy.standardConditions.standardConditionsAp
-      .mapIndexed { i: Int, condition: ILicenceCondition ->
-        StandardCondition(
-          licence = licence,
-          conditionType = "AP",
-          conditionSequence = i,
-          conditionCode = condition.code,
-          conditionText = condition.text,
-        )
-      }
+    private fun standardConditions(licence: CrdLicence): List<StandardCondition> = List(currentPolicy.standardConditions.standardConditionsAp.size) { _: Int ->
+      aStandardConditionEntity(licence)
+    }
 
-    private fun pssRequirement(licence: CrdLicence): List<StandardCondition> = currentPolicy.standardConditions.standardConditionsPss
-      .mapIndexed { i: Int, condition: ILicenceCondition ->
-        StandardCondition(
-          licence = licence,
-          conditionType = "PSS",
-          conditionSequence = i,
-          conditionCode = condition.code,
-          conditionText = condition.text,
-        )
-      }
+    private fun pssRequirement(licence: CrdLicence): List<StandardCondition> = List(currentPolicy.standardConditions.standardConditionsPss.size) { _: Int ->
+      aStandardConditionEntity(licence).copy(conditionType = "PSS")
+    }
 
     private fun pssAdditionalConditions(licence: CrdLicence): List<AdditionalCondition> = currentPolicy.additionalConditions.pss.mapIndexed { i: Int, condition: AdditionalConditionPss ->
       AdditionalCondition(

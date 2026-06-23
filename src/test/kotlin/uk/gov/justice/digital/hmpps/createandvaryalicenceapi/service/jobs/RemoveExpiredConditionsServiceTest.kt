@@ -190,6 +190,7 @@ class RemoveExpiredConditionsServiceTest {
             conditionText = "Be of good behaviour",
             conditionType = "AP",
             licence = it,
+            conditionVersion = it.licenceVersion,
           ),
           EntityStandardCondition(
             id = 2,
@@ -198,6 +199,7 @@ class RemoveExpiredConditionsServiceTest {
             conditionText = "Do not break any law",
             conditionType = "AP",
             licence = it,
+            conditionVersion = it.licenceVersion,
           ),
           EntityStandardCondition(
             id = 3,
@@ -206,6 +208,7 @@ class RemoveExpiredConditionsServiceTest {
             conditionText = "Attend meetings",
             conditionType = "PSS",
             licence = it,
+            conditionVersion = it.licenceVersion,
           ),
         ),
       )

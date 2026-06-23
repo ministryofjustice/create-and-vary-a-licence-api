@@ -36,6 +36,7 @@ fun transform(model: ModelStandardCondition, licence: EntityLicence, conditionTy
   conditionSequence = model.sequence,
   conditionText = model.text,
   conditionType = conditionType,
+  conditionVersion = licence.version,
 )
 
 fun transform(

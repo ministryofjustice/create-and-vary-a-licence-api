@@ -27,6 +27,7 @@ data class StandardCondition(
   val conditionSequence: Int,
   val conditionText: String,
   val conditionType: String,
+  val conditionVersion: String?,
 ) {
   override fun toString(): String = "StandardCondition(" +
     "id=$id, " +
@@ -34,6 +35,7 @@ data class StandardCondition(
     "conditionCode=$conditionCode, " +
     "conditionSequence=$conditionSequence, " +
     "conditionText=$conditionText, " +
-    "conditionType=$conditionType" +
+    "conditionType=$conditionType, " +
+    "conditionVersion=$conditionVersion" +
     ")"
 }

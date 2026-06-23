@@ -22,6 +22,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.LOWER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_ABSTINENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_MONITORING
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ATTENDANCE_AT_APPOINTMENTS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.CURFEW
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.EXCLUSION_ZONE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.LOCATION_MONITORING
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.RESTRICTION_ZONE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Version.V2
 
 val POLICY_V4_0 = LicencePolicy(
   additionalConditions = AdditionalConditions(
@@ -1410,25 +1418,25 @@ val POLICY_V4_0 = LicencePolicy(
             name = "electronicMonitoringTypes",
             options = listOf(
               Option(
-                value = "that you do not go to areas you must not enter (exclusion zones)",
+                value = EXCLUSION_ZONE.text[V2]!!,
               ),
               Option(
-                value = "that you do not leave areas you must stay in (restriction zones)",
+                value = RESTRICTION_ZONE.text[V2]!!,
               ),
               Option(
-                value = "that you comply with your curfew",
+                value = CURFEW.text[V2]!!,
               ),
               Option(
-                value = "that you do not drink any alcohol",
+                value = ALCOHOL_ABSTINENCE.text[V2]!!,
               ),
               Option(
-                value = "that you attend appointments",
+                value = ATTENDANCE_AT_APPOINTMENTS.text[V2]!!,
               ),
               Option(
-                value = "your alcohol consumption",
+                value = ALCOHOL_MONITORING.text[V2]!!,
               ),
               Option(
-                value = "your location",
+                value = LOCATION_MONITORING.text[V2]!!,
               ),
             ),
             type = CHECK,

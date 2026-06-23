@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.hibernate.Hibernate
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -13,6 +14,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -152,6 +155,7 @@ class TestRepository(
         CurfewTimesMapper.copy(licence.firstNightCurfewTimes)
         CurfewTimesMapper.copyList(licence.weeklyCurfewTimes)
       }
+
       is HdcVariationLicence -> {
         licence.createdBy?.username
         licence.submittedBy?.username
@@ -187,6 +191,22 @@ class TestRepository(
   }
 
   fun findAllHdcCurfewAddresses(): List<HdcCurfewAddress> = hdcCurfewAddressRepository.findAll()
+
+  fun findWeeklyCurfewTimes(licenceId: Long): List<CurfewTimes> {
+    val licence = licenceRepository.findById(licenceId).get()
+    check(licence is HdcCase) { "licence is ${licence.kind}, expected HdcCase" }
+    val curfewTimes = (licence as HdcCase).weeklyCurfewTimes
+    Hibernate.initialize(curfewTimes)
+    return curfewTimes
+  }
+
+  fun findFirstNightCurfewTimes(licenceId: Long): CurfewTimes? {
+    val licence = licenceRepository.findById(licenceId).get()
+    check(licence is HdcCase) { "licence is ${licence.kind}, expected HdcCase" }
+    val firstNightCurfewTimes = (licence as HdcLicence).firstNightCurfewTimes
+    Hibernate.initialize(firstNightCurfewTimes)
+    return firstNightCurfewTimes
+  }
 
   fun getAuditEventCount(): Long = auditEventRepository.count()
 
@@ -252,5 +272,6 @@ class TestRepository(
     assertThat(licences).isNotEmpty
     return licences
   }
+
   fun hasMetaData(): Boolean = migrationRepository.hasAnyMetaData() && migrationRepository.hasAnyConditionMetaData()
 }
