@@ -551,10 +551,12 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-hdc-licence-id-1-with-address.sql",
     "classpath:test_data/seed-hdc-curfew-hours.sql",
+    "classpath:test_data/seed-hdc-curfew-address.sql",
   )
   fun `Create licence HDC variation`() {
     // Given
-    val uri = "/licence/id/1/create-variation"
+    val licenceId = 1L
+    val uri = "/licence/id/$licenceId/create-variation"
 
     // When
     val result = postRequest(uri)
@@ -571,9 +573,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(testRepository.countLicence()).isEqualTo(2)
 
-    val licence = testRepository.findLicence(licenceSummary.licenceId) as HdcVariationLicence
+    val variation = testRepository.findLicence(licenceSummary.licenceId) as HdcVariationLicence
 
-    with(licence) {
+    with(variation) {
       assertThat(licenceVersion).isEqualTo("1.0")
       assertThat(typeCode).isEqualTo(AP)
       assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
@@ -594,6 +596,12 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       assertThat(variationOfId).isEqualTo(1)
       assertLicenceHasExpectedAddress(this)
     }
+
+    val hdcCurfewAddresses = testRepository.findAllHdcCurfewAddresses()
+    assertThat(hdcCurfewAddresses).hasSize(2)
+    assertThat(hdcCurfewAddresses)
+      .extracting<Long, Exception> { it.licence.id }
+      .containsExactlyInAnyOrder(licenceId, variation.id)
   }
 
   @Test
