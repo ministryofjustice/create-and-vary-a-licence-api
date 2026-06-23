@@ -21,10 +21,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublicLicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ATTENDANCE_AT_APPOINTMENTS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.CURFEW
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.RESTRICTION_ZONE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceAdditional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceBespoke
@@ -243,6 +248,57 @@ class PublicLicenceServiceTest {
       val actualLicence = service.getLicenceById(licenceId)
 
       assertThat(actualLicence).isEqualTo(publicLicence)
+    }
+
+    @Test
+    fun `service returns a licence by id handles EM condition 14a`() {
+      val licenceId: Long = 12345
+      whenever(licenceService.getLicenceById(any())).thenReturn(
+        modelLicence.copy(
+          additionalLicenceConditions = listOf(
+            AdditionalCondition(
+              id = 5,
+              code = ELECTRONIC_TAG_COND_CODE_14A,
+              sequence = 5,
+              text = "You must wear an electronic monitoring tag for [REASON] purposes.",
+              expandedText = "You must wear an electronic monitoring tag for curfew purposes.",
+              data = listOf(
+                AdditionalConditionData(
+                  id = 1,
+                  field = "electronicMonitoringTypes",
+                  value = "curfew",
+                  sequence = 1,
+                ),
+                AdditionalConditionData(
+                  id = 2,
+                  field = "electronicMonitoringTypes",
+                  value = "that you attend appointments",
+                  sequence = 2,
+                ),
+                AdditionalConditionData(
+                  id = 3,
+                  field = "electronicMonitoringTypes",
+                  value = "that you do not leave areas you must stay in (restriction zones)",
+                  sequence = 3,
+                ),
+              ),
+              readyToSubmit = true,
+              requiresInput = true,
+            ),
+          ),
+        ),
+      )
+      val actualLicence = service.getLicenceById(licenceId)
+
+      val additionalConditions = actualLicence.conditions.apConditions.additional
+      assertThat(additionalConditions).hasSize(1)
+      val conditionWithRestriction = additionalConditions[0] as ElectronicMonitoringAdditionalConditionWithRestriction
+
+      assertThat(conditionWithRestriction.restrictions).containsExactly(
+        CURFEW,
+        ATTENDANCE_AT_APPOINTMENTS,
+        RESTRICTION_ZONE,
+      )
     }
 
     @Test
