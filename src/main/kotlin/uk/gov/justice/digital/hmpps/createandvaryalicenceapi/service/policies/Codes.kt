@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Version.V1
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Version.V2
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringRestrictionVersion.V1
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringRestrictionVersion.V2
 
 const val ELECTRONIC_TAG_COND_CODE_14A = "fd129172-bdd3-4d97-a4a0-efd7b47a49d4"
 const val ELECTRONIC_TAG_COND_CODE_14B = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4"
@@ -12,12 +12,12 @@ const val MULTIPLE_UPLOAD_COND_CODE = "005d70e4-a247-4f82-b8b3-6d294a0f5051"
 const val EXCLUSION_ZONE_COND_CODE = "0f9a20f4-35c7-4c77-8af8-f200f153fa11"
 const val EVENT_EXCLUSION_COND_CODE = "99195049-f355-46fb-b7d8-aef87a1b19c5"
 
-enum class Version {
+enum class ElectronicMonitoringRestrictionVersion {
   V1,
   V2,
 }
 
-enum class ElectronicMonitoringType(val text: Map<Version, String?>) {
+enum class ElectronicMonitoringType(val text: Map<ElectronicMonitoringRestrictionVersion, String?>) {
   EXCLUSION_ZONE(
     V1 to "exclusion zone",
     V2 to "that you do not go to areas you must not enter (exclusion zones)",
@@ -54,7 +54,7 @@ enum class ElectronicMonitoringType(val text: Map<Version, String?>) {
   ),
   ;
 
-  constructor(vararg values: Pair<Version, String?>) : this(values.toMap())
+  constructor(vararg values: Pair<ElectronicMonitoringRestrictionVersion, String?>) : this(values.toMap())
 
   companion object {
     fun find(value: String): ElectronicMonitoringType? = ElectronicMonitoringType.entries.find { it.text.values.contains(value) }
