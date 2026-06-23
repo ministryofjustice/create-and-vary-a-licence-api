@@ -628,7 +628,7 @@ class ComCaseloadSearchServiceTest {
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
-    assertThat(result.results.first().releaseDateLabel).isEqualTo("CRD")
+    assertThat(result.results.first().releaseDateLabel).isEqualTo("Conditional release date")
   }
 
   @Test
@@ -733,7 +733,7 @@ class ComCaseloadSearchServiceTest {
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
-    assertThat(result.results.first().releaseDateLabel).isEqualTo("CRD")
+    assertThat(result.results.first().releaseDateLabel).isEqualTo("Conditional release date")
   }
 
   @Test
