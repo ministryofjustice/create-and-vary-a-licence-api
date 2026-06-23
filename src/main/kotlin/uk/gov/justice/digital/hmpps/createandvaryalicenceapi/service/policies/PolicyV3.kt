@@ -22,12 +22,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.LOWER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringRestrictionVersion.V1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_ABSTINENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_MONITORING
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ATTENDANCE_AT_APPOINTMENTS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.CURFEW
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.LOCATION_MONITORING
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Version.V1
 
 val POLICY_V3_0 = LicencePolicy(
   additionalConditions = AdditionalConditions(
