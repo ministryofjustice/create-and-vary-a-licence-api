@@ -1473,6 +1473,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(cvlRecordService, never()).getCvlRecord(any())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(notifyService, times(2))
       .sendVariationForApprovalEmail(
