@@ -694,7 +694,7 @@ class CaCaseloadServiceTest {
 
       // Then
       assertThat(prisonOmuCaseload).hasSize(1)
-      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date")
     }
 
     @Nested
@@ -2064,7 +2064,7 @@ class CaCaseloadServiceTest {
 
       // Then
       assertThat(prisonOmuCaseload).hasSize(1)
-      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date")
     }
 
     @Test
