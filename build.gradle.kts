@@ -2,11 +2,11 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("dev.detekt") version "2.0.0-alpha.3"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.0"
+  id("dev.detekt") version "2.0.0-alpha.5"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.3"
   id("org.owasp.dependencycheck") version "12.2.2"
-  kotlin("plugin.spring") version "2.3.21"
-  kotlin("plugin.jpa") version "2.3.21"
+  kotlin("plugin.spring") version "2.4.0"
+  kotlin("plugin.jpa") version "2.4.0"
 }
 
 repositories {
@@ -20,7 +20,7 @@ dependencies {
 
   // hmpps-kotlin-lib
   constraints {
-    implementation("org.apache.commons:commons-compress:1.26.0") {
+    implementation("org.apache.commons:commons-compress:1.28.0") {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
     }
     // FIX: CVE-2026-23907
@@ -53,13 +53,13 @@ dependencies {
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:3.0.7")
-  implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
+  implementation("org.apache.pdfbox:jbig2-imageio:3.0.5")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.11")
   implementation("com.google.code.gson:gson:2.14.0")
-  implementation("io.arrow-kt:arrow-core:2.2.2.1")
+  implementation("io.arrow-kt:arrow-core:2.2.3")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
@@ -78,7 +78,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
 
   // Update to a version compatible with Spring Boot 4.0
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
 
   // Test dependencies
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
@@ -88,11 +88,11 @@ dependencies {
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.1")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
-  testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
-  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.3.0")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.1.1")
-  testImplementation("org.wiremock:wiremock-standalone:3.13.1")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
+  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.5.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
