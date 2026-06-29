@@ -628,11 +628,11 @@ class ComCaseloadSearchServiceTest {
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
-    assertThat(result.results.first().releaseDateLabel).isEqualTo("CRD")
+    assertThat(result.results.first().releaseDateLabel).isEqualTo("Conditional release date")
   }
 
   @Test
-  fun `Release date label reads 'Post-recall release date (PRRD)' when licence start date matches PRRD`() {
+  fun `Release date label reads 'Post-recall release date' when licence start date matches PRRD`() {
     // Given
 
     val licenceStartDate = LocalDate.of(2023, 9, 14)
@@ -657,11 +657,11 @@ class ComCaseloadSearchServiceTest {
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
     // Then
-    assertThat(result.results.first().releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+    assertThat(result.results.first().releaseDateLabel).isEqualTo("Post-recall release date")
   }
 
   @Test
-  fun `for offenders in prison with a PRRD licence the release date label reads 'Post-recall release date (PRRD)' when licence start date matches PRRD`() {
+  fun `for offenders in prison with a PRRD licence the release date label reads 'Post-recall release date' when licence start date matches PRRD`() {
     // Given
 
     val licenceStartDate = LocalDate.of(2023, 9, 14)
@@ -686,7 +686,7 @@ class ComCaseloadSearchServiceTest {
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
     // Then
-    assertThat(result.results.first().releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+    assertThat(result.results.first().releaseDateLabel).isEqualTo("Post-recall release date")
   }
 
   @Test
@@ -733,7 +733,7 @@ class ComCaseloadSearchServiceTest {
 
     val result = service.searchForOffenderOnProbationUserCaseload(request)
 
-    assertThat(result.results.first().releaseDateLabel).isEqualTo("CRD")
+    assertThat(result.results.first().releaseDateLabel).isEqualTo("Conditional release date")
   }
 
   @Test

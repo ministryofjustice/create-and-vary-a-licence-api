@@ -440,39 +440,35 @@ class LicenceService(
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licenceEntity.bookingId!!)).first()
-    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
-
     when (licenceEntity) {
       is PrrdLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
+        assertCaseIsEligible(licenceEntity)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
       is CrdLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
-        licenceEntity
-          .submit(submitter as CommunityOffenderManager)
+        assertCaseIsEligible(licenceEntity)
+        licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
-      is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
-
       is HardStopLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
+        assertCaseIsEligible(licenceEntity)
         licenceEntity.submit(submitter as PrisonUser)
       }
 
       is HdcLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
+        assertCaseIsEligible(licenceEntity)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
-      is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
-
       is TimeServedLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
+        assertCaseIsEligible(licenceEntity)
         licenceEntity.submit(submitter as PrisonUser)
       }
+
+      is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+
+      is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
 
       else -> error("Unexpected licence type: $licenceEntity")
     }
@@ -656,10 +652,7 @@ class LicenceService(
       return EditLicenceResponse(inProgressVersions[0].id)
     }
 
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licence.bookingId!!)).first()
-    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
-
-    assertCaseIsEligible(cvlRecord, licenceId)
+    assertCaseIsEligible(licence)
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
@@ -926,37 +919,37 @@ class LicenceService(
 
   private fun populateCopyAndAudit(
     kind: LicenceKind,
-    licence: EntityLicence,
-    licenceCopy: EntityLicence,
+    original: EntityLicence,
+    copy: EntityLicence,
     creator: CommunityOffenderManager,
   ): EntityLicence {
     val newStatus = kind.initialStatus()
 
-    licenceCopy.bespokeConditions.clear()
-    licenceCopy.standardConditions.clear()
-    licenceCopy.additionalConditions.clear()
+    copy.bespokeConditions.clear()
+    copy.standardConditions.clear()
+    copy.additionalConditions.clear()
 
-    licenceCopy.version = licencePolicyService.currentPolicy(licence.licenceStartDate).version
-    licenceCopy.standardConditions.addAll(
-      licence.standardConditions.map { it.copy(id = null, licence = licenceCopy) },
+    copy.version = licencePolicyService.currentPolicy(original.licenceStartDate).version
+    copy.standardConditions.addAll(
+      original.standardConditions.map { it.copy(id = null, licence = copy) },
     )
 
     val isNowInPssPeriod =
-      licence.kind.isVariation() && licence.typeCode == AP_PSS && licence.isInPssPeriod()
+      original.kind.isVariation() && original.typeCode == AP_PSS && original.isInPssPeriod()
 
     if (!isNowInPssPeriod) {
-      licenceCopy.bespokeConditions.addAll(
-        licence.bespokeConditions.map { it.copy(id = null, licence = licenceCopy) },
+      copy.bespokeConditions.addAll(
+        original.bespokeConditions.map { it.copy(id = null, licence = copy) },
       )
     }
 
-    val copiedAdditionalConditions = licence.additionalConditions
+    val copiedAdditionalConditions = original.additionalConditions
       .run { if (isNowInPssPeriod) filter { it.isNotAp() } else this }
       .map { condition ->
 
         val copiedCondition = condition.copy(
           id = null,
-          licence = licenceCopy,
+          licence = copy,
           additionalConditionData = mutableListOf(),
           additionalConditionUpload = mutableListOf(),
         )
@@ -974,17 +967,17 @@ class LicenceService(
       }
 
     // This needs to be saved here before the below code uses the condition.id
-    licenceCopy.additionalConditions.addAll(copiedAdditionalConditions)
-    licenceRepository.saveAndFlush(licenceCopy)
+    copy.additionalConditions.addAll(copiedAdditionalConditions)
+    licenceRepository.saveAndFlush(copy)
 
-    val licenceEventMessage = when (licenceCopy.statusCode) {
-      VARIATION_IN_PROGRESS -> "A variation was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"
-      IN_PROGRESS -> "A new licence version was created for ${licenceCopy.forename} ${licenceCopy.surname} from ID ${licence.id}"
-      else -> error("Invalid new licence status of ${licenceCopy.statusCode} when creating a licence copy ")
+    val licenceEventMessage = when (copy.statusCode) {
+      VARIATION_IN_PROGRESS -> "A variation was created for ${copy.forename} ${copy.surname} from ID ${original.id}"
+      IN_PROGRESS -> "A new licence version was created for ${copy.forename} ${copy.surname} from ID ${original.id}"
+      else -> error("Invalid new licence status of ${copy.statusCode} when creating a licence copy ")
     }
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
-        licenceId = licenceCopy.id,
+        licenceId = copy.id,
         eventType = kind.copyEventType(),
         username = creator.username,
         forenames = creator.firstName,
@@ -994,21 +987,21 @@ class LicenceService(
     )
 
     val auditEventSummary = when (newStatus) {
-      VARIATION_IN_PROGRESS -> "Licence varied for ${licenceCopy.forename} ${licenceCopy.surname}"
-      IN_PROGRESS -> "New licence version created for ${licenceCopy.forename} ${licenceCopy.surname}"
+      VARIATION_IN_PROGRESS -> "Licence varied for ${copy.forename} ${copy.surname}"
+      IN_PROGRESS -> "New licence version created for ${copy.forename} ${copy.surname}"
       else -> error("Invalid new licence status of $newStatus when creating a licence copy ")
     }
     auditEventRepository.saveAndFlush(
       AuditEvent(
-        licenceId = licence.id,
+        licenceId = original.id,
         username = creator.username,
         fullName = "${creator.firstName} ${creator.lastName}",
         summary = auditEventSummary,
-        detail = "Old ID ${licence.id}, new ID ${licenceCopy.id} type ${licenceCopy.typeCode} status ${licenceCopy.statusCode.name} version ${licenceCopy.version}",
+        detail = "Old ID ${original.id}, new ID ${copy.id} type ${copy.typeCode} status ${copy.statusCode.name} version ${copy.version}",
       ),
     )
 
-    return licenceCopy
+    return copy
   }
 
   private fun getCommunityOffenderManagerForCurrentUser(): CommunityOffenderManager {
@@ -1204,9 +1197,11 @@ class LicenceService(
     ),
   )
 
-  private fun assertCaseIsEligible(cvlRecord: CvlRecord, licenceId: Long) {
+  private fun assertCaseIsEligible(licence: EntityLicence) {
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licence.bookingId!!)).first()
+    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
     if (!cvlRecord.isEligible) {
-      throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
+      throw ValidationException("Unable to perform action, licence ${licence.id} is ineligible for CVL")
     }
   }
 

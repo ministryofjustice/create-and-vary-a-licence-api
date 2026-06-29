@@ -47,6 +47,8 @@ export DB_SERVER=localhost
 export DB_NAME=create-and-vary-a-licence-db
 export DB_USER=cvl
 export DB_PASS=cvl
+export PROGRESSION_MODEL_POLICY_START_DATE=2026-01-14
+export HDC_ENABLED=true
 
 # Provide Notify details to access Notify
 # Match with the API key in hmpps-auth set for its dev profile
