@@ -20,7 +20,7 @@ dependencies {
 
   // hmpps-kotlin-lib
   constraints {
-    implementation("org.apache.commons:commons-compress:1.26.0") {
+    implementation("org.apache.commons:commons-compress:1.28.0") {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
     }
     // FIX: CVE-2026-23907
@@ -57,9 +57,9 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.11")
+  runtimeOnly("org.postgresql:postgresql:42.7.12")
   implementation("com.google.code.gson:gson:2.14.0")
-  implementation("io.arrow-kt:arrow-core:2.2.2.1")
+  implementation("io.arrow-kt:arrow-core:2.2.3")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
@@ -78,7 +78,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
 
   // Update to a version compatible with Spring Boot 4.0
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
 
   // Test dependencies
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
@@ -88,11 +88,11 @@ dependencies {
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.1")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
-  testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
-  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
+  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.0")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
-  testImplementation("org.wiremock:wiremock-standalone:3.13.1")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
