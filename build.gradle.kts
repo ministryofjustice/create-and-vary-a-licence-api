@@ -65,7 +65,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
   // Digital prison reporting
-  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:12.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:16.4.1")
 
   // To help override SAR
   implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.6.0")
