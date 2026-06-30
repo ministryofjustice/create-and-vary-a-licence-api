@@ -627,6 +627,11 @@ class LicenceService(
         populateCopyAndAudit(HDC_VARIATION, licence, licenceCopy, creator)
       }
 
+      is HdcVariationLicence -> {
+        val licenceCopy = LicenceFactory.createHdcVariation(licence, creator)
+        populateCopyAndAudit(HDC_VARIATION, licence, licenceCopy, creator)
+      }
+
       else -> {
         val licenceCopy = LicenceFactory.createVariation(licence, creator)
         populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
