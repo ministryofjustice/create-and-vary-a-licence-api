@@ -379,7 +379,7 @@ object LicenceFactory {
   fun <T> createHdcVariation(
     licence: T,
     creator: CommunityOffenderManager,
-  ): HdcVariationLicence where T : Licence, T : HdcCase, T: AlwaysHasCom {
+  ): HdcVariationLicence where T : Licence, T : HdcCase, T : AlwaysHasCom {
     with(licence) {
       return HdcVariationLicence(
         typeCode = this.typeCode,

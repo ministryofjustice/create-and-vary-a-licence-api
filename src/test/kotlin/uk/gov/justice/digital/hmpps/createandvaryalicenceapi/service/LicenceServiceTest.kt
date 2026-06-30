@@ -2015,9 +2015,11 @@ class LicenceServiceTest {
       ),
     )
     whenever(licenceRepository.findById(1L)).thenReturn(
-      Optional.of(anHdcVariationLicence.copy(
-        weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
-      )),
+      Optional.of(
+        anHdcVariationLicence.copy(
+          weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
+        ),
+      ),
     )
     whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcVariationLicence)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
