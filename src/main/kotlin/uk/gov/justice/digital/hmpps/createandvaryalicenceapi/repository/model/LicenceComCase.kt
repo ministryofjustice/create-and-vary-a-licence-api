@@ -22,6 +22,7 @@ data class LicenceComCase(
   override val licenceStartDate: LocalDate?,
   override val postRecallReleaseDate: LocalDate?,
   override val homeDetentionCurfewActualDate: LocalDate?,
+  override val homeDetentionCurfewEligibilityDate: LocalDate?,
   override val updatedByFirstName: String?,
   override val updatedByLastName: String?,
   override val comUsername: String?,

@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AbstractAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Entity
 @Table(name = "hdc_curfew_address")
@@ -55,4 +56,22 @@ class HdcCurfewAddress(
   source = source,
   createdTimestamp = createdTimestamp,
   lastUpdatedTimestamp = lastUpdatedTimestamp,
-)
+) {
+
+  fun copy(licence: Licence) = HdcCurfewAddress(
+    id = null,
+    reference = UUID.randomUUID().toString(),
+    uprn = uprn,
+    firstLine = firstLine,
+    secondLine = secondLine,
+    townOrCity = townOrCity,
+    county = county,
+    postcode = postcode,
+    source = source,
+    createdTimestamp = createdTimestamp,
+    lastUpdatedTimestamp = lastUpdatedTimestamp,
+    licence = licence,
+    accommodationType = accommodationType,
+    postReleaseResidentialChecksCompleted = postReleaseResidentialChecksCompleted,
+  )
+}

@@ -190,7 +190,11 @@ class TestRepository(
     return events
   }
 
-  fun findAllHdcCurfewAddresses(): List<HdcCurfewAddress> = hdcCurfewAddressRepository.findAll()
+  fun findAllHdcCurfewAddresses(): List<HdcCurfewAddress> {
+    val addresses = hdcCurfewAddressRepository.findAll()
+    addresses.forEach { Hibernate.initialize(it.licence) }
+    return addresses
+  }
 
   fun findWeeklyCurfewTimes(licenceId: Long): List<CurfewTimes> {
     val licence = licenceRepository.findById(licenceId).get()

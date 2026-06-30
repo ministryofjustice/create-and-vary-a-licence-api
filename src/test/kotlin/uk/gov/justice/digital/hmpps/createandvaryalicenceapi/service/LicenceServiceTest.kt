@@ -1473,6 +1473,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(cvlRecordService, never()).getCvlRecord(any())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(notifyService, times(2))
       .sendVariationForApprovalEmail(
@@ -1998,6 +1999,10 @@ class LicenceServiceTest {
       assertThat(firstNightCurfewTimes).isEqualTo(firstNightCurfewTimes())
       assertThat(variationOfId).isEqualTo(1)
       assertThat(licenceVersion).isEqualTo("1.0")
+      assertThat(curfewAddress?.licence).isEqualTo(licenceCaptor.value)
+      assertThat(curfewAddress?.licence).isNotEqualTo(anHdcLicenceEntity)
+      assertThat(firstNightCurfewTimes).isNotSameAs(anHdcLicenceEntity.firstNightCurfewTimes)
+      assertThat(weeklyCurfewTimes[0]).isNotSameAs(anHdcLicenceEntity.weeklyCurfewTimes[0])
     }
     verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
     assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VARIATION_CREATED)
@@ -4052,6 +4057,10 @@ class LicenceServiceTest {
         assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
         assertThat(versionOfId).isEqualTo(1)
         assertThat(licenceVersion).isEqualTo("1.1")
+        assertThat(curfewAddress?.licence).isEqualTo(licenceCaptor.value)
+        assertThat(curfewAddress?.licence).isNotEqualTo(approvedLicence)
+        assertThat(firstNightCurfewTimes).isNotSameAs(approvedLicence.firstNightCurfewTimes)
+        assertThat(weeklyCurfewTimes[0]).isNotSameAs(approvedLicence.weeklyCurfewTimes[0])
       }
 
       verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())

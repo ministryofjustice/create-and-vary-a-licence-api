@@ -22,6 +22,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.LOWER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringRestrictionVersion.V1
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_ABSTINENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_MONITORING
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ATTENDANCE_AT_APPOINTMENTS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.CURFEW
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.LOCATION_MONITORING
 
 val POLICY_V3_0 = LicencePolicy(
   additionalConditions = AdditionalConditions(
@@ -1184,19 +1190,19 @@ val POLICY_V3_0 = LicencePolicy(
                 value = "exclusion zone",
               ),
               Option(
-                value = "curfew",
+                value = CURFEW.text[V1]!!,
               ),
               Option(
-                value = "location monitoring",
+                value = LOCATION_MONITORING.text[V1]!!,
               ),
               Option(
-                value = "attendance at appointments",
+                value = ATTENDANCE_AT_APPOINTMENTS.text[V1]!!,
               ),
               Option(
-                value = "alcohol monitoring",
+                value = ALCOHOL_MONITORING.text[V1]!!,
               ),
               Option(
-                value = "alcohol abstinence",
+                value = ALCOHOL_ABSTINENCE.text[V1]!!,
               ),
             ),
             type = CHECK,

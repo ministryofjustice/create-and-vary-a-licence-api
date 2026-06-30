@@ -618,7 +618,7 @@ class CaCaseloadServiceTest {
           caCase().copy(
             name = "Person One",
             releaseDate = tenDaysFromNow,
-            releaseDateLabel = "CRD",
+            releaseDateLabel = "Conditional release date",
             probationPractitioner = probationPractitionerFor(comUser01),
             lastWorkedOnBy = "X Y",
             prisonCode = "BAI",
@@ -694,7 +694,7 @@ class CaCaseloadServiceTest {
 
       // Then
       assertThat(prisonOmuCaseload).hasSize(1)
-      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date")
     }
 
     @Nested
@@ -1511,7 +1511,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -1876,7 +1876,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -1904,7 +1904,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -1929,7 +1929,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -1967,7 +1967,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -2064,7 +2064,7 @@ class CaCaseloadServiceTest {
 
       // Then
       assertThat(prisonOmuCaseload).hasSize(1)
-      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date")
     }
 
     @Test

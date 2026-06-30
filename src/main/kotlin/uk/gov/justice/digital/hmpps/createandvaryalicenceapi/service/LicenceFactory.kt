@@ -272,7 +272,13 @@ object LicenceFactory {
         licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
         versionOfId = licence.id,
         createdBy = creator,
-      )
+        appointment = AppointmentMapper.copy(this.appointment),
+        weeklyCurfewTimes = CurfewTimesMapper.copyList(this.weeklyCurfewTimes),
+        firstNightCurfewTimes = CurfewTimesMapper.copy(this.firstNightCurfewTimes),
+      ).let {
+        it.curfewAddress = this.curfewAddress?.copy(it)
+        it
+      }
     }
   }
 
@@ -426,7 +432,10 @@ object LicenceFactory {
         responsibleCom = this.getCom(),
         dateCreated = LocalDateTime.now(),
         licenceVersion = "1.0", // This is for Active licenses if we were to migration variations, this would be 2.0
-      )
+      ).let {
+        it.curfewAddress = this.curfewAddress?.copy(it)
+        it
+      }
     }
   }
 
