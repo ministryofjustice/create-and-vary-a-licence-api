@@ -122,6 +122,6 @@ data class SarLicence(
   @field:Schema(description = "Programme Name of the licence", example = "Off Some Road")
   val programmeName: String?,
 
-  @field:Schema(description = "Information about HDC (Only available for kind==HDC)")
+  @field:Schema(description = "Information about HDC (Only available for HDC licences and HDC variations)")
   val hdcInfo: SarHdcInfo?,
 )
