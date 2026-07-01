@@ -88,7 +88,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
-      assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licence creation not currently supported in CVL")
       assertThat(result.eligibleKind).isEqualTo(CRD)
     }
 
@@ -441,7 +441,7 @@ class EligibilityServiceTest {
         "has no post recall release date",
         "is expected to be released on HDC",
       )
-      assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licence creation not currently supported in CVL")
       assertThat(result.eligibleKind).isNull()
     }
 
@@ -583,7 +583,7 @@ class EligibilityServiceTest {
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
-      assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licences not currently supported in CVL")
+      assertThat(result.hdcIneligibilityReasons).containsExactly("HDC licence creation not currently supported in CVL")
       assertThat(result.eligibleKind).isEqualTo(FIXED_TERM)
     }
 
