@@ -27,4 +27,4 @@ class LicenceVaryApproverCase(
   override val comUsername: String?,
   override val homeDetentionCurfewActualDate: LocalDate?,
   override val homeDetentionCurfewEligibilityDate: LocalDate?,
-): LicenceCase
+) : LicenceCase
