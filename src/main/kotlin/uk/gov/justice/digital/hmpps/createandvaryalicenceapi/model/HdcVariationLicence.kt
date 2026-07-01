@@ -306,10 +306,10 @@ data class HdcVariationLicence(
   override val updatedByUsername: String? = null,
 
   @field:Schema(description = "The curfew times for this licence")
-  val weeklyCurfewTimes: List<CurfewTimes>? = emptyList(),
+  override val weeklyCurfewTimes: List<CurfewTimes> = emptyList(),
 
   @field:Schema(description = "The first night curfew time for this licence")
-  val firstNightCurfewTimes: CurfewTimes? = null,
+  override val firstNightCurfewTimes: CurfewTimes? = null,
 
   @field:Schema(description = "The list of standard licence conditions on this licence")
   override val standardLicenceConditions: List<StandardCondition>? = emptyList(),
@@ -355,7 +355,7 @@ data class HdcVariationLicence(
   override val submittedByFullName: String? = null,
 
   @field:Schema(description = "The curfew address for this licence")
-  val curfewAddress: HdcCurfewAddress? = null,
+  override val curfewAddress: HdcCurfewAddress? = null,
 
   @field:Schema(description = "Are all curfew times equal across the week")
   val allCurfewTimesEqual: Boolean? = null,
@@ -363,4 +363,5 @@ data class HdcVariationLicence(
   @field:Schema(description = "The status of the electronic monitoring provider", example = "NOT_STARTED")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
 ) : Licence,
-  ModelVariation
+  ModelVariation,
+  ModelHdcCase
