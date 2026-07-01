@@ -19,7 +19,7 @@ class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
   private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
-  @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
+  @param:Value("\${feature.toggle.hdcCreation.enabled}") private val hdcCreationEnabled: Boolean = false,
   @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
 
@@ -93,7 +93,7 @@ class EligibilityService(
   }
 
   fun getHdcIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isExpectedHdcRelease: Boolean): List<String> {
-    if (!hdcEnabled) return listOf("HDC licences not currently supported in CVL")
+    if (!hdcCreationEnabled) return listOf("HDC licence creation not currently supported in CVL")
 
     val eligibilityCriteria = listOf(
       hasConditionalReleaseDate(prisoner) to "has no conditional release date",

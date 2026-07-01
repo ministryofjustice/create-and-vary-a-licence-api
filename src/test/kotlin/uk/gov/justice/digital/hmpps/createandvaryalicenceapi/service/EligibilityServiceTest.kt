@@ -915,7 +915,7 @@ class EligibilityServiceTest {
   @Nested
   inner class HdcCases {
     private var service =
-      EligibilityService(prisonApiClient, releaseDateService, clock, hdcEnabled = true)
+      EligibilityService(prisonApiClient, releaseDateService, clock, hdcCreationEnabled = true)
     val hdcStatuses = HdcStatuses(
       listOf(
         hdcPrisonerStatus().copy(
