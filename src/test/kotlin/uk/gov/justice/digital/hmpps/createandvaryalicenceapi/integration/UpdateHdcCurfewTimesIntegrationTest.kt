@@ -9,7 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CurfewTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.FirstNightCurfewTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -138,49 +139,49 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
   private companion object {
     val anUpdateWeeklyCurfewTimesRequest = UpdateWeeklyCurfewTimesRequest(
       listOf(
-        CurfewTimes(
+        CurfewTimeRequest(
           curfewTimesSequence = 1,
           fromDay = DayOfWeek.MONDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.TUESDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        CurfewTimes(
+        CurfewTimeRequest(
           curfewTimesSequence = 2,
           fromDay = DayOfWeek.TUESDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.WEDNESDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        CurfewTimes(
+        CurfewTimeRequest(
           curfewTimesSequence = 3,
           fromDay = DayOfWeek.WEDNESDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.THURSDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        CurfewTimes(
+        CurfewTimeRequest(
           curfewTimesSequence = 4,
           fromDay = DayOfWeek.THURSDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.FRIDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        CurfewTimes(
+        CurfewTimeRequest(
           curfewTimesSequence = 5,
           fromDay = DayOfWeek.FRIDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.SATURDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        CurfewTimes(
+        CurfewTimeRequest(
           curfewTimesSequence = 6,
           fromDay = DayOfWeek.SATURDAY,
           fromTime = LocalTime.of(20, 0),
           untilDay = DayOfWeek.SUNDAY,
           untilTime = LocalTime.of(8, 0),
         ),
-        CurfewTimes(
+        CurfewTimeRequest(
           curfewTimesSequence = 7,
           fromDay = DayOfWeek.SUNDAY,
           fromTime = LocalTime.of(20, 0),
@@ -191,11 +192,8 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
     )
 
     val anUpdateFirstNightCurfewTimesRequest = UpdateFirstNightCurfewTimesRequest(
-      CurfewTimes(
-        curfewTimesSequence = 1,
-        fromDay = DayOfWeek.MONDAY,
+      FirstNightCurfewTimeRequest(
         fromTime = LocalTime.of(20, 0),
-        untilDay = DayOfWeek.TUESDAY,
         untilTime = LocalTime.of(8, 0),
       ),
     )

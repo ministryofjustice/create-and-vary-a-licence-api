@@ -4,6 +4,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CurfewTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.FirstNightCurfewTimeRequest
 import java.time.LocalDateTime
 import java.util.UUID
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
@@ -15,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCond
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes as ModelCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
@@ -95,9 +96,9 @@ fun transform(model: ModelHdcCurfewAddress, licence: EntityLicence): EntityHdcCu
 )
 
 // Transform a list of model hdc curfew times to a list of entity hdc curfew times, setting the licenceId
-fun List<ModelCurfewTimes>.transformToEntityWeeklyCurfewTimes(): List<EntityCurfewTimes> = map { time -> transform(time) }
+fun List<CurfewTimeRequest>.transformToEntityWeeklyCurfewTimes(): List<EntityCurfewTimes> = map { time -> transform(time) }
 
-fun transform(model: ModelCurfewTimes): EntityCurfewTimes = EntityCurfewTimes(
+fun transform(model: CurfewTimeRequest): EntityCurfewTimes = EntityCurfewTimes(
   curfewTimesSequence = model.curfewTimesSequence,
   fromDay = model.fromDay,
   fromTime = model.fromTime,
@@ -106,7 +107,7 @@ fun transform(model: ModelCurfewTimes): EntityCurfewTimes = EntityCurfewTimes(
   createdTimestamp = LocalDateTime.now(),
 )
 
-fun ModelCurfewTimes.transformToEntityFirstNightCurfewTimes(): EntityCurfewTimes = EntityCurfewTimes(
+fun FirstNightCurfewTimeRequest.transformToEntityFirstNightCurfewTimes(): EntityCurfewTimes = EntityCurfewTimes(
   fromTime = fromTime,
   untilTime = untilTime,
   createdTimestamp = LocalDateTime.now(),

@@ -117,9 +117,11 @@ data class SarLicence(
   val policyVersion: String?,
 
   @field:Schema(description = "Is the licence to be tagged for electronic monitoring programme")
-  val isToBeTaggedForProgramme: Boolean? = null,
+  val isToBeTaggedForProgramme: Boolean?,
 
   @field:Schema(description = "Programme Name of the licence", example = "Off Some Road")
-  val programmeName: String? = null,
+  val programmeName: String?,
 
+  @field:Schema(description = "Information about HDC (Only available for kind==HDC)")
+  val hdcInfo: SarHdcInfo?,
 )
