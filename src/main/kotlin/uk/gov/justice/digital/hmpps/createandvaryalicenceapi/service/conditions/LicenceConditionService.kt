@@ -107,6 +107,7 @@ class LicenceConditionService(
         conditionType = request.conditionType,
         conditionCode = request.conditionCode,
         conditionText = request.conditionText,
+        conditionTextPlural = request.conditionTextPlural,
         expandedConditionText = request.expandedText,
         conditionCategory = request.conditionCategory,
         licence = licenceEntity,
