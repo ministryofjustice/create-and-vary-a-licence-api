@@ -30,7 +30,7 @@ class ReleaseDateLabelFactoryTest {
     )
     assertThat(factory.getLabel(tomorrow, null, null, tomorrow, null)).isEqualTo(LABEL_FOR_HDC_ACTUAL_DATE)
     assertThat(factory.getLabel(tomorrow, null, null, null, tomorrow)).isEqualTo(LABEL_FOR_HDC_ELIGIBLE_DATE)
-    assertThat(factory.getLabel(tomorrow, tomorrow, null, tomorrow, null)).isEqualTo(LABEL_FOR_CONFIRMED_RELEASE_DATE)
+    assertThat(factory.getLabel(tomorrow, tomorrow, null, tomorrow, null)).isEqualTo(LABEL_FOR_HDC_ACTUAL_DATE)
     // for PRRDs, LSD is the last working day before PRRD
     whenever(workingDaysService.getLastWorkingDay(tomorrow)).thenReturn(today)
     assertThat(factory.getLabel(today, null, tomorrow, null, null)).isEqualTo(LABEL_FOR_PRRD_RELEASE_DATE)

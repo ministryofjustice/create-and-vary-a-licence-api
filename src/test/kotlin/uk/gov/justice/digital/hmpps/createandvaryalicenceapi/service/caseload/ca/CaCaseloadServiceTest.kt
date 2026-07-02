@@ -854,6 +854,7 @@ class CaCaseloadServiceTest {
                 allocated = true,
               ),
               lastWorkedOnBy = null,
+              releaseDateLabel = "HDC eligible date"
             ),
           ),
         )
