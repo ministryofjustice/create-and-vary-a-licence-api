@@ -74,7 +74,6 @@ values (1, 1, 1, 'Electronic monitoring', 'Town centre');
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (1, true, 'Test Programme');
 
----- case 2 - approved case with
 insert into licence (kind,
                      type_code,
                      version,
