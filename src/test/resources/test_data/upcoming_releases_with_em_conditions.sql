@@ -49,7 +49,7 @@ values ('CRD',
         '2022-02-25',
         '2022-02-25',
         '2022-02-25',
-        '2026-01-06',
+        current_date + 1,
         '2023-02-25',
         'N01',
         'PDU1',
@@ -73,8 +73,8 @@ values (1, 1, 1, 'Electronic monitoring', 'Town centre');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (1, true, 'Test Programme');
---
 
+---- case 2 - approved case with
 insert into licence (kind,
                      type_code,
                      version,
@@ -126,7 +126,7 @@ values ('CRD',
         '2022-02-25',
         '2022-02-25',
         '2022-02-25',
-        null,
+        current_date + 1,
         '2023-02-25',
         'N01',
         'PDU1',
@@ -203,7 +203,7 @@ values ('CRD',
         '2022-02-25',
         '2022-02-25',
         '2022-02-25',
-        '2026-01-04',
+        current_date + 1,
         '2023-02-25',
         'N01',
         'PDU1',
@@ -281,7 +281,7 @@ values ('CRD',
         '2022-02-25',
         '2022-02-25',
         '2022-02-25',
-        '2026-01-03',
+        current_date + 1,
         '2023-02-25',
         'N01',
         'PDU1',
@@ -299,3 +299,80 @@ insert into additional_condition (id, licence_id, condition_version, condition_c
 values (6, 4, '3.0', 'Exclusion zone', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1,
         'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
+
+-- case 5 - approved case with EM condition but no licence start date
+insert into licence (kind,
+                     type_code,
+                     version,
+                     status_code,
+                     noms_id,
+                     booking_no,
+                     booking_id,
+                     crn,
+                     pnc,
+                     cro,
+                     prison_code,
+                     prison_description,
+                     forename,
+                     surname,
+                     date_of_birth,
+                     conditional_release_date,
+                     actual_release_date,
+                     sentence_start_date,
+                     sentence_end_date,
+                     topup_supervision_start_date,
+                     topup_supervision_expiry_date,
+                     licence_start_date,
+                     licence_expiry_date,
+                     probation_area_code,
+                     probation_pdu_code,
+                     probation_lau_code,
+                     probation_team_code,
+                     responsible_com_id,
+                     created_by_com_id,
+                     licence_version)
+values ('CRD',
+        'AP',
+        '3.0',
+        'APPROVED',
+        'A1234AE',
+        'BOOKNO',
+        12345,
+        'CRN5',
+        '2015/1238',
+        'CRO5',
+        'MDI',
+        'Moorland (HMP)',
+        'Person',
+        'Five',
+        '2020-10-25',
+        '2022-02-12',
+        '2022-02-25',
+        '2020-10-11',
+        '2022-02-25',
+        '2022-02-25',
+        '2022-02-25',
+        null,
+        '2023-02-25',
+        'N01',
+        'PDU1',
+        'LAU1',
+        'TEAM1',
+        1,
+        1,
+        '1.0');
+
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (5, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
+                                  condition_sequence, condition_text, condition_type)
+values (7, 5, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2ed4', 1,
+        'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+        'AP');
+
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (4, 7, 1, 'Electronic monitoring', 'Town centre');
+
+insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
+VALUES (5, true, 'Test Programme');

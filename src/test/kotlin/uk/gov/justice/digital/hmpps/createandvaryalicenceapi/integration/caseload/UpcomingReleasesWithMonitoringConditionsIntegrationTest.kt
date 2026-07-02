@@ -15,6 +15,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import java.nio.charset.StandardCharsets.UTF_8
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 private const val GET_CASES = "/cvl-report/upcoming-releases-with-monitoring"
 
@@ -31,6 +33,9 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
   @Test
   fun `Successfully retrieve some cases`() {
     // Given
+    val licenceStartDate = LocalDate.now().plusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+    val expectedJson = serializedContent("upcoming_releases_with_em_conditions")
+      .replace("{{LICENCE_START_DATE}}", licenceStartDate)
 
     // When
     val result = webTestClient.get()
@@ -43,7 +48,7 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
     result.expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
       .expectBody()
-      .json(serializedContent("upcoming_releases_with_em_conditions"), STRICT)
+      .json(expectedJson, STRICT)
   }
 
   private fun serializedContent(name: String) = this.javaClass.getResourceAsStream("/test_data/reports/$name.json")!!.bufferedReader(
