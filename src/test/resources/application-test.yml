@@ -116,6 +116,8 @@ feature:
   toggle:
     hdc:
       enabled: true
+    hdcCreation:
+      enabled: true
     standardRecalls:
       enabled: true
     restrictedPatients:
