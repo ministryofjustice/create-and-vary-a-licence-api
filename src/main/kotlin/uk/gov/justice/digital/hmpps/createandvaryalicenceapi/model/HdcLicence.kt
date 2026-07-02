@@ -293,10 +293,10 @@ data class HdcLicence(
   override val updatedByUsername: String? = null,
 
   @field:Schema(description = "The curfew times for this licence")
-  val weeklyCurfewTimes: List<CurfewTimes>? = emptyList(),
+  override val weeklyCurfewTimes: List<CurfewTimes> = emptyList(),
 
   @field:Schema(description = "The first night curfew time for this licence")
-  val firstNightCurfewTimes: CurfewTimes? = null,
+  override val firstNightCurfewTimes: CurfewTimes? = null,
 
   @field:Schema(description = "The list of standard licence conditions on this licence")
   override val standardLicenceConditions: List<StandardCondition>? = emptyList(),
@@ -353,7 +353,7 @@ data class HdcLicence(
   override val submittedByFullName: String? = null,
 
   @field:Schema(description = "The curfew address for this licence")
-  val curfewAddress: HdcCurfewAddress? = null,
+  override val curfewAddress: HdcCurfewAddress? = null,
 
   @field:Schema(description = "Describes a electronic monitoring provider on a licence")
   override val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
@@ -367,4 +367,5 @@ data class HdcLicence(
   @field:Schema(description = "Has this licence been migrated from the HDC service?", example = "false")
   val isHdcMigration: Boolean = false,
 ) : Licence,
-  SupportsElectronicMonitoring
+  SupportsElectronicMonitoring,
+  ModelHdcCase

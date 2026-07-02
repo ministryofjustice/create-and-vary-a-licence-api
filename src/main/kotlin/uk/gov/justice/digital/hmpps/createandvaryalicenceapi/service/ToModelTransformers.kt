@@ -841,12 +841,14 @@ private fun transform(entity: EntityCurfewTimes): ModelCurfewTimes = ModelCurfew
   fromTime = entity.fromTime,
   untilDay = entity.untilDay,
   untilTime = entity.untilTime,
+  createdTimestamp = entity.createdTimestamp,
 )
 
 fun EntityCurfewTimes.transformToModelFirstNightCurfewTimes(): ModelCurfewTimes = ModelCurfewTimes(
   id = id,
   fromTime = fromTime,
   untilTime = untilTime,
+  createdTimestamp = createdTimestamp,
 )
 
 fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
@@ -1039,6 +1041,8 @@ fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCu
   accommodationType = entity.accommodationType,
   postReleaseResidentialChecksCompleted = entity.postReleaseResidentialChecksCompleted,
   postReleaseResidentialChecksNotCompletedReason = entity.postReleaseResidentialChecksNotCompletedReason,
+  createdTimestamp = entity.createdTimestamp,
+  lastUpdatedTimestamp = entity.lastUpdatedTimestamp,
 )
 
 fun transformToModelElectronicMonitoringProvider(entity: EntityElectronicMonitoringProvider): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
