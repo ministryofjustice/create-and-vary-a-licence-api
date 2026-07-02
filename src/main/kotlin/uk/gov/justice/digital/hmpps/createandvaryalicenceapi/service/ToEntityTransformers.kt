@@ -50,6 +50,7 @@ fun transform(
   conditionCategory = model.category,
   conditionSequence = model.sequence,
   conditionText = model.text,
+  conditionTextPlural = model.textPlural,
   conditionType = conditionType,
   licence = licence,
 )
