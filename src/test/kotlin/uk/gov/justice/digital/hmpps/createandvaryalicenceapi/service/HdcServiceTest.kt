@@ -27,10 +27,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.OS_PLACES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.CAS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.RESIDENTIAL
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CurfewTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.FirstNightCurfewTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -57,12 +57,9 @@ import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.DayOfWeek.WEDNESDAY
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Optional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes as EntityCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes as ModelCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.CurfewTimes as ClientCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence as HdcLicenceFromClient
 
@@ -664,85 +661,10 @@ class HdcServiceTest {
       RESIDENTIAL,
     )
 
-    val aModelCurfewAddress = HdcCurfewAddress(
-      firstLine = "1 Test Street",
-      secondLine = "Test Area",
-      townOrCity = "Test Town",
-      postcode = "",
-      source = MANUAL,
-    )
-
     val aSetOfFirstNightCurfewTimes = FirstNight(
       firstNightFrom = LocalTime.of(16, 0),
       firstNightUntil = LocalTime.of(8, 0),
     )
-
-    val anEntitySetOfCurfewTimes =
-      listOf(
-        EntityCurfewTimes(
-          1L,
-          1,
-          MONDAY,
-          LocalTime.of(20, 0),
-          TUESDAY,
-          LocalTime.of(8, 0),
-          LocalDateTime.of(2024, 8, 14, 9, 0),
-        ),
-        EntityCurfewTimes(
-          1L,
-          2,
-          TUESDAY,
-          LocalTime.of(20, 0),
-          WEDNESDAY,
-          LocalTime.of(8, 0),
-          LocalDateTime.of(2024, 8, 14, 9, 0),
-        ),
-        EntityCurfewTimes(
-          1L,
-          3,
-          WEDNESDAY,
-          LocalTime.of(20, 0),
-          THURSDAY,
-          LocalTime.of(8, 0),
-          LocalDateTime.of(2024, 8, 14, 9, 0),
-        ),
-        EntityCurfewTimes(
-          1L,
-          4,
-          THURSDAY,
-          LocalTime.of(20, 0),
-          FRIDAY,
-          LocalTime.of(8, 0),
-          LocalDateTime.of(2024, 8, 14, 9, 0),
-        ),
-        EntityCurfewTimes(
-          1L,
-          5,
-          FRIDAY,
-          LocalTime.of(20, 0),
-          SATURDAY,
-          LocalTime.of(8, 0),
-          LocalDateTime.of(2024, 8, 14, 9, 0),
-        ),
-        EntityCurfewTimes(
-          1L,
-          6,
-          SATURDAY,
-          LocalTime.of(20, 0),
-          SUNDAY,
-          LocalTime.of(8, 0),
-          LocalDateTime.of(2024, 8, 14, 9, 0),
-        ),
-        EntityCurfewTimes(
-          1L,
-          7,
-          SUNDAY,
-          LocalTime.of(20, 0),
-          MONDAY,
-          LocalTime.of(8, 0),
-          LocalDateTime.of(2024, 8, 14, 9, 0),
-        ),
-      )
 
     val aClientSetOfCurfewTimes =
       listOf(
@@ -790,118 +712,51 @@ class HdcServiceTest {
         ),
       )
 
-    val aModelClientSetOfCurfewTimes =
-      listOf(
-        CurfewTimes(
-          id = null,
-          curfewTimesSequence = null,
-          MONDAY,
-          LocalTime.of(20, 0),
-          TUESDAY,
-          LocalTime.of(8, 0),
-        ),
-        CurfewTimes(
-          id = null,
-          curfewTimesSequence = null,
-          TUESDAY,
-          LocalTime.of(20, 0),
-          WEDNESDAY,
-          LocalTime.of(8, 0),
-        ),
-        CurfewTimes(
-          id = null,
-          curfewTimesSequence = null,
-          WEDNESDAY,
-          LocalTime.of(20, 0),
-          THURSDAY,
-          LocalTime.of(8, 0),
-        ),
-        CurfewTimes(
-          id = null,
-          curfewTimesSequence = null,
-          THURSDAY,
-          LocalTime.of(20, 0),
-          FRIDAY,
-          LocalTime.of(8, 0),
-        ),
-        CurfewTimes(
-          id = null,
-          curfewTimesSequence = null,
-          FRIDAY,
-          LocalTime.of(20, 0),
-          SATURDAY,
-          LocalTime.of(8, 0),
-        ),
-        CurfewTimes(
-          id = null,
-          curfewTimesSequence = null,
-          SATURDAY,
-          LocalTime.of(20, 0),
-          SUNDAY,
-          LocalTime.of(8, 0),
-        ),
-        CurfewTimes(
-          id = null,
-          curfewTimesSequence = null,
-          SUNDAY,
-          LocalTime.of(20, 0),
-          MONDAY,
-          LocalTime.of(8, 0),
-        ),
-      )
-
     val aUpdatedModelSetOfCurfewTimes =
       listOf(
-        ModelCurfewTimes(
-          1L,
+        CurfewTimeRequest(
           1,
           MONDAY,
           LocalTime.of(21, 0),
           TUESDAY,
           LocalTime.of(9, 0),
         ),
-        ModelCurfewTimes(
-          1L,
+        CurfewTimeRequest(
           2,
           TUESDAY,
           LocalTime.of(21, 0),
           WEDNESDAY,
           LocalTime.of(9, 0),
         ),
-        ModelCurfewTimes(
-          1L,
+        CurfewTimeRequest(
           3,
           WEDNESDAY,
           LocalTime.of(21, 0),
           THURSDAY,
           LocalTime.of(9, 0),
         ),
-        ModelCurfewTimes(
-          1L,
+        CurfewTimeRequest(
           4,
           THURSDAY,
           LocalTime.of(21, 0),
           FRIDAY,
           LocalTime.of(9, 0),
         ),
-        ModelCurfewTimes(
-          1L,
+        CurfewTimeRequest(
           5,
           FRIDAY,
           LocalTime.of(21, 0),
           SATURDAY,
           LocalTime.of(9, 0),
         ),
-        ModelCurfewTimes(
-          1L,
+        CurfewTimeRequest(
           6,
           SATURDAY,
           LocalTime.of(21, 0),
           SUNDAY,
           LocalTime.of(9, 0),
         ),
-        ModelCurfewTimes(
-          1L,
+        CurfewTimeRequest(
           7,
           SUNDAY,
           LocalTime.of(21, 0),
@@ -911,16 +766,9 @@ class HdcServiceTest {
       )
 
     val aUpdatedModelSetOfFirstNightCurfewTimes =
-      ModelCurfewTimes(
-        id = 1L,
+      FirstNightCurfewTimeRequest(
         fromTime = LocalTime.of(16, 0),
         untilTime = LocalTime.of(8, 0),
-      )
-
-    val aLicenceEntityWithCurfewDetails = createHdcLicence()
-      .copy(
-        weeklyCurfewTimes = anEntitySetOfCurfewTimes,
-        curfewAddress = anEntityCurfewAddress,
       )
 
     val someHdcLicenceData = HdcLicenceFromClient(

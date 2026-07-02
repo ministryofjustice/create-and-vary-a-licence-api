@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com
 
 import jakarta.transaction.Transactional
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.core.context.SecurityContextHolder
@@ -34,6 +35,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import java.time.Clock
 import java.time.LocalDate
+import kotlin.collections.filter
 
 @Service
 class ComCaseloadSearchService(
@@ -44,6 +46,7 @@ class ComCaseloadSearchService(
   private val clock: Clock,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val cvlRecordService: CvlRecordService,
+  @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
 ) {
   @Transactional()
   fun searchForOffenderOnProbationUserCaseload(body: ProbationUserSearchRequest): ComSearchResponse {
@@ -69,7 +72,7 @@ class ComCaseloadSearchService(
       val caseAccessRecord = caseAccessRecords[caseloadResult.crn] ?: unrestricted
       val case = createCase(licence, caseloadResult, prisonerRecord, cvlRecord, caseAccessRecord)
       case?.takeUnless { it.isExcludedFromCaseloads(body.query) }
-    }.filter { !it.kind.isHdc() }
+    }
 
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
@@ -132,6 +135,7 @@ class ComCaseloadSearchService(
     cvlRecord: CvlRecord?,
     caseAccessRecord: CaseAccessResponse,
   ): FoundComCase? = when {
+    !hdcEnabled && licence.kind.isHdc() -> null
     licence.statusCode.isOnProbation() -> deliusOffender.toCaseWithLicence(licence, caseAccessRecord)
     prisonOffender == null || cvlRecord == null -> null
     cvlRecord.isEligible -> deliusOffender.toCaseWithLicence(licence, caseAccessRecord)
