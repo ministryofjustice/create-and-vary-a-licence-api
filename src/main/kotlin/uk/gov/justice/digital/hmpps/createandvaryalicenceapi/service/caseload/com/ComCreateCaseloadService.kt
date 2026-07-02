@@ -52,18 +52,6 @@ class ComCreateCaseloadService(
     return cases
   }
 
-  fun getStaffCreateCaseloadHdc(deliusStaffIdentifier: Long): List<ComCreateCase> {
-    val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
-    val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
-    val cvlRecords = cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
-
-    val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
-    val cases = createComCases(eligibleCases, cvlRecords, isAdminUser = false)
-    val hdcCases = cases.filter { it.cvlRecord.eligibleKind == EligibleKind.HDC }
-
-    return transformToCreateCaseload(hdcCases)
-  }
-
   fun getTeamCreateCaseload(
     probationTeamCodes: List<String>,
     teamSelected: List<String>,
