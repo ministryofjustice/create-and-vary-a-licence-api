@@ -263,15 +263,15 @@ class PolicyFunctionsTest {
   }
 
   fun policyCondition() = AdditionalConditionAp(
-    "default-code",
-    "default-category",
-    "default-text",
-    "default-template",
-    false,
-    emptyList(),
-    "default-category-short",
-    "default-subtext",
-    "default-type",
+    code = "default-code",
+    category = "default-category",
+    text = "default-text",
+    tpl = "default-template",
+    requiresInput = false,
+    inputs = emptyList(),
+    categoryShort = "default-category-short",
+    subtext = "default-subtext",
+    type = "default-type",
   )
 
   fun input() = Input(

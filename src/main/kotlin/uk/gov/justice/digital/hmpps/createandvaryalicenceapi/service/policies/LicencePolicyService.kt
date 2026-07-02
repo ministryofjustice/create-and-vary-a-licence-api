@@ -167,6 +167,7 @@ class LicencePolicyService(
       conditionSequence = i,
       conditionCode = condition.code,
       conditionText = condition.text,
+      conditionTextPlural = condition.text,
       expandedConditionText = condition.text,
       conditionVersion = licence.version!!,
       conditionCategory = condition.categoryShort ?: condition.category,
