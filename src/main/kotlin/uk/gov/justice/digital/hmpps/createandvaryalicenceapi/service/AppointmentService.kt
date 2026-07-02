@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Contact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
@@ -45,7 +45,7 @@ class AppointmentService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val previousPerson = licenceEntity.appointment?.person
+    val previousPerson = licenceEntity.contact?.person
 
     val staffMember = getStaffUser()
 
@@ -60,7 +60,7 @@ class AppointmentService(
       mapOf(
         "field" to "appointmentPerson",
         "previousValue" to (previousPerson ?: ""),
-        "newValue" to (licenceEntity.appointment?.person ?: ""),
+        "newValue" to (licenceEntity.contact?.person ?: ""),
       ),
       staffMember,
     )
@@ -77,7 +77,7 @@ class AppointmentService(
         throw ValidationException("Appointment time must not be null if Appointment Type is SPECIFIC_DATE_TIME")
       }
     }
-    val previousTime = licenceEntity.appointment?.time
+    val previousTime = licenceEntity.contact?.time
 
     val staffMember = getStaffUser()
 
@@ -92,7 +92,7 @@ class AppointmentService(
       mapOf(
         "field" to "appointmentTime",
         "previousValue" to (previousTime ?: "").toString(),
-        "newValue" to (licenceEntity.appointment?.time ?: "").toString(),
+        "newValue" to (licenceEntity.contact?.time ?: "").toString(),
       ),
       staffMember,
     )
@@ -104,8 +104,8 @@ class AppointmentService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val previousContact = licenceEntity.appointment?.telephoneContactNumber
-    val previousContactAlternative = licenceEntity.appointment?.alternativeTelephoneContactNumber
+    val previousContact = licenceEntity.contact?.telephoneContactNumber
+    val previousContactAlternative = licenceEntity.contact?.alternativeTelephoneContactNumber
 
     val staffMember = getStaffUser()
 
@@ -123,7 +123,7 @@ class AppointmentService(
       mapOf(
         "field" to "appointmentContact",
         "previousValue" to (previousContact ?: ""),
-        "newValue" to (licenceEntity.appointment?.telephoneContactNumber ?: ""),
+        "newValue" to (licenceEntity.contact?.telephoneContactNumber ?: ""),
       ),
       staffMember,
     )
@@ -135,7 +135,7 @@ class AppointmentService(
         mapOf(
           "field" to "appointmentAlternativeTelephoneNumber",
           "previousValue" to (previousContactAlternative ?: ""),
-          "newValue" to (licenceEntity.appointment?.alternativeTelephoneContactNumber ?: ""),
+          "newValue" to (licenceEntity.contact?.alternativeTelephoneContactNumber ?: ""),
         ),
         staffMember,
       )
@@ -149,7 +149,7 @@ class AppointmentService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val previousAddress = licenceEntity.appointment?.addressText
+    val previousAddress = licenceEntity.contact?.addressText
     val staffMember = getStaffUser()
 
     licenceEntity.updateAppointmentAddress(
@@ -163,7 +163,7 @@ class AppointmentService(
       mapOf(
         "field" to "appointmentAddress",
         "previousValue" to (previousAddress ?: ""),
-        "newValue" to (licenceEntity.appointment?.addressText ?: ""),
+        "newValue" to (licenceEntity.contact?.addressText ?: ""),
       ),
       staffMember,
     )
@@ -175,7 +175,7 @@ class AppointmentService(
       .orElseThrow { EntityNotFoundException("Licence $licenceId not found") }
 
     val staff = getStaffUser()
-    val auditData = when (licence.appointment?.address) {
+    val auditData = when (licence.contact?.address) {
       null -> createAppointmentAddress(licence, request, staff)
       else -> updateAppointmentAddress(licence, request, staff)
     }
@@ -191,7 +191,11 @@ class AppointmentService(
     )
   }
 
-  private fun createAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
+  private fun createAppointmentAddress(
+    licence: Licence,
+    request: AddAddressRequest,
+    staff: Staff?,
+  ): Map<String, String> {
     log.info(
       "Creating appointment address for licenceId={}, prn={}, postcode={}, staffId={}",
       licence.id,
@@ -202,10 +206,10 @@ class AppointmentService(
 
     val addressString = request.toString()
 
-    if (licence.appointment == null) {
-      licence.appointment = Appointment()
+    if (licence.contact == null) {
+      licence.contact = Contact()
     }
-    with(licence.appointment!!) {
+    with(licence.contact!!) {
       addressText = addressString
       address = addressMapper.toEntity(request)
     }
@@ -219,7 +223,11 @@ class AppointmentService(
     )
   }
 
-  private fun updateAppointmentAddress(licence: Licence, request: AddAddressRequest, staff: Staff?): Map<String, String> {
+  private fun updateAppointmentAddress(
+    licence: Licence,
+    request: AddAddressRequest,
+    staff: Staff?,
+  ): Map<String, String> {
     log.info(
       "Updating appointment address for licenceId={}, prn={}, postcode={}, staffId={}",
       licence.id,
@@ -228,17 +236,17 @@ class AppointmentService(
       staff?.id ?: "none",
     )
 
-    val address = licence.appointment!!.address!!
-    val previousAddress = licence.appointment?.addressText ?: ""
+    val address = licence.contact!!.address!!
+    val previousAddress = licence.contact?.addressText ?: ""
     val newAddressString = request.toString()
 
     addPreferredAddress(staff, request)
 
     addressMapper.update(address, request)
-    if (licence.appointment == null) {
-      licence.appointment = Appointment()
+    if (licence.contact == null) {
+      licence.contact = Contact()
     }
-    licence.appointment?.addressText = newAddressString
+    licence.contact?.addressText = newAddressString
 
     return buildAuditDetails(
       field = "updateAppointmentAddress",

@@ -16,8 +16,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTim
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "APPOINTMENT")
-class Appointment(
+@Table(name = "CONTACT")
+class Contact(
 
   id: Long? = null,
   @Enumerated(EnumType.STRING)

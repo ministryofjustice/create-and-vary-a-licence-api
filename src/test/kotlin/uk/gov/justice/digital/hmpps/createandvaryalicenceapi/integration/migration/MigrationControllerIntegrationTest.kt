@@ -48,9 +48,24 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     // Given
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManagerWithNomsId("A1234AA")
-    deliusMockServer.stubGetUserByUserName(2L, userName = "submittedByUserName", firstName = "submittedByFirstName", lastName = "submittedByLastName")
-    deliusMockServer.stubGetUserByUserName(3L, userName = "createdByUserName", firstName = "createdByFirstName", lastName = "createdByLastName")
-    deliusMockServer.stubGetUserByUserName(4L, userName = "approvedByUsername", firstName = "approvedByFirstName", lastName = "approvedByLastName")
+    deliusMockServer.stubGetUserByUserName(
+      2L,
+      userName = "submittedByUserName",
+      firstName = "submittedByFirstName",
+      lastName = "submittedByLastName",
+    )
+    deliusMockServer.stubGetUserByUserName(
+      3L,
+      userName = "createdByUserName",
+      firstName = "createdByFirstName",
+      lastName = "createdByLastName",
+    )
+    deliusMockServer.stubGetUserByUserName(
+      4L,
+      userName = "approvedByUsername",
+      firstName = "approvedByFirstName",
+      lastName = "approvedByLastName",
+    )
 
     val request = validRequest()
     prisonApiMockServer.stubGetPrison(prisonId = request.prison.prisonCode)
@@ -336,15 +351,15 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
     assertThat(licence.homeDetentionCurfewActualDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
 
-    assertThat(licence.appointment?.timeType).isEqualTo(AppointmentTimeType.SPECIFIC_DATE_TIME)
-    assertThat(licence.appointment?.personType).isEqualTo(AppointmentPersonType.SPECIFIC_PERSON)
-    assertThat(licence.appointment?.person).isEqualTo(request.appointment?.person)
-    assertThat(licence.appointment?.time).isEqualTo(request.appointment?.time)
-    assertThat(licence.appointment?.telephoneContactNumber).isEqualTo(request.appointment?.telephone)
-    assertThat(licence.appointment?.address?.firstLine).isEqualTo(request.appointment?.address?.firstLine)
-    assertThat(licence.appointment?.address?.secondLine).isEqualTo(request.appointment?.address?.secondLine)
-    assertThat(licence.appointment?.address?.townOrCity).isEqualTo(request.appointment?.address?.townOrCity)
-    assertThat(licence.appointment?.address?.postcode).isEqualTo(request.appointment?.address?.postcode)
+    assertThat(licence.contact?.timeType).isEqualTo(AppointmentTimeType.SPECIFIC_DATE_TIME)
+    assertThat(licence.contact?.personType).isEqualTo(AppointmentPersonType.SPECIFIC_PERSON)
+    assertThat(licence.contact?.person).isEqualTo(request.appointment?.person)
+    assertThat(licence.contact?.time).isEqualTo(request.appointment?.time)
+    assertThat(licence.contact?.telephoneContactNumber).isEqualTo(request.appointment?.telephone)
+    assertThat(licence.contact?.address?.firstLine).isEqualTo(request.appointment?.address?.firstLine)
+    assertThat(licence.contact?.address?.secondLine).isEqualTo(request.appointment?.address?.secondLine)
+    assertThat(licence.contact?.address?.townOrCity).isEqualTo(request.appointment?.address?.townOrCity)
+    assertThat(licence.contact?.address?.postcode).isEqualTo(request.appointment?.address?.postcode)
 
     assertThat(licence.probationAreaCode).isEqualTo("probationArea-code-1")
     assertThat(licence.probationAreaDescription).isEqualTo("probationArea-description-1")

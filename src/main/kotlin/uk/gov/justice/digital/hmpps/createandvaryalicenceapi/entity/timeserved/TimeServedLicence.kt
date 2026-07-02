@@ -7,9 +7,9 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Contact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
@@ -63,7 +63,7 @@ class TimeServedLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointment: Appointment? = null,
+  contact: Contact? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
   approvedByName: String? = null,
@@ -127,7 +127,7 @@ class TimeServedLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointment = appointment,
+  contact = contact,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
   approvedByName = approvedByName,
@@ -183,7 +183,7 @@ class TimeServedLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointment: Appointment? = AppointmentMapper.copy(this.appointment),
+    contact: Contact? = AppointmentMapper.copy(this.contact),
     approvedDate: LocalDateTime? = this.approvedDate,
     approvedByUsername: String? = this.approvedByUsername,
     approvedByName: String? = this.approvedByName,
@@ -239,7 +239,7 @@ class TimeServedLicence(
     probationLauDescription = probationLauDescription,
     probationTeamCode = probationTeamCode,
     probationTeamDescription = probationTeamDescription,
-    appointment = appointment,
+    contact = contact,
     approvedDate = approvedDate,
     approvedByUsername = approvedByUsername,
     approvedByName = approvedByName,
@@ -307,14 +307,14 @@ class TimeServedLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=${appointment?.personType}, " +
-    "appointmentPerson=${appointment?.person}, " +
-    "appointmentTime=${appointment?.time}, " +
-    "appointmentTimeType=${appointment?.timeType}, " +
-    "appointmentAddress=${appointment?.addressText}, " +
-    "licenceAppointmentAddress=${appointment?.address}, " +
-    "appointmentContact=${appointment?.telephoneContactNumber}, " +
-    "alternativeTelephoneContactNumber=${appointment?.alternativeTelephoneContactNumber}, " +
+    "appointmentPersonType=${contact?.personType}, " +
+    "appointmentPerson=${contact?.person}, " +
+    "appointmentTime=${contact?.time}, " +
+    "appointmentTimeType=${contact?.timeType}, " +
+    "appointmentAddress=${contact?.addressText}, " +
+    "licenceAppointmentAddress=${contact?.address}, " +
+    "appointmentContact=${contact?.telephoneContactNumber}, " +
+    "alternativeTelephoneContactNumber=${contact?.alternativeTelephoneContactNumber}, " +
     "approvedDate=$approvedDate, " +
     "approvedByUsername=$approvedByUsername, " +
     "approvedByName=$approvedByName, " +

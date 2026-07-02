@@ -64,7 +64,7 @@ INSERT INTO licence (
 		 );
 
 -- 2. Insert the appointment
-INSERT INTO appointment (
+INSERT INTO contact (
 	person_type,
 	person,
 	time_type,
@@ -90,7 +90,7 @@ INSERT INTO appointment (
 INSERT INTO licence_appointment (licence_id, appointment_id)
 VALUES (
 		   (SELECT MAX(id) FROM licence),
-		   (SELECT MAX(id) FROM appointment)
+		   (SELECT MAX(id) FROM contact)
 	   );
 
 -- 4. Insert the address
@@ -117,7 +117,7 @@ INSERT INTO address (
 -- 5. Link appointment to address
 INSERT INTO appointment_address (appointment_id, address_id)
 VALUES (
-		   (SELECT MAX(id) FROM appointment),
+		   (SELECT MAX(id) FROM contact),
 		   (SELECT MAX(id) FROM address)
 	   );
 

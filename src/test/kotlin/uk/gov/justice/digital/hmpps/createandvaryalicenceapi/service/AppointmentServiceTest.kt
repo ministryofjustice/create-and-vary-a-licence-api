@@ -83,7 +83,7 @@ class AppointmentServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     val licence = licenceCaptor.value
-    val appointment = licence.appointment
+    val appointment = licence.contact
     assertThat(appointment).isNotNull
     assertThat(appointment!!.personType).isEqualTo(SPECIFIC_PERSON)
     assertThat(appointment.person).isEqualTo("John Smith")
@@ -94,7 +94,7 @@ class AppointmentServiceTest {
   @Test
   fun `update initial appointment clears specific person if not a appointment type is not with a specific person `() {
     // Given
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(appointment = TestData.createAppointment())))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(contact = TestData.createAppointment())))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
     // When
@@ -111,7 +111,7 @@ class AppointmentServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     val licence = licenceCaptor.value
-    val appointment = licence.appointment
+    val appointment = licence.contact
     assertThat(appointment).isNotNull
     assertThat(appointment!!.personType).isEqualTo(DUTY_OFFICER)
     assertThat(appointment.person).isNull()
@@ -156,7 +156,7 @@ class AppointmentServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     val licence = licenceCaptor.value
-    val appointment = licence.appointment
+    val appointment = licence.contact
     assertThat(appointment).isNotNull
     assertThat(appointment!!.time).isEqualTo(tenDaysFromNow)
     assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
@@ -194,7 +194,7 @@ class AppointmentServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     val licence = licenceCaptor.value
-    val appointment = licence.appointment
+    val appointment = licence.contact
     assertThat(appointment).isNotNull
     assertThat(appointment!!.telephoneContactNumber).isEqualTo("0114 2565555")
     assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
@@ -238,7 +238,7 @@ class AppointmentServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     val licence = licenceCaptor.value
-    val appointment = licence.appointment
+    val appointment = licence.contact
     assertThat(appointment).isNotNull
     assertThat(appointment!!.personType).isEqualTo(SPECIFIC_PERSON)
     assertThat(appointment.person).isEqualTo("John Smith")

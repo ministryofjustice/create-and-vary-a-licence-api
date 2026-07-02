@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Contact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
@@ -188,7 +188,7 @@ class MigrationService(
     licence.bespokeConditions.addAll(additionalConditions + bespokeConditions)
 
     appointment?.let {
-      licence.appointment = Appointment(
+      licence.contact = Contact(
         personType = AppointmentPersonType.SPECIFIC_PERSON,
         person = it.person,
         time = it.time,

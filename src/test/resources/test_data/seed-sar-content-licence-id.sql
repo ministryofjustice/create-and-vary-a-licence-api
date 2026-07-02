@@ -186,15 +186,15 @@ values (1, 1, 'CREATED', 'Test User', 'Test', 'User', 'Licence created1', null),
 
 
 -- 2. Insert the appointment
-INSERT INTO appointment (person_type,
-                         person,
-                         time_type,
-                         time,
-                         address_text,
-                         telephone_contact_number,
-                         alternative_telephone_contact_number,
-                         date_created,
-                         date_last_updated)
+INSERT INTO contact (person_type,
+                     person,
+                     time_type,
+                     time,
+                     address_text,
+                     telephone_contact_number,
+                     alternative_telephone_contact_number,
+                     date_created,
+                     date_last_updated)
 VALUES ('SPECIFIC_PERSON', -- person_type
         'John Smith', -- person
         'SPECIFIC_DATE_TIME', -- time_type
@@ -208,7 +208,7 @@ VALUES ('SPECIFIC_PERSON', -- person_type
 -- 3. Link licence <> appointment
 INSERT INTO licence_appointment (licence_id, appointment_id)
 VALUES (2,
-        (SELECT MAX(id) FROM appointment));
+        (SELECT MAX(id) FROM contact));
 
 -- 4. Address row
 INSERT INTO address (reference,
@@ -228,20 +228,20 @@ VALUES ('550e8400-e29b-41d4-a716-446655440000',
 
 -- 5. Appointment <> Address join
 INSERT INTO appointment_address (appointment_id, address_id)
-VALUES ((SELECT MAX(id) FROM appointment),
+VALUES ((SELECT MAX(id) FROM contact),
         (SELECT MAX(id) FROM address));
 
 
 -- 2. Insert the appointment
-INSERT INTO appointment (person_type,
-                         person,
-                         time_type,
-                         time,
-                         address_text,
-                         telephone_contact_number,
-                         alternative_telephone_contact_number,
-                         date_created,
-                         date_last_updated)
+INSERT INTO contact (person_type,
+                     person,
+                     time_type,
+                     time,
+                     address_text,
+                     telephone_contact_number,
+                     alternative_telephone_contact_number,
+                     date_created,
+                     date_last_updated)
 VALUES ('RESPONSIBLE_COM', -- person_type
         null, -- person
         'IMMEDIATE_UPON_RELEASE', -- time_type
@@ -255,7 +255,7 @@ VALUES ('RESPONSIBLE_COM', -- person_type
 -- 3. Link licence <> appointment
 INSERT INTO licence_appointment (licence_id, appointment_id)
 VALUES (1,
-        (SELECT MAX(id) FROM appointment));
+        (SELECT MAX(id) FROM contact));
 
 -- 4. Address row
 INSERT INTO address (reference,
@@ -275,7 +275,7 @@ VALUES ('550e8400-e29b-41d4-a716-1211212121',
 
 -- 5. Appointment <> Address join
 INSERT INTO appointment_address (appointment_id, address_id)
-VALUES ((SELECT MAX(id) FROM appointment),
+VALUES ((SELECT MAX(id) FROM contact),
         (SELECT MAX(id) FROM address));
 
 INSERT INTO time_served_external_records (noms_id,

@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Contact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
@@ -480,7 +480,7 @@ object TestData {
     standardConditions = emptyList(),
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
-    appointment = createAppointment(),
+    contact = createAppointment(),
     variationOfId = 2L,
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
@@ -520,7 +520,7 @@ object TestData {
     address: Address? = createAddress(),
     created: LocalDateTime = LocalDateTime.now(),
     updated: LocalDateTime = created,
-  ): Appointment = Appointment(
+  ): Contact = Contact(
     id = id,
     personType = personType,
     person = person,
@@ -617,7 +617,7 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    appointment = createAppointment(),
+    contact = createAppointment(),
     firstNightCurfewTimes = firstNightCurfewTimes(),
     weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
     responsibleCom = communityOffenderManager(),
