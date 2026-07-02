@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse.Companion.unrestricted
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -50,18 +49,6 @@ class ComCreateCaseloadService(
 
     telemetryService.recordCaseloadLoad(ComCreateStaffCaseload, setOf(deliusStaffIdentifier.toString()), cases)
     return cases
-  }
-
-  fun getStaffCreateCaseloadHdc(deliusStaffIdentifier: Long): List<ComCreateCase> {
-    val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
-    val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
-    val cvlRecords = cvlRecordService.getCvlRecords(deliusAndNomisRecords.map { (_, nomisRecord) -> nomisRecord })
-
-    val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, cvlRecords)
-    val cases = createComCases(eligibleCases, cvlRecords, isAdminUser = false)
-    val hdcCases = cases.filter { it.cvlRecord.eligibleKind == EligibleKind.HDC }
-
-    return transformToCreateCaseload(hdcCases)
   }
 
   fun getTeamCreateCaseload(
