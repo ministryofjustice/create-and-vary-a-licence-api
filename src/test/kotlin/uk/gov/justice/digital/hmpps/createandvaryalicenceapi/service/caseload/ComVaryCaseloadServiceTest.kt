@@ -12,6 +12,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
@@ -94,6 +95,70 @@ class ComVaryCaseloadServiceTest {
         allocated = true,
       ),
     )
+  }
+
+  @Test
+  fun `Given HDC licences are enabled when vary case list is requested then HDC licences are returned`() {
+    // Given
+
+    ReflectionTestUtils.setField(service, "hdcEnabled", true)
+
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+      listOf(
+        createLicenceComCase(
+          kind = LicenceKind.HDC,
+          crn = "X12348",
+          nomisId = "AB1234E",
+          licenceStatus = VARIATION_IN_PROGRESS,
+        ),
+      ),
+    )
+
+    // When
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
+
+    // Then
+    assertThat(caseload).hasSize(1)
+  }
+
+  @Test
+  fun `Given HDC licences are not enabled when vary case list is requested then HDC licences are not returned`() {
+    // Given
+
+    ReflectionTestUtils.setField(service, "hdcEnabled", false)
+
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+      ),
+    )
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(licenceCaseRepository.findLicenceCasesForCom(any(), any())).thenReturn(
+      listOf(
+        createLicenceComCase(
+          kind = LicenceKind.HDC,
+          crn = "X12348",
+          nomisId = "AB1234E",
+          licenceStatus = VARIATION_IN_PROGRESS,
+        ),
+      ),
+    )
+
+    // When
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
+
+    // Then
+    assertThat(caseload).hasSize(0)
   }
 
   @Test
