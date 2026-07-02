@@ -790,6 +790,7 @@ fun transform(
   category = entity.conditionCategory,
   sequence = entity.conditionSequence,
   text = entity.conditionText,
+  textPlural = entity.conditionTextPlural,
   expandedText = entity.expandedConditionText,
   data = entity.additionalConditionData.transformToModelAdditionalData(),
   uploadSummary = entity.additionalConditionUpload.transformToModelAdditionalConditionUploadSummary(),

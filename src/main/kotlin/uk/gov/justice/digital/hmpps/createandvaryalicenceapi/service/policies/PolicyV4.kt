@@ -645,6 +645,7 @@ val POLICY_V4_0 = LicencePolicy(
         requiresInput = true,
         text = "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
         tpl = "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
+        textPlural = "Not to enter the areas as defined by the attached maps without the prior approval of your supervising officer.",
         type = "OutOfBoundsRegionPolicyV3",
       ),
       AdditionalConditionAp(
@@ -822,6 +823,7 @@ val POLICY_V4_0 = LicencePolicy(
         requiresInput = true,
         text = "Not to leave the area as defined by the attached map without the prior approval of your supervising officer.",
         tpl = "Not to leave the area as defined by the attached map without the prior approval of your supervising officer.",
+        textPlural = "Not to leave the areas as defined by the attached maps without the prior approval of your supervising officer.",
         type = "InBoundsRegion",
       ),
       AdditionalConditionAp(

@@ -6,6 +6,7 @@
     "conditionCode": "String",
     "conditionSequence": "Integer",
     "conditionText": "String",
+    "conditionTextPlural": "String",
     "conditionType": "String",
     "conditionVersion": "String",
     "expandedConditionText": "String",
