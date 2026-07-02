@@ -93,7 +93,7 @@ class HdcService(
     val licence = licenceRepository.findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val curfewUpdatable = requireNotNull(licence as? HdcCase) {
+    val hdcCase = requireNotNull(licence as? HdcCase) {
       "Licence ${licence::class.simpleName} does not support weekly curfew updates"
     }
 
@@ -104,7 +104,7 @@ class HdcService(
     val weeklyCurfewTimes = request.weeklyCurfewTimes
       .transformToEntityWeeklyCurfewTimes()
 
-    curfewUpdatable.updateWeeklyCurfewTimes(weeklyCurfewTimes, staff)
+    hdcCase.updateWeeklyCurfewTimes(weeklyCurfewTimes, staff)
 
     licenceRepository.saveAndFlush(licence)
 
@@ -127,8 +127,7 @@ class HdcService(
     val username = SecurityContextHolder.getContext().authentication?.name!!
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    val entityFirstNightCurfewTimes =
-      request.firstNightCurfewTimes.transformToEntityFirstNightCurfewTimes()
+    val entityFirstNightCurfewTimes = request.firstNightCurfewTimes.transformToEntityFirstNightCurfewTimes()
 
     auditService.recordAuditEventUpdateHdcFirstNightCurfewTimes(
       licenceEntity,

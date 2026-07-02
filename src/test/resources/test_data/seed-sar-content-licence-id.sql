@@ -62,8 +62,8 @@ values (1,
         'TEAM1',
         1,
         1,
-        '2019-06-01 14:00:00',
-        '2024-06-01 15:00:00');
+        '2019-03-01 14:00:00',
+        '2024-04-01 15:00:00');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
@@ -250,7 +250,7 @@ VALUES ('RESPONSIBLE_COM', -- person_type
         '1234556', -- contact
         '342324343', -- contact_alternative
         '2020-05-11 10:00:00',
-        '2024-06-21 11:12:00');
+        '2024-03-21 11:12:00');
 
 -- 3. Link licence <> appointment
 INSERT INTO licence_appointment (licence_id, appointment_id)
@@ -290,22 +290,22 @@ VALUES ('A1234AA',
         'Time served licence created in NOMIS',
         'MDI',
         1,
-        '2024-06-01 10:00:00',
-        '2024-06-01 11:00:00'),
+        '2024-03-01 10:00:00',
+        '2024-03-01 11:00:00'),
        ('A1234AG',
         '1234',
         'Time served served licence created in NOMIS',
         'MDI',
         1,
-        '2024-06-01 10:00:00',
-        '2024-06-01 11:00:00'),
+        '2024-04-01 10:00:00',
+        '2024-04-01 11:00:00'),
        ('A1234AA',
         '1235',
         'Some other time served licence created in NOMIS',
         'MDI',
         1,
-        '2024-06-02 10:00:00',
-        '2024-06-02 11:00:00')
+        '2024-04-02 10:00:00',
+        '2024-04-02 11:00:00')
 ;
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
@@ -364,18 +364,167 @@ VALUES (1, 6,
         1,
         'exclusion zone.png',
         'image/png',
-        'A description of the exclusion zone boundaries', '2024-06-22 11:32:00');
+        'A description of the exclusion zone boundaries', '2024-04-22 11:32:00');
 
 -- Create the data for the exclusion zone condition
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (1, 1, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (2, 1, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
+values (2, 1, 2, 'outOfBoundFile', 'Test_map_2021-12-04_112550.pdf');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (5, 3, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (6, 3, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
+values (6, 3, 2, 'outOfBoundFile', 'Test_map_2021-12-04_112550.pdf');
+
+-- HDC case
+
+insert into licence (id,
+                     kind,
+                     type_code,
+                     version,
+                     licence_version,
+                     status_code,
+                     noms_id,
+                     booking_no,
+                     booking_id,
+                     crn,
+                     pnc,
+                     cro,
+                     prison_code,
+                     prison_description,
+                     forename,
+                     surname,
+                     date_of_birth,
+                     conditional_release_date,
+                     actual_release_date,
+                     sentence_start_date,
+                     sentence_end_date,
+                     topup_supervision_start_date,
+                     topup_supervision_expiry_date,
+                     licence_start_date,
+                     licence_expiry_date,
+                     probation_area_code,
+                     probation_pdu_code,
+                     probation_lau_code,
+                     probation_team_code,
+                     responsible_com_id,
+                     created_by_com_id,
+                     date_created,
+                     date_last_updated)
+values (3,
+        'HDC_VARIATION',
+        'AP',
+        '3.0',
+        '1.0',
+        'IN_PROGRESS',
+        'A1234AA',
+        'BOOKNO',
+        1234567,
+        'CRN1',
+        '2015/1234',
+        'CRO1',
+        'MDI',
+        'Moorland (HMP)',
+        'Person',
+        'One',
+        '2020-10-25',
+        '2022-02-12',
+        '2022-02-25',
+        '2020-10-11',
+        '2022-02-25',
+        '2022-02-25',
+        '2022-02-25',
+        '2022-02-25',
+        '2023-02-25',
+        'N01',
+        'PDU1',
+        'LAU1',
+        'TEAM1',
+        1,
+        1,
+        '2019-04-01 14:00:00',
+        '2024-04-01 15:00:00');
+
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (3, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
+
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (3, 'notBreakLaw', 2, 'Do not break the law', 'AP');
+
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (3, 'attendMeetings', 3, 'Attend meetings', 'PSS');
+
+insert into hdc_curfew_address (licence_id, first_line, second_line, town_or_city, county, postcode, reference,
+                                uprn, source, accommodation_type, post_release_residential_checks_completed,
+                                post_release_residential_checks_not_completed_reason, created_timestamp,
+                                last_updated_timestamp)
+values (3, '1 Some Address', 'Off Some Road', 'Some Town', 'Some County', 'AB1 2CD',
+        '123e4567-e89b-12d3-a456-426614174000', null, 'MANUAL', 'RESIDENTIAL', true, null,
+        '2026-01-01 12:23:33+00',
+        '2026-01-01 12:23:33+00');
+
+insert into curfew_times (from_day, from_time, until_day, until_time, curfew_times_sequence,
+                          created_timestamp)
+values ('MONDAY',
+        '19:00',
+        'TUESDAY',
+        '07:00',
+        '1',
+        '2026-01-01 00:00:00+00'),
+       ('TUESDAY',
+        '19:00',
+        'WEDNESDAY',
+        '07:00',
+        '2',
+        '2026-01-01 00:00:00+00'),
+       ('WEDNESDAY',
+        '19:00',
+        'THURSDAY',
+        '07:00',
+        '3',
+        '2026-01-01 00:00:00+00'),
+       ('THURSDAY',
+        '19:00',
+        'FRIDAY',
+        '07:00',
+        '4',
+        '2026-01-01 00:00:00+00'),
+       ('FRIDAY',
+        '19:00',
+        'SATURDAY',
+        '07:00',
+        '5',
+        '2026-01-01 00:00:00+00'),
+       ('SATURDAY',
+        '19:00',
+        'SUNDAY',
+        '07:00',
+        '6',
+        '2026-01-01 00:00:00+00'),
+       ('SUNDAY',
+        '19:00',
+        'MONDAY',
+        '07:00',
+        '7',
+        '2026-01-01 00:00:00+00'),
+       ('MONDAY',
+        '18:00',
+        'TUESDAY',
+        '08:00',
+        '1',
+        '2026-01-01 00:00:00+00');
+
+insert into hdc_weekly_curfew_times (licence_id, curfew_time_id)
+values (3, 1),
+       (3, 2),
+       (3, 3),
+       (3, 4),
+       (3, 5),
+       (3, 6),
+       (3, 7);
+insert into hdc_first_night_curfew_times (licence_id, curfew_time_id)
+values (3, 8);
 
