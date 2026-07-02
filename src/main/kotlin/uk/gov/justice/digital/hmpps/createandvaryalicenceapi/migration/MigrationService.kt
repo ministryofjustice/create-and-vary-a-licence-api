@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
@@ -46,6 +47,7 @@ class MigrationService(
   val cvlRecordService: CvlRecordService,
   val prisonerSearchApiClient: PrisonerSearchApiClient,
   val prisonService: PrisonService,
+  val licencePolicyService: LicencePolicyService,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -178,6 +180,9 @@ class MigrationService(
     val additionalConditions = conditions.additional.mapIndexed { index, condition ->
       BespokeCondition(conditionText = condition.text, licence = licence, conditionSequence = index)
     }
+
+    val standardConditions = licencePolicyService.getStandardConditionsForLicence(licence)
+    licence.standardConditions.addAll(standardConditions)
 
     val lastIndex = additionalConditions.lastOrNull()?.conditionSequence?.plus(1) ?: 0
 
