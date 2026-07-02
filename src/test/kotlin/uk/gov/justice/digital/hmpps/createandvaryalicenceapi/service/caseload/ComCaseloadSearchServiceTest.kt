@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -41,7 +42,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.C
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
@@ -429,49 +429,53 @@ class ComCaseloadSearchServiceTest {
   }
 
   @Test
-  fun `can not search for offenders in prison without a licence, eligible for CVL, HDC case and is approved for HDC`() {
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
-      listOf(
-        aCvlRecord(
-          eligibleKind = EligibleKind.HDC,
-          creationKind = LicenceKind.HDC,
-          licenceStartDate = LocalDate.of(2023, 9, 14),
-        ),
-      ),
+  fun `can not search for offenders in prison with a HDC licence, when hdc is not Enabled`() {
+    // Given
+    ReflectionTestUtils.setField(service, "hdcEnabled", false)
+
+    val prisoner = aPrisonerSearchResult.copy(
+      homeDetentionCurfewEligibilityDate = LocalDate.parse("2023-09-14"),
+    )
+    val hdcLicence = createHdcLicence().copy(
+      bookingId = prisoner.bookingId!!.toLong(),
+      versionOfId = 2L,
+      statusCode = LicenceStatus.APPROVED,
     )
 
-    val result = service.searchForOffenderOnProbationUserCaseload(request)
-    assertThat(result.results.size).isEqualTo(0)
-    /*
-        Temporarily Removed as part of https://dsdmoj.atlassian.net/browse/CVSL-3821
-        assertThat(result.results.size).isEqualTo(1)
-        assertThat(result.inPrisonCount).isEqualTo(1)
-        assertThat(result.onProbationCount).isEqualTo(0)
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(hdcLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
 
-        assertThat(result.results.first()).extracting {
-          tuple(
-            it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.probationPractitioner, it.teamName, it.releaseDate,
-            it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-          )
-        }.isEqualTo(
-          tuple(
-            "Test Surname",
-            "A123456",
-            "A1234AA",
-            "Staff Surname",
-            "A01B02C",
-            ProbationPractitioner("A01B02C", "Staff Surname", true),
-            "Test Team",
-            LocalDate.parse("2023-09-14"),
-            null,
-            LicenceType.AP,
-            LicenceStatus.NOT_STARTED,
-            false,
-          ),
-        )
-     */
+    // When
+    val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+    // Then
+    assertThat(result.results).hasSize(0)
+  }
+
+  @Test
+  fun `can search for offenders in prison with a HDC licence, when hdc is Enabled`() {
+    // Given
+    ReflectionTestUtils.setField(service, "hdcEnabled", true)
+
+    val prisoner = aPrisonerSearchResult.copy(
+      homeDetentionCurfewEligibilityDate = LocalDate.parse("2023-09-14"),
+    )
+    val hdcLicence = createHdcLicence().copy(
+      bookingId = prisoner.bookingId!!.toLong(),
+      versionOfId = 2L,
+      statusCode = LicenceStatus.APPROVED,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(hdcLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
+    whenever(cvlRecordService.getCvlRecords(any())).thenReturn(listOf(aCvlRecord()))
+
+    // When
+    val result = service.searchForOffenderOnProbationUserCaseload(request)
+
+    // Then
+    assertThat(result.results).hasSize(1)
   }
 
   @Test

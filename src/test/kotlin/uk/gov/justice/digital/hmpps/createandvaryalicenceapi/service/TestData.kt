@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
@@ -575,7 +576,7 @@ object TestData {
   ).let {
     it.copy(
       standardConditions = someEntityStandardConditions(it),
-      weeklyCurfewTimes = emptyList(),
+      weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
       curfewAddress = curfewAddress(it),
     )
   }
@@ -842,11 +843,12 @@ object TestData {
     firstLine = "1 Test Street",
     secondLine = "Test Area",
     townOrCity = "Test Town",
-    county = null,
+    county = "Test County",
     postcode = "AB1 2CD",
     reference = "ref-123",
     uprn = "uprn-123",
     source = MANUAL,
+    accommodationType = AccommodationType.RESIDENTIAL,
     postReleaseResidentialChecksCompleted = false,
     postReleaseResidentialChecksNotCompletedReason = "Old reason",
   )

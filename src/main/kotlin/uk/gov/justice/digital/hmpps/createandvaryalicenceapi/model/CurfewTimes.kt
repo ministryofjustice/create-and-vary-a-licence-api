@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 @Schema(description = "Describes the curfew times on this hdc licence")
@@ -24,4 +26,8 @@ data class CurfewTimes(
 
   @field:Schema(description = "The time at which this curfew ends on the untilDay", example = "01:00:00")
   val untilTime: LocalTime? = null,
+
+  @field:Schema(description = "the date and time the curfew time was created")
+  @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+  val createdTimestamp: LocalDateTime?,
 )
