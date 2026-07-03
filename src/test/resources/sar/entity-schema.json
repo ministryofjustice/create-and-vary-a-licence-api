@@ -47,7 +47,7 @@
     "townOrCity": "String",
     "uprn": "String"
   },
-  "Appointment": {
+  "ProbationContact": {
     "address": "Address",
     "addressText": "String",
     "alternativeTelephoneContactNumber": "String",
@@ -57,8 +57,8 @@
     "person": "String",
     "personType": "AppointmentPersonType",
     "telephoneContactNumber": "String",
-    "time": "LocalDateTime",
-    "timeType": "AppointmentTimeType"
+    "appointmentTime": "LocalDateTime",
+    "appointmentTimeType": "AppointmentTimeType"
   },
   "AuditEvent": {
     "changes": "Map",
@@ -92,7 +92,7 @@
   "CrdLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -167,7 +167,7 @@
   "HardStopLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -242,7 +242,7 @@
   "HdcLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -306,7 +306,7 @@
   "HdcVariationLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -371,7 +371,7 @@
   "Licence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -477,7 +477,7 @@
   "PrrdLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -564,7 +564,7 @@
   "TimeServedLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -631,7 +631,7 @@
   "VariationLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",

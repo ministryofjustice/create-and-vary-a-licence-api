@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
@@ -193,11 +193,11 @@ class MigrationService(
     licence.bespokeConditions.addAll(additionalConditions + bespokeConditions)
 
     appointment?.let {
-      licence.appointment = Appointment(
+      licence.probationContact = ProbationContact(
         personType = AppointmentPersonType.SPECIFIC_PERSON,
         person = it.person,
-        time = it.time,
-        timeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
+        appointmentTime = it.time,
+        appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
         telephoneContactNumber = it.telephone,
         address = it.address?.toCvlDomain(),
         addressText = it.address?.toSingleLineAddress(),
