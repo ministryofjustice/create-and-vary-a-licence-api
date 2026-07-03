@@ -164,6 +164,40 @@ tasks {
       includeTestsMatching("*IntegrationTest*")
     }
   }
+
+  val sarSnapshotFiles = listOf(
+    "sar-api-response.json",
+    "sar-generated-report.html",
+    "entity-schema.json",
+  )
+
+  register<Test>("generateSarSnapshots") {
+    description = "Runs the SAR integration test with SAR_GENERATE_ACTUAL=true to generate updated SAR snapshot files"
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform()
+    filter {
+      includeTestsMatching("*SubjectAccessRequestIntegrationTest*")
+    }
+    environment("SAR_GENERATE_ACTUAL", "true")
+    outputs.upToDateWhen { false }
+  }
+
+  register<Copy>("updateSarSnapshots") {
+    description = "Generates and copies updated SAR snapshot files into src/test/resources/sar (review the diff before committing)"
+    group = "verification"
+    dependsOn("generateSarSnapshots")
+    from("$projectDir/src/test/resources") {
+      include(sarSnapshotFiles.map { "$it.log" })
+    }
+    into("$projectDir/src/test/resources/sar")
+    rename { it.removeSuffix(".log") }
+    doLast {
+      delete(sarSnapshotFiles.map { file("$projectDir/src/test/resources/$it.log") })
+    }
+  }
+
   register<Copy>("installLocalGitHook") {
     from(File(rootProject.rootDir, ".scripts/pre-commit"))
     into(File(rootProject.rootDir, ".git/hooks"))

@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toCrd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toHdc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -111,57 +110,57 @@ class SubjectAccessRequestResponseBuilderTest {
           curfewTimes = listOf(
             SarCurfewTimes(
               curfewTimesSequence = 1,
-              fromDay = DayOfWeek.MONDAY,
+              fromDay = "Monday",
               fromTime = LocalTime.of(21, 0),
-              untilDay = DayOfWeek.TUESDAY,
+              untilDay = "Tuesday",
               untilTime = LocalTime.of(9, 0),
               createdTimestamp = null,
             ),
             SarCurfewTimes(
               curfewTimesSequence = 2,
-              fromDay = DayOfWeek.TUESDAY,
+              fromDay = "Tuesday",
               fromTime = LocalTime.of(21, 0),
-              untilDay = DayOfWeek.WEDNESDAY,
+              untilDay = "Wednesday",
               untilTime = LocalTime.of(9, 0),
               createdTimestamp = null,
             ),
             SarCurfewTimes(
               curfewTimesSequence = 3,
-              fromDay = DayOfWeek.WEDNESDAY,
+              fromDay = "Wednesday",
               fromTime = LocalTime.of(21, 0),
-              untilDay = DayOfWeek.THURSDAY,
+              untilDay = "Thursday",
               untilTime = LocalTime.of(9, 0),
               createdTimestamp = null,
             ),
             SarCurfewTimes(
               curfewTimesSequence = 4,
-              fromDay = DayOfWeek.THURSDAY,
+              fromDay = "Thursday",
               fromTime = LocalTime.of(21, 0),
-              untilDay = DayOfWeek.FRIDAY,
+              untilDay = "Friday",
               untilTime = LocalTime.of(9, 0),
               createdTimestamp = null,
             ),
             SarCurfewTimes(
               curfewTimesSequence = 5,
-              fromDay = DayOfWeek.FRIDAY,
+              fromDay = "Friday",
               fromTime = LocalTime.of(21, 0),
-              untilDay = DayOfWeek.SATURDAY,
+              untilDay = "Saturday",
               untilTime = LocalTime.of(9, 0),
               createdTimestamp = null,
             ),
             SarCurfewTimes(
               curfewTimesSequence = 6,
-              fromDay = DayOfWeek.SATURDAY,
+              fromDay = "Saturday",
               fromTime = LocalTime.of(21, 0),
-              untilDay = DayOfWeek.SUNDAY,
+              untilDay = "Sunday",
               untilTime = LocalTime.of(9, 0),
               createdTimestamp = null,
             ),
             SarCurfewTimes(
               curfewTimesSequence = 7,
-              fromDay = DayOfWeek.SUNDAY,
+              fromDay = "Sunday",
               fromTime = LocalTime.of(21, 0),
-              untilDay = DayOfWeek.MONDAY,
+              untilDay = "Monday",
               untilTime = LocalTime.of(9, 0),
               createdTimestamp = null,
             ),

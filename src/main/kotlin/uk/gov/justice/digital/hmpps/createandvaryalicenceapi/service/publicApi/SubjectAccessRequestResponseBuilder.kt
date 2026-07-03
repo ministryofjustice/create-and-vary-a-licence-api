@@ -132,14 +132,16 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     curfewTimes = licence.weeklyCurfewTimes.map {
       SarCurfewTimes(
         curfewTimesSequence = it.curfewTimesSequence,
-        fromDay = it.fromDay,
+        fromDay = it.fromDay?.name.upperCaseFirstChar(),
         fromTime = it.fromTime,
-        untilDay = it.untilDay,
+        untilDay = it.untilDay?.name.upperCaseFirstChar(),
         untilTime = it.untilTime,
         createdTimestamp = it.createdTimestamp,
       )
     },
   )
+
+  fun String?.upperCaseFirstChar() = this?.lowercase()?.replaceFirstChar(Char::titlecase) ?: ""
 
   fun build() = HmppsSubjectAccessRequestContent(
     Content(

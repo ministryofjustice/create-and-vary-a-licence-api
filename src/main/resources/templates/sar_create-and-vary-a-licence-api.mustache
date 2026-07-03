@@ -134,6 +134,67 @@
             <tr><td>No data held</td></tr>
         {{/bespokeConditions}}
     </table>
+    <br>
+
+    {{#hdcInfo}}
+        <h2>HDC information</h2>
+        <br>
+        <h3>Curfew address</h3>
+        <br>
+        {{#curfewAddress}}
+            <table class="summary-list">
+                <tr><td>Accommodation type</td><td>{{ optionalValue accommodationType }}</td></tr>
+                <tr><td>First line</td><td>{{ optionalValue firstLine }}</td></tr>
+                <tr><td>Second line</td><td>{{ optionalValue secondLine }}</td></tr>
+                <tr><td>Town or city</td><td>{{ optionalValue townOrCity }}</td></tr>
+                <tr><td>County</td><td>{{ optionalValue county }}</td></tr>
+                <tr><td>Postcode</td><td>{{ optionalValue postcode }}</td></tr>
+                <tr><td>UPRN</td><td>{{ optionalValue uprn }}</td></tr>
+                <tr><td>Source</td><td>{{ optionalValue source }}</td></tr>
+                <tr><td>Post release residential checks completed</td><td>{{ optionalValue postReleaseResidentialChecksCompleted }}</td></tr>
+                <tr><td>Post release residential checks not completed reason</td><td>{{ optionalValue postReleaseResidentialChecksNotCompletedReason }}</td></tr>
+                <tr><td>Created</td><td>{{ optionalValue (formatDate createdTimestamp) }}</td></tr>
+                <tr><td>Last updated</td><td>{{ optionalValue (formatDate lastUpdatedTimestamp) }}</td></tr>
+            </table>
+        {{/curfewAddress}}
+        {{^curfewAddress}}
+            <p>No data held</p>
+        {{/curfewAddress}}
+        <br>
+
+        <h3>First night curfew hours</h3>
+        <br>
+        {{#firstNight}}
+            <table class="summary-list">
+                <tr><td>From</td><td>{{ optionalValue firstNightFrom }}</td></tr>
+                <tr><td>Until</td><td>{{ optionalValue firstNightUntil }}</td></tr>
+                <tr><td>Created</td><td>{{ optionalValue (formatDate createdTimestamp) }}</td></tr>
+            </table>
+        {{/firstNight}}
+        {{^firstNight}}
+            <p>No data held</p>
+        {{/firstNight}}
+        <br>
+
+        <h3>Curfew hours</h3>
+        <br>
+        <table class="data-table">
+            <tr>
+                <td class="data-column-100"></td>
+            </tr>
+            {{#curfewTimes}}
+                <tr>
+                    <td>{{ optionalValue fromDay }} {{ optionalValue fromTime }} to {{ optionalValue untilDay }} {{ optionalValue untilTime }}</td>
+                </tr>
+            {{/curfewTimes}}
+            {{^curfewTimes}}
+                <tr>
+                    <td>No data held</td>
+                </tr>
+            {{/curfewTimes}}
+        </table>
+        <br>
+    {{/hdcInfo}}
 {{/licences}}
 
 <h2>Time Served External Records</h2>

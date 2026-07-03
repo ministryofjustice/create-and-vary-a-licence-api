@@ -187,15 +187,15 @@
       "hdcInfo": {
         "curfewAddress": {
           "accommodationType": "Residential accommodation",
-          "postReleaseResidentialChecksCompleted": true,
-          "postReleaseResidentialChecksNotCompletedReason": null,
-          "uprn": null,
+          "postReleaseResidentialChecksCompleted": false,
+          "postReleaseResidentialChecksNotCompletedReason": "There was not any capacity to complete the checks",
+          "uprn": "6a8412ef-2061-460f-90e8-07f2a714cc1c",
           "firstLine": "1 Some Address",
           "secondLine": "Off Some Road",
           "townOrCity": "Some Town",
           "county": "Some County",
           "postcode": "AB1 2CD",
-          "source": "Manual",
+          "source": "From OS Places",
           "createdTimestamp": "01/01/2026 12:23:33",
           "lastUpdatedTimestamp": "01/01/2026 12:23:33"
         },
@@ -207,57 +207,57 @@
         "curfewTimes": [
           {
             "curfewTimesSequence": 1,
-            "fromDay": "MONDAY",
+            "fromDay": "Monday",
             "fromTime": "19:00:00",
-            "untilDay": "TUESDAY",
+            "untilDay": "Tuesday",
             "untilTime": "07:00:00",
             "createdTimestamp": "01/01/2026 00:00:00"
           },
           {
             "curfewTimesSequence": 2,
-            "fromDay": "TUESDAY",
+            "fromDay": "Tuesday",
             "fromTime": "19:00:00",
-            "untilDay": "WEDNESDAY",
+            "untilDay": "Wednesday",
             "untilTime": "07:00:00",
             "createdTimestamp": "01/01/2026 00:00:00"
           },
           {
             "curfewTimesSequence": 3,
-            "fromDay": "WEDNESDAY",
+            "fromDay": "Wednesday",
             "fromTime": "19:00:00",
-            "untilDay": "THURSDAY",
+            "untilDay": "Thursday",
             "untilTime": "07:00:00",
             "createdTimestamp": "01/01/2026 00:00:00"
           },
           {
             "curfewTimesSequence": 4,
-            "fromDay": "THURSDAY",
+            "fromDay": "Thursday",
             "fromTime": "19:00:00",
-            "untilDay": "FRIDAY",
+            "untilDay": "Friday",
             "untilTime": "07:00:00",
             "createdTimestamp": "01/01/2026 00:00:00"
           },
           {
             "curfewTimesSequence": 5,
-            "fromDay": "FRIDAY",
+            "fromDay": "Friday",
             "fromTime": "19:00:00",
-            "untilDay": "SATURDAY",
+            "untilDay": "Saturday",
             "untilTime": "07:00:00",
             "createdTimestamp": "01/01/2026 00:00:00"
           },
           {
             "curfewTimesSequence": 6,
-            "fromDay": "SATURDAY",
+            "fromDay": "Saturday",
             "fromTime": "19:00:00",
-            "untilDay": "SUNDAY",
+            "untilDay": "Sunday",
             "untilTime": "07:00:00",
             "createdTimestamp": "01/01/2026 00:00:00"
           },
           {
             "curfewTimesSequence": 7,
-            "fromDay": "SUNDAY",
+            "fromDay": "Sunday",
             "fromTime": "19:00:00",
-            "untilDay": "MONDAY",
+            "untilDay": "Monday",
             "untilTime": "07:00:00",
             "createdTimestamp": "01/01/2026 00:00:00"
           }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
-import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -44,7 +43,7 @@ data class SarHdcCurfewAddress(
   @field:Schema(description = "the county of the HDC curfew address")
   val county: String?,
   @field:Schema(description = "the postcode of the HDC curfew address")
-  val postcode: String?,
+  val postcode: String,
   @field:Schema(
     description = "the source of the HDC curfew address, either from OS Places or manually entered",
     example = "Manual",
@@ -63,11 +62,11 @@ data class SarCurfewTimes(
   @field:Schema(description = "the sequence of the curfew times (representing order in the week)")
   val curfewTimesSequence: Int?,
   @field:Schema(description = "the day the curfew starts")
-  val fromDay: DayOfWeek?,
+  val fromDay: String?,
   @field:Schema(description = "the time the curfew starts")
   val fromTime: LocalTime?,
   @field:Schema(description = "the day the curfew ends")
-  val untilDay: DayOfWeek?,
+  val untilDay: String?,
   @field:Schema(description = "the time the curfew ends")
   val untilTime: LocalTime?,
   @field:Schema(description = "the date and time the curfew was created")
