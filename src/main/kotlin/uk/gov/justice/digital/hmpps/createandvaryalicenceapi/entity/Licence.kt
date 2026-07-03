@@ -93,7 +93,7 @@ abstract class Licence(
     joinColumns = [JoinColumn(name = "licence_id")],
     inverseJoinColumns = [JoinColumn(name = "appointment_id")],
   )
-  var contact: Contact? = null,
+  var probationContact: ProbationContact? = null,
   var approvedDate: LocalDateTime? = null,
   var approvedByUsername: String? = null,
   var approvedByName: String? = null,
@@ -168,10 +168,10 @@ abstract class Licence(
   }
 
   fun updateAppointmentAddress(appointmentAddressText: String?, staffMember: Staff?) {
-    if (this.contact == null) {
-      this.contact = Contact()
+    if (this.probationContact == null) {
+      this.probationContact = ProbationContact()
     }
-    this.contact?.addressText = appointmentAddressText
+    this.probationContact?.addressText = appointmentAddressText
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
@@ -182,11 +182,11 @@ abstract class Licence(
     alternativeTelephoneContactNumber: String?,
     staffMember: Staff?,
   ) {
-    if (this.contact == null) {
-      this.contact = Contact()
+    if (this.probationContact == null) {
+      this.probationContact = ProbationContact()
     }
-    this.contact?.telephoneContactNumber = telephoneContactNumber
-    this.contact?.alternativeTelephoneContactNumber = alternativeTelephoneContactNumber
+    this.probationContact?.telephoneContactNumber = telephoneContactNumber
+    this.probationContact?.alternativeTelephoneContactNumber = alternativeTelephoneContactNumber
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
@@ -197,11 +197,11 @@ abstract class Licence(
     appointmentTimeType: AppointmentTimeType,
     staffMember: Staff?,
   ) {
-    if (this.contact == null) {
-      this.contact = Contact()
+    if (this.probationContact == null) {
+      this.probationContact = ProbationContact()
     }
-    this.contact?.time = appointmentTime
-    this.contact?.timeType = appointmentTimeType
+    this.probationContact?.appointmentTime = appointmentTime
+    this.probationContact?.appointmentTimeType = appointmentTimeType
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
@@ -212,11 +212,11 @@ abstract class Licence(
     appointmentPerson: String?,
     staffMember: Staff?,
   ) {
-    if (this.contact == null) {
-      this.contact = Contact()
+    if (this.probationContact == null) {
+      this.probationContact = ProbationContact()
     }
-    this.contact?.personType = appointmentPersonType
-    this.contact?.person = if (appointmentPersonType == SPECIFIC_PERSON) appointmentPerson else null
+    this.probationContact?.personType = appointmentPersonType
+    this.probationContact?.person = if (appointmentPersonType == SPECIFIC_PERSON) appointmentPerson else null
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy

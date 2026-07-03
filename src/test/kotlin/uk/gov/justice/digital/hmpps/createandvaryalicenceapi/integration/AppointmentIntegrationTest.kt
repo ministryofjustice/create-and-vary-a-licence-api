@@ -616,8 +616,8 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
   }
 
   private fun getAndAssertAddress(licence: LicenceEntity = getLicence()): Address {
-    assertThat(licence.contact).isNotNull
-    val appointment = licence.contact!!
+    assertThat(licence.probationContact).isNotNull
+    val appointment = licence.probationContact!!
     assertThat(appointment.address).isNotNull
     assertThat(appointment.addressText).isNotNull
     val address = appointment.address!!

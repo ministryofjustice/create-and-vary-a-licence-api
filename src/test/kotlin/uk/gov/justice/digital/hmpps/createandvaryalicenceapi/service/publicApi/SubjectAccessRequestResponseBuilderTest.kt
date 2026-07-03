@@ -344,7 +344,7 @@ class SubjectAccessRequestResponseBuilderTest {
         version = "2.1",
         typeCode = AP,
         licenceVersion = "2.0",
-        contact = createAppointment(timeType = AppointmentTimeType.SPECIFIC_DATE_TIME),
+        probationContact = createAppointment(timeType = AppointmentTimeType.SPECIFIC_DATE_TIME),
       ),
       earliestReleaseDate = LocalDate.of(2024, 1, 3),
       isEligibleForEarlyRelease = true,

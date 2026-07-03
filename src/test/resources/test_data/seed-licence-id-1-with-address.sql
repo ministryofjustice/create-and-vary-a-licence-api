@@ -61,15 +61,15 @@ VALUES ('CRD',
         '1.0');
 
 -- 2. Insert the appointment
-INSERT INTO contact (person_type,
-                     person,
-                     time_type,
-                     time,
-                     address_text,
-                     telephone_contact_number,
-                     alternative_telephone_contact_number,
-                     date_created,
-                     date_last_updated)
+INSERT INTO probation_contact (person_type,
+                               person,
+                               appointment_time_type,
+                               appointment_time,
+                               address_text,
+                               telephone_contact_number,
+                               alternative_telephone_contact_number,
+                               date_created,
+                               date_last_updated)
 VALUES ('SPECIFIC_PERSON', -- person_type
         'John Smith', -- person
         'SPECIFIC_DATE_TIME', -- time_type
@@ -84,7 +84,7 @@ VALUES ('SPECIFIC_PERSON', -- person_type
 -- 3. Link licence <> appointment
 INSERT INTO licence_appointment (licence_id, appointment_id)
 VALUES ((SELECT MAX(id) FROM licence),
-        (SELECT MAX(id) FROM contact));
+        (SELECT MAX(id) FROM probation_contact));
 
 -- 4. Address row
 INSERT INTO address (reference,
@@ -103,8 +103,8 @@ VALUES ('550e8400-e29b-41d4-a716-446655440000',
         'MANUAL');
 
 -- 5. Appointment <> Address join
-INSERT INTO appointment_address (appointment_id, address_id)
-VALUES ((SELECT MAX(id) FROM contact),
+INSERT INTO probation_contact_appointment_address (appointment_id, address_id)
+VALUES ((SELECT MAX(id) FROM probation_contact),
         (SELECT MAX(id) FROM address));
 
 -- 6. Standard conditions

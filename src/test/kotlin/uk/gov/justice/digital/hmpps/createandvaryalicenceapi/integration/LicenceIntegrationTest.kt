@@ -442,7 +442,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val newLicence = testRepository.findLicence(2)
 
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
-    assertThat(newLicence.contact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+    assertThat(newLicence.probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
 
     assertThat(newLicence).isInstanceOf(EntityVariationLicence::class.java)
     assertThat((newLicence as EntityVariationLicence).variationOfId).isEqualTo(1)
@@ -592,7 +592,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       assertThat(firstNight?.fromTime).isEqualTo("18:00")
 
       assertThat(statusCode).isEqualTo(VARIATION_IN_PROGRESS)
-      assertThat(contact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+      assertThat(probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
       assertThat(variationOfId).isEqualTo(1)
       assertLicenceHasExpectedAddress(this)
     }
@@ -647,7 +647,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       assertThat(firstNight?.fromTime).isEqualTo("18:00")
 
       assertThat(statusCode).isEqualTo(VARIATION_IN_PROGRESS)
-      assertThat(contact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+      assertThat(probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
       assertThat(variationOfId).isEqualTo(1)
       assertLicenceHasExpectedAddress(this)
     }
@@ -1237,7 +1237,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
     if (noAddress) {
       assertLicenceHasExpectedAddress(newLicence, newAddress = true)
-      assertThat(newLicence.contact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
+      assertThat(newLicence.probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
     }
 
     val versionOfId = when (newLicence) {
@@ -1275,9 +1275,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     newAddress: Boolean = true,
     uprn: String? = null,
   ) {
-    assertThat(licence.contact).isNotNull
-    assertThat(licence.contact!!.addressText).isEqualTo(appointmentAddress)
-    val address = licence.contact?.address
+    assertThat(licence.probationContact).isNotNull
+    assertThat(licence.probationContact!!.addressText).isEqualTo(appointmentAddress)
+    val address = licence.probationContact?.address
     assertThat(address).isNotNull
     address?.let {
       if (newAddress) {

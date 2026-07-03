@@ -34,7 +34,7 @@ class VariationLicenceTest {
         submittedDate = submittedDate,
         variationOfId = 1L,
         vloDiscussion = "Yes 2",
-        contact = appointment,
+        probationContact = appointment,
         submittedBy = aCom,
         approvedByName = "approvedByName",
         approvedByUsername = "approvedByUsername",
@@ -61,13 +61,13 @@ class VariationLicenceTest {
     val copy = variationLicence.copy()
 
     val incorrectlyCopiedItems = VariationLicence::class.memberProperties
-      .filter { it.get(variationLicence) != it.get(copy) && it.name != "contact" }
+      .filter { it.get(variationLicence) != it.get(copy) && it.name != "probationContact" }
       .map { it.name }
 
     assertThat(incorrectlyCopiedItems).isEmpty()
-    assertThat(copy.contact).isNotNull
-    assertThat(copy.contact!!.address).isNotNull
-    val licenceAppointmentAddress = copy.contact!!.address!!
-    assertThat(licenceAppointmentAddress.reference).isNotEqualTo(variationLicence.contact!!.address!!.reference)
+    assertThat(copy.probationContact).isNotNull
+    assertThat(copy.probationContact!!.address).isNotNull
+    val licenceAppointmentAddress = copy.probationContact!!.address!!
+    assertThat(licenceAppointmentAddress.reference).isNotEqualTo(variationLicence.probationContact!!.address!!.reference)
   }
 }

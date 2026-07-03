@@ -63,15 +63,15 @@ VALUES ('HDC',
         '1.0');
 
 -- 2. Insert the appointment
-INSERT INTO contact (person_type,
-                     person,
-                     time_type,
-                     time,
-                     address_text,
-                     telephone_contact_number,
-                     alternative_telephone_contact_number,
-                     date_created,
-                     date_last_updated)
+INSERT INTO probation_contact (person_type,
+                               person,
+                               appointment_time_type,
+                               appointment_time,
+                               address_text,
+                               telephone_contact_number,
+                               alternative_telephone_contact_number,
+                               date_created,
+                               date_last_updated)
 VALUES ('SPECIFIC_PERSON', -- person_type
         'Person One', -- person
         'SPECIFIC_DATE_TIME', -- time_type
@@ -87,7 +87,7 @@ VALUES ('SPECIFIC_PERSON', -- person_type
 INSERT INTO licence_appointment (licence_id,
                                  appointment_id)
 VALUES ((SELECT MAX(id) FROM licence),
-        (SELECT MAX(id) FROM contact));
+        (SELECT MAX(id) FROM probation_contact));
 
 -- 4. Insert the address
 INSERT INTO address (reference,
@@ -106,7 +106,7 @@ VALUES ('REF-123456',
         'MANUAL');
 
 -- 5. Link appointment <> address
-INSERT INTO appointment_address (appointment_id,
-                                 address_id)
-VALUES ((SELECT MAX(id) FROM contact),
+INSERT INTO probation_contact_appointment_address (appointment_id,
+                                                   address_id)
+VALUES ((SELECT MAX(id) FROM probation_contact),
         (SELECT MAX(id) FROM address));
