@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("dev.detekt") version "2.0.0-alpha.5"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.3"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.4"
   id("org.owasp.dependencycheck") version "12.2.2"
   kotlin("plugin.spring") version "2.4.0"
   kotlin("plugin.jpa") version "2.4.0"
@@ -57,15 +57,15 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.11")
+  runtimeOnly("org.postgresql:postgresql:42.7.12")
   implementation("com.google.code.gson:gson:2.14.0")
-  implementation("io.arrow-kt:arrow-core:2.2.2.1")
+  implementation("io.arrow-kt:arrow-core:2.2.3")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
   // Digital prison reporting
-  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:12.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:16.4.1")
 
   // To help override SAR
   implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.6.0")
