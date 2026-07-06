@@ -246,6 +246,7 @@ class MigrationServiceTest {
       val request = migrateRequest(
         prisonerNumber = prisonerNumber,
         approvedByUsername = approvedByUsername,
+        approvedByName = "dont use me",
       )
 
       mockGetOffenderManager(staffId)
@@ -266,6 +267,33 @@ class MigrationServiceTest {
       verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
       val savedLicence = licenceCaptor.firstValue
       assertThat(savedLicence.approvedByName).isEqualTo("approvedFirstName approvedLastName")
+      assertThat(savedLicence.approvedByUsername).isEqualTo(approvedByUsername)
+    }
+
+    @Test
+    fun `migrate should get approved name from then given approvedByName`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val approvedByName = "approvedFirstName approvedLastName"
+
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        approvedByName = approvedByName,
+      )
+
+      mockGetOffenderManager(staffId)
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
+
+      // When
+      service.migrate(request)
+
+      // Then
+      val licenceCaptor = argumentCaptor<HdcLicence>()
+      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+      val savedLicence = licenceCaptor.firstValue
+      assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
+      assertThat(savedLicence.approvedByUsername).isNull()
     }
   }
 
@@ -299,6 +327,7 @@ class MigrationServiceTest {
     submittedBy: String? = null,
     createdByUserName: String? = null,
     approvedByUsername: String? = null,
+    approvedByName: String? = null,
     additionalConditions: List<MigrateAdditionalCondition> = emptyList(),
   ): MigrateFromHdcToCvlRequest = MigrateFromHdcToCvlRequest(
     bookingNo = "BOOK1",
@@ -336,6 +365,7 @@ class MigrationServiceTest {
     lifecycle = MigrateLicenceLifecycleDetails(
       approvedDate = null,
       approvedByUsername = approvedByUsername,
+      approvedByName = approvedByName,
       submittedDate = null,
       submittedByUserName = submittedBy,
       createdByUserName = createdByUserName,

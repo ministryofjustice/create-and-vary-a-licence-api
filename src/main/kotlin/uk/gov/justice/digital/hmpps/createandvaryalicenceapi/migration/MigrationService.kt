@@ -172,7 +172,7 @@ class MigrationService(
       submittedBy = submittedByCom,
       submittedDate = lifecycle.submittedDate,
       approvedByUsername = lifecycle.approvedByUsername,
-      approvedByName = approvedByStaff?.fullName,
+      approvedByName = approvedByStaff?.fullName ?: lifecycle.approvedByName,
       approvedDate = lifecycle.approvedDate,
       firstNightCurfewTimes = curfew?.firstNight?.toCvlDomain(),
     )
