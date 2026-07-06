@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -54,7 +53,6 @@ class LicenceCreationService(
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
   private val caseService: CaseService,
-  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -326,11 +324,8 @@ class LicenceCreationService(
   private fun missing(username: String, field: String): Nothing = error("staff with staff username: '$username', missing $field")
 
   private fun getPrisonInformation(nomisRecord: PrisonerSearchPrisoner): Prison {
-    val prisonCode = if (restrictedPatientsEnabled && nomisRecord.isRestrictedPatient()) {
-      nomisRecord.supportingPrisonId!!
-    } else {
-      nomisRecord.prisonId!!
-    }
+    val prisonCode = if (nomisRecord.isRestrictedPatient()) nomisRecord.supportingPrisonId!! else nomisRecord.prisonId!!
+
     return prisonApiClient.getPrisonInformation(prisonCode)
   }
 }

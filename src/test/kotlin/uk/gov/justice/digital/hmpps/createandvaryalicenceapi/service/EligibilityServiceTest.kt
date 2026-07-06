@@ -524,7 +524,6 @@ class EligibilityServiceTest {
         prisonApiClient,
         releaseDateService,
         clock,
-        restrictedPatientsEnabled = true,
       )
 
       val result = service.getEligibilityAssessment(prisoner, HdcStatuses(emptyList()))
@@ -534,26 +533,6 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).isEmpty()
       assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
       assertThat(result.eligibleKind).isEqualTo(CRD)
-    }
-
-    @Test
-    fun `Person is a restricted patient but toggle is off -  not eligible for CVL`() {
-      val prisoner = aPrisonerSearchResult.copy(
-        status = "INACTIVE OUT",
-        restrictedPatient = true,
-        supportingPrisonId = "MDI",
-      )
-      val service = EligibilityService(
-        prisonApiClient,
-        releaseDateService,
-        clock,
-        restrictedPatientsEnabled = false,
-      )
-
-      val result = service.getEligibilityAssessment(prisoner, HdcStatuses(emptyList()))
-
-      assertThat(result.isEligible).isFalse()
-      assertThat(result.genericIneligibilityReasons).contains("does not have eligible prison status")
     }
   }
 
@@ -879,7 +858,6 @@ class EligibilityServiceTest {
         prisonApiClient,
         releaseDateService,
         clock,
-        restrictedPatientsEnabled = true,
       )
 
       val result = service.getEligibilityAssessment(prisoner, HdcStatuses(emptyList()))
@@ -889,26 +867,6 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
       assertThat(result.eligibleKind).isEqualTo(FIXED_TERM)
-    }
-
-    @Test
-    fun `Person is a restricted patient but toggle is off -  not eligible for CVL`() {
-      val prisoner = aRecallPrisonerSearchResult.copy(
-        status = "INACTIVE OUT",
-        restrictedPatient = true,
-        supportingPrisonId = "MDI",
-      )
-      val service = EligibilityService(
-        prisonApiClient,
-        releaseDateService,
-        clock,
-        restrictedPatientsEnabled = false,
-      )
-
-      val result = service.getEligibilityAssessment(prisoner, HdcStatuses(emptyList()))
-
-      assertThat(result.isEligible).isFalse()
-      assertThat(result.genericIneligibilityReasons).contains("does not have eligible prison status")
     }
   }
 

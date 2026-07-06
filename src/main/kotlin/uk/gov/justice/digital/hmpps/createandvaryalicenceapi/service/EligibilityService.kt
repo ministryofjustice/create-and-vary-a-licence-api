@@ -20,7 +20,6 @@ class EligibilityService(
   private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
   @param:Value("\${feature.toggle.hdcCreation.enabled}") private val hdcCreationEnabled: Boolean = false,
-  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
 
   fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner, hdcStatuses: HdcStatuses): EligibilityAssessment {
@@ -198,9 +197,8 @@ class EligibilityService(
   }
 
   private fun hasEligiblePrisonStatus(prisoner: PrisonerSearchPrisoner): Boolean {
-    val isRestrictedPatient = restrictedPatientsEnabled && prisoner.isRestrictedPatient()
     val isEligibleStatus = prisoner.status?.let { it.startsWith("ACTIVE") || it == "INACTIVE TRN" } ?: false
-    return isRestrictedPatient || isEligibleStatus
+    return prisoner.isRestrictedPatient() || isEligibleStatus
   }
 
   private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.imprisonmentStatus == "BOTUS"
