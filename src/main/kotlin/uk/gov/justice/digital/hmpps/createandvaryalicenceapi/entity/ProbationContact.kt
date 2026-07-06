@@ -11,8 +11,8 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import java.time.LocalDateTime
 
 @Entity
@@ -21,7 +21,7 @@ class ProbationContact(
 
   id: Long? = null,
   @Enumerated(EnumType.STRING)
-  var personType: AppointmentPersonType? = null,
+  var appointmentType: AppointmentType? = null,
   var person: String? = null,
   @Enumerated(EnumType.STRING)
   var appointmentTimeType: AppointmentTimeType? = null,

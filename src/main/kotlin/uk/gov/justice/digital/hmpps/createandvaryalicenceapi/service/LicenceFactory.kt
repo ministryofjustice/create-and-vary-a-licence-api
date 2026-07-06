@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.CurfewTimesMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.ProbationContactMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
@@ -272,7 +272,7 @@ object LicenceFactory {
         licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
         versionOfId = licence.id,
         createdBy = creator,
-        probationContact = AppointmentMapper.copy(this.probationContact),
+        probationContact = ProbationContactMapper.copy(this.probationContact),
         weeklyCurfewTimes = CurfewTimesMapper.copyList(this.weeklyCurfewTimes),
         firstNightCurfewTimes = CurfewTimesMapper.copy(this.firstNightCurfewTimes),
       ).let {
@@ -321,7 +321,7 @@ object LicenceFactory {
         probationLauDescription = this.probationLauDescription,
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
-        probationContact = AppointmentMapper.copy(this.probationContact),
+        probationContact = ProbationContactMapper.copy(this.probationContact),
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),
         licenceVersion = getVariationVersion(this.licenceVersion!!),
@@ -426,7 +426,7 @@ object LicenceFactory {
         probationLauDescription = this.probationLauDescription,
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
-        probationContact = AppointmentMapper.copy(this.probationContact),
+        probationContact = ProbationContactMapper.copy(this.probationContact),
         weeklyCurfewTimes = CurfewTimesMapper.copyList(this.weeklyCurfewTimes),
         firstNightCurfewTimes = CurfewTimesMapper.copy(this.firstNightCurfewTimes),
         responsibleCom = this.getCom(),

@@ -18,9 +18,10 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.NO_APPOINTMENT_NEEDED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -208,15 +209,20 @@ abstract class Licence(
   }
 
   fun updateAppointmentPerson(
-    appointmentPersonType: AppointmentPersonType?,
+    appointmentType: AppointmentType?,
     appointmentPerson: String?,
     staffMember: Staff?,
   ) {
     if (this.probationContact == null) {
       this.probationContact = ProbationContact()
     }
-    this.probationContact?.personType = appointmentPersonType
-    this.probationContact?.person = if (appointmentPersonType == SPECIFIC_PERSON) appointmentPerson else null
+    this.probationContact?.appointmentType = appointmentType
+    if (appointmentType == NO_APPOINTMENT_NEEDED) {
+      this.probationContact?.appointmentTime = null
+      this.probationContact?.appointmentTimeType = null
+    }
+
+    this.probationContact?.person = if (appointmentType == SPECIFIC_PERSON) appointmentPerson else null
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy

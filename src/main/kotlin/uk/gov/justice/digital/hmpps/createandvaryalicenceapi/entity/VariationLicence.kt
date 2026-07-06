@@ -6,7 +6,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.ProbationContactMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -172,7 +172,7 @@ class VariationLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    probationContact: ProbationContact? = AppointmentMapper.copy(this.probationContact),
+    probationContact: ProbationContact? = ProbationContactMapper.copy(this.probationContact),
     spoDiscussion: String? = this.spoDiscussion,
     vloDiscussion: String? = this.vloDiscussion,
     approvedDate: LocalDateTime? = this.approvedDate,
@@ -301,7 +301,7 @@ class VariationLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=${probationContact?.personType}, " +
+    "appointmentType=${probationContact?.appointmentType}, " +
     "appointmentPerson=${probationContact?.person}, " +
     "appointmentTime=${probationContact?.appointmentTime}, " +
     "appointmentTimeType=${probationContact?.appointmentTimeType}, " +

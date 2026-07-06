@@ -26,9 +26,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.an
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.DUTY_OFFICER
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.DUTY_OFFICER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.NO_APPOINTMENT_NEEDED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.SPECIFIC_PERSON
 import java.time.LocalDateTime
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -85,7 +86,7 @@ class AppointmentServiceTest {
     val licence = licenceCaptor.value
     val appointment = licence.probationContact
     assertThat(appointment).isNotNull
-    assertThat(appointment!!.personType).isEqualTo(SPECIFIC_PERSON)
+    assertThat(appointment!!.appointmentType).isEqualTo(SPECIFIC_PERSON)
     assertThat(appointment.person).isEqualTo("John Smith")
     assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
     assertThat(licence.updatedBy!!.username).isEqualTo(aCom.username)
@@ -94,7 +95,7 @@ class AppointmentServiceTest {
   @Test
   fun `update initial appointment clears specific person if not a appointment type is not with a specific person `() {
     // Given
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(probationContact = TestData.createAppointment())))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(probationContact = TestData.createProbationContact())))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
     // When
@@ -113,7 +114,7 @@ class AppointmentServiceTest {
     val licence = licenceCaptor.value
     val appointment = licence.probationContact
     assertThat(appointment).isNotNull
-    assertThat(appointment!!.personType).isEqualTo(DUTY_OFFICER)
+    assertThat(appointment!!.appointmentType).isEqualTo(DUTY_OFFICER)
     assertThat(appointment.person).isNull()
     assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
     assertThat(licence.updatedBy).isEqualTo(aCom)
@@ -136,6 +137,24 @@ class AppointmentServiceTest {
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
+    verifyNoInteractions(staffRepository)
+  }
+
+  @Test
+  fun `update initial appointment person throws an exception if person is provided when appointment not needed`() {
+    val exception = assertThrows<ValidationException> {
+      service.updateAppointmentPerson(
+        1L,
+        AppointmentPersonRequest(
+          appointmentPersonType = NO_APPOINTMENT_NEEDED,
+          appointmentPerson = "John Smith",
+        ),
+      )
+    }
+
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+
+    verifyNoInteractions(licenceRepository)
     verifyNoInteractions(staffRepository)
   }
 
@@ -240,7 +259,7 @@ class AppointmentServiceTest {
     val licence = licenceCaptor.value
     val appointment = licence.probationContact
     assertThat(appointment).isNotNull
-    assertThat(appointment!!.personType).isEqualTo(SPECIFIC_PERSON)
+    assertThat(appointment!!.appointmentType).isEqualTo(SPECIFIC_PERSON)
     assertThat(appointment.person).isEqualTo("John Smith")
     assertThat(licence.updatedByUsername).isEqualTo(SYSTEM_USER)
     assertThat(licence.updatedBy).isEqualTo(aPreviousUser)

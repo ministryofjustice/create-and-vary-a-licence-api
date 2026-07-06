@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createAppointment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import java.time.LocalDate
@@ -25,7 +25,7 @@ class VariationLicenceTest {
     val supersededDate = LocalDateTime.now().plusDays(5)
     val aCom = communityOffenderManager()
     val postRecallReleaseDate = LocalDate.now()
-    val appointment = createAppointment(time = appointmentTime, timeType = appointmentTimeType)
+    val appointment = createProbationContact(time = appointmentTime, timeType = appointmentTimeType)
 
     val variationLicence = createVariationLicence()
       .copy(

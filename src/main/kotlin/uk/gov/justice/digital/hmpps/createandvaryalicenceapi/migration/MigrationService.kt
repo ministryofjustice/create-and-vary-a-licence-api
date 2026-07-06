@@ -31,8 +31,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 import java.util.UUID
@@ -194,7 +194,7 @@ class MigrationService(
 
     appointment?.let {
       licence.probationContact = ProbationContact(
-        personType = AppointmentPersonType.SPECIFIC_PERSON,
+        appointmentType = AppointmentType.SPECIFIC_PERSON,
         person = it.person,
         appointmentTime = it.time,
         appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,

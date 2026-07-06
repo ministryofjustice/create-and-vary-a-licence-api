@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -188,7 +188,7 @@ sealed interface Licence {
   val probationTeamDescription: String?
 
   @get:Schema(description = "The type of appointment with for the initial appointment", example = "SPECIFIC_PERSON")
-  val appointmentPersonType: AppointmentPersonType?
+  val appointmentPersonType: AppointmentType?
 
   @get:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   val appointmentPerson: String?
