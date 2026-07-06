@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,8 +29,6 @@ class PrisonerUpdatedHandler(
   private val prisonApiClient: PrisonApiClient,
   private val staffRepository: StaffRepository,
   private val auditEventRepository: AuditEventRepository,
-  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
-
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(PrisonerUpdatedHandler::class.java)
@@ -66,30 +63,26 @@ class PrisonerUpdatedHandler(
   }
 
   fun updateSupportingPrisonId(nomsId: String) {
-    if (restrictedPatientsEnabled) {
-      log.info("Processing prisoner updated event received for nomis id: $nomsId")
+    log.info("Processing prisoner updated event received for nomis id: $nomsId")
 
-      val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsId)).first()
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsId)).first()
 
-      if (!nomisRecord.isRestrictedPatient()) {
-        log.info("Nomis record is not a restricted patient, skipping prisoner updated event")
-        return
-      }
-      val licences = getLicences(nomsId, LicenceStatus.PRE_RELEASE_STATUSES.toList())
-
-      if (licences.isEmpty()) {
-        log.info("No in-flight licences found for nomsId: $nomsId, skipping prisoner updated event")
-        return
-      }
-
-      val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.supportingPrisonId!!)
-
-      updateLicences(licences, prisonInformation)
-
-      log.info("Processed prisoner updated event for nomis id: $nomsId")
-    } else {
-      log.info("Restricted patients feature is disabled, skipping handling of prisoner updated event")
+    if (!nomisRecord.isRestrictedPatient()) {
+      log.info("Nomis record is not a restricted patient, skipping prisoner updated event")
+      return
     }
+    val licences = getLicences(nomsId, LicenceStatus.PRE_RELEASE_STATUSES.toList())
+
+    if (licences.isEmpty()) {
+      log.info("No in-flight licences found for nomsId: $nomsId, skipping prisoner updated event")
+      return
+    }
+
+    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.supportingPrisonId!!)
+
+    updateLicences(licences, prisonInformation)
+
+    log.info("Processed prisoner updated event for nomis id: $nomsId")
   }
 
   private fun getLicences(nomisId: String, licenceStatuses: List<LicenceStatus>): List<Licence> = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomisId, licenceStatuses)

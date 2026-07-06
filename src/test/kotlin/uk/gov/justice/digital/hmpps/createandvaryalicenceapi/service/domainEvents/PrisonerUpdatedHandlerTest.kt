@@ -47,7 +47,6 @@ class PrisonerUpdatedHandlerTest {
     prisonApiClient,
     staffRepository,
     auditEventRepository,
-    restrictedPatientsEnabled = true,
   )
 
   @BeforeEach
@@ -146,31 +145,6 @@ class PrisonerUpdatedHandlerTest {
   }
 
   @Test
-  fun `should not process supporting prison changes if they are not enabled`() {
-    val handlerNotEnabled =
-      PrisonerUpdatedHandler(
-        mapper,
-        offenderService,
-        prisonerSearchApiClient,
-        licenceRepository,
-        prisonApiClient,
-        staffRepository,
-        auditEventRepository,
-        restrictedPatientsEnabled = false,
-      )
-
-    handlerNotEnabled.handleEvent(
-      aPrisonerUpdatedEventMessage(
-        aPrisoner.prisonerNumber,
-        PRISONER_UPDATED_EVENT_TYPE,
-        listOf(DiffCategory.RESTRICTED_PATIENT),
-      ),
-    )
-
-    verifyNoInteractions(licenceRepository)
-  }
-
-  @Test
   fun `should return early when prisoner is not a restricted patient`() {
     val nomisId = "A1234BC"
 
@@ -264,7 +238,13 @@ class PrisonerUpdatedHandlerTest {
   private companion object {
     val aLicence = createCrdLicence().copy(nomsId = "A1234BC")
 
-    val aPrisoner = prisonerSearchResult().copy(prisonerNumber = "A1234BC", restrictedPatient = true, prisonId = "OUT", status = "INACTIVE OUT", supportingPrisonId = "MDI")
+    val aPrisoner = prisonerSearchResult().copy(
+      prisonerNumber = "A1234BC",
+      restrictedPatient = true,
+      prisonId = "OUT",
+      status = "INACTIVE OUT",
+      supportingPrisonId = "MDI",
+    )
 
     val somePrisonInformation = Prison(
       prisonId = "ABC",

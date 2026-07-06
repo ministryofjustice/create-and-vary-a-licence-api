@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.reports
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LicenceStatusResponse
@@ -23,7 +22,6 @@ class LicenceStatusReportService(
   private val cvlRecordService: CvlRecordService,
   private val clock: Clock,
   private val licenceRepository: LicenceRepository,
-  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
 
   fun getCases(): List<LicenceStatusResponse> {
@@ -43,9 +41,13 @@ class LicenceStatusReportService(
     val cvlRecords = cvlRecordService.getCvlRecords(nomisRecordswithDeliusData.keys.toList())
 
     val eligibleCases = findEligibleCases(nomisRecordswithDeliusData, cvlRecords, licences)
-    log.info("Out of {} prisoners, found {} eligible cases with a LSD of today", nomisRecordswithDeliusData.size, eligibleCases.size)
+    log.info(
+      "Out of {} prisoners, found {} eligible cases with a LSD of today",
+      nomisRecordswithDeliusData.size,
+      eligibleCases.size,
+    )
 
-    log.info("Total of ${licences.size + eligibleCases.size } cases with a licence start date of today")
+    log.info("Total of ${licences.size + eligibleCases.size} cases with a licence start date of today")
 
     val notStartedCases = eligibleCases.map { (prisoner, com) ->
       LicenceStatusResponse(
@@ -73,10 +75,12 @@ class LicenceStatusReportService(
     return notStartedCases + casesWithLicence
   }
 
-  private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE, includeRestrictedPatients = restrictedPatientsEnabled)
+  private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE)
 
   private fun enrichWithDeliusData(candidates: List<PrisonerSearchPrisoner>): Map<PrisonerSearchPrisoner, CommunityManager> {
-    val coms = deliusApiClient.getOffenderManagers(candidates.map { it.prisonerNumber }).filter { it.case.nomisId != null }.associateBy { it.case.nomisId!! }
+    val coms =
+      deliusApiClient.getOffenderManagers(candidates.map { it.prisonerNumber }).filter { it.case.nomisId != null }
+        .associateBy { it.case.nomisId!! }
     return candidates.mapNotNull {
       val com = coms[it.prisonerNumber] ?: return@mapNotNull null
       it to com

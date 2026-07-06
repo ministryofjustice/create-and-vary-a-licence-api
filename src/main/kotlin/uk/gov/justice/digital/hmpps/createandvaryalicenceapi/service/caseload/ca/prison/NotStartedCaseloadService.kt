@@ -33,7 +33,6 @@ class NotStartedCaseloadService(
   private val cvlRecordService: CvlRecordService,
   private val licenceRepository: TimeServedExternalRecordsRepository,
   @param:Value("\${timeserved.max.days.crd.before.today:28}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 28,
-  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
 ) {
   fun findNotStartedCases(
     licences: List<LicenceCaCase>,
@@ -64,7 +63,6 @@ class NotStartedCaseloadService(
       todayPlusFourWeeks,
       prisonCaseload,
       page = 0,
-      includeRestrictedPatients = restrictedPatientsEnabled,
     ).toList()
   }
 
