@@ -64,11 +64,11 @@ INSERT INTO licence (
 		 );
 
 -- 2. Insert the appointment
-INSERT INTO appointment (
+INSERT INTO probation_contact (
 	person_type,
 	person,
-	time_type,
-	time,
+    appointment_time_type,
+    appointment_time,
 	address_text,
 	telephone_contact_number,
 	alternative_telephone_contact_number,
@@ -90,7 +90,7 @@ INSERT INTO appointment (
 INSERT INTO licence_appointment (licence_id, appointment_id)
 VALUES (
 		   (SELECT MAX(id) FROM licence),
-		   (SELECT MAX(id) FROM appointment)
+		   (SELECT MAX(id) FROM probation_contact)
 	   );
 
 -- 4. Insert the address
@@ -115,9 +115,9 @@ INSERT INTO address (
 		 );
 
 -- 5. Link appointment to address
-INSERT INTO appointment_address (appointment_id, address_id)
+INSERT INTO probation_contact_appointment_address (appointment_id, address_id)
 VALUES (
-		   (SELECT MAX(id) FROM appointment),
+		   (SELECT MAX(id) FROM probation_contact),
 		   (SELECT MAX(id) FROM address)
 	   );
 

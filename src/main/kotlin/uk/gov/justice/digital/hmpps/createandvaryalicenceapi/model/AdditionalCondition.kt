@@ -26,6 +26,12 @@ data class AdditionalCondition(
   val text: String? = null,
 
   @field:Schema(
+    description = "The textual value for this additional condition if it can be grouped in a plural form",
+    example = "You must not enter the locations",
+  )
+  val textPlural: String? = null,
+
+  @field:Schema(
     description = "The condition text with the users data inserted into the template",
     example = "You must not enter the location Tesco Superstore",
   )

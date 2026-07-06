@@ -6,18 +6,28 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarFirstNight
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarHdcInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createAppointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toCrd
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toHdc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 class SubjectAccessRequestResponseBuilderTest {
 
@@ -66,6 +76,99 @@ class SubjectAccessRequestResponseBuilderTest {
       assertThat(licenceVersion).isEqualTo(crdLicence.licenceVersion)
       assertThat(isToBeTaggedForProgramme).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider!!.isToBeTaggedForProgramme)
       assertThat(programmeName).isEqualTo(crdLicenceWithEm.electronicMonitoringProvider.programmeName)
+    }
+  }
+
+  @Test
+  fun `hdc details are properly populated`() {
+    val sarResponse = SubjectAccessRequestResponseBuilder("https://some-host")
+      .addLicence(hdcLicence)
+      .build()
+
+    val content = sarResponse.content as Content
+    with(content.licences.first()) {
+      assertThat(hdcInfo).isEqualTo(
+        SarHdcInfo(
+          curfewAddress = SarHdcCurfewAddress(
+            accommodationType = SarAccommodationType.RESIDENTIAL,
+            postReleaseResidentialChecksCompleted = false,
+            postReleaseResidentialChecksNotCompletedReason = "Old reason",
+            uprn = "uprn-123",
+            firstLine = "1 Test Street",
+            secondLine = "Test Area",
+            townOrCity = "Test Town",
+            county = "Test County",
+            postcode = "AB1 2CD",
+            source = SarAddressSource.MANUAL,
+            createdTimestamp = hdcLicence.curfewAddress!!.createdTimestamp,
+            lastUpdatedTimestamp = hdcLicence.curfewAddress.lastUpdatedTimestamp,
+          ),
+          firstNight = SarFirstNight(
+            firstNightFrom = LocalTime.of(12, 0),
+            firstNightUntil = LocalTime.of(13, 0),
+            createdTimestamp = null,
+          ),
+          curfewTimes = listOf(
+            SarCurfewTimes(
+              curfewTimesSequence = 1,
+              fromDay = DayOfWeek.MONDAY,
+              fromTime = LocalTime.of(21, 0),
+              untilDay = DayOfWeek.TUESDAY,
+              untilTime = LocalTime.of(9, 0),
+              createdTimestamp = null,
+            ),
+            SarCurfewTimes(
+              curfewTimesSequence = 2,
+              fromDay = DayOfWeek.TUESDAY,
+              fromTime = LocalTime.of(21, 0),
+              untilDay = DayOfWeek.WEDNESDAY,
+              untilTime = LocalTime.of(9, 0),
+              createdTimestamp = null,
+            ),
+            SarCurfewTimes(
+              curfewTimesSequence = 3,
+              fromDay = DayOfWeek.WEDNESDAY,
+              fromTime = LocalTime.of(21, 0),
+              untilDay = DayOfWeek.THURSDAY,
+              untilTime = LocalTime.of(9, 0),
+              createdTimestamp = null,
+            ),
+            SarCurfewTimes(
+              curfewTimesSequence = 4,
+              fromDay = DayOfWeek.THURSDAY,
+              fromTime = LocalTime.of(21, 0),
+              untilDay = DayOfWeek.FRIDAY,
+              untilTime = LocalTime.of(9, 0),
+              createdTimestamp = null,
+            ),
+            SarCurfewTimes(
+              curfewTimesSequence = 5,
+              fromDay = DayOfWeek.FRIDAY,
+              fromTime = LocalTime.of(21, 0),
+              untilDay = DayOfWeek.SATURDAY,
+              untilTime = LocalTime.of(9, 0),
+              createdTimestamp = null,
+            ),
+            SarCurfewTimes(
+              curfewTimesSequence = 6,
+              fromDay = DayOfWeek.SATURDAY,
+              fromTime = LocalTime.of(21, 0),
+              untilDay = DayOfWeek.SUNDAY,
+              untilTime = LocalTime.of(9, 0),
+              createdTimestamp = null,
+            ),
+            SarCurfewTimes(
+              curfewTimesSequence = 7,
+              fromDay = DayOfWeek.SUNDAY,
+              fromTime = LocalTime.of(21, 0),
+              untilDay = DayOfWeek.MONDAY,
+              untilTime = LocalTime.of(9, 0),
+              createdTimestamp = null,
+            ),
+          ),
+        ),
+
+      )
     }
   }
 
@@ -241,7 +344,7 @@ class SubjectAccessRequestResponseBuilderTest {
         version = "2.1",
         typeCode = AP,
         licenceVersion = "2.0",
-        appointment = TestData.createAppointment(timeType = AppointmentTimeType.SPECIFIC_DATE_TIME),
+        probationContact = createAppointment(timeType = AppointmentTimeType.SPECIFIC_DATE_TIME),
       ),
       earliestReleaseDate = LocalDate.of(2024, 1, 3),
       isEligibleForEarlyRelease = true,
@@ -251,6 +354,17 @@ class SubjectAccessRequestResponseBuilderTest {
 
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       conditionPolicyData = emptyMap(),
+    )
+    private val hdcLicence = toHdc(
+      licence = createHdcLicence(1),
+      earliestReleaseDate = LocalDate.of(2024, 1, 3),
+      isEligibleForEarlyRelease = true,
+      hardStopDate = LocalDate.of(2024, 1, 1),
+      hardStopWarningDate = LocalDate.of(2023, 12, 28),
+      isInHardStopPeriod = true,
+      isDueToBeReleasedInTheNextTwoWorkingDays = true,
+      conditionPolicyData = emptyMap(),
+      isHdcMigration = false,
     )
   }
 }

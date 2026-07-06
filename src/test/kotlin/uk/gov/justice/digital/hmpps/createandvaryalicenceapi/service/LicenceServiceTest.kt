@@ -1473,6 +1473,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(cvlRecordService, never()).getCvlRecord(any())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(notifyService, times(2))
       .sendVariationForApprovalEmail(
@@ -2002,6 +2003,44 @@ class LicenceServiceTest {
       assertThat(curfewAddress?.licence).isNotEqualTo(anHdcLicenceEntity)
       assertThat(firstNightCurfewTimes).isNotSameAs(anHdcLicenceEntity.firstNightCurfewTimes)
       assertThat(weeklyCurfewTimes[0]).isNotSameAs(anHdcLicenceEntity.weeklyCurfewTimes[0])
+    }
+    verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
+    assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VARIATION_CREATED)
+  }
+
+  @Test
+  fun `creating an HDC variation from an existing HDC variation`() {
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
+    whenever(licencePolicyService.currentPolicy(any())).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(
+        anHdcVariationLicence.copy(
+          weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
+        ),
+      ),
+    )
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcVariationLicence)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+
+    service.createVariation(1L)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    with(licenceCaptor.value as HdcVariationLicence) {
+      assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
+      assertThat(version).isEqualTo("2.1")
+      assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+      assertThat(weeklyCurfewTimes).isEqualTo(aSetOfweeklyCurfewTimes())
+      assertThat(firstNightCurfewTimes).isEqualTo(firstNightCurfewTimes())
+      assertThat(variationOfId).isEqualTo(1)
+      assertThat(licenceVersion).isEqualTo("1.0")
     }
     verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
     assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VARIATION_CREATED)

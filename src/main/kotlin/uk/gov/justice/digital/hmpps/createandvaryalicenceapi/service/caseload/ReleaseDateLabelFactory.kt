@@ -11,7 +11,7 @@ const val LABEL_FOR_CRD_RELEASE_DATE = "Conditional release date"
 const val LABEL_FOR_CONFIRMED_RELEASE_DATE = "Confirmed release date"
 const val LABEL_FOR_HDC_ACTUAL_DATE = "HDC actual date"
 const val LABEL_FOR_HDC_ELIGIBLE_DATE = "HDC eligible date"
-const val LABEL_FOR_PRRD_RELEASE_DATE = "Post-recall release date (PRRD)"
+const val LABEL_FOR_PRRD_RELEASE_DATE = "Post-recall release date"
 
 @Component
 class ReleaseDateLabelFactory(
@@ -29,10 +29,10 @@ class ReleaseDateLabelFactory(
 
     val label = when (releaseDate) {
       null -> LABEL_FOR_CRD_RELEASE_DATE
-      confirmedReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
-      prrdLicenceStartDate -> LABEL_FOR_PRRD_RELEASE_DATE
       hdcActualDate -> LABEL_FOR_HDC_ACTUAL_DATE
       hdcEligibleDate -> LABEL_FOR_HDC_ELIGIBLE_DATE
+      confirmedReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
+      prrdLicenceStartDate -> LABEL_FOR_PRRD_RELEASE_DATE
       else -> LABEL_FOR_CRD_RELEASE_DATE
     }
     return label

@@ -4,14 +4,21 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.T
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ModelHdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportsElectronicMonitoring
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarExternalRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarFirstNight
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarHdcInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceType
@@ -92,10 +99,47 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
         policyVersion = licence.version,
         isToBeTaggedForProgramme = isToBeTaggedForProgramme,
         programmeName = programmeName,
+        hdcInfo = if (licence is ModelHdcCase) transformHdcInfo(licence) else null,
       ),
     )
     return this
   }
+
+  private fun transformHdcInfo(licence: ModelHdcCase) = SarHdcInfo(
+    licence.curfewAddress?.let {
+      SarHdcCurfewAddress(
+        accommodationType = it.accommodationType?.let { type -> SarAccommodationType.from(type) },
+        postReleaseResidentialChecksCompleted = it.postReleaseResidentialChecksCompleted,
+        postReleaseResidentialChecksNotCompletedReason = it.postReleaseResidentialChecksNotCompletedReason,
+        uprn = it.uprn,
+        firstLine = it.firstLine,
+        secondLine = it.secondLine,
+        townOrCity = it.townOrCity,
+        county = it.county,
+        postcode = it.postcode,
+        source = SarAddressSource.from(it.source),
+        createdTimestamp = it.createdTimestamp,
+        lastUpdatedTimestamp = it.lastUpdatedTimestamp,
+      )
+    },
+    firstNight = licence.firstNightCurfewTimes?.let {
+      SarFirstNight(
+        firstNightFrom = it.fromTime,
+        firstNightUntil = it.untilTime,
+        createdTimestamp = it.createdTimestamp,
+      )
+    },
+    curfewTimes = licence.weeklyCurfewTimes.map {
+      SarCurfewTimes(
+        curfewTimesSequence = it.curfewTimesSequence,
+        fromDay = it.fromDay,
+        fromTime = it.fromTime,
+        untilDay = it.untilDay,
+        untilTime = it.untilTime,
+        createdTimestamp = it.createdTimestamp,
+      )
+    },
+  )
 
   fun build() = HmppsSubjectAccessRequestContent(
     Content(

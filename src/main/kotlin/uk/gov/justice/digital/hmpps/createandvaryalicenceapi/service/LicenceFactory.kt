@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -270,7 +272,7 @@ object LicenceFactory {
         licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
         versionOfId = licence.id,
         createdBy = creator,
-        appointment = AppointmentMapper.copy(this.appointment),
+        probationContact = AppointmentMapper.copy(this.probationContact),
         weeklyCurfewTimes = CurfewTimesMapper.copyList(this.weeklyCurfewTimes),
         firstNightCurfewTimes = CurfewTimesMapper.copy(this.firstNightCurfewTimes),
       ).let {
@@ -319,7 +321,7 @@ object LicenceFactory {
         probationLauDescription = this.probationLauDescription,
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
-        appointment = AppointmentMapper.copy(this.appointment),
+        probationContact = AppointmentMapper.copy(this.probationContact),
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),
         licenceVersion = getVariationVersion(this.licenceVersion!!),
@@ -380,7 +382,10 @@ object LicenceFactory {
     createdBy = creator,
   )
 
-  fun createHdcVariation(licence: HdcLicence, creator: CommunityOffenderManager): HdcVariationLicence {
+  fun <T> createHdcVariation(
+    licence: T,
+    creator: CommunityOffenderManager,
+  ): HdcVariationLicence where T : Licence, T : HdcCase, T : AlwaysHasCom {
     with(licence) {
       return HdcVariationLicence(
         typeCode = this.typeCode,
@@ -421,7 +426,7 @@ object LicenceFactory {
         probationLauDescription = this.probationLauDescription,
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
-        appointment = AppointmentMapper.copy(this.appointment),
+        probationContact = AppointmentMapper.copy(this.probationContact),
         weeklyCurfewTimes = CurfewTimesMapper.copyList(this.weeklyCurfewTimes),
         firstNightCurfewTimes = CurfewTimesMapper.copy(this.firstNightCurfewTimes),
         responsibleCom = this.getCom(),

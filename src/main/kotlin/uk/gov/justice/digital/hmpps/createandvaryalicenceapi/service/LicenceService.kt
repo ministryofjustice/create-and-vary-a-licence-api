@@ -440,39 +440,35 @@ class LicenceService(
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licenceEntity.bookingId!!)).first()
-    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
-
     when (licenceEntity) {
       is PrrdLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
+        assertCaseIsEligible(licenceEntity)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
       is CrdLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
-        licenceEntity
-          .submit(submitter as CommunityOffenderManager)
+        assertCaseIsEligible(licenceEntity)
+        licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
-      is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
-
       is HardStopLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
+        assertCaseIsEligible(licenceEntity)
         licenceEntity.submit(submitter as PrisonUser)
       }
 
       is HdcLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
+        assertCaseIsEligible(licenceEntity)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
-      is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
-
       is TimeServedLicence -> {
-        assertCaseIsEligible(cvlRecord, licenceId)
+        assertCaseIsEligible(licenceEntity)
         licenceEntity.submit(submitter as PrisonUser)
       }
+
+      is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+
+      is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
 
       else -> error("Unexpected licence type: $licenceEntity")
     }
@@ -631,6 +627,11 @@ class LicenceService(
         populateCopyAndAudit(HDC_VARIATION, licence, licenceCopy, creator)
       }
 
+      is HdcVariationLicence -> {
+        val licenceCopy = LicenceFactory.createHdcVariation(licence, creator)
+        populateCopyAndAudit(HDC_VARIATION, licence, licenceCopy, creator)
+      }
+
       else -> {
         val licenceCopy = LicenceFactory.createVariation(licence, creator)
         populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
@@ -656,10 +657,7 @@ class LicenceService(
       return EditLicenceResponse(inProgressVersions[0].id)
     }
 
-    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licence.bookingId!!)).first()
-    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
-
-    assertCaseIsEligible(cvlRecord, licenceId)
+    assertCaseIsEligible(licence)
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
@@ -1204,9 +1202,11 @@ class LicenceService(
     ),
   )
 
-  private fun assertCaseIsEligible(cvlRecord: CvlRecord, licenceId: Long) {
+  private fun assertCaseIsEligible(licence: EntityLicence) {
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(licence.bookingId!!)).first()
+    val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
     if (!cvlRecord.isEligible) {
-      throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
+      throw ValidationException("Unable to perform action, licence ${licence.id} is ineligible for CVL")
     }
   }
 

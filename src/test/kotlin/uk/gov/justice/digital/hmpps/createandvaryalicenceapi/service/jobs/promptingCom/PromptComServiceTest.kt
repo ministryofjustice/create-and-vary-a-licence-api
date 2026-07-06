@@ -44,7 +44,9 @@ class PromptComServiceTest {
 
   @Test
   fun noRecords() {
-    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end, includeRestrictedPatients = false)).thenReturn(emptyList())
+    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(
+      emptyList(),
+    )
 
     val emails = promptComService.getCases(clock)
 
@@ -53,7 +55,9 @@ class PromptComServiceTest {
 
   @Test
   fun recordsProcessed() {
-    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end, includeRestrictedPatients = false)).thenReturn(cases)
+    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(
+      cases,
+    )
 
     whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
 
@@ -82,7 +86,7 @@ class PromptComServiceTest {
     assertThat(emails).containsExactly(com)
 
     inOrder(prisonerSearchApiClient, promptComListBuilder) {
-      verify(prisonerSearchApiClient).getAllByReleaseDate(start, end, includeRestrictedPatients = false)
+      verify(prisonerSearchApiClient).getAllByReleaseDate(start, end)
 
       verify(promptComListBuilder).excludeInflightLicences(cases)
 
@@ -106,7 +110,9 @@ class PromptComServiceTest {
 
   @Test
   fun sendNotifications() {
-    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end, includeRestrictedPatients = false)).thenReturn(cases)
+    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(
+      cases,
+    )
     whenever(promptComListBuilder.excludeIneligibleCases(any(), any())).thenReturn(casesWithDeliusData)
     whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(cvlRecords)

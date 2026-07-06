@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
@@ -10,12 +9,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
@@ -479,7 +480,7 @@ object TestData {
     standardConditions = emptyList(),
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
-    appointment = createAppointment(),
+    probationContact = createAppointment(),
     variationOfId = 2L,
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
@@ -519,12 +520,12 @@ object TestData {
     address: Address? = createAddress(),
     created: LocalDateTime = LocalDateTime.now(),
     updated: LocalDateTime = created,
-  ): Appointment = Appointment(
+  ): ProbationContact = ProbationContact(
     id = id,
     personType = personType,
     person = person,
-    timeType = timeType,
-    time = time,
+    appointmentTimeType = timeType,
+    appointmentTime = time,
     telephoneContactNumber = telephoneContactNumber,
     alternativeTelephoneContactNumber = alternativeTelephoneContactNumber,
     addressText = addressText,
@@ -575,7 +576,7 @@ object TestData {
   ).let {
     it.copy(
       standardConditions = someEntityStandardConditions(it),
-      weeklyCurfewTimes = emptyList(),
+      weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
       curfewAddress = curfewAddress(it),
     )
   }
@@ -616,7 +617,7 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    appointment = createAppointment(),
+    probationContact = createAppointment(),
     firstNightCurfewTimes = firstNightCurfewTimes(),
     weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
     responsibleCom = communityOffenderManager(),
@@ -842,11 +843,12 @@ object TestData {
     firstLine = "1 Test Street",
     secondLine = "Test Area",
     townOrCity = "Test Town",
-    county = null,
+    county = "Test County",
     postcode = "AB1 2CD",
     reference = "ref-123",
     uprn = "uprn-123",
     source = MANUAL,
+    accommodationType = AccommodationType.RESIDENTIAL,
     postReleaseResidentialChecksCompleted = false,
     postReleaseResidentialChecksNotCompletedReason = "Old reason",
   )

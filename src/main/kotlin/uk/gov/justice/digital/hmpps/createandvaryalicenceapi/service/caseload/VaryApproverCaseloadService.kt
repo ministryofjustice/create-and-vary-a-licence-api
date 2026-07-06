@@ -94,10 +94,7 @@ class VaryApproverCaseloadService(
           licenceType = licence.typeCode,
           variationRequestDate = licence.dateCreated?.toLocalDate(),
           releaseDate = licence.licenceStartDate,
-          releaseDateLabel = releaseDateLabelFactory.fromPrisonerSearch(
-            licence.licenceStartDate,
-            nomisRecord,
-          ),
+          releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(licence),
           probationPractitioner = probationPractitioner,
           isRestricted = false,
         )

@@ -19,8 +19,7 @@ class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
   private val releaseDateService: ReleaseDateService,
   private val clock: Clock,
-  @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
-  @param:Value("\${feature.toggle.restrictedPatients.enabled:false}") private val restrictedPatientsEnabled: Boolean = false,
+  @param:Value("\${feature.toggle.hdcCreation.enabled}") private val hdcCreationEnabled: Boolean = false,
 ) {
 
   fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner, hdcStatuses: HdcStatuses): EligibilityAssessment {
@@ -93,7 +92,7 @@ class EligibilityService(
   }
 
   fun getHdcIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isExpectedHdcRelease: Boolean): List<String> {
-    if (!hdcEnabled) return listOf("HDC licences not currently supported in CVL")
+    if (!hdcCreationEnabled) return listOf("HDC licence creation not currently supported in CVL")
 
     val eligibilityCriteria = listOf(
       hasConditionalReleaseDate(prisoner) to "has no conditional release date",
@@ -198,9 +197,8 @@ class EligibilityService(
   }
 
   private fun hasEligiblePrisonStatus(prisoner: PrisonerSearchPrisoner): Boolean {
-    val isRestrictedPatient = restrictedPatientsEnabled && prisoner.isRestrictedPatient()
     val isEligibleStatus = prisoner.status?.let { it.startsWith("ACTIVE") || it == "INACTIVE TRN" } ?: false
-    return isRestrictedPatient || isEligibleStatus
+    return prisoner.isRestrictedPatient() || isEligibleStatus
   }
 
   private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.imprisonmentStatus == "BOTUS"

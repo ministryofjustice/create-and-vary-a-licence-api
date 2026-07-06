@@ -4,6 +4,7 @@ data class AdditionalConditionAp(
   override var code: String,
   override val category: String,
   override val text: String,
+  val textPlural: String? = null,
   override val tpl: String? = null,
   override val requiresInput: Boolean,
   override val inputs: List<Input>? = null,

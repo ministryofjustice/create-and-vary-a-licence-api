@@ -442,7 +442,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val newLicence = testRepository.findLicence(2)
 
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
-    assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+    assertThat(newLicence.probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
 
     assertThat(newLicence).isInstanceOf(EntityVariationLicence::class.java)
     assertThat((newLicence as EntityVariationLicence).variationOfId).isEqualTo(1)
@@ -592,7 +592,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       assertThat(firstNight?.fromTime).isEqualTo("18:00")
 
       assertThat(statusCode).isEqualTo(VARIATION_IN_PROGRESS)
-      assertThat(appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+      assertThat(probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
       assertThat(variationOfId).isEqualTo(1)
       assertLicenceHasExpectedAddress(this)
     }
@@ -602,6 +602,55 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(hdcCurfewAddresses)
       .extracting<Long, Exception> { it.licence.id }
       .containsExactlyInAnyOrder(licenceId, variation.id)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-hdc-variation-licence-id-1-with-address.sql",
+    "classpath:test_data/seed-hdc-curfew-hours.sql",
+  )
+  fun `Create licence HDC variation from an existing HDC variation`() {
+    // Given
+    val uri = "/licence/id/1/create-variation"
+
+    // When
+    val result = postRequest(uri)
+
+    // Then
+    result.expectStatus().isOk
+
+    val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateVariationResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(licenceSummary).isNotNull
+    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
+
+    assertThat(testRepository.countLicence()).isEqualTo(2)
+
+    val licence = testRepository.findLicence(licenceSummary.licenceId) as HdcVariationLicence
+
+    with(licence) {
+      assertThat(licenceVersion).isEqualTo("1.0")
+      assertThat(typeCode).isEqualTo(AP)
+      assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
+
+      val weekly = weeklyCurfewTimes.toList()
+
+      assertThat(weekly).hasSize(7)
+      assertThat(weekly[0].fromDay).isEqualTo(MONDAY)
+      assertThat(weekly[0].fromTime).isEqualTo("19:00")
+
+      val firstNight = firstNightCurfewTimes
+
+      assertThat(firstNight?.fromDay).isEqualTo(MONDAY)
+      assertThat(firstNight?.fromTime).isEqualTo("18:00")
+
+      assertThat(statusCode).isEqualTo(VARIATION_IN_PROGRESS)
+      assertThat(probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+      assertThat(variationOfId).isEqualTo(1)
+      assertLicenceHasExpectedAddress(this)
+    }
   }
 
   @Test
@@ -1188,7 +1237,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
     if (noAddress) {
       assertLicenceHasExpectedAddress(newLicence, newAddress = true)
-      assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
+      assertThat(newLicence.probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
     }
 
     val versionOfId = when (newLicence) {
@@ -1226,9 +1275,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     newAddress: Boolean = true,
     uprn: String? = null,
   ) {
-    assertThat(licence.appointment).isNotNull
-    assertThat(licence.appointment!!.addressText).isEqualTo(appointmentAddress)
-    val address = licence.appointment?.address
+    assertThat(licence.probationContact).isNotNull
+    assertThat(licence.probationContact!!.addressText).isEqualTo(appointmentAddress)
+    val address = licence.probationContact?.address
     assertThat(address).isNotNull
     address?.let {
       if (newAddress) {

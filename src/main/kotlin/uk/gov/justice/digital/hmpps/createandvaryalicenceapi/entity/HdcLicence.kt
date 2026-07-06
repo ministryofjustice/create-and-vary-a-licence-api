@@ -48,7 +48,7 @@ class HdcLicence(
   licenceExpiryDate: LocalDate? = null,
   licenceActivatedDate: LocalDateTime? = null,
   override var homeDetentionCurfewActualDate: LocalDate? = null,
-  var homeDetentionCurfewEndDate: LocalDate? = null,
+  override var homeDetentionCurfewEndDate: LocalDate? = null,
   override var homeDetentionCurfewEligibilityDate: LocalDate? = null,
   topupSupervisionStartDate: LocalDate? = null,
   topupSupervisionExpiryDate: LocalDate? = null,
@@ -61,7 +61,7 @@ class HdcLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointment: Appointment? = null,
+  probationContact: ProbationContact? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
   approvedByName: String? = null,
@@ -161,7 +161,7 @@ class HdcLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointment = appointment,
+  probationContact = probationContact,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
   approvedByName = approvedByName,
@@ -220,7 +220,7 @@ class HdcLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointment: Appointment? = AppointmentMapper.copy(this.appointment),
+    probationContact: ProbationContact? = AppointmentMapper.copy(this.probationContact),
     approvedDate: LocalDateTime? = this.approvedDate,
     approvedByUsername: String? = this.approvedByUsername,
     approvedByName: String? = this.approvedByName,
@@ -281,7 +281,7 @@ class HdcLicence(
     probationLauDescription = probationLauDescription,
     probationTeamCode = probationTeamCode,
     probationTeamDescription = probationTeamDescription,
-    appointment = appointment,
+    probationContact = probationContact,
     approvedDate = approvedDate,
     approvedByUsername = approvedByUsername,
     approvedByName = approvedByName,
@@ -361,14 +361,14 @@ class HdcLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=${appointment?.personType}, " +
-    "appointmentPerson=${appointment?.person}, " +
-    "appointmentTime=${appointment?.time}, " +
-    "appointmentTimeType=${appointment?.timeType}, " +
-    "appointmentAddress=${appointment?.addressText}, " +
-    "licenceAppointmentAddress=${appointment?.address}, " +
-    "appointmentContact=${appointment?.telephoneContactNumber}, " +
-    "alternativeTelephoneContactNumber=${appointment?.alternativeTelephoneContactNumber}, " +
+    "appointmentPersonType=${probationContact?.personType}, " +
+    "appointmentPerson=${probationContact?.person}, " +
+    "appointmentTime=${probationContact?.appointmentTime}, " +
+    "appointmentTimeType=${probationContact?.appointmentTimeType}, " +
+    "appointmentAddress=${probationContact?.addressText}, " +
+    "licenceAppointmentAddress=${probationContact?.address}, " +
+    "appointmentContact=${probationContact?.telephoneContactNumber}, " +
+    "alternativeTelephoneContactNumber=${probationContact?.alternativeTelephoneContactNumber}, " +
     "approvedDate=$approvedDate, " +
     "approvedByUsername=$approvedByUsername, " +
     "approvedByName=$approvedByName, " +
