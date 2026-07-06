@@ -149,12 +149,6 @@
                 <tr><td>Town or city</td><td>{{ optionalValue townOrCity }}</td></tr>
                 <tr><td>County</td><td>{{ optionalValue county }}</td></tr>
                 <tr><td>Postcode</td><td>{{ optionalValue postcode }}</td></tr>
-                <tr><td>UPRN</td><td>{{ optionalValue uprn }}</td></tr>
-                <tr><td>Source</td><td>{{ optionalValue source }}</td></tr>
-                <tr><td>Post release residential checks completed</td><td>{{ optionalValue postReleaseResidentialChecksCompleted }}</td></tr>
-                <tr><td>Post release residential checks not completed reason</td><td>{{ optionalValue postReleaseResidentialChecksNotCompletedReason }}</td></tr>
-                <tr><td>Created</td><td>{{ optionalValue (formatDate createdTimestamp) }}</td></tr>
-                <tr><td>Last updated</td><td>{{ optionalValue (formatDate lastUpdatedTimestamp) }}</td></tr>
             </table>
         {{/curfewAddress}}
         {{^curfewAddress}}

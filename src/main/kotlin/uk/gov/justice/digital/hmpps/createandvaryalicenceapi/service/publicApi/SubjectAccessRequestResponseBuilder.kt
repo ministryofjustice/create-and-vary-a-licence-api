@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalConditionUploadSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarCurfewTimes
@@ -109,17 +108,11 @@ class SubjectAccessRequestResponseBuilder(val baseUrl: String) {
     licence.curfewAddress?.let {
       SarHdcCurfewAddress(
         accommodationType = it.accommodationType?.let { type -> SarAccommodationType.from(type) },
-        postReleaseResidentialChecksCompleted = it.postReleaseResidentialChecksCompleted,
-        postReleaseResidentialChecksNotCompletedReason = it.postReleaseResidentialChecksNotCompletedReason,
-        uprn = it.uprn,
         firstLine = it.firstLine,
         secondLine = it.secondLine,
         townOrCity = it.townOrCity,
         county = it.county,
         postcode = it.postcode,
-        source = SarAddressSource.from(it.source),
-        createdTimestamp = it.createdTimestamp,
-        lastUpdatedTimestamp = it.lastUpdatedTimestamp,
       )
     },
     firstNight = licence.firstNightCurfewTimes?.let {

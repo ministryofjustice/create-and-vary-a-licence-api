@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAccommodationType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarCurfewTimes
@@ -90,17 +89,11 @@ class SubjectAccessRequestResponseBuilderTest {
         SarHdcInfo(
           curfewAddress = SarHdcCurfewAddress(
             accommodationType = SarAccommodationType.RESIDENTIAL,
-            postReleaseResidentialChecksCompleted = false,
-            postReleaseResidentialChecksNotCompletedReason = "Old reason",
-            uprn = "uprn-123",
             firstLine = "1 Test Street",
             secondLine = "Test Area",
             townOrCity = "Test Town",
             county = "Test County",
             postcode = "AB1 2CD",
-            source = SarAddressSource.MANUAL,
-            createdTimestamp = hdcLicence.curfewAddress!!.createdTimestamp,
-            lastUpdatedTimestamp = hdcLicence.curfewAddress.lastUpdatedTimestamp,
           ),
           firstNight = SarFirstNight(
             firstNightFrom = LocalTime.of(12, 0),
