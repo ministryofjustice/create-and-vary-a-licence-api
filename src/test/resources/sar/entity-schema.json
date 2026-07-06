@@ -55,7 +55,7 @@
     "dateLastUpdated": "LocalDateTime",
     "idInternal": "Long",
     "person": "String",
-    "personType": "AppointmentPersonType",
+    "appointmentType": "AppointmentType",
     "telephoneContactNumber": "String",
     "appointmentTime": "LocalDateTime",
     "appointmentTimeType": "AppointmentTimeType"

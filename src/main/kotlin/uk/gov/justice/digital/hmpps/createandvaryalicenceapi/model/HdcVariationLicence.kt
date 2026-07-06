@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -210,7 +210,7 @@ data class HdcVariationLicence(
   override val appointmentPerson: String? = null,
 
   @field:Schema(description = "The type of appointment with for the initial appointment", example = "SPECIFIC_PERSON")
-  override val appointmentPersonType: AppointmentPersonType? = null,
+  override val appointmentPersonType: AppointmentType? = null,
 
   @field:Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm")

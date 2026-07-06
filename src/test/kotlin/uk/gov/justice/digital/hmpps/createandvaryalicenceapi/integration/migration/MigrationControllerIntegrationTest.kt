@@ -28,8 +28,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonerDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateSentenceDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V3_0
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.DayOfWeek
@@ -357,7 +357,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     assertThat(licence.homeDetentionCurfewActualDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
 
     assertThat(licence.probationContact?.appointmentTimeType).isEqualTo(AppointmentTimeType.SPECIFIC_DATE_TIME)
-    assertThat(licence.probationContact?.personType).isEqualTo(AppointmentPersonType.SPECIFIC_PERSON)
+    assertThat(licence.probationContact?.appointmentType).isEqualTo(AppointmentType.SPECIFIC_PERSON)
     assertThat(licence.probationContact?.person).isEqualTo(request.appointment?.person)
     assertThat(licence.probationContact?.appointmentTime).isEqualTo(request.appointment?.time)
     assertThat(licence.probationContact?.telephoneContactNumber).isEqualTo(request.appointment?.telephone)

@@ -58,8 +58,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -480,7 +480,7 @@ object TestData {
     standardConditions = emptyList(),
     responsibleCom = communityOffenderManager(),
     createdBy = communityOffenderManager(),
-    probationContact = createAppointment(),
+    probationContact = createProbationContact(),
     variationOfId = 2L,
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
@@ -508,10 +508,10 @@ object TestData {
     lastUpdatedTimestamp = updated,
   )
 
-  fun createAppointment(
+  fun createProbationContact(
     id: Long? = null,
-    personType: AppointmentPersonType? = AppointmentPersonType.SPECIFIC_PERSON,
-    person: String? = if (personType == AppointmentPersonType.SPECIFIC_PERSON) "Test Officer" else null,
+    appointmentType: AppointmentType? = AppointmentType.SPECIFIC_PERSON,
+    person: String? = if (appointmentType == AppointmentType.SPECIFIC_PERSON) "Test Officer" else null,
     timeType: AppointmentTimeType? = AppointmentTimeType.SPECIFIC_DATE_TIME,
     time: LocalDateTime? = LocalDateTime.now().plusDays(1),
     telephoneContactNumber: String? = "07123456789",
@@ -522,7 +522,7 @@ object TestData {
     updated: LocalDateTime = created,
   ): ProbationContact = ProbationContact(
     id = id,
-    personType = personType,
+    appointmentType = appointmentType,
     person = person,
     appointmentTimeType = timeType,
     appointmentTime = time,
@@ -617,7 +617,7 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    probationContact = createAppointment(),
+    probationContact = createProbationContact(),
     firstNightCurfewTimes = firstNightCurfewTimes(),
     weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
     responsibleCom = communityOffenderManager(),

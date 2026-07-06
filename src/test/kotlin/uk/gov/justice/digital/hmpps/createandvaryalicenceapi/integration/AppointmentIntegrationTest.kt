@@ -20,8 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
@@ -657,7 +657,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
   private companion object {
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+      appointmentPersonType = AppointmentType.SPECIFIC_PERSON,
       appointmentPerson = "John Smith",
     )
 

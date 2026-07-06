@@ -18,8 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import java.time.LocalDateTime
 
 @Service
@@ -36,7 +36,11 @@ class AppointmentService(
 
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
-    if (request.appointmentPersonType === AppointmentPersonType.SPECIFIC_PERSON) {
+    if (request.appointmentPersonType == AppointmentType.NO_APPOINTMENT_NEEDED && request.appointmentPerson != null) {
+      throw ValidationException("Appointment person must be empty when an appointment is not needed.")
+    }
+
+    if (request.appointmentPersonType === AppointmentType.SPECIFIC_PERSON) {
       if (request.appointmentPerson.isNullOrBlank()) {
         throw ValidationException("Appointment person must not be empty if Appointment With Type is SPECIFIC_PERSON")
       }
@@ -50,7 +54,7 @@ class AppointmentService(
     val staffMember = getStaffUser()
 
     licenceEntity.updateAppointmentPerson(
-      appointmentPersonType = request.appointmentPersonType,
+      appointmentType = request.appointmentPersonType,
       appointmentPerson = request.appointmentPerson,
       staffMember = staffMember,
     )

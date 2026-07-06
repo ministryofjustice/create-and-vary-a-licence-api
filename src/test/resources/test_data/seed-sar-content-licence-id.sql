@@ -186,7 +186,7 @@ values (1, 1, 'CREATED', 'Test User', 'Test', 'User', 'Licence created1', null),
 
 
 -- 2. Insert the appointment
-INSERT INTO probation_contact (person_type,
+INSERT INTO probation_contact (appointment_type,
                                person,
                                appointment_time_type,
                                appointment_time,
@@ -233,7 +233,7 @@ VALUES ((SELECT MAX(id) FROM probation_contact),
 
 
 -- 2. Insert the appointment
-INSERT INTO probation_contact (person_type,
+INSERT INTO probation_contact (appointment_type,
                                person,
                                appointment_time_type,
                                appointment_time,

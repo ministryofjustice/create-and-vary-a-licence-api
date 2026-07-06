@@ -63,7 +63,7 @@ VALUES ('HDC',
         '1.0');
 
 -- 2. Insert the appointment
-INSERT INTO probation_contact (person_type,
+INSERT INTO probation_contact (appointment_type,
                                person,
                                appointment_time_type,
                                appointment_time,

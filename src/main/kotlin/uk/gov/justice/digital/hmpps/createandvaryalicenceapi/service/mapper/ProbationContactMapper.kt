@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ProbationContact
 
 @Component
-class AppointmentMapper {
+class ProbationContactMapper {
 
   companion object {
 
@@ -13,7 +13,7 @@ class AppointmentMapper {
 
       return ProbationContact(
         id = null,
-        personType = entity.personType,
+        appointmentType = entity.appointmentType,
         person = entity.person,
         appointmentTimeType = entity.appointmentTimeType,
         appointmentTime = entity.appointmentTime,
