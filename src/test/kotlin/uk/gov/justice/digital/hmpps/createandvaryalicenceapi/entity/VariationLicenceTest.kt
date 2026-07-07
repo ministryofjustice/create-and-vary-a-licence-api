@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createAppointment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import java.time.LocalDate
@@ -25,7 +25,7 @@ class VariationLicenceTest {
     val supersededDate = LocalDateTime.now().plusDays(5)
     val aCom = communityOffenderManager()
     val postRecallReleaseDate = LocalDate.now()
-    val appointment = createAppointment(time = appointmentTime, timeType = appointmentTimeType)
+    val appointment = createProbationContact(time = appointmentTime, timeType = appointmentTimeType)
 
     val variationLicence = createVariationLicence()
       .copy(
@@ -34,7 +34,7 @@ class VariationLicenceTest {
         submittedDate = submittedDate,
         variationOfId = 1L,
         vloDiscussion = "Yes 2",
-        appointment = appointment,
+        probationContact = appointment,
         submittedBy = aCom,
         approvedByName = "approvedByName",
         approvedByUsername = "approvedByUsername",
@@ -61,13 +61,13 @@ class VariationLicenceTest {
     val copy = variationLicence.copy()
 
     val incorrectlyCopiedItems = VariationLicence::class.memberProperties
-      .filter { it.get(variationLicence) != it.get(copy) && it.name != "appointment" }
+      .filter { it.get(variationLicence) != it.get(copy) && it.name != "probationContact" }
       .map { it.name }
 
     assertThat(incorrectlyCopiedItems).isEmpty()
-    assertThat(copy.appointment).isNotNull
-    assertThat(copy.appointment!!.address).isNotNull
-    val licenceAppointmentAddress = copy.appointment!!.address!!
-    assertThat(licenceAppointmentAddress.reference).isNotEqualTo(variationLicence.appointment!!.address!!.reference)
+    assertThat(copy.probationContact).isNotNull
+    assertThat(copy.probationContact!!.address).isNotNull
+    val licenceAppointmentAddress = copy.probationContact!!.address!!
+    assertThat(licenceAppointmentAddress.reference).isNotEqualTo(variationLicence.probationContact!!.address!!.reference)
   }
 }

@@ -625,26 +625,9 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `should use supporting prison for restricted patient for CRD licence`() {
-      val serviceWithFeatureEnabled = LicenceCreationService(
-        licenceRepository,
-        crdLicenceRepository,
-        staffRepository,
-        standardConditionRepository,
-        additionalConditionRepository,
-        licenceEventRepository,
-        licencePolicyService,
-        auditEventRepository,
-        prisonerSearchApiClient,
-        prisonApiClient,
-        deliusApiClient,
-        cvlRecordService,
-        telemetryService,
-        timeServedExternalRecordsService,
-        caseService,
-        restrictedPatientsEnabled = true,
-      )
       val supportingPrisonId = "BMI"
-      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+      val supportingPrisonInfo =
+        somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
 
       val restrictedPatient = prisonerSearchResult().copy(
         prisonId = "OUT",
@@ -663,7 +646,7 @@ class LicenceCreationServiceTest {
         ),
       )
 
-      serviceWithFeatureEnabled.createLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(prisonApiClient).getPrisonInformation(supportingPrisonId)
@@ -1238,26 +1221,9 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `should use supporting prison for restricted patient for PRRD licence`() {
-      val serviceWithFeatureEnabled = LicenceCreationService(
-        licenceRepository,
-        crdLicenceRepository,
-        staffRepository,
-        standardConditionRepository,
-        additionalConditionRepository,
-        licenceEventRepository,
-        licencePolicyService,
-        auditEventRepository,
-        prisonerSearchApiClient,
-        prisonApiClient,
-        deliusApiClient,
-        cvlRecordService,
-        telemetryService,
-        timeServedExternalRecordsService,
-        caseService,
-        restrictedPatientsEnabled = true,
-      )
       val supportingPrisonId = "BMI"
-      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+      val supportingPrisonInfo =
+        somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
 
       val restrictedPatient = prisonerSearchResult().copy(
         postRecallReleaseDate = LocalDate.now(),
@@ -1277,7 +1243,7 @@ class LicenceCreationServiceTest {
         ),
       )
 
-      serviceWithFeatureEnabled.createLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<PrrdLicence>().apply {
         verify(prisonApiClient).getPrisonInformation(supportingPrisonId)
@@ -1995,26 +1961,9 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `should use supporting prison for restricted patient for hard stop licence`() {
-      val serviceWithFeatureEnabled = LicenceCreationService(
-        licenceRepository,
-        crdLicenceRepository,
-        staffRepository,
-        standardConditionRepository,
-        additionalConditionRepository,
-        licenceEventRepository,
-        licencePolicyService,
-        auditEventRepository,
-        prisonerSearchApiClient,
-        prisonApiClient,
-        deliusApiClient,
-        cvlRecordService,
-        telemetryService,
-        timeServedExternalRecordsService,
-        caseService,
-        restrictedPatientsEnabled = true,
-      )
       val supportingPrisonId = "BMI"
-      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+      val supportingPrisonInfo =
+        somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
 
       val restrictedPatient = prisonerSearchResult().copy(
         prisonId = "OUT",
@@ -2034,7 +1983,7 @@ class LicenceCreationServiceTest {
         ),
       )
 
-      serviceWithFeatureEnabled.createHardStopLicence(PRISON_NUMBER)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(prisonApiClient).getPrisonInformation(supportingPrisonId)
@@ -2050,26 +1999,9 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `should use supporting prison for restricted patient for time served licence`() {
-      val serviceWithFeatureEnabled = LicenceCreationService(
-        licenceRepository,
-        crdLicenceRepository,
-        staffRepository,
-        standardConditionRepository,
-        additionalConditionRepository,
-        licenceEventRepository,
-        licencePolicyService,
-        auditEventRepository,
-        prisonerSearchApiClient,
-        prisonApiClient,
-        deliusApiClient,
-        cvlRecordService,
-        telemetryService,
-        timeServedExternalRecordsService,
-        caseService,
-        restrictedPatientsEnabled = true,
-      )
       val supportingPrisonId = "BMI"
-      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+      val supportingPrisonInfo =
+        somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
 
       val restrictedPatient = prisonerSearchResult().copy(
         prisonId = "OUT",
@@ -2089,7 +2021,7 @@ class LicenceCreationServiceTest {
         ),
       )
 
-      serviceWithFeatureEnabled.createHardStopLicence(PRISON_NUMBER)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<TimeServedLicence>().apply {
         verify(prisonApiClient).getPrisonInformation(supportingPrisonId)
@@ -2613,26 +2545,9 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `should use supporting prison for restricted patient for HDC licence`() {
-      val serviceWithFeatureEnabled = LicenceCreationService(
-        licenceRepository,
-        crdLicenceRepository,
-        staffRepository,
-        standardConditionRepository,
-        additionalConditionRepository,
-        licenceEventRepository,
-        licencePolicyService,
-        auditEventRepository,
-        prisonerSearchApiClient,
-        prisonApiClient,
-        deliusApiClient,
-        cvlRecordService,
-        telemetryService,
-        timeServedExternalRecordsService,
-        caseService,
-        restrictedPatientsEnabled = true,
-      )
       val supportingPrisonId = "BMI"
-      val supportingPrisonInfo = somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
+      val supportingPrisonInfo =
+        somePrisonInformation.copy(prisonId = supportingPrisonId, description = "HMP Birmingham")
 
       val restrictedPatient = prisonerSearchResult().copy(
         prisonId = "OUT",
@@ -2652,7 +2567,7 @@ class LicenceCreationServiceTest {
         ),
       )
 
-      serviceWithFeatureEnabled.createLicence(PRISON_NUMBER)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<HdcLicence>().apply {
         verify(prisonApiClient).getPrisonInformation(supportingPrisonId)

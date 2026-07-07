@@ -6,7 +6,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.ProbationContactMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -53,7 +53,7 @@ class VariationLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointment: Appointment? = null,
+  probationContact: ProbationContact? = null,
   override var spoDiscussion: String? = null,
   override var vloDiscussion: String? = null,
   approvedDate: LocalDateTime? = null,
@@ -117,7 +117,7 @@ class VariationLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointment = appointment,
+  probationContact = probationContact,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
   approvedByName = approvedByName,
@@ -172,7 +172,7 @@ class VariationLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointment: Appointment? = AppointmentMapper.copy(this.appointment),
+    probationContact: ProbationContact? = ProbationContactMapper.copy(this.probationContact),
     spoDiscussion: String? = this.spoDiscussion,
     vloDiscussion: String? = this.vloDiscussion,
     approvedDate: LocalDateTime? = this.approvedDate,
@@ -230,7 +230,7 @@ class VariationLicence(
       probationLauDescription = probationLauDescription,
       probationTeamCode = probationTeamCode,
       probationTeamDescription = probationTeamDescription,
-      appointment = appointment,
+      probationContact = probationContact,
       spoDiscussion = spoDiscussion,
       vloDiscussion = vloDiscussion,
       approvedDate = approvedDate,
@@ -301,14 +301,14 @@ class VariationLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=${appointment?.personType}, " +
-    "appointmentPerson=${appointment?.person}, " +
-    "appointmentTime=${appointment?.time}, " +
-    "appointmentTimeType=${appointment?.timeType}, " +
-    "appointmentAddress=${appointment?.addressText}, " +
-    "licenceAppointmentAddress=${appointment?.address}, " +
-    "appointmentContact=${appointment?.telephoneContactNumber}, " +
-    "alternativeTelephoneContactNumber=${appointment?.alternativeTelephoneContactNumber}, " +
+    "appointmentType=${probationContact?.appointmentType}, " +
+    "appointmentPerson=${probationContact?.person}, " +
+    "appointmentTime=${probationContact?.appointmentTime}, " +
+    "appointmentTimeType=${probationContact?.appointmentTimeType}, " +
+    "appointmentAddress=${probationContact?.addressText}, " +
+    "licenceAppointmentAddress=${probationContact?.address}, " +
+    "appointmentContact=${probationContact?.telephoneContactNumber}, " +
+    "alternativeTelephoneContactNumber=${probationContact?.alternativeTelephoneContactNumber}, " +
     "spoDiscussion=$spoDiscussion, " +
     "vloDiscussion=$vloDiscussion, " +
     "approvedDate=$approvedDate, " +

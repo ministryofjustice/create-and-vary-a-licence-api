@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
@@ -19,8 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
@@ -49,11 +50,11 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
+      .expectBody<Licence>()
       .returnResult().responseBody
 
-    assertThat(result?.appointmentPersonType).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPersonType)
-    assertThat(result?.appointmentPerson).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPerson)
+    assertThat(result.appointmentPersonType).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPersonType)
+    assertThat(result.appointmentPerson).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPerson)
   }
 
   @Test
@@ -95,11 +96,11 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
+      .expectBody<Licence>()
       .returnResult().responseBody
 
-    assertThat(result?.appointmentTime).isNull()
-    assertThat(result?.appointmentTimeType)
+    assertThat(result.appointmentTime).isNull()
+    assertThat(result.appointmentTimeType)
       .isEqualTo(AppointmentTimeType.IMMEDIATE_UPON_RELEASE)
   }
 
@@ -123,12 +124,12 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
+      .expectBody<Licence>()
       .returnResult().responseBody
 
-    assertThat(result?.appointmentTime)
+    assertThat(result.appointmentTime)
       .isEqualTo(anAppointmentTimeRequest.appointmentTime?.truncatedTo(ChronoUnit.MINUTES))
-    assertThat(result?.appointmentTimeType)
+    assertThat(result.appointmentTimeType)
       .isEqualTo(anAppointmentTimeRequest.appointmentTimeType)
   }
 
@@ -152,10 +153,10 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
+      .expectBody<Licence>()
       .returnResult().responseBody
 
-    assertThat(result?.appointmentTelephoneNumber).isEqualTo(aContactNumberRequest.telephone)
+    assertThat(result.appointmentTelephoneNumber).isEqualTo(aContactNumberRequest.telephone)
   }
 
   @Test
@@ -178,10 +179,10 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
+      .expectBody<Licence>()
       .returnResult().responseBody
 
-    assertThat(result?.appointmentTelephoneNumber).isEqualTo("+44 20 7946 0958 #98765")
+    assertThat(result.appointmentTelephoneNumber).isEqualTo("+44 20 7946 0958 #98765")
   }
 
   @Test
@@ -450,7 +451,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
 
     // Then
     val errorResponse = getErrorResponse(result)
-    assertThat(errorResponse!!.userMessage).contains("Validation failed for one or more fields.")
+    assertThat(errorResponse.userMessage).contains("Validation failed for one or more fields.")
     assertThat(errorResponse.developerMessage).contains("Unique Property Reference Number must be provided only with source OS_PLACES")
   }
 
@@ -468,7 +469,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
 
     // Then
     val errorResponse = getErrorResponse(result)
-    assertThat(errorResponse!!.userMessage).contains("Validation failed for one or more fields.")
+    assertThat(errorResponse.userMessage).contains("Validation failed for one or more fields.")
     assertThat(errorResponse.developerMessage).contains("Unique Property Reference Number must be provided only with source OS_PLACES")
   }
 
@@ -510,7 +511,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
 
     // Then
     val errorResponse = getErrorResponse(result)
-    assertThat(errorResponse!!.userMessage).contains("Validation failed for one or more fields.")
+    assertThat(errorResponse.userMessage).contains("Validation failed for one or more fields.")
     assertThat(errorResponse.developerMessage).contains("must not be blank")
   }
 
@@ -529,7 +530,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isBadRequest
       .expectBody()
       .consumeWith { response ->
-        val responseString = response.responseBody?.toString(Charsets.UTF_8)
+        val responseString = response.responseBody.toString(Charsets.UTF_8)
         assertThat(responseString).contains("Validation failed")
       }
   }
@@ -546,7 +547,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
 
     // Then
     val errorResponse = getErrorResponse(result)
-    assertThat(errorResponse!!.userMessage).contains("Validation failed")
+    assertThat(errorResponse.userMessage).contains("Validation failed")
     assertThat(errorResponse.developerMessage).contains("Unique Property Reference Number must be provided only with source OS_PLACES")
     invalidReference?.let {
       if (it.isEmpty()) {
@@ -567,7 +568,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
 
     // Then
     val errorResponse = getErrorResponse(result)
-    assertThat(errorResponse!!.userMessage).contains("Bad request: JSON parse error: Instantiation of")
+    assertThat(errorResponse.userMessage).contains("Bad request: JSON parse error: Instantiation of")
   }
 
   private fun createAddressJson(excludeField: String, blank: Boolean?): MutableMap<String, Any?> {
@@ -601,9 +602,9 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
   private fun getErrorResponse(
     result: WebTestClient.ResponseSpec,
     exceptedStatus: HttpStatusCode = HttpStatusCode.valueOf(400),
-  ): ErrorResponse? {
+  ): ErrorResponse {
     result.expectStatus().isEqualTo(exceptedStatus)
-    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+    val errorResponse = result.expectBody<ErrorResponse>().returnResult().responseBody
     assertThat(errorResponse).isNotNull
     return errorResponse
   }
@@ -615,8 +616,8 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
   }
 
   private fun getAndAssertAddress(licence: LicenceEntity = getLicence()): Address {
-    assertThat(licence.appointment).isNotNull
-    val appointment = licence.appointment!!
+    assertThat(licence.probationContact).isNotNull
+    val appointment = licence.probationContact!!
     assertThat(appointment.address).isNotNull
     assertThat(appointment.addressText).isNotNull
     val address = appointment.address!!
@@ -656,7 +657,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
   private companion object {
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+      appointmentPersonType = AppointmentType.SPECIFIC_PERSON,
       appointmentPerson = "John Smith",
     )
 

@@ -1,22 +1,22 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ProbationContact
 
 @Component
-class AppointmentMapper {
+class ProbationContactMapper {
 
   companion object {
 
-    fun copy(entity: Appointment?): Appointment? {
+    fun copy(entity: ProbationContact?): ProbationContact? {
       if (entity == null) return null
 
-      return Appointment(
+      return ProbationContact(
         id = null,
-        personType = entity.personType,
+        appointmentType = entity.appointmentType,
         person = entity.person,
-        timeType = entity.timeType,
-        time = entity.time,
+        appointmentTimeType = entity.appointmentTimeType,
+        appointmentTime = entity.appointmentTime,
         telephoneContactNumber = entity.telephoneContactNumber,
         alternativeTelephoneContactNumber = entity.alternativeTelephoneContactNumber,
         addressText = entity.addressText,

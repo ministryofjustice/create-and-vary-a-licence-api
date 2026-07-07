@@ -11,21 +11,21 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "APPOINTMENT")
-class Appointment(
+@Table(name = "PROBATION_CONTACT")
+class ProbationContact(
 
   id: Long? = null,
   @Enumerated(EnumType.STRING)
-  var personType: AppointmentPersonType? = null,
+  var appointmentType: AppointmentType? = null,
   var person: String? = null,
   @Enumerated(EnumType.STRING)
-  var timeType: AppointmentTimeType? = null,
-  var time: LocalDateTime? = null,
+  var appointmentTimeType: AppointmentTimeType? = null,
+  var appointmentTime: LocalDateTime? = null,
   var telephoneContactNumber: String? = null,
   var alternativeTelephoneContactNumber: String? = null,
   var addressText: String? = null,
@@ -36,7 +36,7 @@ class Appointment(
     orphanRemoval = true,
   )
   @JoinTable(
-    name = "APPOINTMENT_ADDRESS",
+    name = "PROBATION_CONTACT_APPOINTMENT_ADDRESS",
     joinColumns = [JoinColumn(name = "appointment_id")],
     inverseJoinColumns = [JoinColumn(name = "address_id")],
     uniqueConstraints = [UniqueConstraint(columnNames = ["appointment_id", "address_id"])],

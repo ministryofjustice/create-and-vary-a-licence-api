@@ -35,7 +35,6 @@ export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets
 
 # --- Booleans / Flags ---
 export HDC_ENABLED=false
-export RESTRICTED_PATIENTS_ENABLED=true
 export ISR_REPEAL_DATE="2026-03-25"
 
 # --- Write to .env file ---
@@ -64,7 +63,6 @@ cat > "$fileToAddVars" <<EOF
 
 # --- Flags ---
   HDC_ENABLED=${HDC_ENABLED}
-  RESTRICTED_PATIENTS_ENABLED=${RESTRICTED_PATIENTS_ENABLED}
   ISR_REPEAL_DATE=${ISR_REPEAL_DATE}
 EOF
 

@@ -5,9 +5,12 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import java.time.LocalDate
@@ -242,6 +245,33 @@ class LicenceTest {
         reviewDate = LocalDateTime.now(),
       )
       assertThat(licence.isReviewNeeded()).isFalse()
+    }
+  }
+
+  @Nested
+  inner class `Update appointment person` {
+    @Test
+    fun `Should clear appointment person and time details if no appointment needed`() {
+      val licence =
+        createCrdLicence().copy(
+          probationContact = createProbationContact(
+            appointmentType = AppointmentType.SPECIFIC_PERSON,
+            person = "A specific person",
+            time = LocalDateTime.now(),
+          ),
+        )
+
+      licence.updateAppointmentPerson(
+        appointmentType = AppointmentType.NO_APPOINTMENT_NEEDED,
+        appointmentPerson = null,
+        staffMember = null,
+      )
+
+      val probationContact = licence.probationContact
+      assertThat(probationContact?.appointmentType).isEqualTo(AppointmentType.NO_APPOINTMENT_NEEDED)
+      assertThat(probationContact?.person).isNull()
+      assertThat(probationContact?.appointmentTime).isNull()
+      assertThat(licence.updatedByUsername).isEqualTo(SYSTEM_USER)
     }
   }
 }

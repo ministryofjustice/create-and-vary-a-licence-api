@@ -6,7 +6,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.ProbationContactMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.Reviewable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
@@ -55,7 +55,7 @@ class HardStopLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointment: Appointment? = null,
+  probationContact: ProbationContact? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
   approvedByName: String? = null,
@@ -119,7 +119,7 @@ class HardStopLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointment = appointment,
+  probationContact = probationContact,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
   approvedByName = approvedByName,
@@ -176,7 +176,7 @@ class HardStopLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointment: Appointment? = AppointmentMapper.copy(this.appointment),
+    probationContact: ProbationContact? = ProbationContactMapper.copy(this.probationContact),
     approvedDate: LocalDateTime? = this.approvedDate,
     approvedByUsername: String? = this.approvedByUsername,
     approvedByName: String? = this.approvedByName,
@@ -232,7 +232,7 @@ class HardStopLicence(
     probationLauDescription = probationLauDescription,
     probationTeamCode = probationTeamCode,
     probationTeamDescription = probationTeamDescription,
-    appointment = appointment,
+    probationContact = probationContact,
     approvedDate = approvedDate,
     approvedByUsername = approvedByUsername,
     approvedByName = approvedByName,
@@ -300,14 +300,14 @@ class HardStopLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=${appointment?.personType}, " +
-    "appointmentPerson=${appointment?.person}, " +
-    "appointmentTime=${appointment?.time}, " +
-    "appointmentTimeType=${appointment?.timeType}, " +
-    "appointmentAddress=${appointment?.addressText}, " +
-    "licenceAppointmentAddress=${appointment?.address}, " +
-    "appointmentContact=${appointment?.telephoneContactNumber}, " +
-    "alternativeTelephoneContactNumber=${appointment?.alternativeTelephoneContactNumber}, " +
+    "appointmentType=${probationContact?.appointmentType}, " +
+    "appointmentPerson=${probationContact?.person}, " +
+    "appointmentTime=${probationContact?.appointmentTime}, " +
+    "appointmentTimeType=${probationContact?.appointmentTimeType}, " +
+    "appointmentAddress=${probationContact?.addressText}, " +
+    "licenceAppointmentAddress=${probationContact?.address}, " +
+    "appointmentContact=${probationContact?.telephoneContactNumber}, " +
+    "alternativeTelephoneContactNumber=${probationContact?.alternativeTelephoneContactNumber}, " +
     "approvedDate=$approvedDate, " +
     "approvedByUsername=$approvedByUsername, " +
     "approvedByName=$approvedByName, " +

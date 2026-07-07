@@ -16,6 +16,11 @@ spring:
     oauth2:
       client:
         registration:
+          DPR_LIB_API:
+            provider: hmpps-auth
+            client-id: ${system.client.id}
+            client-secret: ${system.client.secret}
+            authorization-grant-type: client_credentials
           hmpps-auth:
             provider: hmpps-auth
             client-id: ${system.client.id}
@@ -149,6 +154,7 @@ cache:
 
 dpr:
   lib:
+    hasProbationDatasources: false
     manage-users:
       host: ${DPR_MANAGE_USERS_HOST}
     definition:
@@ -157,6 +163,8 @@ dpr:
       role: ROLE_CVL_ADMIN
       token:
         enabled: true
+    user:
+      requiredAuthSources: NOMIS,AUTH
   search:
     max-total: 200
   os-places:
@@ -172,8 +180,6 @@ feature:
     isr:
       repeal:
         date: ${ISR_REPEAL_DATE:#{null}}
-    restrictedPatients:
-      enabled: ${RESTRICTED_PATIENTS_ENABLED}
 
 hmpps:
   cases:

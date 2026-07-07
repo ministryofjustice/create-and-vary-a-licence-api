@@ -23,8 +23,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AppointmentService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -66,7 +66,7 @@ class AppointmentControllerTest {
   @Test
   fun `update initial appointment person - invalid request body`() {
     val anNullUpdateAppointmentPersonRequest = anUpdateAppointmentPersonRequest.copy(
-      appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+      appointmentPersonType = AppointmentType.SPECIFIC_PERSON,
       appointmentPerson = null,
     )
     whenever(
@@ -100,7 +100,7 @@ class AppointmentControllerTest {
         .content(
           mapper.writeValueAsBytes(
             anUpdateAppointmentPersonRequest.copy(
-              appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+              appointmentPersonType = AppointmentType.SPECIFIC_PERSON,
             ),
           ),
         ),
@@ -110,7 +110,7 @@ class AppointmentControllerTest {
     verify(appointmentService, times(1)).updateAppointmentPerson(
       4,
       anUpdateAppointmentPersonRequest.copy(
-        appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+        appointmentPersonType = AppointmentType.SPECIFIC_PERSON,
       ),
     )
   }
@@ -200,7 +200,7 @@ class AppointmentControllerTest {
 
   private companion object {
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentPersonType = AppointmentPersonType.DUTY_OFFICER,
+      appointmentPersonType = AppointmentType.DUTY_OFFICER,
       appointmentPerson = "John Smith",
     )
 

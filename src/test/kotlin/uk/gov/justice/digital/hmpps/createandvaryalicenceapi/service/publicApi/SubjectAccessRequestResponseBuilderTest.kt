@@ -17,9 +17,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createAppointment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toCrd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toHdc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -344,7 +344,7 @@ class SubjectAccessRequestResponseBuilderTest {
         version = "2.1",
         typeCode = AP,
         licenceVersion = "2.0",
-        appointment = createAppointment(timeType = AppointmentTimeType.SPECIFIC_DATE_TIME),
+        probationContact = createProbationContact(timeType = AppointmentTimeType.SPECIFIC_DATE_TIME),
       ),
       earliestReleaseDate = LocalDate.of(2024, 1, 3),
       isEligibleForEarlyRelease = true,

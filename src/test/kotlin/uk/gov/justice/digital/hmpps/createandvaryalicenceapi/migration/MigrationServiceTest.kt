@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordSe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
@@ -52,6 +53,7 @@ class MigrationServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val prisonService = mock<PrisonService>()
+  private val licencePolicyService = mock<LicencePolicyService>()
 
   private val team = TeamDetail(
     code = "NA01A2-A",
@@ -70,6 +72,7 @@ class MigrationServiceTest {
     cvlRecordService,
     prisonerSearchApiClient,
     prisonService,
+    licencePolicyService,
   )
 
   @BeforeEach
@@ -243,6 +246,7 @@ class MigrationServiceTest {
       val request = migrateRequest(
         prisonerNumber = prisonerNumber,
         approvedByUsername = approvedByUsername,
+        approvedByName = "dont use me",
       )
 
       mockGetOffenderManager(staffId)
@@ -263,6 +267,33 @@ class MigrationServiceTest {
       verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
       val savedLicence = licenceCaptor.firstValue
       assertThat(savedLicence.approvedByName).isEqualTo("approvedFirstName approvedLastName")
+      assertThat(savedLicence.approvedByUsername).isEqualTo(approvedByUsername)
+    }
+
+    @Test
+    fun `migrate should get approved name from then given approvedByName`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val approvedByName = "approvedFirstName approvedLastName"
+
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        approvedByName = approvedByName,
+      )
+
+      mockGetOffenderManager(staffId)
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
+
+      // When
+      service.migrate(request)
+
+      // Then
+      val licenceCaptor = argumentCaptor<HdcLicence>()
+      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+      val savedLicence = licenceCaptor.firstValue
+      assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
+      assertThat(savedLicence.approvedByUsername).isNull()
     }
   }
 
@@ -296,6 +327,7 @@ class MigrationServiceTest {
     submittedBy: String? = null,
     createdByUserName: String? = null,
     approvedByUsername: String? = null,
+    approvedByName: String? = null,
     additionalConditions: List<MigrateAdditionalCondition> = emptyList(),
   ): MigrateFromHdcToCvlRequest = MigrateFromHdcToCvlRequest(
     bookingNo = "BOOK1",
@@ -333,6 +365,7 @@ class MigrationServiceTest {
     lifecycle = MigrateLicenceLifecycleDetails(
       approvedDate = null,
       approvedByUsername = approvedByUsername,
+      approvedByName = approvedByName,
       submittedDate = null,
       submittedByUserName = submittedBy,
       createdByUserName = createdByUserName,

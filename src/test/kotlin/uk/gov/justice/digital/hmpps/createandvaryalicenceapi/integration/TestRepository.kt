@@ -32,10 +32,10 @@ import java.util.Optional
 
 @Repository
 interface TestLicenceRepository : JpaRepository<Licence, Long> {
-  @EntityGraph(attributePaths = ["standardConditions", "appointment", "appointment.address", "responsibleCom", "responsibleCom.savedAppointmentAddresses"])
+  @EntityGraph(attributePaths = ["standardConditions", "probationContact", "probationContact.address", "responsibleCom", "responsibleCom.savedAppointmentAddresses"])
   override fun findById(id: Long): Optional<Licence>
 
-  @EntityGraph(attributePaths = ["standardConditions", "appointment", "appointment.address", "responsibleCom", "responsibleCom.savedAppointmentAddresses"])
+  @EntityGraph(attributePaths = ["standardConditions", "probationContact", "probationContact.address", "responsibleCom", "responsibleCom.savedAppointmentAddresses"])
   override fun findAll(): List<Licence>
 
   fun findByStatusCodeAndTypeCodeOrderById(
