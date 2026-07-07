@@ -188,7 +188,10 @@ class EligibilityServiceTest {
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly(
+        "has no post recall release date",
+        "is on non-eligible EDS",
+      )
       assertThat(result.eligibleKind).isNull()
     }
 
@@ -205,7 +208,10 @@ class EligibilityServiceTest {
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly(
+        "has no post recall release date",
+        "is on non-eligible EDS",
+      )
       assertThat(result.eligibleKind).isNull()
     }
 
@@ -222,7 +228,10 @@ class EligibilityServiceTest {
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly(
+        "has no post recall release date",
+        "is on non-eligible EDS",
+      )
       assertThat(result.eligibleKind).isNull()
     }
 
@@ -239,7 +248,10 @@ class EligibilityServiceTest {
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly(
+        "has no post recall release date",
+        "is on non-eligible EDS",
+      )
       assertThat(result.eligibleKind).isNull()
     }
 
@@ -256,7 +268,10 @@ class EligibilityServiceTest {
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).containsExactly("is eligible for parole")
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly(
+        "has no post recall release date",
+        "is on non-eligible EDS",
+      )
       assertThat(result.eligibleKind).isNull()
     }
 
@@ -970,7 +985,10 @@ class EligibilityServiceTest {
       assertThat(result.isEligible).isFalse()
       assertThat(result.genericIneligibilityReasons).isEmpty()
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
-      assertThat(result.prrdIneligibilityReasons).containsExactly("has no post recall release date")
+      assertThat(result.prrdIneligibilityReasons).containsExactly(
+        "has no post recall release date",
+        "is on non-eligible EDS",
+      )
       assertThat(result.hdcIneligibilityReasons).containsExactly("is not expected to be released on HDC")
       assertThat(result.eligibleKind).isNull()
     }

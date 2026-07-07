@@ -85,6 +85,7 @@ class EligibilityService(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
       !isBeingReleasedAtSled(prisoner) to "is being released at SLED",
+      isEligibleIfOnAnExtendedDeterminateSentence(prisoner) to "is on non-eligible EDS",
       !isExpectedHdcRelease to "is expected to be released on HDC",
     )
 
@@ -160,6 +161,7 @@ class EligibilityService(
 
   private fun isBeingReleasedAtSled(prisoner: PrisonerSearchPrisoner): Boolean = when {
     prisoner.postRecallReleaseDate == null -> false
+
     prisoner.licenceExpiryDate == null -> false
 
     else -> {
