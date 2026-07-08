@@ -13,7 +13,7 @@ import uk.gov.justice.hmpps.kotlin.auth.service.GlobalPrincipalOAuth2AuthorizedC
 
 private const val HMPPS_AUTH = "hmpps-auth"
 private const val MAX_IN_MEMORY_SIZE = 10485760 // 10 MB
-private const val MAX_IN_MEMORY_SIZE_EXTENDED = 12582912 // 12 MB
+private const val MAX_IN_MEMORY_SIZE_EXTENDED = 15728640 // 15 MB
 
 @Configuration
 class WebClientConfiguration(
@@ -84,7 +84,8 @@ class WebClientConfiguration(
   fun oauthDeliusApiClient(
     authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(deliusApiUrl, authorizedClientManagerCvl, builder, maxInMemorySize = MAX_IN_MEMORY_SIZE_EXTENDED)
+  ): WebClient =
+    getWebClient(deliusApiUrl, authorizedClientManagerCvl, builder, maxInMemorySize = MAX_IN_MEMORY_SIZE_EXTENDED)
 
   @Bean
   fun oauthWorkLoadApiClient(
