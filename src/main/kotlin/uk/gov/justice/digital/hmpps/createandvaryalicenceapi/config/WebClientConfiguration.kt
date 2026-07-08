@@ -84,8 +84,7 @@ class WebClientConfiguration(
   fun oauthDeliusApiClient(
     authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient =
-    getWebClient(deliusApiUrl, authorizedClientManagerCvl, builder, maxInMemorySize = MAX_IN_MEMORY_SIZE_EXTENDED)
+  ): WebClient = getWebClient(deliusApiUrl, authorizedClientManagerCvl, builder, maxInMemorySize = MAX_IN_MEMORY_SIZE_EXTENDED)
 
   @Bean
   fun oauthWorkLoadApiClient(
