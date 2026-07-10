@@ -72,7 +72,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(result.licenceId).isGreaterThan(0L)
 
     val standardConditions = standardConditionRepository.findAll()
-    assertThat(standardConditions).hasSize(10)
+    assertThat(standardConditions).hasSize(8)
     assertThat(standardConditions.map { it.conditionType }).allMatch { it == "AP" }
     val additionalConditions = additionalConditionRepository.findAll()
     assertThat(additionalConditions).hasSize(1)

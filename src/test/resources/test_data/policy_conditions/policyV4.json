@@ -4,17 +4,12 @@
     "AP": [
       {
         "code": "9ce9d594-e346-4785-9642-c87e764bee37",
-        "text": "Behave well and do not commit any crime.",
-        "tpl": null
-      },
-      {
-        "code": "3b19fdb0-4ca3-4615-9fdd-61fabc1587af",
-        "text": "Live at an address agreed by your supervising officer.",
+        "text": "Behave well in a way that supports the purpose of you being on licence, and do not commit any crime.",
         "tpl": null
       },
       {
         "code": "3361683a-504a-4357-ae22-6aa01b370b4a",
-        "text": "Ask your supervising officer if you want to stay at a different address for one or more nights.",
+        "text": "Get permission from your supervising officer to stay at an address and if you want to stay somewhere else for one or more nights.",
         "tpl": null
       },
       {
@@ -34,22 +29,17 @@
       },
       {
         "code": "6FA6E492-F0AB-4E76-B868-63813DB44696",
-        "text": "Tell your supervising officer about any new work you want to do. Get their approval before you start this work.",
+        "text": "Tell your supervising officer about any new work, or a type of work, you want to do. Get their approval before you start this work.",
         "tpl": null
       },
       {
         "code": "88069445-08cb-4f16-915f-5a162d085c26",
-        "text": "Get permission from your supervising officer if you want to leave the UK, Isle of Man or Channel Islands. This does not apply if you are being deported or removed for immigration purposes.",
+        "text": "Get permission from your supervising officer if you want to leave the United Kingdom, Isle of Man or the Channel Islands. This does not apply if you are being deported or removed for immigration purposes.",
         "tpl": null
       },
       {
         "code": "7d416906-0e94-4fde-ae86-8339d339ccb7",
-        "text": "Give your passport to your supervising officer and speak to them before applying for a new passport.",
-        "tpl": null
-      },
-      {
-        "code": "2cbfc6ef-576e-482d-97c1-f6f937a34de8",
-        "text": "Provide a sample so it can be tested for specified Class A or Class B drugs. Cooperate fully with this test.",
+        "text": "Get permission from your supervising officer if you want to apply for a new passport. If requested, tell your supervising officer about any passports you have already.",
         "tpl": null
       }
     ],

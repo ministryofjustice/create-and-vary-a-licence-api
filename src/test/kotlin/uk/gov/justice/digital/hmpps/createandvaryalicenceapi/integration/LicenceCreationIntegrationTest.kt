@@ -83,7 +83,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -123,7 +123,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -164,7 +164,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -202,7 +202,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -384,7 +384,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.getCom().username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
 
@@ -425,7 +425,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.getCom().username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
 
@@ -469,7 +469,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(8)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(1)
   }
 
@@ -510,7 +510,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(8)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(1)
   }
 
@@ -558,7 +558,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(8)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(2)
 
     // Verify the record is deleted
@@ -617,7 +617,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(8)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(2)
 
     // Verify the record is deleted
@@ -680,7 +680,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(hardStopLicence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(hardStopLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(1)
 
     assertThat(auditEventRepository.count()).isEqualTo(1)
@@ -728,7 +728,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(hardStopLicence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(hardStopLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(1)
 
     assertThat(auditEventRepository.count()).isEqualTo(1)

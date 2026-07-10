@@ -63,7 +63,7 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun currentPolicy() {
-    webTestClient.get()
+    val result = webTestClient.get()
       .uri("/licence-policy/active?licenceStartDate=2026-02-18")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -72,5 +72,7 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
       .json(policy("V4"), STRICT)
+
+    println(result)
   }
 }
