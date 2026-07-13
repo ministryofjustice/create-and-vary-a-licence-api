@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
+import java.time.format.DateTimeFormatter.ISO_DATE
 
 class PrisonerMergedHandlerTest {
   private val auditService = mock<AuditService>()
@@ -71,8 +72,8 @@ class PrisonerMergedHandlerTest {
         "newSurname" to prisoner.lastName,
         "oldPrisonCode" to aLicence.prisonCode,
         "newPrisonCode" to prisoner.agencyId,
-        "oldDateOfBirth" to aLicence.dateOfBirth,
-        "newDateOfBirth" to prisoner.dateOfBirth,
+        "oldDateOfBirth" to aLicence.dateOfBirth?.format(ISO_DATE),
+        "newDateOfBirth" to prisoner.dateOfBirth.format(ISO_DATE),
         "oldCRO" to aLicence.cro,
         "newCRO" to newCRO,
         "oldPNC" to aLicence.pnc,

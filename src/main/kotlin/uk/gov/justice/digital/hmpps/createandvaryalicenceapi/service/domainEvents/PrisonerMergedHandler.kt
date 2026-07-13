@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
+import java.time.format.DateTimeFormatter.ISO_DATE
 
 @Service
 class PrisonerMergedHandler(
@@ -30,7 +31,7 @@ class PrisonerMergedHandler(
       throw e
     }
 
-    val bookingId = event.additionalInformation.bookingId.toLong()
+    val newBookingId = event.additionalInformation.bookingId.toLong()
     val oldNomisId = event.additionalInformation.removedNomsNumber
     val newNomisId = event.additionalInformation.nomsNumber
 
@@ -38,17 +39,14 @@ class PrisonerMergedHandler(
     val licencesToUpdate =
       licenceRepository.findAllByNomsIdAndStatusCodeIn(oldNomisId, IN_FLIGHT_LICENCES)
 
-    deactivateLicencesOnOldBooking(licencesToUpdate, bookingId)
-    updateOffenderDetails(licencesToUpdate, newNomisId)
+    val (oldBookingLicences, newBookingLicences) = licencesToUpdate.partition { it.bookingId != newBookingId }
+    deactivateLicencesOnOldBooking(oldBookingLicences)
+    updateOffenderDetails(newBookingLicences, newNomisId)
   }
 
-  private fun deactivateLicencesOnOldBooking(licences: List<Licence>, newBookingId: Long) {
-    val oldBookingLicences = licences.filter {
-      it.bookingId != newBookingId
-    }
-
-    if (!oldBookingLicences.isEmpty()) {
-      licenceService.inactivateLicences(oldBookingLicences, "Deactivating licence on old booking after prisoner merge")
+  private fun deactivateLicencesOnOldBooking(licences: List<Licence>) {
+    if (!licences.isEmpty()) {
+      licenceService.inactivateLicences(licences, "Deactivating licence on old booking after prisoner merge")
     }
   }
 
@@ -72,8 +70,8 @@ class PrisonerMergedHandler(
           "newSurname" to prisonerDetails.lastName,
           "oldPrisonCode" to licence.prisonCode,
           "newPrisonCode" to prisonerDetails.agencyId,
-          "oldDateOfBirth" to licence.dateOfBirth,
-          "newDateOfBirth" to prisonerDetails.dateOfBirth,
+          "oldDateOfBirth" to licence.dateOfBirth?.format(ISO_DATE),
+          "newDateOfBirth" to prisonerDetails.dateOfBirth.format(ISO_DATE),
           "oldCRO" to licence.cro,
           "newCRO" to cro,
           "oldPNC" to licence.pnc,
