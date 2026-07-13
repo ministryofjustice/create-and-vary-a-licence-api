@@ -178,7 +178,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isBadRequest
     assertThat(testRepository.hasMetaData()).isFalse
-    assertThat(errorResponse.userMessage).contains("Unexpected error: Licence for prisoner A1234AA already exists")
+    assertThat(errorResponse.userMessage).contains("Unexpected error: Licence for prisoner already exists (prisonNumber : A1234AA)")
   }
 
   @Test
