@@ -56,12 +56,12 @@ abstract class Licence(
   @Enumerated(EnumType.STRING)
   var statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
 
-  val nomsId: String? = null,
+  var nomsId: String? = null,
   val bookingNo: String? = null,
   val bookingId: Long? = null,
   val crn: String? = null,
-  val pnc: String? = null,
-  val cro: String? = null,
+  var pnc: String? = null,
+  var cro: String? = null,
   var prisonCode: String? = null,
   var prisonDescription: String? = null,
   var prisonTelephone: String? = null,

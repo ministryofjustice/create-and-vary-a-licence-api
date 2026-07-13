@@ -88,7 +88,7 @@ class AuditServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(auditEventRepository, times(1)).findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(
-      aUserRequest.licenceId!!,
+      aUserRequest.licenceId,
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
@@ -112,7 +112,7 @@ class AuditServiceTest {
     assertThat(response[0].summary).isEqualTo("Summary1")
 
     verify(auditEventRepository, times(1)).findAllByUsernameAndEventTimeBetweenOrderByEventTimeDesc(
-      aUserRequest.username!!,
+      aUserRequest.username,
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
@@ -1071,6 +1071,26 @@ class AuditServiceTest {
           ),
         )
     }
+  }
+
+  @Test
+  fun `records a prisoner merged audit event`() {
+    val changes: Map<String, Any> = mapOf(
+      "oldName" to "a name",
+      "newName" to "new name",
+    )
+
+    service.recordPrisonerMergedEvent(aLicenceEntity, changes)
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo("SYSTEM")
+    assertThat(captured.summary).isEqualTo("Prisoner merged event for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
+
+    assertThat(captured.changes).isEqualTo(changes)
   }
 
   companion object {

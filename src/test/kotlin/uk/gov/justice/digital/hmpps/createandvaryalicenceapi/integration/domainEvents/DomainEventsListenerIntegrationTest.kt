@@ -25,16 +25,20 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.AdditionalInformationPrisonerMerged
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.AdditionalInformationPrisonerUpdated
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.COM_ALLOCATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DiffCategory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSPrisonerMergedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSPrisonerUpdatedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISONER_UPDATED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISON_OFFENDER_MERGED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_INSERTED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_UPDATED_EVENT_TYPE
@@ -52,6 +56,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var comAllocatedHandler: ComAllocatedHandler
+
+  @MockitoSpyBean
+  lateinit var prisonerMergedHandler: PrisonerMergedHandler
 
   @MockitoSpyBean
   lateinit var prisonerUpdatedHandler: PrisonerUpdatedHandler
@@ -378,6 +385,47 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     sendEventAndVerifyProcessed(message, event.eventType)
 
     verify(prisonerUpdatedHandler).handleEvent(message)
+
+    val updatedLicence = testRepository.findLicence()
+    assertThat(currentLicence.prisonCode).isEqualTo("MDI")
+    assertThat(updatedLicence.prisonCode).isEqualTo("ABC")
+
+    val auditEvent = testRepository.findFirstAuditEvent()
+    assertThat(auditEvent.summary).isEqualTo("Supporting prison information changed for Person One")
+    assertThat(auditEvent.changes)
+      .containsEntry("field", "prisonCode")
+      .containsEntry("previousValue", "MDI")
+      .containsEntry("newValue", "ABC")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `A prisoner merged event is processed`() {
+    // prisonerSearchMockServer.stubSearchPrisonersByNomisIds(aRestrictedPatientRecord)
+    // prisonApiMockServer.stubGetPrison()
+
+    val currentLicence = testRepository.findLicence()
+
+    val event = HMPPSPrisonerMergedEvent(
+      eventType = PRISON_OFFENDER_MERGED_EVENT_TYPE,
+      additionalInformation = AdditionalInformationPrisonerMerged(
+        bookingId = "123",
+        nomsNumber = "A1234AA",
+        removedNomsNumber = "G5678XT",
+        reason = "MERGED",
+      ),
+      version = 1,
+      occurredAt = "2026-05-22T00:00:00Z",
+      description = "A prisoner record has been updated",
+    )
+
+    val message = mapper.writeValueAsString(event)
+
+    sendEventAndVerifyProcessed(message, event.eventType)
+
+    verify(prisonerMergedHandler).handleEvent(message)
 
     val updatedLicence = testRepository.findLicence()
     assertThat(currentLicence.prisonCode).isEqualTo("MDI")
