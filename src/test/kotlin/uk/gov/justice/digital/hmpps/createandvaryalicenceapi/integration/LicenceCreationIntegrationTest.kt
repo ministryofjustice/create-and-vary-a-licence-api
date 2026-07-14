@@ -18,10 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
@@ -63,8 +59,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val createLicenceResponse = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -143,8 +138,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -221,8 +215,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetOffenderManager()
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = CRD))
+      .uri("/licence/probation/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -232,8 +225,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody!!
 
     val secondAttempt = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = CRD))
+      .uri("/licence/probation/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -258,7 +250,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetOffenderManager()
 
     val result = webTestClient.post()
-      .uri("/licence/probation/nomisid/NOMSID")
+      .uri("/licence/probation/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -268,8 +260,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody!!
 
     val secondAttempt = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = CRD))
+      .uri("/licence/probation/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -287,8 +278,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Suppress("DEPRECATION")
   fun `Unauthorized (401) for creating CRD Licence when no token is supplied`() {
     webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
@@ -314,8 +304,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Suppress("DEPRECATION")
   fun `Get forbidden (403) for creating CRD Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()
@@ -362,8 +351,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -447,8 +435,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(testRepository.getAuditEventCount()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -538,8 +525,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     // When
     val reponse = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = TIME_SERVED))
+      .uri("/licence/prison/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -654,8 +640,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -739,8 +724,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Suppress("DEPRECATION")
   fun `Unauthorized (401) for creating Hard Stop Licence when no token is supplied`() {
     webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
@@ -766,8 +750,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Suppress("DEPRECATION")
   fun `Get forbidden (403) for creating Hard Stop Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()
