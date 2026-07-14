@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEven
 
 import com.fasterxml.jackson.core.JacksonException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -22,8 +23,11 @@ class PrisonerMergedHandler(
   private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
   private val prisonApiClient: PrisonApiClient,
+  @param:Value("\${prisoner.merged.handler.enabled:false}") private val prisonerMergedHandlerEnabled: Boolean = false,
 ) : EventHandler {
   override fun handleEvent(message: String) {
+    if (!prisonerMergedHandlerEnabled) return
+
     val event = try {
       mapper.readValue(message, HMPPSPrisonerMergedEvent::class.java)
     } catch (e: JacksonException) {
@@ -35,13 +39,18 @@ class PrisonerMergedHandler(
     val oldNomisId = event.additionalInformation.removedNomsNumber
     val newNomisId = event.additionalInformation.nomsNumber
 
-    log.info("Processing prisoner merged event received for nomis id: ${event.additionalInformation.nomsNumber}")
+    log.info("Processing prisoner merged event received for nomis id: ${event.additionalInformation.nomsNumber}, old nomis id: $oldNomisId, new booking id: $newBookingId")
+    mergeOffenders(oldNomisId, newNomisId, newBookingId)
+  }
+
+  fun mergeOffenders(oldNomisId: String, newNomisId: String, newBookingId: Long) {
     val licencesToUpdate =
       licenceRepository.findAllByNomsIdAndStatusCodeIn(oldNomisId, IN_FLIGHT_LICENCES)
-
-    val (oldBookingLicences, newBookingLicences) = licencesToUpdate.partition { it.bookingId != newBookingId }
-    deactivateLicencesOnOldBooking(oldBookingLicences)
-    updateOffenderDetails(newBookingLicences, newNomisId)
+    if (!licencesToUpdate.isEmpty()) {
+      val (oldBookingLicences, newBookingLicences) = licencesToUpdate.partition { it.bookingId != newBookingId }
+      deactivateLicencesOnOldBooking(oldBookingLicences)
+      updateOffenderDetails(newBookingLicences, newNomisId)
+    }
   }
 
   private fun deactivateLicencesOnOldBooking(licences: List<Licence>) {

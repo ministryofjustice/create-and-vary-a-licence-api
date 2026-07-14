@@ -7,6 +7,7 @@ import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -36,6 +37,7 @@ class PrisonerMergedHandlerTest {
     licenceRepository,
     licenceService,
     prisonApiClient,
+    prisonerMergedHandlerEnabled = true,
   )
 
   @BeforeEach
@@ -127,6 +129,32 @@ class PrisonerMergedHandlerTest {
       listOf(aLicence),
       "Deactivating licence on old booking after prisoner merge",
     )
+  }
+
+  @Test
+  fun `should not process the message if the handler is not enabled`() {
+    val newNomisId = "A1234AA"
+    val oldNomisId = "G5678XT"
+    val aLicence = createCrdLicence().copy(nomsId = oldNomisId)
+    val bookingId = (aLicence.bookingId?.plus(1)).toString()
+
+    val disabledHandler = PrisonerMergedHandler(
+      auditService,
+      deliusApiClient,
+      mapper,
+      licenceRepository,
+      licenceService,
+      prisonApiClient,
+      prisonerMergedHandlerEnabled = false,
+    )
+
+    disabledHandler.handleEvent(
+      aPrisonerMergedEventMessage(bookingId, newNomisId, oldNomisId),
+    )
+
+    verifyNoInteractions(licenceRepository)
+    verifyNoInteractions(prisonApiClient)
+    verifyNoInteractions(licenceService)
   }
 
   private fun aPrisonerMergedEventMessage(bookingId: String, newNomisId: String, oldNomisId: String) = mapper
