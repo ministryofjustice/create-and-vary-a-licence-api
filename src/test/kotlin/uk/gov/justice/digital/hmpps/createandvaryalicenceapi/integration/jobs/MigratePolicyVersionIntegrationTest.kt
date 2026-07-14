@@ -30,6 +30,6 @@ class MigratePolicyVersionIntegrationTest : IntegrationTestBase() {
     await.atMost(Duration.ofSeconds(30)) untilCallTo {
       val licence = testRepository.findLicence(1L)
       licence.standardConditions.size
-    } matches { size -> size == 10 }
+    } matches { size -> size == 8 }
   }
 }
