@@ -453,7 +453,7 @@ object LicenceFactory {
     return croPattern.matcher(cro).matches()
   }
 
-  private fun getCro(deliusRecordCro: String?, nomisRecordCro: String?): String? {
+  fun getCro(deliusRecordCro: String?, nomisRecordCro: String?): String? {
     val deliusCro = deliusRecordCro?.trim()
     val nomisCro = nomisRecordCro?.trim()
     return when {
