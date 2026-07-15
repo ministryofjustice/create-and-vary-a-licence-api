@@ -26,12 +26,15 @@ class PrisonerMergedHandler(
   @param:Value("\${prisoner.merged.handler.enabled:false}") private val prisonerMergedHandlerEnabled: Boolean = false,
 ) : EventHandler {
   override fun handleEvent(message: String) {
-    if (!prisonerMergedHandlerEnabled) return
+    if (!prisonerMergedHandlerEnabled) {
+      log.info("Ignoring prisoner merge event as handler is disabled")
+      return
+    }
 
     val event = try {
       mapper.readValue(message, HMPPSPrisonerMergedEvent::class.java)
     } catch (e: JacksonException) {
-      log.error("Failed to parse recall inserted event message", e)
+      log.error("Failed to parse prisoner merged event message", e)
       throw e
     }
 
@@ -46,8 +49,11 @@ class PrisonerMergedHandler(
   fun mergeOffenders(oldNomisId: String, newNomisId: String, newBookingId: Long) {
     val licencesToUpdate =
       licenceRepository.findAllByNomsIdAndStatusCodeIn(oldNomisId, IN_FLIGHT_LICENCES)
+    log.info("merge offenders, found ${licencesToUpdate.size} licences to update")
     if (!licencesToUpdate.isEmpty()) {
       val (oldBookingLicences, newBookingLicences) = licencesToUpdate.partition { it.bookingId != newBookingId }
+
+      log.info("merge offenders, found ${oldBookingLicences.size} licences on old booking")
       deactivateLicencesOnOldBooking(oldBookingLicences)
       updateOffenderDetails(newBookingLicences, newNomisId)
     }
