@@ -2389,9 +2389,9 @@
       {
         "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
         "category": "Electronic monitoring",
-        "text": "Your electronic monitoring tag will check [CONDITIONS TO BE MONITORED]. You must wear the tag until [END DATE].",
+        "text": "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",
         "textPlural": null,
-        "tpl": "Your electronic monitoring tag will check {electronicMonitoringTypes}. You must wear the tag until {endDate}.",
+        "tpl": "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking {electronicMonitoringTypes} until {endDate}.",
         "requiresInput": true,
         "inputs": [
           {
