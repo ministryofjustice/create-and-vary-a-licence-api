@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 import java.util.UUID
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 
 @Service
 class MigrationService(
@@ -126,9 +127,9 @@ class MigrationService(
       pnc = pnc,
       cro = cro,
       crn = offenderManager.case.crn,
-      forename = prisoner.forename,
-      middleNames = prisoner.middleNames,
-      surname = prisoner.surname,
+      forename = prisoner.forename?.convertToTitleCase(),
+      middleNames = prisoner.middleNames?.convertToTitleCase(),
+      surname = prisoner.surname?.convertToTitleCase(),
       dateOfBirth = prisoner.dateOfBirth,
 
       // Prison details
