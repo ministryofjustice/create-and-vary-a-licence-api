@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonerDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateSentenceDetails
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V3_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
@@ -278,9 +279,9 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     assertThat(licence.crn).isEqualTo("X12345")
 
     assertThat(licence.nomsId).isEqualTo(request.prisoner.prisonerNumber)
-    assertThat(licence.forename).isEqualTo(request.prisoner.forename)
-    assertThat(licence.middleNames).isEqualTo(request.prisoner.middleNames)
-    assertThat(licence.surname).isEqualTo(request.prisoner.surname)
+    assertThat(licence.forename).isEqualTo(request.prisoner.forename?.convertToTitleCase())
+    assertThat(licence.middleNames).isEqualTo(request.prisoner.middleNames?.convertToTitleCase())
+    assertThat(licence.surname).isEqualTo(request.prisoner.surname?.convertToTitleCase())
     assertThat(licence.dateOfBirth).isEqualTo(request.prisoner.dateOfBirth)
 
     assertThat(licence.prisonCode).isEqualTo(request.prison.prisonCode)
