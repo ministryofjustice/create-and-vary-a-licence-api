@@ -628,7 +628,8 @@ val POLICY_V4_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "Your curfew hours are between [TIME] and [TIME] daily.",
+        text = "You must stay at the address approved by your supervising officer between [TIME] and [TIME] each day," +
+                " unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
         tpl = "Your curfew hours are between {oneCurfewStart}{twoCurfewStart}{threeCurfewStart} and {oneCurfewEnd}{twoCurfewEnd}{threeCurfewEnd}{twoCurfewStart2}{twoCurfewEnd2}{threeCurfewStart2}{threeCurfewEnd2}{threeCurfewStart3}{threeCurfewEnd3} daily.",
         type = "CurfewTermsV4",
       ),
