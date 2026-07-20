@@ -6,7 +6,7 @@ plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.1"
   id("org.owasp.dependencycheck") version "12.2.2"
   kotlin("plugin.spring") version "2.4.10"
-  kotlin("plugin.jpa") version "2.4.0"
+  kotlin("plugin.jpa") version "2.4.10"
 }
 
 repositories {
@@ -20,11 +20,11 @@ dependencies {
 
   // hmpps-kotlin-lib
   constraints {
-    implementation("org.apache.commons:commons-compress:1.26.0") {
+    implementation("org.apache.commons:commons-compress:1.28.0") {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
     }
     // FIX: CVE-2026-23907
-    implementation("org.apache.pdfbox:pdfbox:3.0.7") {
+    implementation("org.apache.pdfbox:pdfbox:3.0.8") {
       because("Fix CVE-2026-23907")
     }
   }
@@ -49,15 +49,15 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:6.0.1-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
-  implementation("org.apache.pdfbox:pdfbox:3.0.7")
+  implementation("org.apache.pdfbox:pdfbox:3.0.8")
   implementation("org.apache.pdfbox:jbig2-imageio:3.0.5")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.12")
+  runtimeOnly("org.postgresql:postgresql:42.7.13")
   implementation("com.google.code.gson:gson:2.14.0")
   implementation("io.arrow-kt:arrow-core:2.2.3")
 
@@ -68,7 +68,7 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:16.4.1")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.6.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.6.2")
   implementation("org.jsoup:jsoup:1.22.2")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
@@ -78,7 +78,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
 
   // Update to a version compatible with Spring Boot 4.0
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
 
   // Test dependencies
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
@@ -88,11 +88,11 @@ dependencies {
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.1")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
-  testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
-  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.0")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
+  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.2")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
-  testImplementation("org.wiremock:wiremock-standalone:3.13.1")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
