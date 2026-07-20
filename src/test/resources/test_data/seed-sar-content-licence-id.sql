@@ -462,7 +462,9 @@ insert into hdc_curfew_address (licence_id, first_line, second_line, town_or_cit
                                 post_release_residential_checks_not_completed_reason, created_timestamp,
                                 last_updated_timestamp)
 values (3, '1 Some Address', 'Off Some Road', 'Some Town', 'Some County', 'AB1 2CD',
-        '123e4567-e89b-12d3-a456-426614174000', null, 'MANUAL', 'RESIDENTIAL', true, null,
+        '123e4567-e89b-12d3-a456-426614174000', '6a8412ef-2061-460f-90e8-07f2a714cc1c', 'OS_PLACES', 'RESIDENTIAL',
+        false,
+        'There was not any capacity to complete the checks',
         '2026-01-01 12:23:33+00',
         '2026-01-01 12:23:33+00');
 
