@@ -3,9 +3,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("dev.detekt") version "2.0.0-alpha.5"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.4"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.1"
   id("org.owasp.dependencycheck") version "12.2.2"
-  kotlin("plugin.spring") version "2.4.0"
+  kotlin("plugin.spring") version "2.4.10"
   kotlin("plugin.jpa") version "2.4.0"
 }
 
@@ -29,7 +29,7 @@ dependencies {
     }
   }
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.5.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
 
   implementation("io.netty:netty-codec-http")
@@ -185,7 +185,8 @@ tasks {
   }
 
   register<Copy>("updateSarSnapshots") {
-    description = "Generates and copies updated SAR snapshot files into src/test/resources/sar (review the diff before committing)"
+    description =
+      "Generates and copies updated SAR snapshot files into src/test/resources/sar (review the diff before committing)"
     group = "verification"
     dependsOn("generateSarSnapshots")
     from("$projectDir/src/test/resources") {
