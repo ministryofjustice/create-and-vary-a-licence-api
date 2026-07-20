@@ -20,13 +20,13 @@ class RecallInsertedHandler(
   private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
   private val prisonService: PrisonService,
-) {
+) : EventHandler {
   companion object {
     private val log = LoggerFactory.getLogger(RecallInsertedHandler::class.java)
   }
 
   @Transactional
-  fun handleEvent(message: String) {
+  override fun handleEvent(message: String) {
     val event = try {
       mapper.readValue(message, HMPPSDomainEvent::class.java)
     } catch (e: JacksonException) {

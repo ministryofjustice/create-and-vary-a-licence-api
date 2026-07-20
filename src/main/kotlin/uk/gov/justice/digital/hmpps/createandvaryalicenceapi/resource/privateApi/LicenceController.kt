@@ -32,11 +32,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceRe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -62,66 +59,6 @@ class LicenceController(
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
-  }
-
-  @Deprecated("Use /licence/prison or /licence/probation instead")
-  @Tag(name = Tags.LICENCES)
-  @PostMapping(value = ["/create"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @ResponseBody
-  @Operation(
-    summary = "Create a licence",
-    description = "Creates a licence with the default status IN_PROGRESS and populates with the details provided." +
-      " Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Licence created",
-        content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = CreateLicenceResponse::class)),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "409",
-        description = "Conflict, resource already exists",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = EntityAlreadyExistsResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun createLicence(
-    @RequestBody @Valid
-    request: CreateLicenceRequest,
-  ): CreateLicenceResponse = when (request.type) {
-    HARD_STOP, TIME_SERVED -> licenceCreationService.createHardStopLicence(request.nomsId)
-    else -> licenceCreationService.createLicence(request.nomsId)
   }
 
   @Tag(name = Tags.LICENCES)

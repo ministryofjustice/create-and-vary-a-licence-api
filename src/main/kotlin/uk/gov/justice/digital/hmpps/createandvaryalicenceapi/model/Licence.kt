@@ -210,13 +210,6 @@ sealed interface Licence {
   )
   val licenceAppointmentAddress: AddressResponse?
 
-  @get:Deprecated("Use appointmentTelephoneNumber instead")
-  @get:Schema(
-    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
-    example = "0114 2557665",
-  )
-  val appointmentContact: String?
-
   @get:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
     example = "0114 2557665",

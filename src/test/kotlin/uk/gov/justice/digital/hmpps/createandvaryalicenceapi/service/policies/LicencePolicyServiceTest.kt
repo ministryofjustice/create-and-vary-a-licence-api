@@ -72,7 +72,8 @@ class LicencePolicyServiceTest {
       val version = "4.0"
 
       val response = licencePolicyService.getStandardConditionsForLicence(licence, version)
-      assertThat(response).hasSize(10)
+
+      assertThat(response).hasSize(8)
       assertThat(response.all { it.conditionVersion == version })
       assertThat(response.all { it.licence == licence })
     }

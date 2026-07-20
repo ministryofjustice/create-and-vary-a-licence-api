@@ -13,7 +13,9 @@ import uk.gov.justice.hmpps.kotlin.auth.service.GlobalPrincipalOAuth2AuthorizedC
 
 private const val HMPPS_AUTH = "hmpps-auth"
 private const val MAX_IN_MEMORY_SIZE = 10485760 // 10 MB
-private const val MAX_IN_MEMORY_SIZE_EXTENDED = 12582912 // 12 MB
+
+// temporarily increasing to cope with the incredibly large caseload at bristol
+private const val MAX_IN_MEMORY_SIZE_DELIUS = 37748736 // 36 MB
 
 @Configuration
 class WebClientConfiguration(
@@ -71,7 +73,7 @@ class WebClientConfiguration(
     prisonerSearchApiUrl,
     authorizedClientManagerCvl,
     builder,
-    maxInMemorySize = MAX_IN_MEMORY_SIZE_EXTENDED,
+    maxInMemorySize = MAX_IN_MEMORY_SIZE_DELIUS,
   )
 
   @Bean
@@ -84,7 +86,7 @@ class WebClientConfiguration(
   fun oauthDeliusApiClient(
     authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
-  ): WebClient = getWebClient(deliusApiUrl, authorizedClientManagerCvl, builder, maxInMemorySize = MAX_IN_MEMORY_SIZE_EXTENDED)
+  ): WebClient = getWebClient(deliusApiUrl, authorizedClientManagerCvl, builder, maxInMemorySize = MAX_IN_MEMORY_SIZE_DELIUS)
 
   @Bean
   fun oauthWorkLoadApiClient(

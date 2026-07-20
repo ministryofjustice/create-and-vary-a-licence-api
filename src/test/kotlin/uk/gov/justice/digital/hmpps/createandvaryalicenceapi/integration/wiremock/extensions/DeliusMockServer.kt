@@ -973,7 +973,9 @@ class DeliusMockServer :
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody("""{ "crn": "X12345", "nomisId": "A1234AA" }""")
+            .withBody(
+              """{ "crn": "X12345", "nomisId": "A1234AA", "croNumber": "SF39/6W", "pncNumber": "7428/85493"}""",
+            )
             .withStatus(200),
         ),
     )

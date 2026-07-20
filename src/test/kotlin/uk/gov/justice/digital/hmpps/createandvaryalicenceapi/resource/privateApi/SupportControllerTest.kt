@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.NotSecuredWe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RecallSupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
 
@@ -32,6 +33,9 @@ class SupportControllerTest {
   @MockitoBean
   private lateinit var comAllocatedHandler: ComAllocatedHandler
 
+  @MockitoBean
+  private lateinit var prisonerMergedHandler: PrisonerMergedHandler
+
   @Autowired
   private lateinit var mvc: MockMvc
 
@@ -43,7 +47,7 @@ class SupportControllerTest {
     reset(supportService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(SupportController(supportService, comAllocatedHandler))
+      .standaloneSetup(SupportController(supportService, comAllocatedHandler, prisonerMergedHandler))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }

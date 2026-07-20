@@ -30,7 +30,7 @@ generic-service:
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
     HDC_ENABLED: true
-
+    PRISONER_MERGED_HANDLER_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
