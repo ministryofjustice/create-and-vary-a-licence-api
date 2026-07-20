@@ -1386,6 +1386,12 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Drug, alcohol and solvent abuse",
+        code = "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
+        requiresInput = false,
+        text = "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. Do not try to stop or disrupt the test.",
+      ),
+      AdditionalConditionAp(
+        category = "Drug, alcohol and solvent abuse",
         code = "f1d2888b-be86-4732-8874-44cb867865c2",
         inputs = listOf(
           Input(

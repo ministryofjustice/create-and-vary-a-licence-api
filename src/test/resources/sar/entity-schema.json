@@ -225,19 +225,19 @@
   "HdcCurfewAddress": {
     "accommodationType": "AccommodationType",
     "county": "String",
+    "createdTimestamp": "LocalDateTime",
     "firstLine": "String",
     "idInternal": "Long",
+    "lastUpdatedTimestamp": "LocalDateTime",
     "licence": "Licence",
-    "postcode": "String",
-    "reference": "String",
     "postReleaseResidentialChecksCompleted": "Boolean",
     "postReleaseResidentialChecksNotCompletedReason": "String",
+    "postcode": "String",
+    "reference": "String",
     "secondLine": "String",
     "source": "AddressSource",
     "townOrCity": "String",
-    "uprn": "String",
-    "lastUpdatedTimestamp": "LocalDateTime",
-    "createdTimestamp": "LocalDateTime"
+    "uprn": "String"
   },
   "HdcLicence": {
     "actualReleaseDate": "LocalDate",
@@ -547,9 +547,9 @@
     "conditionSequence": "int",
     "conditionText": "String",
     "conditionType": "String",
+    "conditionVersion": "String",
     "id": "Long",
-    "licence": "Licence",
-    "conditionVersion": "String"
+    "licence": "Licence"
   },
   "TimeServedExternalRecord": {
     "bookingId": "long",
