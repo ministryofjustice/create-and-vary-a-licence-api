@@ -18,3 +18,24 @@ Run directly from the `scripts/` directory:
 ```bash
 ./smoke-dev.sh
 ```
+
+### export-additional-conditions.sh
+
+`export-additional-conditions.sh` is a bash script that outputs the additional conditions for a given 
+policy version with v4 being the default policy if the version is not specified.
+
+It provides a CSV containing the following columns:
+
+1. CVL Code - the code of the additional policy condition
+2. CVL Main Heading - the main category heading of the additional policy condition
+3. CVL Detail - the detailed description of the additional policy condition
+
+Dependencies: `jq`
+
+Run directly from the `scripts/` directory:
+
+```bash
+./export-additional-conditions.sh <policy-version>
+
+e.g. ./export-additional-conditions.sh v3
+```
