@@ -212,8 +212,3 @@ tasks {
 allOpen {
   annotation("jakarta.persistence.Entity")
 }
-
-dependencyCheck {
-  nvd.datafeedUrl = "file:///opt/vulnz/cache"
-  suppressionFiles.add("cvl-api-suppressions.xml")
-}
