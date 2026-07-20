@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -126,9 +127,9 @@ class MigrationService(
       pnc = pnc,
       cro = cro,
       crn = offenderManager.case.crn,
-      forename = prisoner.forename,
-      middleNames = prisoner.middleNames,
-      surname = prisoner.surname,
+      forename = prisoner.forename?.convertToTitleCase(),
+      middleNames = prisoner.middleNames?.convertToTitleCase(),
+      surname = prisoner.surname?.convertToTitleCase(),
       dateOfBirth = prisoner.dateOfBirth,
 
       // Prison details
