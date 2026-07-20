@@ -66,6 +66,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
           createCommunityManager(2, "A1234AB"),
           createCommunityManager(3, "C1234BC"),
           createCommunityManager(4, "B1234BC"),
+          createCommunityManager(5, "E1234BC"),
         ),
       )
 
@@ -79,7 +80,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ApprovalCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(4)
+      assertThat(caseload).hasSize(5)
       with(caseload[0]) {
         assertThat(releaseDate).isNull()
         assertThat(name).isEqualTo("Person Seven")
@@ -109,6 +110,14 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(name).isEqualTo("Person Eight")
         assertThat(prisonerNumber).isEqualTo("B1234BC")
         assertThat(releaseDateLabel).isEqualTo("HDC actual date")
+        assertThat(approvedBy).isNull()
+        assertThat(approvedOn).isNull()
+      }
+      with(caseload[4]) {
+        assertThat(releaseDate).isEqualTo(LocalDate.of(2026, 1, 1))
+        assertThat(name).isEqualTo("Person E")
+        assertThat(prisonerNumber).isEqualTo("E1234BC")
+        assertThat(releaseDateLabel).isEqualTo("Post-recall release date")
         assertThat(approvedBy).isNull()
         assertThat(approvedOn).isNull()
       }

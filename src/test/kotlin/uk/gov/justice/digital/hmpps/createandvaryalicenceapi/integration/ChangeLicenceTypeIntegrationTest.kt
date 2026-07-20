@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceTypeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -50,7 +49,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(standardConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
-    val result = webTestClient.post().uri("/licence/create").bodyValue(CreateLicenceRequest(nomsId = "A1234AA"))
+    val result = webTestClient.post().uri("/licence/probation/nomisid/A1234AA")
       .accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isOk.expectHeader().contentType(APPLICATION_JSON)
       .expectBody(CreateLicenceResponse::class.java).returnResult().responseBody!!
@@ -72,7 +71,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(result.licenceId).isGreaterThan(0L)
 
     val standardConditions = standardConditionRepository.findAll()
-    assertThat(standardConditions).hasSize(10)
+    assertThat(standardConditions).hasSize(8)
     assertThat(standardConditions.map { it.conditionType }).allMatch { it == "AP" }
     val additionalConditions = additionalConditionRepository.findAll()
     assertThat(additionalConditions).hasSize(1)
@@ -127,7 +126,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(standardConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
-    val result = webTestClient.post().uri("/licence/create").bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+    val result = webTestClient.post().uri("/licence/probation/nomisid/NOMSID")
       .accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isOk.expectHeader().contentType(APPLICATION_JSON)
       .expectBody(CreateLicenceResponse::class.java).returnResult().responseBody!!

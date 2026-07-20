@@ -21,7 +21,7 @@ class ComAllocatedHandler(
   private val mapper: ObjectMapper,
   private val staffService: StaffService,
   private val offenderManagerMapper: OffenderManagerMapper,
-) {
+) : EventHandler {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
@@ -34,7 +34,7 @@ class ComAllocatedHandler(
     }
   }
 
-  fun handleEvent(message: String) {
+  override fun handleEvent(message: String) {
     log.info("Received COM allocation event")
 
     val event = try {

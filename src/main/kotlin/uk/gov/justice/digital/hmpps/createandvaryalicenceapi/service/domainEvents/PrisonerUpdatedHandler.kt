@@ -29,13 +29,13 @@ class PrisonerUpdatedHandler(
   private val prisonApiClient: PrisonApiClient,
   private val staffRepository: StaffRepository,
   private val auditEventRepository: AuditEventRepository,
-) {
+) : EventHandler {
   companion object {
     private val log = LoggerFactory.getLogger(PrisonerUpdatedHandler::class.java)
   }
 
   @Transactional
-  fun handleEvent(message: String) {
+  override fun handleEvent(message: String) {
     val event = mapper.readValue(message, HMPPSPrisonerUpdatedEvent::class.java)
     val categoriesChanged = event.additionalInformation.categoriesChanged
     val nomsNumber = event.additionalInformation.nomsNumber
@@ -88,11 +88,11 @@ class PrisonerUpdatedHandler(
   private fun getLicences(nomisId: String, licenceStatuses: List<LicenceStatus>): List<Licence> = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomisId, licenceStatuses)
 
   fun updateLicences(licences: List<Licence>, prisonInformation: Prison) {
-    licences.map { licence ->
+    licences.forEach { licence ->
       val previousPrisonCode = licence.prisonCode
       if (previousPrisonCode == prisonInformation.prisonId) {
         log.info("Prison code for licence id ${licence.id} is already ${prisonInformation.prisonId}, skipping prisoner updated event")
-        return@map
+        return@forEach
       }
       val user =
         staffRepository.findByUsernameIgnoreCase(
@@ -135,6 +135,14 @@ data class HMPPSPrisonerUpdatedEvent(
   val description: String,
 )
 
+data class HMPPSPrisonerMergedEvent(
+  val eventType: String? = PRISON_OFFENDER_MERGED_EVENT_TYPE,
+  val additionalInformation: AdditionalInformationPrisonerMerged,
+  val version: Int,
+  val occurredAt: String,
+  val description: String,
+)
+
 data class AdditionalInformationPrisonerUpdated(
   val nomsNumber: String,
   val categoriesChanged: List<DiffCategory>,
@@ -152,3 +160,10 @@ enum class DiffCategory {
   PHYSICAL_DETAILS,
   CONTACT_DETAILS,
 }
+
+data class AdditionalInformationPrisonerMerged(
+  val bookingId: String,
+  val nomsNumber: String,
+  val removedNomsNumber: String,
+  val reason: String,
+)

@@ -170,3 +170,9 @@ dpr:
   lib:
     manage-users:
       host: http://localhost:8096
+
+
+prisoner:
+  merged:
+    handler:
+      enabled: true

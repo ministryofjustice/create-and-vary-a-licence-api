@@ -262,7 +262,11 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
-  fun recordAuditEventHdcCurfewAddressUpdate(licence: HdcVariationLicence, changes: Map<String, Any>, staffMember: Staff?) {
+  fun recordAuditEventHdcCurfewAddressUpdate(
+    licence: HdcVariationLicence,
+    changes: Map<String, Any>,
+    staffMember: Staff?,
+  ) {
     val summary = "Updated HDC curfew address"
 
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
@@ -388,6 +392,17 @@ class AuditService(
       ),
     )
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
+  }
+
+  fun recordPrisonerMergedEvent(licence: Licence, changes: Map<String, Any>) {
+    auditEventRepository.saveAndFlush(
+      createAuditEvent(
+        licence = licence,
+        summary = "Prisoner merged event",
+        staffMember = null,
+        changes = changes,
+      ),
+    )
   }
 
   private fun getAuditEventsForLicence(auditRequest: AuditRequest): List<ModelAuditEvent> {
