@@ -190,7 +190,6 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
       assertThat(result.prrdIneligibilityReasons).containsExactly(
         "has no post recall release date",
-        "is on non-eligible EDS",
       )
       assertThat(result.eligibleKind).isNull()
     }
@@ -210,7 +209,6 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
       assertThat(result.prrdIneligibilityReasons).containsExactly(
         "has no post recall release date",
-        "is on non-eligible EDS",
       )
       assertThat(result.eligibleKind).isNull()
     }
@@ -882,6 +880,66 @@ class EligibilityServiceTest {
       assertThat(result.crdIneligibilityReasons).containsExactly("has no conditional release date")
       assertThat(result.prrdIneligibilityReasons).isEmpty()
       assertThat(result.eligibleKind).isEqualTo(FIXED_TERM)
+    }
+
+    @Test
+    fun `Person is on ineligible EDS - has a APD and a PED in the past - not eligible for CVL `() {
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(
+          paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
+          actualParoleDate = LocalDate.now(clock).plusDays(1),
+        ),
+        HdcStatuses(emptyList()),
+      )
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
+      assertThat(result.prrdIneligibilityReasons).containsExactly(
+        "has no post recall release date",
+        "is on non-eligible EDS",
+      )
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `Person is on ineligible EDS - has a APD with a PED today - not eligible for CVL `() {
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(
+          paroleEligibilityDate = LocalDate.now(clock),
+          actualParoleDate = LocalDate.now(clock),
+        ),
+        HdcStatuses(emptyList()),
+      )
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).isEmpty()
+      assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
+      assertThat(result.prrdIneligibilityReasons).containsExactly(
+        "has no post recall release date",
+        "is on non-eligible EDS",
+      )
+      assertThat(result.eligibleKind).isNull()
+    }
+
+    @Test
+    fun `Person is on ineligible EDS - has a APD with a PED in the future - not eligible for CVL `() {
+      val result = service.getEligibilityAssessment(
+        aPrisonerSearchResult.copy(
+          paroleEligibilityDate = LocalDate.now(clock).plusDays(1),
+          actualParoleDate = LocalDate.now(clock).plusDays(1),
+        ),
+        HdcStatuses(emptyList()),
+      )
+
+      assertThat(result.isEligible).isFalse()
+      assertThat(result.genericIneligibilityReasons).containsExactly("is eligible for parole")
+      assertThat(result.crdIneligibilityReasons).containsExactly("is on non-eligible EDS")
+      assertThat(result.prrdIneligibilityReasons).containsExactly(
+        "has no post recall release date",
+        "is on non-eligible EDS",
+      )
+      assertThat(result.eligibleKind).isNull()
     }
   }
 
