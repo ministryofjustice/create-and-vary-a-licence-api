@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AddAnother
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ChangeHint
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Conditional
@@ -18,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionAp
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.LOWER
@@ -1599,57 +1597,7 @@ val POLICY_V4_0 = LicencePolicy(
         text = "Provide your supervising officer with the details of the full postal addresses of all premises and storage facilities, including business addresses, to which you have a right of access.",
       ),
     ),
-    pss = listOf(
-      AdditionalConditionPss(
-        category = "Drug appointment",
-        code = "62c83b80-2223-4562-a195-0670f4072088",
-        inputs = listOf(
-          Input(
-            includeBefore = " at ",
-            label = "Enter time (optional)",
-            name = "appointmentTime",
-            type = TIME_PICKER,
-          ),
-          Input(
-            includeBefore = " on ",
-            label = "Enter date (optional)",
-            name = "appointmentDate",
-            type = DATE_PICKER,
-          ),
-          Input(
-            label = "Enter the address for the appointment",
-            name = "appointmentAddress",
-            type = ADDRESS,
-          ),
-        ),
-        pssDates = true,
-        requiresInput = true,
-        text = "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
-        tpl = "Attend {appointmentAddress}{appointmentDate}{appointmentTime}, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
-        type = "AppointmentTimeAndPlaceDuringPss",
-        skippable = true,
-      ),
-      AdditionalConditionPss(
-        category = "Drug testing",
-        code = "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
-        inputs = listOf(
-          Input(
-            label = "Enter name",
-            name = "name",
-            type = TEXT,
-          ),
-          Input(
-            label = "Enter address",
-            name = "address",
-            type = ADDRESS,
-          ),
-        ),
-        requiresInput = true,
-        text = "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
-        tpl = "Attend {name} {address}, as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
-        type = "DrugTestLocation",
-      ),
-    ),
+    pss = emptyList(),
   ),
   changeHints = listOf(
     ChangeHint(
@@ -1737,40 +1685,7 @@ val POLICY_V4_0 = LicencePolicy(
         text = "Get permission from your supervising officer if you want to apply for a new passport. If requested, tell your supervising officer about any passports you have already.",
       ),
     ),
-    standardConditionsPss = listOf(
-      StandardConditionPss(
-        code = "b3cd4a30-11fd-4715-9ebb-ed89f5386e1f",
-        text = "Be of good behaviour and not behave in a way that undermines the rehabilitative purpose of the supervision period.",
-      ),
-      StandardConditionPss(
-        code = "b950407d-2270-45b8-9666-3ad58a17d0be",
-        text = "Not commit any offence.",
-      ),
-      StandardConditionPss(
-        code = "93413832-9954-4907-a64d-eb8a56e34afb",
-        text = "Keep in touch with your supervisor in accordance with instructions given by your supervisor.",
-      ),
-      StandardConditionPss(
-        code = "9288e01c-e40e-4040-8b6e-57092361f422",
-        text = "Receive visits from your supervisor in accordance with instructions given by your supervisor.",
-      ),
-      StandardConditionPss(
-        code = "8e15cf42-f8e0-4408-a33e-d16a3448b7bd",
-        text = "Reside permanently at an address approved by your supervisor and obtain the prior permission of the supervisor for any stay of one or more nights at a different address.",
-      ),
-      StandardConditionPss(
-        code = "0ed57797-2745-4592-a78b-8e4d712c580e",
-        text = "Not undertake work, or a particular type of work, unless it is approved by your supervisor and notify your supervisor in advance of any proposal to undertake work or a particular type of work.",
-      ),
-      StandardConditionPss(
-        code = "c8966621-088a-4b87-9a19-752ff8b900c6",
-        text = "Not travel outside the United Kingdom, the Channel Islands or the Isle of Man except with the prior permission of your supervisor or in order to comply with a legal obligation (whether or not arising under the law of any part of the United Kingdom, the Channel Islands or the Isle of Man).",
-      ),
-      StandardConditionPss(
-        code = "579060fd-e412-471c-94d7-2fefa06d5052",
-        text = "Participate in activities in accordance with any instructions given by your supervisor.",
-      ),
-    ),
+    standardConditionsPss = emptyList(),
   ),
   version = "4.0",
 )

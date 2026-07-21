@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Script to output the additional conditions for a given policy.
+# Script to output the standard and additional conditions for a given policy.
 # Requires: jq
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -8,7 +8,7 @@ ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 POLICY_DIR="${ROOT}/src/test/resources/test_data/policy_conditions"
 
 VERSION="${1:-v4}"
-OUTPUT_CSV="policy-${VERSION}-additional-conditions.csv"
+OUTPUT_CSV="policy-${VERSION}-conditions.csv"
 
 case "${VERSION}" in
   v1)   INPUT_JSON="${POLICY_DIR}/policyV1.json" ;;
@@ -32,15 +32,19 @@ if [[ ! -f "$INPUT_JSON" ]]; then
   exit 1
 fi
 
-echo "=== Outputting additional conditions for policy version ${VERSION} ==="
+echo "=== Outputting standard and additional conditions for policy version ${VERSION} ==="
 
 {
   echo '"CVL Code","CVL Main Heading","CVL Detail"'
   jq -r '
-    .additionalConditions
-    | to_entries[]
-    | .value[]
-    | [ .code, .category, .text ]
+    (
+      .standardConditions.AP[]
+      | [.code, "Standard Condition", .text]
+    ),
+    (
+      .additionalConditions.AP[]
+      | [ .code, .category, .text ]
+    )
     | @csv
   ' "$INPUT_JSON"
 } > "$OUTPUT_CSV"
