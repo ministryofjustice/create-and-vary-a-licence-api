@@ -148,7 +148,6 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .bodyToMono(typeReference<List<ManagedOffenderCrn>>())
     .block() ?: error("Unexpected null response from Delius staff caseload")
 
-  // TeamResource
   fun getManagedOffendersByTeam(teamCode: String): List<ManagedOffenderCrn> = deliusApiWebClient
     .get()
     .uri("/team/$teamCode/caseload/managed-offenders")
