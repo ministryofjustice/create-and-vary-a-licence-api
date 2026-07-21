@@ -35,7 +35,7 @@ class HdcService(
   private val licenceRepository: LicenceRepository,
   private val staffRepository: StaffRepository,
   private val auditService: AuditService,
-  @param:Value("\${feature.toggle.hdc.enabled}") private val useCurrentHdcStatus: Boolean = false,
+  @param:Value("\${feature.toggle.hdcCreation.enabled}") private val useCurrentHdcStatus: Boolean = false,
 ) {
 
   companion object {

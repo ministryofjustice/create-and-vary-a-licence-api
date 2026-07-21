@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("dev.detekt") version "2.0.0-alpha.5"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.4"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.1"
   id("org.owasp.dependencycheck") version "12.2.2"
-  kotlin("plugin.spring") version "2.4.0"
-  kotlin("plugin.jpa") version "2.4.0"
+  kotlin("plugin.spring") version "2.4.10"
+  kotlin("plugin.jpa") version "2.4.10"
 }
 
 repositories {
@@ -29,7 +29,7 @@ dependencies {
     }
   }
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.5.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
 
   implementation("io.netty:netty-codec-http")
@@ -164,6 +164,41 @@ tasks {
       includeTestsMatching("*IntegrationTest*")
     }
   }
+
+  val sarSnapshotFiles = listOf(
+    "sar-api-response.json",
+    "sar-generated-report.html",
+    "entity-schema.json",
+  )
+
+  register<Test>("generateSarSnapshots") {
+    description = "Runs the SAR integration test with SAR_GENERATE_ACTUAL=true to generate updated SAR snapshot files"
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform()
+    filter {
+      includeTestsMatching("*SubjectAccessRequestIntegrationTest*")
+    }
+    environment("SAR_GENERATE_ACTUAL", "true")
+    outputs.upToDateWhen { false }
+  }
+
+  register<Copy>("updateSarSnapshots") {
+    description =
+      "Generates and copies updated SAR snapshot files into src/test/resources/sar (review the diff before committing)"
+    group = "verification"
+    dependsOn("generateSarSnapshots")
+    from("$projectDir/src/test/resources") {
+      include(sarSnapshotFiles.map { "$it.log" })
+    }
+    into("$projectDir/src/test/resources/sar")
+    rename { it.removeSuffix(".log") }
+    doLast {
+      delete(sarSnapshotFiles.map { file("$projectDir/src/test/resources/$it.log") })
+    }
+  }
+
   register<Copy>("installLocalGitHook") {
     from(File(rootProject.rootDir, ".scripts/pre-commit"))
     into(File(rootProject.rootDir, ".git/hooks"))
@@ -176,9 +211,4 @@ tasks {
 
 allOpen {
   annotation("jakarta.persistence.Entity")
-}
-
-dependencyCheck {
-  nvd.datafeedUrl = "file:///opt/vulnz/cache"
-  suppressionFiles.add("cvl-api-suppressions.xml")
 }

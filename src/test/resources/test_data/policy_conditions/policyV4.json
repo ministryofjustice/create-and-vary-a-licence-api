@@ -2304,6 +2304,20 @@
         "requiresElectronicMonitoringResponse": false
       },
       {
+        "code": "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
+        "category": "Drug, alcohol and solvent abuse",
+        "text": "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. Do not try to stop or disrupt the test.",
+        "textPlural": null,
+        "tpl": null,
+        "requiresInput": false,
+        "inputs": null,
+        "categoryShort": null,
+        "subtext": null,
+        "type": null,
+        "skippable": false,
+        "requiresElectronicMonitoringResponse": false
+      },
+      {
         "code": "f1d2888b-be86-4732-8874-44cb867865c2",
         "category": "Drug, alcohol and solvent abuse",
         "text": "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A CONTROLLED DRUG / ALCOHOL / SOLVENTS].",
