@@ -140,7 +140,6 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
       .block()
   }
 
-  //
   fun getManagedOffenders(staffIdentifier: Long): List<ManagedOffenderCrn> = deliusApiWebClient
     .get()
     .uri("/staff/byid/{staffIdentifier}/caseload/managed-offenders", staffIdentifier)
