@@ -49,10 +49,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
@@ -778,7 +778,7 @@ object TestData {
     username = "aComUser",
   )
 
-  fun caseloadResult() = CaseloadResult(
+  fun managedOffender() = ManagedOffenderCrn(
     "A123456",
     "A1234AA",
     name = Name("Test", surname = "Surname"),
@@ -789,9 +789,9 @@ object TestData {
     team = TeamDetail(
       "A01B02",
       "Test Team",
-      Detail("B01", "Test borough"),
-      Detail("D01", "Test district"),
-      Detail("P01", "Test provider"),
+      borough = Detail("B01", "Test borough"),
+      district = Detail("D01", "Test district"),
+      provider = Detail("P01", "Test provider"),
     ),
     allocationDate = LocalDate.of(2023, 5, 24),
   )

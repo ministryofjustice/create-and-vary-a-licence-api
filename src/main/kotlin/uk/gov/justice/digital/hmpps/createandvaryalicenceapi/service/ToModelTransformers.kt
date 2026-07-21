@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
@@ -873,7 +873,7 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent
   eventTime = entity.eventTime,
 )
 
-fun CaseloadResult.transformToUnstartedRecord(
+fun ManagedOffenderCrn.transformToUnstartedRecord(
   kind: LicenceKind,
   bookingId: Long?,
   releaseDate: LocalDate?,
@@ -908,7 +908,7 @@ fun CaseloadResult.transformToUnstartedRecord(
     comName = com?.name?.fullName()?.convertToTitleCase(),
     comStaffCode = com?.code,
     probationPractitioner = probationPractitioner,
-    teamName = team.description,
+    teamName = team?.description,
     releaseDate = releaseDate,
     licenceId = null,
     licenceStatus = licenceStatus,

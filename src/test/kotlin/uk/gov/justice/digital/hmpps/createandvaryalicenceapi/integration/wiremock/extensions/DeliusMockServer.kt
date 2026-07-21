@@ -711,6 +711,10 @@ class DeliusMockServer :
                 "crn": "X12348",
                 "nomisId": "AB1234E",
                 "allocationDate": null,
+                "name": {
+                    "forename": "Test1 Firstname",
+                    "surname": "Test1 Surname"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -727,6 +731,10 @@ class DeliusMockServer :
                 "crn": "X12349",
                 "nomisId": "AB1234F",
                 "allocationDate": null,
+                "name": {
+                    "forename": "Test2 Firstname",
+                    "surname": "Test2 Surname"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -743,6 +751,10 @@ class DeliusMockServer :
                 "crn": "X12350",
                 "nomisId": "AB1234G",
                 "allocationDate": null,
+                "name": {
+                    "forename": "Test3 Firstname",
+                    "surname": "Test3 Surname"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -759,6 +771,10 @@ class DeliusMockServer :
                 "crn": "X12351",
                 "nomisId": "AB1234H",
                 "allocationDate": null,
+                "name": {
+                    "forename": "Test4 Firstname",
+                    "surname": "Test4 Surname"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -775,6 +791,10 @@ class DeliusMockServer :
                 "crn": "X12352",
                 "nomisId": "AB1234I",
                 "allocationDate": null,
+                "name": {
+                    "forename": "Test5 Firstname",
+                    "surname": "Test5 Surname"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -791,6 +811,10 @@ class DeliusMockServer :
                 "crn": "X12353",
                 "nomisId": "AB1234J",
                 "allocationDate": null,
+                "name": {
+                    "forename": "Test6 Firstname",
+                    "surname": "Test6 Surname"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -823,6 +847,10 @@ class DeliusMockServer :
                 "crn": "X12354",
                 "nomisId": "AB1234K",
                 "allocationDate": null,
+                "name": {
+                    "forename": "Test7 Firstname",
+                    "surname": "Test7 Surname"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -855,6 +883,10 @@ class DeliusMockServer :
                 "crn": "X12355",
                 "nomisId": "AB1234L",
                 "allocationDate": null,
+                "name": {
+                    "forename": "Test1 Firstname",
+                    "surname": "Test1 Surname"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -900,6 +932,11 @@ class DeliusMockServer :
                 "crn": "X12348",
                 "nomisId": "AB1234E",
                 "allocationDate": null,
+                "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -916,6 +953,11 @@ class DeliusMockServer :
                 "crn": "X12349",
                 "nomisId": "AB1234F",
                 "allocationDate": null,
+                "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",
@@ -932,6 +974,11 @@ class DeliusMockServer :
                 "crn": "X12353",
                 "nomisId": "AB1234G",
                 "allocationDate": null,
+                "name": { 
+                    "forename": "Joe",
+                    "middleName": "Steve",
+                    "surname": "Bloggs"
+                },
                 "staff": {
                   "id": null,
                   "code": "X1234",

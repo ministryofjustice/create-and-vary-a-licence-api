@@ -160,7 +160,7 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     staffIdentifier: Long,
     query: String,
     page: PageRequest = PageRequest.of(0, CASELOAD_PAGE_SIZE),
-  ): CaseloadResponse = deliusApiWebClient
+  ): List<ManagedOffenderCrn> = deliusApiWebClient
     .post()
     .uri {
       it.path("/staff/byid/{staffIdentifier}/caseload/team-managed-offenders")
@@ -177,7 +177,7 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono(typeReference<CaseloadResponse>())
-    .block() ?: error("Unexpected null response from Delius staff caseload")
+    .block()?.content ?: error("Unexpected null response from Delius staff caseload")
 
   fun assignDeliusRole(username: String): ResponseEntity<Void> = deliusApiWebClient.put()
     .uri("/users/$username/roles")

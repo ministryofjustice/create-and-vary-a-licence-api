@@ -63,6 +63,7 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -101,6 +102,7 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -145,6 +147,7 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -184,14 +187,17 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
       ManagedOffenderCrn(
         crn = "X12350",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
@@ -242,6 +248,7 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
     )
@@ -289,14 +296,17 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
       ManagedOffenderCrn(
         crn = "X12350",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
@@ -385,6 +395,7 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
     )
@@ -430,6 +441,7 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -465,6 +477,7 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -500,6 +513,7 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -543,6 +557,7 @@ class ComVaryCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -578,25 +593,21 @@ class ComVaryCaseloadServiceTest {
       ManagedOffenderCrn(
         crn = "X12348",
         nomisId = "AB1234E",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person1")),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
         nomisId = "AB1234F",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person2")),
       ),
       ManagedOffenderCrn(
         crn = "X12350",
         nomisId = "AB1234G",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person3")),
       ),
-    )
-
-    val service = ComVaryCaseloadService(
-      deliusApiClient,
-      licenceCaseRepository,
-      releaseDateLabelFactory,
-      telemetryService,
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
@@ -645,16 +656,19 @@ class ComVaryCaseloadServiceTest {
       ManagedOffenderCrn(
         crn = "X12350",
         nomisId = "AB1234E",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
       ManagedOffenderCrn(
         crn = "X12348",
         nomisId = "AB1234F",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
         nomisId = "AB1234G",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )

@@ -27,18 +27,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordSe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.caseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffender
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComCaseloadSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -92,7 +91,7 @@ class ComCaseloadSearchServiceTest {
     )
 
     whenever(deliusApiClient.getTeamManagedOffenders(2000, "Test"))
-      .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+      .thenReturn(listOf(managedOffender()))
   }
 
   @Test
@@ -139,7 +138,7 @@ class ComCaseloadSearchServiceTest {
           ),
         ),
       ),
-    ).thenReturn(CaseloadResponse(listOf(caseloadResult())))
+    ).thenReturn(listOf(managedOffender()))
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
@@ -290,7 +289,7 @@ class ComCaseloadSearchServiceTest {
   @Test
   fun `search for offenders in prison without a licence where NOMIS ID is not populated`() {
     whenever(deliusApiClient.getTeamManagedOffenders(2000, "Test"))
-      .thenReturn(CaseloadResponse(listOf(caseloadResult().copy(crn = "X123456", nomisId = null))))
+      .thenReturn(listOf(managedOffender().copy(crn = "X123456", nomisId = null)))
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 
@@ -939,7 +938,7 @@ class ComCaseloadSearchServiceTest {
         ),
       ).thenReturn(listOf(aCvlRecord()))
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
-        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+        .thenReturn(listOf(managedOffender()))
 
       request = ProbationUserSearchRequest("A123456", 2000)
     }
@@ -1157,7 +1156,7 @@ class ComCaseloadSearchServiceTest {
       )
 
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
-        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+        .thenReturn(listOf(managedOffender()))
       whenever(
         licenceRepository.findAllByCrnAndStatusCodeIn(
           any(),
@@ -1180,7 +1179,7 @@ class ComCaseloadSearchServiceTest {
     @Test
     fun `when searching by CRN, include LAO excluded cases`() {
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
-        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+        .thenReturn(listOf(managedOffender()))
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
         .thenReturn(listOf(aLicenceEntity.copy(crn = "A123456")))
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
@@ -1242,7 +1241,7 @@ class ComCaseloadSearchServiceTest {
       request = ProbationUserSearchRequest("Test", 2000)
 
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "Test"))
-        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+        .thenReturn(listOf(managedOffender()))
 
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((emptyList()))
       whenever(deliusApiClient.getCheckUserAccess(any(), any(), any())).thenReturn(
@@ -1268,7 +1267,7 @@ class ComCaseloadSearchServiceTest {
       request = ProbationUserSearchRequest("A123", 2000)
 
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123"))
-        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+        .thenReturn(listOf(managedOffender()))
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
         .thenReturn(emptyList())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
@@ -1289,7 +1288,7 @@ class ComCaseloadSearchServiceTest {
       request = ProbationUserSearchRequest("23456", 2000)
 
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "23456"))
-        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+        .thenReturn(listOf(managedOffender()))
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
         .thenReturn(emptyList())
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
@@ -1325,7 +1324,7 @@ class ComCaseloadSearchServiceTest {
       )
 
       whenever(deliusApiClient.getTeamManagedOffenders(2000, "A123456"))
-        .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+        .thenReturn(listOf(managedOffender()))
       whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licenceWithPastDate))
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(cvlRecordService.getCvlRecords(any())).thenReturn(
