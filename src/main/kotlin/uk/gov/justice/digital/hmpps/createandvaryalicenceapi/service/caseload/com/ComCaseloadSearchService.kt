@@ -20,9 +20,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.getVersionOf
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient.Companion.CASELOAD_PAGE_SIZE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
@@ -35,7 +35,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import java.time.Clock
 import java.time.LocalDate
-import kotlin.collections.filter
 
 @Service
 class ComCaseloadSearchService(
@@ -50,7 +49,7 @@ class ComCaseloadSearchService(
 ) {
   @Transactional()
   fun searchForOffenderOnProbationUserCaseload(body: ProbationUserSearchRequest): ComSearchResponse {
-    val teamCaseloadResult = deliusApiClient.getTeamManagedOffenders(
+    val offenders = deliusApiClient.getTeamManagedOffenders(
       body.staffIdentifier,
       body.query,
       PageRequest.of(
@@ -58,19 +57,19 @@ class ComCaseloadSearchService(
         CASELOAD_PAGE_SIZE,
         Sort.by(body.sortBy.map { Sort.Order(it.direction, it.field.probationSearchApiSortType) }),
       ),
-    ).content
+    )
 
-    val deliusRecordsToLicences = teamCaseloadResult.map { it to getLicence(it.crn) }
+    val deliusRecordsToLicences = offenders.map { it to getLicence(it.crn) }
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsToLicences)
     val cvlRecordsByPrisonNumber =
       cvlRecordService.getCvlRecords(prisonerRecords.values.toList()).associateBy { it.nomisId }
     val caseAccessRecords = getCaseAccessRecords(deliusRecordsToLicences)
 
-    val searchResults = deliusRecordsToLicences.mapNotNull { (caseloadResult, licence) ->
-      val prisonerRecord = prisonerRecords[caseloadResult.nomisId]
-      val cvlRecord = cvlRecordsByPrisonNumber[caseloadResult.nomisId]
-      val caseAccessRecord = caseAccessRecords[caseloadResult.crn] ?: unrestricted
-      val case = createCase(licence, caseloadResult, prisonerRecord, cvlRecord, caseAccessRecord)
+    val searchResults = deliusRecordsToLicences.mapNotNull { (offender, licence) ->
+      val prisonerRecord = prisonerRecords[offender.nomisId]
+      val cvlRecord = cvlRecordsByPrisonNumber[offender.nomisId]
+      val caseAccessRecord = caseAccessRecords[offender.crn] ?: unrestricted
+      val case = createCase(licence, offender, prisonerRecord, cvlRecord, caseAccessRecord)
       case?.takeUnless { it.isExcludedFromCaseloads(body.query) }
     }
 
@@ -86,14 +85,14 @@ class ComCaseloadSearchService(
 
   private fun createCase(
     licence: Licence?,
-    caseloadResult: CaseloadResult,
+    offender: ManagedOffenderCrn,
     prisonerRecord: PrisonerSearchPrisoner?,
     cvlRecord: CvlRecord?,
     caseAccessRecord: CaseAccessResponse,
   ): FoundComCase? = if (licence == null) {
-    createNotStartedCase(caseloadResult, prisonerRecord, cvlRecord, caseAccessRecord)
+    createNotStartedCase(offender, prisonerRecord, cvlRecord, caseAccessRecord)
   } else {
-    createCaseWithExistingLicence(caseloadResult, licence, prisonerRecord, cvlRecord, caseAccessRecord)
+    createCaseWithExistingLicence(offender, licence, prisonerRecord, cvlRecord, caseAccessRecord)
   }
 
   private fun getLicence(crn: String): Licence? {
@@ -102,7 +101,7 @@ class ComCaseloadSearchService(
     return licences.maxWithOrNull(versionComparator)
   }
 
-  private fun findPrisonersForRelevantRecords(record: List<Pair<CaseloadResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
+  private fun findPrisonersForRelevantRecords(record: List<Pair<ManagedOffenderCrn, Licence?>>): Map<String, PrisonerSearchPrisoner> {
     val prisonNumbers = record
       .filter { (_, licence) -> licence == null || !licence.statusCode.isOnProbation() }
       .mapNotNull { (result, _) -> result.nomisId }
@@ -115,7 +114,7 @@ class ComCaseloadSearchService(
   }
 
   private fun createNotStartedCase(
-    deliusOffender: CaseloadResult,
+    deliusOffender: ManagedOffenderCrn,
     prisonOffender: PrisonerSearchPrisoner?,
     cvlRecord: CvlRecord?,
     caseAccessRecord: CaseAccessResponse,
@@ -129,7 +128,7 @@ class ComCaseloadSearchService(
   }
 
   private fun createCaseWithExistingLicence(
-    deliusOffender: CaseloadResult,
+    deliusOffender: ManagedOffenderCrn,
     licence: Licence,
     prisonOffender: PrisonerSearchPrisoner?,
     cvlRecord: CvlRecord?,
@@ -142,7 +141,7 @@ class ComCaseloadSearchService(
     else -> null
   }
 
-  private fun CaseloadResult.toUnstartedRecord(
+  private fun ManagedOffenderCrn.toUnstartedRecord(
     prisonOffender: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
     caseAccessRecord: CaseAccessResponse,
@@ -160,7 +159,7 @@ class ComCaseloadSearchService(
     isRestricted = caseAccessRecord.userRestricted,
   )
 
-  private fun CaseloadResult.toCaseWithLicence(
+  private fun ManagedOffenderCrn.toCaseWithLicence(
     licence: Licence,
     caseAccessRecord: CaseAccessResponse,
   ) = this.transformToCaseWithLicence(
@@ -183,7 +182,7 @@ class ComCaseloadSearchService(
     )
   }
 
-  fun CaseloadResult.transformToCaseWithLicence(
+  fun ManagedOffenderCrn.transformToCaseWithLicence(
     licence: Licence,
     hardStopDate: LocalDate?,
     hardStopWarningDate: LocalDate?,
@@ -213,7 +212,7 @@ class ComCaseloadSearchService(
       comName = com?.name?.fullName()?.convertToTitleCase(),
       comStaffCode = com?.code,
       probationPractitioner = probationPractitioner,
-      teamName = team.description,
+      teamName = team?.description,
       releaseDate = licence.licenceStartDate,
       licenceId = licence.id,
       versionOf = getVersionOf(licence),
@@ -240,9 +239,9 @@ class ComCaseloadSearchService(
     }
   }
 
-  private fun getCaseAccessRecords(deliusRecordsToLicences: List<Pair<CaseloadResult, Licence?>>): Map<String, CaseAccessResponse> {
+  private fun getCaseAccessRecords(deliusRecordsToLicences: List<Pair<ManagedOffenderCrn, Licence?>>): Map<String, CaseAccessResponse> {
     val username = SecurityContextHolder.getContext().authentication?.name!!
-    val crns = deliusRecordsToLicences.map { (caseloadResult, _) -> caseloadResult.crn }
+    val crns = deliusRecordsToLicences.map { (offender, _) -> offender.crn }
     return deliusApiClient.getCheckUserAccess(username, crns).associateBy { it.crn }
   }
 
