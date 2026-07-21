@@ -19,7 +19,7 @@
       "id": "licence-dataset",
       "name": "licence-dataset",
       "datasource": "cvl",
-      "query": "SELECT licence_start_date, probation_pdu_code, probation_pdu_description, crn FROM licence WHERE kind <> 'VARIATION' AND approved_date IS NOT NULL AND probation_area_code = 'N07' AND status_code <> 'INACTIVE'",
+      "query": "SELECT licence_start_date, probation_pdu_code, probation_pdu_description, crn FROM licence WHERE kind <> 'VARIATION' AND kind <> 'HDC' AND kind <> 'HDC_VARIATION' AND approved_date IS NOT NULL AND probation_area_code = 'N07' AND status_code <> 'INACTIVE'",
       "schema": {
         "field": [
           {
