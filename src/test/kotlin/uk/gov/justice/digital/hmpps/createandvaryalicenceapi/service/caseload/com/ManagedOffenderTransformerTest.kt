@@ -3,11 +3,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.managedOffender
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderCrnTransformer.toProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderTransformer.toProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 
-class ManagedOffenderCrnTransformerTest {
+class ManagedOffenderTransformerTest {
   @Test
   fun `should map staff to unallocated ProbationPractitioner when staff is unallocated`() {
     val staff = StaffDetail(code = "X123", name = Name("John", null, "Doe"), unallocated = true)
