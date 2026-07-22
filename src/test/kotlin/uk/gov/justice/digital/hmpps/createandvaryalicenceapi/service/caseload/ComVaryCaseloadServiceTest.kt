@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffender
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
@@ -61,8 +61,9 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `it builds the staff vary caseload where there is a single licence`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -99,8 +100,9 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `it builds the staff vary caseload where there are multiple licences`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -143,8 +145,9 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `telemetry is captured for staff`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -182,16 +185,19 @@ class ComVaryCaseloadServiceTest {
     val selectedTeam = "team C"
 
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12349",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12350",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
@@ -240,8 +246,9 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `it builds the staff vary caseload with Review Needed status`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
     )
@@ -287,16 +294,19 @@ class ComVaryCaseloadServiceTest {
     val selectedTeam = "team C"
 
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12349",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12350",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
@@ -383,8 +393,9 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `it builds the team vary caseload with Review Needed status`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
     )
@@ -428,8 +439,9 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `LAO cases are returned as restricted in the caseload when they are excluded`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -463,8 +475,9 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `LAO cases are returned as restricted in the caseload when they are restricted`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -498,8 +511,9 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `Cases are not returned as restricted where they are not excluded or restricted`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -541,8 +555,9 @@ class ComVaryCaseloadServiceTest {
     val selectedTeam = "team C"
 
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
@@ -575,28 +590,24 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `it sorts non-restricted cases by release date then name before restricted cases which are sorted by CRN`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
         nomisId = "AB1234E",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person1")),
       ),
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12349",
         nomisId = "AB1234F",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person2")),
       ),
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12350",
         nomisId = "AB1234G",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Test", surname = "Person3")),
       ),
-    )
-
-    val service = ComVaryCaseloadService(
-      deliusApiClient,
-      licenceCaseRepository,
-      releaseDateLabelFactory,
-      telemetryService,
     )
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
@@ -642,19 +653,22 @@ class ComVaryCaseloadServiceTest {
   @Test
   fun `it sorts multiple restricted LAO cases by CRN`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12350",
         nomisId = "AB1234E",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12348",
         nomisId = "AB1234F",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
-      ManagedOffenderCrn(
+      ManagedOffender(
         crn = "X12349",
         nomisId = "AB1234G",
+        name = Name(forename = "John", surname = "Smith"),
         staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )

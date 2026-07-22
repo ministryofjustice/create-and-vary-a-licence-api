@@ -49,14 +49,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManagerWithoutUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffender
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
@@ -778,7 +779,7 @@ object TestData {
     username = "aComUser",
   )
 
-  fun caseloadResult() = CaseloadResult(
+  fun managedOffender() = ManagedOffender(
     "A123456",
     "A1234AA",
     name = Name("Test", surname = "Surname"),
@@ -786,12 +787,9 @@ object TestData {
       "A01B02C",
       Name("Staff", surname = "Surname"),
     ),
-    team = TeamDetail(
+    team = TeamSummary(
       "A01B02",
       "Test Team",
-      Detail("B01", "Test borough"),
-      Detail("D01", "Test district"),
-      Detail("P01", "Test provider"),
     ),
     allocationDate = LocalDate.of(2023, 5, 24),
   )
