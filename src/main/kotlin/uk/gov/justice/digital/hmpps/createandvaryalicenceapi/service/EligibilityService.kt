@@ -85,6 +85,7 @@ class EligibilityService(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
       !isBeingReleasedAtSled(prisoner) to "is being released at SLED",
+      isRecallEligibleIfOnAnExtendedDeterminateSentence(prisoner) to "is on non-eligible EDS",
       !isExpectedHdcRelease to "is expected to be released on HDC",
     )
 
@@ -160,6 +161,7 @@ class EligibilityService(
 
   private fun isBeingReleasedAtSled(prisoner: PrisonerSearchPrisoner): Boolean = when {
     prisoner.postRecallReleaseDate == null -> false
+
     prisoner.licenceExpiryDate == null -> false
 
     else -> {
@@ -172,6 +174,20 @@ class EligibilityService(
     prisoner.conditionalReleaseDate.isOnOrAfter(
       LocalDate.now(clock).plusDays(MINIMUM_HDC_WINDOW_DAYS),
     )
+
+  private fun isRecallEligibleIfOnAnExtendedDeterminateSentence(prisoner: PrisonerSearchPrisoner): Boolean {
+    // If you don’t have a PED, you automatically pass this check as you’re not an EDS case
+    if (prisoner.paroleEligibilityDate == null) {
+      return true
+    }
+
+    // an APD with a PED in the past means they were a successful parole applicant on a later attempt, so not eligible
+    if (prisoner.actualParoleDate != null) {
+      return false
+    }
+
+    return true
+  }
 
   // Shared eligibility rules
   private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate != null

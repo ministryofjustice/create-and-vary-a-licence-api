@@ -140,27 +140,27 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
       .block()
   }
 
-  fun getManagedOffenders(staffIdentifier: Long): List<ManagedOffenderCrn> = deliusApiWebClient
+  fun getManagedOffenders(staffIdentifier: Long): List<ManagedOffender> = deliusApiWebClient
     .get()
     .uri("/staff/byid/{staffIdentifier}/caseload/managed-offenders", staffIdentifier)
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono(typeReference<List<ManagedOffenderCrn>>())
+    .bodyToMono(typeReference<List<ManagedOffender>>())
     .block() ?: error("Unexpected null response from Delius staff caseload")
 
-  fun getManagedOffendersByTeam(teamCode: String): List<ManagedOffenderCrn> = deliusApiWebClient
+  fun getManagedOffendersByTeam(teamCode: String): List<ManagedOffender> = deliusApiWebClient
     .get()
     .uri("/team/$teamCode/caseload/managed-offenders")
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono(typeReference<List<ManagedOffenderCrn>>())
+    .bodyToMono(typeReference<List<ManagedOffender>>())
     .block() ?: error("Unexpected null response from Delius staff caseload")
 
   fun getTeamManagedOffenders(
     staffIdentifier: Long,
     query: String,
     page: PageRequest = PageRequest.of(0, CASELOAD_PAGE_SIZE),
-  ): CaseloadResponse = deliusApiWebClient
+  ): List<ManagedOffender> = deliusApiWebClient
     .post()
     .uri {
       it.path("/staff/byid/{staffIdentifier}/caseload/team-managed-offenders")
@@ -177,7 +177,7 @@ class DeliusApiClient(@param:Qualifier("oauthDeliusApiClient") val deliusApiWebC
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono(typeReference<CaseloadResponse>())
-    .block() ?: error("Unexpected null response from Delius staff caseload")
+    .block()?.content ?: error("Unexpected null response from Delius staff caseload")
 
   fun assignDeliusRole(username: String): ResponseEntity<Void> = deliusApiWebClient.put()
     .uri("/users/$username/roles")

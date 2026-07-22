@@ -2,11 +2,16 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
 import java.time.LocalDate
 
-data class CaseloadResult(
+data class ManagedOffender(
   val crn: String,
   val nomisId: String? = null,
   val name: Name,
-  val allocationDate: LocalDate,
+  val allocationDate: LocalDate? = null,
   val staff: StaffDetail,
-  val team: TeamDetail,
+  val team: TeamSummary? = null,
+)
+
+data class TeamSummary(
+  val code: String,
+  val description: String,
 )
