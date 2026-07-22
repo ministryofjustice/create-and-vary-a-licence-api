@@ -103,25 +103,6 @@ interface LicenceRepository :
 
   @Query(
     """
-      SELECT l
-      FROM Licence l
-      WHERE l.kind IN (
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION,
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION)
-      AND (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE
-      AND l.typeCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS))
-      AND l.statusCode IN (
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS,
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED,
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED,
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
-  )
-  """,
-  )
-  fun getAllVariedLicencesInPSSPeriod(): List<Licence>
-
-  @Query(
-    """
     SELECT l
         FROM Licence l
         WHERE l.statusCode != uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE

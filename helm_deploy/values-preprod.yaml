@@ -85,12 +85,6 @@ jobs:
     cron: "45 8 * * 1-5" # 8:45am UTC Monday - Friday
     allowRetry: true
 
-  - name: remove-expired-conditions-job
-    enabled: true
-    path: /remove-expired-conditions
-    cron: "30 8 * * 1-5" # 8:30am UTC Monday - Friday
-    allowRetry: true
-
   - name: notify-probation-of-unapproved-licences-job
     enabled: true
     path: /notify-probation-of-unapproved-licences

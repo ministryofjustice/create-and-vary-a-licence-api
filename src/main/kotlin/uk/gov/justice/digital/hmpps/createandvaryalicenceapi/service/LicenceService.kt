@@ -7,7 +7,6 @@ import org.springframework.data.core.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
@@ -74,9 +73,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -939,17 +935,11 @@ class LicenceService(
       original.standardConditions.map { it.copy(id = null, licence = copy) },
     )
 
-    val isNowInPssPeriod =
-      original.kind.isVariation() && original.typeCode == AP_PSS && original.isInPssPeriod()
-
-    if (!isNowInPssPeriod) {
-      copy.bespokeConditions.addAll(
-        original.bespokeConditions.map { it.copy(id = null, licence = copy) },
-      )
-    }
+    copy.bespokeConditions.addAll(
+      original.bespokeConditions.map { it.copy(id = null, licence = copy) },
+    )
 
     val copiedAdditionalConditions = original.additionalConditions
-      .run { if (isNowInPssPeriod) filter { it.isNotAp() } else this }
       .map { condition ->
 
         val copiedCondition = condition.copy(
@@ -1015,8 +1005,6 @@ class LicenceService(
       ?: error("Cannot find staff with username: $username")
     return staff as? CommunityOffenderManager ?: error("Cannot find staff with username: $username")
   }
-
-  private fun AdditionalCondition.isNotAp() = LicenceType.valueOf(this.conditionType) != AP
 
   private fun splitName(fullName: String?): Pair<String?, String?> {
     val names = fullName?.split(" ")?.toMutableList()
