@@ -826,21 +826,8 @@ class DeliusMockServer :
                   "unallocated": null
                 },
                 "team": {
-                  "id": 1,
                   "code": "TEAM1",
-                  "description": "Team 1",
-                  "district": {
-                    "code": "DISTRICT1",
-                    "description": "District 1"
-                  },
-                  "borough": {
-                    "code": "BOROUGH1",
-                    "description": "Borough 1"
-                  },
-                  "provider": {
-                    "code": "REGION1",
-                    "description": "Region 1"
-                  }
+                  "description": "Team 1"
                 }
               },
               {
@@ -862,21 +849,8 @@ class DeliusMockServer :
                   "unallocated": null
                 },
                 "team": {
-                  "id": 2,
                   "code": "TEAM2",
-                  "description": "Team 2",
-                  "district": {
-                    "code": "DISTRICT2",
-                    "description": "District 2"
-                  },
-                  "borough": {
-                    "code": "BOROUGH2",
-                    "description": "Borough 2"
-                  },
-                  "provider": {
-                    "code": "REGION2",
-                    "description": "Region 2"
-                  }
+                  "description": "Team 2"
                 }
               },
               {
@@ -898,21 +872,8 @@ class DeliusMockServer :
                   "unallocated": null
                 },
                 "team": {
-                  "id": 2,
                   "code": "TEAM2",
-                  "description": "Team 2",
-                  "district": {
-                    "code": "DISTRICT2",
-                    "description": "District 2"
-                  },
-                  "borough": {
-                    "code": "BOROUGH2",
-                    "description": "Borough 2"
-                  },
-                  "provider": {
-                    "code": "REGION2",
-                    "description": "Region 2"
-                  }
+                  "description": "Team 2"
                 }
               }
             ]
@@ -990,21 +951,8 @@ class DeliusMockServer :
                   "unallocated": null
                 },
                 "team": {
-                  "id": 1,
                   "code": "TEAM1",
-                  "description": "Team 1",
-                  "district": {
-                    "code": "DISTRICT1",
-                    "description": "District 1"
-                  },
-                  "borough": {
-                    "code": "BOROUGH1",
-                    "description": "Borough 1"
-                  },
-                  "provider": {
-                    "code": "REGION1",
-                    "description": "Region 1"
-                  }
+                  "description": "Team 1"
                 }
               }
             ]
@@ -1094,19 +1042,7 @@ class DeliusMockServer :
           },
           "team": {
             "code": "A01B02",
-            "description": "Test Team",
-            "borough": {
-              "code": "A01B02",
-              "description": "description"
-            },
-            "district": {
-              "code": "A01B02",
-              "description": "description"
-            },
-            "provider": { 
-              "code": "probationArea-code-1", 
-              "description": "probationArea-description-1"
-            }
+            "description": "Test Team"
           },
           "allocationDate": "2023-05-24"
         },

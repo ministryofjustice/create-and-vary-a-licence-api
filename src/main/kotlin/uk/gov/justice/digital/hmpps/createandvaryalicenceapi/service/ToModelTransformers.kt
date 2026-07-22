@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffender
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
@@ -873,7 +873,7 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent
   eventTime = entity.eventTime,
 )
 
-fun ManagedOffenderCrn.transformToUnstartedRecord(
+fun ManagedOffender.transformToUnstartedRecord(
   kind: LicenceKind,
   bookingId: Long?,
   releaseDate: LocalDate?,

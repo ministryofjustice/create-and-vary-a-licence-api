@@ -12,13 +12,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ReleaseDateLabelFactory
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderCrnTransformer.toProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderTransformer.toProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.RelevantLicenceFinder.findRelevantLicencePerCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffender
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse.Companion.unrestricted
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -71,7 +71,7 @@ class ComCreateCaseloadService(
   }
 
   private fun buildCreateCaseload(
-    managedOffenders: List<ManagedOffenderCrn>,
+    managedOffenders: List<ManagedOffender>,
     isAdminUser: Boolean,
   ): List<ComCreateCase> {
     val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
@@ -84,7 +84,7 @@ class ComCreateCaseloadService(
     return transformToCreateCaseload(filteredCases)
   }
 
-  private fun pairDeliusRecordsWithNomis(managedOffenders: List<ManagedOffenderCrn>): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> {
+  private fun pairDeliusRecordsWithNomis(managedOffenders: List<ManagedOffender>): Map<ManagedOffender, PrisonerSearchPrisoner> {
     val caseloadNomisIds = managedOffenders.mapNotNull { offender -> offender.nomisId }
 
     val nomisRecords =
@@ -95,14 +95,14 @@ class ComCreateCaseloadService(
   }
 
   private fun filterCasesEligibleForCvl(
-    cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>,
+    cases: Map<ManagedOffender, PrisonerSearchPrisoner>,
     cvlRecords: List<CvlRecord>,
-  ): Map<ManagedOffenderCrn, PrisonerSearchPrisoner> = cases.filter { (_, nomisRecord) ->
+  ): Map<ManagedOffender, PrisonerSearchPrisoner> = cases.filter { (_, nomisRecord) ->
     cvlRecords.first { it.nomisId == nomisRecord.prisonerNumber }.isEligible
   }
 
   private fun createComCases(
-    cases: Map<ManagedOffenderCrn, PrisonerSearchPrisoner>,
+    cases: Map<ManagedOffender, PrisonerSearchPrisoner>,
     cvlRecords: List<CvlRecord>,
     isAdminUser: Boolean,
   ): List<Case> {
@@ -174,7 +174,7 @@ class ComCreateCaseloadService(
   )
 
   private fun createNotStartedLicenceDto(
-    deliusRecord: ManagedOffenderCrn,
+    deliusRecord: ManagedOffender,
     nomisRecord: PrisonerSearchPrisoner,
     cvlRecord: CvlRecord,
     isRestricted: Boolean,
