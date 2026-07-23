@@ -132,6 +132,8 @@ notify:
     variationReferred: e124b2ff-68e1-4364-894b-b723289d1fdc
     licenceReviewOverdue: 2eeff8dd-8935-404c-ab39-0eed5e083db5
 
+    progressionLicenceDeactivated: 32a0542c-5f02-4c4a-b536-41688f015935
+
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'
 
@@ -180,6 +182,11 @@ feature:
     isr:
       repeal:
         date: ${ISR_REPEAL_DATE:#{null}}
+
+progression:
+  model:
+    policy-start-date: ${PROGRESSION_MODEL_POLICY_START_DATE}
+    notification-window-end-date: ${PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE}
 
 hmpps:
   cases:

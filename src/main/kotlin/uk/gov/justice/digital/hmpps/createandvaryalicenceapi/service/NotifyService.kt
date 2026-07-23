@@ -31,6 +31,7 @@ class NotifyService(
   @param:Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
   @param:Value("\${notify.templates.licenceReviewOverdue}") private val licenceReviewOverdueTemplateId: String,
   @param:Value("\${notify.templates.initialComAllocation}") private val initialComAllocationTemplateId: String,
+  @param:Value("\${notify.templates.progressionLicenceDeactivated}") private val progressionLicenceDeactivatedTemplateId: String,
   @param:Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
@@ -292,6 +293,32 @@ class NotifyService(
     if (sendEmail(licenceReviewOverdueTemplateId, emailAddress, values)) {
       val licenceStatus = if (isTimeServedLicence) "TIME SERVED" else "HARD STOP"
       log.info("Notification sent to $emailAddress $licenceStatus LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
+    }
+  }
+
+  fun sendLicenceDeactivatedForProgressionEmail(
+    emailAddress: String?,
+    crn: String,
+    comFirstName: String,
+    comLastName: String,
+    pipFirstName: String,
+    pipLastName: String,
+  ) {
+    if (emailAddress.isNullOrBlank()) {
+      log.error("Notification failed (sendLicenceDeactivatedForProgressionEmail) - email address not present for crn $crn")
+      return
+    }
+
+    val values: Map<String, String> = mapOf(
+      "crn" to crn,
+      "comFirstName" to comFirstName,
+      "comLastName" to comLastName,
+      "pipFirstName" to pipFirstName,
+      "pipLastName" to pipLastName,
+    )
+
+    if (sendEmail(progressionLicenceDeactivatedTemplateId, emailAddress, values)) {
+      log.info("Notification sent to $emailAddress LICENCE DEACTIVATED FOR PROGRESSION for $crn $pipFirstName $pipLastName")
     }
   }
 
