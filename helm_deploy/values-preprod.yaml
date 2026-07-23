@@ -26,9 +26,11 @@ generic-service:
     HMPPS_COREPERSONRECORD_API_URL: "https://hmpps-person-record-preprod.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     DPR_MANAGE_USERS_HOST: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk"
+    PROGRESSION_MODEL_POLICY_START_DATE: "2026-09-02"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
     ISR_REPEAL_DATE: "2026-03-26"
+
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
