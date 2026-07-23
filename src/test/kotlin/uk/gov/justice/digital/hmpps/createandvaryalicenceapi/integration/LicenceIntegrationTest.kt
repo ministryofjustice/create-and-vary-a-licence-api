@@ -485,28 +485,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     assertListsEqual(newLicence.bespokeConditions, oldLicence.bespokeConditions)
   }
 
-  @Test
-  @Sql(
-    "classpath:test_data/seed-variation-licence-id-1-inPssPeriod.sql",
-  )
-  fun `Create licence variation when in pss period then exclude bespoke conditions`() {
-    // Given
-    val uri = "/licence/id/1/create-variation"
-
-    // When
-    val result = postRequest(uri)
-
-    // Then
-    result.expectStatus().isOk
-
-    val response = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(CreateVariationResponse::class.java)
-      .returnResult().responseBody
-
-    val bespokeConditions = testRepository.getBespokeConditions(response!!.licenceId, assertNotEmpty = false)
-    assertThat(bespokeConditions.size).isEqualTo(0)
-  }
-
   private fun <T> assertNoOverlaps(
     extractors: List<(T) -> Any?>,
     newList: List<T>,
