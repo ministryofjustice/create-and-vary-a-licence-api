@@ -14,6 +14,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
@@ -44,8 +45,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 class AuditServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
+  private val objectMapper = jacksonObjectMapper()
 
-  private val service = AuditService(auditEventRepository, licenceRepository)
+  private val service = AuditService(auditEventRepository, licenceRepository, objectMapper)
 
   @BeforeEach
   fun reset() {
@@ -92,6 +94,60 @@ class AuditServiceTest {
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
+  }
+
+  @Test
+  fun `gets audit events relating to a specific licence preserves ordering in changes`() {
+    val aUserRequest = aRequest.copy(username = null, licenceId = 1L)
+    val unorderedChanges = mapOf(
+      "type" to "Updated HDC curfew times",
+      "changes" to mapOf(
+        "after" to listOf(
+          mapOf(
+            "to" to listOf("TUESDAY", "08:00"),
+            "from" to listOf("MONDAY", "20:00"),
+          ),
+        ),
+        "before" to listOf(
+          mapOf(
+            "to" to listOf("MONDAY", "08:00"),
+            "from" to listOf("SUNDAY", "20:00"),
+          ),
+        ),
+      ),
+    )
+    val auditEvent = EntityAuditEvent(
+      id = 1L,
+      licenceId = 1L,
+      eventTime = LocalDateTime.now().minusDays(1L),
+      username = "USER",
+      fullName = "First Last",
+      eventType = AuditEventType.USER_EVENT,
+      summary = "Summary1",
+      detail = "Detail1",
+      changes = unorderedChanges,
+    )
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(
+      auditEventRepository.findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(
+        aUserRequest.licenceId!!,
+        aUserRequest.startTime,
+        aUserRequest.endTime,
+      ),
+    ).thenReturn(listOf(auditEvent))
+
+    val response = service.getAuditEvents(aUserRequest)
+
+    val changes = response.first().changes!!
+    val curfewChanges = changes["changes"] as Map<String, Any>
+    val afterChanges = (curfewChanges["after"] as List<Map<String, Any>>).first()
+    val beforeChanges = (curfewChanges["before"] as List<Map<String, Any>>).first()
+
+    assertThat(changes.keys.toList()).containsExactly("type", "changes")
+    assertThat(curfewChanges.keys.toList()).containsExactly("before", "after")
+    assertThat(beforeChanges.keys.toList()).containsExactly("from", "to")
+    assertThat(afterChanges.keys.toList()).containsExactly("from", "to")
   }
 
   @Test
@@ -147,6 +203,58 @@ class AuditServiceTest {
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
+  }
+
+  @Test
+  fun `get all audit events preserves ordering in changes`() {
+    val aUserRequest = aRequest.copy(username = null, licenceId = null)
+    val unorderedChanges = mapOf<String, Any>(
+      "type" to "Updated HDC curfew times",
+      "changes" to mapOf(
+        "after" to listOf(
+          mapOf(
+            "to" to listOf("TUESDAY", "08:00"),
+            "from" to listOf("MONDAY", "20:00"),
+          ),
+        ),
+        "before" to listOf(
+          mapOf(
+            "to" to listOf("MONDAY", "08:00"),
+            "from" to listOf("SUNDAY", "20:00"),
+          ),
+        ),
+      ),
+    )
+    val auditEvent = EntityAuditEvent(
+      id = 1L,
+      licenceId = 1L,
+      eventTime = LocalDateTime.now().minusDays(1L),
+      username = "USER",
+      fullName = "First Last",
+      eventType = AuditEventType.USER_EVENT,
+      summary = "Summary1",
+      detail = "Detail1",
+      changes = unorderedChanges,
+    )
+
+    whenever(
+      auditEventRepository.findAllByEventTimeBetweenOrderByEventTimeDesc(
+        aUserRequest.startTime,
+        aUserRequest.endTime,
+      ),
+    ).thenReturn(listOf(auditEvent))
+
+    val response = service.getAuditEvents(aUserRequest)
+
+    val changes = response.first().changes!!
+    val curfewChanges = changes["changes"] as Map<String, Any>
+    val afterChanges = (curfewChanges["after"] as List<Map<String, Any>>).first()
+    val beforeChanges = (curfewChanges["before"] as List<Map<String, Any>>).first()
+
+    assertThat(changes.keys.toList()).containsExactly("type", "changes")
+    assertThat(curfewChanges.keys.toList()).containsExactly("before", "after")
+    assertThat(beforeChanges.keys.toList()).containsExactly("from", "to")
+    assertThat(afterChanges.keys.toList()).containsExactly("from", "to")
   }
 
   @Test

@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
@@ -27,21 +29,24 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as
 class AuditService(
   private val auditEventRepository: AuditEventRepository,
   private val licenceRepository: LicenceRepository,
+  private val objectMapper: ObjectMapper,
 ) {
 
   fun recordAuditEvent(auditEvent: ModelAuditEvent) {
     auditEventRepository.save(transform(auditEvent))
   }
 
-  fun getAuditEvents(auditRequest: AuditRequest): List<ModelAuditEvent> = if (auditRequest.licenceId != null && auditRequest.username != null) {
-    getAuditEventsForLicenceAndUser(auditRequest)
-  } else if (auditRequest.licenceId != null) {
-    getAuditEventsForLicence(auditRequest)
-  } else if (auditRequest.username != null) {
-    getAuditEventsForUser(auditRequest)
-  } else {
-    getAllEvents(auditRequest)
-  }
+  fun getAuditEvents(auditRequest: AuditRequest): List<ModelAuditEvent> = (
+    if (auditRequest.licenceId != null && auditRequest.username != null) {
+      getAuditEventsForLicenceAndUser(auditRequest)
+    } else if (auditRequest.licenceId != null) {
+      getAuditEventsForLicence(auditRequest)
+    } else if (auditRequest.username != null) {
+      getAuditEventsForUser(auditRequest)
+    } else {
+      getAllEvents(auditRequest)
+    }
+    ).map(::setAuditEventChangesOrder)
 
   fun recordAuditEventUpdateStandardCondition(
     licence: Licence,
@@ -444,6 +449,17 @@ class AuditService(
     .findAllByEventTimeBetweenOrderByEventTimeDesc(auditRequest.startTime, auditRequest.endTime)
     .transformToModelAuditEvents()
 
+  private fun setAuditEventChangesOrder(event: ModelAuditEvent): ModelAuditEvent {
+    val changes = event.changes?.takeIf { it["type"] == UPDATED_HDC_CURFEW_TIMES_TYPE } ?: return event
+
+    val orderedChanges = objectMapper.convertValue(
+      objectMapper.convertValue(changes, HdcWeeklyCurfewAuditChanges::class.java),
+      Map::class.java,
+    ) as Map<String, Any>
+
+    return event.copy(changes = orderedChanges)
+  }
+
   private fun createAuditEvent(
     licence: Licence,
     summary: String,
@@ -466,5 +482,24 @@ class AuditService(
 
   private companion object {
     val TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    const val UPDATED_HDC_CURFEW_TIMES_TYPE = "Updated HDC curfew times"
   }
+
+  @JsonPropertyOrder("type", "changes")
+  private data class HdcWeeklyCurfewAuditChanges(
+    val type: String,
+    val changes: HdcWeeklyCurfewDiff,
+  )
+
+  @JsonPropertyOrder("before", "after")
+  private data class HdcWeeklyCurfewDiff(
+    val before: List<HdcWeeklyCurfewWindow>,
+    val after: List<HdcWeeklyCurfewWindow>,
+  )
+
+  @JsonPropertyOrder("from", "to")
+  private data class HdcWeeklyCurfewWindow(
+    val from: List<String?>,
+    val to: List<String?>,
+  )
 }
