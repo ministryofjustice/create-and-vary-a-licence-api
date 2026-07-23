@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import java.time.format.DateTimeFormatter
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 
 @Service
@@ -274,6 +275,7 @@ class AuditService(
 
   fun recordAuditEventUpdateHdcWeeklyCurfewTimes(
     licence: Licence,
+    previousWeeklyCurfewTimes: List<CurfewTimes>,
     updatedWeeklyCurfewTimes: List<CurfewTimes>,
     staffMember: Staff?,
   ) {
@@ -281,14 +283,10 @@ class AuditService(
 
     val changes = mapOf(
       "type" to summary,
-      "changes" to updatedWeeklyCurfewTimes.map {
-        mapOf(
-          "fromDay" to it.fromDay,
-          "fromTime" to it.fromTime,
-          "untilDay" to it.untilDay,
-          "untilTime" to it.untilTime,
-        )
-      },
+      "changes" to mapOf(
+        "before" to previousWeeklyCurfewTimes.map { it.toWeeklyCurfewChange() },
+        "after" to updatedWeeklyCurfewTimes.map { it.toWeeklyCurfewChange() },
+      ),
     )
 
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
@@ -460,4 +458,13 @@ class AuditService(
     detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
     changes = changes,
   )
+
+  private fun CurfewTimes.toWeeklyCurfewChange() = mapOf(
+    "from" to listOf(fromDay?.name, fromTime?.format(TIME_FORMATTER)),
+    "to" to listOf(untilDay?.name, untilTime?.format(TIME_FORMATTER)),
+  )
+
+  private companion object {
+    val TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+  }
 }

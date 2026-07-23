@@ -353,7 +353,7 @@ class HdcServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(HdcLicence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateHdcWeeklyCurfewTimes(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateHdcWeeklyCurfewTimes(any(), any(), any(), any())
 
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")

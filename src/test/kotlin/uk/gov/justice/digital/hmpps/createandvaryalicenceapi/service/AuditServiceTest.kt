@@ -820,7 +820,7 @@ class AuditServiceTest {
   inner class `audit events for HDC curfew times` {
     @Test
     fun `records an audit event when curfew times are updated`() {
-      service.recordAuditEventUpdateHdcWeeklyCurfewTimes(aLicenceEntity, aSetOfCurfewTimes, aCom)
+      service.recordAuditEventUpdateHdcWeeklyCurfewTimes(aLicenceEntity, aSetOfCurfewTimes, emptyList(), aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -841,49 +841,38 @@ class AuditServiceTest {
         .isEqualTo(
           listOf(
             "Updated HDC curfew times",
-            listOf(
-              mapOf(
-                "fromDay" to DayOfWeek.MONDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.TUESDAY,
-                "untilTime" to LocalTime.of(8, 0),
+            mapOf(
+              "before" to listOf(
+                mapOf(
+                  "from" to listOf("MONDAY", "20:00"),
+                  "to" to listOf("TUESDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("TUESDAY", "20:00"),
+                  "to" to listOf("WEDNESDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("WEDNESDAY", "20:00"),
+                  "to" to listOf("THURSDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("THURSDAY", "20:00"),
+                  "to" to listOf("FRIDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("FRIDAY", "20:00"),
+                  "to" to listOf("SATURDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("SATURDAY", "20:00"),
+                  "to" to listOf("SUNDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("SUNDAY", "20:00"),
+                  "to" to listOf("MONDAY", "08:00"),
+                ),
               ),
-              mapOf(
-                "fromDay" to DayOfWeek.TUESDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.WEDNESDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.WEDNESDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.THURSDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.THURSDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.FRIDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.FRIDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.SATURDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.SATURDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.SUNDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.SUNDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.MONDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
+              "after" to emptyList(),
             ),
           ),
         )
