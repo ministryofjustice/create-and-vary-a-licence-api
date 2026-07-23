@@ -85,7 +85,7 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-api:0.13.0")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.13.0")
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.13.0")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.1")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:6.0.1")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
