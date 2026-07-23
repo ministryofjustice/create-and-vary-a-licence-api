@@ -41,6 +41,7 @@ class NotifyServiceTest {
     reviewableLicenceApprovedTemplateId = TEMPLATE_ID,
     licenceReviewOverdueTemplateId = TEMPLATE_ID,
     initialComAllocationTemplateId = TEMPLATE_ID,
+    progressionLicenceDeactivatedTemplateId = TEMPLATE_ID,
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
     releaseDateService = releaseDateService,
@@ -279,6 +280,7 @@ class NotifyServiceTest {
       reviewableLicenceApprovedTemplateId = TEMPLATE_ID,
       licenceReviewOverdueTemplateId = TEMPLATE_ID,
       initialComAllocationTemplateId = TEMPLATE_ID,
+      progressionLicenceDeactivatedTemplateId = TEMPLATE_ID,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)

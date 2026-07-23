@@ -93,6 +93,7 @@ update:
 progression:
   model:
     policy-start-date: 2026-09-01
+    notification-window-end-date: 2026-12-31
 
 dpr:
   lib:

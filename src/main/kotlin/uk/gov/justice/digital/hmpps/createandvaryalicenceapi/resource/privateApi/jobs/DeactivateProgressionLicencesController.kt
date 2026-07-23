@@ -13,26 +13,26 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ProtectedByIngress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags.Companion.JOBS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.DeactivateLicencesService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.DeactivateProgressionLicencesService
 
 @Tag(name = JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
-class DeactivateLicencesController(
-  private val deactivateLicencesService: DeactivateLicencesService,
+class DeactivateProgressionLicencesController(
+  private val deactivateProgressionLicencesService: DeactivateProgressionLicencesService,
 ) {
 
   @ProtectedByIngress
-  @PostMapping(value = ["/jobs/deactivate-licences-past-release-date"])
+  @PostMapping(value = ["/jobs/deactivate-progression-licences"])
   @Operation(
-    summary = "Deactivate licences which are past release date.",
-    description = "Deactivate licences from IN_PROGRESS and SUBMITTED status to INACTIVE where these are past release date already.",
+    summary = "Deactivate licences not on policy version 4 which have release dates beyond the policy version 4 go-live date.",
+    description = "Deactivate any in-flight (IN_PROGRESS, SUBMITTED, APPROVED, and TIMED_OUT) licences not on policy version 4 that have licence start dates beyond the policy version 4 go-live date.",
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "204",
-        description = "Deactivation request for licences past release date is processed successfully.",
+        description = "Deactivation request for progression licences is processed successfully.",
       ),
       ApiResponse(
         responseCode = "401",
@@ -42,5 +42,5 @@ class DeactivateLicencesController(
     ],
   )
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  fun runDeactivateLicencesJob() = deactivateLicencesService.deactivateLicences()
+  fun runDeactivateProgressionLicencesJob() = deactivateProgressionLicencesService.deactivateLicences()
 }
