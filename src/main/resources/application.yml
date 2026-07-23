@@ -183,6 +183,11 @@ feature:
       repeal:
         date: ${ISR_REPEAL_DATE:#{null}}
 
+progression:
+  model:
+    policy-start-date: ${PROGRESSION_MODEL_POLICY_START_DATE}
+    notification-window-end-date: ${PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE}
+
 hmpps:
   cases:
     last-minute:

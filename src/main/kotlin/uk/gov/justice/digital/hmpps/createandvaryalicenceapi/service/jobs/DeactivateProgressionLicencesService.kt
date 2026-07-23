@@ -53,6 +53,7 @@ class DeactivateProgressionLicencesService(
     }
     log.info("deactivateProgressionLicences is updating status INACTIVE on ${licencesToDeactivate.size} licences")
     updateLicencesStatus(licencesToDeactivate)
+    telemetryService.recordDeactivateProgressionLicencesJobEvent(licencesToDeactivate.size)
     log.info("deactivateProgressionLicences updated status to INACTIVE on ${licencesToDeactivate.size} licences")
   }
 
@@ -88,7 +89,7 @@ class DeactivateProgressionLicencesService(
       // query relies on Licence Start Date being past given date, so nulls should not be returned
       if (licence.licenceStartDate!!.isOnOrBefore(notificationWindowEndDate)) {
         if (licence.responsibleCom == null) {
-          log.info("Unable to notify COM of progression licence deactivation as licence has no responsible com")
+          log.info("Unable to notify COM of progression licence deactivation as licence id: ${licence.id} has no responsible com")
           return@forEach
         }
 
@@ -102,6 +103,5 @@ class DeactivateProgressionLicencesService(
         )
       }
     }
-    telemetryService.recordDeactivateProgressionLicencesJobEvent(licences.size)
   }
 }
