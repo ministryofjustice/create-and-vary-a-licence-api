@@ -285,7 +285,7 @@ class UpdateSentenceDateService(
         ?: false
   } ?: false
 
-  private fun isEligibleForPolicyVersionCheck(licence: Licence): Boolean = licence.version == V4_0.toString() && licence.statusCode in inFlightStatuses
+  private fun isEligibleForPolicyVersionCheck(licence: Licence): Boolean = licence.version == V4_0.version && licence.statusCode in inFlightStatuses
 
   private fun getValidLsdDates(lsdChange: DateChange): Pair<LocalDate, LocalDate>? = if (lsdChange.changed && lsdChange.oldDate != null && lsdChange.newDate != null) {
     lsdChange.oldDate to lsdChange.newDate
