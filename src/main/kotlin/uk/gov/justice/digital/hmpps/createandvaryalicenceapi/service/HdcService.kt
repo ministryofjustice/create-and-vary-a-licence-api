@@ -101,6 +101,8 @@ class HdcService(
 
     val staff = staffRepository.findByUsernameIgnoreCase(username)
 
+    val previousWeeklyCurfewTimes = hdcCase.weeklyCurfewTimes.toList()
+
     val weeklyCurfewTimes = request.weeklyCurfewTimes
       .transformToEntityWeeklyCurfewTimes()
 
@@ -110,6 +112,7 @@ class HdcService(
 
     auditService.recordAuditEventUpdateHdcWeeklyCurfewTimes(
       licence,
+      previousWeeklyCurfewTimes,
       weeklyCurfewTimes,
       staff,
     )
