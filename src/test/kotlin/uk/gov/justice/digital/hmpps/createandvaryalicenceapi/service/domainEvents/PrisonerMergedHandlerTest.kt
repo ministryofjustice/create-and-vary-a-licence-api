@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import java.time.format.DateTimeFormatter.ISO_DATE
 
@@ -85,10 +84,7 @@ class PrisonerMergedHandlerTest {
     )
 
     whenever(
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(
-        oldNomisId,
-        IN_FLIGHT_LICENCES,
-      ),
+      licenceRepository.findAllByNomsId(oldNomisId),
     ).thenReturn(listOf(aLicence))
 
     whenever(deliusApiClient.getProbationCase(newNomisId)).thenReturn(deliusRecord)
@@ -112,10 +108,7 @@ class PrisonerMergedHandlerTest {
     val prisoner = aPrisonApiPrisoner()
 
     whenever(
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(
-        oldNomisId,
-        IN_FLIGHT_LICENCES,
-      ),
+      licenceRepository.findAllByNomsId(oldNomisId),
     ).thenReturn(listOf(aLicence))
 
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(prisoner)
