@@ -125,6 +125,7 @@ notify:
     initialComAllocation: a584b741-82ce-41de-adce-0a665dc27b0f
     editedLicenceTimedOut: 3db6954b-f16f-4c77-b028-ccfa4f87fb62
     unapprovedLicence: 11f3d28e-d7d9-47f9-bbad-57bd32fbed45
+    policyVersionInactivated: de23bd34-fcc3-46d8-914a-82a13d3768ae
 
     # Variation emails
     variationForApproval: 2dc01a48-73f1-4dde-931e-05eaf502441e

@@ -92,7 +92,7 @@ update:
 
 progression:
   model:
-    policy-start-date: 2026-09-01
+    policy-start-date: 2026-09-02
 
 dpr:
   lib:
