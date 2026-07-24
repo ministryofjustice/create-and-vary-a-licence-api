@@ -186,7 +186,7 @@ hmpps:
     last-minute:
       prisons: CFI,SWI,PBI,PFI,SUI,RNI,FEI
   sar:
-    additionalAccessRole: CVL_ADMIN
+    additionalAccessRole: ROLE_CVL__SAR_REQUESTS__RO
     template:
       path: /templates/sar_create-and-vary-a-licence-api.mustache
       enabled: true
