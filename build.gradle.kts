@@ -49,15 +49,15 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:6.0.1-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
-  implementation("org.apache.pdfbox:pdfbox:3.0.7")
+  implementation("org.apache.pdfbox:pdfbox:3.0.8")
   implementation("org.apache.pdfbox:jbig2-imageio:3.0.5")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.12")
+  runtimeOnly("org.postgresql:postgresql:42.7.13")
   implementation("com.google.code.gson:gson:2.14.0")
   implementation("io.arrow-kt:arrow-core:2.2.3")
 
@@ -68,7 +68,7 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:16.4.1")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.6.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.6.2")
   implementation("org.jsoup:jsoup:1.22.2")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
