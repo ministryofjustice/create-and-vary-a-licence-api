@@ -64,7 +64,6 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 # Feature toggles
 export HDC_ENABLED=true
 export USE_CURRENT_HDC_STATUS=false
-export ISR_REPEAL_DATE="2026-03-25"
 
 SKIP_DOCKER=false
 DEBUG=""
