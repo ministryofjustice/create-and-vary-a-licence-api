@@ -12,9 +12,11 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAdditionalCondition
@@ -25,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonerDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateSentenceDetails
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -54,6 +57,7 @@ class MigrationServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val prisonService = mock<PrisonService>()
   private val licencePolicyService = mock<LicencePolicyService>()
+  private val auditEventRepository = mock<AuditEventRepository>()
 
   private val team = TeamDetail(
     code = "NA01A2-A",
@@ -73,6 +77,7 @@ class MigrationServiceTest {
     prisonerSearchApiClient,
     prisonService,
     licencePolicyService,
+    auditEventRepository,
   )
 
   @BeforeEach
@@ -144,6 +149,15 @@ class MigrationServiceTest {
         eq(3),
         eq(4),
       )
+
+      val auditEventCaptor = argumentCaptor<AuditEvent>()
+
+      verify(auditEventRepository).saveAndFlush(auditEventCaptor.capture())
+      val auditEvent = auditEventCaptor.firstValue
+      assertThat(auditEvent.licenceId).isEqualTo(1L)
+      assertThat(auditEvent.username).isEqualTo(SYSTEM_USER)
+      assertThat(auditEvent.summary).isEqualTo("Licence migrated from HDC")
+      assertThat(auditEvent.detail).isEqualTo("Licence migrated from HDC licence ID 2, version 3.4 ")
     }
 
     @Test

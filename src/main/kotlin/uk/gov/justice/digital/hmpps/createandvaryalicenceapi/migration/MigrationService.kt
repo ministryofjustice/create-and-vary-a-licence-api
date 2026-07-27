@@ -5,10 +5,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
@@ -22,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateCurfewTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFromHdcToCvlRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -49,6 +52,7 @@ class MigrationService(
   val prisonerSearchApiClient: PrisonerSearchApiClient,
   val prisonService: PrisonService,
   val licencePolicyService: LicencePolicyService,
+  val auditEventRepository: AuditEventRepository,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -97,6 +101,24 @@ class MigrationService(
         saveCondition.id!!,
         hdcCondition.conditionCode,
         hdcCondition.conditionsVersion,
+      )
+    }
+
+    saveMigrationAudit(hdcLicence, request)
+  }
+
+  private fun saveMigrationAudit(
+    hdcLicence: HdcLicence,
+    request: MigrateFromHdcToCvlRequest,
+  ) {
+    with(hdcLicence) {
+      auditEventRepository.saveAndFlush(
+        AuditEvent(
+          licenceId = id,
+          username = SYSTEM_USER,
+          summary = "Licence migrated from HDC",
+          detail = "Licence migrated from HDC licence ID ${request.licence.licenceVersionId}, version ${request.licence.licenceVersion}.${request.licence.varyVersion} ",
+        ),
       )
     }
   }
