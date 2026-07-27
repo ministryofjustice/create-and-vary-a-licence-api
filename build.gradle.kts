@@ -20,11 +20,11 @@ dependencies {
 
   // hmpps-kotlin-lib
   constraints {
-    implementation("org.apache.commons:commons-compress:1.26.0") {
+    implementation("org.apache.commons:commons-compress:1.28.0") {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
     }
     // FIX: CVE-2026-23907
-    implementation("org.apache.pdfbox:pdfbox:3.0.7") {
+    implementation("org.apache.pdfbox:pdfbox:3.0.8") {
       because("Fix CVE-2026-23907")
     }
   }
@@ -78,7 +78,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
 
   // Update to a version compatible with Spring Boot 4.0
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
 
   // Test dependencies
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
@@ -88,11 +88,11 @@ dependencies {
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.1")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
-  testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
-  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.0")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
+  testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.2")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
-  testImplementation("org.wiremock:wiremock-standalone:3.13.1")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
