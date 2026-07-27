@@ -125,9 +125,7 @@ class UpdateSentenceDateService(
         LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE,
         deactivateInProgressVersions = false,
       )
-      if (dateChanges.anyChanges) {
-        recordAuditEvent(updatedLicence, dateChanges)
-      }
+      recordAuditEvent(updatedLicence, dateChanges)
     } else if (hardstopChangeType == NOW_IN_HARDSTOP) {
       licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
     } else {
