@@ -94,33 +94,42 @@ class MigrationService(
       throw LicenceAlreadyMigratedException(message)
     }
 
-    request.conditions.additional.forEach { hdcCondition ->
-      val saveCondition = hdcLicence.bespokeConditions.findLast { it.conditionText == hdcCondition.text }!!
-      migrationRepository.saveConditionMetaData(
-        licenceId = hdcLicence.id,
-        saveCondition.id!!,
-        hdcCondition.conditionCode,
-        hdcCondition.conditionsVersion,
-      )
+    val migratedConditions = buildString {
+      request.conditions.additional.forEach { hdcCondition ->
+        val saveCondition = hdcLicence.bespokeConditions.findLast {
+          it.conditionText == hdcCondition.text
+        }!!
+
+        migrationRepository.saveConditionMetaData(
+          licenceId = hdcLicence.id,
+          saveCondition.id!!,
+          hdcCondition.conditionCode,
+          hdcCondition.conditionsVersion,
+        )
+
+        if (isNotEmpty()) append(", ")
+        append("Id=${saveCondition.id}, Code=${hdcCondition.conditionCode}, Version=${hdcCondition.conditionsVersion}")
+      }
     }
 
-    saveMigrationAudit(hdcLicence, request)
+    saveMigrationAudit(hdcLicence, request, migratedConditions)
   }
 
   private fun saveMigrationAudit(
     hdcLicence: HdcLicence,
     request: MigrateFromHdcToCvlRequest,
+    migratedConditions: String,
   ) {
-    with(hdcLicence) {
-      auditEventRepository.saveAndFlush(
-        AuditEvent(
-          licenceId = id,
-          username = SYSTEM_USER,
-          summary = "Licence migrated from HDC",
-          detail = "Licence migrated from HDC licence ID ${request.licence.licenceVersionId}, version ${request.licence.licenceVersion}.${request.licence.varyVersion} ",
-        ),
-      )
-    }
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = hdcLicence.id,
+        username = SYSTEM_USER,
+        summary = "Licence migrated from HDC",
+        detail =
+        """Licence migrated from HDC, source Id:${request.licence.licenceVersionId}, Version:${request.licence.licenceVersion}.${request.licence.varyVersion}, conditions:[$migratedConditions]
+        """.trimIndent().replace("\n", " "),
+      ),
+    )
   }
 
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
