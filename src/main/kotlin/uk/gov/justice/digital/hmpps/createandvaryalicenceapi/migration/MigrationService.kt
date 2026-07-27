@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.C
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 import java.util.UUID
@@ -124,6 +125,7 @@ class MigrationService(
       AuditEvent(
         licenceId = hdcLicence.id,
         username = SYSTEM_USER,
+        eventType = AuditEventType.SYSTEM_EVENT,
         summary = "Licence migrated from HDC",
         detail =
         """Licence migrated from HDC, source Id:${request.licence.licenceVersionId}, Version:${request.licence.licenceVersion}.${request.licence.varyVersion}, conditions:[$migratedConditions]
