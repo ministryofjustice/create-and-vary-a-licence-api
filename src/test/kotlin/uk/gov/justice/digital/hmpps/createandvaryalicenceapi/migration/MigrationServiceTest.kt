@@ -157,7 +157,7 @@ class MigrationServiceTest {
       assertThat(auditEvent.licenceId).isEqualTo(1L)
       assertThat(auditEvent.username).isEqualTo(SYSTEM_USER)
       assertThat(auditEvent.summary).isEqualTo("Licence migrated from HDC")
-      assertThat(auditEvent.detail).isEqualTo("Licence migrated from HDC licence ID 2, version 3.4 ")
+      assertThat(auditEvent.detail).isEqualTo("Licence migrated from HDC, source Id:2, Version:3.4, conditions:[Id=10, Code=CODE1, Version=1]")
     }
 
     @Test
