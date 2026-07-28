@@ -34,9 +34,9 @@ updates:
       interval: "weekly"
 
   - package-ecosystem: "helm"
+    directory: "/helm_deploy/create-and-vary-a-licence-api"
     cooldown:
       default-days: 7
-    directory: "/helm_deploy/create-and-vary-a-licence-api"
     schedule:
       interval: "weekly"
     ignore:
