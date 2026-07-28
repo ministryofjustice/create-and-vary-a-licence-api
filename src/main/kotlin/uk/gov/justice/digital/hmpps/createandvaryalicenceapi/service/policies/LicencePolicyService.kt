@@ -5,7 +5,6 @@ import jakarta.persistence.EntityNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -60,8 +59,7 @@ data class LicenceConditionChanges(
 @Service
 class LicencePolicyService(
   private var policies: List<LicencePolicy> = emptyList(),
-  @param:Value("\${progression.model.policy-start-date:null}")
-  @param:DateTimeFormat(pattern = "yyyy-MM-dd")
+  @param:Value("\${progression.model.policy-start-date:#{null}}")
   private val progressionModelPolicyStartDate: LocalDate? = null,
 ) {
 

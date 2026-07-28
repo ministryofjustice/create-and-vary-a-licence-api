@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -50,8 +49,7 @@ class UpdateSentenceDateService(
   private val licenceService: LicenceService,
   private val cvlRecordService: CvlRecordService,
   private val potentialHardstopCaseRepository: PotentialHardstopCaseRepository,
-  @param:Value("\${progression.model.policy-start-date:null}")
-  @param:DateTimeFormat(pattern = "yyyy-MM-dd")
+  @param:Value("\${progression.model.policy-start-date:#{null}}")
   private val progressionModelPolicyStartDate: LocalDate? = null,
   @param:Value("\${hardstop.deactivation.job.enabled:false}") private val hardstopJobEnabled: Boolean = false,
 ) {
