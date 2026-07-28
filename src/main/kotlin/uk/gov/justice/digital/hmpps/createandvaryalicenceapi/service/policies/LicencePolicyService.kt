@@ -69,12 +69,10 @@ class LicencePolicyService(
     policies = listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3_0, POLICY_V4_0)
   }
 
-  fun currentPolicy(licenceStartDate: LocalDate? = null): LicencePolicy {
-    if (licenceStartDate?.isOnOrAfter(progressionModelPolicyStartDate) == true) {
-      return POLICY_V4_0
-    }
-    return POLICY_V3_0
-  }
+  fun currentPolicy(licenceStartDate: LocalDate? = null): LicencePolicy =
+    progressionModelPolicyStartDate?.let { policyStartDate ->
+      if (licenceStartDate?.isOnOrAfter(policyStartDate) == true) POLICY_V4_0 else POLICY_V3_0
+    } ?: POLICY_V3_0
 
   fun currentPolicyVersion(licenceStartDate: LocalDate? = null): String = currentPolicy(licenceStartDate).version
 
