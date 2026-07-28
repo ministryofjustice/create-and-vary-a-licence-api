@@ -753,7 +753,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(testRepository.doesLicenceExist(2)).isFalse()
 
-    // Verify audit event is recorded on parent licence (id=1), not the discarded variation (id=2)
     val auditEvents = testRepository.findAllAuditEventsByLicenceIdIn(listOf(1L))
 
     val discardedEvent = auditEvents.find { it.summary?.contains("Licence variation discarded") ?: false }
