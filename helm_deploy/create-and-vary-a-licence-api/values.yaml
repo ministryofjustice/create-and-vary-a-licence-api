@@ -44,7 +44,7 @@ generic-service:
     HDC_CREATION_ENABLED: false
     PRISONER_MERGED_HANDLER_ENABLED: false
     PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE: "2026-12-31"
-    PROGRESSION_MODEL_POLICY_START_DATE: 2027-08-14
+    PROGRESSION_MODEL_POLICY_START_DATE: "2097-08-14"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
