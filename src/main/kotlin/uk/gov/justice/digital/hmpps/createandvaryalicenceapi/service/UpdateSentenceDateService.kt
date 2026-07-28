@@ -50,8 +50,7 @@ class UpdateSentenceDateService(
   private val licenceService: LicenceService,
   private val cvlRecordService: CvlRecordService,
   private val potentialHardstopCaseRepository: PotentialHardstopCaseRepository,
-  @param:Value("\${progression.model.policy-start-date:null}")
-  @param:DateTimeFormat(pattern = "yyyy-MM-dd")
+  @param:Value("\${progression.model.policy-start-date:#{null}}")
   private val progressionModelPolicyStartDate: LocalDate? = null,
   @param:Value("\${hardstop.deactivation.job.enabled:false}") private val hardstopJobEnabled: Boolean = false,
 ) {
