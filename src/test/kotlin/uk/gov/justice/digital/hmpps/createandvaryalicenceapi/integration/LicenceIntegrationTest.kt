@@ -742,6 +742,30 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-variation-licence.sql",
   )
+  fun `Discard variation records audit event on parent licence`() {
+    documentApiMockServer.stubDeleteDocuments()
+
+    webTestClient.delete()
+      .uri("/licence/id/2/discard")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    assertThat(testRepository.doesLicenceExist(2)).isFalse()
+
+    // Verify audit event is recorded on parent licence (id=1), not the discarded variation (id=2)
+    val auditEvents = testRepository.findAllAuditEventsByLicenceIdIn(listOf(1L))
+
+    val discardedEvent = auditEvents.find { it.summary?.contains("Licence variation discarded") ?: false }
+    assertThat(discardedEvent).isNotNull
+    assertThat(discardedEvent!!.detail).contains("Discarded variation ID 2")
+    assertThat(discardedEvent.licenceId).isEqualTo(1L)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-variation-licence.sql",
+  )
   fun `Update spo discussion`() {
     webTestClient.put()
       .uri("/licence/id/2/spo-discussion")

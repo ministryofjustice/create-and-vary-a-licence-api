@@ -870,13 +870,15 @@ class LicenceService(
     val username = SecurityContextHolder.getContext().authentication?.name!!
     val discardedBy = this.staffRepository.findByUsernameIgnoreCase(username)
 
+    val auditLicenceId = if (licenceEntity is Variation) licenceEntity.variationOfId else licenceId
+
     auditEventRepository.saveAndFlush(
       AuditEvent(
-        licenceId = licenceId,
+        licenceId = auditLicenceId,
         username = discardedBy?.username ?: SYSTEM_USER,
         fullName = "${discardedBy?.firstName} ${discardedBy?.lastName}",
         summary = "Licence variation discarded for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+        detail = "Discarded variation ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
     )
     log.info("Deleting documents for Licence id={}", licenceEntity.id)
