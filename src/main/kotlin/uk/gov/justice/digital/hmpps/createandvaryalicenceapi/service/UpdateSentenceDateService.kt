@@ -275,14 +275,13 @@ class UpdateSentenceDateService(
   private fun shouldInactivateForPolicyVersionChange(
     licence: Licence,
     dateChanges: DateChanges,
-  ): Boolean {
-    val cutoffDate = progressionModelPolicyStartDate ?: return false
-    return isEligibleForPolicyVersionCheck(licence) &&
+  ): Boolean = progressionModelPolicyStartDate?.let { cutoffDate ->
+    isEligibleForPolicyVersionCheck(licence) &&
       dateChanges.firstOrNull { it.type == LicenceDateType.LSD }
         ?.let { getValidLsdDates(it) }
         ?.let { (oldLsd, newLsd) -> crossesPolicyVersionCutoff(oldLsd, newLsd, cutoffDate) }
         ?: false
-  }
+  } ?: false
 
   private fun isEligibleForPolicyVersionCheck(licence: Licence): Boolean = licence.version == V4_0.version && licence.statusCode in inFlightStatuses
 
