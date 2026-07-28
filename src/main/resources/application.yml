@@ -178,9 +178,6 @@ feature:
       enabled: ${HDC_ENABLED}
     hdcCreation:
       enabled: ${HDC_CREATION_ENABLED:#{false}}
-    isr:
-      repeal:
-        date: ${ISR_REPEAL_DATE:#{null}}
 
 hmpps:
   cases:
