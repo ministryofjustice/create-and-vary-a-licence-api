@@ -91,7 +91,7 @@ class UpdateSentenceDateServiceTest {
     licenceService,
     cvlRecordService,
     potentialHardstopCaseRepository,
-    progressionModelPolicyStartDate = LocalDate.of(2026, 9, 2),
+    progressionModelPolicyStartDateStr = LocalDate.of(2026, 9, 2).toString(),
   )
 
   @BeforeEach
@@ -1208,7 +1208,7 @@ class UpdateSentenceDateServiceTest {
         licenceService,
         cvlRecordService,
         potentialHardstopCaseRepository,
-        progressionModelPolicyStartDate = LocalDate.of(2026, 9, 2),
+        progressionModelPolicyStartDateStr = LocalDate.of(2026, 9, 2).toString(),
         hardstopJobEnabled = true,
       )
       val inHardStopLicence = aCrdLicenceEntity.copy(

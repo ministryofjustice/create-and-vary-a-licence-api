@@ -13,7 +13,7 @@ import java.time.LocalDate
 // This doesn't actually assert anything but dumps the differences between different versions of the policy
 class PolicyVersionDifferencesTest {
 
-  private val licencePolicyService = LicencePolicyService(progressionModelPolicyStartDate = LocalDate.now())
+  private val licencePolicyService = LicencePolicyService(progressionModelPolicyStartDateStr = LocalDate.now().toString())
 
   @Test
   fun `1_0 to 2_0`() {

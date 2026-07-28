@@ -16,7 +16,7 @@ import java.time.LocalDate
 class LicencePolicyServiceTest {
   private val progressionModelPolicyStartDate = LocalDate.now()
   private val licencePolicyService =
-    LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
+    LicencePolicyService(progressionModelPolicyStartDateStr = progressionModelPolicyStartDate.toString())
 
   @Test
   fun `Check all policy versions are mapped`() {
@@ -39,7 +39,7 @@ class LicencePolicyServiceTest {
 
   @Test
   fun `Policy version 3 is returned if progress model policy start date is null`() {
-    val licencePolicyServiceNullStartDate = LicencePolicyService(progressionModelPolicyStartDate = null)
+    val licencePolicyServiceNullStartDate = LicencePolicyService(progressionModelPolicyStartDateStr = "")
 
     val policy = licencePolicyServiceNullStartDate.currentPolicy(LocalDate.now())
     assertThat(policy.version).isEqualTo("3.0")
