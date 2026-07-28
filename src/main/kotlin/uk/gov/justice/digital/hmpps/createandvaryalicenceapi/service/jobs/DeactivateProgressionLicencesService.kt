@@ -32,11 +32,11 @@ class DeactivateProgressionLicencesService(
 
   @param:Value("\${progression.model.policy-start-date}")
   @param:DateTimeFormat(pattern = "yyyy-MM-dd")
-  private val policyV4StartDate: LocalDate,
+  private val policyV4StartDate: LocalDate?,
 
   @param:Value("\${progression.model.notification-window-end-date}")
   @param:DateTimeFormat(pattern = "yyyy-MM-dd")
-  private val notificationWindowEndDate: LocalDate,
+  private val notificationWindowEndDate: LocalDate?,
 ) {
 
   companion object {
@@ -46,6 +46,12 @@ class DeactivateProgressionLicencesService(
   @Transactional
   fun deactivateLicences() {
     log.info("Job deactivateProgressionLicences started")
+
+    if(policyV4StartDate == null) {
+      log.info("Skipping job deactivateProgressionLicences due to missing policy v4 start date")
+      return
+    }
+
     val licencesToDeactivate = licenceRepository.getLicencesForProgressionDeactivation(policyV4StartDate)
     if (licencesToDeactivate.isEmpty()) {
       log.info("Job deactivateProgressionLicences has no licences to deactivate")
