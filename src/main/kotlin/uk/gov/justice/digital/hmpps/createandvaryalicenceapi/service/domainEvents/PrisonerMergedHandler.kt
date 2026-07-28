@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceFact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import java.time.format.DateTimeFormatter.ISO_DATE
 
 @Service
@@ -48,7 +47,7 @@ class PrisonerMergedHandler(
 
   fun mergeOffenders(oldNomisId: String, newNomisId: String, newBookingId: Long) {
     val licencesToUpdate =
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(oldNomisId, IN_FLIGHT_LICENCES)
+      licenceRepository.findAllByNomsId(oldNomisId)
     log.info("merge offenders, found ${licencesToUpdate.size} licences to update")
     if (!licencesToUpdate.isEmpty()) {
       val (oldBookingLicences, newBookingLicences) = licencesToUpdate.partition { it.bookingId != newBookingId }

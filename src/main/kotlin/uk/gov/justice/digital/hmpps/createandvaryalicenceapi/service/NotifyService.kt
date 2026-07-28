@@ -30,6 +30,7 @@ class NotifyService(
   @param:Value("\${notify.templates.reviewableLicenceApproved}") private val reviewableLicenceApprovedTemplateId: String,
   @param:Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
   @param:Value("\${notify.templates.licenceReviewOverdue}") private val licenceReviewOverdueTemplateId: String,
+  @param:Value("\${notify.templates.policyVersionInactivated}") private val policyVersionInactivatedTemplateId: String,
   @param:Value("\${notify.templates.initialComAllocation}") private val initialComAllocationTemplateId: String,
   @param:Value("\${notify.templates.progressionLicenceDeactivated}") private val progressionLicenceDeactivatedTemplateId: String,
   @param:Value("\${internalEmailAddress}") private val internalEmailAddress: String,
@@ -184,6 +185,33 @@ class NotifyService(
     )
     if (sendEmail(datesChangedTemplateId, emailAddress, values)) {
       log.info("Notification sent to $emailAddress DATES CHANGED for $licenceId $offenderFullName")
+    }
+  }
+
+  fun sendPolicyVersionInactivatedEmail(
+    licenceId: String,
+    emailAddress: String?,
+    comFirstName: String,
+    comLastName: String,
+    pipFirstName: String,
+    pipLastName: String,
+    crn: String?,
+  ) {
+    if (emailAddress.isNullOrBlank()) {
+      log.error("Notification failed (policyVersionInactivatedEmail) - email address not present for licence Id $licenceId")
+      return
+    }
+
+    val values: Map<String, Any> = mapOf(
+      "comFirstName" to comFirstName,
+      "comLastName" to comLastName,
+      "pipFirstName" to pipFirstName,
+      "pipLastName" to pipLastName,
+      "crn" to (crn ?: ""),
+    )
+
+    if (sendEmail(policyVersionInactivatedTemplateId, emailAddress, values)) {
+      log.info("Notification sent to $emailAddress POLICY VERSION 4 INACTIVATED for $licenceId $pipFirstName $pipLastName")
     }
   }
 
