@@ -179,6 +179,10 @@ feature:
     hdcCreation:
       enabled: ${HDC_CREATION_ENABLED:#{false}}
 
+progression:
+  model:
+    policy-start-date: ${PROGRESSION_MODEL_POLICY_START_DATE:#{null}}
+
 hmpps:
   cases:
     last-minute:
