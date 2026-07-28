@@ -5,10 +5,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
@@ -22,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateCurfewTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFromHdcToCvlRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
@@ -34,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.C
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 import java.util.UUID
@@ -49,6 +53,7 @@ class MigrationService(
   val prisonerSearchApiClient: PrisonerSearchApiClient,
   val prisonService: PrisonService,
   val licencePolicyService: LicencePolicyService,
+  val auditEventRepository: AuditEventRepository,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -90,15 +95,43 @@ class MigrationService(
       throw LicenceAlreadyMigratedException(message)
     }
 
-    request.conditions.additional.forEach { hdcCondition ->
-      val saveCondition = hdcLicence.bespokeConditions.findLast { it.conditionText == hdcCondition.text }!!
-      migrationRepository.saveConditionMetaData(
-        licenceId = hdcLicence.id,
-        saveCondition.id!!,
-        hdcCondition.conditionCode,
-        hdcCondition.conditionsVersion,
-      )
+    val migratedConditions = buildString {
+      request.conditions.additional.forEach { hdcCondition ->
+        val saveCondition = hdcLicence.bespokeConditions.findLast {
+          it.conditionText == hdcCondition.text
+        }!!
+
+        migrationRepository.saveConditionMetaData(
+          licenceId = hdcLicence.id,
+          saveCondition.id!!,
+          hdcCondition.conditionCode,
+          hdcCondition.conditionsVersion,
+        )
+
+        if (isNotEmpty()) append(", ")
+        append("Id=${saveCondition.id}, Code=${hdcCondition.conditionCode}, Version=${hdcCondition.conditionsVersion}")
+      }
     }
+
+    saveMigrationAudit(hdcLicence, request, migratedConditions)
+  }
+
+  private fun saveMigrationAudit(
+    hdcLicence: HdcLicence,
+    request: MigrateFromHdcToCvlRequest,
+    migratedConditions: String,
+  ) {
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = hdcLicence.id,
+        username = SYSTEM_USER,
+        eventType = AuditEventType.SYSTEM_EVENT,
+        summary = "Licence migrated from HDC",
+        detail =
+        """Licence migrated from HDC, source Id:${request.licence.licenceVersionId}, Version:${request.licence.licenceVersion}.${request.licence.varyVersion}, conditions:[$migratedConditions]
+        """.trimIndent().replace("\n", " "),
+      ),
+    )
   }
 
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {

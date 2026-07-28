@@ -43,6 +43,7 @@ generic-service:
     HDC_ENABLED: true
     HDC_CREATION_ENABLED: false
     PRISONER_MERGED_HANDLER_ENABLED: false
+    PROGRESSION_MODEL_POLICY_START_DATE: 2027-08-14
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
@@ -124,9 +125,3 @@ jobs:
     path: /notify-probation-of-unapproved-licences
     cron: "0 2 * * *" # 2am every day
     allowRetry: false
-
-  - name: isr-licence-progression-job
-    enabled: true
-    path: /isr-licence-progression-job
-    cron: "30 0 11 5 *" # 00:30 UTC on 11/05/2026
-    allowRetry: true

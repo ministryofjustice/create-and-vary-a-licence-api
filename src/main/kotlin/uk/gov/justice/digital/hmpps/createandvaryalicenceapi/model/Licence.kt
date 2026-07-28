@@ -279,9 +279,11 @@ sealed interface Licence {
   @get:Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   val createdByFullName: String?
 
+  @Deprecated("This shouldn't be referenced anymore as PSS has been repealed")
   @get:Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
   val isInPssPeriod: Boolean?
 
+  @Deprecated("This shouldn't be referenced anymore as PSS has been repealed")
   @get:Schema(description = "Is this licence activated in PSS period?(LED < LAD <= TUSED)")
   val isActivatedInPssPeriod: Boolean?
 
