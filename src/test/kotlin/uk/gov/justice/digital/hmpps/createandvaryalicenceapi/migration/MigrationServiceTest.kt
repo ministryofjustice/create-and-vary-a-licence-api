@@ -42,6 +42,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
@@ -156,6 +157,7 @@ class MigrationServiceTest {
       val auditEvent = auditEventCaptor.firstValue
       assertThat(auditEvent.licenceId).isEqualTo(1L)
       assertThat(auditEvent.username).isEqualTo(SYSTEM_USER)
+      assertThat(auditEvent.eventType).isEqualTo(AuditEventType.SYSTEM_EVENT)
       assertThat(auditEvent.summary).isEqualTo("Licence migrated from HDC")
       assertThat(auditEvent.detail).isEqualTo("Licence migrated from HDC, source Id:2, Version:3.4, conditions:[Id=10, Code=CODE1, Version=1]")
     }
