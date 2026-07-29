@@ -275,29 +275,18 @@ class UpdateSentenceDateService(
     licence: Licence,
     dateChanges: DateChanges,
   ): Boolean = when {
-    !isEligibleForPolicyVersionCheck(licence) -> false
+    !licence.isEligibleForPolicyVersionCheck -> false
     progressionModelPolicyStartDate == null -> true
-    else -> lsdCrossesTheCutoffDate(dateChanges, progressionModelPolicyStartDate)
+    else -> dateChanges[LicenceDateType.LSD]
+      ?.newValidDate
+      ?.isBefore(progressionModelPolicyStartDate) ?: false
   }
 
-  private fun lsdCrossesTheCutoffDate(dateChanges: DateChanges, cutoffDate: LocalDate): Boolean = dateChanges[LicenceDateType.LSD]
-    ?.let { getValidLsdDates(it) }
-    ?.let { (oldLsd, newLsd) -> crossesPolicyVersionCutoff(oldLsd, newLsd, cutoffDate) }
-    ?: false
+  private val Licence.isEligibleForPolicyVersionCheck: Boolean
+    get() = version == V4_0.version && statusCode in LicenceStatus.PRE_RELEASE_STATUSES
 
-  private fun isEligibleForPolicyVersionCheck(licence: Licence): Boolean = licence.version == V4_0.version && licence.statusCode in LicenceStatus.PRE_RELEASE_STATUSES
-
-  private fun getValidLsdDates(lsdChange: DateChange): Pair<LocalDate, LocalDate>? = if (lsdChange.changed && lsdChange.oldDate != null && lsdChange.newDate != null) {
-    lsdChange.oldDate to lsdChange.newDate
-  } else {
-    null
-  }
-
-  private fun crossesPolicyVersionCutoff(
-    oldLsd: LocalDate,
-    newLsd: LocalDate,
-    cutoffDate: LocalDate,
-  ): Boolean = !oldLsd.isBefore(cutoffDate) && newLsd.isBefore(cutoffDate)
+  private val DateChange.newValidDate: LocalDate?
+    get() = takeIf { it.changed }?.newDate
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
