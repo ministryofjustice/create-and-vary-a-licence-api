@@ -143,7 +143,7 @@ class UpdateSentenceDateService(
     }
 
     val licenceForPolicyCheck = if (hardstopChangeType == NOW_IN_HARDSTOP) {
-      licenceRepository.findById(updatedLicence.id).orElseThrow()
+      licenceRepository.findById(updatedLicence.id).orElseThrow { EntityNotFoundException("${updatedLicence.id}") }
     } else {
       updatedLicence
     }
