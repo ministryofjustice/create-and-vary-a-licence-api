@@ -275,8 +275,10 @@ class UpdateSentenceDateService(
     licence: Licence,
     dateChanges: DateChanges,
   ): Boolean = licence.isEligibleForPolicyVersionCheck &&
-    (progressionModelPolicyStartDate == null ||
-      dateChanges[LicenceDateType.LSD]?.newDate?.isBefore(progressionModelPolicyStartDate) == true)
+    (
+      progressionModelPolicyStartDate == null ||
+        dateChanges[LicenceDateType.LSD]?.newDate?.isBefore(progressionModelPolicyStartDate) == true
+      )
 
   private val Licence.isEligibleForPolicyVersionCheck: Boolean
     get() = version == V4_0.version && statusCode in LicenceStatus.PRE_RELEASE_STATUSES
