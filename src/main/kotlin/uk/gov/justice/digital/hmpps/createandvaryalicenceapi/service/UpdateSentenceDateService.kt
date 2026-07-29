@@ -116,22 +116,10 @@ class UpdateSentenceDateService(
     )
 
     val hardstopChangeType = getHardstopChangeType(currentLicenceStartDate, currentLicenceKind, updatedLicence)
-    val shouldInactivateForPolicyVersion = shouldInactivateForPolicyVersionChange(updatedLicence, dateChanges)
 
-    if (shouldInactivateForPolicyVersion) {
-      licenceService.inactivateLicences(
-        listOf(updatedLicence),
-        LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE,
-        deactivateInProgressVersions = false,
-      )
-      recordAuditEvent(updatedLicence, dateChanges)
-    } else if (hardstopChangeType == NOW_IN_HARDSTOP) {
-      licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
-    } else {
-      licenceRepository.saveAndFlush(updatedLicence)
-      if (dateChanges.anyChanges) {
-        recordAuditEvent(updatedLicence, dateChanges)
-      }
+    when {
+      hardstopChangeType == NOW_IN_HARDSTOP -> licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
+      else -> saveAndRecordIfChanged(updatedLicence, dateChanges)
     }
 
     if (hardstopChangeType == NO_LONGER_IN_HARDSTOP) {
@@ -154,14 +142,21 @@ class UpdateSentenceDateService(
       }
     }
 
-    if (shouldInactivateForPolicyVersion) {
-      notifyComOfPolicyVersionInactivation(updatedLicence)
+    val licenceForPolicyCheck = if (hardstopChangeType == NOW_IN_HARDSTOP) {
+      licenceRepository.findById(updatedLicence.id).orElseThrow()
+    } else {
+      updatedLicence
+    }
+
+    if (shouldInactivateForPolicyVersionChange(licenceForPolicyCheck, dateChanges)) {
+      inactivateForPolicyVersionChange(licenceForPolicyCheck, dateChanges)
+      notifyComOfPolicyVersionInactivation(licenceForPolicyCheck)
     } else if (dateChanges.isMaterial) {
       val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
-        updatedLicence.bookingId!!,
+        licenceForPolicyCheck.bookingId!!,
         sentenceDates.homeDetentionCurfewEligibilityDate,
       )
-      notifyComOfUpdate(updatedLicence, dateChanges, isNotApprovedForHdc)
+      notifyComOfUpdate(licenceForPolicyCheck, dateChanges, isNotApprovedForHdc)
     }
   }
 
@@ -282,6 +277,22 @@ class UpdateSentenceDateService(
 
   private val Licence.isEligibleForPolicyVersionCheck: Boolean
     get() = version == V4_0.version && statusCode in LicenceStatus.PRE_RELEASE_STATUSES
+
+  private fun inactivateForPolicyVersionChange(licence: Licence, dateChanges: DateChanges) {
+    licenceService.inactivateLicences(
+      listOf(licence),
+      LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE,
+      deactivateInProgressVersions = false,
+    )
+    recordAuditEvent(licence, dateChanges)
+  }
+
+  private fun saveAndRecordIfChanged(licence: Licence, dateChanges: DateChanges) {
+    licenceRepository.saveAndFlush(licence)
+    if (dateChanges.anyChanges) {
+      recordAuditEvent(licence, dateChanges)
+    }
+  }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

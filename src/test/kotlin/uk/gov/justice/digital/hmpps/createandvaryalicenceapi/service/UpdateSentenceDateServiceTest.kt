@@ -765,12 +765,21 @@ class UpdateSentenceDateServiceTest {
     )
     verify(notifyService, never()).sendDatesChangedEmail(any(), any(), any(), any(), anyOrNull(), any())
 
-    verify(licenceRepository, never()).saveAndFlush(any())
+    verify(licenceRepository).saveAndFlush(any())
     verify(licenceService, never()).timeout(any(), any())
+    verify(notifyService).sendPolicyVersionInactivatedEmail(
+      licenceId = "1",
+      emailAddress = aCrdLicenceEntity.getCom().email,
+      comFirstName = aCrdLicenceEntity.getCom().firstName.orEmpty(),
+      comLastName = aCrdLicenceEntity.getCom().lastName.orEmpty(),
+      pipFirstName = aCrdLicenceEntity.forename.orEmpty(),
+      pipLastName = aCrdLicenceEntity.surname.orEmpty(),
+      crn = aCrdLicenceEntity.crn,
+    )
   }
 
   @Test
-  fun `should inactivate and not timeout when both policy version rollback and hard-stop timeout conditions are true`() {
+  fun `should inactivate and timeout when both policy version rollback and hard-stop timeout conditions are true`() {
     val v4Licence = aCrdLicenceEntity.copy(
       statusCode = IN_PROGRESS,
       version = "4.0",
@@ -795,17 +804,18 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
+     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
-    service.updateSentenceDates(1L)
+     service.updateSentenceDates(1L)
 
-    verify(licenceService).inactivateLicences(
-      any(),
-      eq(UpdateSentenceDateService.LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE),
-      eq(false),
-    )
-    verify(licenceService, never()).timeout(any(), any())
-  }
+     verify(licenceService).timeout(any(), eq("due to sentence dates update"))
+
+     verify(licenceService).inactivateLicences(
+       any(),
+       eq(UpdateSentenceDateService.LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE),
+       eq(false),
+     )
+   }
 
   @Test
   fun `should not inactivate V3 licence when LSD moves before policy cutover date`() {

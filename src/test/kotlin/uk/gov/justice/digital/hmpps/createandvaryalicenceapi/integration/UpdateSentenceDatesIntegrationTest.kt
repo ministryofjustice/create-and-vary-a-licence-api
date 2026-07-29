@@ -625,6 +625,58 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  @TestPropertySource(properties = ["progression.model.policy-start-date=2026-09-02"])
+  inner class WhenLicenceEntersHardstopAndPolicyVersionBothApply {
+    @Test
+    @Sql("classpath:test_data/seed-v4-licence-id-4.sql")
+    fun `Update sentence dates should inactivate V4 licence for policy version when it enters hardstop and LSD moves before cutoff`() {
+      prisonApiMockServer.stubGetHdcLatest()
+      prisonApiMockServer.stubGetCourtOutcomes()
+      val crdDate = LocalDate.now().plusDays(2)
+      mockPrisonerSearchResponse(
+        SentenceDetail(
+          conditionalReleaseDate = crdDate,
+          confirmedReleaseDate = crdDate,
+          sentenceStartDate = LocalDate.parse("2020-10-11"),
+          sentenceExpiryDate = LocalDate.parse("2027-09-25"),
+          licenceExpiryDate = LocalDate.parse("2027-09-25"),
+          topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
+          topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
+        ),
+      )
+
+      webTestClient.put()
+        .uri("/licence/id/4/sentence-dates")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+
+      val result = webTestClient.get()
+        .uri("/licence/id/4")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody(Licence::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+      assertThat(result?.version).isEqualTo("4.0")
+    }
+
+    private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {
+      prisonApiMockServer.stubGetPrisonerDetail("A1234AA", sentenceDetail)
+    }
+
+    @BeforeEach
+    fun startMocks() {
+      prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
+    }
+  }
+
   private companion object {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
