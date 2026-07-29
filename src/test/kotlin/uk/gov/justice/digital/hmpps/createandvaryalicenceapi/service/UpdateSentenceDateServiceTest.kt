@@ -804,18 +804,18 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
-     service.updateSentenceDates(1L)
+    service.updateSentenceDates(1L)
 
-     verify(licenceService).timeout(any(), eq("due to sentence dates update"))
+    verify(licenceService).timeout(any(), eq("due to sentence dates update"))
 
-     verify(licenceService).inactivateLicences(
-       any(),
-       eq(UpdateSentenceDateService.LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE),
-       eq(false),
-     )
-   }
+    verify(licenceService).inactivateLicences(
+      any(),
+      eq(UpdateSentenceDateService.LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE),
+      eq(false),
+    )
+  }
 
   @Test
   fun `should not inactivate V3 licence when LSD moves before policy cutover date`() {
