@@ -30,11 +30,11 @@ class DeactivateProgressionLicencesService(
   private val telemetryService: TelemetryService,
   private val notifyService: NotifyService,
 
-  @param:Value("\${progression.model.policy-start-date}")
+  @param:Value("\${progression.model.policy-start-date:#{null}}")
   @param:DateTimeFormat(pattern = "yyyy-MM-dd")
   private val policyV4StartDate: LocalDate?,
 
-  @param:Value("\${progression.model.notification-window-end-date}")
+  @param:Value("\${progression.model.notification-window-end-date:#{null}}")
   @param:DateTimeFormat(pattern = "yyyy-MM-dd")
   private val notificationWindowEndDate: LocalDate?,
 ) {
@@ -47,7 +47,7 @@ class DeactivateProgressionLicencesService(
   fun deactivateLicences() {
     log.info("Job deactivateProgressionLicences started")
 
-    if(policyV4StartDate == null) {
+    if (policyV4StartDate == null) {
       log.info("Skipping job deactivateProgressionLicences due to missing policy v4 start date")
       return
     }

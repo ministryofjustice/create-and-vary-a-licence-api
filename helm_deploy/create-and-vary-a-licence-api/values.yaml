@@ -125,14 +125,9 @@ jobs:
     cron: "0 2 * * *" # 2am every day
     allowRetry: false
 
-  - name: isr-licence-progression-job
-    enabled: true
-    path: /isr-licence-progression-job
-    cron: "30 0 11 5 *" # 00:30 UTC on 11/05/2026
-    allowRetry: true
 
   - name: deactivate-progression-licences-job
     enabled: true
     path: /deactivate-progression-licences
-    cron: "30 3 1 12 *" # 03:30 UTC on 1/12/2026
+    cron: "30 3 1 12 *" # 03:30 UTC on 1st December each year
     allowRetry: false

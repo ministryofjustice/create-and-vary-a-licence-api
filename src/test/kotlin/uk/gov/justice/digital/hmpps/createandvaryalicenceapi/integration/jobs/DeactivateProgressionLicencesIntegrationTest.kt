@@ -51,7 +51,7 @@ class DeactivateProgressionLicencesIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licences-for-progression-deactivation.sql",
   )
-  fun `Job runs to deactivate HDC licences`() {
+  fun `Job runs to deactivate progression licences`() {
     webTestClient.post()
       .uri("/jobs/deactivate-progression-licences")
       .accept(MediaType.APPLICATION_JSON)

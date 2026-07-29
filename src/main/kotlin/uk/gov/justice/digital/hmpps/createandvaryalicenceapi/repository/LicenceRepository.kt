@@ -215,7 +215,7 @@ interface LicenceRepository :
     """
     SELECT l
     FROM Licence l
-    WHERE l.version in ("1.0", "2.0", "2.1", "3.0")
+    WHERE l.version in ('1.0', '2.0', '2.1', '3.0')
     AND l.statusCode in (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED)
     AND l.licenceStartDate >= :policyV4GoLiveDate
   """,

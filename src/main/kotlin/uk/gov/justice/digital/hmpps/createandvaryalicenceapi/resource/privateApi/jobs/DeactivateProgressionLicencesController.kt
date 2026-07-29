@@ -25,7 +25,7 @@ class DeactivateProgressionLicencesController(
   @ProtectedByIngress
   @PostMapping(value = ["/jobs/deactivate-progression-licences"])
   @Operation(
-    summary = "Deactivate licences not on policy version 4 which have release dates beyond the policy version 4 go-live date.",
+    summary = "Deactivate licences not on policy version 4 which have licence start dates beyond the policy version 4 go-live date.",
     description = "Deactivate any in-flight (IN_PROGRESS, SUBMITTED, APPROVED, and TIMED_OUT) licences not on policy version 4 that have licence start dates beyond the policy version 4 go-live date.",
   )
   @ApiResponses(
