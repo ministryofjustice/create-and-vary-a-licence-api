@@ -274,19 +274,12 @@ class UpdateSentenceDateService(
   private fun shouldInactivateForPolicyVersionChange(
     licence: Licence,
     dateChanges: DateChanges,
-  ): Boolean = when {
-    !licence.isEligibleForPolicyVersionCheck -> false
-    progressionModelPolicyStartDate == null -> true
-    else -> dateChanges[LicenceDateType.LSD]
-      ?.newValidDate
-      ?.isBefore(progressionModelPolicyStartDate) ?: false
-  }
+  ): Boolean = licence.isEligibleForPolicyVersionCheck &&
+    (progressionModelPolicyStartDate == null ||
+      dateChanges[LicenceDateType.LSD]?.newDate?.isBefore(progressionModelPolicyStartDate) == true)
 
   private val Licence.isEligibleForPolicyVersionCheck: Boolean
     get() = version == V4_0.version && statusCode in LicenceStatus.PRE_RELEASE_STATUSES
-
-  private val DateChange.newValidDate: LocalDate?
-    get() = takeIf { it.changed }?.newDate
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
