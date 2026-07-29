@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -273,15 +274,18 @@ class UpdateSentenceDateService(
   private fun shouldInactivateForPolicyVersionChange(
     licence: Licence,
     dateChanges: DateChanges,
-  ): Boolean = progressionModelPolicyStartDate?.let { cutoffDate ->
-    isEligibleForPolicyVersionCheck(licence) &&
-      dateChanges.firstOrNull { it.type == LicenceDateType.LSD }
-        ?.let { getValidLsdDates(it) }
-        ?.let { (oldLsd, newLsd) -> crossesPolicyVersionCutoff(oldLsd, newLsd, cutoffDate) }
-        ?: false
-  } ?: false
+  ): Boolean = when {
+    !isEligibleForPolicyVersionCheck(licence) -> false
+    progressionModelPolicyStartDate == null -> true
+    else -> lsdCrossesTheCutoffDate(dateChanges, progressionModelPolicyStartDate)
+  }
 
-  private fun isEligibleForPolicyVersionCheck(licence: Licence): Boolean = licence.version == V4_0.version && licence.statusCode in inFlightStatuses
+  private fun lsdCrossesTheCutoffDate(dateChanges: DateChanges, cutoffDate: LocalDate): Boolean = dateChanges[LicenceDateType.LSD]
+    ?.let { getValidLsdDates(it) }
+    ?.let { (oldLsd, newLsd) -> crossesPolicyVersionCutoff(oldLsd, newLsd, cutoffDate) }
+    ?: false
+
+  private fun isEligibleForPolicyVersionCheck(licence: Licence): Boolean = licence.version == V4_0.version && licence.statusCode in LicenceStatus.PRE_RELEASE_STATUSES
 
   private fun getValidLsdDates(lsdChange: DateChange): Pair<LocalDate, LocalDate>? = if (lsdChange.changed && lsdChange.oldDate != null && lsdChange.newDate != null) {
     lsdChange.oldDate to lsdChange.newDate
@@ -297,7 +301,6 @@ class UpdateSentenceDateService(
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
-    private val inFlightStatuses = setOf(IN_PROGRESS, SUBMITTED, APPROVED)
 
     const val LICENCE_DEACTIVATION_HARD_STOP =
       "Licence automatically inactivated as licence is no longer in hard stop period"

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -565,6 +566,63 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun startMocks() {
     prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
+  }
+
+  @Nested
+  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  @TestPropertySource(properties = ["progression.model.policy-start-date="])
+  inner class WhenProgressionModelPolicyStartDateIsNull {
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-v4-licence-id-4.sql",
+    )
+    fun `Update sentence dates should inactivate V4 in-flight licence when progressionModelPolicyStartDate is null`() {
+      prisonApiMockServer.stubGetHdcLatest()
+      prisonApiMockServer.stubGetCourtOutcomes()
+      val crdDate = LocalDate.parse("2026-09-10")
+      mockPrisonerSearchResponse(
+        SentenceDetail(
+          conditionalReleaseDate = crdDate,
+          confirmedReleaseDate = crdDate,
+          sentenceStartDate = LocalDate.parse("2020-10-11"),
+          sentenceExpiryDate = LocalDate.parse("2027-09-25"),
+          licenceExpiryDate = LocalDate.parse("2027-09-25"),
+          topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
+          topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
+        ),
+      )
+
+      webTestClient.put()
+        .uri("/licence/id/4/sentence-dates")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+
+      val result = webTestClient.get()
+        .uri("/licence/id/4")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(Licence::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.version).isEqualTo("4.0")
+      assertThat(result?.licenceStartDate).isEqualTo(crdDate)
+      assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    }
+
+    private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {
+      prisonApiMockServer.stubGetPrisonerDetail("A1234AA", sentenceDetail)
+    }
+
+    @BeforeEach
+    fun startMocks() {
+      prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
+    }
   }
 
   private companion object {
