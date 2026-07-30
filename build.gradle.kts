@@ -147,6 +147,7 @@ tasks {
     filter {
       excludeTestsMatching("*.integration.*")
     }
+    jvmArgs("-Xmx2g")
   }
 
   register<Test>("initialiseDatabase", fun Test.() {
@@ -163,6 +164,7 @@ tasks {
     filter {
       includeTestsMatching("*IntegrationTest*")
     }
+    jvmArgs("-Xmx2g")
   }
 
   val sarSnapshotFiles = listOf(
@@ -182,6 +184,7 @@ tasks {
     }
     environment("SAR_GENERATE_ACTUAL", "true")
     outputs.upToDateWhen { false }
+    jvmArgs("-Xmx2g")
   }
 
   register<Copy>("updateSarSnapshots") {
