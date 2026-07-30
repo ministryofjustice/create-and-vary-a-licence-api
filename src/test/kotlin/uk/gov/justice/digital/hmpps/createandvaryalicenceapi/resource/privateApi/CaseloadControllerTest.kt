@@ -285,8 +285,6 @@ class CaseloadControllerTest {
           name = "Test Surname",
           crn = "CRN1",
           nomisId = "NOMS1",
-          comName = "Staff Surname",
-          comStaffCode = "A01B02C",
           probationPractitioner = ProbationPractitioner("A01B02C", "Staff Surname", true),
           teamName = "Test Team",
           releaseDate = LocalDate.of(2021, 10, 22),

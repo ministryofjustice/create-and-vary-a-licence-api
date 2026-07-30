@@ -895,7 +895,7 @@ fun ManagedOffender.transformToUnstartedRecord(
   } else {
     ProbationPractitioner(
       staffCode = staff.code,
-      name = staff.name!!.fullName(),
+      name = staff.name!!.fullName().convertToTitleCase(),
       allocated = true,
     )
   }
@@ -905,8 +905,6 @@ fun ManagedOffender.transformToUnstartedRecord(
     name = name.fullName(),
     crn = crn,
     nomisId = nomisId,
-    comName = com?.name?.fullName()?.convertToTitleCase(),
-    comStaffCode = com?.code,
     probationPractitioner = probationPractitioner,
     teamName = team?.description,
     releaseDate = releaseDate,
