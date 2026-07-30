@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -115,22 +116,10 @@ class UpdateSentenceDateService(
     )
 
     val hardstopChangeType = getHardstopChangeType(currentLicenceStartDate, currentLicenceKind, updatedLicence)
-    val shouldInactivateForPolicyVersion = shouldInactivateForPolicyVersionChange(updatedLicence, dateChanges)
 
-    if (shouldInactivateForPolicyVersion) {
-      licenceService.inactivateLicences(
-        listOf(updatedLicence),
-        LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE,
-        deactivateInProgressVersions = false,
-      )
-      recordAuditEvent(updatedLicence, dateChanges)
-    } else if (hardstopChangeType == NOW_IN_HARDSTOP) {
-      licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
-    } else {
-      licenceRepository.saveAndFlush(updatedLicence)
-      if (dateChanges.anyChanges) {
-        recordAuditEvent(updatedLicence, dateChanges)
-      }
+    when {
+      hardstopChangeType == NOW_IN_HARDSTOP -> licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
+      else -> saveAndRecordIfChanged(updatedLicence, dateChanges)
     }
 
     if (hardstopChangeType == NO_LONGER_IN_HARDSTOP) {
@@ -153,14 +142,21 @@ class UpdateSentenceDateService(
       }
     }
 
-    if (shouldInactivateForPolicyVersion) {
-      notifyComOfPolicyVersionInactivation(updatedLicence)
+    val licenceForPolicyCheck = if (hardstopChangeType == NOW_IN_HARDSTOP) {
+      licenceRepository.findById(updatedLicence.id).orElseThrow { EntityNotFoundException("${updatedLicence.id}") }
+    } else {
+      updatedLicence
+    }
+
+    if (shouldInactivateForPolicyVersionChange(licenceForPolicyCheck, dateChanges)) {
+      inactivateForPolicyVersionChange(licenceForPolicyCheck, dateChanges)
+      notifyComOfPolicyVersionInactivation(licenceForPolicyCheck)
     } else if (dateChanges.isMaterial) {
       val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
-        updatedLicence.bookingId!!,
+        licenceForPolicyCheck.bookingId!!,
         sentenceDates.homeDetentionCurfewEligibilityDate,
       )
-      notifyComOfUpdate(updatedLicence, dateChanges, isNotApprovedForHdc)
+      notifyComOfUpdate(licenceForPolicyCheck, dateChanges, isNotApprovedForHdc)
     }
   }
 
@@ -273,31 +269,33 @@ class UpdateSentenceDateService(
   private fun shouldInactivateForPolicyVersionChange(
     licence: Licence,
     dateChanges: DateChanges,
-  ): Boolean = progressionModelPolicyStartDate?.let { cutoffDate ->
-    isEligibleForPolicyVersionCheck(licence) &&
-      dateChanges.firstOrNull { it.type == LicenceDateType.LSD }
-        ?.let { getValidLsdDates(it) }
-        ?.let { (oldLsd, newLsd) -> crossesPolicyVersionCutoff(oldLsd, newLsd, cutoffDate) }
-        ?: false
-  } ?: false
+  ): Boolean = licence.isEligibleForPolicyVersionCheck &&
+    (
+      progressionModelPolicyStartDate == null ||
+        dateChanges[LicenceDateType.LSD]?.newDate?.isBefore(progressionModelPolicyStartDate) == true
+      )
 
-  private fun isEligibleForPolicyVersionCheck(licence: Licence): Boolean = licence.version == V4_0.version && licence.statusCode in inFlightStatuses
+  private val Licence.isEligibleForPolicyVersionCheck: Boolean
+    get() = version == V4_0.version && statusCode in LicenceStatus.PRE_RELEASE_STATUSES
 
-  private fun getValidLsdDates(lsdChange: DateChange): Pair<LocalDate, LocalDate>? = if (lsdChange.changed && lsdChange.oldDate != null && lsdChange.newDate != null) {
-    lsdChange.oldDate to lsdChange.newDate
-  } else {
-    null
+  private fun inactivateForPolicyVersionChange(licence: Licence, dateChanges: DateChanges) {
+    licenceService.inactivateLicences(
+      listOf(licence),
+      LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE,
+      deactivateInProgressVersions = false,
+    )
+    recordAuditEvent(licence, dateChanges)
   }
 
-  private fun crossesPolicyVersionCutoff(
-    oldLsd: LocalDate,
-    newLsd: LocalDate,
-    cutoffDate: LocalDate,
-  ): Boolean = !oldLsd.isBefore(cutoffDate) && newLsd.isBefore(cutoffDate)
+  private fun saveAndRecordIfChanged(licence: Licence, dateChanges: DateChanges) {
+    licenceRepository.saveAndFlush(licence)
+    if (dateChanges.anyChanges) {
+      recordAuditEvent(licence, dateChanges)
+    }
+  }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
-    private val inFlightStatuses = setOf(IN_PROGRESS, SUBMITTED, APPROVED)
 
     const val LICENCE_DEACTIVATION_HARD_STOP =
       "Licence automatically inactivated as licence is no longer in hard stop period"

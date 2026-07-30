@@ -51,6 +51,7 @@ enum class LicenceStatus {
       IN_PROGRESS,
       SUBMITTED,
       APPROVED,
+      TIMED_OUT,
     )
 
     val ON_PROBATION_STATUSES = setOf(
