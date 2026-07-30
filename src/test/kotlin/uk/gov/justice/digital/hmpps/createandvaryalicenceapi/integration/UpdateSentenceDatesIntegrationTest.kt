@@ -592,15 +592,18 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stubGetHdcLatest()
       prisonApiMockServer.stubGetCourtOutcomes()
       val crdDate = LocalDate.parse("2026-09-10")
-      prisonApiMockServer.stubGetPrisonerDetail("A1234AA", SentenceDetail(
-        conditionalReleaseDate = crdDate,
-        confirmedReleaseDate = crdDate,
-        sentenceStartDate = LocalDate.parse("2020-10-11"),
-        sentenceExpiryDate = LocalDate.parse("2027-09-25"),
-        licenceExpiryDate = LocalDate.parse("2027-09-25"),
-        topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
-        topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
-      ))
+      prisonApiMockServer.stubGetPrisonerDetail(
+        "A1234AA",
+        SentenceDetail(
+          conditionalReleaseDate = crdDate,
+          confirmedReleaseDate = crdDate,
+          sentenceStartDate = LocalDate.parse("2020-10-11"),
+          sentenceExpiryDate = LocalDate.parse("2027-09-25"),
+          licenceExpiryDate = LocalDate.parse("2027-09-25"),
+          topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
+          topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
+        ),
+      )
 
       webTestClient.put()
         .uri("/licence/id/4/sentence-dates")
@@ -642,15 +645,18 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stubGetHdcLatest()
       prisonApiMockServer.stubGetCourtOutcomes()
       val crdDate = LocalDate.now().plusDays(2)
-      prisonApiMockServer.stubGetPrisonerDetail("A1234AA", SentenceDetail(
-        conditionalReleaseDate = crdDate,
-        confirmedReleaseDate = crdDate,
-        sentenceStartDate = LocalDate.parse("2020-10-11"),
-        sentenceExpiryDate = LocalDate.parse("2027-09-25"),
-        licenceExpiryDate = LocalDate.parse("2027-09-25"),
-        topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
-        topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
-      ))
+      prisonApiMockServer.stubGetPrisonerDetail(
+        "A1234AA",
+        SentenceDetail(
+          conditionalReleaseDate = crdDate,
+          confirmedReleaseDate = crdDate,
+          sentenceStartDate = LocalDate.parse("2020-10-11"),
+          sentenceExpiryDate = LocalDate.parse("2027-09-25"),
+          licenceExpiryDate = LocalDate.parse("2027-09-25"),
+          topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
+          topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
+        ),
+      )
 
       webTestClient.put()
         .uri("/licence/id/4/sentence-dates")
