@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -15,6 +14,7 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
@@ -568,113 +568,123 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
   }
 
-  @Nested
-  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-  @TestPropertySource(properties = ["progression.model.policy-start-date="])
-  inner class WhenProgressionModelPolicyStartDateIsNull {
 
-    @Test
-    @Sql(
-      "classpath:test_data/seed-v4-licence-id-4.sql",
-    )
-    fun `Update sentence dates should inactivate V4 in-flight licence when progressionModelPolicyStartDate is null`() {
-      prisonApiMockServer.stubGetHdcLatest()
-      prisonApiMockServer.stubGetCourtOutcomes()
-      val crdDate = LocalDate.parse("2026-09-10")
-      mockPrisonerSearchResponse(
-        SentenceDetail(
-          conditionalReleaseDate = crdDate,
-          confirmedReleaseDate = crdDate,
-          sentenceStartDate = LocalDate.parse("2020-10-11"),
-          sentenceExpiryDate = LocalDate.parse("2027-09-25"),
-          licenceExpiryDate = LocalDate.parse("2027-09-25"),
-          topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
-          topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
-        ),
-      )
+  private companion object {
+    @RegisterExtension
+    val prisonApiMockServer = PrisonApiMockServer()
+  }
+}
 
-      webTestClient.put()
-        .uri("/licence/id/4/sentence-dates")
-        .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-        .expectStatus().isOk
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@TestPropertySource(properties = ["progression.model.policy-start-date="])
+class UpdateSentenceDatesNullConfigIntegrationTest : IntegrationTestBase() {
 
-      val result = webTestClient.get()
-        .uri("/licence/id/4")
-        .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-        .expectStatus().isOk
-        .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody(Licence::class.java)
-        .returnResult().responseBody
-
-      assertThat(result?.version).isEqualTo("4.0")
-      assertThat(result?.licenceStartDate).isEqualTo(crdDate)
-      assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
-    }
-
-    private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {
-      prisonApiMockServer.stubGetPrisonerDetail("A1234AA", sentenceDetail)
-    }
-
-    @BeforeEach
-    fun startMocks() {
-      prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
-    }
+  @BeforeEach
+  fun startMocks() {
+    prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
   }
 
-  @Nested
-  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-  @TestPropertySource(properties = ["progression.model.policy-start-date=2026-09-02"])
-  inner class WhenLicenceEntersHardstopAndPolicyVersionBothApply {
-    @Test
-    @Sql("classpath:test_data/seed-v4-licence-id-4.sql")
-    fun `Update sentence dates should inactivate V4 licence for policy version when it enters hardstop and LSD moves before cutoff`() {
-      prisonApiMockServer.stubGetHdcLatest()
-      prisonApiMockServer.stubGetCourtOutcomes()
-      val crdDate = LocalDate.now().plusDays(2)
-      mockPrisonerSearchResponse(
-        SentenceDetail(
-          conditionalReleaseDate = crdDate,
-          confirmedReleaseDate = crdDate,
-          sentenceStartDate = LocalDate.parse("2020-10-11"),
-          sentenceExpiryDate = LocalDate.parse("2027-09-25"),
-          licenceExpiryDate = LocalDate.parse("2027-09-25"),
-          topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
-          topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
-        ),
-      )
+  @Test
+  @Sql("classpath:test_data/seed-v4-licence-id-4.sql")
+  fun `Update sentence dates should inactivate V4 in-flight licence when progressionModelPolicyStartDate is null`() {
+    prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    val crdDate = LocalDate.parse("2026-09-10")
+    mockPrisonerSearchResponse(
+      SentenceDetail(
+        conditionalReleaseDate = crdDate,
+        confirmedReleaseDate = crdDate,
+        sentenceStartDate = LocalDate.parse("2020-10-11"),
+        sentenceExpiryDate = LocalDate.parse("2027-09-25"),
+        licenceExpiryDate = LocalDate.parse("2027-09-25"),
+        topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
+        topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
+      ),
+    )
 
-      webTestClient.put()
-        .uri("/licence/id/4/sentence-dates")
-        .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-        .expectStatus().isOk
+    webTestClient.put()
+      .uri("/licence/id/4/sentence-dates")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
 
-      val result = webTestClient.get()
-        .uri("/licence/id/4")
-        .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-        .expectStatus().isOk
-        .expectBody(Licence::class.java)
-        .returnResult().responseBody
+    val result = webTestClient.get()
+      .uri("/licence/id/4")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
 
-      assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
-      assertThat(result?.version).isEqualTo("4.0")
-    }
+    assertThat(result?.version).isEqualTo("4.0")
+    assertThat(result?.licenceStartDate).isEqualTo(crdDate)
+    assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+  }
 
-    private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {
-      prisonApiMockServer.stubGetPrisonerDetail("A1234AA", sentenceDetail)
-    }
+  private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {
+    prisonApiMockServer.stubGetPrisonerDetail("A1234AA", sentenceDetail)
+  }
 
-    @BeforeEach
-    fun startMocks() {
-      prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
-    }
+  private companion object {
+    @RegisterExtension
+    val prisonApiMockServer = PrisonApiMockServer()
+  }
+}
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@TestPropertySource(properties = ["progression.model.policy-start-date=2026-09-02"])
+class UpdateSentenceDatesHardstopPolicyVersionIntegrationTest : IntegrationTestBase() {
+
+  @BeforeEach
+  fun startMocks() {
+    prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-v4-licence-id-4.sql")
+  fun `Update sentence dates should inactivate V4 licence for policy version when it enters hardstop and LSD moves before cutoff`() {
+    prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    val crdDate = LocalDate.now().plusDays(2)
+    mockPrisonerSearchResponse(
+      SentenceDetail(
+        conditionalReleaseDate = crdDate,
+        confirmedReleaseDate = crdDate,
+        sentenceStartDate = LocalDate.parse("2020-10-11"),
+        sentenceExpiryDate = LocalDate.parse("2027-09-25"),
+        licenceExpiryDate = LocalDate.parse("2027-09-25"),
+        topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
+        topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
+      ),
+    )
+
+    webTestClient.put()
+      .uri("/licence/id/4/sentence-dates")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/4")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(result?.version).isEqualTo("4.0")
+  }
+
+  private fun mockPrisonerSearchResponse(sentenceDetail: SentenceDetail) {
+    prisonApiMockServer.stubGetPrisonerDetail("A1234AA", sentenceDetail)
   }
 
   private companion object {
