@@ -36,6 +36,7 @@ import java.time.LocalDate
 import kotlin.jvm.optionals.getOrNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = ["progression.model.policy-start-date=2026-09-20"])
 class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
