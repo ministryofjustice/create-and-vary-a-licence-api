@@ -59,7 +59,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.probationPractitioner?.name, it?.probationPractitioner?.staffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(
@@ -110,7 +110,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.probationPractitioner?.name, it?.probationPractitioner?.staffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(
@@ -202,8 +202,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     val resultsList = searchResult!!.results
     assertThat(resultsList.size).isEqualTo(1)
     assertThat(resultsList[0].kind).isEqualTo(LicenceKind.TIME_SERVED)
-    assertThat(resultsList[0].comName).isNull()
-    assertThat(resultsList[0].comStaffCode).isNull()
+    assertThat(resultsList[0].probationPractitioner.name).isEqualTo("Not allocated")
+    assertThat(resultsList[0].probationPractitioner.staffCode).isEqualTo("A01B02C")
+    assertThat(resultsList[0].probationPractitioner.allocated).isFalse()
   }
 
   @Test
@@ -281,8 +282,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     val resultsList = searchResult!!.results
     assertThat(resultsList.size).isEqualTo(1)
     assertThat(resultsList[0].kind).isEqualTo(LicenceKind.TIME_SERVED)
-    assertThat(resultsList[0].comName).isNull()
-    assertThat(resultsList[0].comStaffCode).isNull()
+    assertThat(resultsList[0].probationPractitioner.name).isEqualTo("Not allocated")
+    assertThat(resultsList[0].probationPractitioner.staffCode).isEqualTo("A01B02C")
+    assertThat(resultsList[0].probationPractitioner.allocated).isFalse()
   }
 
   @Test
@@ -358,7 +360,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.probationPractitioner?.name, it?.probationPractitioner?.staffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(

@@ -177,7 +177,7 @@ class ComCaseloadSearchService(
   } else {
     ProbationPractitioner(
       staffCode = staff.code,
-      name = staff.name!!.fullName(),
+      name = staff.name!!.fullName().convertToTitleCase(),
       allocated = true,
     )
   }
@@ -209,8 +209,6 @@ class ComCaseloadSearchService(
       name = "${name.forename} ${name.surname}".convertToTitleCase(),
       crn = licence.crn,
       nomisId = licence.nomsId,
-      comName = com?.name?.fullName()?.convertToTitleCase(),
-      comStaffCode = com?.code,
       probationPractitioner = probationPractitioner,
       teamName = team?.description,
       releaseDate = licence.licenceStartDate,

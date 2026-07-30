@@ -27,14 +27,6 @@ data class FoundComCase(
   @field:Schema(description = "The prison nomis number for the offender", example = "A1234AA")
   val nomisId: String? = "",
 
-  @Deprecated("Use probationPractitioner name instead")
-  @field:Schema(description = "The forename and surname of the COM")
-  val comName: String? = "",
-
-  @Deprecated("Use probationPractitioner staffCode instead")
-  @field:Schema(description = "The COM's staff code")
-  val comStaffCode: String? = "",
-
   @field:Schema(description = "The details for the active supervising probation officer")
   val probationPractitioner: ProbationPractitioner,
 
@@ -92,7 +84,6 @@ data class FoundComCase(
       releaseDate = releaseDate,
       name = "Access restricted on NDelius",
       crn = crn,
-      comName = "Restricted",
       teamName = "Restricted",
       probationPractitioner = ProbationPractitioner.restrictedView(),
       isOnProbation = isOnProbation,
