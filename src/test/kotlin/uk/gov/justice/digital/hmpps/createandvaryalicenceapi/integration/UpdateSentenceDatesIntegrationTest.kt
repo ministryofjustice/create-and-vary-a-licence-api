@@ -568,7 +568,6 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
   }
 
-
   private companion object {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
