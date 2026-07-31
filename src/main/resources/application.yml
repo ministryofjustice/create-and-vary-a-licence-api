@@ -146,10 +146,14 @@ self:
 
 springdoc:
   api-docs:
+    enabled: false
     groups:
       enabled: true
   swagger-ui:
+    enabled: false
+    version: 5.32.11
     urls-primary-name: "public"
+
 cache:
   evict:
     bank-holidays:
