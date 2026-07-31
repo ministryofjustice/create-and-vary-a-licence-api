@@ -125,7 +125,6 @@ jobs:
     cron: "0 2 * * *" # 2am every day
     allowRetry: false
 
-
   - name: deactivate-progression-licences-job
     enabled: true
     path: /deactivate-progression-licences
