@@ -54,6 +54,14 @@ class TelemetryService(
     )
   }
 
+  fun recordDeactivateProgressionLicencesJobEvent(licencesDeactivated: Int = 0) {
+    telemetryClient.trackEvent(
+      "DeactivateProgressionLicencesJob",
+      mapOf("licences" to licencesDeactivated.toString()),
+      null,
+    )
+  }
+
   fun <T> recordCaseloadLoad(
     caseLoadType: CaseloadType<T>,
     context: Collection<String>,
