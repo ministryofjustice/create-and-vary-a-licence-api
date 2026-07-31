@@ -104,3 +104,10 @@ jobs:
     path: /migrate-standard-conditions?policyVersion=4.0
     cron: "30 11 20 12 *" # 11:30 UTC on 20/12/2026
     allowRetry: false
+
+  - name: deactivate-progression-licences-job
+    enabled: true
+    path: /deactivate-progression-licences
+    cron: "30 3 1 12 *" # 03:30 UTC on 1st December each year
+    allowRetry: false
+    
