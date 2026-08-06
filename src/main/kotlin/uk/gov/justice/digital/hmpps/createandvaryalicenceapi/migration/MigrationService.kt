@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.MissingStaffException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAppointmentAddress
@@ -137,7 +138,7 @@ class MigrationService(
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
     val offenderManager = getOffenderManager(prisoner.prisonerNumber)
     val probationTeam = offenderManager.team
-    val responsibleCom = licenceCreationService.getOrCreateCom(offenderManager.id)
+    val responsibleCom = getCommunityOffenderManager(offenderManager.id)
 
     val prisonInformation = prisonService.getPrisonInformation(prison.prisonCode)
 
@@ -299,7 +300,15 @@ class MigrationService(
     userName: String,
     coms: Set<CommunityOffenderManager>,
   ): CommunityOffenderManager = coms.firstOrNull { it.username == userName }
-    ?: licenceCreationService.getOrCreateCom(userName)
+    ?: licenceCreationService.getOrCreateCom(userName) ?: throw MissingStaffException("Missing Com using username '$userName'")
+
+  private fun getCommunityOffenderManager(staffId: Long): CommunityOffenderManager {
+    try {
+      return licenceCreationService.getOrCreateCom(staffId)
+    } catch (e: IllegalStateException) {
+      throw MissingStaffException("Missing Com using staffId $staffId")
+    }
+  }
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
