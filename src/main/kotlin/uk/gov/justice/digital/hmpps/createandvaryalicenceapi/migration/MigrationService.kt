@@ -138,7 +138,7 @@ class MigrationService(
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
     val offenderManager = getOffenderManager(prisoner.prisonerNumber)
     val probationTeam = offenderManager.team
-    val responsibleCom = getResponsibleCom(offenderManager.id)
+    val responsibleCom = getCommunityOffenderManager(offenderManager.id)
 
     val prisonInformation = prisonService.getPrisonInformation(prison.prisonCode)
 
@@ -302,7 +302,7 @@ class MigrationService(
   ): CommunityOffenderManager = coms.firstOrNull { it.username == userName }
     ?: licenceCreationService.getOrCreateCom(userName) ?: throw MissingStaffException("Missing Com using username '$userName'")
 
-  private fun getResponsibleCom(staffId: Long): CommunityOffenderManager {
+  private fun getCommunityOffenderManager(staffId: Long): CommunityOffenderManager {
     try {
       return licenceCreationService.getOrCreateCom(staffId)
     } catch (e: IllegalStateException) {
