@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -28,17 +27,19 @@ class PrisonEventsListener(
     rawMessage: String,
   ) {
     val (message, _, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
+    try {
+      when (val eventType = messageAttributes.eventType.value) {
+        SENTENCE_DATES_CHANGED_EVENT_TYPE, CONFIRMED_RELEASE_DATE_CHANGED_EVENT_TYPE -> {
+          sentenceDatesChangedHandler.handleEvent(message)
+        }
 
-    when (val eventType = messageAttributes.eventType.value) {
-      SENTENCE_DATES_CHANGED_EVENT_TYPE, CONFIRMED_RELEASE_DATE_CHANGED_EVENT_TYPE -> {
-        sentenceDatesChangedHandler.handleEvent(message)
+        else -> {
+          log.warn("Ignoring message with type $eventType")
+        }
       }
-
-      else -> {
-        log.warn("Ignoring message with type $eventType")
-      }
+    } finally {
+      finishedEventProcessing(messageAttributes.eventType)
     }
-    finishedEventProcessing(messageAttributes.eventType)
   }
 
   fun finishedEventProcessing(eventType: EventType) {
