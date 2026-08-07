@@ -56,4 +56,11 @@
         <packageUrl regex="true">^pkg:.*handlebars@.*$</packageUrl>
         <cve>CVE-2021-23383</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: kotlinx-coroutines-core-jvm-1.10.2-intellij-1.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.intellij\.deps\.kotlinx/kotlinx-coroutines-core-jvm@.*$</packageUrl>
+        <cve>CVE-2026-53914</cve>
+    </suppress>
 </suppressions>
