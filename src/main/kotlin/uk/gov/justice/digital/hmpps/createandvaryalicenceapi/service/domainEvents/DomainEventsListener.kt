@@ -33,32 +33,35 @@ class DomainEventListener(
   ) {
     val (message, _, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
 
-    when (val eventType = messageAttributes.eventType.value) {
-      COM_ALLOCATED_EVENT_TYPE -> {
-        comAllocatedHandler.handleEvent(message)
-      }
+    try {
+      when (val eventType = messageAttributes.eventType.value) {
+        COM_ALLOCATED_EVENT_TYPE -> {
+          comAllocatedHandler.handleEvent(message)
+        }
 
-      PRISONER_UPDATED_EVENT_TYPE -> {
-        prisonerUpdatedHandler.handleEvent(message)
-      }
+        PRISONER_UPDATED_EVENT_TYPE -> {
+          prisonerUpdatedHandler.handleEvent(message)
+        }
 
-      RECALL_INSERTED_EVENT_TYPE -> {
-        recallInsertedHandler.handleEvent(message)
-      }
+        RECALL_INSERTED_EVENT_TYPE -> {
+          recallInsertedHandler.handleEvent(message)
+        }
 
-      RECALL_UPDATED_EVENT_TYPE -> {
-        recallUpdatedHandler.handleEvent(message)
-      }
+        RECALL_UPDATED_EVENT_TYPE -> {
+          recallUpdatedHandler.handleEvent(message)
+        }
 
-      PRISON_OFFENDER_MERGED_EVENT_TYPE -> {
-        prisonerMergedHandler.handleEvent(message)
-      }
+        PRISON_OFFENDER_MERGED_EVENT_TYPE -> {
+          prisonerMergedHandler.handleEvent(message)
+        }
 
-      else -> {
-        log.warn("Ignoring message with type $eventType")
+        else -> {
+          log.warn("Ignoring message with type $eventType")
+        }
       }
+    } finally {
+      finishedEventProcessing(messageAttributes.eventType)
     }
-    finishedEventProcessing(messageAttributes.eventType)
   }
 
   fun finishedEventProcessing(eventType: EventType) {
