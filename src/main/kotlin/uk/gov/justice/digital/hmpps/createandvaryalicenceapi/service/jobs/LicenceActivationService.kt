@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -28,6 +29,8 @@ class LicenceActivationService(
   private val iS91DeterminationService: IS91DeterminationService,
   private val remandDeterminationService: RemandDeterminationService,
   private val telemetryService: TelemetryService,
+  @param:Value("\${feature.toggle.remand.enabled}") private val remandEnabled: Boolean = false,
+
 ) {
 
   @Transactional
@@ -78,7 +81,7 @@ class LicenceActivationService(
   private fun filterLicencesIntoTypes(licences: List<LicenceWithPrisoner>): Triple<List<LicenceWithPrisoner>, List<LicenceWithPrisoner>, List<LicenceWithPrisoner>> {
     val prisoners = licences.map { it.prisoner }
     val iS91RelatedIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
-    val remandRelatedIds = remandDeterminationService.getRemandBookingIds(prisoners)
+    val remandRelatedIds = if (remandEnabled) remandDeterminationService.getRemandBookingIds(prisoners) else emptyList()
     val (iS91Licences, otherLicences) = licences.partition { iS91RelatedIds.contains(it.bookingId) }
     val (remandLicences, standardLicences) = otherLicences.partition { remandRelatedIds.contains(it.bookingId) }
     return Triple(iS91Licences, remandLicences, standardLicences)
