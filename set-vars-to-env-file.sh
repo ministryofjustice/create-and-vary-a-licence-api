@@ -62,6 +62,7 @@ cat > "$fileToAddVars" <<EOF
 
 # --- Flags ---
   HDC_ENABLED=${HDC_ENABLED}
+  REMAND_ENABLED=${REMAND_ENABLED}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"

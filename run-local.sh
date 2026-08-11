@@ -62,10 +62,10 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
-
 # Feature toggles
 export HDC_ENABLED=true
 export USE_CURRENT_HDC_STATUS=false
+export REMAND_ENABLED=false
 export PROGRESSION_MODEL_POLICY_START_DATE=2026-01-14
 
 SKIP_DOCKER=false

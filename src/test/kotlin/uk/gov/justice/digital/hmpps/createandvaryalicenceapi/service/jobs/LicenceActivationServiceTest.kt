@@ -40,7 +40,7 @@ class LicenceActivationServiceTest {
   private val remandDeterminationService = mock<RemandDeterminationService>()
   private val telemetryService = mock<TelemetryService>()
 
-  private val service = LicenceActivationService(
+  private var service = LicenceActivationService(
     licenceRepository,
     licenceService,
     hdcService,
@@ -456,6 +456,16 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job activates licences where prisoner is on remand on licence start date`() {
+    service = LicenceActivationService(
+      licenceRepository,
+      licenceService,
+      hdcService,
+      prisonerSearchApiClient,
+      iS91DeterminationService,
+      remandDeterminationService,
+      telemetryService,
+      remandEnabled = true,
+    )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
     val remandPrisoner = nonHdcPrisoner
 
@@ -480,6 +490,16 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job does not activate licences where prisoner is on remand with a release date in the future`() {
+    service = LicenceActivationService(
+      licenceRepository,
+      licenceService,
+      hdcService,
+      prisonerSearchApiClient,
+      iS91DeterminationService,
+      remandDeterminationService,
+      telemetryService,
+      remandEnabled = true,
+    )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().plusDays(1))
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
@@ -503,6 +523,16 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job does not activate  licences where prisoner is on remand with no licence start date`() {
+    service = LicenceActivationService(
+      licenceRepository,
+      licenceService,
+      hdcService,
+      prisonerSearchApiClient,
+      iS91DeterminationService,
+      remandDeterminationService,
+      telemetryService,
+      remandEnabled = true,
+    )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = null)
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
