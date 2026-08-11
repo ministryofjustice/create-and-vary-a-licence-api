@@ -48,6 +48,27 @@ class PrisonApiMockServer :
     )
   }
 
+  fun stubGetCourtOutcomesForRemand() {
+    stubFor(
+      post(urlEqualTo("/api/bookings/court-event-outcomes?outcomeReasonCodes=2507,4001,4004,4012,4016,4505,4506,4531,4532,4534,4535,4536,4537,4539,4549,4553,4554,4560,4561,4563,4564,4565,4570,4571,4588,5601"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              """[
+                {
+                "bookingId": 901,
+                "eventId": 1,
+                "outcomeReasonCode": "2507"
+                }
+                ]
+              """.trimIndent(),
+            )
+            .withStatus(200),
+        ),
+    )
+  }
+
   fun stubGetPrison(
     prisonId: String = "ABC",
     prisonDescription: String = "ABC (HMP)",

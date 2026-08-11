@@ -51,7 +51,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher, times(9)).publishDomainEvent(capture())
+      verify(eventsPublisher, times(10)).publishDomainEvent(capture())
 
       assertThat(allValues)
         .extracting<Tuple> { tuple(it.eventType, it.additionalInformation["licenceId"]) }
@@ -60,6 +60,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "2"),
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "3"),
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "7"),
+          tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "10"),
           tuple(LicenceDomainEventType.HDC_LICENCE_ACTIVATED.value, "8"),
           tuple(LicenceDomainEventType.PRRD_LICENCE_ACTIVATED.value, "9"),
           tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "4"),
@@ -77,7 +78,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(activatedLicences?.size).isEqualTo(6)
+    assertThat(activatedLicences.size).isEqualTo(7)
     assertThat(activatedLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -89,6 +90,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         tuple(7L, ACTIVE),
         tuple(8L, ACTIVE),
         tuple(9L, ACTIVE),
+        tuple(10L, ACTIVE),
       )
 
     val deactivatedLicences = webTestClient.post()
@@ -100,7 +102,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(deactivatedLicences?.size).isEqualTo(3)
+    assertThat(deactivatedLicences.size).isEqualTo(3)
     assertThat(deactivatedLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -110,6 +112,12 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         tuple(5L, INACTIVE),
         tuple(6L, INACTIVE),
       )
+
+    verify(telemetryClient).trackEvent(
+      "LicenceForPrisonerOnRemandActivated",
+      mapOf("licenceId" to "10", "nomsId" to "A1234AG", "bookingId" to "901", "prisonCode" to null),
+      null,
+    )
   }
 
   @BeforeEach
@@ -117,6 +125,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(mockPrisoners)
     prisonerSearchMockServer.stubSearchPrisonersByBookingIds(mockPrisoners)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetCourtOutcomesForRemand()
     hdcApiMockServer.stubGetHdcStatuses(
       listOf(
         CurrentPrisonerHdcStatus(345, HdcStatus.APPROVED),
@@ -257,6 +266,27 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
           lastName = "Person6",
           dateOfBirth = LocalDate.parse("1987-01-01"),
           postRecallReleaseDate = LocalDate.now(),
+        ),
+        PrisonerSearchPrisoner(
+          prisonerNumber = "A1234AG",
+          bookingId = "901",
+          status = "INACTIVE",
+          mostSeriousOffence = "Robbery",
+          licenceExpiryDate = LocalDate.now().plusYears(1),
+          sentenceExpiryDate = LocalDate.now().plusYears(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
+          releaseDate = LocalDate.now().plusDays(1),
+          confirmedReleaseDate = LocalDate.now().plusDays(1),
+          conditionalReleaseDate = LocalDate.now().plusDays(1),
+          legalStatus = "SENTENCED",
+          indeterminateSentence = false,
+          recall = false,
+          prisonId = "GHI",
+          bookNumber = "12345G",
+          firstName = "Test7",
+          lastName = "Person7",
+          dateOfBirth = LocalDate.parse("1988-01-01"),
+          postRecallReleaseDate = null,
         ),
       ),
     )

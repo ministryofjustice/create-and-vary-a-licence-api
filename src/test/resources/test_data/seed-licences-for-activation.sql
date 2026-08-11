@@ -18,5 +18,6 @@ values (1, 'CRD', '1.0', 1, 1, 'AP', 'A1234AA', 'APPROVED', 123, current_date, '
        (6, 'CRD', '1.0', 1, 1, 'AP', 'A1324AD', 'TIMED_OUT', 012, current_date, '1.0', null),
        (7, 'HARD_STOP', '1.0', 1, 1, 'AP', 'A1234AD', 'APPROVED', 012, current_date, '1.0', null),
        (8, 'HDC', '1.0', 1, 1, 'AP', 'A1234AE', 'APPROVED', 345, current_date, '1.0', null),
-       (9, 'PRRD', '1.0', 1, 1, 'AP', 'A1234AF', 'APPROVED', 678, current_date, '1.0', null)
+       (9, 'PRRD', '1.0', 1, 1, 'AP', 'A1234AF', 'APPROVED', 678, current_date, '1.0', null),
+       (10, 'CRD', '1.0', 1, 1, 'AP', 'A1234AG', 'APPROVED', 901, current_date, '1.0', null)
 ;

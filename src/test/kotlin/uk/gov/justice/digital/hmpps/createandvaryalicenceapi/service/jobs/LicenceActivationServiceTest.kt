@@ -16,6 +16,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RemandDeterminationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
@@ -23,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.IS91_LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_DEACTIVATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.REMAND_LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -34,6 +37,8 @@ class LicenceActivationServiceTest {
   private val hdcService = mock<HdcService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
+  private val remandDeterminationService = mock<RemandDeterminationService>()
+  private val telemetryService = mock<TelemetryService>()
 
   private val service = LicenceActivationService(
     licenceRepository,
@@ -41,6 +46,8 @@ class LicenceActivationServiceTest {
     hdcService,
     prisonerSearchApiClient,
     iS91DeterminationService,
+    remandDeterminationService,
+    telemetryService,
   )
 
   @BeforeEach
@@ -58,6 +65,7 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       iS91DeterminationService,
+      remandDeterminationService,
     )
   }
 
@@ -444,6 +452,76 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+  }
+
+  @Test
+  fun `licence activation job activates licences where prisoner is on remand on licence start date`() {
+    val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
+    val remandPrisoner = nonHdcPrisoner
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!)))
+      .thenReturn(listOf(remandPrisoner))
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(remandPrisoner)))
+      .thenReturn(emptyList())
+    whenever(remandDeterminationService.getRemandBookingIds(listOf(remandPrisoner)))
+      .thenReturn(listOf(remandLicence.bookingId!!))
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(listOf(remandLicence), REMAND_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService, times(1)).recordLicenceForPrisonerOnRemandActivatedEvent(any())
+  }
+
+  @Test
+  fun `licence activation job does not activate licences where prisoner is on remand with a release date in the future`() {
+    val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().plusDays(1))
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!)))
+      .thenReturn(listOf(nonHdcPrisoner))
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nonHdcPrisoner)))
+      .thenReturn(emptyList())
+    whenever(remandDeterminationService.getRemandBookingIds(listOf(nonHdcPrisoner)))
+      .thenReturn(listOf(remandLicence.bookingId!!))
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(emptyList(), REMAND_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService, times(0)).recordLicenceForPrisonerOnRemandActivatedEvent(any())
+  }
+
+  @Test
+  fun `licence activation job does not activate  licences where prisoner is on remand with no licence start date`() {
+    val remandLicence = nonHdcLicence.copy(licenceStartDate = null)
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!)))
+      .thenReturn(listOf(nonHdcPrisoner))
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nonHdcPrisoner)))
+      .thenReturn(emptyList())
+    whenever(remandDeterminationService.getRemandBookingIds(listOf(nonHdcPrisoner)))
+      .thenReturn(listOf(remandLicence.bookingId!!))
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(emptyList(), REMAND_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService, times(0)).recordLicenceForPrisonerOnRemandActivatedEvent(any())
   }
 
   private val aLicenceEntity = createCrdLicence().copy(
