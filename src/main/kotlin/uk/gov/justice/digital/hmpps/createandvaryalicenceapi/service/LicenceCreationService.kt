@@ -299,19 +299,19 @@ class LicenceCreationService(
     )
   }
 
-  fun getOrCreateCom(userName: String): CommunityOffenderManager {
+  fun getOrCreateCom(userName: String): CommunityOffenderManager? {
     log.info("Searching for persisted COM with userName: $userName")
     val staff = staffRepository.findACommunityOffenderManagerIgnoreCase(userName)
     if (staff != null) {
       return staff
     }
     log.info("Creating COM record for staff with userName: $userName")
-    val user = deliusApiClient.getStaffByUserName(userName) ?: missing(userName, "record in delius")
+    val user = deliusApiClient.getStaffByUserName(userName) ?: return null
     return staffRepository.saveAndFlush(
       CommunityOffenderManager(
         staffIdentifier = user.id,
         staffCode = user.code,
-        username = user.username?.uppercase() ?: missing(userName, "username"),
+        username = userName,
         email = user.email,
         firstName = user.name.forename,
         lastName = user.name.surname,
@@ -320,8 +320,6 @@ class LicenceCreationService(
   }
 
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
-
-  private fun missing(username: String, field: String): Nothing = error("staff with staff username: '$username', missing $field")
 
   private fun getPrisonInformation(nomisRecord: PrisonerSearchPrisoner): Prison {
     val prisonCode = if (nomisRecord.isRestrictedPatient()) nomisRecord.supportingPrisonId!! else nomisRecord.prisonId!!

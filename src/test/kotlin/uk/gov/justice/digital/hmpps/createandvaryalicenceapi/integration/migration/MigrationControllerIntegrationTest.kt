@@ -156,7 +156,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isBadRequest
     assertThat(testRepository.doesLicenceExist(1)).isFalse
-    assertThat(errorResponse.userMessage).contains("Unexpected error: Licence 1 has already been migrated")
+    assertThat(errorResponse.userMessage).contains("Licence has already been migrated, HDC LicenceVersionId: 1")
   }
 
   @Test
