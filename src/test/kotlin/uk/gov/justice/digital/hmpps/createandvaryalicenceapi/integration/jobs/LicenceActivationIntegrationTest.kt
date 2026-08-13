@@ -125,7 +125,6 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(mockPrisoners)
     prisonerSearchMockServer.stubSearchPrisonersByBookingIds(mockPrisoners)
     prisonApiMockServer.stubGetCourtOutcomes()
-    prisonApiMockServer.stubGetCourtOutcomesForRemand()
     hdcApiMockServer.stubGetHdcStatuses(
       listOf(
         CurrentPrisonerHdcStatus(345, HdcStatus.APPROVED),

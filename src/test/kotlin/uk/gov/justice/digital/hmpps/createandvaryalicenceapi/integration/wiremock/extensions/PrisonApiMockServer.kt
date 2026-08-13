@@ -2,8 +2,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremo
 
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import tools.jackson.databind.ObjectMapper
@@ -40,32 +42,23 @@ class PrisonApiMockServer :
 
   fun stubGetCourtOutcomes() {
     stubFor(
-      post(urlEqualTo("/api/bookings/court-event-outcomes?outcomeReasonCodes=3006,4022,5500,5502")).willReturn(
+      post(urlPathEqualTo("/api/bookings/court-event-outcomes")).withQueryParam("outcomeReasonCodes", matching(".*")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
-          """[]""",
-        ).withStatus(200),
-      ),
-    )
-  }
-
-  fun stubGetCourtOutcomesForRemand() {
-    stubFor(
-      post(urlEqualTo("/api/bookings/court-event-outcomes?outcomeReasonCodes=2507,4001,4004,4012,4016,4505,4506,4531,4532,4534,4535,4536,4537,4539,4549,4553,4554,4560,4561,4563,4564,4565,4570,4571,4588,5601"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(
-              """[
+          """[
                 {
                 "bookingId": 901,
                 "eventId": 1,
                 "outcomeReasonCode": "2507"
+                },
+                {
+                "bookingId": 12,
+                "eventId": 2,
+                "outcomeReasonCode": "5500"
                 }
                 ]
-              """.trimIndent(),
-            )
-            .withStatus(200),
-        ),
+          """.trimIndent(),
+        ).withStatus(200),
+      ),
     )
   }
 

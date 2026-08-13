@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RemandDeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
@@ -26,6 +25,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_DEACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.REMAND_LICENCE_ACTIVATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.CourtEventOutcome
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -37,17 +38,16 @@ class LicenceActivationServiceTest {
   private val hdcService = mock<HdcService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
-  private val remandDeterminationService = mock<RemandDeterminationService>()
   private val telemetryService = mock<TelemetryService>()
-
+  private val prisonApiClient = mock<PrisonApiClient>()
   private var service = LicenceActivationService(
     licenceRepository,
     licenceService,
     hdcService,
     prisonerSearchApiClient,
     iS91DeterminationService,
-    remandDeterminationService,
     telemetryService,
+    prisonApiClient,
   )
 
   @BeforeEach
@@ -65,7 +65,6 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       iS91DeterminationService,
-      remandDeterminationService,
     )
   }
 
@@ -87,8 +86,10 @@ class LicenceActivationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(emptyList())
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(
       hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
     ).thenReturn(HdcStatuses(emptyList()))
@@ -107,8 +108,10 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(licence))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(licence.bookingId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(emptyList())
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -132,8 +135,10 @@ class LicenceActivationServiceTest {
     val prisoners = listOf(aPrisonerSearchPrisoner)
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(prisoners)
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners))
-      .thenReturn(listOf(aLicenceEntity.bookingId!!))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(listOf(aIS91CourtEventOutcome))
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(
       hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
     ).thenReturn(HdcStatuses(emptyList()))
@@ -157,8 +162,10 @@ class LicenceActivationServiceTest {
     val prisoners = listOf(aPrisonerSearchPrisoner)
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(prisoners)
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners))
-      .thenReturn(listOf(aLicenceEntity.bookingId!!))
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(listOf(aIS91CourtEventOutcome))
     whenever(
       hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
     ).thenReturn(HdcStatuses(emptyList()))
@@ -185,6 +192,8 @@ class LicenceActivationServiceTest {
         ),
       ),
     )
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
 
     service.licenceActivation()
 
@@ -202,6 +211,8 @@ class LicenceActivationServiceTest {
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
 
     service.licenceActivation()
 
@@ -217,9 +228,11 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(prisoners)
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any())).thenReturn(
       emptyList(),
     )
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -238,7 +251,10 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner.copy(status = "ACTIVE IN")))
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(unreleasedPrisoner))).thenReturn(emptyList())
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(emptyList())
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -264,7 +280,10 @@ class LicenceActivationServiceTest {
       ),
     )
 
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(emptyList())
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(emptyList())
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -292,7 +311,10 @@ class LicenceActivationServiceTest {
       ),
     )
 
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(listOf(54321))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(listOf(aIS91CourtEventOutcome))
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -320,7 +342,10 @@ class LicenceActivationServiceTest {
       ),
     )
 
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(listOf(54321))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(listOf(aIS91CourtEventOutcome))
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -349,8 +374,10 @@ class LicenceActivationServiceTest {
         setOf(aLicenceEntity.bookingId!!, hdcLicence.bookingId!!),
       ),
     ).thenReturn(prisoners)
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(hdcPrisoner)))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(emptyList())
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(
         listOf(
@@ -386,6 +413,8 @@ class LicenceActivationServiceTest {
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
 
     service.licenceActivation()
 
@@ -408,6 +437,8 @@ class LicenceActivationServiceTest {
         ),
       ),
     )
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
 
     service.licenceActivation()
 
@@ -446,6 +477,8 @@ class LicenceActivationServiceTest {
         ),
       ),
     )
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
 
     service.licenceActivation()
 
@@ -462,8 +495,8 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       iS91DeterminationService,
-      remandDeterminationService,
       telemetryService,
+      prisonApiClient,
       remandEnabled = true,
     )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
@@ -472,10 +505,10 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!)))
       .thenReturn(listOf(remandPrisoner))
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(remandPrisoner)))
-      .thenReturn(emptyList())
-    whenever(remandDeterminationService.getRemandBookingIds(listOf(remandPrisoner)))
-      .thenReturn(listOf(remandLicence.bookingId!!))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(listOf(aRemandCourtEventOutcome.copy(bookingId = remandLicence.bookingId!!)))
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
       .thenReturn(HdcStatuses(emptyList()))
 
@@ -496,8 +529,8 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       iS91DeterminationService,
-      remandDeterminationService,
       telemetryService,
+      prisonApiClient,
       remandEnabled = true,
     )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().plusDays(1))
@@ -505,10 +538,10 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!)))
       .thenReturn(listOf(nonHdcPrisoner))
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nonHdcPrisoner)))
-      .thenReturn(emptyList())
-    whenever(remandDeterminationService.getRemandBookingIds(listOf(nonHdcPrisoner)))
-      .thenReturn(listOf(remandLicence.bookingId!!))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(listOf(aRemandCourtEventOutcome))
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
       .thenReturn(HdcStatuses(emptyList()))
 
@@ -522,15 +555,15 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job does not activate  licences where prisoner is on remand with no licence start date`() {
+  fun `licence activation job does not activate licences where prisoner is on remand with no licence start date`() {
     service = LicenceActivationService(
       licenceRepository,
       licenceService,
       hdcService,
       prisonerSearchApiClient,
       iS91DeterminationService,
-      remandDeterminationService,
       telemetryService,
+      prisonApiClient,
       remandEnabled = true,
     )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = null)
@@ -538,10 +571,10 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!)))
       .thenReturn(listOf(nonHdcPrisoner))
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nonHdcPrisoner)))
-      .thenReturn(emptyList())
-    whenever(remandDeterminationService.getRemandBookingIds(listOf(nonHdcPrisoner)))
-      .thenReturn(listOf(remandLicence.bookingId!!))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(listOf(aRemandCourtEventOutcome))
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
       .thenReturn(HdcStatuses(emptyList()))
 
@@ -615,5 +648,17 @@ class LicenceActivationServiceTest {
   val nonHdcPrisoner = aPrisonerSearchPrisoner.copy(
     prisonerNumber = nonHdcLicence.nomsId!!,
     bookingId = nonHdcLicence.bookingId.toString(),
+  )
+
+  val aIS91CourtEventOutcome = CourtEventOutcome(
+    bookingId = 54321,
+    eventId = 123456,
+    outcomeReasonCode = "5500",
+  )
+
+  val aRemandCourtEventOutcome = CourtEventOutcome(
+    bookingId = 54321,
+    eventId = 654321,
+    outcomeReasonCode = "4531",
   )
 }
