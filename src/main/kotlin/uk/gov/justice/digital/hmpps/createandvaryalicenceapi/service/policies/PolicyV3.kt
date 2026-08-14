@@ -650,6 +650,7 @@ val POLICY_V3_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
+        headerCaption = "Area this person must not enter (exclusion zone)",
         inputs = listOf(
           Input(
             label = "Select a PDF map of the area this person must not enter",
@@ -745,6 +746,7 @@ val POLICY_V3_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "99195049-f355-46fb-b7d8-aef87a1b19c5",
+        headerCaption = "Area this person must not enter during an event (exclusion zone)",
         inputs = listOf(
           Input(
             label = "Enter the name of the event",

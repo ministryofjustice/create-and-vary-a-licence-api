@@ -48,4 +48,7 @@ data class AdditionalCondition(
 
   @field:Schema(description = "Whether the condition requires input from the user")
   val requiresInput: Boolean?,
+
+  @field:Schema(description = "An additional caption to appear above the header of this additional condition")
+  val headerCaption: String? = null,
 )

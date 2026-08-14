@@ -769,6 +769,7 @@ fun List<EntityAdditionalCondition>.transformToModelAdditional(
     it,
     conditionPolicyData[it.conditionCode]!!.readyToSubmit,
     conditionPolicyData[it.conditionCode]!!.requiresInput,
+    conditionPolicyData[it.conditionCode]!!.headerCaption,
   )
 }
 
@@ -776,6 +777,7 @@ fun transform(
   entity: EntityAdditionalCondition,
   readyToSubmit: Boolean,
   requiresInput: Boolean,
+  headerCaption: String?,
 ): ModelAdditionalCondition = ModelAdditionalCondition(
   id = entity.id,
   code = entity.conditionCode,
@@ -789,6 +791,7 @@ fun transform(
   uploadSummary = entity.additionalConditionUpload.transformToModelAdditionalConditionUploadSummary(),
   readyToSubmit = readyToSubmit,
   requiresInput = requiresInput,
+  headerCaption = headerCaption,
 )
 
 // Transform a list of entity additional condition data to model additional condition data
