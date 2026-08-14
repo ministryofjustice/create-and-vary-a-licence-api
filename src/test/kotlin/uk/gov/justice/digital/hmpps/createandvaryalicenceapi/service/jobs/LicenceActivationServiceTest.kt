@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
+// check each of these tests make sense with the court outcome and is91 mocks for each of them
 class LicenceActivationServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceService = mock<LicenceService>()
@@ -178,6 +179,37 @@ class LicenceActivationServiceTest {
   }
 
   @Test
+  fun `licence activation job calls for non-HDC, IS91 licences to be activated if Licence Start Date is in the past where their most serious offence is ILLEGAL IMMIGRANT DETAINEE`() {
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          licenceStartDate = LocalDate.now().minusDays(10),
+        ),
+      ),
+    )
+    val prisoners = listOf(
+      aPrisonerSearchPrisoner.copy(
+        mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE",
+      ),
+    )
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+      .thenReturn(prisoners)
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(prisoners to emptyList())
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(emptyList())
+    whenever(
+      hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
+    ).thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+  }
+
+  @Test
   fun `licence activation job calls for HDC approved case to be deactivated when they are not HDC licences`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     val prisoners = listOf(
@@ -194,6 +226,7 @@ class LicenceActivationServiceTest {
     )
     whenever(iS91DeterminationService.getImmigrationDetainees(any()))
       .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever { prisonApiClient.getCourtEventOutcomes(any(), any(), any()) }.thenReturn(emptyList())
 
     service.licenceActivation()
 
@@ -213,6 +246,7 @@ class LicenceActivationServiceTest {
     )
     whenever(iS91DeterminationService.getImmigrationDetainees(any()))
       .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever { prisonApiClient.getCourtEventOutcomes(any(), any(), any()) }.thenReturn(emptyList())
 
     service.licenceActivation()
 
@@ -233,6 +267,7 @@ class LicenceActivationServiceTest {
     )
     whenever(iS91DeterminationService.getImmigrationDetainees(any()))
       .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever { prisonApiClient.getCourtEventOutcomes(any(), any(), any()) }.thenReturn(emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -255,6 +290,7 @@ class LicenceActivationServiceTest {
       .thenReturn(emptyList())
     whenever(iS91DeterminationService.getImmigrationDetainees(any()))
       .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever { prisonApiClient.getCourtEventOutcomes(any(), any(), any()) }.thenReturn(emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -284,6 +320,7 @@ class LicenceActivationServiceTest {
       .thenReturn(emptyList())
     whenever(iS91DeterminationService.getImmigrationDetainees(any()))
       .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever { prisonApiClient.getCourtEventOutcomes(any(), any(), any()) }.thenReturn(emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -315,6 +352,7 @@ class LicenceActivationServiceTest {
       .thenReturn(listOf(aIS91CourtEventOutcome))
     whenever(iS91DeterminationService.getImmigrationDetainees(any()))
       .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever { prisonApiClient.getCourtEventOutcomes(any(), any(), any()) }.thenReturn(emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
     )
@@ -415,6 +453,7 @@ class LicenceActivationServiceTest {
     )
     whenever(iS91DeterminationService.getImmigrationDetainees(any()))
       .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever { prisonApiClient.getCourtEventOutcomes(any(), any(), any()) }.thenReturn(emptyList())
 
     service.licenceActivation()
 
@@ -439,6 +478,7 @@ class LicenceActivationServiceTest {
     )
     whenever(iS91DeterminationService.getImmigrationDetainees(any()))
       .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever { prisonApiClient.getCourtEventOutcomes(any(), any(), any()) }.thenReturn(emptyList())
 
     service.licenceActivation()
 
@@ -479,6 +519,7 @@ class LicenceActivationServiceTest {
     )
     whenever(iS91DeterminationService.getImmigrationDetainees(any()))
       .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever { prisonApiClient.getCourtEventOutcomes(any(), any(), any()) }.thenReturn(emptyList())
 
     service.licenceActivation()
 
@@ -516,6 +557,42 @@ class LicenceActivationServiceTest {
 
     verify(licenceService, times(1)).activateLicences(listOf(remandLicence), REMAND_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService, times(1)).recordLicenceForPrisonerOnRemandActivatedEvent(any())
+  }
+
+  @Test
+  fun `licence activation job activates both IS91 and remand licences where there are court outcomes for these licences`() {
+    service = LicenceActivationService(
+      licenceRepository,
+      licenceService,
+      hdcService,
+      prisonerSearchApiClient,
+      iS91DeterminationService,
+      telemetryService,
+      prisonApiClient,
+      remandEnabled = true,
+    )
+    val is91Licence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1), bookingId = 123456)
+    val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
+    val is91Prisoner = nonHdcPrisoner.copy(bookingId = is91Licence.bookingId.toString())
+    val remandPrisoner = nonHdcPrisoner
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(is91Licence, remandLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!, is91Licence.bookingId!!)))
+      .thenReturn(listOf(remandPrisoner, is91Prisoner))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(listOf(aIS91CourtEventOutcome.copy(bookingId = is91Licence.bookingId!!), aRemandCourtEventOutcome.copy(bookingId = remandLicence.bookingId!!)))
+    whenever(iS91DeterminationService.getImmigrationDetainees(any()))
+      .thenReturn(emptyList<PrisonerSearchPrisoner>() to emptyList())
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(listOf(remandLicence), REMAND_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(listOf(is91Licence), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
     verify(telemetryService, times(1)).recordLicenceForPrisonerOnRemandActivatedEvent(any())
