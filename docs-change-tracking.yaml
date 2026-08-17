@@ -1,0 +1,24 @@
+# Registry of "documented business logic" units whose freshness is tracked by
+# DocsChangeTrackingTest (src/test/kotlin/.../docs/DocsChangeTrackingTest.kt).
+#
+# Each entry maps one or more source files (a class, or a whole directory of classes)
+# to a markdown document describing the business rules they implement. The `hash`
+# field is an MD5 digest of the concatenated raw contents of the resolved source
+# files (sorted by path). If the source changes, the computed hash will no longer
+# match, and the test will fail — prompting the developer to review/update the doc
+# and then update `hash` here to the new value (printed in the test failure message).
+#
+# `sources` entries may be:
+#   - a path to a single file, or
+#   - a path to a directory, in which case all `*.kt` files within it (recursively)
+#     are included, sorted by path.
+#
+# All paths are relative to the repository root.
+
+entries:
+  - id: eligibility-service
+    description: "Licence eligibility rules (CRD/PRRD/HDC/recall eligibility criteria)"
+    doc: docs/eligibility.md
+    sources:
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/EligibilityService.kt
+    hash: 508cbcfe8051da22e896e263ac48ff66
