@@ -22,3 +22,10 @@ entries:
     sources:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/EligibilityService.kt
     hash: 508cbcfe8051da22e896e263ac48ff66
+
+  - id: release-date-service
+    description: "Licence start date (LSD) calculation, hard stop dates and early release/allocation warnings"
+    doc: docs/licence-start-date.md
+    sources:
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/dates/ReleaseDateService.kt
+    hash: 06b46f433d64c50da865423310435727
