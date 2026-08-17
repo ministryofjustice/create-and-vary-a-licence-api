@@ -1380,7 +1380,7 @@ val POLICY_V4_0 = LicencePolicy(
         category = "Polygraph",
         code = "1dc7ee29-df47-48a8-90b6-69e286692d8a",
         requiresInput = false,
-        text = "To comply with any instruction given by your supervising officer requiring you to attend polygraph testing. To participate in polygraph sessions and examinations as instructed by or under the authority of your supervising officer and to comply with any instruction given to you during a polygraph session by the person conducting the polygraph.",
+        text = "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop or disrupt the test.",
       ),
       AdditionalConditionAp(
         category = "Drug, alcohol and solvent abuse",
