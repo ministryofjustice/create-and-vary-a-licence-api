@@ -18,9 +18,9 @@ things automatically:
 1. **Is this person eligible** to have a licence created at all?
 2. If so, **what type of licence** applies to them?
 
-There are four possible licence types:
+There are four possible kinds of licence:
 
-| Licence type                    | Plain English meaning                                                                     |
+| Licence kind                    | Plain English meaning                                                                     |
 |---------------------------------|-------------------------------------------------------------------------------------------|
 | **Standard release**            | A normal licence tied to their conditional release date                                   |
 | **Home Detention Curfew (HDC)** | An early release licence, typically involving an electronic tag/curfew                    |
