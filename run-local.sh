@@ -47,8 +47,9 @@ export DB_SERVER=localhost
 export DB_NAME=create-and-vary-a-licence-db
 export DB_USER=cvl
 export DB_PASS=cvl
-export PROGRESSION_MODEL_POLICY_START_DATE=2026-01-14
-export HDC_ENABLED=true
+
+export SPRINGDOC_API-DOCS_ENABLED=true
+export SPRINGDOC_SWAGGER-UI_ENABLED=true
 
 # Provide Notify details to access Notify
 # Match with the API key in hmpps-auth set for its dev profile
@@ -61,9 +62,11 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
+
 # Feature toggles
 export HDC_ENABLED=true
 export USE_CURRENT_HDC_STATUS=false
+export PROGRESSION_MODEL_POLICY_START_DATE=2026-01-14
 
 SKIP_DOCKER=false
 DEBUG=""
