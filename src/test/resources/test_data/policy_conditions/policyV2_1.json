@@ -1137,7 +1137,7 @@
         "type": "OutOfBoundsRegion",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false,
-        "headerCaption": null
+        "headerCaption": "Area this person must not enter (exclusion zone)"
       },
       {
         "code": "42f71b40-84cd-446d-8647-f00bbb6c079c",

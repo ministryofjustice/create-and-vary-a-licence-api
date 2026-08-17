@@ -765,11 +765,12 @@ fun List<EntityAdditionalCondition>.transformToModelAdditional(
   conditionType: String,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ): List<ModelAdditionalCondition> = filter { condition -> condition.conditionType == conditionType }.map {
+  val policyData = conditionPolicyData[it.conditionCode]!!
   transform(
     it,
-    conditionPolicyData[it.conditionCode]!!.readyToSubmit,
-    conditionPolicyData[it.conditionCode]!!.requiresInput,
-    conditionPolicyData[it.conditionCode]!!.headerCaption,
+    policyData.readyToSubmit,
+    policyData.requiresInput,
+    policyData.headerCaption,
   )
 }
 
