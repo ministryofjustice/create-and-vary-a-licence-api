@@ -11,4 +11,5 @@ data class AdditionalConditionPss(
   override val inputs: List<Input>? = null,
   override val type: String? = null,
   override val skippable: Boolean? = false,
+  override val headerCaption: String? = null,
 ) : IAdditionalCondition

@@ -765,10 +765,12 @@ fun List<EntityAdditionalCondition>.transformToModelAdditional(
   conditionType: String,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ): List<ModelAdditionalCondition> = filter { condition -> condition.conditionType == conditionType }.map {
+  val policyData = conditionPolicyData[it.conditionCode]!!
   transform(
     it,
-    conditionPolicyData[it.conditionCode]!!.readyToSubmit,
-    conditionPolicyData[it.conditionCode]!!.requiresInput,
+    policyData.readyToSubmit,
+    policyData.requiresInput,
+    policyData.headerCaption,
   )
 }
 
@@ -776,6 +778,7 @@ fun transform(
   entity: EntityAdditionalCondition,
   readyToSubmit: Boolean,
   requiresInput: Boolean,
+  headerCaption: String?,
 ): ModelAdditionalCondition = ModelAdditionalCondition(
   id = entity.id,
   code = entity.conditionCode,
@@ -789,6 +792,7 @@ fun transform(
   uploadSummary = entity.additionalConditionUpload.transformToModelAdditionalConditionUploadSummary(),
   readyToSubmit = readyToSubmit,
   requiresInput = requiresInput,
+  headerCaption = headerCaption,
 )
 
 // Transform a list of entity additional condition data to model additional condition data
