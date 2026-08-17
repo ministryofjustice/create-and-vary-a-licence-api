@@ -634,6 +634,7 @@ val POLICY_V4_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
+        headerCaption = "Area this person must not enter (exclusion zone)",
         inputs = listOf(
           Input(
             label = "Select a PDF map of the area this person must not enter",
@@ -730,6 +731,7 @@ val POLICY_V4_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "99195049-f355-46fb-b7d8-aef87a1b19c5",
+        headerCaption = "Area this person must not enter during an event (exclusion zone)",
         inputs = listOf(
           Input(
             label = "Enter the name of the event",
@@ -812,6 +814,7 @@ val POLICY_V4_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "005d70e4-a247-4f82-b8b3-6d294a0f5051",
+        headerCaption = "Area this person must not leave (restriction zone)",
         inputs = listOf(
           Input(
             label = "Select a PDF map of the area this person must not leave",
@@ -1380,7 +1383,7 @@ val POLICY_V4_0 = LicencePolicy(
         category = "Polygraph",
         code = "1dc7ee29-df47-48a8-90b6-69e286692d8a",
         requiresInput = false,
-        text = "To comply with any instruction given by your supervising officer requiring you to attend polygraph testing. To participate in polygraph sessions and examinations as instructed by or under the authority of your supervising officer and to comply with any instruction given to you during a polygraph session by the person conducting the polygraph.",
+        text = "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop or disrupt the test.",
       ),
       AdditionalConditionAp(
         category = "Drug, alcohol and solvent abuse",

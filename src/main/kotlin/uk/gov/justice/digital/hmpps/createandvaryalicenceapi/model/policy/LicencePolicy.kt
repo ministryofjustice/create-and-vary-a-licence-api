@@ -18,6 +18,7 @@ interface IAdditionalCondition :
   val requiresInput: Boolean
   val categoryShort: String?
   val skippable: Boolean?
+  val headerCaption: String?
   override fun getConditionInputs() = inputs
 }
 
