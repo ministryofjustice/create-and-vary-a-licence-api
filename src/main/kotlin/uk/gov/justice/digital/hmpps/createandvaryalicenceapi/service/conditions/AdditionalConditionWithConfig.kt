@@ -12,6 +12,7 @@ data class AdditionalConditionWithConfig(
 data class ConditionPolicyData(
   val readyToSubmit: Boolean,
   val requiresInput: Boolean,
+  val headerCaption: String?,
 )
 
 fun mapConditionsToConfig(
@@ -39,6 +40,7 @@ fun getLicenceConditionPolicyData(
 
     val requiresInput = config.requiresInput
     val enteredFields = condition.additionalConditionData.map { it.dataField }
+    val headerCaption = config.headerCaption
 
     val readyToSubmit = if (!requiresInput) {
       true
@@ -50,11 +52,11 @@ fun getLicenceConditionPolicyData(
       requiredFields.any { it in enteredFields }
     }
 
-    condition.conditionCode to ConditionPolicyData(readyToSubmit, requiresInput)
+    condition.conditionCode to ConditionPolicyData(readyToSubmit, requiresInput, headerCaption)
   }
 }
 
-fun isConditionReadyToSubmit(
+fun getConditionPolicyFields(
   licenceCondition: AdditionalCondition,
   policyConditions: AllAdditionalConditions,
 ): ConditionPolicyData = getLicenceConditionPolicyData(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!
