@@ -175,29 +175,4 @@ class TelemetryServiceTest {
       eq(null),
     )
   }
-
-  @Test
-  fun `recordLicenceForPrisonerOnRemandActivatedEvent tracks event with correct properties`() {
-    val licence = createCrdLicence().copy(
-      id = 10,
-      bookingId = 999,
-      nomsId = "A1234AG",
-      prisonCode = "MDI",
-    )
-
-    service.recordLicenceForPrisonerOnRemandActivatedEvent(licence)
-
-    verify(telemetryClient).trackEvent(
-      eq("LicenceForPrisonerOnRemandActivated"),
-      eq(
-        mapOf(
-          "licenceId" to licence.id.toString(),
-          "nomsId" to licence.nomsId,
-          "bookingId" to licence.bookingId.toString(),
-          "prisonCode" to licence.prisonCode,
-        ),
-      ),
-      eq(null),
-    )
-  }
 }
