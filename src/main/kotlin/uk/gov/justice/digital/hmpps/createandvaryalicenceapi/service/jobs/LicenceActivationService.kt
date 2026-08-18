@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.IS91_RESULT_CODES
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.OFFENCE_DESCRIPTION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
@@ -28,7 +28,6 @@ class LicenceActivationService(
   private val licenceService: LicenceService,
   private val hdcService: HdcService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val iS91DeterminationService: IS91DeterminationService,
   private val telemetryService: TelemetryService,
   private val prisonApiClient: PrisonApiClient,
   @param:Value("\${feature.toggle.remand.enabled}") private val remandEnabled: Boolean = false,
@@ -45,21 +44,21 @@ class LicenceActivationService(
     val matchedLicences = prisonerSearchApiClient.searchPrisonersByBookingIds(potentialLicences.keys)
       .map { LicenceWithPrisoner(potentialLicences[it.bookingId?.toLong()]!!, it) }
     val (eligibleLicences, ineligibleLicences) = determineActivationEligibility(matchedLicences)
-    val (iS91licencesToActivate, remandLicencesToActivate, standardLicencesToActivate) = findLicencesToActivate(eligibleLicences)
+    val licencesToActivate = findLicencesToActivate(eligibleLicences)
 
     log.info(
-      "Licence activation job: activating ${iS91licencesToActivate.size} IS91 licences, " +
-        "${remandLicencesToActivate.size} remand licences, " +
-        "${standardLicencesToActivate.size} standard licences, " +
+      "Licence activation job: activating ${licencesToActivate.iS91Licences.size} IS91 licences, " +
+        "${licencesToActivate.remandLicences.size} remand licences, " +
+        "${licencesToActivate.standardLicences.size} standard licences, " +
         "inactivating ${ineligibleLicences.size} licences",
     )
 
-    licenceService.activateLicences(iS91licencesToActivate, IS91_LICENCE_ACTIVATION)
-    licenceService.activateLicences(remandLicencesToActivate, REMAND_LICENCE_ACTIVATION)
-    remandLicencesToActivate.forEach { licence ->
+    licenceService.activateLicences(licencesToActivate.iS91Licences, IS91_LICENCE_ACTIVATION)
+    licenceService.activateLicences(licencesToActivate.remandLicences, REMAND_LICENCE_ACTIVATION)
+    licencesToActivate.remandLicences.forEach { licence ->
       telemetryService.recordLicenceForPrisonerOnRemandActivatedEvent(licence)
     }
-    licenceService.activateLicences(standardLicencesToActivate, LICENCE_ACTIVATION)
+    licenceService.activateLicences(licencesToActivate.standardLicences, LICENCE_ACTIVATION)
     licenceService.inactivateLicences(ineligibleLicences.map { it.licence }, LICENCE_DEACTIVATION)
   }
 
@@ -72,18 +71,19 @@ class LicenceActivationService(
     return filteredLicences.partition { hdcStatus.canBeActivated(it.licence.kind, it.bookingId) }
   }
 
-  private fun findLicencesToActivate(licences: List<LicenceWithPrisoner>): Triple<List<Licence>, List<Licence>, List<Licence>> {
-    val (iS91Licences, remandLicences, standardLicences) = filterLicencesIntoTypes(licences)
-    val iS91LicencesToActivate = iS91Licences.filter { isPassedLicenceStartDate(it.licence.licenceStartDate) }
-    val remandLicencesToActivate = remandLicences.filter { isPassedLicenceStartDate(it.licence.licenceStartDate) }
-    val standardLicencesToActivate = standardLicences.filter { it.isStandardLicenceForActivation() }
-    return Triple(iS91LicencesToActivate.map { it.licence }, remandLicencesToActivate.map { it.licence }, standardLicencesToActivate.map { it.licence })
+  private fun findLicencesToActivate(licences: List<LicenceWithPrisoner>): LicencesToActivate {
+    val licenceBuckets = filterLicencesIntoTypes(licences)
+    return LicencesToActivate(
+      iS91Licences = licenceBuckets.iS91Licences.filter { isPassedLicenceStartDate(it.licence.licenceStartDate) }.map { it.licence },
+      remandLicences = licenceBuckets.remandLicences.filter { isPassedLicenceStartDate(it.licence.licenceStartDate) }.map { it.licence },
+      standardLicences = licenceBuckets.standardLicences.filter { it.isStandardLicenceForActivation() }.map { it.licence },
+    )
   }
 
-  private fun filterLicencesIntoTypes(licences: List<LicenceWithPrisoner>): Triple<List<LicenceWithPrisoner>, List<LicenceWithPrisoner>, List<LicenceWithPrisoner>> {
+  private fun filterLicencesIntoTypes(licences: List<LicenceWithPrisoner>): LicenceBuckets {
     val prisoners = licences.map { it.prisoner }
 
-    val(immigrationDetainees, nonImmigrationDetainees) = iS91DeterminationService.getImmigrationDetainees(prisoners)
+    val (immigrationDetainees, nonImmigrationDetainees) = prisoners.partition { it.mostSeriousOffence == OFFENCE_DESCRIPTION }
 
     val immigrationDetaineeBookingIds = immigrationDetainees.mapNotNull { it.bookingId?.toLong() }
     val nonImmigrationBookingIds = nonImmigrationDetainees.mapNotNull { it.bookingId?.toLong() }
@@ -101,11 +101,11 @@ class LicenceActivationService(
       .filter { it.outcomeReasonCode in RemandCourtEvents.getRemandCourtCodes() }
       .map { it.bookingId }
 
-    val is91BookingIds = immigrationDetaineeBookingIds + iS91OutcomeBookingIds
-    val (is91Licences, nonIs91Licences) = licences.partition { it.bookingId in is91BookingIds }
+    val iS91BookingIds = immigrationDetaineeBookingIds + iS91OutcomeBookingIds
+    val (iS91Licences, nonIs91Licences) = licences.partition { it.bookingId in iS91BookingIds }
     val (remandLicences, standardLicences) = nonIs91Licences.partition { it.bookingId in remandOutcomeBookingIds }
 
-    return Triple(is91Licences, remandLicences, standardLicences)
+    return LicenceBuckets(iS91Licences, remandLicences, standardLicences)
   }
 
   private fun LicenceWithPrisoner.isStandardLicenceForActivation(): Boolean = (
@@ -122,4 +122,16 @@ class LicenceActivationService(
     const val LICENCE_ACTIVATION = "Licence automatically activated via repeating job"
     const val LICENCE_DEACTIVATION = "Licence automatically deactivated as booking ID has approved HDC licence"
   }
+
+  private data class LicenceBuckets(
+    val iS91Licences: List<LicenceWithPrisoner>,
+    val remandLicences: List<LicenceWithPrisoner>,
+    val standardLicences: List<LicenceWithPrisoner>,
+  )
+
+  private data class LicencesToActivate(
+    val iS91Licences: List<Licence>,
+    val remandLicences: List<Licence>,
+    val standardLicences: List<Licence>,
+  )
 }
