@@ -13,4 +13,5 @@ data class AdditionalConditionAp(
   override val type: String? = null,
   override val skippable: Boolean? = false,
   val requiresElectronicMonitoringResponse: Boolean = false,
+  override val headerCaption: String? = null,
 ) : IAdditionalCondition
