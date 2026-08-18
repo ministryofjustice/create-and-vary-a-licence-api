@@ -81,14 +81,4 @@ class TelemetryService(
       mapOf("caseloadType" to caseLoadType.name, "context" to context.joinToString(", ")) + itemCounts
     telemetryClient.trackEvent("CaseLoadRequest", properties, null)
   }
-
-  fun recordLicenceForPrisonerOnRemandActivatedEvent(licence: Licence) {
-    val properties = mapOf(
-      "licenceId" to licence.id.toString(),
-      "nomsId" to licence.nomsId,
-      "bookingId" to licence.bookingId.toString(),
-      "prisonCode" to licence.prisonCode,
-    )
-    telemetryClient.trackEvent("LicenceForPrisonerOnRemandActivated", properties, null)
-  }
 }

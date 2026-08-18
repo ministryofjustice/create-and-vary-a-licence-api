@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.IS91_RESULT_CODES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.OFFENCE_DESCRIPTION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -28,7 +27,6 @@ class LicenceActivationService(
   private val licenceService: LicenceService,
   private val hdcService: HdcService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val telemetryService: TelemetryService,
   private val prisonApiClient: PrisonApiClient,
   @param:Value("\${feature.toggle.remand.enabled}") private val remandEnabled: Boolean = false,
 
@@ -55,9 +53,6 @@ class LicenceActivationService(
 
     licenceService.activateLicences(licencesToActivate.iS91Licences, IS91_LICENCE_ACTIVATION)
     licenceService.activateLicences(licencesToActivate.remandLicences, REMAND_LICENCE_ACTIVATION)
-    licencesToActivate.remandLicences.forEach { licence ->
-      telemetryService.recordLicenceForPrisonerOnRemandActivatedEvent(licence)
-    }
     licenceService.activateLicences(licencesToActivate.standardLicences, LICENCE_ACTIVATION)
     licenceService.inactivateLicences(ineligibleLicences.map { it.licence }, LICENCE_DEACTIVATION)
   }

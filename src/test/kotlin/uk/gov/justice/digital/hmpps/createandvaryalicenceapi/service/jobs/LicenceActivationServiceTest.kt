@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
@@ -38,14 +37,12 @@ class LicenceActivationServiceTest {
   private val hdcService = mock<HdcService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
-  private val telemetryService = mock<TelemetryService>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private var service = LicenceActivationService(
     licenceRepository,
     licenceService,
     hdcService,
     prisonerSearchApiClient,
-    telemetryService,
     prisonApiClient,
   )
 
@@ -501,7 +498,6 @@ class LicenceActivationServiceTest {
       licenceService,
       hdcService,
       prisonerSearchApiClient,
-      telemetryService,
       prisonApiClient,
       remandEnabled = true,
     )
@@ -522,7 +518,6 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
-    verify(telemetryService, times(1)).recordLicenceForPrisonerOnRemandActivatedEvent(any())
   }
 
   @Test
@@ -532,7 +527,6 @@ class LicenceActivationServiceTest {
       licenceService,
       hdcService,
       prisonerSearchApiClient,
-      telemetryService,
       prisonApiClient,
       remandEnabled = true,
     )
@@ -555,7 +549,6 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(listOf(is91Licence), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
-    verify(telemetryService, times(1)).recordLicenceForPrisonerOnRemandActivatedEvent(any())
   }
 
   @Test
@@ -565,7 +558,6 @@ class LicenceActivationServiceTest {
       licenceService,
       hdcService,
       prisonerSearchApiClient,
-      telemetryService,
       prisonApiClient,
       remandEnabled = true,
     )
@@ -585,7 +577,6 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
-    verify(telemetryService, times(0)).recordLicenceForPrisonerOnRemandActivatedEvent(any())
   }
 
   @Test
@@ -595,7 +586,6 @@ class LicenceActivationServiceTest {
       licenceService,
       hdcService,
       prisonerSearchApiClient,
-      telemetryService,
       prisonApiClient,
       remandEnabled = true,
     )
@@ -615,7 +605,6 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
-    verify(telemetryService, times(0)).recordLicenceForPrisonerOnRemandActivatedEvent(any())
   }
 
   private val aLicenceEntity = createCrdLicence().copy(
