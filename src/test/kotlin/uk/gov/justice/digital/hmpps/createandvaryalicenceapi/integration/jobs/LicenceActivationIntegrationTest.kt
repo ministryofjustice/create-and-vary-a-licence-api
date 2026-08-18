@@ -112,6 +112,12 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         tuple(5L, INACTIVE),
         tuple(6L, INACTIVE),
       )
+
+    verify(telemetryClient).trackEvent(
+      "LicenceForPrisonerOnRemandActivated",
+      mapOf("licenceId" to "10", "nomsId" to "A1234AG", "bookingId" to "901", "prisonCode" to null),
+      null,
+    )
   }
 
   @BeforeEach
