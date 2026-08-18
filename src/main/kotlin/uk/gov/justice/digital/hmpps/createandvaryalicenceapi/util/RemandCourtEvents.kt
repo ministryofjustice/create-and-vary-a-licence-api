@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util
 
 enum class RemandCourtEvents(val code: String) {
   BAIL_APPEAL_WITHDRAWN("2507"),
-  COMMITED_TO_CROWN_COURT_FOR_SENTENCE("4001"),
+  COMMITTED_TO_CROWN_COURT_FOR_SENTENCE("4001"),
   SENTENCE_POSTPONED("4004"),
   REMITTAL_FOR_SENTENCE_IN_CUSTODY("4012"),
   COMMIT_TO_CROWN_COURT_FOR_SENTENCE_IN_CUSTODY("4016"),

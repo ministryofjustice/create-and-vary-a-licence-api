@@ -22,13 +22,8 @@ class IS91DeterminationService(
 
   fun isIS91Case(prisoner: PrisonerSearchPrisoner) = getIS91AndExtraditionBookingIds(listOf(prisoner)).isNotEmpty()
 
-  fun getImmigrationDetainees(prisoners: List<PrisonerSearchPrisoner>): Pair<List<PrisonerSearchPrisoner>, List<PrisonerSearchPrisoner>> {
-    val (immigrationDetainees, nonImmigrationDetainees) = prisoners.partition { it.mostSeriousOffence == OFFENCE_DESCRIPTION }
-    return Pair(immigrationDetainees, nonImmigrationDetainees)
-  }
-
   fun getIS91AndExtraditionBookingIds(prisoners: List<PrisonerSearchPrisoner>): List<Long> {
-    val (immigrationDetainees, nonImmigrationDetainees) = getImmigrationDetainees(prisoners)
+    val (immigrationDetainees, nonImmigrationDetainees) = prisoners.partition { it.mostSeriousOffence == OFFENCE_DESCRIPTION }
     val immigrationDetaineeBookings = immigrationDetainees.mapNotNull { it.bookingId?.toLong() }
     val is91OutcomeBookings = bookingsWithIS91Outcomes(nonImmigrationDetainees.mapNotNull { it.bookingId?.toLong() })
     return immigrationDetaineeBookings + is91OutcomeBookings
