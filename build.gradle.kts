@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("dev.detekt") version "2.0.0-alpha.5"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.2"
+  id("dev.detekt") version "2.0.0-alpha.6"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.5"
   id("org.owasp.dependencycheck") version "12.2.2"
   kotlin("plugin.spring") version "2.4.10"
   kotlin("plugin.jpa") version "2.4.10"
@@ -22,10 +22,6 @@ dependencies {
   constraints {
     implementation("org.apache.commons:commons-compress:1.26.0") {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
-    }
-    // FIX: CVE-2026-23907
-    implementation("org.apache.pdfbox:pdfbox:3.0.7") {
-      because("Fix CVE-2026-23907")
     }
   }
 
@@ -49,7 +45,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:6.0.1-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:6.2.0-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:3.0.8")
@@ -62,14 +58,14 @@ dependencies {
   implementation("io.arrow-kt:arrow-core:2.2.3")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
 
   // Digital prison reporting
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:16.4.1")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.6.2")
-  implementation("org.jsoup:jsoup:1.22.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.8.0")
+  implementation("org.jsoup:jsoup:1.23.1")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
   implementation("org.springframework.boot:spring-boot-starter-webclient")
@@ -207,6 +203,10 @@ tasks {
   getByName("check") {
     dependsOn(":ktlintCheck", "detekt")
   }
+}
+
+dependencyCheck {
+  skipConfigurations.add("detekt")
 }
 
 allOpen {
