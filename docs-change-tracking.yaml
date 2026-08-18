@@ -29,3 +29,10 @@ entries:
     sources:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/dates/ReleaseDateService.kt
     hash: 06b46f433d64c50da865423310435727
+
+  - id: update-sentence-date-service
+    description: "How CVL reacts when a person's sentence/release dates change: date recalculation, materiality, COM notifications, and hard stop/policy-version safeguards"
+    doc: docs/sentence-date-updates.md
+    sources:
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/UpdateSentenceDateService.kt
+    hash: 560202058e8db41b2f4102e7f8a4eeef
