@@ -9,7 +9,7 @@ class IS91DeterminationService(
   private val prisonApiClient: PrisonApiClient,
 ) {
 
-  private companion object IS91Constants {
+  companion object IS91Constants {
     const val OFFENCE_DESCRIPTION = "ILLEGAL IMMIGRANT/DETAINEE"
     const val DEPORTATION_RECOMMENDED = "3006"
     const val IMMIGRATION_DETAINEE = "5500"

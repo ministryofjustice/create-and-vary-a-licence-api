@@ -75,7 +75,7 @@ earlier** — i.e. release day has arrived or passed — and haven't yet been sw
 For each one, it checks the person's current HDC (Home Detention Curfew) status, then:
 
 - **Activates** the licence once it's clear the person has genuinely been released on
-  this basis — for IS91/extradition cases, once their licence start date has passed;
+  this basis — for IS91/extradition/remand cases, once their licence start date has passed;
   for everyone else, once their licence start date has passed *and* the prison's own
   records show them as released.
 - **Deactivates** an approved standard licence instead, if it turns out the person has
