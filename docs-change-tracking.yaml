@@ -36,3 +36,12 @@ entries:
     sources:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/UpdateSentenceDateService.kt
     hash: 560202058e8db41b2f4102e7f8a4eeef
+
+  - id: scheduled-jobs
+    description: "The scheduled background jobs (controllers + services) that keep licences up to date and notify probation automatically"
+    doc: docs/scheduled-jobs.md
+    sources:
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/resource/privateApi/jobs
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/jobs
+    hash: 75aaa55e7f9d95c10f7f392852b1d30b
+
