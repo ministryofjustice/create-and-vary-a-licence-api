@@ -118,7 +118,11 @@ class UpdateSentenceDateService(
     val hardstopChangeType = getHardstopChangeType(currentLicenceStartDate, currentLicenceKind, updatedLicence)
 
     when {
-      hardstopChangeType == NOW_IN_HARDSTOP -> licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
+      hardstopChangeType == NOW_IN_HARDSTOP -> licenceService.timeout(
+        updatedLicence,
+        reason = "due to sentence dates update",
+      )
+
       else -> saveAndRecordIfChanged(updatedLicence, dateChanges)
     }
 
@@ -302,7 +306,7 @@ class UpdateSentenceDateService(
     const val LICENCE_DEACTIVATION_HARD_STOP_TASK =
       "Licence automatically inactivated by task as licence is still not in hard stop period"
     const val LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE =
-      "Licence automatically inactivated as the licence start date moved before 02/09/2026 and the case must be recreated on policy V3"
+      "Licence automatically inactivated as the licence start date moved prior to V4 start date and the case must be recreated on policy V3"
   }
 
   private enum class HardstopChangeType {
