@@ -79,6 +79,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.fi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someEntityStandardConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
@@ -123,26 +124,28 @@ class LicenceServiceTest {
   private val auditService = mock<AuditService>()
   private val cvlRecordService = mock<CvlRecordService>()
   private val migrationService = mock<MigrationService>()
+  private val licenceConditionService = mock<LicenceConditionService>()
 
   private val service =
     LicenceService(
-      licenceRepository,
-      crdLicenceRepository,
-      staffRepository,
-      licenceEventRepository,
-      licencePolicyService,
-      auditEventRepository,
-      notifyService,
-      omuService,
-      releaseDateService,
-      domainEventsService,
-      prisonerSearchApiClient,
-      uploadFileConditionsService,
-      deliusApiClient,
-      telemetryService,
-      auditService,
-      cvlRecordService,
-      migrationService,
+        licenceRepository,
+        crdLicenceRepository,
+        staffRepository,
+        licenceEventRepository,
+        licencePolicyService,
+        auditEventRepository,
+        notifyService,
+        omuService,
+        releaseDateService,
+        domainEventsService,
+        prisonerSearchApiClient,
+        uploadFileConditionsService,
+        deliusApiClient,
+        telemetryService,
+        auditService,
+        cvlRecordService,
+        migrationService,
+        licenceConditionService,
     )
 
   @BeforeEach
@@ -3524,23 +3527,24 @@ class LicenceServiceTest {
     fun `approving a hard stop licence sends a hard stop licence approval email`() {
       val service =
         LicenceService(
-          licenceRepository,
-          crdLicenceRepository,
-          staffRepository,
-          licenceEventRepository,
-          licencePolicyService,
-          auditEventRepository,
-          notifyService,
-          omuService,
-          releaseDateService,
-          domainEventsService,
-          prisonerSearchApiClient,
-          uploadFileConditionsService,
-          deliusApiClient,
-          telemetryService,
-          auditService,
-          cvlRecordService,
-          migrationService,
+            licenceRepository,
+            crdLicenceRepository,
+            staffRepository,
+            licenceEventRepository,
+            licencePolicyService,
+            auditEventRepository,
+            notifyService,
+            omuService,
+            releaseDateService,
+            domainEventsService,
+            prisonerSearchApiClient,
+            uploadFileConditionsService,
+            deliusApiClient,
+            telemetryService,
+            auditService,
+            cvlRecordService,
+            migrationService,
+            licenceConditionService,
         )
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
