@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.MigrationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -62,9 +63,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSetOfweeklyCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anEligibilityAssessment
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anIneligibleEligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -74,8 +75,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.firstNightCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someEntityStandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
@@ -85,8 +88,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -114,11 +117,12 @@ class LicenceServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val domainEventsService = mock<DomainEventsService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
-  private val eligibilityService = mock<EligibilityService>()
   private val uploadFileConditionsService = mock<UploadFileConditionsService>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val telemetryService = mock<TelemetryService>()
   private val auditService = mock<AuditService>()
+  private val cvlRecordService = mock<CvlRecordService>()
+  private val migrationService = mock<MigrationService>()
 
   private val service =
     LicenceService(
@@ -133,11 +137,12 @@ class LicenceServiceTest {
       releaseDateService,
       domainEventsService,
       prisonerSearchApiClient,
-      eligibilityService,
       uploadFileConditionsService,
       deliusApiClient,
       telemetryService,
       auditService,
+      cvlRecordService,
+      migrationService,
     )
 
   @BeforeEach
@@ -162,7 +167,6 @@ class LicenceServiceTest {
       releaseDateService,
       domainEventsService,
       prisonerSearchApiClient,
-      eligibilityService,
       uploadFileConditionsService,
     )
   }
@@ -1332,12 +1336,8 @@ class LicenceServiceTest {
   fun `submit a CRD licence saves new fields to the licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(
-      eligibilityService.getEligibilityAssessment(
-        eq(aPrisonerSearchPrisoner),
-      ),
-    ).thenReturn(anEligibilityAssessment())
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.submitLicence(1L, emptyList())
 
@@ -1396,10 +1396,8 @@ class LicenceServiceTest {
     val hardStopLicence = createHardStopLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardStopLicence))
     whenever(staffRepository.findByUsernameIgnoreCase("tca")).thenReturn(caseAdmin)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.submitLicence(1L, emptyList())
 
@@ -1442,11 +1440,9 @@ class LicenceServiceTest {
   fun `attempting to submit a licence for an ineligible case results in validation exception `() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anIneligibleEligibilityAssessment(),
-    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(isEligible = false))
 
     val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
 
@@ -1466,10 +1462,8 @@ class LicenceServiceTest {
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
 
@@ -1479,6 +1473,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(cvlRecordService, never()).getCvlRecord(any())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(notifyService, times(2))
       .sendVariationForApprovalEmail(
@@ -1989,7 +1984,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(anHdcLicenceEntity),
     )
-    whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcLicenceEntity)
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcVariationLicence)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
@@ -2000,6 +1995,50 @@ class LicenceServiceTest {
       assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+      assertThat(weeklyCurfewTimes).isEqualTo(aSetOfweeklyCurfewTimes())
+      assertThat(firstNightCurfewTimes).isEqualTo(firstNightCurfewTimes())
+      assertThat(variationOfId).isEqualTo(1)
+      assertThat(licenceVersion).isEqualTo("1.0")
+      assertThat(curfewAddress?.licence).isEqualTo(licenceCaptor.value)
+      assertThat(curfewAddress?.licence).isNotEqualTo(anHdcLicenceEntity)
+      assertThat(firstNightCurfewTimes).isNotSameAs(anHdcLicenceEntity.firstNightCurfewTimes)
+      assertThat(weeklyCurfewTimes[0]).isNotSameAs(anHdcLicenceEntity.weeklyCurfewTimes[0])
+    }
+    verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
+    assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VARIATION_CREATED)
+  }
+
+  @Test
+  fun `creating an HDC variation from an existing HDC variation`() {
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
+    whenever(licencePolicyService.currentPolicy(any())).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(
+        anHdcVariationLicence.copy(
+          weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
+        ),
+      ),
+    )
+    whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcVariationLicence)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+
+    service.createVariation(1L)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    with(licenceCaptor.value as HdcVariationLicence) {
+      assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
+      assertThat(version).isEqualTo("2.1")
+      assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+      assertThat(weeklyCurfewTimes).isEqualTo(aSetOfweeklyCurfewTimes())
+      assertThat(firstNightCurfewTimes).isEqualTo(firstNightCurfewTimes())
       assertThat(variationOfId).isEqualTo(1)
       assertThat(licenceVersion).isEqualTo("1.0")
     }
@@ -2093,10 +2132,8 @@ class LicenceServiceTest {
       ),
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2135,10 +2172,8 @@ class LicenceServiceTest {
       ),
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2173,10 +2208,8 @@ class LicenceServiceTest {
       ),
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anEligibilityAssessment(),
-    )
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2219,11 +2252,9 @@ class LicenceServiceTest {
 
   @Test
   fun `attempting to edit a licence that is ineligible for CVL results in validation exception`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
 
-    whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-      anIneligibleEligibilityAssessment(),
-    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(isEligible = false))
 
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
@@ -2928,7 +2959,7 @@ class LicenceServiceTest {
 
     service.deactivateLicenceAndVariations(
       aLicenceEntity.id,
-      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RESENTENCED),
+      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RESENTENCED),
     )
     verify(
       licenceRepository,
@@ -2958,7 +2989,7 @@ class LicenceServiceTest {
 
     service.deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RESENTENCED),
+      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RESENTENCED),
     )
 
     verify(
@@ -3011,7 +3042,7 @@ class LicenceServiceTest {
 
     service.deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RECALLED),
+      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RECALLED),
     )
 
     verify(
@@ -3504,11 +3535,12 @@ class LicenceServiceTest {
           releaseDateService,
           domainEventsService,
           prisonerSearchApiClient,
-          eligibilityService,
           uploadFileConditionsService,
           deliusApiClient,
           telemetryService,
           auditService,
+          cvlRecordService,
+          migrationService,
         )
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
@@ -3856,6 +3888,21 @@ class LicenceServiceTest {
     }
 
     @Test
+    fun `populates isHdcMigration field`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
+      whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+        AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+      )
+      whenever(migrationService.isAMigratedLicence(1L)).thenReturn(true)
+
+      val licence = service.getLicenceById(1L)
+
+      with(licence as HdcLicenceModel) {
+        assertThat(licence.isHdcMigration).isTrue()
+      }
+    }
+
+    @Test
     fun `service returns an HDC variation licence by ID`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(anHdcVariationLicence))
       whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
@@ -3875,10 +3922,8 @@ class LicenceServiceTest {
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hdcLicence))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-        anEligibilityAssessment(),
-      )
+      whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       service.submitLicence(
         1L,
@@ -3929,10 +3974,8 @@ class LicenceServiceTest {
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-        anEligibilityAssessment(),
-      )
+      whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       service.submitLicence(
         1L,
@@ -3997,10 +4040,8 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(
         Optional.of(approvedLicence),
       )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-        anEligibilityAssessment(),
-      )
+      whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcLicenceEntity)
 
@@ -4016,6 +4057,10 @@ class LicenceServiceTest {
         assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
         assertThat(versionOfId).isEqualTo(1)
         assertThat(licenceVersion).isEqualTo("1.1")
+        assertThat(curfewAddress?.licence).isEqualTo(licenceCaptor.value)
+        assertThat(curfewAddress?.licence).isNotEqualTo(approvedLicence)
+        assertThat(firstNightCurfewTimes).isNotSameAs(approvedLicence.firstNightCurfewTimes)
+        assertThat(weeklyCurfewTimes[0]).isNotSameAs(approvedLicence.weeklyCurfewTimes[0])
       }
 
       verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
@@ -4044,10 +4089,8 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(
         Optional.of(approvedLicence),
       )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
-      whenever(eligibilityService.getEligibilityAssessment(eq(aPrisonerSearchPrisoner))).thenReturn(
-        anEligibilityAssessment(),
-      )
+      whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
 
       whenever(licenceRepository.save(any<Licence>())).thenReturn(approvedLicence)
 
@@ -4251,6 +4294,7 @@ class LicenceServiceTest {
           conditionText = "Be of good behaviour",
           conditionType = "AP",
           licence = it,
+          conditionVersion = it.version,
         ),
         EntityStandardCondition(
           id = 2,
@@ -4259,6 +4303,7 @@ class LicenceServiceTest {
           conditionText = "Do not break any law",
           conditionType = "AP",
           licence = it,
+          conditionVersion = it.version,
         ),
         EntityStandardCondition(
           id = 3,
@@ -4267,6 +4312,7 @@ class LicenceServiceTest {
           conditionText = "Attend meetings",
           conditionType = "AP",
           licence = it,
+          conditionVersion = it.version,
         ),
       ),
     )
@@ -4308,37 +4354,12 @@ class LicenceServiceTest {
     standardConditions = emptyList(),
     responsibleCom = aCom,
     createdBy = aCom,
+    weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
+    firstNightCurfewTimes = firstNightCurfewTimes(),
     approvedByName = "jim smith",
     approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
   ).let {
-    it.copy(
-      standardConditions = listOf(
-        EntityStandardCondition(
-          id = 1,
-          conditionCode = "goodBehaviour",
-          conditionSequence = 1,
-          conditionText = "Be of good behaviour",
-          conditionType = "AP",
-          licence = it,
-        ),
-        EntityStandardCondition(
-          id = 2,
-          conditionCode = "notBreakLaw",
-          conditionSequence = 2,
-          conditionText = "Do not break any law",
-          conditionType = "AP",
-          licence = it,
-        ),
-        EntityStandardCondition(
-          id = 3,
-          conditionCode = "attendMeetings",
-          conditionSequence = 3,
-          conditionText = "Attend meetings",
-          conditionType = "AP",
-          licence = it,
-        ),
-      ),
-    )
+    it.copy(standardConditions = someEntityStandardConditions(it))
   }
 
   private val aVariationLicence = createVariationLicence()

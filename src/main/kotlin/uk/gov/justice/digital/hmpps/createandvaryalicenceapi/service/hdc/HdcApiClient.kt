@@ -5,6 +5,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils.propagateAny404
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
@@ -13,12 +14,12 @@ private const val HDC_BATCH_SIZE = 500
 @Service
 class HdcApiClient(@param:Qualifier("oauthHdcApiClient") val hdcApiWebClient: WebClient) {
 
-  fun getByBookingId(bookingId: Long): HdcLicenceData = hdcApiWebClient
+  fun getByBookingId(bookingId: Long): HdcLicence = hdcApiWebClient
     .get()
     .uri("/licence/hdc/$bookingId")
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono(HdcLicenceData::class.java)
+    .bodyToMono(HdcLicence::class.java)
     .propagateAny404 { "No licence data found for $bookingId" }
     .block()!!
 

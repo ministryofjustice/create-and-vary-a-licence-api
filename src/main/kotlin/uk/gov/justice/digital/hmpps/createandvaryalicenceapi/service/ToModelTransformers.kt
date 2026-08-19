@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffender
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReviewablePostRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
@@ -34,9 +34,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes as EntityCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider as EntityElectronicMonitoringProvider
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary as ModelAdditionalConditionUploadSummary
@@ -161,15 +161,14 @@ fun toHardstop(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointment?.personType,
-  appointmentPerson = licence.appointment?.person,
-  appointmentTime = licence.appointment?.time,
-  appointmentTimeType = licence.appointment?.timeType,
-  appointmentAddress = licence.appointment?.addressText,
-  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointment?.telephoneContactNumber,
-  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
-  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
+  appointmentPersonType = licence.probationContact?.appointmentType,
+  appointmentPerson = licence.probationContact?.person,
+  appointmentTime = licence.probationContact?.appointmentTime,
+  appointmentTimeType = licence.probationContact?.appointmentTimeType,
+  appointmentAddress = licence.probationContact?.addressText,
+  licenceAppointmentAddress = licence.probationContact?.address?.let { AddressMapper.toResponse(it) },
+  appointmentTelephoneNumber = licence.probationContact?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.probationContact?.alternativeTelephoneContactNumber,
   reviewDate = licence.reviewDate,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
@@ -251,15 +250,14 @@ fun toTimeServed(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointment?.personType,
-  appointmentPerson = licence.appointment?.person,
-  appointmentTime = licence.appointment?.time,
-  appointmentTimeType = licence.appointment?.timeType,
-  appointmentAddress = licence.appointment?.addressText,
-  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointment?.telephoneContactNumber,
-  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
-  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
+  appointmentPersonType = licence.probationContact?.appointmentType,
+  appointmentPerson = licence.probationContact?.person,
+  appointmentTime = licence.probationContact?.appointmentTime,
+  appointmentTimeType = licence.probationContact?.appointmentTimeType,
+  appointmentAddress = licence.probationContact?.addressText,
+  licenceAppointmentAddress = licence.probationContact?.address?.let { AddressMapper.toResponse(it) },
+  appointmentTelephoneNumber = licence.probationContact?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.probationContact?.alternativeTelephoneContactNumber,
   reviewDate = licence.reviewDate,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
@@ -337,15 +335,14 @@ fun toVariation(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointment?.personType,
-  appointmentPerson = licence.appointment?.person,
-  appointmentTime = licence.appointment?.time,
-  appointmentTimeType = licence.appointment?.timeType,
-  appointmentAddress = licence.appointment?.addressText,
-  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointment?.telephoneContactNumber,
-  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
-  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
+  appointmentPersonType = licence.probationContact?.appointmentType,
+  appointmentPerson = licence.probationContact?.person,
+  appointmentTime = licence.probationContact?.appointmentTime,
+  appointmentTimeType = licence.probationContact?.appointmentTimeType,
+  appointmentAddress = licence.probationContact?.addressText,
+  licenceAppointmentAddress = licence.probationContact?.address?.let { AddressMapper.toResponse(it) },
+  appointmentTelephoneNumber = licence.probationContact?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.probationContact?.alternativeTelephoneContactNumber,
   spoDiscussion = licence.spoDiscussion,
   vloDiscussion = licence.vloDiscussion,
   approvedDate = licence.approvedDate,
@@ -424,15 +421,14 @@ fun toPrrd(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointment?.personType,
-  appointmentPerson = licence.appointment?.person,
-  appointmentTime = licence.appointment?.time,
-  appointmentTimeType = licence.appointment?.timeType,
-  appointmentAddress = licence.appointment?.addressText,
-  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointment?.telephoneContactNumber,
-  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
-  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
+  appointmentPersonType = licence.probationContact?.appointmentType,
+  appointmentPerson = licence.probationContact?.person,
+  appointmentTime = licence.probationContact?.appointmentTime,
+  appointmentTimeType = licence.probationContact?.appointmentTimeType,
+  appointmentAddress = licence.probationContact?.addressText,
+  licenceAppointmentAddress = licence.probationContact?.address?.let { AddressMapper.toResponse(it) },
+  appointmentTelephoneNumber = licence.probationContact?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.probationContact?.alternativeTelephoneContactNumber,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
   approvedByName = licence.approvedByName,
@@ -518,15 +514,14 @@ fun toCrd(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointment?.personType,
-  appointmentPerson = licence.appointment?.person,
-  appointmentTime = licence.appointment?.time,
-  appointmentTimeType = licence.appointment?.timeType,
-  appointmentAddress = licence.appointment?.addressText,
-  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointment?.telephoneContactNumber,
-  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
-  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
+  appointmentPersonType = licence.probationContact?.appointmentType,
+  appointmentPerson = licence.probationContact?.person,
+  appointmentTime = licence.probationContact?.appointmentTime,
+  appointmentTimeType = licence.probationContact?.appointmentTimeType,
+  appointmentAddress = licence.probationContact?.addressText,
+  licenceAppointmentAddress = licence.probationContact?.address?.let { AddressMapper.toResponse(it) },
+  appointmentTelephoneNumber = licence.probationContact?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.probationContact?.alternativeTelephoneContactNumber,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
   approvedByName = licence.approvedByName,
@@ -572,6 +567,7 @@ fun toHdc(
   isInHardStopPeriod: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
+  isHdcMigration: Boolean,
 ) = ModelHdcLicence(
   id = licence.id,
   typeCode = licence.typeCode,
@@ -615,15 +611,14 @@ fun toHdc(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPersonType = licence.appointment?.personType,
-  appointmentPerson = licence.appointment?.person,
-  appointmentTime = licence.appointment?.time,
-  appointmentTimeType = licence.appointment?.timeType,
-  appointmentAddress = licence.appointment?.addressText,
-  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointment?.telephoneContactNumber,
-  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
-  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
+  appointmentPersonType = licence.probationContact?.appointmentType,
+  appointmentPerson = licence.probationContact?.person,
+  appointmentTime = licence.probationContact?.appointmentTime,
+  appointmentTimeType = licence.probationContact?.appointmentTimeType,
+  appointmentAddress = licence.probationContact?.addressText,
+  licenceAppointmentAddress = licence.probationContact?.address?.let { AddressMapper.toResponse(it) },
+  appointmentTelephoneNumber = licence.probationContact?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.probationContact?.alternativeTelephoneContactNumber,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
   approvedByName = licence.approvedByName,
@@ -655,12 +650,14 @@ fun toHdc(
   weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
   firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
+  allCurfewTimesEqual = licence.isCurfewSameTimeEachDay(),
   electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
     transformToModelElectronicMonitoringProvider(
       it,
     )
   },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
+  isHdcMigration = isHdcMigration,
 )
 
 fun toHdcVariation(
@@ -711,15 +708,14 @@ fun toHdcVariation(
   probationLauDescription = licence.probationLauDescription,
   probationTeamCode = licence.probationTeamCode,
   probationTeamDescription = licence.probationTeamDescription,
-  appointmentPerson = licence.appointment?.person,
-  appointmentPersonType = licence.appointment?.personType,
-  appointmentTime = licence.appointment?.time,
-  appointmentTimeType = licence.appointment?.timeType,
-  appointmentAddress = licence.appointment?.addressText,
-  licenceAppointmentAddress = licence.appointment?.address?.let { AddressMapper.toResponse(it) },
-  appointmentContact = licence.appointment?.telephoneContactNumber,
-  appointmentTelephoneNumber = licence.appointment?.telephoneContactNumber,
-  appointmentAlternativeTelephoneNumber = licence.appointment?.alternativeTelephoneContactNumber,
+  appointmentPerson = licence.probationContact?.person,
+  appointmentPersonType = licence.probationContact?.appointmentType,
+  appointmentTime = licence.probationContact?.appointmentTime,
+  appointmentTimeType = licence.probationContact?.appointmentTimeType,
+  appointmentAddress = licence.probationContact?.addressText,
+  licenceAppointmentAddress = licence.probationContact?.address?.let { AddressMapper.toResponse(it) },
+  appointmentTelephoneNumber = licence.probationContact?.telephoneContactNumber,
+  appointmentAlternativeTelephoneNumber = licence.probationContact?.alternativeTelephoneContactNumber,
   spoDiscussion = licence.spoDiscussion,
   vloDiscussion = licence.vloDiscussion,
   approvedDate = licence.approvedDate,
@@ -749,6 +745,7 @@ fun toHdcVariation(
   isReviewNeeded = false,
   submittedByFullName = licence.getSubmittedByFullName(),
   weeklyCurfewTimes = licence.weeklyCurfewTimes.transformToModelWeeklyCurfewTimes(),
+  allCurfewTimesEqual = licence.isCurfewSameTimeEachDay(),
   firstNightCurfewTimes = licence.firstNightCurfewTimes?.transformToModelFirstNightCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
 )
@@ -768,10 +765,12 @@ fun List<EntityAdditionalCondition>.transformToModelAdditional(
   conditionType: String,
   conditionPolicyData: Map<String, ConditionPolicyData>,
 ): List<ModelAdditionalCondition> = filter { condition -> condition.conditionType == conditionType }.map {
+  val policyData = conditionPolicyData[it.conditionCode]!!
   transform(
     it,
-    conditionPolicyData[it.conditionCode]!!.readyToSubmit,
-    conditionPolicyData[it.conditionCode]!!.requiresInput,
+    policyData.readyToSubmit,
+    policyData.requiresInput,
+    policyData.headerCaption,
   )
 }
 
@@ -779,6 +778,7 @@ fun transform(
   entity: EntityAdditionalCondition,
   readyToSubmit: Boolean,
   requiresInput: Boolean,
+  headerCaption: String?,
 ): ModelAdditionalCondition = ModelAdditionalCondition(
   id = entity.id,
   code = entity.conditionCode,
@@ -786,11 +786,13 @@ fun transform(
   category = entity.conditionCategory,
   sequence = entity.conditionSequence,
   text = entity.conditionText,
+  textPlural = entity.conditionTextPlural,
   expandedText = entity.expandedConditionText,
   data = entity.additionalConditionData.transformToModelAdditionalData(),
   uploadSummary = entity.additionalConditionUpload.transformToModelAdditionalConditionUploadSummary(),
   readyToSubmit = readyToSubmit,
   requiresInput = requiresInput,
+  headerCaption = headerCaption,
 )
 
 // Transform a list of entity additional condition data to model additional condition data
@@ -836,12 +838,14 @@ private fun transform(entity: EntityCurfewTimes): ModelCurfewTimes = ModelCurfew
   fromTime = entity.fromTime,
   untilDay = entity.untilDay,
   untilTime = entity.untilTime,
+  createdTimestamp = entity.createdTimestamp,
 )
 
 fun EntityCurfewTimes.transformToModelFirstNightCurfewTimes(): ModelCurfewTimes = ModelCurfewTimes(
   id = id,
   fromTime = fromTime,
   untilTime = untilTime,
+  createdTimestamp = createdTimestamp,
 )
 
 fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
@@ -873,11 +877,10 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent
   eventTime = entity.eventTime,
 )
 
-fun CaseloadResult.transformToUnstartedRecord(
+fun ManagedOffender.transformToUnstartedRecord(
   kind: LicenceKind,
   bookingId: Long?,
   releaseDate: LocalDate?,
-  licenceType: LicenceType?,
   licenceStatus: LicenceStatus?,
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
@@ -896,7 +899,7 @@ fun CaseloadResult.transformToUnstartedRecord(
   } else {
     ProbationPractitioner(
       staffCode = staff.code,
-      name = staff.name!!.fullName(),
+      name = staff.name!!.fullName().convertToTitleCase(),
       allocated = true,
     )
   }
@@ -906,13 +909,10 @@ fun CaseloadResult.transformToUnstartedRecord(
     name = name.fullName(),
     crn = crn,
     nomisId = nomisId,
-    comName = com?.name?.fullName()?.convertToTitleCase(),
-    comStaffCode = com?.code,
     probationPractitioner = probationPractitioner,
-    teamName = team.description,
+    teamName = team?.description,
     releaseDate = releaseDate,
     licenceId = null,
-    licenceType = licenceType,
     licenceStatus = licenceStatus,
     isOnProbation = false,
     hardStopDate = hardStopDate,
@@ -1026,11 +1026,18 @@ fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
 
 fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCurfewAddress = ModelHdcCurfewAddress(
   id = entity.id,
-  addressLine1 = entity.addressLine1,
-  addressLine2 = entity.addressLine2,
+  uprn = entity.uprn,
+  firstLine = entity.firstLine,
+  secondLine = entity.secondLine,
   townOrCity = entity.townOrCity,
   county = entity.county,
   postcode = entity.postcode,
+  source = entity.source,
+  accommodationType = entity.accommodationType,
+  postReleaseResidentialChecksCompleted = entity.postReleaseResidentialChecksCompleted,
+  postReleaseResidentialChecksNotCompletedReason = entity.postReleaseResidentialChecksNotCompletedReason,
+  createdTimestamp = entity.createdTimestamp,
+  lastUpdatedTimestamp = entity.lastUpdatedTimestamp,
 )
 
 fun transformToModelElectronicMonitoringProvider(entity: EntityElectronicMonitoringProvider): ElectronicMonitoringProvider = ElectronicMonitoringProvider(

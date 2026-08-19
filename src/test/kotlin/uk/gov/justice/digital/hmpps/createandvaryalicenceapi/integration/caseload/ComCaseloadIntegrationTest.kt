@@ -1,10 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.caseload
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.HttpStatus.UNAUTHORIZED
@@ -13,11 +12,10 @@ import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
@@ -34,7 +32,6 @@ import kotlin.text.Charsets.UTF_8
 
 private const val DELIUS_STAFF_IDENTIFIER = 3492L
 private const val GET_STAFF_CREATE_CASELOAD = "/caseload/com/staff/$DELIUS_STAFF_IDENTIFIER/create-case-load"
-private const val GET_STAFF_CREATE_CASELOAD_HDC = "/caseload/com/staff/$DELIUS_STAFF_IDENTIFIER/create-case-load/hdc"
 private const val GET_TEAM_CREATE_CASELOAD = "/caseload/com/team/create-case-load"
 private const val GET_STAFF_VARY_CASELOAD = "/caseload/com/staff/$DELIUS_STAFF_IDENTIFIER/vary-case-load"
 private const val GET_TEAM_VARY_CASELOAD = "/caseload/com/team/vary-case-load"
@@ -134,10 +131,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody
 
-      assertThat(caseload).hasSize(5)
       assertThat(caseload.map { it.prisonerNumber }).containsExactly(
         "AB1234E",
-        "AB1234H",
         "AB1234J",
         "AB1234K",
         "AB1234I",
@@ -161,6 +156,130 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun `Successfully retrieve a caseload with licences`() {
       // Given
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
+      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
+      stubCommonDependencies()
+
+      // When
+      val result = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      val caseload = result.expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCreateCase>>())
+        .returnResult().responseBody
+
+      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
+        "A1234AA",
+        "AB1234I",
+        "AB1234J",
+        "AB1234K",
+      )
+
+      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
+        1,
+        null,
+        null,
+        null,
+      )
+      with(caseload.last()) {
+        assertThat(name).isEqualTo("Access restricted on NDelius")
+        assertThat(crnNumber).isEqualTo("X12352")
+        assertThat(probationPractitioner.name).isEqualTo("Restricted")
+        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDateLabel).isEqualTo("Restricted")
+        assertThat(isRestricted).isTrue()
+      }
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-licences-with-e_m_providers.sql",
+    )
+    fun `Successfully retrieve a caseload and verify all release date label possibilities`() {
+      // Given
+      val now = LocalDate.now()
+      val releaseDate = now.plusDays(10)
+      val sled = now.plusDays(11)
+      val hdcad = now.plusDays(10)
+      val scenarios = mapOf(
+        "AB1234E" to PrisonerTestDateScenario(
+          prisonerNumber = "AB1234E",
+          licenceStartDate = releaseDate,
+          conditionalReleaseDate = releaseDate,
+          homeDetentionCurfewActualDate = null,
+          postRecallReleaseDate = null,
+        ),
+        "AB1234J" to PrisonerTestDateScenario(
+          prisonerNumber = "AB1234J",
+          licenceStartDate = releaseDate,
+          conditionalReleaseDate = releaseDate,
+          sentenceStartDate = sled,
+          homeDetentionCurfewActualDate = hdcad,
+          homeDetentionCurfewEligibilityDate = hdcad,
+          postRecallReleaseDate = null,
+        ),
+        "AB1234K" to PrisonerTestDateScenario(
+          prisonerNumber = "AB1234K",
+          licenceStartDate = releaseDate,
+          conditionalReleaseDate = releaseDate,
+          sentenceStartDate = sled,
+          homeDetentionCurfewActualDate = null,
+          homeDetentionCurfewEligibilityDate = hdcad,
+          postRecallReleaseDate = null,
+        ),
+        "AB1234L" to PrisonerTestDateScenario(
+          prisonerNumber = "AB1234L",
+          licenceStartDate = releaseDate,
+          conditionalReleaseDate = releaseDate,
+          sentenceStartDate = sled,
+          postRecallReleaseDate = releaseDate,
+        ),
+      )
+      stubSearchPrisonersByNomisIdWithAllScenarios(scenarios)
+      hdcApiMockServer.stubGetHdcStatuses(
+        listOf(
+          CurrentPrisonerHdcStatus(1, HdcStatus.NOT_A_HDC_RELEASE),
+          CurrentPrisonerHdcStatus(6, HdcStatus.NOT_STARTED),
+          CurrentPrisonerHdcStatus(7, HdcStatus.NOT_STARTED),
+          CurrentPrisonerHdcStatus(8, HdcStatus.NOT_A_HDC_RELEASE),
+        ),
+      )
+      stubCommonDependencies()
+
+      // When
+      val result = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      val caseload = result.expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCreateCase>>())
+        .returnResult().responseBody
+
+      assertThat(caseload).hasSize(4)
+
+      assertThat(caseload.find { it.prisonerNumber == "A1234AA" }!!.releaseDateLabel)
+        .isEqualTo("Conditional release date")
+
+      assertThat(caseload.find { it.prisonerNumber == "AB1234L" }!!.releaseDateLabel)
+        .isEqualTo("Post-recall release date")
+
+      assertThat(caseload.find { it.prisonerNumber == "AB1234J" }!!.releaseDateLabel)
+        .isEqualTo("HDC actual date")
+
+      assertThat(caseload.find { it.prisonerNumber == "AB1234K" }!!.releaseDateLabel)
+        .isEqualTo("HDC eligible date")
+    }
+
+    private fun stubCommonDependencies() {
       val ftr14Ora =
         SentenceAndRecallType(
           "14FTR_ORA",
@@ -201,10 +320,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       deliusMockServer.stubGetCheckUserAccess(accessResponse)
-      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
-      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
-      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
-      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
       prisonApiMockServer.stubGetCourtOutcomes()
       prisonApiMockServer.stubGetSentenceAndRecallTypes(
         listOf(
@@ -212,42 +327,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           BookingSentenceAndRecallTypes(7, listOf(lrSopc21)),
         ),
       )
-
-      // When
-      val result = webTestClient.get()
-        .uri(GET_STAFF_CREATE_CASELOAD)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-
-      // Then
-      val caseload = result.expectStatus().isEqualTo(OK.value())
-        .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCreateCase>>())
-        .returnResult().responseBody
-
-      assertThat(caseload).hasSize(5)
-
-      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
-        1,
-        2,
-        null,
-        null,
-        null,
-      )
-      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
-        "A1234AA",
-        "AB1234H",
-        "AB1234I",
-        "AB1234J",
-        "AB1234K",
-      )
-      with(caseload.last()) {
-        assertThat(name).isEqualTo("Access restricted on NDelius")
-        assertThat(crnNumber).isEqualTo("X12352")
-        assertThat(probationPractitioner.name).isEqualTo("Restricted")
-        assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
-        assertThat(isRestricted).isTrue()
-      }
     }
 
     private fun stubSearchPrisonersByNomisId(releaseDate: String, sled: String, tused: String) {
@@ -257,6 +336,23 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           releaseDate,
         ).replace("\$sled", sled).replace("\$tused", tused),
       )
+    }
+
+    private fun stubSearchPrisonersByNomisIdWithAllScenarios(scenarios: Map<String, PrisonerTestDateScenario>) {
+      var jsonContent = readFile("staff-create-case-load-prisoners-all-scenarios")
+
+      scenarios.forEach { (_, scenario) ->
+        val suffix = scenario.prisonerNumber.takeLast(1)
+        jsonContent = jsonContent
+          .replace("\$releaseDate$suffix", scenario.conditionalReleaseDate?.toString() ?: "")
+          .replace("\$sled$suffix", scenario.sentenceStartDate?.toString() ?: "")
+          .replace("\$tused$suffix", scenario.sentenceStartDate?.toString() ?: "")
+          .replace("\$hdcad$suffix", scenario.homeDetentionCurfewActualDate?.toString() ?: "")
+          .replace("\$hdced$suffix", scenario.homeDetentionCurfewEligibilityDate?.toString() ?: "")
+          .replace("\$prrd$suffix", scenario.postRecallReleaseDate?.toString() ?: "")
+      }
+
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(jsonContent)
     }
   }
 
@@ -336,7 +432,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody
 
-      assertThat(caseload).hasSize(3)
       assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
         "AB1234E",
         "AB1234F",
@@ -450,6 +545,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       with(caseload.first()) {
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
+        assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
       }
 
       with(caseload.last()) {
@@ -457,6 +553,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(crnNumber).isEqualTo("X12352")
         assertThat(probationPractitioner.name).isEqualTo("Restricted")
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
+        assertThat(releaseDateLabel).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
       }
     }
@@ -552,166 +649,28 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     }
   }
 
-  @Nested
-  inner class GetStaffCreateCaseloadHdc {
-    @Test
-    fun `Get forbidden (403) when incorrect roles are supplied`() {
-      webTestClient.get()
-        .uri(GET_STAFF_CREATE_CASELOAD_HDC)
-        .accept(APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
-        .exchange()
-        .expectStatus().isForbidden
-        .expectStatus().isEqualTo(FORBIDDEN.value())
-        .expectBody<ErrorResponse>()
-        .returnResult().responseBody
-    }
-
-    @Test
-    fun `Unauthorized (401) when no token is supplied`() {
-      webTestClient.get()
-        .uri(GET_STAFF_CREATE_CASELOAD_HDC)
-        .accept(APPLICATION_JSON)
-        .exchange()
-        .expectStatus().isEqualTo(UNAUTHORIZED.value())
-    }
-
-    @Test
-    @Sql(
-      "classpath:test_data/seed-licences-with-e_m_providers.sql",
-    )
-    fun `Successfully retrieve a caseload with licences`() {
-      // Given
-      val ftr14Ora =
-        SentenceAndRecallType(
-          "14FTR_ORA",
-          SentenceRecallType("FIXED_TERM_RECALL_14", isStandardRecall = false, isFixedTermRecall = true),
-        )
-      val lrSopc21 =
-        SentenceAndRecallType(
-          "LR_SOPC21",
-          SentenceRecallType("STANDARD_RECALL", isStandardRecall = true, isFixedTermRecall = false),
-        )
-      val accessResponse = """
-      {
-        "access": [
-           {
-            "crn": "X12348",
-            "userExcluded": false,
-            "userRestricted": false
-          },
-          {
-            "crn": "X12351",
-            "userExcluded": false,
-            "userRestricted": false
-          },
-          {
-            "crn": "X12352",
-            "userExcluded": true,
-            "userRestricted": false,
-            "exclusionMessage": "Access restricted on NDelius"
-          },
-          {
-            "crn": "X12353",
-            "userExcluded": false,
-            "userRestricted": false
-          }
-        ]
-      }
-      """.trimIndent()
-      deliusMockServer.stubGetStaffDetailsByUsername()
-      deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
-      deliusMockServer.stubGetCheckUserAccess(accessResponse)
-      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
-      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
-      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
-      val hdced = LocalDate.now().plusDays(12).format(DateTimeFormatter.ISO_DATE)
-      val hdcad = LocalDate.now().plusDays(13).format(DateTimeFormatter.ISO_DATE)
-      stubSearchPrisonersByNomisId(releaseDate, sled, tused, hdcad, hdced)
-      prisonApiMockServer.stubGetCourtOutcomes()
-      prisonApiMockServer.stubGetSentenceAndRecallTypes(
-        listOf(
-          BookingSentenceAndRecallTypes(6, listOf(ftr14Ora)),
-          BookingSentenceAndRecallTypes(7, listOf(lrSopc21)),
-        ),
-      )
-      hdcApiMockServer.stubGetHdcStatuses(
-        listOf(
-          CurrentPrisonerHdcStatus(1, HdcStatus.APPROVED),
-          CurrentPrisonerHdcStatus(2, HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
-          CurrentPrisonerHdcStatus(3, HdcStatus.APPROVED),
-        ),
-      )
-
-      // When
-      val result = webTestClient.get()
-        .uri(GET_STAFF_CREATE_CASELOAD_HDC)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-
-      // Then
-      val caseload = result.expectStatus().isEqualTo(OK.value())
-        .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCreateCase>>())
-        .returnResult().responseBody
-
-      assertThat(caseload).hasSize(2)
-
-      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
-        1,
-        null,
-      )
-      assertThat(caseload.map { it.prisonerNumber }).containsExactlyInAnyOrder(
-        "A1234AA",
-        "AB1234F",
-      )
-
-      assertThat(caseload.first().hdcStatus).isEqualTo(HdcStatus.APPROVED)
-      assertThat(caseload.last().hdcStatus).isEqualTo(HdcStatus.ELIGIBILITY_CHECKS_COMPLETE)
-    }
-
-    private fun stubSearchPrisonersByNomisId(
-      releaseDate: String,
-      sled: String,
-      tused: String,
-      hdcad: String,
-      hdced: String,
-    ) {
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
-        readFile("team-create-case-load-prisoners")
-          .replace("\$releaseDate", releaseDate)
-          .replace("\$sled", sled).replace("\$tused", tused)
-          .replace("\$hdcad", hdcad).replace("\$hdced", hdced),
-      )
-    }
-  }
+  data class PrisonerTestDateScenario(
+    val prisonerNumber: String,
+    val licenceStartDate: LocalDate?,
+    val sentenceStartDate: LocalDate? = null,
+    val conditionalReleaseDate: LocalDate?,
+    val actualReleaseDate: LocalDate? = null,
+    val homeDetentionCurfewActualDate: LocalDate? = null,
+    val homeDetentionCurfewEligibilityDate: LocalDate? = null,
+    val postRecallReleaseDate: LocalDate? = null,
+  )
 
   private companion object {
+    @RegisterExtension
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
-    val govUkMockServer = GovUkMockServer()
+
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonerSearchApiMockServer.start()
-      deliusMockServer.start()
-      govUkMockServer.start()
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
-      prisonApiMockServer.start()
-      hdcApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonerSearchApiMockServer.stop()
-      deliusMockServer.stop()
-      govUkMockServer.stop()
-      prisonApiMockServer.stop()
-      hdcApiMockServer.stop()
-    }
   }
 }

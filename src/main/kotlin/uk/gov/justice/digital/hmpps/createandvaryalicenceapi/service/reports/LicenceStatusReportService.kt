@@ -41,9 +41,13 @@ class LicenceStatusReportService(
     val cvlRecords = cvlRecordService.getCvlRecords(nomisRecordswithDeliusData.keys.toList())
 
     val eligibleCases = findEligibleCases(nomisRecordswithDeliusData, cvlRecords, licences)
-    log.info("Out of {} prisoners, found {} eligible cases with a LSD of today", nomisRecordswithDeliusData.size, eligibleCases.size)
+    log.info(
+      "Out of {} prisoners, found {} eligible cases with a LSD of today",
+      nomisRecordswithDeliusData.size,
+      eligibleCases.size,
+    )
 
-    log.info("Total of ${licences.size + eligibleCases.size } cases with a licence start date of today")
+    log.info("Total of ${licences.size + eligibleCases.size} cases with a licence start date of today")
 
     val notStartedCases = eligibleCases.map { (prisoner, com) ->
       LicenceStatusResponse(
@@ -74,7 +78,9 @@ class LicenceStatusReportService(
   private fun getPrisonerData(fromDate: LocalDate, toDate: LocalDate): List<PrisonerSearchPrisoner> = prisonerSearchApiClient.getAllByReleaseDate(fromDate, toDate, emptySet(), LICENCE_STATUS_REPORT_PAGE_SIZE)
 
   private fun enrichWithDeliusData(candidates: List<PrisonerSearchPrisoner>): Map<PrisonerSearchPrisoner, CommunityManager> {
-    val coms = deliusApiClient.getOffenderManagers(candidates.map { it.prisonerNumber }).filter { it.case.nomisId != null }.associateBy { it.case.nomisId!! }
+    val coms =
+      deliusApiClient.getOffenderManagers(candidates.map { it.prisonerNumber }).filter { it.case.nomisId != null }
+        .associateBy { it.case.nomisId!! }
     return candidates.mapNotNull {
       val com = coms[it.prisonerNumber] ?: return@mapNotNull null
       it to com

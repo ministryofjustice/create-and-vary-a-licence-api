@@ -40,8 +40,10 @@ generic-service:
     HMPPS_GOVUK_API_URL: "https://www.gov.uk"
     HMPPS_SQS_USE_WEB_TOKEN: true
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
-    HDC_ENABLED: false
-    STANDARD_RECALLS_ENABLED: false
+    HDC_ENABLED: true
+    HDC_CREATION_ENABLED: false
+    PRISONER_MERGED_HANDLER_ENABLED: false
+    REMAND_ENABLED: false
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
@@ -118,20 +120,14 @@ jobs:
     cron: "30 1 * * 1-5" # 1:30am UTC Monday - Friday
     allowRetry: true
 
-  - name: remove-expired-conditions-job
-    enabled: true
-    path: /remove-expired-conditions
-    cron: "30 1 * * 1-5" # 1:30am UTC Monday - Friday
-    allowRetry: true
-
   - name: notify-probation-of-unapproved-licences-job
     enabled: true
     path: /notify-probation-of-unapproved-licences
     cron: "0 2 * * *" # 2am every day
     allowRetry: false
 
-  - name: isr-licence-progression-job
+  - name: deactivate-progression-licences-job
     enabled: true
-    path: /isr-licence-progression-job
-    cron: "30 0 11 5 *" # 00:30 UTC on 11/05/2026
-    allowRetry: true
+    path: /deactivate-progression-licences
+    cron: "30 3 1 12 *" # 03:30 UTC on 1st December each year
+    allowRetry: false

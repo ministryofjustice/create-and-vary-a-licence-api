@@ -22,6 +22,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.LOWER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringRestrictionVersion.V1
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_ABSTINENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_MONITORING
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ATTENDANCE_AT_APPOINTMENTS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.CURFEW
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.LOCATION_MONITORING
 
 val POLICY_V3_0 = LicencePolicy(
   additionalConditions = AdditionalConditions(
@@ -644,6 +650,7 @@ val POLICY_V3_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
+        headerCaption = "Area this person must not enter (exclusion zone)",
         inputs = listOf(
           Input(
             label = "Select a PDF map of the area this person must not enter",
@@ -739,6 +746,7 @@ val POLICY_V3_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "99195049-f355-46fb-b7d8-aef87a1b19c5",
+        headerCaption = "Area this person must not enter during an event (exclusion zone)",
         inputs = listOf(
           Input(
             label = "Enter the name of the event",
@@ -1184,19 +1192,19 @@ val POLICY_V3_0 = LicencePolicy(
                 value = "exclusion zone",
               ),
               Option(
-                value = "curfew",
+                value = CURFEW.text[V1]!!,
               ),
               Option(
-                value = "location monitoring",
+                value = LOCATION_MONITORING.text[V1]!!,
               ),
               Option(
-                value = "attendance at appointments",
+                value = ATTENDANCE_AT_APPOINTMENTS.text[V1]!!,
               ),
               Option(
-                value = "alcohol monitoring",
+                value = ALCOHOL_MONITORING.text[V1]!!,
               ),
               Option(
-                value = "alcohol abstinence",
+                value = ALCOHOL_ABSTINENCE.text[V1]!!,
               ),
             ),
             type = CHECK,

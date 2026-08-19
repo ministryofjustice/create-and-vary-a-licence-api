@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -206,7 +206,7 @@ data class HdcLicence(
   override val appointmentPerson: String? = null,
 
   @field:Schema(description = "The type of appointment with for the initial appointment", example = "SPECIFIC_PERSON")
-  override val appointmentPersonType: AppointmentPersonType? = null,
+  override val appointmentPersonType: AppointmentType? = null,
 
   @field:Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -225,13 +225,6 @@ data class HdcLicence(
     description = "The address of initial appointment",
   )
   override val licenceAppointmentAddress: AddressResponse? = null,
-
-  @Deprecated("Use appointmentTelephoneNumber instead")
-  @field:Schema(
-    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
-    example = "0114 2557665",
-  )
-  override val appointmentContact: String? = null,
 
   @field:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
@@ -293,10 +286,10 @@ data class HdcLicence(
   override val updatedByUsername: String? = null,
 
   @field:Schema(description = "The curfew times for this licence")
-  val weeklyCurfewTimes: List<CurfewTimes>? = emptyList(),
+  override val weeklyCurfewTimes: List<CurfewTimes> = emptyList(),
 
   @field:Schema(description = "The first night curfew time for this licence")
-  val firstNightCurfewTimes: CurfewTimes? = null,
+  override val firstNightCurfewTimes: CurfewTimes? = null,
 
   @field:Schema(description = "The list of standard licence conditions on this licence")
   override val standardLicenceConditions: List<StandardCondition>? = emptyList(),
@@ -353,12 +346,19 @@ data class HdcLicence(
   override val submittedByFullName: String? = null,
 
   @field:Schema(description = "The curfew address for this licence")
-  val curfewAddress: HdcCurfewAddress? = null,
+  override val curfewAddress: HdcCurfewAddress? = null,
 
   @field:Schema(description = "Describes a electronic monitoring provider on a licence")
   override val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 
+  @field:Schema(description = "Are all curfew times equal across the week")
+  val allCurfewTimesEqual: Boolean? = null,
+
   @field:Schema(description = "The status of the electronic monitoring provider", example = "COMPLETE")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
+
+  @field:Schema(description = "Has this licence been migrated from the HDC service?", example = "false")
+  val isHdcMigration: Boolean = false,
 ) : Licence,
-  SupportsElectronicMonitoring
+  SupportsElectronicMonitoring,
+  ModelHdcCase

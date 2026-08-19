@@ -23,6 +23,12 @@ data class AddAdditionalConditionRequest(
   val conditionText: String,
 
   @field:Schema(
+    description = "The textual value for this additional condition if multiple items are present and can be grouped",
+    example = "You must not enter the locations",
+  )
+  val conditionTextPlural: String? = null,
+
+  @field:Schema(
     description = "The condition text with the users data inserted into the template",
     example = "You must not enter the location Tesco Superstore",
   )

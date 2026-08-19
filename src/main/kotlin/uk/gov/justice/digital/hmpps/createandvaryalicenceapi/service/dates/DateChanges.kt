@@ -19,6 +19,8 @@ data class DateChanges(
 
   val anyChanges = dates.any { it.changed }
 
+  operator fun get(type: LicenceDateType): DateChange? = dates.firstOrNull { it.type == type }
+
   override fun iterator() = dates.iterator()
 }
 

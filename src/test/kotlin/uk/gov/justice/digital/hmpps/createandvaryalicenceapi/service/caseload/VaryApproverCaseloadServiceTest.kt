@@ -24,6 +24,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.CaseAccessResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 import java.time.LocalDate
@@ -33,11 +35,13 @@ class VaryApproverCaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceCaseRepository = mock<LicenceCaseRepository>()
+  private val releaseDateLabelFactory = mock<ReleaseDateLabelFactory>()
 
   private var service = VaryApproverCaseloadService(
     prisonerSearchApiClient,
     deliusApiClient,
     licenceCaseRepository,
+    releaseDateLabelFactory,
   )
 
   @BeforeEach
@@ -81,7 +85,7 @@ class VaryApproverCaseloadServiceTest {
     // Then
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
-      assertThat(licenceId).isEqualTo(1)
+      assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(PSS)
@@ -160,7 +164,7 @@ class VaryApproverCaseloadServiceTest {
     // Then
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
-      assertThat(licenceId).isEqualTo(1)
+      assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(PSS)
@@ -203,7 +207,7 @@ class VaryApproverCaseloadServiceTest {
     // Then
     assertThat(caseload).hasSize(1)
     with(caseload.first()) {
-      assertThat(licenceId).isEqualTo(1)
+      assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(PSS)
@@ -248,7 +252,7 @@ class VaryApproverCaseloadServiceTest {
     // Then
     assertThat(searchResults.pduCasesResponse).hasSize(1)
     with(searchResults.pduCasesResponse.first()) {
-      assertThat(licenceId).isEqualTo(1)
+      assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(PSS)
@@ -303,7 +307,7 @@ class VaryApproverCaseloadServiceTest {
     // Then
     assertThat(searchResults.regionCasesResponse).hasSize(1)
     with(searchResults.regionCasesResponse.first()) {
-      assertThat(licenceId).isEqualTo(1)
+      assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(PSS)
@@ -361,7 +365,7 @@ class VaryApproverCaseloadServiceTest {
     // Then
     assertThat(searchResults.pduCasesResponse).hasSize(1)
     with(searchResults.pduCasesResponse.first()) {
-      assertThat(licenceId).isEqualTo(1)
+      assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(PSS)
@@ -375,7 +379,7 @@ class VaryApproverCaseloadServiceTest {
 
     assertThat(searchResults.regionCasesResponse).hasSize(1)
     with(searchResults.regionCasesResponse.first()) {
-      assertThat(licenceId).isEqualTo(1)
+      assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
       assertThat(licenceType).isEqualTo(PSS)
@@ -436,6 +440,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -471,6 +476,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -506,6 +512,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -549,6 +556,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -583,6 +591,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -626,6 +635,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -677,6 +687,7 @@ class VaryApproverCaseloadServiceTest {
       prisonerSearchApiClient,
       deliusApiClient,
       licenceCaseRepository,
+      releaseDateLabelFactory,
     )
 
     val probationAreaCode = "N01"
@@ -723,11 +734,12 @@ class VaryApproverCaseloadServiceTest {
   }
 
   fun aLicenceVaryApproverCase(
-    id: Long = 1,
+    id: Long = 2,
     type: LicenceType = LicenceType.AP_PSS,
     prisonNumber: String = "AB1234E",
     licenceStartDate: LocalDate = LocalDate.now().plusDays(10),
     crn: String = "X12348",
+    hdcad: LocalDate? = null,
   ) = LicenceVaryApproverCase(
     licenceId = id,
     crn = crn,
@@ -736,6 +748,19 @@ class VaryApproverCaseloadServiceTest {
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     prisonNumber = prisonNumber,
     typeCode = type,
+    kind = LicenceKind.VARIATION,
+    versionOfId = 1,
+    statusCode = LicenceStatus.VARIATION_SUBMITTED,
+    surname = "Prisoner",
+    forename = "A",
+    updatedByFirstName = "Joe",
+    updatedByLastName = "Bloggs",
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    conditionalReleaseDate = licenceStartDate,
+    actualReleaseDate = licenceStartDate,
+    postRecallReleaseDate = null,
+    homeDetentionCurfewActualDate = hdcad,
+    homeDetentionCurfewEligibilityDate = LocalDate.of(2018, 10, 22),
   )
 
   fun aCommunityManagerWithoutUser() = TestData.aCommunityManagerWithoutUser().copy(

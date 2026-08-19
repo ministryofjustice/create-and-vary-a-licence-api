@@ -68,6 +68,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.licenceStartDate,
           l.postRecallReleaseDate,
           l.homeDetentionCurfewActualDate,
+          l.homeDetentionCurfewEligibilityDate,
           updatedBy.firstName,
           updatedBy.lastName,
           com.username,
@@ -108,7 +109,9 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.approvedDate,
           l.prisonCode,
           l.prisonDescription,
-          l.variationOfId
+          l.variationOfId,
+          l.homeDetentionCurfewActualDate,
+          l.homeDetentionCurfewEligibilityDate
         FROM Licence l
           LEFT JOIN l.responsibleCom com
           LEFT JOIN l.updatedBy updatedBy
@@ -141,7 +144,9 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
       l.approvedDate,
       l.prisonCode,
       l.prisonDescription,
-      l.variationOfId
+      l.variationOfId,
+      l.homeDetentionCurfewActualDate,
+      l.homeDetentionCurfewEligibilityDate
     FROM Licence l
         LEFT JOIN l.responsibleCom com
         LEFT JOIN l.updatedBy updatedBy
@@ -178,7 +183,9 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.approvedDate,
           l.prisonCode,
           l.prisonDescription,
-          l.variationOfId
+          l.variationOfId,
+          l.homeDetentionCurfewActualDate,
+          l.homeDetentionCurfewEligibilityDate
         FROM Licence l
           LEFT JOIN l.responsibleCom com
           LEFT JOIN l.updatedBy updatedBy
@@ -204,15 +211,29 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
   @Query(
     """
         SELECT 
-          l.idInternal,
           l.crn,
+          l.typeCode,
+          l.dateCreated,
+          l.kind,
+          l.idInternal,
+          l.versionOfId,
+          l.statusCode,
+          l.surname,
+          l.forename,
+          updatedBy.firstName,
+          updatedBy.lastName, 
+          l.sentenceStartDate,
+          l.conditionalReleaseDate,
+          l.actualReleaseDate,
+          l.postRecallReleaseDate,
           l.licenceStartDate,
           l.nomsId as prisonNumber,
           com.username,
-          l.typeCode,
-          l.dateCreated
+          l.homeDetentionCurfewActualDate,
+          l.homeDetentionCurfewEligibilityDate
         FROM Licence l
           LEFT JOIN l.responsibleCom com
+          LEFT JOIN l.updatedBy updatedBy
         WHERE l.probationPduCode in :probationPduCodes and l.statusCode = 'VARIATION_SUBMITTED'
         ORDER BY l.idInternal
     """,
@@ -222,15 +243,29 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
   @Query(
     """
         SELECT 
-          l.idInternal,
           l.crn,
+          l.typeCode,
+          l.dateCreated,
+          l.kind,
+          l.idInternal,
+          l.versionOfId,
+          l.statusCode,
+          l.surname,
+          l.forename,
+          updatedBy.firstName,
+          updatedBy.lastName, 
+          l.sentenceStartDate,
+          l.conditionalReleaseDate,
+          l.actualReleaseDate,
+          l.postRecallReleaseDate,
           l.licenceStartDate,
           l.nomsId as prisonNumber,
           com.username,
-          l.typeCode,
-          l.dateCreated
+          l.homeDetentionCurfewActualDate,
+          l.homeDetentionCurfewEligibilityDate
         FROM Licence l
           LEFT JOIN l.responsibleCom com
+          LEFT JOIN l.updatedBy updatedBy
         WHERE l.probationAreaCode = :probationAreaCode and l.statusCode = 'VARIATION_SUBMITTED' 
            ORDER BY l.idInternal
     """,

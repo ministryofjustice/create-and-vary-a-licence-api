@@ -4,6 +4,7 @@ data class AdditionalConditionAp(
   override var code: String,
   override val category: String,
   override val text: String,
+  val textPlural: String? = null,
   override val tpl: String? = null,
   override val requiresInput: Boolean,
   override val inputs: List<Input>? = null,
@@ -12,4 +13,5 @@ data class AdditionalConditionAp(
   override val type: String? = null,
   override val skippable: Boolean? = false,
   val requiresElectronicMonitoringResponse: Boolean = false,
+  override val headerCaption: String? = null,
 ) : IAdditionalCondition

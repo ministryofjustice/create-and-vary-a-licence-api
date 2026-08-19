@@ -44,7 +44,9 @@ class PromptComServiceTest {
 
   @Test
   fun noRecords() {
-    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(emptyList())
+    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(
+      emptyList(),
+    )
 
     val emails = promptComService.getCases(clock)
 
@@ -53,7 +55,9 @@ class PromptComServiceTest {
 
   @Test
   fun recordsProcessed() {
-    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(cases)
+    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(
+      cases,
+    )
 
     whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
 
@@ -106,7 +110,9 @@ class PromptComServiceTest {
 
   @Test
   fun sendNotifications() {
-    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(cases)
+    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(
+      cases,
+    )
     whenever(promptComListBuilder.excludeIneligibleCases(any(), any())).thenReturn(casesWithDeliusData)
     whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
     whenever(cvlRecordService.getCvlRecords(any())).thenReturn(cvlRecords)

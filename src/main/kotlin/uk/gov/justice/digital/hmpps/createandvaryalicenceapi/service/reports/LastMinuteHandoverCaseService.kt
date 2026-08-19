@@ -48,7 +48,11 @@ class LastMinuteHandoverCaseService(
     log.info("Getting prisoner data for $lastMinutePrisonCodes")
     val today = LocalDate.now(clock)
     val nextWeek = today.plusWeeks(1)
-    val prisoners = prisonerSearchApiClient.getAllByReleaseDate(today, nextWeek, lastMinutePrisonCodes)
+    val prisoners = prisonerSearchApiClient.getAllByReleaseDate(
+      today,
+      nextWeek,
+      lastMinutePrisonCodes,
+    )
     log.info("Found ${prisoners.size} prisoners")
     return prisoners.associateBy { it.prisonerNumber }
   }

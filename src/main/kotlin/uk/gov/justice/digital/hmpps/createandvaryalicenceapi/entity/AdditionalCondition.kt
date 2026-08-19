@@ -32,6 +32,7 @@ data class AdditionalCondition(
   var conditionCategory: String,
   var conditionSequence: Int? = null,
   var conditionText: String,
+  var conditionTextPlural: String? = null,
   var expandedConditionText: String? = null,
   var conditionType: String,
 

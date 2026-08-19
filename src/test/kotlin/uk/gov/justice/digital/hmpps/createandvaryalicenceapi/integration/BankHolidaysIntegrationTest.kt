@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.times
@@ -12,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.CacheManager
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.GovUkApiClient
 import java.time.LocalDate
 
@@ -32,7 +29,6 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `retrieve bank holidays for England and Wales`() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     val resultList = webTestClient.get()
       .uri("/bank-holidays")
       .accept(MediaType.APPLICATION_JSON)
@@ -55,7 +51,6 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `cached version of bank holidays are returned when retrieving the bank holidays a second time`() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     var resultList = webTestClient.get()
       .uri("/bank-holidays")
       .accept(MediaType.APPLICATION_JSON)
@@ -81,21 +76,5 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
     assertThat(resultList).hasSize(4)
 
     verify(govUkApiClient, times(1)).getBankHolidaysForEnglandAndWales()
-  }
-
-  private companion object {
-    val govUkApiMockServer = GovUkMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-    }
   }
 }

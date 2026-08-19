@@ -1,33 +1,46 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration
 
-import jakarta.persistence.EntityNotFoundException
-import jakarta.validation.ValidationException
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Appointment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.MissingStaffException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAppointmentAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateCurfewTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFromHdcToCvlRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -39,47 +52,99 @@ class MigrationService(
   val migrationRepository: MigrationRepository,
   val cvlRecordService: CvlRecordService,
   val prisonerSearchApiClient: PrisonerSearchApiClient,
+  val prisonService: PrisonService,
+  val licencePolicyService: LicencePolicyService,
+  val auditEventRepository: AuditEventRepository,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
 
   @Transactional
   fun migrate(request: MigrateFromHdcToCvlRequest) {
+    checkForNoRetryExceptions(request)
+
     log.info("Starting migration for bookingId={}", request.bookingId)
     val hdcLicence = request.toHdcLicence()
     saveMetaData(request, hdcLicence)
     log.info("Ending migration for bookingId={} cvl licence id ={}", request.bookingId, hdcLicence.id)
   }
 
+  fun isAMigratedLicence(licenceId: Long): Boolean = migrationRepository.isAMigratedLicence(licenceId)
+
+  private fun checkForNoRetryExceptions(request: MigrateFromHdcToCvlRequest) {
+    if (migrationRepository.hasBeenAlreadyMigrated(request.licence.licenceVersionId)) {
+      throw LicenceAlreadyMigratedException(request.licence.licenceVersionId)
+    }
+    if (migrationRepository.hasExistingLicence(request.prisoner.prisonerNumber)) {
+      throw ExistingCvlLicenceException(request.prisoner.prisonerNumber)
+    }
+  }
+
   private fun saveMetaData(
     request: MigrateFromHdcToCvlRequest,
     hdcLicence: HdcLicence,
   ) {
-    request.conditions.additional.forEach { hdcCondition ->
-      val saveCondition = hdcLicence.bespokeConditions.findLast { it.conditionText == hdcCondition.text }!!
-      migrationRepository.saveConditionMetaData(
-        licenceId = hdcLicence.id,
-        saveCondition.id!!,
-        hdcCondition.conditionCode,
-        hdcCondition.conditionsVersion,
+    try {
+      migrationRepository.saveMetaData(
+        hdcLicence.id,
+        request.licence.licenceVersionId,
+        request.licence.licenceVersion,
+        request.licence.varyVersion,
       )
+    } catch (e: DataIntegrityViolationException) {
+      throw LicenceAlreadyMigratedException(request.licence.licenceVersionId, e)
     }
-    migrationRepository.saveMetaData(
-      hdcLicence.id,
-      request.licence.licenceId,
-      request.licence.licenceVersion,
-      request.licence.varyVersion,
+
+    val migratedConditions = buildString {
+      request.conditions.additional.forEach { hdcCondition ->
+        val saveCondition = hdcLicence.bespokeConditions.findLast {
+          it.conditionText == hdcCondition.text
+        }!!
+
+        migrationRepository.saveConditionMetaData(
+          licenceId = hdcLicence.id,
+          saveCondition.id!!,
+          hdcCondition.conditionCode,
+          hdcCondition.conditionsVersion,
+        )
+
+        if (isNotEmpty()) append(", ")
+        append("Id=${saveCondition.id}, Code=${hdcCondition.conditionCode}, Version=${hdcCondition.conditionsVersion}")
+      }
+    }
+
+    saveMigrationAudit(hdcLicence, request, migratedConditions)
+  }
+
+  private fun saveMigrationAudit(
+    hdcLicence: HdcLicence,
+    request: MigrateFromHdcToCvlRequest,
+    migratedConditions: String,
+  ) {
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = hdcLicence.id,
+        username = SYSTEM_USER,
+        eventType = AuditEventType.SYSTEM_EVENT,
+        summary = "Licence migrated from HDC",
+        detail =
+        """Licence migrated from HDC, source Id:${request.licence.licenceVersionId}, Version:${request.licence.licenceVersion}.${request.licence.varyVersion}, conditions:[$migratedConditions]
+        """.trimIndent().replace("\n", " "),
+      ),
     )
   }
 
   fun MigrateFromHdcToCvlRequest.toHdcLicence(): HdcLicence {
-    val prisonerNumber = prisoner.prisonerNumber ?: throw EntityNotFoundException("No prisoner number found!")
-    val (responsibleCom, probationTeam) = getResponsibleComDetails(prisonerNumber)
+    val offenderManager = getOffenderManager(prisoner.prisonerNumber)
+    val probationTeam = offenderManager.team
+    val responsibleCom = getCommunityOffenderManager(offenderManager.id)
+
+    val prisonInformation = prisonService.getPrisonInformation(prison.prisonCode)
 
     val comSet = mutableSetOf(responsibleCom)
     val submittedByCom = comSet.getCommAndAdd(lifecycle.submittedByUserName)
     val createdByCom = comSet.getCommAndAdd(lifecycle.createdByUserName)
-    val approvedByStaff = lifecycle.approvedByUsername?.let { getStaff(it) }
+    val approvedByStaff = lifecycle.approvedByUsername?.let { getPrisonUser(it) }
     val licence = HdcLicence(
       // Hard coded values
       version = "3.0",
@@ -94,16 +159,16 @@ class MigrationService(
       bookingId = bookingId,
       pnc = pnc,
       cro = cro,
-      crn = null,
-      forename = prisoner.forename,
-      middleNames = prisoner.middleNames,
-      surname = prisoner.surname,
+      crn = offenderManager.case.crn,
+      forename = prisoner.forename?.convertToTitleCase(),
+      middleNames = prisoner.middleNames?.convertToTitleCase(),
+      surname = prisoner.surname?.convertToTitleCase(),
       dateOfBirth = prisoner.dateOfBirth,
 
       // Prison details
-      prisonCode = prison.prisonCode,
-      prisonDescription = prison.prisonDescription,
-      prisonTelephone = prison.prisonTelephone,
+      prisonCode = prisonInformation.prisonId,
+      prisonDescription = prisonInformation.description,
+      prisonTelephone = prisonInformation.getPrisonContactNumber(),
 
       // Probation
       probationAreaCode = probationTeam.provider.code,
@@ -141,26 +206,32 @@ class MigrationService(
       submittedBy = submittedByCom,
       submittedDate = lifecycle.submittedDate,
       approvedByUsername = lifecycle.approvedByUsername,
-      approvedByName = approvedByStaff?.fullName,
+      approvedByName = approvedByStaff?.fullName ?: lifecycle.approvedByName,
       approvedDate = lifecycle.approvedDate,
       firstNightCurfewTimes = curfew?.firstNight?.toCvlDomain(),
     )
 
-    val bespokeConditions = conditions.bespoke.map { text ->
-      BespokeCondition(conditionText = text, licence = licence)
+    val additionalConditions = conditions.additional.mapIndexed { index, condition ->
+      BespokeCondition(conditionText = condition.text, licence = licence, conditionSequence = index)
     }
 
-    val additionalConditions = conditions.additional.map {
-      BespokeCondition(conditionText = it.text, licence = licence)
+    val standardConditions = licencePolicyService.getStandardConditionsForLicence(licence)
+    licence.standardConditions.addAll(standardConditions)
+
+    val lastIndex = additionalConditions.lastOrNull()?.conditionSequence?.plus(1) ?: 0
+
+    val bespokeConditions = conditions.bespoke.mapIndexed { index, text ->
+      BespokeCondition(conditionText = text, licence = licence, conditionSequence = index + lastIndex)
     }
 
     licence.bespokeConditions.addAll(additionalConditions + bespokeConditions)
 
     appointment?.let {
-      licence.appointment = Appointment(
+      licence.probationContact = ProbationContact(
+        appointmentType = AppointmentType.SPECIFIC_PERSON,
         person = it.person,
-        time = it.time,
-        timeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
+        appointmentTime = it.time,
+        appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
         telephoneContactNumber = it.telephone,
         address = it.address?.toCvlDomain(),
         addressText = it.address?.toSingleLineAddress(),
@@ -169,22 +240,24 @@ class MigrationService(
 
     curfewAddress?.let {
       licence.curfewAddress = HdcCurfewAddress(
-        addressLine1 = it.addressLine1 ?: "",
-        addressLine2 = it.addressLine2,
+        firstLine = it.addressLine1 ?: "",
+        secondLine = it.addressLine2,
         townOrCity = it.townOrCity ?: "",
-        postcode = it.postcode,
+        postcode = it.postcode ?: "",
         licence = licence,
+        reference = UUID.randomUUID().toString(),
+        source = AddressSource.MANUAL_MIGRATED,
+        accommodationType = it.addressType,
       )
     }
 
     licence.weeklyCurfewTimes.addAll(
-      curfew?.curfewTimes?.map { it.toCvlDomain() }.orEmpty(),
+      curfew?.curfewTimes?.mapIndexed { index, curfewTime -> curfewTime.toCvlDomain(index) }.orEmpty(),
     )
-
     return licenceRepository.saveAndFlush(licence)
   }
 
-  private fun getStaff(username: String): Staff? = staffRepository.findByUsernameIgnoreCase(username)
+  private fun getPrisonUser(username: String): Staff? = staffRepository.findAPrisonUserIgnoreCase(username)
 
   private fun MigrateAppointmentAddress.toSingleLineAddress(): String = listOfNotNull(firstLine, secondLine, townOrCity, postcode)
     .joinToString(", ")
@@ -198,29 +271,23 @@ class MigrationService(
     source = AddressSource.MANUAL_MIGRATED,
   )
 
-  private fun MigrateCurfewTime.toCvlDomain(): CurfewTimes = CurfewTimes(
+  private fun MigrateCurfewTime.toCvlDomain(index: Int): CurfewTimes = CurfewTimes(
+    curfewTimesSequence = index,
     fromDay = fromDay,
     fromTime = fromTime,
     untilDay = untilDay,
     untilTime = untilTime,
+    createdTimestamp = LocalDateTime.now(),
   )
 
   private fun MigrateFirstNight.toCvlDomain(): CurfewTimes = CurfewTimes(
     fromTime = firstNightFrom,
     untilTime = firstNightUntil,
+    createdTimestamp = LocalDateTime.now(),
   )
 
-  private fun getResponsibleComDetails(prisonNumber: String?): Pair<CommunityOffenderManager, TeamDetail> {
-    val prisonNumber = prisonNumber
-      ?: throw ValidationException("Prison number must not be null")
-
-    val offenderManager = deliusApiClient.getOffenderManager(prisonNumber)
-      ?: throw ValidationException("Could not find offender manager for $prisonNumber in delius")
-
-    val probationTeam = offenderManager.team
-    val com = licenceCreationService.getOrCreateCom(offenderManager.id)
-    return Pair(com, probationTeam)
-  }
+  private fun getOffenderManager(prisonNumber: String): CommunityManager = deliusApiClient.getOffenderManager(prisonNumber)
+    ?: throw OffenderManagerNotFoundException(prisonNumber)
 
   private fun MutableSet<CommunityOffenderManager>.getCommAndAdd(
     userName: String?,
@@ -232,5 +299,17 @@ class MigrationService(
     userName: String,
     coms: Set<CommunityOffenderManager>,
   ): CommunityOffenderManager = coms.firstOrNull { it.username == userName }
-    ?: licenceCreationService.getOrCreateCom(userName)
+    ?: licenceCreationService.getOrCreateCom(userName) ?: throw MissingStaffException("Missing Com using username '$userName'")
+
+  private fun getCommunityOffenderManager(staffId: Long): CommunityOffenderManager {
+    try {
+      return licenceCreationService.getOrCreateCom(staffId)
+    } catch (e: IllegalStateException) {
+      throw MissingStaffException("Missing Com using staffId $staffId")
+    }
+  }
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 }

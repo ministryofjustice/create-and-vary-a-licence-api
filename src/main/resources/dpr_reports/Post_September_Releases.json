@@ -1,0 +1,167 @@
+{
+  "id": "licences-due-to-be-released-on-or-after-september-02-2026",
+  "name": "Licence that will start on or after the 2nd of September 2026",
+  "description": "In-progress Licences with an start date that indicates they will become active on or after the 2nd of September 2026",
+  "metadata": {
+    "author": "Andrew Lee",
+    "owner": "Andrew Lee",
+    "version": "1.0.0",
+    "interactive": "true"
+  },
+  "datasource": [
+    {
+      "id": "cvl",
+      "name": "cvl"
+    }
+  ],
+  "dataset": [
+    {
+      "id": "licence-dataset",
+      "name": "licence-dataset",
+      "datasource": "cvl",
+      "query": "select licence_start_date, crn, status_code, probation_area_code, probation_area_description, probation_pdu_code, probation_pdu_description, eligible_kind  from licence l where licence_start_date >= '2026-09-02' and status_code != 'INACTIVE'",
+      "schema": {
+        "field": [
+          {
+            "name": "licence_start_date",
+            "type": "date",
+            "display": "Licence start date"
+          },
+          {
+            "name": "crn",
+            "type": "string",
+            "display": "CRN"
+          },
+          {
+            "name": "status_code",
+            "type": "string",
+            "display": "Licence Status"
+          },
+          {
+            "name": "probation_area_code",
+            "type": "string",
+            "display": "Probation area code"
+          },
+          {
+            "name": "probation_pdu_code",
+            "type": "string",
+            "display": "Probation PDU code"
+          },
+          {
+            "name": "probation_area_description",
+            "type": "string",
+            "display": "Probation area description"
+          },
+          {
+            "name": "probation_pdu_description",
+            "type": "string",
+            "display": "Probation PDU description"
+          },
+          {
+            "name": "eligible_kind",
+            "type": "string",
+            "display": "The kind of licence the offender is eligible for"
+          }
+        ]
+      }
+    }
+  ],
+  "policy": [
+    {
+      "id": "access",
+      "type": "access",
+      "rule": [
+        {
+          "effect": "permit",
+          "condition": [
+            {
+              "match": [
+                "${role}",
+                "ROLE_NOMIS_BATCHLOAD",
+                "ROLE_CVL_REPORTS"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "report": [
+    {
+      "id": "licences-due-to-be-released-on-or-after-september-02-2026",
+      "name": "Licence that will start on or after the 2nd of September 2026",
+      "description": "In-progress Licences with an start date that indicates they will become active on or after the 2nd of September 2026",
+      "version": "1.0.0",
+      "render": "HTML",
+      "dataset": "$ref:licence-dataset",
+      "feature": [
+        {
+          "type": "print"
+        }
+      ],
+      "specification": {
+        "template": "list",
+        "field": [
+          {
+            "name": "$ref:licence_start_date",
+            "display": "Licence start date",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": true
+          },
+          {
+            "name": "$ref:crn",
+            "display": "CRN",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:status_code",
+            "display": "Licence Status",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:probation_area_code",
+            "display": "Probation area code",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:probation_area_description",
+            "display": "Probation area description",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:probation_pdu_code",
+            "display": "Probation PDU code",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:probation_pdu_description",
+            "display": "Probation PDU description",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:eligible_kind",
+            "display": "Eligible kind",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          }
+        ]
+      },
+      "summary": [
+      ]
+    }
+  ]
+}

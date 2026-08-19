@@ -7,6 +7,9 @@ data class ProbationCase(
   @field:Schema(description = "The case reference number (CRN) for the person on this licence", example = "X12444")
   val crn: String,
 
+  @field:Schema(description = "True if the offender has a COM allocated to them", example = "true")
+  val comAllocated: Boolean,
+
   @field:Schema(required = true, description = "Prisoner Number", example = "A1234AA")
   val prisonNumber: String? = null,
 

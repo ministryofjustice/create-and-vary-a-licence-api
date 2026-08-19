@@ -21,7 +21,7 @@ restart_docker () {
   #Prune existing containers
   #Comment in if you wish to perform a fresh install of all containers where all containers are removed and deleted
   #You will be prompted to continue with the deletion in the terminal
-  #docker system prune --all
+  docker system prune --all
 
   echo "Pulling back end containers ..."
   docker compose pull
@@ -48,6 +48,9 @@ export DB_NAME=create-and-vary-a-licence-db
 export DB_USER=cvl
 export DB_PASS=cvl
 
+export SPRINGDOC_API-DOCS_ENABLED=true
+export SPRINGDOC_SWAGGER-UI_ENABLED=true
+
 # Provide Notify details to access Notify
 # Match with the API key in hmpps-auth set for its dev profile
 export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json  | jq -r '.data.NOTIFY_API_KEY | @base64d')
@@ -61,9 +64,9 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
 # Feature toggles
 export HDC_ENABLED=true
-export STANDARD_RECALLS_ENABLED=true
 export USE_CURRENT_HDC_STATUS=false
-export ISR_REPEAL_DATE="2026-03-25"
+export REMAND_ENABLED=false
+export PROGRESSION_MODEL_POLICY_START_DATE=2026-01-14
 
 SKIP_DOCKER=false
 DEBUG=""

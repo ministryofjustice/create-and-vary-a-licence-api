@@ -17,15 +17,17 @@ class LicenceApproverCase(
   override val updatedByFirstName: String?,
   override val updatedByLastName: String?,
   override val comUsername: String?,
+  override val sentenceStartDate: LocalDate?,
   override val conditionalReleaseDate: LocalDate?,
   override val actualReleaseDate: LocalDate?,
   override val postRecallReleaseDate: LocalDate?,
-  override val sentenceStartDate: LocalDate?,
   val approvedByName: String?,
   val approvedDate: LocalDateTime?,
   val prisonCode: String?,
   val prisonDescription: String?,
   var variationOfId: Long?,
+  override var homeDetentionCurfewActualDate: LocalDate?,
+  override var homeDetentionCurfewEligibilityDate: LocalDate?,
 ) : LicenceCase {
   var submittedByFullName: String? = null
 }

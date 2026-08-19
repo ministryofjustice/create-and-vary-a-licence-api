@@ -1,0 +1,2 @@
+ALTER TABLE hdc_migration_meta_data
+RENAME COLUMN hdcLicence_id TO hdc_licence_version_id;

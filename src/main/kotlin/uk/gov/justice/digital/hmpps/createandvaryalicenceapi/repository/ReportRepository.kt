@@ -46,7 +46,8 @@ ranked AS (
     ON ac.licence_id = l.id
   INNER JOIN condition_lookup AS cl
     ON cl.condition_code = ac.condition_code
-  WHERE l.status_code IN ('SUBMITTED', 'APPROVED')
+    WHERE l.status_code IN ('SUBMITTED', 'APPROVED')
+    AND l.licence_start_date >= CURRENT_DATE
   GROUP BY l.noms_id, l.crn, l.status_code, l.licence_start_date, l.id, l.surname, l.forename
 )
 SELECT

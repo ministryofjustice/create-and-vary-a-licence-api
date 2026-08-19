@@ -223,6 +223,8 @@ class PrisonApproverServiceTest {
     prisonCode: String? = "MDI",
     prisonDescription: String? = "Moorland (HMP)",
     variationOfId: Long? = null,
+    homeDetentionCurfewActualDate: LocalDate? = null,
+    homeDetentionCurfewEligibilityDate: LocalDate? = null,
   ): LicenceApproverCase {
     val licenceApproverCase = LicenceApproverCase(
       licenceStartDate = licenceStartDate,
@@ -245,6 +247,8 @@ class PrisonApproverServiceTest {
       prisonCode = prisonCode,
       prisonDescription = prisonDescription,
       variationOfId = variationOfId,
+      homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
+      homeDetentionCurfewEligibilityDate = homeDetentionCurfewEligibilityDate,
     )
     licenceApproverCase.submittedByFullName = submittedByFullName
     return licenceApproverCase

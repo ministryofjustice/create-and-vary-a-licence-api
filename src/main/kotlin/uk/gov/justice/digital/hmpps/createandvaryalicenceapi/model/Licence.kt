@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -34,6 +34,7 @@ object LicenceKinds {
     DiscriminatorMapping(value = LicenceKinds.HARD_STOP, schema = HardStopLicence::class),
     DiscriminatorMapping(value = LicenceKinds.HDC, schema = HdcLicence::class),
     DiscriminatorMapping(value = LicenceKinds.TIME_SERVED, schema = TimeServedLicence::class),
+    DiscriminatorMapping(value = LicenceKinds.HDC_VARIATION, schema = HdcVariationLicence::class),
   ],
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "kind")
@@ -187,7 +188,7 @@ sealed interface Licence {
   val probationTeamDescription: String?
 
   @get:Schema(description = "The type of appointment with for the initial appointment", example = "SPECIFIC_PERSON")
-  val appointmentPersonType: AppointmentPersonType?
+  val appointmentPersonType: AppointmentType?
 
   @get:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   val appointmentPerson: String?
@@ -208,13 +209,6 @@ sealed interface Licence {
     description = "The address of initial appointment",
   )
   val licenceAppointmentAddress: AddressResponse?
-
-  @get:Deprecated("Use appointmentTelephoneNumber instead")
-  @get:Schema(
-    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
-    example = "0114 2557665",
-  )
-  val appointmentContact: String?
 
   @get:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
@@ -285,9 +279,11 @@ sealed interface Licence {
   @get:Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   val createdByFullName: String?
 
+  @Deprecated("This shouldn't be referenced anymore as PSS has been repealed")
   @get:Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
   val isInPssPeriod: Boolean?
 
+  @Deprecated("This shouldn't be referenced anymore as PSS has been repealed")
   @get:Schema(description = "Is this licence activated in PSS period?(LED < LAD <= TUSED)")
   val isActivatedInPssPeriod: Boolean?
 

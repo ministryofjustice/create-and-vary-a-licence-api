@@ -1,11 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus.FORBIDDEN
@@ -25,10 +23,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DocumentApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
@@ -53,6 +51,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import java.time.DayOfWeek.MONDAY
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceDto
@@ -62,11 +61,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
-
-  @BeforeEach
-  fun reset() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
 
   @Test
   @Sql(
@@ -267,7 +261,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit Crd licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -298,7 +294,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit PRRD licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -324,7 +322,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit Hard Stop licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -347,7 +347,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit VARIATION licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -370,7 +372,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit HDC licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -393,7 +397,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   )
   fun `Submit HDC_VARIATION licence`() {
     // Given
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = webTestClient.put()
@@ -436,7 +442,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val newLicence = testRepository.findLicence(2)
 
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
-    assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+    assertThat(newLicence.probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
 
     assertThat(newLicence).isInstanceOf(EntityVariationLicence::class.java)
     assertThat((newLicence as EntityVariationLicence).variationOfId).isEqualTo(1)
@@ -477,28 +483,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
     assertListsEqual(newLicence.additionalConditions, oldLicence.additionalConditions)
     assertListsEqual(newLicence.bespokeConditions, oldLicence.bespokeConditions)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-variation-licence-id-1-inPssPeriod.sql",
-  )
-  fun `Create licence variation when in pss period then exclude bespoke conditions`() {
-    // Given
-    val uri = "/licence/id/1/create-variation"
-
-    // When
-    val result = postRequest(uri)
-
-    // Then
-    result.expectStatus().isOk
-
-    val response = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(CreateVariationResponse::class.java)
-      .returnResult().responseBody
-
-    val bespokeConditions = testRepository.getBespokeConditions(response!!.licenceId, assertNotEmpty = false)
-    assertThat(bespokeConditions.size).isEqualTo(0)
   }
 
   private fun <T> assertNoOverlaps(
@@ -544,8 +528,66 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-hdc-licence-id-1-with-address.sql",
+    "classpath:test_data/seed-hdc-curfew-hours.sql",
+    "classpath:test_data/seed-hdc-curfew-address.sql",
   )
   fun `Create licence HDC variation`() {
+    // Given
+    val licenceId = 1L
+    val uri = "/licence/id/$licenceId/create-variation"
+
+    // When
+    val result = postRequest(uri)
+
+    // Then
+    result.expectStatus().isOk
+
+    val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(CreateVariationResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(licenceSummary).isNotNull
+    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
+
+    assertThat(testRepository.countLicence()).isEqualTo(2)
+
+    val variation = testRepository.findLicence(licenceSummary.licenceId) as HdcVariationLicence
+
+    with(variation) {
+      assertThat(licenceVersion).isEqualTo("1.0")
+      assertThat(typeCode).isEqualTo(AP)
+      assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
+
+      val weekly = weeklyCurfewTimes.toList()
+
+      assertThat(weekly).hasSize(7)
+      assertThat(weekly[0].fromDay).isEqualTo(MONDAY)
+      assertThat(weekly[0].fromTime).isEqualTo("19:00")
+
+      val firstNight = firstNightCurfewTimes
+
+      assertThat(firstNight?.fromDay).isEqualTo(MONDAY)
+      assertThat(firstNight?.fromTime).isEqualTo("18:00")
+
+      assertThat(statusCode).isEqualTo(VARIATION_IN_PROGRESS)
+      assertThat(probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+      assertThat(variationOfId).isEqualTo(1)
+      assertLicenceHasExpectedAddress(this)
+    }
+
+    val hdcCurfewAddresses = testRepository.findAllHdcCurfewAddresses()
+    assertThat(hdcCurfewAddresses).hasSize(2)
+    assertThat(hdcCurfewAddresses)
+      .extracting<Long, Exception> { it.licence.id }
+      .containsExactlyInAnyOrder(licenceId, variation.id)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-hdc-variation-licence-id-1-with-address.sql",
+    "classpath:test_data/seed-hdc-curfew-hours.sql",
+  )
+  fun `Create licence HDC variation from an existing HDC variation`() {
     // Given
     val uri = "/licence/id/1/create-variation"
 
@@ -564,13 +606,26 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(testRepository.countLicence()).isEqualTo(2)
 
-    val licence = testRepository.findLicence(licenceSummary.licenceId)
+    val licence = testRepository.findLicence(licenceSummary.licenceId) as HdcVariationLicence
 
-    with(licence as HdcVariationLicence) {
+    with(licence) {
       assertThat(licenceVersion).isEqualTo("1.0")
       assertThat(typeCode).isEqualTo(AP)
+      assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
+
+      val weekly = weeklyCurfewTimes.toList()
+
+      assertThat(weekly).hasSize(7)
+      assertThat(weekly[0].fromDay).isEqualTo(MONDAY)
+      assertThat(weekly[0].fromTime).isEqualTo("19:00")
+
+      val firstNight = firstNightCurfewTimes
+
+      assertThat(firstNight?.fromDay).isEqualTo(MONDAY)
+      assertThat(firstNight?.fromTime).isEqualTo("18:00")
+
       assertThat(statusCode).isEqualTo(VARIATION_IN_PROGRESS)
-      assertThat(appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
+      assertThat(probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA")
       assertThat(variationOfId).isEqualTo(1)
       assertLicenceHasExpectedAddress(this)
     }
@@ -614,7 +669,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     // Given
     val uri = "/licence/id/1/edit"
     val roles = listOf("ROLE_CVL_ADMIN")
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = postRequest(uri, roles)
@@ -631,7 +688,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     // Given
     val uri = "/licence/id/1/edit"
     val roles = listOf("ROLE_CVL_ADMIN")
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = postRequest(uri, roles)
@@ -648,7 +707,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     // Given
     val uri = "/licence/id/1/edit"
     val roles = listOf("ROLE_CVL_ADMIN")
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+    prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
+    prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     // When
     val result = postRequest(uri, roles)
@@ -675,6 +736,29 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
     // 3 set up in the above sql , 2 associated with licence 2
     assertThat(testRepository.findAllUploadSummary()).hasSize(1)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-variation-licence.sql",
+  )
+  fun `Discard variation records audit event on parent licence`() {
+    documentApiMockServer.stubDeleteDocuments()
+
+    webTestClient.delete()
+      .uri("/licence/id/2/discard")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    assertThat(testRepository.doesLicenceExist(2)).isFalse()
+
+    val auditEvents = testRepository.findAllAuditEventsByLicenceIdIn(listOf(1L))
+
+    val discardedEvent = auditEvents.find { it.summary?.contains("Licence variation discarded") ?: false }
+    assertThat(discardedEvent).isNotNull
+    assertThat(discardedEvent!!.detail).contains("Discarded variation ID 2")
+    assertThat(discardedEvent.licenceId).isEqualTo(1L)
   }
 
   @Test
@@ -1076,7 +1160,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-licence-id-1.sql",
     )
     fun `licence submission should be prevented`() {
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(aPrisonerMissingReleaseDate)
+      prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds(aPrisonerMissingReleaseDate)
+      prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+      prisonApiMockServer.stubGetCourtOutcomes()
 
       webTestClient.put()
         .uri("/licence/id/1/submit")
@@ -1106,7 +1192,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-approved-licence-1.sql",
     )
     fun `Editing an approved licence should be prevented`() {
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(aPrisonerMissingReleaseDate)
+      prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds(aPrisonerMissingReleaseDate)
+      prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
+      prisonApiMockServer.stubGetCourtOutcomes()
 
       webTestClient.post()
         .uri("/licence/id/1/edit")
@@ -1150,7 +1238,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
     if (noAddress) {
       assertLicenceHasExpectedAddress(newLicence, newAddress = true)
-      assertThat(newLicence.appointment?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
+      assertThat(newLicence.probationContact?.addressText).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
     }
 
     val versionOfId = when (newLicence) {
@@ -1188,9 +1276,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     newAddress: Boolean = true,
     uprn: String? = null,
   ) {
-    assertThat(licence.appointment).isNotNull
-    assertThat(licence.appointment!!.addressText).isEqualTo(appointmentAddress)
-    val address = licence.appointment?.address
+    assertThat(licence.probationContact).isNotNull
+    assertThat(licence.probationContact!!.addressText).isEqualTo(appointmentAddress)
+    val address = licence.probationContact?.address
     assertThat(address).isNotNull
     address?.let {
       if (newAddress) {
@@ -1241,27 +1329,16 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       "dateOfBirth": "1985-01-01"
     }]"""
 
-    val govUkApiMockServer = GovUkMockServer()
+    @RegisterExtension
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val documentApiMockServer = DocumentApiMockServer()
 
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-      prisonerSearchApiMockServer.start()
-      deliusMockServer.start()
-      documentApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-      prisonerSearchApiMockServer.stop()
-      deliusMockServer.stop()
-      documentApiMockServer.stop()
-    }
+    @RegisterExtension
+    val prisonApiMockServer = PrisonApiMockServer()
   }
 }

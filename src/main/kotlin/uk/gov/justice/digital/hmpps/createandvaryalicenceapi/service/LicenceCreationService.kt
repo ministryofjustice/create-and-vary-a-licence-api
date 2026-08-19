@@ -21,8 +21,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.timeserved.TimeServedExternalRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
@@ -65,7 +67,9 @@ class LicenceCreationService(
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
 
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
-    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
+
+    val prisonInformation = getPrisonInformation(nomisRecord)
+
     val offenderManager =
       deliusApiClient.getOffenderManager(deliusRecord!!.crn) ?: error("Offender manager for $prisonNumber not found")
 
@@ -140,7 +144,7 @@ class LicenceCreationService(
     val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
     standardConditionRepository.saveAllAndFlush(standardConditions)
 
-    recordLicenceCreation(createdBy, createdLicence)
+    recordLicenceCreation(createdBy, createdLicence, nomisRecord)
 
     return CreateLicenceResponse(createdLicence.id)
   }
@@ -152,7 +156,7 @@ class LicenceCreationService(
     val username = SecurityContextHolder.getContext().authentication?.name!!
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
     val deliusRecord = caseService.getProbationCase(prisonNumber)
-    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
+    val prisonInformation = getPrisonInformation(nomisRecord)
     val offenderManager = deliusApiClient.getOffenderManager(deliusRecord.crn)
     val cvlRecord = cvlRecordService.getCvlRecord(nomisRecord)
 
@@ -161,10 +165,10 @@ class LicenceCreationService(
     val licenceType = cvlRecord.licenceType
     val version = licencePolicyService.currentPolicy(cvlRecord.licenceStartDate).version
     val licenceStartDate = cvlRecord.licenceStartDate
-    val hardStopKind = cvlRecord.hardStopKind
+    val creationKind = cvlRecord.creationKind
       ?: error("No hardStopKind on CVL record for $prisonNumber - not eligible for hard stop licence")
 
-    val isTimeServedLicenceCreation = hardStopKind == LicenceKind.TIME_SERVED
+    val isTimeServedLicenceCreation = creationKind == LicenceKind.TIME_SERVED
 
     val licence = if (isTimeServedLicenceCreation) {
       val responsibleCom =
@@ -221,7 +225,7 @@ class LicenceCreationService(
     val additionalConditions = licencePolicyService.getHardStopAdditionalConditions(createdLicence)
     additionalConditionRepository.saveAllAndFlush(additionalConditions)
 
-    recordLicenceCreation(createdBy, createdLicence)
+    recordLicenceCreation(createdBy, createdLicence, nomisRecord)
 
     if (isTimeServedLicenceCreation) {
       val nomisId = nomisRecord.prisonerNumber
@@ -235,6 +239,7 @@ class LicenceCreationService(
   private fun recordLicenceCreation(
     creator: Creator,
     licence: Licence,
+    nomisRecord: PrisonerSearchPrisoner,
   ) {
     auditEventRepository.saveAndFlush(
       AuditEvent(
@@ -256,7 +261,7 @@ class LicenceCreationService(
         eventDescription = "Licence created for ${licence.forename} ${licence.surname}",
       ),
     )
-    telemetryService.recordLicenceCreatedEvent(licence)
+    telemetryService.recordLicenceCreatedEvent(licence, nomisRecord)
   }
 
   private fun verifyNoInFlightLicence(nomsId: String) {
@@ -294,18 +299,19 @@ class LicenceCreationService(
     )
   }
 
-  fun getOrCreateCom(userName: String): CommunityOffenderManager {
-    val staff = staffRepository.findByUsernameIgnoreCase(userName) as CommunityOffenderManager?
+  fun getOrCreateCom(userName: String): CommunityOffenderManager? {
+    log.info("Searching for persisted COM with userName: $userName")
+    val staff = staffRepository.findACommunityOffenderManagerIgnoreCase(userName)
     if (staff != null) {
       return staff
     }
     log.info("Creating COM record for staff with userName: $userName")
-    val user = deliusApiClient.getStaffByUserName(userName) ?: missing(userName, "record in delius")
+    val user = deliusApiClient.getStaffByUserName(userName) ?: return null
     return staffRepository.saveAndFlush(
       CommunityOffenderManager(
         staffIdentifier = user.id,
         staffCode = user.code,
-        username = user.username?.uppercase() ?: missing(userName, "username"),
+        username = userName,
         email = user.email,
         firstName = user.name.forename,
         lastName = user.name.surname,
@@ -315,5 +321,9 @@ class LicenceCreationService(
 
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
 
-  private fun missing(username: String, field: String): Nothing = error("staff with staff username: '$username', missing $field")
+  private fun getPrisonInformation(nomisRecord: PrisonerSearchPrisoner): Prison {
+    val prisonCode = if (nomisRecord.isRestrictedPatient()) nomisRecord.supportingPrisonId!! else nomisRecord.prisonId!!
+
+    return prisonApiClient.getPrisonInformation(prisonCode)
+  }
 }

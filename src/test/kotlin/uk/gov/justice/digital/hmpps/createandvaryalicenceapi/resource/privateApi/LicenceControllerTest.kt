@@ -34,11 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -52,7 +48,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.SentenceDates
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -136,13 +132,11 @@ class LicenceControllerTest {
 
   @Test
   fun `create a PRRD licence`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(CreateLicenceResponse(1))
+    whenever(licenceCreationService.createLicence(nomsID)).thenReturn(CreateLicenceResponse(1))
 
     val result = mvc.perform(
-      post("/licence/create")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aCreateLicenceRequest.copy(type = PRRD))),
+      post("/licence/probation/nomisid/$nomsID")
+        .accept(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -150,18 +144,16 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(CreateLicenceResponse(1))))
 
-    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
+    verify(licenceCreationService, times(1)).createLicence(nomsID)
   }
 
   @Test
   fun `create a CRD licence`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(CreateLicenceResponse(1))
+    whenever(licenceCreationService.createLicence(nomsID)).thenReturn(CreateLicenceResponse(1))
 
     val result = mvc.perform(
-      post("/licence/create")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aCreateLicenceRequest.copy(type = CRD))),
+      post("/licence/probation/nomisid/$nomsID")
+        .accept(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -169,20 +161,18 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(CreateLicenceResponse(1))))
 
-    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
+    verify(licenceCreationService, times(1)).createLicence(nomsID)
   }
 
   @Test
   fun `create a Hard Stop licence`() {
-    whenever(licenceCreationService.createHardStopLicence(aCreateLicenceRequest.nomsId)).thenReturn(
+    whenever(licenceCreationService.createHardStopLicence(nomsID)).thenReturn(
       CreateLicenceResponse(1),
     )
 
     val result = mvc.perform(
-      post("/licence/create")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aCreateLicenceRequest.copy(type = HARD_STOP))),
+      post("/licence/prison/nomisid/$nomsID")
+        .accept(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -190,19 +180,17 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(CreateLicenceResponse(1)))
 
-    verify(licenceCreationService, times(1)).createHardStopLicence(aCreateLicenceRequest.nomsId)
+    verify(licenceCreationService, times(1)).createHardStopLicence(nomsID)
   }
 
   @Test
   fun `create a licence where another is in progress`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId))
+    whenever(licenceCreationService.createLicence(nomsID))
       .thenThrow(ValidationException("A licence already exists for this person"))
 
     val result = mvc.perform(
-      post("/licence/create")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aCreateLicenceRequest)),
+      post("/licence/probation/nomisid/$nomsID")
+        .accept(APPLICATION_JSON),
     )
       .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -210,7 +198,7 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).contains("A licence already exists for this person")
 
-    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
+    verify(licenceCreationService, times(1)).createLicence(nomsID)
   }
 
   @Test
@@ -457,7 +445,7 @@ class LicenceControllerTest {
 
   @Test
   fun `deactivate a licence and variations`() {
-    val request = DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeactivationReason.RECALLED)
+    val request = DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RECALLED)
     mvc.perform(
       post("/licence/id/4/deactivate-licence-and-variations")
         .accept(APPLICATION_JSON)
@@ -543,7 +531,7 @@ class LicenceControllerTest {
       bespokeConditions = someBespokeConditions,
     )
 
-    val aCreateLicenceRequest = CreateLicenceRequest(nomsId = "NOMSID")
+    val nomsID = "NOMSID"
 
     val aStatusUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")

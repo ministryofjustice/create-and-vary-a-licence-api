@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.FIXED_TERM
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind.STANDARD
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -29,7 +30,9 @@ class NotifyService(
   @param:Value("\${notify.templates.reviewableLicenceApproved}") private val reviewableLicenceApprovedTemplateId: String,
   @param:Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
   @param:Value("\${notify.templates.licenceReviewOverdue}") private val licenceReviewOverdueTemplateId: String,
+  @param:Value("\${notify.templates.policyVersionInactivated}") private val policyVersionInactivatedTemplateId: String,
   @param:Value("\${notify.templates.initialComAllocation}") private val initialComAllocationTemplateId: String,
+  @param:Value("\${notify.templates.progressionLicenceDeactivated}") private val progressionLicenceDeactivatedTemplateId: String,
   @param:Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
@@ -185,6 +188,33 @@ class NotifyService(
     }
   }
 
+  fun sendPolicyVersionInactivatedEmail(
+    licenceId: String,
+    emailAddress: String?,
+    comFirstName: String,
+    comLastName: String,
+    pipFirstName: String,
+    pipLastName: String,
+    crn: String?,
+  ) {
+    if (emailAddress.isNullOrBlank()) {
+      log.error("Notification failed (policyVersionInactivatedEmail) - email address not present for licence Id $licenceId")
+      return
+    }
+
+    val values: Map<String, Any> = mapOf(
+      "comFirstName" to comFirstName,
+      "comLastName" to comLastName,
+      "pipFirstName" to pipFirstName,
+      "pipLastName" to pipLastName,
+      "crn" to (crn ?: ""),
+    )
+
+    if (sendEmail(policyVersionInactivatedTemplateId, emailAddress, values)) {
+      log.info("Notification sent to $emailAddress POLICY VERSION 4 INACTIVATED for $licenceId $pipFirstName $pipLastName")
+    }
+  }
+
   fun sendInitialLicenceCreateEmails(comsToEmail: List<PromptComNotification>) {
     log.info(
       """
@@ -294,6 +324,32 @@ class NotifyService(
     }
   }
 
+  fun sendLicenceDeactivatedForProgressionEmail(
+    emailAddress: String?,
+    crn: String,
+    comFirstName: String,
+    comLastName: String,
+    pipFirstName: String,
+    pipLastName: String,
+  ) {
+    if (emailAddress.isNullOrBlank()) {
+      log.error("Notification failed (sendLicenceDeactivatedForProgressionEmail) - email address not present for crn $crn")
+      return
+    }
+
+    val values: Map<String, String> = mapOf(
+      "crn" to crn,
+      "comFirstName" to comFirstName,
+      "comLastName" to comLastName,
+      "pipFirstName" to pipFirstName,
+      "pipLastName" to pipLastName,
+    )
+
+    if (sendEmail(progressionLicenceDeactivatedTemplateId, emailAddress, values)) {
+      log.info("Notification sent to $emailAddress LICENCE DEACTIVATED FOR PROGRESSION for $crn $pipFirstName $pipLastName")
+    }
+  }
+
   internal fun sendLicenceCreateEmail(
     templateId: String,
     emailAddress: String,
@@ -309,6 +365,8 @@ class NotifyService(
         "prisonersForRelease" to cases.map { prisoner ->
           val releaseType = if (prisoner.kind == FIXED_TERM) {
             "following a fixed-term recall"
+          } else if (prisoner.kind == STANDARD) {
+            "following a recall"
           } else {
             "as a standard release"
           }
@@ -386,8 +444,11 @@ class NotifyService(
 
   private fun getContacts(creatorEmail: String, creatorName: String, comEmail: String, comName: String): List<Contact> = when {
     creatorEmail.isBlank() && comEmail.isNotBlank() -> listOf(Contact(comEmail, comName))
+
     comEmail.isBlank() && creatorEmail.isNotBlank() -> listOf(Contact(creatorEmail, creatorName))
+
     creatorEmail == comEmail -> listOf(Contact(creatorEmail, creatorName))
+
     else -> listOf(
       Contact(creatorEmail, creatorName),
       Contact(comEmail, comName),

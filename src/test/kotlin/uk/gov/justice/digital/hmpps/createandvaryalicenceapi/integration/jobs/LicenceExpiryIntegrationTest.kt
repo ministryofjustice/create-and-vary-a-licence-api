@@ -3,15 +3,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
 import org.assertj.core.groups.Tuple
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.web.reactive.server.expectBodyList
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -43,10 +43,10 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectBodyList(LicenceSummary::class.java)
+      .expectBodyList<LicenceSummary>()
       .returnResult().responseBody
 
-    assertThat(inactiveLicences?.size).isEqualTo(6)
+    assertThat(inactiveLicences.size).isEqualTo(6)
     assertThat(inactiveLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -66,10 +66,10 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectBodyList(LicenceSummary::class.java)
+      .expectBodyList<LicenceSummary>()
       .returnResult().responseBody
 
-    assertThat(remainingLicences?.size).isEqualTo(3)
+    assertThat(remainingLicences.size).isEqualTo(3)
     assertThat(remainingLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -81,24 +81,13 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       )
   }
 
+  @BeforeEach
+  fun startMocks() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+  }
+
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-      prisonerSearchMockServer.start()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-      govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-      prisonerSearchMockServer.stop()
-    }
   }
 }

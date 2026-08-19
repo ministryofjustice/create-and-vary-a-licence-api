@@ -23,6 +23,7 @@ class ApproverCaseloadService(
   private val prisonApproverService: PrisonApproverService,
   private val deliusApiClient: DeliusApiClient,
   private val releaseDateService: ReleaseDateService,
+  private val releaseDateLabelFactory: ReleaseDateLabelFactory,
 ) {
   private val byApprovedOnAndName = compareByDescending<ApprovalCase> { it.approvedOn }
     .thenBy { it.name?.lowercase().orEmpty() }
@@ -70,6 +71,7 @@ class ApproverCaseloadService(
             prisonerNumber = licence.prisonNumber,
             submittedByFullName = licence.submittedByFullName,
             releaseDate = licence.licenceStartDate,
+            releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(licence),
             urgentApproval = licence.isUrgentApproval(),
             approvedBy = licence.approvedByName,
             approvedOn = licence.approvedDate,

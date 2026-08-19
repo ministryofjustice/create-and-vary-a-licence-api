@@ -31,6 +31,9 @@ data class ComCreateCase(
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate?,
 
+  @field:Schema(description = "Label for release date", example = "Confirmed release date")
+  val releaseDateLabel: String? = null,
+
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val licenceId: Long?,
 

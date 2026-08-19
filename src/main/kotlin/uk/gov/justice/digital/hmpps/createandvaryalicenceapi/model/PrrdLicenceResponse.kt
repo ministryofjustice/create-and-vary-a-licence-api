@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -132,7 +132,6 @@ data class PrrdLicenceResponse(
   @field:Schema(
     description = "The release date after being recalled",
     example = "06/06/2023",
-    requiredMode = Schema.RequiredMode.AUTO,
   )
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   override val postRecallReleaseDate: LocalDate?,
@@ -189,7 +188,7 @@ data class PrrdLicenceResponse(
   override val appointmentPerson: String? = null,
 
   @field:Schema(description = "The type of appointment with for the initial appointment", example = "SPECIFIC_PERSON")
-  override val appointmentPersonType: AppointmentPersonType? = null,
+  override val appointmentPersonType: AppointmentType? = null,
 
   @field:Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @field:JsonFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -208,13 +207,6 @@ data class PrrdLicenceResponse(
     description = "The address of initial appointment",
   )
   override val licenceAppointmentAddress: AddressResponse? = null,
-
-  @Deprecated("Use appointmentTelephoneNumber instead")
-  @field:Schema(
-    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
-    example = "0114 2557665",
-  )
-  override val appointmentContact: String? = null,
 
   @field:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",

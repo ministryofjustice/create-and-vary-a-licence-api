@@ -16,6 +16,11 @@ spring:
     oauth2:
       client:
         registration:
+          DPR_LIB_API:
+            provider: hmpps-auth
+            client-id: ${system.client.id}
+            client-secret: ${system.client.secret}
+            authorization-grant-type: client_credentials
           hmpps-auth:
             provider: hmpps-auth
             client-id: ${system.client.id}
@@ -120,12 +125,15 @@ notify:
     initialComAllocation: a584b741-82ce-41de-adce-0a665dc27b0f
     editedLicenceTimedOut: 3db6954b-f16f-4c77-b028-ccfa4f87fb62
     unapprovedLicence: 11f3d28e-d7d9-47f9-bbad-57bd32fbed45
+    policyVersionInactivated: de23bd34-fcc3-46d8-914a-82a13d3768ae
 
     # Variation emails
     variationForApproval: 2dc01a48-73f1-4dde-931e-05eaf502441e
     variationApproved: 24ad56b7-7bec-4fdb-ac8b-3b5af6f18666
     variationReferred: e124b2ff-68e1-4364-894b-b723289d1fdc
     licenceReviewOverdue: 2eeff8dd-8935-404c-ab39-0eed5e083db5
+
+    progressionLicenceDeactivated: 32a0542c-5f02-4c4a-b536-41688f015935
 
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'
@@ -138,10 +146,14 @@ self:
 
 springdoc:
   api-docs:
+    enabled: false
     groups:
       enabled: true
   swagger-ui:
+    enabled: false
+    version: 5.32.11
     urls-primary-name: "public"
+
 cache:
   evict:
     bank-holidays:
@@ -149,14 +161,17 @@ cache:
 
 dpr:
   lib:
+    hasProbationDatasources: false
     manage-users:
       host: ${DPR_MANAGE_USERS_HOST}
     definition:
-      locations: dpr_reports/Active_Licences.json, dpr_reports/Install_At_Source.json, dpr_reports/Licence_Variations_In_London.json, dpr_reports/Approved_Licences_Created_In_London.json
+      locations: dpr_reports/Active_Licences.json, dpr_reports/Install_At_Source.json, dpr_reports/Licence_Variations_In_London.json, dpr_reports/Approved_Licences_Created_In_London.json, dpr_reports/Pre_Release_Cases_Submitted_Approved.json, dpr_reports/Post_September_Releases.json
     system:
       role: ROLE_CVL_ADMIN
       token:
         enabled: true
+    user:
+      requiredAuthSources: NOMIS,AUTH
   search:
     max-total: 200
   os-places:
@@ -167,18 +182,22 @@ feature:
   toggle:
     hdc:
       enabled: ${HDC_ENABLED}
-    standardRecalls:
-      enabled: ${STANDARD_RECALLS_ENABLED}
-    isr:
-      repeal:
-        date: ${ISR_REPEAL_DATE:#{null}}
+    hdcCreation:
+      enabled: ${HDC_CREATION_ENABLED:#{false}}
+    remand:
+      enabled: ${REMAND_ENABLED}
+
+progression:
+  model:
+    policy-start-date: ${PROGRESSION_MODEL_POLICY_START_DATE:#{null}}
+    notification-window-end-date: ${PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE:#{null}}
 
 hmpps:
   cases:
     last-minute:
       prisons: CFI,SWI,PBI,PFI,SUI,RNI,FEI
   sar:
-    additionalAccessRole: CVL_ADMIN
+    additionalAccessRole: ROLE_CVL__SAR_REQUESTS__RO
     template:
       path: /templates/sar_create-and-vary-a-licence-api.mustache
       enabled: true

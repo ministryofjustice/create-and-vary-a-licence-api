@@ -15,7 +15,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.NotSecuredWebMvcTest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CurfewTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.FirstNightCurfewTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
@@ -73,56 +74,48 @@ class HdcCurfewTimesControllerTest {
   private companion object {
     val anWeeklyCurfewTimesRequest = UpdateWeeklyCurfewTimesRequest(
       listOf(
-        CurfewTimes(
-          1L,
+        CurfewTimeRequest(
           1,
           DayOfWeek.MONDAY,
           LocalTime.of(20, 0),
           DayOfWeek.TUESDAY,
-          LocalTime.of(8, 0),
         ),
-        CurfewTimes(
-          1L,
+        CurfewTimeRequest(
           2,
           DayOfWeek.TUESDAY,
           LocalTime.of(20, 0),
           DayOfWeek.WEDNESDAY,
           LocalTime.of(8, 0),
         ),
-        CurfewTimes(
-          1L,
+        CurfewTimeRequest(
           3,
           DayOfWeek.WEDNESDAY,
           LocalTime.of(20, 0),
           DayOfWeek.THURSDAY,
           LocalTime.of(8, 0),
         ),
-        CurfewTimes(
-          1L,
+        CurfewTimeRequest(
           4,
           DayOfWeek.THURSDAY,
           LocalTime.of(20, 0),
           DayOfWeek.FRIDAY,
           LocalTime.of(8, 0),
         ),
-        CurfewTimes(
-          1L,
+        CurfewTimeRequest(
           5,
           DayOfWeek.FRIDAY,
           LocalTime.of(20, 0),
           DayOfWeek.SATURDAY,
           LocalTime.of(8, 0),
         ),
-        CurfewTimes(
-          1L,
+        CurfewTimeRequest(
           6,
           DayOfWeek.SATURDAY,
           LocalTime.of(20, 0),
           DayOfWeek.SUNDAY,
           LocalTime.of(8, 0),
         ),
-        CurfewTimes(
-          1L,
+        CurfewTimeRequest(
           7,
           DayOfWeek.SUNDAY,
           LocalTime.of(20, 0),
@@ -133,8 +126,7 @@ class HdcCurfewTimesControllerTest {
     )
 
     val anFirstNightCurfewTimesRequest = UpdateFirstNightCurfewTimesRequest(
-      CurfewTimes(
-        id = 1,
+      FirstNightCurfewTimeRequest(
         fromTime = LocalTime.of(20, 0),
         untilTime = LocalTime.of(8, 0),
       ),

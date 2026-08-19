@@ -88,7 +88,7 @@ class NotStartedCaseloadService(
         licenceStatus = TIMED_OUT
       }
       val timeServedExternalRecord = timeServedExternalRecordsFlags[case.nomisRecord.bookingId?.toLong()]
-      val kind = case.cvlRecord.hardStopKind ?: case.cvlRecord.eligibleKind?.licenceKind
+      val kind = case.cvlRecord.creationKind
 
       CaCase(
         kind = kind,
@@ -106,7 +106,7 @@ class NotStartedCaseloadService(
           case.cvlRecord.isDueToBeReleasedInTheNextTwoWorkingDays,
           case.cvlRecord.licenceStartDate,
           licenceCaCase = null,
-          timeServedCase = case.cvlRecord.hardStopKind == TIME_SERVED,
+          timeServedCase = kind == TIME_SERVED,
           clock,
         ),
         probationPractitioner = probationPractitioners[case.nomisRecord.prisonerNumber]
@@ -120,7 +120,7 @@ class NotStartedCaseloadService(
   }
 
   private fun fetchTimeServedExternalRecordFlags(cases: List<ManagedCaseDto>): Map<Long, TimeServedExternalSummaryRecord> {
-    val bookingIds = cases.filter { it.cvlRecord.hardStopKind == TIME_SERVED }.mapNotNull { it.nomisRecord.bookingId }
+    val bookingIds = cases.filter { it.cvlRecord.creationKind == TIME_SERVED }.mapNotNull { it.nomisRecord.bookingId }
 
     if (bookingIds.isEmpty()) return emptyMap()
 

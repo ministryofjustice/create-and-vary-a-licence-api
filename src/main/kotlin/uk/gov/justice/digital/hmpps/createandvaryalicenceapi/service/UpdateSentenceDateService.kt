@@ -24,12 +24,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.DateC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion.V4_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -48,6 +50,8 @@ class UpdateSentenceDateService(
   private val licenceService: LicenceService,
   private val cvlRecordService: CvlRecordService,
   private val potentialHardstopCaseRepository: PotentialHardstopCaseRepository,
+  @param:Value("\${progression.model.policy-start-date:#{null}}")
+  private val progressionModelPolicyStartDate: LocalDate? = null,
   @param:Value("\${hardstop.deactivation.job.enabled:false}") private val hardstopJobEnabled: Boolean = false,
 ) {
 
@@ -113,13 +117,9 @@ class UpdateSentenceDateService(
 
     val hardstopChangeType = getHardstopChangeType(currentLicenceStartDate, currentLicenceKind, updatedLicence)
 
-    if (hardstopChangeType == NOW_IN_HARDSTOP) {
-      licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
-    } else {
-      licenceRepository.saveAndFlush(updatedLicence)
-      if (dateChanges.anyChanges) {
-        recordAuditEvent(updatedLicence, dateChanges)
-      }
+    when {
+      hardstopChangeType == NOW_IN_HARDSTOP -> licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
+      else -> saveAndRecordIfChanged(updatedLicence, dateChanges)
     }
 
     if (hardstopChangeType == NO_LONGER_IN_HARDSTOP) {
@@ -142,13 +142,37 @@ class UpdateSentenceDateService(
       }
     }
 
-    if (dateChanges.isMaterial) {
+    val licenceForPolicyCheck = if (hardstopChangeType == NOW_IN_HARDSTOP) {
+      licenceRepository.findById(updatedLicence.id).orElseThrow { EntityNotFoundException("${updatedLicence.id}") }
+    } else {
+      updatedLicence
+    }
+
+    if (shouldInactivateForPolicyVersionChange(licenceForPolicyCheck, dateChanges)) {
+      inactivateForPolicyVersionChange(licenceForPolicyCheck, dateChanges)
+      notifyComOfPolicyVersionInactivation(licenceForPolicyCheck)
+    } else if (dateChanges.isMaterial) {
       val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
-        updatedLicence.bookingId!!,
+        licenceForPolicyCheck.bookingId!!,
         sentenceDates.homeDetentionCurfewEligibilityDate,
       )
-      notifyComOfUpdate(updatedLicence, dateChanges, isNotApprovedForHdc)
+      notifyComOfUpdate(licenceForPolicyCheck, dateChanges, isNotApprovedForHdc)
     }
+  }
+
+  private fun notifyComOfPolicyVersionInactivation(licence: Licence) {
+    licence.responsibleCom?.let { com ->
+      log.info("Notifying COM ${com.email} of policy version inactivation for licence ${licence.id}")
+      notifyService.sendPolicyVersionInactivatedEmail(
+        licenceId = licence.id.toString(),
+        emailAddress = com.email,
+        comFirstName = com.firstName!!,
+        comLastName = com.lastName!!,
+        pipFirstName = licence.forename!!,
+        pipLastName = licence.surname!!,
+        crn = licence.crn,
+      )
+    } ?: log.info("Cannot notify COM of policy version inactivation as licence has no responsible COM: ${licence.id}")
   }
 
   private fun notifyComOfUpdate(
@@ -242,12 +266,43 @@ class UpdateSentenceDateService(
     }
   }
 
+  private fun shouldInactivateForPolicyVersionChange(
+    licence: Licence,
+    dateChanges: DateChanges,
+  ): Boolean = licence.isEligibleForPolicyVersionCheck &&
+    (
+      progressionModelPolicyStartDate == null ||
+        dateChanges[LicenceDateType.LSD]?.newDate?.isBefore(progressionModelPolicyStartDate) == true
+      )
+
+  private val Licence.isEligibleForPolicyVersionCheck: Boolean
+    get() = version == V4_0.version && statusCode in LicenceStatus.PRE_RELEASE_STATUSES
+
+  private fun inactivateForPolicyVersionChange(licence: Licence, dateChanges: DateChanges) {
+    licenceService.inactivateLicences(
+      listOf(licence),
+      LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE,
+      deactivateInProgressVersions = false,
+    )
+    recordAuditEvent(licence, dateChanges)
+  }
+
+  private fun saveAndRecordIfChanged(licence: Licence, dateChanges: DateChanges) {
+    licenceRepository.saveAndFlush(licence)
+    if (dateChanges.anyChanges) {
+      recordAuditEvent(licence, dateChanges)
+    }
+  }
+
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
+
     const val LICENCE_DEACTIVATION_HARD_STOP =
       "Licence automatically inactivated as licence is no longer in hard stop period"
     const val LICENCE_DEACTIVATION_HARD_STOP_TASK =
       "Licence automatically inactivated by task as licence is still not in hard stop period"
+    const val LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE =
+      "Licence automatically inactivated as the licence start date moved before 02/09/2026 and the case must be recreated on policy V3"
   }
 
   private enum class HardstopChangeType {

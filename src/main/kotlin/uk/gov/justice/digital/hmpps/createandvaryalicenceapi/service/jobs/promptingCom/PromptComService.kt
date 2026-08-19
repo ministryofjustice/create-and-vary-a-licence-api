@@ -37,7 +37,10 @@ class PromptComService(
     val (earliestReleaseDate, latestReleaseDate) = fromNowToTheNext4Weeks(clock)
     log.info("Gathering prisoners with release dates between {} and {}", earliestReleaseDate, latestReleaseDate)
 
-    val candidates = prisonerSearchApiClient.getAllByReleaseDate(earliestReleaseDate, latestReleaseDate)
+    val candidates = prisonerSearchApiClient.getAllByReleaseDate(
+      earliestReleaseDate,
+      latestReleaseDate,
+    )
 
     log.info("Found {} prisoners with release dates within the next 4 weeks ", candidates.size)
     return promptComListBuilder.gatherEmails(candidates, earliestReleaseDate, latestReleaseDate)

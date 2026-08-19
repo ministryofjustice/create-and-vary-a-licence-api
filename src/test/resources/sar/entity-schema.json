@@ -6,6 +6,7 @@
     "conditionCode": "String",
     "conditionSequence": "Integer",
     "conditionText": "String",
+    "conditionTextPlural": "String",
     "conditionType": "String",
     "conditionVersion": "String",
     "expandedConditionText": "String",
@@ -46,7 +47,7 @@
     "townOrCity": "String",
     "uprn": "String"
   },
-  "Appointment": {
+  "ProbationContact": {
     "address": "Address",
     "addressText": "String",
     "alternativeTelephoneContactNumber": "String",
@@ -54,10 +55,10 @@
     "dateLastUpdated": "LocalDateTime",
     "idInternal": "Long",
     "person": "String",
-    "personType": "AppointmentPersonType",
+    "appointmentType": "AppointmentType",
     "telephoneContactNumber": "String",
-    "time": "LocalDateTime",
-    "timeType": "AppointmentTimeType"
+    "appointmentTime": "LocalDateTime",
+    "appointmentTimeType": "AppointmentTimeType"
   },
   "AuditEvent": {
     "changes": "Map",
@@ -91,7 +92,7 @@
   "CrdLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -166,7 +167,7 @@
   "HardStopLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -222,18 +223,26 @@
     "version": "String"
   },
   "HdcCurfewAddress": {
-    "addressLine1": "String",
-    "addressLine2": "String",
+    "accommodationType": "AccommodationType",
     "county": "String",
-    "id": "Long",
+    "createdTimestamp": "LocalDateTime",
+    "firstLine": "String",
+    "idInternal": "Long",
+    "lastUpdatedTimestamp": "LocalDateTime",
     "licence": "Licence",
+    "postReleaseResidentialChecksCompleted": "Boolean",
+    "postReleaseResidentialChecksNotCompletedReason": "String",
     "postcode": "String",
-    "townOrCity": "String"
+    "reference": "String",
+    "secondLine": "String",
+    "source": "AddressSource",
+    "townOrCity": "String",
+    "uprn": "String"
   },
   "HdcLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -297,7 +306,7 @@
   "HdcVariationLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -362,7 +371,7 @@
   "Licence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -468,7 +477,7 @@
   "PrrdLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -538,6 +547,7 @@
     "conditionSequence": "int",
     "conditionText": "String",
     "conditionType": "String",
+    "conditionVersion": "String",
     "id": "Long",
     "licence": "Licence"
   },
@@ -554,7 +564,7 @@
   "TimeServedLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -621,7 +631,7 @@
   "VariationLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
-    "appointment": "Appointment",
+    "probationContact": "ProbationContact",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",

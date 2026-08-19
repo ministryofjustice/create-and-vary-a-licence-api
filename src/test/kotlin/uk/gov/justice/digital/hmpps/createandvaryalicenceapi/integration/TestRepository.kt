@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.hibernate.Hibernate
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -13,23 +14,28 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedProbationConfirmContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.CurfewTimesMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.util.Optional
 
 @Repository
 interface TestLicenceRepository : JpaRepository<Licence, Long> {
-  @EntityGraph(attributePaths = ["standardConditions", "appointment", "appointment.address", "responsibleCom", "responsibleCom.savedAppointmentAddresses"])
+  @EntityGraph(attributePaths = ["standardConditions", "probationContact", "probationContact.address", "responsibleCom", "responsibleCom.savedAppointmentAddresses"])
   override fun findById(id: Long): Optional<Licence>
 
-  @EntityGraph(attributePaths = ["standardConditions", "appointment", "appointment.address", "responsibleCom", "responsibleCom.savedAppointmentAddresses"])
+  @EntityGraph(attributePaths = ["standardConditions", "probationContact", "probationContact.address", "responsibleCom", "responsibleCom.savedAppointmentAddresses"])
   override fun findAll(): List<Licence>
 
   fun findByStatusCodeAndTypeCodeOrderById(
@@ -43,6 +49,9 @@ interface TestAuditEventRepository : JpaRepository<AuditEvent, Long> {
   fun findAllByLicenceIdIn(licenceIds: List<Long>): List<AuditEvent>
   fun findAllByLicenceIdNull(): List<AuditEvent>
 }
+
+@Repository
+interface TestHdcCurfewAddressRepository : JpaRepository<HdcCurfewAddress, Long>
 
 @Repository
 interface TestStaffRepository : JpaRepository<Staff, Long> {
@@ -118,6 +127,7 @@ class TestRepository(
   private val testTimeServedProbationConfirmContactRepository: TestTimeServedProbationConfirmContactRepository,
   private val testAdditionalConditionUploadRepository: TestAdditionalConditionUploadRepository,
   private val migrationRepository: TestMigrationRepository,
+  private val hdcCurfewAddressRepository: TestHdcCurfewAddressRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -138,10 +148,22 @@ class TestRepository(
     licence.bespokeConditions = bespokeConditionRepository.findByLicenceId(licenceId = licence.id).toMutableList()
     licence.additionalConditions = additionalConditionRepository.findByLicenceId(licenceId = licence.id).toMutableList()
     licence.responsibleCom?.id
-    if (licence is HdcLicence) {
-      licence.createdBy?.username
-      licence.submittedBy?.username
+    when (licence) {
+      is HdcLicence -> {
+        licence.createdBy?.username
+        licence.submittedBy?.username
+        CurfewTimesMapper.copy(licence.firstNightCurfewTimes)
+        CurfewTimesMapper.copyList(licence.weeklyCurfewTimes)
+      }
+
+      is HdcVariationLicence -> {
+        licence.createdBy?.username
+        licence.submittedBy?.username
+        CurfewTimesMapper.copy(licence.firstNightCurfewTimes)
+        CurfewTimesMapper.copyList(licence.weeklyCurfewTimes)
+      }
     }
+
     return licence
   }
 
@@ -166,6 +188,28 @@ class TestRepository(
     val events = auditEventRepository.findAllByLicenceIdNull()
     assertThat(events).isNotEmpty
     return events
+  }
+
+  fun findAllHdcCurfewAddresses(): List<HdcCurfewAddress> {
+    val addresses = hdcCurfewAddressRepository.findAll()
+    addresses.forEach { Hibernate.initialize(it.licence) }
+    return addresses
+  }
+
+  fun findWeeklyCurfewTimes(licenceId: Long): List<CurfewTimes> {
+    val licence = licenceRepository.findById(licenceId).get()
+    check(licence is HdcCase) { "licence is ${licence.kind}, expected HdcCase" }
+    val curfewTimes = (licence as HdcCase).weeklyCurfewTimes
+    Hibernate.initialize(curfewTimes)
+    return curfewTimes
+  }
+
+  fun findFirstNightCurfewTimes(licenceId: Long): CurfewTimes? {
+    val licence = licenceRepository.findById(licenceId).get()
+    check(licence is HdcCase) { "licence is ${licence.kind}, expected HdcCase" }
+    val firstNightCurfewTimes = (licence as HdcLicence).firstNightCurfewTimes
+    Hibernate.initialize(firstNightCurfewTimes)
+    return firstNightCurfewTimes
   }
 
   fun getAuditEventCount(): Long = auditEventRepository.count()
@@ -232,5 +276,6 @@ class TestRepository(
     assertThat(licences).isNotEmpty
     return licences
   }
+
   fun hasMetaData(): Boolean = migrationRepository.hasAnyMetaData() && migrationRepository.hasAnyConditionMetaData()
 }

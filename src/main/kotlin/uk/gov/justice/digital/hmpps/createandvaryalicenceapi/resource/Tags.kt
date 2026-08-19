@@ -26,5 +26,6 @@ class Tags {
     const val HDC_LICENCE_FIRST_NIGHT_CURFEW_TIMES = "HDC Licence First Night Curfew Times"
     const val ELECTRONIC_MONITORING_PROGRAMME = "Electronic Monitoring Programme"
     const val TIME_SERVED = "Time Served"
+    const val HDC_CURFEW_ADDRESS = "HDC Curfew Address"
   }
 }

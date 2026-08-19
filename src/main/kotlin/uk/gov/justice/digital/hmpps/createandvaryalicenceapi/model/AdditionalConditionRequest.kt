@@ -18,4 +18,10 @@ data class AdditionalConditionRequest(
     example = "You must not enter the location [DESCRIPTION]",
   )
   val text: String,
+
+  @field:Schema(
+    description = "The textual value for this additional condition if it can be grouped in a plural form",
+    example = "You must not enter the locations",
+  )
+  val textPlural: String? = null,
 )

@@ -2,21 +2,21 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.LocalDate
@@ -30,6 +30,14 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+      prisonId = "MDI",
+      sentenceStartDate = LocalDate.now(),
+      confirmedReleaseDate = LocalDate.now(),
+      conditionalReleaseDate = LocalDate.now(),
+    )
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -51,8 +59,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId,
-          it?.licenceType, it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.probationPractitioner?.name, it?.probationPractitioner?.staffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(
@@ -65,7 +72,6 @@ class ComIntegrationTest : IntegrationTestBase() {
           "Test Team",
           LocalDate.now(),
           1L,
-          LicenceType.AP,
           LicenceStatus.IN_PROGRESS,
           false,
         ),
@@ -80,8 +86,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -103,8 +110,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId,
-          it?.licenceType, it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.probationPractitioner?.name, it?.probationPractitioner?.staffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(
@@ -117,7 +123,6 @@ class ComIntegrationTest : IntegrationTestBase() {
           "Test Team",
           prisonerSearchApiMockServer.nextWorkingDate(),
           null,
-          LicenceType.AP,
           LicenceStatus.TIMED_OUT,
           false,
         ),
@@ -138,8 +143,9 @@ class ComIntegrationTest : IntegrationTestBase() {
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     // When
     val result = webTestClient.post()
@@ -169,12 +175,14 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedUnallocatedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
       prisonId = "MDI",
       sentenceStartDate = LocalDate.now(),
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     // When
     val result = webTestClient.post()
@@ -194,8 +202,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     val resultsList = searchResult!!.results
     assertThat(resultsList.size).isEqualTo(1)
     assertThat(resultsList[0].kind).isEqualTo(LicenceKind.TIME_SERVED)
-    assertThat(resultsList[0].comName).isNull()
-    assertThat(resultsList[0].comStaffCode).isNull()
+    assertThat(resultsList[0].probationPractitioner.name).isEqualTo("Not allocated")
+    assertThat(resultsList[0].probationPractitioner.staffCode).isEqualTo("A01B02C")
+    assertThat(resultsList[0].probationPractitioner.allocated).isFalse()
   }
 
   @Test
@@ -207,12 +216,14 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
       prisonId = "MDI",
       sentenceStartDate = LocalDate.now(),
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     // When
     val result = webTestClient.post()
@@ -250,6 +261,8 @@ class ComIntegrationTest : IntegrationTestBase() {
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     // When
     val result = webTestClient.post()
@@ -269,13 +282,19 @@ class ComIntegrationTest : IntegrationTestBase() {
     val resultsList = searchResult!!.results
     assertThat(resultsList.size).isEqualTo(1)
     assertThat(resultsList[0].kind).isEqualTo(LicenceKind.TIME_SERVED)
-    assertThat(resultsList[0].comName).isNull()
-    assertThat(resultsList[0].comStaffCode).isNull()
+    assertThat(resultsList[0].probationPractitioner.name).isEqualTo("Not allocated")
+    assertThat(resultsList[0].probationPractitioner.staffCode).isEqualTo("A01B02C")
+    assertThat(resultsList[0].probationPractitioner.allocated).isFalse()
   }
 
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from team caseload`() {
+    deliusMockServer.stubGetTeamManagedCases()
+    deliusMockServer.stubGetCheckUserAccess()
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultList = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -317,8 +336,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -340,8 +360,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId,
-          it?.licenceType, it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.probationPractitioner?.name, it?.probationPractitioner?.staffCode, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(
@@ -354,7 +373,6 @@ class ComIntegrationTest : IntegrationTestBase() {
           "Test Team",
           prisonerSearchApiMockServer.nextWorkingDate(),
           null,
-          LicenceType.AP,
           LicenceStatus.TIMED_OUT,
           false,
         ),
@@ -369,8 +387,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -391,8 +410,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -511,8 +531,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases(managedCasesResponse)
     deliusMockServer.stubGetCheckUserAccess(accessResponse)
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -661,8 +682,9 @@ class ComIntegrationTest : IntegrationTestBase() {
       confirmedReleaseDate = LocalDate.now(),
       conditionalReleaseDate = LocalDate.now(),
     )
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -721,8 +743,9 @@ class ComIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetTeamManagedCases()
     deliusMockServer.stubGetCheckUserAccess(accessResponse)
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetSentenceAndRecallTypes()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.NOT_A_HDC_RELEASE)))
 
     val resultObject = webTestClient.post()
       .uri("/caseload/com/case-search")
@@ -747,10 +770,17 @@ class ComIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val deliusMockServer = DeliusMockServer()
-    val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
-    val govUkMockServer = GovUkMockServer()
+
+    @RegisterExtension
+    val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
+    val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
+    val hdcApiMockServer = HdcApiMockServer()
 
     val aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",
@@ -759,25 +789,5 @@ class ComIntegrationTest : IntegrationTestBase() {
         ProbationSearchSortBy(SearchField.FORENAME, Sort.Direction.ASC),
       ),
     )
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      deliusMockServer.start()
-      prisonerSearchApiMockServer.start()
-      prisonApiMockServer.start()
-
-      govUkMockServer.start()
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      deliusMockServer.stop()
-      prisonerSearchApiMockServer.stop()
-      prisonApiMockServer.stop()
-      govUkMockServer.stop()
-    }
   }
 }

@@ -255,7 +255,7 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
-              hardStopKind = LicenceKind.HARD_STOP,
+              creationKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               isTimedOut = true,
@@ -263,7 +263,14 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -293,7 +300,12 @@ class CaCaseloadServiceTest {
           PrisonQuery.prisonCodes,
         )
         verify(prisonerSearchApiClient, times(0)).searchPrisonersByNomisIds(listOf(licenceCase.prisonNumber))
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
+        verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(
+          any(),
+          any(),
+          any(),
+          anyOrNull(),
+        )
       }
     }
 
@@ -360,7 +372,14 @@ class CaCaseloadServiceTest {
           listOf(licenceCase1, licenceCase2),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(emptyList()),
         )
 
@@ -425,7 +444,14 @@ class CaCaseloadServiceTest {
         ),
       )
 
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(
+        prisonerSearchApiClient.searchPrisonersByReleaseDate(
+          any(),
+          any(),
+          any(),
+          anyOrNull(),
+        ),
+      ).thenReturn(
         PageImpl(
           listOf(
             aPrisonerSearchPrisoner.copy(
@@ -495,7 +521,14 @@ class CaCaseloadServiceTest {
         ),
       )
 
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(
+        prisonerSearchApiClient.searchPrisonersByReleaseDate(
+          any(),
+          any(),
+          any(),
+          anyOrNull(),
+        ),
+      ).thenReturn(
         PageImpl(
           listOf(
             aPrisonerSearchPrisoner.copy(
@@ -543,19 +576,19 @@ class CaCaseloadServiceTest {
         listOf(
           aCvlRecord(
             nomsId = "A1234AA",
-            hardStopKind = LicenceKind.HARD_STOP,
+            creationKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
           ),
           aCvlRecord(
             nomsId = "A1234AB",
-            hardStopKind = LicenceKind.HARD_STOP,
+            creationKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
           ),
           aCvlRecord(
             nomsId = "A1234AC",
-            hardStopKind = LicenceKind.HARD_STOP,
+            creationKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
             isEligible = false,
@@ -617,7 +650,7 @@ class CaCaseloadServiceTest {
           caCase().copy(
             name = "Person One",
             releaseDate = tenDaysFromNow,
-            releaseDateLabel = "CRD",
+            releaseDateLabel = "Conditional release date",
             probationPractitioner = probationPractitionerFor(comUser01),
             lastWorkedOnBy = "X Y",
             prisonCode = "BAI",
@@ -641,7 +674,14 @@ class CaCaseloadServiceTest {
           PrisonQuery.prisonCodes,
         ),
       ).thenReturn(listOf(licenceCase))
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(
+        prisonerSearchApiClient.searchPrisonersByReleaseDate(
+          any(),
+          any(),
+          any(),
+          anyOrNull(),
+        ),
+      ).thenReturn(
         PageImpl(
           listOf(prisonerSearchResult()),
         ),
@@ -662,7 +702,7 @@ class CaCaseloadServiceTest {
         listOf(
           aCvlRecord(
             nomsId = "A1234AA",
-            hardStopKind = LicenceKind.HARD_STOP,
+            creationKind = LicenceKind.HARD_STOP,
             licenceStartDate = twoDaysFromNow,
             isInHardStopPeriod = true,
           ),
@@ -682,7 +722,14 @@ class CaCaseloadServiceTest {
         ),
       ).thenReturn(listOf(licenceCase))
 
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(
+        prisonerSearchApiClient.searchPrisonersByReleaseDate(
+          any(),
+          any(),
+          any(),
+          anyOrNull(),
+        ),
+      ).thenReturn(
         PageImpl(
           listOf(prisonerSearchResult()),
         ),
@@ -693,7 +740,7 @@ class CaCaseloadServiceTest {
 
       // Then
       assertThat(prisonOmuCaseload).hasSize(1)
-      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date")
     }
 
     @Nested
@@ -725,7 +772,14 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -750,7 +804,14 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `Should filter out cases with a legal status of DEAD`() {
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             emptyList(),
           ),
@@ -791,7 +852,14 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should filter out ineligible cases`() {
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(listOf(aPrisonerSearchPrisoner.copy(conditionalReleaseDate = null))),
         )
 
@@ -833,7 +901,14 @@ class CaCaseloadServiceTest {
           bookingId = "1234",
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(listOf(prisoner)),
         )
 
@@ -853,6 +928,7 @@ class CaCaseloadServiceTest {
                 allocated = true,
               ),
               lastWorkedOnBy = null,
+              releaseDateLabel = "HDC eligible date",
             ),
           ),
         )
@@ -883,13 +959,20 @@ class CaCaseloadServiceTest {
               nomsId = licenceCase.prisonNumber!!,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.TIME_SERVED,
+              creationKind = LicenceKind.TIME_SERVED,
               isTimedOut = true,
             ),
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -951,12 +1034,19 @@ class CaCaseloadServiceTest {
               nomsId = licenceCase.prisonNumber!!,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.TIME_SERVED,
+              creationKind = LicenceKind.TIME_SERVED,
             ),
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -1014,7 +1104,7 @@ class CaCaseloadServiceTest {
           listOf(
             aCvlRecord(
               nomsId = licenceCase.prisonNumber!!,
-              hardStopKind = LicenceKind.HARD_STOP,
+              creationKind = LicenceKind.HARD_STOP,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
               isTimedOut = true,
@@ -1022,7 +1112,14 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -1084,13 +1181,20 @@ class CaCaseloadServiceTest {
               nomsId = licenceCase.prisonNumber!!,
               licenceStartDate = twoDaysFromNow,
               isInHardStopPeriod = true,
-              hardStopKind = LicenceKind.TIME_SERVED,
+              creationKind = LicenceKind.TIME_SERVED,
               isTimedOut = true,
             ),
           ),
         )
 
-        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+        whenever(
+          prisonerSearchApiClient.searchPrisonersByReleaseDate(
+            any(),
+            any(),
+            any(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
@@ -1431,7 +1535,14 @@ class CaCaseloadServiceTest {
       }
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(prisoners)
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(
+        prisonerSearchApiClient.searchPrisonersByReleaseDate(
+          any(),
+          any(),
+          any(),
+          anyOrNull(),
+        ),
+      ).thenReturn(
         PageImpl(emptyList()),
       )
 
@@ -1510,7 +1621,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -1648,7 +1759,14 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should successfully search by probation practitioner name for offender on probation`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(
+        prisonerSearchApiClient.searchPrisonersByReleaseDate(
+          any(),
+          any(),
+          any(),
+          anyOrNull(),
+        ),
+      ).thenReturn(
         PageImpl(emptyList()),
       )
       whenever(licenceCaseRepository.findLicenceCases(PrisonQuery.statusCodes, ProbationQuery.prisonCodes)).thenReturn(
@@ -1875,7 +1993,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -1903,7 +2021,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -1928,7 +2046,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -1966,7 +2084,7 @@ class CaCaseloadServiceTest {
               name = "Person Three",
               nomisLegalStatus = "SENTENCED",
               releaseDate = null,
-              releaseDateLabel = "CRD",
+              releaseDateLabel = "Conditional release date",
               tabType = CaViewCasesTab.ATTENTION_NEEDED,
               lastWorkedOnBy = "X Y",
               probationPractitioner = probationPractitionerFor(atcomUser02),
@@ -2036,7 +2154,14 @@ class CaCaseloadServiceTest {
       }
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(prisoners)
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+      whenever(
+        prisonerSearchApiClient.searchPrisonersByReleaseDate(
+          any(),
+          any(),
+          any(),
+          anyOrNull(),
+        ),
+      ).thenReturn(
         PageImpl(emptyList()),
       )
 
@@ -2063,11 +2188,11 @@ class CaCaseloadServiceTest {
 
       // Then
       assertThat(prisonOmuCaseload).hasSize(1)
-      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date")
     }
 
     @Test
-    fun `should use HDCAD as release label where a HDCAD is set`() {
+    fun `should use HDC actual date as release label where a HDCAD is set`() {
       whenever(licenceCaseRepository.findLicenceCases(any(), any())).thenReturn(
         listOf(
           createLicenceCase(
@@ -2091,7 +2216,7 @@ class CaCaseloadServiceTest {
             nomisLegalStatus = null,
             probationPractitioner = probationPractitionerFor(comUser01),
             lastWorkedOnBy = "X Y",
-            releaseDateLabel = "HDCAD",
+            releaseDateLabel = "HDC actual date",
             prisonCode = "BAI",
             prisonDescription = "Moorland (HMP)",
           ),

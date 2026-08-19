@@ -1,10 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.HttpStatus.OK
@@ -12,11 +11,10 @@ import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
@@ -42,7 +40,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody<ErrorResponse>()
         .returnResult().responseBody
 
-      assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(result.userMessage).contains("Access Denied")
     }
 
     @Test
@@ -89,7 +87,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody<PrisonerWithCvlFields>()
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
       with(caseloadItem) {
         assertThat(prisoner).isNotNull
@@ -98,6 +96,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
           assertThat(hardStopDate).isNotNull
           assertThat(hardStopWarningDate).isNotNull
           assertThat(licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
+          assertThat(isTimeServed).isEqualTo(false)
         }
       }
     }
@@ -138,7 +137,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody<ErrorResponse>()
         .returnResult().responseBody
 
-      assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(result.userMessage).contains("Access Denied")
     }
 
     @Test
@@ -152,7 +151,8 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun success() {
-      deliusMockServer.stubGetProbationCase()
+      deliusMockServer.stubGetOffenderManager()
+      deliusMockServer.stubGetOffenderManagerWithNomsId()
 
       val probationCase = webTestClient.get()
         .uri(GET_PROBATION_CASE)
@@ -162,38 +162,23 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody<ProbationCase>()
-        .returnResult().responseBody!!
+        .returnResult().responseBody
 
-      assertThat(probationCase).isEqualTo(ProbationCase(crn = "X12345", prisonNumber = "A1234AA"))
+      assertThat(probationCase).isEqualTo(ProbationCase(crn = "X12345", comAllocated = true, prisonNumber = "A1234AA"))
     }
   }
 
   private companion object {
-    val prisonerSearchApiMockServer = PrisonerSearchMockServer()
-    val govUkMockServer = GovUkMockServer()
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
+    val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonerSearchApiMockServer.start()
-      govUkMockServer.start()
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
-      prisonApiMockServer.start()
-      deliusMockServer.start()
-      hdcApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonerSearchApiMockServer.stop()
-      govUkMockServer.stop()
-      prisonApiMockServer.stop()
-      deliusMockServer.stop()
-      hdcApiMockServer.stop()
-    }
   }
 }

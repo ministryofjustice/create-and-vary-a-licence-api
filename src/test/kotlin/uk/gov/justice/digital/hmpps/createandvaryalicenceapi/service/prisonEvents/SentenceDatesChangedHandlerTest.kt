@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
@@ -81,11 +81,11 @@ class SentenceDatesChangedHandlerTest {
 
     verify(licenceService).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RESENTENCED),
+      DeactivateLicenceAndVariationsRequest(reason = LicenceDeactivationReason.RESENTENCED),
     )
     verify(licenceService, never()).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RECALLED),
+      DeactivateLicenceAndVariationsRequest(reason = LicenceDeactivationReason.RECALLED),
     )
   }
 
@@ -112,7 +112,7 @@ class SentenceDatesChangedHandlerTest {
 
     verify(licenceService).deactivateLicenceAndVariations(
       activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = DateChangeLicenceDeactivationReason.RECALLED),
+      DeactivateLicenceAndVariationsRequest(reason = LicenceDeactivationReason.RECALLED),
     )
   }
 

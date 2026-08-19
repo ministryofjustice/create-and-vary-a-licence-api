@@ -10,6 +10,8 @@ generic-service:
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
+    SPRINGDOC_API-DOCS_ENABLED: "true"
+    SPRINGDOC_SWAGGER-UI_ENABLED: "true"
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     HMPPS_AUTH_TOKEN_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_DELIUS_API_URL: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
@@ -27,8 +29,8 @@ generic-service:
     DPR_MANAGE_USERS_HOST: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
-    ISR_REPEAL_DATE: "2026-03-26"
-    STANDARD_RECALLS_ENABLED: true
+    PRISONER_MERGED_HANDLER_ENABLED: true
+    REMAND_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
@@ -90,20 +92,14 @@ jobs:
     cron: "30 7 * * 1-5" # 7:30am UTC Monday - Friday
     allowRetry: true
 
-  - name: remove-expired-conditions-job
-    enabled: true
-    path: /remove-expired-conditions
-    cron: "0 7 * * 1-5" # 7am UTC, Monday - Friday
-    allowRetry: true
-
   - name: notify-probation-of-unapproved-licences-job
     enabled: true
     path: /notify-probation-of-unapproved-licences
     cron: "0 11 * * 1-5" # 11am UTC, Monday - Friday
     allowRetry: false
 
-  - name: isr-licence-progression-job
+  - name: migrate-standard-conditions-v4-job
     enabled: true
-    path: /isr-licence-progression-job
-    cron: "30 8 * * *" # 8:30 UTC every day
-    allowRetry: true
+    path: /migrate-standard-conditions?policyVersion=4.0
+    cron: "30 11 20 12 *" # 11:30 UTC on 20/12/2026
+    allowRetry: false

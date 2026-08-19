@@ -1,15 +1,14 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.address
 
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.test.json.JsonCompareMode
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OsPlacesMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.OsPlacesMockServer
 import java.nio.charset.StandardCharsets
 
 private const val SEARCH_STRING = "Glan-y-mor"
@@ -21,19 +20,8 @@ private const val OS_API_KEY = "os-places-api-key"
 class AddressSearchControllerIntegrationTest : IntegrationTestBase() {
 
   private companion object {
+    @RegisterExtension
     val osPlacesMockServer = OsPlacesMockServer(OS_API_KEY)
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      osPlacesMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      osPlacesMockServer.stop()
-    }
   }
 
   abstract inner class BaseAddressSearchTest(private val urlToTest: String) {
@@ -117,7 +105,7 @@ class AddressSearchControllerIntegrationTest : IntegrationTestBase() {
         .isBadRequest
         .expectBody()
         .jsonPath("$.developerMessage").value<String> {
-          assert(it.contains("Search query length must be more than 0 and no more than 100")) {
+          assert(it.contains("Search query length must be more than 0 and no more than 200")) {
             "Expected developerMessage to contain validation error, but was: $it"
           }
         }
@@ -125,17 +113,18 @@ class AddressSearchControllerIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `should return bad request with search query that is too long`() {
+      val longQuery = "a".repeat(201)
       webTestClient.post()
         .uri(urlToTest)
         .contentType(MediaType.APPLICATION_JSON)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .bodyValue("""{"searchQuery": "Search query that is way too long and exceeds the maximum allowed length of one hundred characters which is not acceptable"}""")
+        .bodyValue("""{"searchQuery": "$longQuery"}""")
         .exchange()
         .expectStatus()
         .isBadRequest
         .expectBody()
         .jsonPath("$.developerMessage").value<String> {
-          assert(it.contains("Search query length must be more than 0 and no more than 100")) {
+          assert(it.contains("Search query length must be more than 0 and no more than 200")) {
             "Expected developerMessage to contain validation error, but was: $it"
           }
         }

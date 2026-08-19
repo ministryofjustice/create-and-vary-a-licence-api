@@ -78,6 +78,16 @@ class PrisonServiceTest {
   }
 
   @Test
+  fun `should return null if no sentence and recall types for a booking`() {
+    val bookingId = 392L
+
+    whenever(prisonApiClient.getSentenceAndRecallTypes(listOf(bookingId))).thenReturn(
+      emptyList(),
+    )
+    assertThat(service.getSentenceAndRecallTypes(bookingId)).isNull()
+  }
+
+  @Test
   fun `should search prisoners by nomis ids`() {
     val nomisIds = listOf("A1234AA", "B1234BB")
     val searchResult = listOf(prisonerSearchResult())

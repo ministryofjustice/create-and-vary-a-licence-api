@@ -103,29 +103,13 @@ interface LicenceRepository :
 
   @Query(
     """
-      SELECT l
-      FROM Licence l
-      WHERE l.kind IN (
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION,
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION)
-      AND (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE
-      AND l.typeCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS))
-      AND l.statusCode IN (
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS,
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED,
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED,
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
-  )
-  """,
-  )
-  fun getAllVariedLicencesInPSSPeriod(): List<Licence>
-
-  @Query(
-    """
     SELECT l
         FROM Licence l
         WHERE l.statusCode != uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
-        AND COALESCE(l.topupSupervisionExpiryDate, l.licenceExpiryDate) < CURRENT_DATE
+        AND (
+            (l.typeCode = 'AP' AND l.licenceExpiryDate < CURRENT_DATE)
+         OR (l.typeCode IN ('AP_PSS', 'PSS') AND l.topupSupervisionExpiryDate < CURRENT_DATE)
+       )
     """,
   )
   fun getLicencesPassedExpiryDate(): List<Licence>
@@ -226,4 +210,15 @@ interface LicenceRepository :
     """,
   )
   fun findAllPreReleaseAndActiveLicencesForToday(): List<Licence>
+
+  @Query(
+    """
+    SELECT l
+    FROM Licence l
+    WHERE l.version in ('1.0', '2.0', '2.1', '3.0')
+    AND l.statusCode in (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED)
+    AND l.licenceStartDate >= :policyV4GoLiveDate
+  """,
+  )
+  fun getLicencesForProgressionDeactivation(policyV4GoLiveDate: LocalDate): List<Licence>
 }

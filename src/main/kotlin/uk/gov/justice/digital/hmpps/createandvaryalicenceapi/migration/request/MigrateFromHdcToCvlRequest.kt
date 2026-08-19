@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -55,20 +56,14 @@ data class MigrateFromHdcToCvlRequest(
 @Schema(description = "Prison details")
 data class MigratePrisonDetails(
   @field:Schema(description = "Prison code", example = "MDI")
-  val prisonCode: String?,
-
-  @field:Schema(description = "Prison description", example = "HMP Example")
-  val prisonDescription: String?,
-
-  @field:Schema(description = "Prison telephone number", example = "02038219211")
-  val prisonTelephone: String?,
+  val prisonCode: String,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Prisoner personal details")
 data class MigratePrisonerDetails(
   @field:Schema(description = "Prisoner Number", example = "A1234BC")
-  val prisonerNumber: String?,
+  val prisonerNumber: String,
 
   @field:Schema(description = "Forename")
   val forename: String?,
@@ -112,8 +107,8 @@ data class MigrateSentenceDetails(
 @Schema(description = "Licence details")
 data class MigrateLicenceDetails(
 
-  @field:Schema(description = "HDC licence ID", example = "1")
-  val licenceId: Long,
+  @field:Schema(description = "HDC licence version ID", example = "1")
+  val licenceVersionId: Long,
 
   @field:Schema(description = "Licence type", example = "AP")
   val typeCode: LicenceType,
@@ -147,7 +142,10 @@ data class MigrateLicenceLifecycleDetails(
   val approvedDate: LocalDateTime?,
 
   @field:Schema(description = "Approved by username", example = "username")
-  val approvedByUsername: String?,
+  val approvedByUsername: String? = null,
+
+  @field:Schema(description = "Approved by name", example = "Test Tester")
+  val approvedByName: String? = null,
 
   @field:Schema(description = "Submitted date", example = "2025-11-20T09:00:00")
   val submittedDate: LocalDateTime?,
@@ -199,6 +197,9 @@ data class MigrateAddress(
 
   @field:Schema(description = "Postcode", example = "SA42 1DQ")
   val postcode: String?,
+
+  @field:Schema(description = "Address type", example = "RESIDENTIAL")
+  val addressType: AccommodationType,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -215,13 +216,13 @@ data class MigrateCurfewDetails(
 @Schema(description = "Individual curfew time block")
 data class MigrateCurfewTime(
   @field:Schema(description = "Start day", example = "MONDAY")
-  val fromDay: DayOfWeek? = null,
+  val fromDay: DayOfWeek,
 
   @field:Schema(description = "Start time", example = "19:00:00")
   val fromTime: LocalTime,
 
   @field:Schema(description = "End day", example = "TUESDAY")
-  val untilDay: DayOfWeek? = null,
+  val untilDay: DayOfWeek,
 
   @field:Schema(description = "End time", example = "07:00:00")
   val untilTime: LocalTime,

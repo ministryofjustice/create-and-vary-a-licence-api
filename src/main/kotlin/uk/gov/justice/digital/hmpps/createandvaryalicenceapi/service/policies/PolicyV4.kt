@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AddAnother
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ChangeHint
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Conditional
@@ -18,10 +17,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionAp
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.LOWER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringRestrictionVersion.V2
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_ABSTINENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ALCOHOL_MONITORING
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.ATTENDANCE_AT_APPOINTMENTS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.CURFEW
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.EXCLUSION_ZONE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.LOCATION_MONITORING
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.RESTRICTION_ZONE
 
 val POLICY_V4_0 = LicencePolicy(
   additionalConditions = AdditionalConditions(
@@ -397,7 +403,7 @@ val POLICY_V4_0 = LicencePolicy(
         categoryShort = "Items and documents",
         code = "8e52e16e-1abf-4251-baca-2fabfcb243d0",
         requiresInput = false,
-        text = "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+        text = "Not to own or possess more than one mobile phone or SIM card, or install an e-sim, without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
       ),
       AdditionalConditionAp(
         category = "Possession, ownership, control or inspection of specified items or documents",
@@ -483,12 +489,6 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Disclosure of information",
-        code = "79ac033f-9d7a-4dab-8344-475106e58b71",
-        requiresInput = false,
-        text = "To notify your supervising officer of the details of any passport that you possess (including passport number), and of any intention to apply for a new passport.",
-      ),
-      AdditionalConditionAp(
-        category = "Disclosure of information",
         code = "8686a815-b7f0-43b6-9886-f01df6a48773",
         inputs = listOf(
           Input(
@@ -516,7 +516,7 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Curfew arrangement",
-        code = "0a370862-5426-49c1-b6d4-3d074d78a81a",
+        code = "52faefcf-15f0-42c5-b908-621b4a7ecdb9",
         inputs = listOf(
           Input(
             label = "Select the number of curfews needed",
@@ -528,13 +528,15 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "Enter the curfew start time",
-                      name = "curfewStart",
+                      name = "oneCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Enter the curfew end time",
-                      name = "curfewEnd",
+                      name = "oneCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
@@ -545,23 +547,29 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "First curfew – enter the start time",
-                      name = "curfewStart",
+                      name = "twoCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "First curfew – enter the end time",
-                      name = "curfewEnd",
+                      name = "twoCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the start time",
-                      name = "curfewStart2",
+                      name = "twoCurfewStart2",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the end time",
-                      name = "curfewEnd2",
+                      name = "twoCurfewEnd2",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
@@ -572,78 +580,61 @@ val POLICY_V4_0 = LicencePolicy(
                   inputs = listOf(
                     ConditionalInput(
                       label = "First curfew – enter the start time",
-                      name = "curfewStart",
+                      name = "threeCurfewStart",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "First curfew – enter the end time",
-                      name = "curfewEnd",
+                      name = "threeCurfewEnd",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the start time",
-                      name = "curfewStart2",
+                      name = "threeCurfewStart2",
+                      includeBefore = ", ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Second curfew – enter the end time",
-                      name = "curfewEnd2",
+                      name = "threeCurfewEnd2",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Third curfew – enter the start time",
-                      name = "curfewStart3",
+                      name = "threeCurfewStart3",
+                      includeBefore = ", and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                     ConditionalInput(
                       label = "Third curfew – enter the end time",
-                      name = "curfewEnd3",
+                      name = "threeCurfewEnd3",
+                      includeBefore = " and ",
                       type = TIME_PICKER,
+                      hideHintText = true,
                     ),
                   ),
                 ),
-              ),
-            ),
-            type = RADIO,
-          ),
-          Input(
-            case = LOWER,
-            handleIndefiniteArticle = true,
-            label = "Select a review period",
-            name = "reviewPeriod",
-            options = listOf(
-              Option(
-                value = "Weekly",
-              ),
-              Option(
-                value = "Monthly",
-              ),
-              Option(
-                conditional = Conditional(
-                  inputs = listOf(
-                    ConditionalInput(
-                      case = LOWER,
-                      handleIndefiniteArticle = true,
-                      label = "Enter a review period",
-                      name = "alternativeReviewPeriod",
-                      type = TEXT,
-                    ),
-                  ),
-                ),
-                value = "Other",
               ),
             ),
             type = RADIO,
           ),
         ),
         requiresInput = true,
-        text = "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-        tpl = "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-        type = "CurfewTerms",
+        text = "You must stay at the address approved by your supervising officer between [TIME] and [TIME] each day," +
+          " unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
+        tpl = "You must stay at the address approved by your supervising officer between {oneCurfewStart}{twoCurfewStart}{threeCurfewStart} and {oneCurfewEnd}{twoCurfewEnd}{threeCurfewEnd}{twoCurfewStart2}{twoCurfewEnd2}{threeCurfewStart2}{threeCurfewEnd2}{threeCurfewStart3}{threeCurfewEnd3} each day, unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
+        type = "CurfewTermsV4",
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
+        headerCaption = "Area this person must not enter (exclusion zone)",
         inputs = listOf(
           Input(
             label = "Select a PDF map of the area this person must not enter",
@@ -654,6 +645,7 @@ val POLICY_V4_0 = LicencePolicy(
         requiresInput = true,
         text = "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
         tpl = "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
+        textPlural = "Not to enter the areas as defined by the attached maps without the prior approval of your supervising officer.",
         type = "OutOfBoundsRegionPolicyV3",
       ),
       AdditionalConditionAp(
@@ -739,6 +731,7 @@ val POLICY_V4_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "99195049-f355-46fb-b7d8-aef87a1b19c5",
+        headerCaption = "Area this person must not enter during an event (exclusion zone)",
         inputs = listOf(
           Input(
             label = "Enter the name of the event",
@@ -764,25 +757,64 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
-        code = "d523d711-9975-4a9a-a37e-a17bd611140f",
-        requiresInput = false,
-        text = "DRIVING PROHIBITION PLACEHOLDER",
-      ),
-      AdditionalConditionAp(
-        category = "Freedom of movement",
         code = "be16ee0b-a916-43ef-9319-b42a1dd418a3",
-        requiresInput = false,
-        text = "DRINKING ESTABLISHMENT PLACEHOLDER",
-      ),
-      AdditionalConditionAp(
-        category = "Freedom of movement",
-        code = "344a87e0-677a-49be-9adc-1f1891b1bd50",
-        requiresInput = false,
-        text = "FOREIGN TRAVEL RESTRICTION PLACEHOLDER",
+        inputs = listOf(
+          Input(
+            label = "Select a time restriction",
+            name = "timeRestriction",
+            options = listOf(
+              Option(
+                value = "At any time",
+              ),
+              Option(
+                value = "Between specified times",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter first start time",
+                      type = TIME_PICKER,
+                      name = "firstCurfewStart",
+                      includeBefore = " between ",
+                      defaultValue = " at any time",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter first end time",
+                      name = "firstCurfewEnd",
+                      type = TIME_PICKER,
+                      includeBefore = " and ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second start time (optional)",
+                      name = "secondCurfewStart",
+                      type = TIME_PICKER,
+                      includeBefore = " or between ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second end time (optional)",
+                      name = "secondCurfewEnd",
+                      includeBefore = " and ",
+                      type = TIME_PICKER,
+                      hideHintText = true,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to enter a drinking establishment [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
+        tpl = "Not to enter a drinking establishment {firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
+        type = "DrinkingEstablishment",
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
         code = "005d70e4-a247-4f82-b8b3-6d294a0f5051",
+        headerCaption = "Area this person must not leave (restriction zone)",
         inputs = listOf(
           Input(
             label = "Select a PDF map of the area this person must not leave",
@@ -791,9 +823,89 @@ val POLICY_V4_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "RESTRICTION ZONES PLACEHOLDER",
-        tpl = "RESTRICTION ZONES PLACEHOLDER",
+        text = "Not to leave the area as defined by the attached map without the prior approval of your supervising officer.",
+        tpl = "Not to leave the area as defined by the attached map without the prior approval of your supervising officer.",
+        textPlural = "Not to leave the areas as defined by the attached maps without the prior approval of your supervising officer.",
         type = "InBoundsRegion",
+      ),
+      AdditionalConditionAp(
+        category = "Freedom of movement",
+        code = "3f96ac05-ef71-43e3-ac07-1219aa26b5f3",
+        inputs = listOf(
+          Input(
+            label = "Event type",
+            name = "eventType",
+            options = listOf(
+              Option(
+                value = "Any public event",
+              ),
+              Option(
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter one or more types of public event",
+                      name = "publicEventType",
+                      type = TEXT,
+                      defaultValue = "any public event",
+                    ),
+                  ),
+                ),
+                value = "Types of public event",
+              ),
+            ),
+            type = RADIO,
+          ),
+          Input(
+            label = "Time restriction",
+            name = "timeRestriction",
+            options = listOf(
+              Option(
+                value = "At any time",
+              ),
+              Option(
+                value = "Between specified times",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter first start time",
+                      name = "firstCurfewStart",
+                      type = TIME_PICKER,
+                      includeBefore = " between ",
+                      defaultValue = " at any time",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter first end time",
+                      name = "firstCurfewEnd",
+                      type = TIME_PICKER,
+                      includeBefore = " and ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second start time (optional)",
+                      name = "secondCurfewStart",
+                      type = TIME_PICKER,
+                      includeBefore = " or between ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second end time (optional)",
+                      name = "secondCurfewEnd",
+                      type = TIME_PICKER,
+                      includeBefore = " and ",
+                      hideHintText = true,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to attend [ANY PUBLIC EVENT / TYPES OF PUBLIC EVENT] [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer.",
+        tpl = "Not to attend {publicEventType}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer.",
+        type = "PublicEvent",
       ),
       AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
@@ -1136,6 +1248,108 @@ val POLICY_V4_0 = LicencePolicy(
         type = "DigitalServices",
       ),
       AdditionalConditionAp(
+        category = "Restriction of specified conduct or specified acts",
+        code = "d523d711-9975-4a9a-a37e-a17bd611140f",
+        inputs = listOf(
+          Input(
+            label = "Vehicle types",
+            name = "vehicleTypes",
+            options = listOf(
+              Option(
+                value = "Any motor vehicle",
+              ),
+              Option(
+                value = "Types of motor vehicle",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter one or more types of motor vehicle",
+                      name = "typesOfMotorVehicle",
+                      defaultValue = "any motor vehicle",
+                      type = TEXT,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+          Input(
+            label = "Time restriction",
+            name = "timeRestriction",
+            options = listOf(
+              Option(
+                value = "At any time",
+              ),
+              Option(
+                value = "Between specified times",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter first start time",
+                      type = TIME_PICKER,
+                      name = "firstCurfewStart",
+                      defaultValue = " at any time",
+                      includeBefore = " between ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter first end time",
+                      name = "firstCurfewEnd",
+                      type = TIME_PICKER,
+                      includeBefore = " and ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second start time (optional)",
+                      name = "secondCurfewStart",
+                      type = TIME_PICKER,
+                      includeBefore = " or between ",
+                      hideHintText = true,
+                    ),
+                    ConditionalInput(
+                      label = "Enter second end time (optional)",
+                      name = "secondCurfewEnd",
+                      type = TIME_PICKER,
+                      includeBefore = " and ",
+                      hideHintText = true,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+          Input(
+            label = "Location restriction",
+            name = "locationRestriction",
+            options = listOf(
+              Option(
+                value = "At any location",
+              ),
+              Option(
+                value = "In specified locations",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter one or more locations",
+                      name = "locations",
+                      defaultValue = " at any location",
+                      type = TEXT,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
+        tpl = "Not to use {typesOfMotorVehicle}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} {locations} without the prior approval of your supervising officer.",
+        type = "VehicleRestrictions",
+      ),
+      AdditionalConditionAp(
         category = "Extremism",
         code = "86f8b3d6-be31-48b2-a29e-5cf662c95ad1",
         requiresInput = false,
@@ -1169,7 +1383,13 @@ val POLICY_V4_0 = LicencePolicy(
         category = "Polygraph",
         code = "1dc7ee29-df47-48a8-90b6-69e286692d8a",
         requiresInput = false,
-        text = "To comply with any instruction given by your supervising officer requiring you to attend polygraph testing. To participate in polygraph sessions and examinations as instructed by or under the authority of your supervising officer and to comply with any instruction given to you during a polygraph session by the person conducting the polygraph.",
+        text = "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop or disrupt the test.",
+      ),
+      AdditionalConditionAp(
+        category = "Drug, alcohol and solvent abuse",
+        code = "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
+        requiresInput = false,
+        text = "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. Do not try to stop or disrupt the test.",
       ),
       AdditionalConditionAp(
         category = "Drug, alcohol and solvent abuse",
@@ -1208,31 +1428,39 @@ val POLICY_V4_0 = LicencePolicy(
             name = "electronicMonitoringTypes",
             options = listOf(
               Option(
-                value = "exclusion zone",
+                value = EXCLUSION_ZONE.text[V2]!!,
               ),
               Option(
-                value = "curfew",
+                value = RESTRICTION_ZONE.text[V2]!!,
               ),
               Option(
-                value = "location monitoring",
+                value = CURFEW.text[V2]!!,
               ),
               Option(
-                value = "attendance at appointments",
+                value = ALCOHOL_ABSTINENCE.text[V2]!!,
               ),
               Option(
-                value = "alcohol monitoring",
+                value = ATTENDANCE_AT_APPOINTMENTS.text[V2]!!,
               ),
               Option(
-                value = "alcohol abstinence",
+                value = ALCOHOL_MONITORING.text[V2]!!,
+              ),
+              Option(
+                value = LOCATION_MONITORING.text[V2]!!,
               ),
             ),
             type = CHECK,
           ),
+          Input(
+            label = "Enter the end date",
+            name = "endDate",
+            type = DATE_PICKER,
+          ),
         ),
         requiresInput = true,
-        text = "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
-        tpl = "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your {electronicMonitoringTypes} licence condition(s) unless otherwise authorised by your supervising officer.",
-        type = "ElectronicMonitoringTypes",
+        text = "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",
+        tpl = "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking {electronicMonitoringTypes} until {endDate}.",
+        type = "ElectronicMonitoringTypesV4",
         requiresElectronicMonitoringResponse = true,
       ),
       AdditionalConditionAp(
@@ -1378,57 +1606,7 @@ val POLICY_V4_0 = LicencePolicy(
         text = "Provide your supervising officer with the details of the full postal addresses of all premises and storage facilities, including business addresses, to which you have a right of access.",
       ),
     ),
-    pss = listOf(
-      AdditionalConditionPss(
-        category = "Drug appointment",
-        code = "62c83b80-2223-4562-a195-0670f4072088",
-        inputs = listOf(
-          Input(
-            includeBefore = " at ",
-            label = "Enter time (optional)",
-            name = "appointmentTime",
-            type = TIME_PICKER,
-          ),
-          Input(
-            includeBefore = " on ",
-            label = "Enter date (optional)",
-            name = "appointmentDate",
-            type = DATE_PICKER,
-          ),
-          Input(
-            label = "Enter the address for the appointment",
-            name = "appointmentAddress",
-            type = ADDRESS,
-          ),
-        ),
-        pssDates = true,
-        requiresInput = true,
-        text = "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
-        tpl = "Attend {appointmentAddress}{appointmentDate}{appointmentTime}, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
-        type = "AppointmentTimeAndPlaceDuringPss",
-        skippable = true,
-      ),
-      AdditionalConditionPss(
-        category = "Drug testing",
-        code = "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
-        inputs = listOf(
-          Input(
-            label = "Enter name",
-            name = "name",
-            type = TEXT,
-          ),
-          Input(
-            label = "Enter address",
-            name = "address",
-            type = ADDRESS,
-          ),
-        ),
-        requiresInput = true,
-        text = "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
-        tpl = "Attend {name} {address}, as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
-        type = "DrugTestLocation",
-      ),
-    ),
+    pss = emptyList(),
   ),
   changeHints = listOf(
     ChangeHint(
@@ -1485,79 +1663,38 @@ val POLICY_V4_0 = LicencePolicy(
     standardConditionsAp = listOf(
       StandardConditionAp(
         code = "9ce9d594-e346-4785-9642-c87e764bee37",
-        text = "Be of good behaviour and not behave in a way which undermines the purpose of the licence period.",
-      ),
-      StandardConditionAp(
-        code = "3b19fdb0-4ca3-4615-9fdd-61fabc1587af",
-        text = "Not commit any offence.",
+        text = "Behave well in a way that supports the purpose of you being on licence, and do not commit any crime.",
       ),
       StandardConditionAp(
         code = "3361683a-504a-4357-ae22-6aa01b370b4a",
-        text = "Keep in touch with the supervising officer in accordance with instructions given by the supervising officer.",
+        text = "Get permission from your supervising officer to stay at an address and if you want to stay somewhere else for one or more nights.",
       ),
       StandardConditionAp(
         code = "9fc04065-df29-4bda-9b1d-bced8335c356",
-        text = "Receive visits from the supervising officer in accordance with any instructions given by the supervising officer.",
+        text = "Keep in touch and meet with your supervising officer in the way they tell you to. This includes meeting them where you live.",
       ),
       StandardConditionAp(
         code = "e670ac69-eda2-4b04-a0a1-a3c8492fe1e6",
-        text = "Reside permanently at an address approved by the supervising officer and obtain the prior permission of the supervising officer for any stay of one or more nights at a different address.",
+        text = "Tell your supervising officer about any names you use that are different to the names on this licence.",
       ),
       StandardConditionAp(
         code = "78A5F860-4791-48F2-B707-D6D4413850EE",
-        text = "Tell the supervising officer if you use a name which is different to the name or names which appear on your licence.",
+        text = "Inform your supervising officer if your contact details change. For example, your phone number or email address.",
       ),
       StandardConditionAp(
         code = "6FA6E492-F0AB-4E76-B868-63813DB44696",
-        text = "Tell the supervising officer if you change or add any contact details, including phone number or email.",
+        text = "Tell your supervising officer about any new work, or a type of work, you want to do. Get their approval before you start this work.",
       ),
       StandardConditionAp(
         code = "88069445-08cb-4f16-915f-5a162d085c26",
-        text = "Not undertake work, or a particular type of work, unless it is approved by the supervising officer and notify the supervising officer in advance of any proposal to undertake work or a particular type of work.",
+        text = "Get permission from your supervising officer if you want to leave the United Kingdom, Isle of Man or the Channel Islands. This does not apply if you are being deported or removed for immigration purposes.",
       ),
       StandardConditionAp(
         code = "7d416906-0e94-4fde-ae86-8339d339ccb7",
-        text = "Not travel outside the United Kingdom, the Channel Islands or the Isle of Man except with the prior permission of the supervising officer or for the purposes of immigration deportation or removal.",
-      ),
-      StandardConditionAp(
-        code = "2cbfc6ef-576e-482d-97c1-f6f937a34de8",
-        text = "Mandatory Drug Testing.",
+        text = "Get permission from your supervising officer if you want to apply for a new passport. If requested, tell your supervising officer about any passports you have already.",
       ),
     ),
-    standardConditionsPss = listOf(
-      StandardConditionPss(
-        code = "b3cd4a30-11fd-4715-9ebb-ed89f5386e1f",
-        text = "Be of good behaviour and not behave in a way that undermines the rehabilitative purpose of the supervision period.",
-      ),
-      StandardConditionPss(
-        code = "b950407d-2270-45b8-9666-3ad58a17d0be",
-        text = "Not commit any offence.",
-      ),
-      StandardConditionPss(
-        code = "93413832-9954-4907-a64d-eb8a56e34afb",
-        text = "Keep in touch with your supervisor in accordance with instructions given by your supervisor.",
-      ),
-      StandardConditionPss(
-        code = "9288e01c-e40e-4040-8b6e-57092361f422",
-        text = "Receive visits from your supervisor in accordance with instructions given by your supervisor.",
-      ),
-      StandardConditionPss(
-        code = "8e15cf42-f8e0-4408-a33e-d16a3448b7bd",
-        text = "Reside permanently at an address approved by your supervisor and obtain the prior permission of the supervisor for any stay of one or more nights at a different address.",
-      ),
-      StandardConditionPss(
-        code = "0ed57797-2745-4592-a78b-8e4d712c580e",
-        text = "Not undertake work, or a particular type of work, unless it is approved by your supervisor and notify your supervisor in advance of any proposal to undertake work or a particular type of work.",
-      ),
-      StandardConditionPss(
-        code = "c8966621-088a-4b87-9a19-752ff8b900c6",
-        text = "Not travel outside the United Kingdom, the Channel Islands or the Isle of Man except with the prior permission of your supervisor or in order to comply with a legal obligation (whether or not arising under the law of any part of the United Kingdom, the Channel Islands or the Isle of Man).",
-      ),
-      StandardConditionPss(
-        code = "579060fd-e412-471c-94d7-2fefa06d5052",
-        text = "Participate in activities in accordance with any instructions given by your supervisor.",
-      ),
-    ),
+    standardConditionsPss = emptyList(),
   ),
   version = "4.0",
 )

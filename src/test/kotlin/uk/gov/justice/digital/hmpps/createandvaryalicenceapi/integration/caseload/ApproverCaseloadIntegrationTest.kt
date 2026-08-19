@@ -1,10 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.caseload
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.OK
@@ -13,8 +12,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
@@ -68,6 +66,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
           createCommunityManager(2, "A1234AB"),
           createCommunityManager(3, "C1234BC"),
           createCommunityManager(4, "B1234BC"),
+          createCommunityManager(5, "E1234BC"),
         ),
       )
 
@@ -81,11 +80,12 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<ApprovalCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(4)
+      assertThat(caseload).hasSize(5)
       with(caseload[0]) {
         assertThat(releaseDate).isNull()
         assertThat(name).isEqualTo("Person Seven")
         assertThat(prisonerNumber).isEqualTo("A1234BC")
+        assertThat(releaseDateLabel).isEqualTo("Conditional release date")
         assertThat(approvedBy).isNull()
         assertThat(approvedOn).isNull()
       }
@@ -93,6 +93,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(releaseDate).isEqualTo(LocalDate.of(2022, 1, 1))
         assertThat(name).isEqualTo("Person Two")
         assertThat(prisonerNumber).isEqualTo("A1234AB")
+        assertThat(releaseDateLabel).isEqualTo("Conditional release date")
         assertThat(approvedBy).isNull()
         assertThat(approvedOn).isNull()
       }
@@ -100,6 +101,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(releaseDate).isEqualTo(LocalDate.of(2022, 1, 1))
         assertThat(name).isEqualTo("Person Z")
         assertThat(prisonerNumber).isEqualTo("C1234BC")
+        assertThat(releaseDateLabel).isEqualTo("HDC eligible date")
         assertThat(approvedBy).isNull()
         assertThat(approvedOn).isNull()
       }
@@ -107,6 +109,15 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(releaseDate).isEqualTo(LocalDate.of(2024, 3, 14))
         assertThat(name).isEqualTo("Person Eight")
         assertThat(prisonerNumber).isEqualTo("B1234BC")
+        assertThat(releaseDateLabel).isEqualTo("HDC actual date")
+        assertThat(approvedBy).isNull()
+        assertThat(approvedOn).isNull()
+      }
+      with(caseload[4]) {
+        assertThat(releaseDate).isEqualTo(LocalDate.of(2026, 1, 1))
+        assertThat(name).isEqualTo("Person E")
+        assertThat(prisonerNumber).isEqualTo("E1234BC")
+        assertThat(releaseDateLabel).isEqualTo("Post-recall release date")
         assertThat(approvedBy).isNull()
         assertThat(approvedOn).isNull()
       }
@@ -174,6 +185,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
+        assertThat(releaseDateLabel).isEqualTo("Conditional release date")
       }
       with(caseload[1]) {
         assertThat(name).isEqualTo("Person A")
@@ -182,6 +194,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
+        assertThat(releaseDateLabel).isEqualTo("HDC eligible date")
       }
       with(caseload[2]) {
         assertThat(name).isEqualTo("Person Z")
@@ -190,6 +203,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isAfter(LocalDate.now().minusDays(14))
+        assertThat(releaseDateLabel).isEqualTo("HDC actual date")
       }
     }
   }
@@ -289,22 +303,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
-    val govUkMockServer = GovUkMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      deliusMockServer.start()
-      govUkMockServer.start()
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      deliusMockServer.stop()
-      govUkMockServer.stop()
-    }
   }
 }

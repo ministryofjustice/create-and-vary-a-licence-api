@@ -1,0 +1,47 @@
+# Registry of "documented business logic" units whose freshness is tracked by
+# DocsChangeTrackingTest (src/test/kotlin/.../docs/DocsChangeTrackingTest.kt).
+#
+# Each entry maps one or more source files (a class, or a whole directory of classes)
+# to a markdown document describing the business rules they implement. The `hash`
+# field is an MD5 digest of the concatenated raw contents of the resolved source
+# files (sorted by path). If the source changes, the computed hash will no longer
+# match, and the test will fail — prompting the developer to review/update the doc
+# and then update `hash` here to the new value (printed in the test failure message).
+#
+# `sources` entries may be:
+#   - a path to a single file, or
+#   - a path to a directory, in which case all `*.kt` files within it (recursively)
+#     are included, sorted by path.
+#
+# All paths are relative to the repository root.
+
+entries:
+  - id: eligibility-service
+    description: "Licence eligibility rules (CRD/PRRD/HDC/recall eligibility criteria)"
+    doc: docs/eligibility.md
+    sources:
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/EligibilityService.kt
+    hash: 508cbcfe8051da22e896e263ac48ff66
+
+  - id: release-date-service
+    description: "Licence start date (LSD) calculation, hard stop dates and early release/allocation warnings"
+    doc: docs/licence-start-date.md
+    sources:
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/dates/ReleaseDateService.kt
+    hash: 06b46f433d64c50da865423310435727
+
+  - id: update-sentence-date-service
+    description: "How CVL reacts when a person's sentence/release dates change: date recalculation, materiality, COM notifications, and hard stop/policy-version safeguards"
+    doc: docs/sentence-date-updates.md
+    sources:
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/UpdateSentenceDateService.kt
+    hash: 560202058e8db41b2f4102e7f8a4eeef
+
+  - id: scheduled-jobs
+    description: "The scheduled background jobs (controllers + services) that keep licences up to date and notify probation automatically"
+    doc: docs/scheduled-jobs.md
+    sources:
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/resource/privateApi/jobs
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/jobs
+    hash: 79bb89726b9fb2f0429fe5c292b59748
+

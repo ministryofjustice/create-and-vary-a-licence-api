@@ -8,7 +8,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.ProbationContactMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -54,7 +54,7 @@ class CrdLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointment: Appointment? = null,
+  probationContact: ProbationContact? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
   approvedByName: String? = null,
@@ -125,7 +125,7 @@ class CrdLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointment = appointment,
+  probationContact = probationContact,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
   approvedByName = approvedByName,
@@ -181,7 +181,7 @@ class CrdLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointment: Appointment? = AppointmentMapper.copy(this.appointment),
+    probationContact: ProbationContact? = ProbationContactMapper.copy(this.probationContact),
     approvedDate: LocalDateTime? = this.approvedDate,
     approvedByUsername: String? = this.approvedByUsername,
     approvedByName: String? = this.approvedByName,
@@ -236,7 +236,7 @@ class CrdLicence(
     probationLauDescription = probationLauDescription,
     probationTeamCode = probationTeamCode,
     probationTeamDescription = probationTeamDescription,
-    appointment = appointment,
+    probationContact = probationContact,
     approvedDate = approvedDate,
     approvedByUsername = approvedByUsername,
     approvedByName = approvedByName,
@@ -310,14 +310,14 @@ class CrdLicence(
     "probationLauDescription=$probationLauDescription, " +
     "probationTeamCode=$probationTeamCode, " +
     "probationTeamDescription=$probationTeamDescription, " +
-    "appointmentPersonType=${appointment?.personType}, " +
-    "appointmentPerson=${appointment?.person}, " +
-    "appointmentTime=${appointment?.time}, " +
-    "appointmentTimeType=${appointment?.timeType}, " +
-    "appointmentAddress=${appointment?.addressText}, " +
-    "licenceAppointmentAddress=${appointment?.address}, " +
-    "appointmentContact=${appointment?.telephoneContactNumber}, " +
-    "alternativeTelephoneContactNumber=${appointment?.alternativeTelephoneContactNumber}, " +
+    "appointmentType=${probationContact?.appointmentType}, " +
+    "appointmentPerson=${probationContact?.person}, " +
+    "appointmentTime=${probationContact?.appointmentTime}, " +
+    "appointmentTimeType=${probationContact?.appointmentTimeType}, " +
+    "appointmentAddress=${probationContact?.addressText}, " +
+    "licenceAppointmentAddress=${probationContact?.address}, " +
+    "appointmentContact=${probationContact?.telephoneContactNumber}, " +
+    "alternativeTelephoneContactNumber=${probationContact?.alternativeTelephoneContactNumber}, " +
     "approvedDate=$approvedDate, " +
     "approvedByUsername=$approvedByUsername, " +
     "approvedByName=$approvedByName, " +

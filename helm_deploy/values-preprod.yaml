@@ -28,7 +28,7 @@ generic-service:
     DPR_MANAGE_USERS_HOST: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
-    ISR_REPEAL_DATE: "2026-03-26"
+    PRISONER_MERGED_HANDLER_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
@@ -85,23 +85,17 @@ jobs:
     cron: "45 8 * * 1-5" # 8:45am UTC Monday - Friday
     allowRetry: true
 
-  - name: remove-expired-conditions-job
-    enabled: true
-    path: /remove-expired-conditions
-    cron: "30 8 * * 1-5" # 8:30am UTC Monday - Friday
-    allowRetry: true
-
   - name: notify-probation-of-unapproved-licences-job
     enabled: true
     path: /notify-probation-of-unapproved-licences
     cron: "40 9 * * *" # 9:40am every day
     allowRetry: false
 
-  - name: isr-licence-progression-job
+  - name: migrate-standard-conditions-v4-job
     enabled: true
-    path: /isr-licence-progression-job
-    cron: "30 0 * * *" # 00:30 UTC every day
-    allowRetry: true
+    path: /migrate-standard-conditions?policyVersion=4.0
+    cron: "30 11 20 12 *" # 11:30 UTC on 20/12/2026
+    allowRetry: false
 
 #CloudPlatform AlertManager receiver to route prometheus alerts to slack
 #See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

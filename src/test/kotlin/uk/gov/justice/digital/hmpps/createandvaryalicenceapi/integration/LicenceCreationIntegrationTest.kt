@@ -1,11 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -15,16 +13,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
@@ -48,11 +41,6 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Autowired
   lateinit var hdcCurfewAddressRepository: HdcCurfewAddressRepository
 
-  @BeforeEach
-  fun reset() {
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
-
   @Test
   @Tag("deprecated")
   @Suppress("DEPRECATION")
@@ -71,8 +59,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val createLicenceResponse = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -91,7 +78,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -131,7 +118,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -151,8 +138,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -172,7 +158,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -210,7 +196,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
@@ -229,8 +215,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetOffenderManager()
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = CRD))
+      .uri("/licence/probation/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -240,8 +225,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody!!
 
     val secondAttempt = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = CRD))
+      .uri("/licence/probation/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -266,7 +250,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     deliusMockServer.stubGetOffenderManager()
 
     val result = webTestClient.post()
-      .uri("/licence/probation/nomisid/NOMSID")
+      .uri("/licence/probation/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -276,8 +260,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody!!
 
     val secondAttempt = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = CRD))
+      .uri("/licence/probation/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -295,8 +278,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Suppress("DEPRECATION")
   fun `Unauthorized (401) for creating CRD Licence when no token is supplied`() {
     webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
@@ -322,8 +304,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Suppress("DEPRECATION")
   fun `Get forbidden (403) for creating CRD Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+      .uri("/licence/probation/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()
@@ -370,8 +351,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -392,7 +372,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.getCom().username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
 
@@ -433,7 +413,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.getCom().username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
 
@@ -455,8 +435,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(testRepository.getAuditEventCount()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -477,7 +456,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(8)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(1)
   }
 
@@ -518,7 +497,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(8)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(1)
   }
 
@@ -546,8 +525,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     // When
     val reponse = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = TIME_SERVED))
+      .uri("/licence/prison/nomisid/A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -566,7 +544,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(8)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(2)
 
     // Verify the record is deleted
@@ -625,7 +603,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom?.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
-    assertThat(testRepository.getStandardConditionCount()).isEqualTo(10)
+    assertThat(testRepository.getStandardConditionCount()).isEqualTo(8)
     assertThat(testRepository.getAuditEventCount()).isEqualTo(2)
 
     // Verify the record is deleted
@@ -662,8 +640,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(user = "pca", roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -688,7 +665,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(hardStopLicence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(hardStopLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(1)
 
     assertThat(auditEventRepository.count()).isEqualTo(1)
@@ -736,7 +713,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(hardStopLicence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(hardStopLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-    assertThat(standardConditionRepository.count()).isEqualTo(10)
+    assertThat(standardConditionRepository.count()).isEqualTo(8)
     assertThat(additionalConditionRepository.count()).isEqualTo(1)
 
     assertThat(auditEventRepository.count()).isEqualTo(1)
@@ -747,8 +724,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Suppress("DEPRECATION")
   fun `Unauthorized (401) for creating Hard Stop Licence when no token is supplied`() {
     webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
@@ -774,8 +750,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Suppress("DEPRECATION")
   fun `Get forbidden (403) for creating Hard Stop Licence when incorrect roles are supplied`() {
     val result = webTestClient.post()
-      .uri("/licence/create")
-      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HARD_STOP))
+      .uri("/licence/prison/nomisid/NOMSID")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()
@@ -805,30 +780,16 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val govUkApiMockServer = GovUkMockServer()
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      prisonApiMockServer.start()
-      govUkApiMockServer.start()
-      prisonerSearchMockServer.start()
-      deliusMockServer.start()
-      hdcApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      prisonApiMockServer.stop()
-      govUkApiMockServer.stop()
-      prisonerSearchMockServer.stop()
-      deliusMockServer.stop()
-      hdcApiMockServer.stop()
-    }
   }
 }

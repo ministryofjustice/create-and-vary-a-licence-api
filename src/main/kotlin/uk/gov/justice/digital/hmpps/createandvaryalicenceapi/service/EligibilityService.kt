@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.ISRPssProgressionService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -18,19 +18,19 @@ import java.time.LocalDate
 class EligibilityService(
   private val prisonApiClient: PrisonApiClient,
   private val releaseDateService: ReleaseDateService,
-  private val hdcService: HdcService,
-  private val isrPssProgressionService: ISRPssProgressionService,
   private val clock: Clock,
-  @param:Value("\${feature.toggle.hdc.enabled}") private val hdcEnabled: Boolean = false,
+  @param:Value("\${feature.toggle.hdcCreation.enabled}") private val hdcCreationEnabled: Boolean = false,
 ) {
 
-  fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner): EligibilityAssessment {
-    val assessments = getEligibilityAssessments(listOf(prisoner))
+  fun getEligibilityAssessment(prisoner: PrisonerSearchPrisoner, hdcStatuses: HdcStatuses): EligibilityAssessment {
+    val assessments = getEligibilityAssessments(listOf(prisoner), hdcStatuses)
     return assessments.values.first()
   }
 
-  fun getEligibilityAssessments(prisoners: List<PrisonerSearchPrisoner>): Map<String, EligibilityAssessment> {
-    val hdcStatuses = hdcService.getHdcStatus(prisoners)
+  fun getEligibilityAssessments(
+    prisoners: List<PrisonerSearchPrisoner>,
+    hdcStatuses: HdcStatuses,
+  ): Map<String, EligibilityAssessment> {
     val nomisIdsToEligibilityAssessments = prisoners.map { prisoner ->
       if (prisoner.bookingId == null) {
         return@map prisoner.prisonerNumber to buildAssessment(
@@ -60,9 +60,9 @@ class EligibilityService(
       !isPersonParoleEligible(prisoner) to "is eligible for parole",
       !isDead(prisoner) to "has died",
       !isOnIndeterminateSentence(prisoner) to "is on indeterminate sentence",
-      hasActivePrisonStatus(prisoner) to "is not active in prison",
+      hasEligiblePrisonStatus(prisoner) to "does not have eligible prison status",
       !isBreachOfTopUpSupervision(prisoner) to "is breach of top up supervision case",
-      isPssTypeStillEligible(prisoner) to "PSS licences no longer supported",
+      !isPssOnly(prisoner) to "PSS licences no longer supported",
     )
 
     return eligibilityCriteria.mapNotNull { (test, message) -> if (!test) message else null }
@@ -84,7 +84,8 @@ class EligibilityService(
     val eligibilityCriteria = listOf(
       hasPostRecallReleaseDate(prisoner) to "has no post recall release date",
       hasPrrdTodayOrInTheFuture(prisoner) to "post recall release date is in the past",
-      !isApSledRelease(prisoner) to "is AP-only being released at SLED",
+      !isBeingReleasedAtSled(prisoner) to "is being released at SLED",
+      isRecallEligibleIfOnAnExtendedDeterminateSentence(prisoner) to "is on non-eligible EDS",
       !isExpectedHdcRelease to "is expected to be released on HDC",
     )
 
@@ -92,11 +93,10 @@ class EligibilityService(
   }
 
   fun getHdcIneligibilityReasons(prisoner: PrisonerSearchPrisoner, isExpectedHdcRelease: Boolean): List<String> {
-    if (!hdcEnabled) return listOf("HDC licences not currently supported in CVL")
+    if (!hdcCreationEnabled) return listOf("HDC licence creation not currently supported in CVL")
 
     val eligibilityCriteria = listOf(
       hasConditionalReleaseDate(prisoner) to "has no conditional release date",
-      hasHomeDetentionCurfewActualDate(prisoner) to "has no home detention curfew actual date",
       isTenOrMoreDaysToCrd(prisoner) to "has CRD fewer than 10 days in the future",
       isExpectedHdcRelease to "is not expected to be released on HDC",
     )
@@ -159,12 +159,10 @@ class EligibilityService(
 
   private fun hasPrrdTodayOrInTheFuture(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.postRecallReleaseDate == null || dateIsTodayOrFuture(prisoner.postRecallReleaseDate)
 
-  private fun isApSledRelease(prisoner: PrisonerSearchPrisoner): Boolean = when {
+  private fun isBeingReleasedAtSled(prisoner: PrisonerSearchPrisoner): Boolean = when {
     prisoner.postRecallReleaseDate == null -> false
 
     prisoner.licenceExpiryDate == null -> false
-
-    prisoner.topupSupervisionExpiryDate != null && prisoner.topupSupervisionExpiryDate.isAfter(prisoner.licenceExpiryDate) -> false
 
     else -> {
       val releaseDate = releaseDateService.calculatePrrdLicenceStartDate(prisoner)
@@ -172,13 +170,24 @@ class EligibilityService(
     }
   }
 
-  // HDC-specific eligibility rules
-  private fun hasHomeDetentionCurfewActualDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.homeDetentionCurfewActualDate != null
-
   private fun isTenOrMoreDaysToCrd(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate == null ||
     prisoner.conditionalReleaseDate.isOnOrAfter(
       LocalDate.now(clock).plusDays(MINIMUM_HDC_WINDOW_DAYS),
     )
+
+  private fun isRecallEligibleIfOnAnExtendedDeterminateSentence(prisoner: PrisonerSearchPrisoner): Boolean {
+    // If you don’t have a PED, you automatically pass this check as you’re not an EDS case
+    if (prisoner.paroleEligibilityDate == null) {
+      return true
+    }
+
+    // an APD with a PED in the past means they were a successful parole applicant on a later attempt, so not eligible
+    if (prisoner.actualParoleDate != null) {
+      return false
+    }
+
+    return true
+  }
 
   // Shared eligibility rules
   private fun hasConditionalReleaseDate(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.conditionalReleaseDate != null
@@ -192,15 +201,7 @@ class EligibilityService(
     return false
   }
 
-  private fun isPssTypeStillEligible(prisoner: PrisonerSearchPrisoner): Boolean {
-    if (prisoner.licenceExpiryDate == null &&
-      prisoner.topupSupervisionExpiryDate != null &&
-      isrPssProgressionService.isPssNowRepealed()
-    ) {
-      return false
-    }
-    return true
-  }
+  private fun isPssOnly(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.licenceExpiryDate == null && prisoner.topupSupervisionExpiryDate != null
 
   private fun isDead(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.legalStatus == "DEAD"
 
@@ -211,9 +212,10 @@ class EligibilityService(
     return prisoner.indeterminateSentence ?: false
   }
 
-  private fun hasActivePrisonStatus(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.status?.let {
-    it.startsWith("ACTIVE") || it == "INACTIVE TRN"
-  } ?: false
+  private fun hasEligiblePrisonStatus(prisoner: PrisonerSearchPrisoner): Boolean {
+    val isEligibleStatus = prisoner.status?.let { it.startsWith("ACTIVE") || it == "INACTIVE TRN" } ?: false
+    return prisoner.isRestrictedPatient() || isEligibleStatus
+  }
 
   private fun isBreachOfTopUpSupervision(prisoner: PrisonerSearchPrisoner): Boolean = prisoner.imprisonmentStatus == "BOTUS"
 

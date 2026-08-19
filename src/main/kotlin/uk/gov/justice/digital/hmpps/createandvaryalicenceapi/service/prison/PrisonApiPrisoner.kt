@@ -95,4 +95,8 @@ data class PrisonApiPrisoner(
   val dateOfBirth: LocalDate,
 
   val sentenceDetail: SentenceDetail,
-)
+
+  private val identifiers: List<OffenderIdentifier> = emptyList(),
+) {
+  fun getCro(): String? = identifiers.find { it.type == "CRO" }?.value
+}

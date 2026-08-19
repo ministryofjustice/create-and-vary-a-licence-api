@@ -1,15 +1,18 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.migration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAppointmentAddress
@@ -24,6 +27,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonerDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateSentenceDetails
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V3_0
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.DayOfWeek
@@ -42,12 +49,56 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   fun `should migrate licence successfully`() {
     // Given
     deliusMockServer.stubGetProbationCase()
-    deliusMockServer.stubGetOffenderManagerWithNomsId("A1234BC")
-    deliusMockServer.stubGetUserByUserName(2L, userName = "submittedByUserName", firstName = "submittedByFirstName", lastName = "submittedByLastName")
-    deliusMockServer.stubGetUserByUserName(3L, userName = "createdByUserName", firstName = "createdByFirstName", lastName = "createdByLastName")
-    deliusMockServer.stubGetUserByUserName(4L, userName = "approvedByUsername", firstName = "approvedByFirstName", lastName = "approvedByLastName")
+    deliusMockServer.stubGetOffenderManagerWithNomsId("A1234AA")
+    deliusMockServer.stubGetUserByUserName(
+      2L,
+      userName = "submittedByUserName",
+      firstName = "submittedByFirstName",
+      lastName = "submittedByLastName",
+    )
+    deliusMockServer.stubGetUserByUserName(
+      3L,
+      userName = "createdByUserName",
+      firstName = "createdByFirstName",
+      lastName = "createdByLastName",
+    )
+    deliusMockServer.stubGetUserByUserName(
+      4L,
+      userName = "approvedByUsername",
+      firstName = "approvedByFirstName",
+      lastName = "approvedByLastName",
+    )
 
     val request = validRequest()
+    prisonApiMockServer.stubGetPrison(prisonId = request.prison.prisonCode)
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(request)
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+
+    val licence = testRepository.findLicence(1)
+    assertHdcLicenceMatches(request, licence)
+    assertThat(testRepository.hasMetaData()).isTrue
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/migration/add-staff.sql",
+  )
+  fun `should create licence successfully with correct staff and user kinds`() {
+    // Given
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManagerWithNomsId("A1234AA")
+
+    val request = validRequest()
+    prisonApiMockServer.stubGetPrison(request.prison.prisonCode)
 
     // When
     val result = webTestClient.post()
@@ -83,6 +134,75 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
     assertThat(testRepository.doesLicenceExist(1)).isFalse
     assertThat(testRepository.hasMetaData()).isFalse
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-migration-meta-data-migration.sql",
+  )
+  fun `should not migrate if licence has already been migrated`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(request)
+      .exchange()
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+
+    // Then
+    result.expectStatus().isBadRequest
+    assertThat(testRepository.doesLicenceExist(1)).isFalse
+    assertThat(errorResponse.userMessage).contains("Licence has already been migrated, HDC LicenceVersionId: 1")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `should not migrate if prisoner has an existing licence in process`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(request)
+      .exchange()
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+
+    // Then
+    result.expectStatus().isBadRequest
+    assertThat(testRepository.hasMetaData()).isFalse
+    assertThat(errorResponse.userMessage).contains("Unexpected error: Licence for prisoner already exists (prisonNumber : A1234AA)")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-staff-offender-manager-not-found.sql",
+  )
+  fun `should not migrate if offender manager not found`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = webTestClient.post()
+      .uri(MIGRATE_URL)
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(request)
+      .exchange()
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+
+    // Then
+    result.expectStatus().isBadRequest
+    assertThat(testRepository.hasMetaData()).isFalse
+    assertThat(errorResponse.userMessage).contains("Unexpected error: Could not find offender manager for A1234AA in delius")
   }
 
   @Test
@@ -156,16 +276,17 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
     assertThat(licence.pnc).isEqualTo(request.pnc)
     assertThat(licence.cro).isEqualTo(request.cro)
+    assertThat(licence.crn).isEqualTo("X12345")
 
     assertThat(licence.nomsId).isEqualTo(request.prisoner.prisonerNumber)
-    assertThat(licence.forename).isEqualTo(request.prisoner.forename)
-    assertThat(licence.middleNames).isEqualTo(request.prisoner.middleNames)
-    assertThat(licence.surname).isEqualTo(request.prisoner.surname)
+    assertThat(licence.forename).isEqualTo(request.prisoner.forename?.convertToTitleCase())
+    assertThat(licence.middleNames).isEqualTo(request.prisoner.middleNames?.convertToTitleCase())
+    assertThat(licence.surname).isEqualTo(request.prisoner.surname?.convertToTitleCase())
     assertThat(licence.dateOfBirth).isEqualTo(request.prisoner.dateOfBirth)
 
     assertThat(licence.prisonCode).isEqualTo(request.prison.prisonCode)
-    assertThat(licence.prisonDescription).isEqualTo(request.prison.prisonDescription)
-    assertThat(licence.prisonTelephone).isEqualTo(request.prison.prisonTelephone)
+    assertThat(licence.prisonDescription).isEqualTo("ABC (HMP)")
+    assertThat(licence.prisonTelephone).isEqualTo("01234567890123")
 
     assertThat(licence.sentenceStartDate).isEqualTo(request.sentence.sentenceStartDate)
     assertThat(licence.sentenceEndDate).isEqualTo(request.sentence.sentenceEndDate)
@@ -184,6 +305,12 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
     assertThat(licence.licenceStartDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
 
+    assertThat(licence.bespokeConditions).extracting<Int> { it.conditionSequence }.containsExactly(0, 1)
+    assertThat(licence.standardConditions.size).isEqualTo(POLICY_V3_0.standardConditions.standardConditionsAp.size)
+    assertThat(licence.standardConditions.map { it.conditionText }).containsExactlyElementsOf(
+      POLICY_V3_0.standardConditions.standardConditionsAp.map { it.text },
+    )
+
     val actualConditions = licence.bespokeConditions.map { it.conditionText }
     val expectedConditions = request.conditions.additional.map { it.text } + request.conditions.bespoke.map { it }
 
@@ -194,23 +321,51 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     if (licence is HdcLicence) {
       assertThat(licence.submittedBy?.username).isEqualToIgnoringCase(request.lifecycle.submittedByUserName)
       assertThat(licence.createdBy?.username).isEqualToIgnoringCase(request.lifecycle.createdByUserName)
-      assertThat(licence.curfewAddress?.addressLine1).isEqualTo(request.curfewAddress?.addressLine1)
-      assertThat(licence.curfewAddress?.addressLine2).isEqualTo(request.curfewAddress?.addressLine2)
+      assertThat(licence.curfewAddress?.firstLine).isEqualTo(request.curfewAddress?.addressLine1)
+      assertThat(licence.curfewAddress?.secondLine).isEqualTo(request.curfewAddress?.addressLine2)
       assertThat(licence.curfewAddress?.townOrCity).isEqualTo(request.curfewAddress?.townOrCity)
       assertThat(licence.curfewAddress?.postcode).isEqualTo(request.curfewAddress?.postcode)
+      assertThat(licence.curfewAddress?.accommodationType).isEqualTo(request.curfewAddress?.addressType)
+      assertThat(licence.curfewAddress?.reference).isNotNull
+      assertThat(licence.curfewAddress?.source).isEqualTo(AddressSource.MANUAL_MIGRATED)
       assertThat(licence.homeDetentionCurfewEndDate).isEqualTo(request.licence.homeDetentionCurfewEndDate)
       assertThat(licence.homeDetentionCurfewEligibilityDate).isEqualTo(request.licence.homeDetentionCurfewEligibilityDate)
+      assertThat(licence.weeklyCurfewTimes).hasSize(2)
+      with(licence.weeklyCurfewTimes[0]) {
+        assertThat(curfewTimesSequence).isEqualTo(0)
+        assertThat(fromDay).isEqualTo(DayOfWeek.MONDAY)
+        assertThat(fromTime).isEqualTo("19:00")
+        assertThat(untilTime).isEqualTo("07:00")
+        assertThat(untilDay).isEqualTo(DayOfWeek.TUESDAY)
+        assertThat(createdTimestamp).isNotNull
+      }
+      with(licence.weeklyCurfewTimes[1]) {
+        assertThat(curfewTimesSequence).isEqualTo(1)
+        assertThat(fromDay).isEqualTo(DayOfWeek.FRIDAY)
+        assertThat(fromTime).isEqualTo("19:00")
+        assertThat(untilTime).isEqualTo("07:00")
+        assertThat(untilDay).isEqualTo(DayOfWeek.SATURDAY)
+        assertThat(createdTimestamp).isNotNull
+      }
+
+      assertThat(licence.firstNightCurfewTimes).isNotNull
+      assertThat(licence.firstNightCurfewTimes!!.curfewTimesSequence).isNull()
+      assertThat(licence.firstNightCurfewTimes!!.fromTime).isEqualTo("17:00")
+      assertThat(licence.firstNightCurfewTimes!!.untilTime).isEqualTo("07:00")
+      assertThat(licence.firstNightCurfewTimes!!.createdTimestamp).isNotNull
     }
 
     assertThat(licence.homeDetentionCurfewActualDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
 
-    assertThat(licence.appointment?.person).isEqualTo(request.appointment?.person)
-    assertThat(licence.appointment?.time).isEqualTo(request.appointment?.time)
-    assertThat(licence.appointment?.telephoneContactNumber).isEqualTo(request.appointment?.telephone)
-    assertThat(licence.appointment?.address?.firstLine).isEqualTo(request.appointment?.address?.firstLine)
-    assertThat(licence.appointment?.address?.secondLine).isEqualTo(request.appointment?.address?.secondLine)
-    assertThat(licence.appointment?.address?.townOrCity).isEqualTo(request.appointment?.address?.townOrCity)
-    assertThat(licence.appointment?.address?.postcode).isEqualTo(request.appointment?.address?.postcode)
+    assertThat(licence.probationContact?.appointmentTimeType).isEqualTo(AppointmentTimeType.SPECIFIC_DATE_TIME)
+    assertThat(licence.probationContact?.appointmentType).isEqualTo(AppointmentType.SPECIFIC_PERSON)
+    assertThat(licence.probationContact?.person).isEqualTo(request.appointment?.person)
+    assertThat(licence.probationContact?.appointmentTime).isEqualTo(request.appointment?.time)
+    assertThat(licence.probationContact?.telephoneContactNumber).isEqualTo(request.appointment?.telephone)
+    assertThat(licence.probationContact?.address?.firstLine).isEqualTo(request.appointment?.address?.firstLine)
+    assertThat(licence.probationContact?.address?.secondLine).isEqualTo(request.appointment?.address?.secondLine)
+    assertThat(licence.probationContact?.address?.townOrCity).isEqualTo(request.appointment?.address?.townOrCity)
+    assertThat(licence.probationContact?.address?.postcode).isEqualTo(request.appointment?.address?.postcode)
 
     assertThat(licence.probationAreaCode).isEqualTo("probationArea-code-1")
     assertThat(licence.probationAreaDescription).isEqualTo("probationArea-description-1")
@@ -228,7 +383,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     pnc = "YYYY/NNNNNNND",
     cro = "NNNNNN/YYD",
     prisoner = MigratePrisonerDetails(
-      prisonerNumber = "A1234BC",
+      prisonerNumber = "A1234AA",
       forename = "forename",
       middleNames = "middleNames",
       surname = "surname",
@@ -236,8 +391,6 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     ),
     prison = MigratePrisonDetails(
       prisonCode = "MDI",
-      prisonDescription = "HMP Example",
-      prisonTelephone = "02038219211",
     ),
     sentence = MigrateSentenceDetails(
       sentenceStartDate = LocalDate.parse("2024-01-01"),
@@ -249,7 +402,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       postRecallReleaseDate = LocalDate.parse("2024-08-01"),
     ),
     licence = MigrateLicenceDetails(
-      licenceId = 1,
+      licenceVersionId = 1,
       typeCode = LicenceType.AP,
       licenceActivationDate = LocalDate.parse("2025-05-03"),
       homeDetentionCurfewActualDate = LocalDate.parse("2025-05-04"),
@@ -282,6 +435,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       addressLine2 = "Flat 1",
       townOrCity = "Newport",
       postcode = "SA42 1DQ",
+      addressType = AccommodationType.CAS,
     ),
     curfew = MigrateCurfewDetails(
       curfewTimes = listOf(
@@ -289,6 +443,12 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
           fromDay = DayOfWeek.MONDAY,
           fromTime = LocalTime.parse("19:00:00"),
           untilDay = DayOfWeek.TUESDAY,
+          untilTime = LocalTime.parse("07:00:00"),
+        ),
+        MigrateCurfewTime(
+          fromDay = DayOfWeek.FRIDAY,
+          fromTime = LocalTime.parse("19:00:00"),
+          untilDay = DayOfWeek.SATURDAY,
           untilTime = LocalTime.parse("07:00:00"),
         ),
       ),
@@ -311,18 +471,10 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   )
 
   private companion object {
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
 
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      deliusMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      deliusMockServer.stop()
-    }
+    @RegisterExtension
+    val prisonApiMockServer = PrisonApiMockServer()
   }
 }

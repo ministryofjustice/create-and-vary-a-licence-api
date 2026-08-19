@@ -78,7 +78,7 @@ class PrisonerSearchApiClient(@param:Qualifier("oauthPrisonerSearchClient") val 
   ): Page<PrisonerSearchPrisoner> {
     val page = prisonerSearchApiWebClient
       .post()
-      .uri("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber")
+      .uri("/prisoner-search/release-date-by-prison?size=$pageSize&page=$pageNumber&includeSupportedByPrisons=true")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(
         ReleaseDateSearch(

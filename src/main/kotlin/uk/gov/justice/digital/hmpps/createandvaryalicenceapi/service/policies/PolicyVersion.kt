@@ -5,4 +5,5 @@ enum class PolicyVersion(val version: String) {
   V2_0("2.0"),
   V2_1("2.1"),
   V3_0("3.0"),
+  V4_0("4.0"),
 }

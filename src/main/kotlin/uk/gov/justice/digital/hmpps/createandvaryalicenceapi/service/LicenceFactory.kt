@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AlwaysHasCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -11,7 +13,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AppointmentMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.CurfewTimesMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.ProbationContactMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
@@ -49,7 +52,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = nomisRecord.prisonId,
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -99,7 +102,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = nomisRecord.prisonId,
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -151,7 +154,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = nomisRecord.prisonId,
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -205,7 +208,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = nomisRecord.prisonId,
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -269,7 +272,13 @@ object LicenceFactory {
         licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
         versionOfId = licence.id,
         createdBy = creator,
-      )
+        probationContact = ProbationContactMapper.copy(this.probationContact),
+        weeklyCurfewTimes = CurfewTimesMapper.copyList(this.weeklyCurfewTimes),
+        firstNightCurfewTimes = CurfewTimesMapper.copy(this.firstNightCurfewTimes),
+      ).let {
+        it.curfewAddress = this.curfewAddress?.copy(it)
+        it
+      }
     }
   }
 
@@ -312,7 +321,7 @@ object LicenceFactory {
         probationLauDescription = this.probationLauDescription,
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
-        appointment = AppointmentMapper.copy(this.appointment),
+        probationContact = ProbationContactMapper.copy(this.probationContact),
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),
         licenceVersion = getVariationVersion(this.licenceVersion!!),
@@ -341,7 +350,7 @@ object LicenceFactory {
     crn = deliusRecord.crn,
     pnc = deliusRecord.pncNumber,
     cro = getCro(deliusRecord.croNumber, nomisRecord.croNumber),
-    prisonCode = nomisRecord.prisonId,
+    prisonCode = prisonInformation.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     forename = nomisRecord.firstName.convertToTitleCase(),
@@ -373,7 +382,10 @@ object LicenceFactory {
     createdBy = creator,
   )
 
-  fun createHdcVariation(licence: HdcLicence, creator: CommunityOffenderManager): HdcVariationLicence {
+  fun <T> createHdcVariation(
+    licence: T,
+    creator: CommunityOffenderManager,
+  ): HdcVariationLicence where T : Licence, T : HdcCase, T : AlwaysHasCom {
     with(licence) {
       return HdcVariationLicence(
         typeCode = this.typeCode,
@@ -414,11 +426,16 @@ object LicenceFactory {
         probationLauDescription = this.probationLauDescription,
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
-        appointment = AppointmentMapper.copy(this.appointment),
+        probationContact = ProbationContactMapper.copy(this.probationContact),
+        weeklyCurfewTimes = CurfewTimesMapper.copyList(this.weeklyCurfewTimes),
+        firstNightCurfewTimes = CurfewTimesMapper.copy(this.firstNightCurfewTimes),
         responsibleCom = this.getCom(),
         dateCreated = LocalDateTime.now(),
         licenceVersion = "1.0", // This is for Active licenses if we were to migration variations, this would be 2.0
-      )
+      ).let {
+        it.curfewAddress = this.curfewAddress?.copy(it)
+        it
+      }
     }
   }
 
@@ -436,7 +453,7 @@ object LicenceFactory {
     return croPattern.matcher(cro).matches()
   }
 
-  private fun getCro(deliusRecordCro: String?, nomisRecordCro: String?): String? {
+  fun getCro(deliusRecordCro: String?, nomisRecordCro: String?): String? {
     val deliusCro = deliusRecordCro?.trim()
     val nomisCro = nomisRecordCro?.trim()
     return when {

@@ -14,6 +14,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
@@ -31,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.an
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -43,8 +45,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 class AuditServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
+  private val objectMapper = jacksonObjectMapper()
 
-  private val service = AuditService(auditEventRepository, licenceRepository)
+  private val service = AuditService(auditEventRepository, licenceRepository, objectMapper)
 
   @BeforeEach
   fun reset() {
@@ -87,10 +90,64 @@ class AuditServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(auditEventRepository, times(1)).findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(
-      aUserRequest.licenceId!!,
+      aUserRequest.licenceId,
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
+  }
+
+  @Test
+  fun `gets audit events relating to a specific licence preserves ordering in changes`() {
+    val aUserRequest = aRequest.copy(username = null, licenceId = 1L)
+    val unorderedChanges = mapOf(
+      "type" to "Updated HDC curfew times",
+      "changes" to mapOf(
+        "after" to listOf(
+          mapOf(
+            "to" to listOf("TUESDAY", "08:00"),
+            "from" to listOf("MONDAY", "20:00"),
+          ),
+        ),
+        "before" to listOf(
+          mapOf(
+            "to" to listOf("MONDAY", "08:00"),
+            "from" to listOf("SUNDAY", "20:00"),
+          ),
+        ),
+      ),
+    )
+    val auditEvent = EntityAuditEvent(
+      id = 1L,
+      licenceId = 1L,
+      eventTime = LocalDateTime.now().minusDays(1L),
+      username = "USER",
+      fullName = "First Last",
+      eventType = AuditEventType.USER_EVENT,
+      summary = "Summary1",
+      detail = "Detail1",
+      changes = unorderedChanges,
+    )
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(
+      auditEventRepository.findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(
+        aUserRequest.licenceId!!,
+        aUserRequest.startTime,
+        aUserRequest.endTime,
+      ),
+    ).thenReturn(listOf(auditEvent))
+
+    val response = service.getAuditEvents(aUserRequest)
+
+    val changes = response.first().changes!!
+    val curfewChanges = changes["changes"] as Map<String, Any>
+    val afterChanges = (curfewChanges["after"] as List<Map<String, Any>>).first()
+    val beforeChanges = (curfewChanges["before"] as List<Map<String, Any>>).first()
+
+    assertThat(changes.keys.toList()).containsExactly("type", "changes")
+    assertThat(curfewChanges.keys.toList()).containsExactly("before", "after")
+    assertThat(beforeChanges.keys.toList()).containsExactly("from", "to")
+    assertThat(afterChanges.keys.toList()).containsExactly("from", "to")
   }
 
   @Test
@@ -111,7 +168,7 @@ class AuditServiceTest {
     assertThat(response[0].summary).isEqualTo("Summary1")
 
     verify(auditEventRepository, times(1)).findAllByUsernameAndEventTimeBetweenOrderByEventTimeDesc(
-      aUserRequest.username!!,
+      aUserRequest.username,
       aUserRequest.startTime,
       aUserRequest.endTime,
     )
@@ -149,6 +206,58 @@ class AuditServiceTest {
   }
 
   @Test
+  fun `get all audit events preserves ordering in changes`() {
+    val aUserRequest = aRequest.copy(username = null, licenceId = null)
+    val unorderedChanges = mapOf<String, Any>(
+      "type" to "Updated HDC curfew times",
+      "changes" to mapOf(
+        "after" to listOf(
+          mapOf(
+            "to" to listOf("TUESDAY", "08:00"),
+            "from" to listOf("MONDAY", "20:00"),
+          ),
+        ),
+        "before" to listOf(
+          mapOf(
+            "to" to listOf("MONDAY", "08:00"),
+            "from" to listOf("SUNDAY", "20:00"),
+          ),
+        ),
+      ),
+    )
+    val auditEvent = EntityAuditEvent(
+      id = 1L,
+      licenceId = 1L,
+      eventTime = LocalDateTime.now().minusDays(1L),
+      username = "USER",
+      fullName = "First Last",
+      eventType = AuditEventType.USER_EVENT,
+      summary = "Summary1",
+      detail = "Detail1",
+      changes = unorderedChanges,
+    )
+
+    whenever(
+      auditEventRepository.findAllByEventTimeBetweenOrderByEventTimeDesc(
+        aUserRequest.startTime,
+        aUserRequest.endTime,
+      ),
+    ).thenReturn(listOf(auditEvent))
+
+    val response = service.getAuditEvents(aUserRequest)
+
+    val changes = response.first().changes!!
+    val curfewChanges = changes["changes"] as Map<String, Any>
+    val afterChanges = (curfewChanges["after"] as List<Map<String, Any>>).first()
+    val beforeChanges = (curfewChanges["before"] as List<Map<String, Any>>).first()
+
+    assertThat(changes.keys.toList()).containsExactly("type", "changes")
+    assertThat(curfewChanges.keys.toList()).containsExactly("before", "after")
+    assertThat(beforeChanges.keys.toList()).containsExactly("from", "to")
+    assertThat(afterChanges.keys.toList()).containsExactly("from", "to")
+  }
+
+  @Test
   fun `records an event when initial appointment details are updated`() {
     service.recordAuditEventInitialAppointmentUpdate(
       aLicenceEntity,
@@ -174,6 +283,62 @@ class AuditServiceTest {
         "field" to "appointmentPerson",
         "previousValue" to "Joe Bloggs",
         "newValue" to "John Doe",
+      ),
+    )
+  }
+
+  @Test
+  fun `records an event when hdc curfew address is created`() {
+    service.recordAuditEventHdcCurfewAddressUpdate(
+      aHdcVariationLicenceEntity,
+      mapOf(
+        "field" to "createHdcCurfewAddress",
+        "value" to "New Address",
+      ),
+      aCom,
+    )
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo(aCom.username)
+    assertThat(captured.summary).isEqualTo("Updated HDC curfew address for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
+
+    assertThat(captured.changes).isEqualTo(
+      mapOf(
+        "field" to "createHdcCurfewAddress",
+        "value" to "New Address",
+      ),
+    )
+  }
+
+  @Test
+  fun `records an event when hdc curfew address are updated`() {
+    service.recordAuditEventHdcCurfewAddressUpdate(
+      aHdcVariationLicenceEntity,
+      mapOf(
+        "field" to "updateHdcCurfewAddress",
+        "previousValue" to "Old Address",
+        "newValue" to "New Address",
+      ),
+      aCom,
+    )
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo(aCom.username)
+    assertThat(captured.summary).isEqualTo("Updated HDC curfew address for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
+
+    assertThat(captured.changes).isEqualTo(
+      mapOf(
+        "field" to "updateHdcCurfewAddress",
+        "previousValue" to "Old Address",
+        "newValue" to "New Address",
       ),
     )
   }
@@ -763,7 +928,7 @@ class AuditServiceTest {
   inner class `audit events for HDC curfew times` {
     @Test
     fun `records an audit event when curfew times are updated`() {
-      service.recordAuditEventUpdateHdcWeeklyCurfewTimes(aLicenceEntity, aSetOfCurfewTimes, aCom)
+      service.recordAuditEventUpdateHdcWeeklyCurfewTimes(aLicenceEntity, aSetOfCurfewTimes, emptyList(), aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -784,49 +949,38 @@ class AuditServiceTest {
         .isEqualTo(
           listOf(
             "Updated HDC curfew times",
-            listOf(
-              mapOf(
-                "fromDay" to DayOfWeek.MONDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.TUESDAY,
-                "untilTime" to LocalTime.of(8, 0),
+            mapOf(
+              "before" to listOf(
+                mapOf(
+                  "from" to listOf("MONDAY", "20:00"),
+                  "to" to listOf("TUESDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("TUESDAY", "20:00"),
+                  "to" to listOf("WEDNESDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("WEDNESDAY", "20:00"),
+                  "to" to listOf("THURSDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("THURSDAY", "20:00"),
+                  "to" to listOf("FRIDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("FRIDAY", "20:00"),
+                  "to" to listOf("SATURDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("SATURDAY", "20:00"),
+                  "to" to listOf("SUNDAY", "08:00"),
+                ),
+                mapOf(
+                  "from" to listOf("SUNDAY", "20:00"),
+                  "to" to listOf("MONDAY", "08:00"),
+                ),
               ),
-              mapOf(
-                "fromDay" to DayOfWeek.TUESDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.WEDNESDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.WEDNESDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.THURSDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.THURSDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.FRIDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.FRIDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.SATURDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.SATURDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.SUNDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
-              mapOf(
-                "fromDay" to DayOfWeek.SUNDAY,
-                "fromTime" to LocalTime.of(20, 0),
-                "untilDay" to DayOfWeek.MONDAY,
-                "untilTime" to LocalTime.of(8, 0),
-              ),
+              "after" to emptyList(),
             ),
           ),
         )
@@ -1016,6 +1170,26 @@ class AuditServiceTest {
     }
   }
 
+  @Test
+  fun `records a prisoner merged audit event`() {
+    val changes: Map<String, Any> = mapOf(
+      "oldName" to "a name",
+      "newName" to "new name",
+    )
+
+    service.recordPrisonerMergedEvent(aLicenceEntity, changes)
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo("SYSTEM")
+    assertThat(captured.summary).isEqualTo("Prisoner merged event for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
+
+    assertThat(captured.changes).isEqualTo(changes)
+  }
+
   companion object {
     val anEvent = AuditEvent(
       licenceId = 1L,
@@ -1039,6 +1213,8 @@ class AuditServiceTest {
     val aLicenceEntity = createCrdLicence()
 
     val aHdcLicenceEntity = createHdcLicence()
+
+    val aHdcVariationLicenceEntity = createHdcVariationLicence()
 
     val someAdditionalConditionData = mutableListOf(
       AdditionalConditionData(

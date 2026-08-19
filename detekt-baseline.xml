@@ -44,8 +44,11 @@
     <ID>ReturnCount:ComAllocatedHandler.kt:ComAllocatedHandler$fun isValidOffenderManager: Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isEligibleIfOnAnExtendedDeterminateSentence: Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isRecallCase: Boolean</ID>
+    <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isRecallEligibleIfOnAnExtendedDeterminateSentence: Boolean</ID>
+    <ID>ReturnCount:LicenceCreationService.kt:LicenceCreationService$fun getOrCreateCom: CommunityOffenderManager?</ID>
     <ID>ReturnCount:LsdRecalculationService.kt:LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate: Long</ID>
     <ID>ReturnCount:NotifyService.kt:NotifyService$private fun sendEmail: Boolean</ID>
+    <ID>SwallowedException:MigrationService.kt:MigrationService$e: IllegalStateException</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt:ComAllocatedHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:UploadFileConditionsService.kt:UploadFileConditionsService$e: Exception</ID>
     <ID>TooManyFunctions:AuditService.kt:AuditService</ID>
@@ -55,6 +58,7 @@
     <ID>TooManyFunctions:ControllerAdvice.kt:ControllerAdvice</ID>
     <ID>TooManyFunctions:DeliusApiClient.kt:DeliusApiClient</ID>
     <ID>TooManyFunctions:EligibilityService.kt:EligibilityService</ID>
+    <ID>TooManyFunctions:HdcService.kt:HdcService</ID>
     <ID>TooManyFunctions:JPASpecificationDSL.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.JPASpecificationDSL.kt</ID>
     <ID>TooManyFunctions:Licence.kt:Licence : AbstractIdEntitySentenceDateHolder</ID>
     <ID>TooManyFunctions:LicenceConditionService.kt:LicenceConditionService</ID>
@@ -64,6 +68,7 @@
     <ID>TooManyFunctions:LicencePolicyService.kt:LicencePolicyService</ID>
     <ID>TooManyFunctions:LicenceRepository.kt:LicenceRepository : JpaRepositoryJpaSpecificationExecutor</ID>
     <ID>TooManyFunctions:LicenceService.kt:LicenceService</ID>
+    <ID>TooManyFunctions:MigrationService.kt:MigrationService</ID>
     <ID>TooManyFunctions:NotifyService.kt:NotifyService</ID>
     <ID>TooManyFunctions:ReleaseDateService.kt:ReleaseDateService</ID>
     <ID>TooManyFunctions:ToEntityTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToEntityTransformers.kt</ID>
@@ -71,6 +76,6 @@
     <ID>TooManyFunctions:ToModelTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:WebClientConfiguration.kt:WebClientConfiguration</ID>
     <ID>UnusedParameter:ConditionController.kt:ConditionController$@PathVariable conditionType: String</ID>
-    <ID>UtilityClassWithPublicConstructor:AppointmentMapper.kt:AppointmentMapper</ID>
+    <ID>UtilityClassWithPublicConstructor:ProbationContactMapper.kt:ProbationContactMapper</ID>
   </CurrentIssues>
 </SmellBaseline>

@@ -16,8 +16,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.AdditionalConditionWithConfig
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.getConditionPolicyFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.getLicenceConditionPolicyData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isConditionReadyToSubmit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.mapConditionsToConfig
 
 class AdditionalConditionWithConfigTest {
@@ -63,10 +63,12 @@ class AdditionalConditionWithConfigTest {
           "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
+            headerCaption = null,
           ),
           "code2" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
+            headerCaption = null,
           ),
         ),
       )
@@ -87,10 +89,12 @@ class AdditionalConditionWithConfigTest {
           "code" to ConditionPolicyData(
             readyToSubmit = false,
             requiresInput = true,
+            headerCaption = null,
           ),
           "code2" to ConditionPolicyData(
             readyToSubmit = false,
             requiresInput = true,
+            headerCaption = null,
           ),
         ),
       )
@@ -108,6 +112,7 @@ class AdditionalConditionWithConfigTest {
           "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = false,
+            headerCaption = null,
           ),
         ),
       )
@@ -125,6 +130,7 @@ class AdditionalConditionWithConfigTest {
           "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
+            headerCaption = null,
           ),
         ),
       )
@@ -142,6 +148,7 @@ class AdditionalConditionWithConfigTest {
           "code2" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = false,
+            headerCaption = null,
           ),
         ),
       )
@@ -164,6 +171,7 @@ class AdditionalConditionWithConfigTest {
           "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
+            headerCaption = null,
           ),
         ),
       )
@@ -181,6 +189,7 @@ class AdditionalConditionWithConfigTest {
           "code" to ConditionPolicyData(
             readyToSubmit = true,
             requiresInput = true,
+            headerCaption = null,
           ),
         ),
       )
@@ -188,35 +197,57 @@ class AdditionalConditionWithConfigTest {
   }
 
   @Nested
-  inner class CheckConditionReadyToSubmit {
+  inner class GetConditionPolicyFields {
     @Test
-    fun `returns true for a condition that has inputs`() {
-      val (readyToSubmit, requiresInput) = isConditionReadyToSubmit(
+    fun `returns readyToSubmit as true for a condition that has inputs`() {
+      val (readyToSubmit, requiresInput, headerCaption) = getConditionPolicyFields(
         anAdditionalConditionEntity,
         aMappedPolicy,
       )
       assertThat(readyToSubmit).isTrue()
       assertThat(requiresInput).isTrue()
+      assertThat(headerCaption).isNull()
     }
 
     @Test
-    fun `returns false for a condition that is missing inputs`() {
-      val (readyToSubmit, requiresInput) = isConditionReadyToSubmit(
+    fun `returns readyToSubmit as false for a condition that is missing inputs`() {
+      val (readyToSubmit, requiresInput, headerCaption) = getConditionPolicyFields(
         anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf()),
         aMappedPolicy,
       )
       assertThat(readyToSubmit).isFalse()
       assertThat(requiresInput).isTrue()
+      assertThat(headerCaption).isNull()
     }
 
     @Test
-    fun `returns true for a condition that doesn't need inputs`() {
-      val (readyToSubmit, requiresInput) = isConditionReadyToSubmit(
+    fun `returns readyToSubmit as true for a condition that doesn't need inputs`() {
+      val (readyToSubmit, requiresInput, headerCaption) = getConditionPolicyFields(
         anAdditionalConditionEntity.copy(additionalConditionData = mutableListOf()),
         aMappedPolicyWithoutInputs,
       )
       assertThat(readyToSubmit).isTrue()
       assertThat(requiresInput).isFalse()
+      assertThat(headerCaption).isNull()
+    }
+
+    @Test
+    fun `passes through headerCaption from config`() {
+      val policy = AllAdditionalConditions(
+        mapOf(
+          "2.1" to mapOf(
+            policyApCondition.code to policyApCondition.copy(headerCaption = "A header caption"),
+          ),
+        ),
+      )
+
+      val (readyToSubmit, requiresInput, headerCaption) = getConditionPolicyFields(
+        anAdditionalConditionEntity,
+        policy,
+      )
+      assertThat(readyToSubmit).isTrue()
+      assertThat(requiresInput).isTrue()
+      assertThat(headerCaption).isEqualTo("A header caption")
     }
   }
 

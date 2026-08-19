@@ -29,8 +29,9 @@ generic-service:
     DPR_MANAGE_USERS_HOST: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-01-14
-    HDC_ENABLED: true
+    PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE: "2026-12-31"
     PRISON_EVENT_LISTENER_ENABLED: true
+    PRISONER_MERGED_HANDLER_ENABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
@@ -94,14 +95,20 @@ jobs:
     cron: "30 7 * * 1-5" # 7:30am UTC Monday - Friday
     allowRetry: true
 
-  - name: remove-expired-conditions-job
-    enabled: true
-    path: /remove-expired-conditions
-    cron: "0 7 * * 1-5" # 7am UTC, Monday - Friday
-    allowRetry: true
-
   - name: notify-probation-of-unapproved-licences-job
     enabled: true
     path: /notify-probation-of-unapproved-licences
     cron: "0 11 * * 1-5" # 11am UTC, Monday - Friday
+    allowRetry: false
+
+  - name: migrate-standard-conditions-v4-job
+    enabled: true
+    path: /migrate-standard-conditions?policyVersion=4.0
+    cron: "30 11 20 12 *" # 11:30 UTC on 20/12/2026
+    allowRetry: false
+
+  - name: deactivate-progression-licences-job
+    enabled: true
+    path: /deactivate-progression-licences
+    cron: "30 3 1 12 *" # 03:30 UTC on 1st December each year
     allowRetry: false

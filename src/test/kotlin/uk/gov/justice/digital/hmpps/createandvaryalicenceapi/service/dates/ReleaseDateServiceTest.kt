@@ -54,6 +54,7 @@ class ReleaseDateServiceTest {
       override val conditionalReleaseDate: LocalDate? = null
       override val actualReleaseDate: LocalDate? = null
       override val homeDetentionCurfewActualDate: LocalDate? = homeDetentionCurfewActualDate
+      override val homeDetentionCurfewEligibilityDate: LocalDate? = null
       override val postRecallReleaseDate: LocalDate? = null
     },
   )

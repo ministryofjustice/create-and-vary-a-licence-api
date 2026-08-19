@@ -10,6 +10,8 @@ import tools.jackson.databind.ObjectMapper
 const val COM_ALLOCATED_EVENT_TYPE = "person.community.manager.allocated"
 const val PRISONER_UPDATED_EVENT_TYPE = "prisoner-offender-search.prisoner.updated"
 const val RECALL_INSERTED_EVENT_TYPE = "recall.inserted"
+const val RECALL_UPDATED_EVENT_TYPE = "recall.updated"
+const val PRISON_OFFENDER_MERGED_EVENT_TYPE = "prison-offender-events.prisoner.merged"
 
 @ConditionalOnProperty(name = ["domain.event.listener.disabled"], havingValue = "false", matchIfMissing = true)
 @Service
@@ -17,6 +19,8 @@ class DomainEventListener(
   private val comAllocatedHandler: ComAllocatedHandler,
   private val prisonerUpdatedHandler: PrisonerUpdatedHandler,
   private val recallInsertedHandler: RecallInsertedHandler,
+  private val recallUpdatedHandler: RecallUpdatedHandler,
+  private val prisonerMergedHandler: PrisonerMergedHandler,
   private val mapper: ObjectMapper,
 ) {
   private companion object {
@@ -29,24 +33,35 @@ class DomainEventListener(
   ) {
     val (message, _, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
 
-    when (val eventType = messageAttributes.eventType.value) {
-      COM_ALLOCATED_EVENT_TYPE -> {
-        comAllocatedHandler.handleEvent(message)
-      }
+    try {
+      when (val eventType = messageAttributes.eventType.value) {
+        COM_ALLOCATED_EVENT_TYPE -> {
+          comAllocatedHandler.handleEvent(message)
+        }
 
-      PRISONER_UPDATED_EVENT_TYPE -> {
-        prisonerUpdatedHandler.handleEvent(message)
-      }
+        PRISONER_UPDATED_EVENT_TYPE -> {
+          prisonerUpdatedHandler.handleEvent(message)
+        }
 
-      RECALL_INSERTED_EVENT_TYPE -> {
-        recallInsertedHandler.handleEvent(message)
-      }
+        RECALL_INSERTED_EVENT_TYPE -> {
+          recallInsertedHandler.handleEvent(message)
+        }
 
-      else -> {
-        log.warn("Ignoring message with type $eventType")
+        RECALL_UPDATED_EVENT_TYPE -> {
+          recallUpdatedHandler.handleEvent(message)
+        }
+
+        PRISON_OFFENDER_MERGED_EVENT_TYPE -> {
+          prisonerMergedHandler.handleEvent(message)
+        }
+
+        else -> {
+          log.warn("Ignoring message with type $eventType")
+        }
       }
+    } finally {
+      finishedEventProcessing(messageAttributes.eventType)
     }
-    finishedEventProcessing(messageAttributes.eventType)
   }
 
   fun finishedEventProcessing(eventType: EventType) {

@@ -1,12 +1,12 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("dev.detekt") version "2.0.0-alpha.2"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.2.1"
-  id("org.owasp.dependencycheck") version "12.2.0"
-  kotlin("plugin.spring") version "2.3.20"
-  kotlin("plugin.jpa") version "2.3.20"
+  id("dev.detekt") version "2.0.0-alpha.6"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.5"
+  id("org.owasp.dependencycheck") version "12.2.2"
+  kotlin("plugin.spring") version "2.4.10"
+  kotlin("plugin.jpa") version "2.4.10"
 }
 
 repositories {
@@ -23,16 +23,11 @@ dependencies {
     implementation("org.apache.commons:commons-compress:1.26.0") {
       because("1.24.0 has CVE-2024-25710 and CVE-2024-26308 vulnerabilities")
     }
-    // FIX: CVE-2026-23907
-    implementation("org.apache.pdfbox:pdfbox:3.0.7") {
-      because("Fix CVE-2026-23907")
-    }
   }
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.1.0")
 
-  // CVE-2026-33871 - it does not fix all occurrences
-  implementation(enforcedPlatform("io.netty:netty-bom:4.2.12.Final"))
-  implementation("io.netty:netty-buffer")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
+
   implementation("io.netty:netty-codec-http")
   implementation("io.netty:netty-handler")
   implementation("io.netty:netty-transport")
@@ -40,11 +35,6 @@ dependencies {
 
   // Fix for CVE-2025-48924
   implementation("org.apache.commons:commons-lang3:3.20.0")
-
-  // Fix for CVE-2025-68161 -  () - maven/org.apache.logging.log4j/log4j-api@2.25.0
-  implementation(enforcedPlatform("org.apache.logging.log4j:log4j-bom:2.25.4"))
-  implementation("org.apache.logging.log4j:log4j-api")
-  // End of CVE-2025-68161 remove when not needed.
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -55,29 +45,27 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:6.2.0-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
-  implementation("org.apache.pdfbox:pdfbox:3.0.7")
+  implementation("org.apache.pdfbox:pdfbox:3.0.8")
+  implementation("org.apache.pdfbox:jbig2-imageio:3.0.5")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.10")
-  implementation("com.google.code.gson:gson:2.13.2")
-  implementation("io.arrow-kt:arrow-core:2.2.2.1")
-
-  // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.0")
+  runtimeOnly("org.postgresql:postgresql:42.7.13")
+  implementation("com.google.code.gson:gson:2.14.0")
+  implementation("io.arrow-kt:arrow-core:2.2.3")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
 
   // Digital prison reporting
-  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:12.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:16.4.1")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.1.4")
-  implementation("org.jsoup:jsoup:1.22.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.8.0")
+  implementation("org.jsoup:jsoup:1.23.1")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
   implementation("org.springframework.boot:spring-boot-starter-webclient")
@@ -98,8 +86,8 @@ dependencies {
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.3")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.1.2")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.2")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
   testImplementation("org.wiremock:wiremock-standalone:3.13.1")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -120,7 +108,7 @@ detekt {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+  toolchain.languageVersion.set(JavaLanguageVersion.of(25))
 }
 
 configurations {
@@ -132,7 +120,7 @@ configurations {
   matching { it.name == "detekt" }.all {
     resolutionStrategy.eachDependency {
       if (requested.group == "org.jetbrains.kotlin") {
-        useVersion("2.3.0")
+        useVersion(dev.detekt.gradle.plugin.getSupportedKotlinVersion())
       }
     }
   }
@@ -141,7 +129,7 @@ configurations {
 tasks {
   withType<KotlinCompile> {
     compilerOptions {
-      jvmTarget = JVM_21
+      jvmTarget = JVM_25
       freeCompilerArgs.addAll(
         "-Xwhen-guards",
         "-Xjvm-default=all",
@@ -172,6 +160,41 @@ tasks {
       includeTestsMatching("*IntegrationTest*")
     }
   }
+
+  val sarSnapshotFiles = listOf(
+    "sar-api-response.json",
+    "sar-generated-report.html",
+    "entity-schema.json",
+  )
+
+  register<Test>("generateSarSnapshots") {
+    description = "Runs the SAR integration test with SAR_GENERATE_ACTUAL=true to generate updated SAR snapshot files"
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform()
+    filter {
+      includeTestsMatching("*SubjectAccessRequestIntegrationTest*")
+    }
+    environment("SAR_GENERATE_ACTUAL", "true")
+    outputs.upToDateWhen { false }
+  }
+
+  register<Copy>("updateSarSnapshots") {
+    description =
+      "Generates and copies updated SAR snapshot files into src/test/resources/sar (review the diff before committing)"
+    group = "verification"
+    dependsOn("generateSarSnapshots")
+    from("$projectDir/src/test/resources") {
+      include(sarSnapshotFiles.map { "$it.log" })
+    }
+    into("$projectDir/src/test/resources/sar")
+    rename { it.removeSuffix(".log") }
+    doLast {
+      delete(sarSnapshotFiles.map { file("$projectDir/src/test/resources/$it.log") })
+    }
+  }
+
   register<Copy>("installLocalGitHook") {
     from(File(rootProject.rootDir, ".scripts/pre-commit"))
     into(File(rootProject.rootDir, ".git/hooks"))
@@ -182,11 +205,10 @@ tasks {
   }
 }
 
-allOpen {
-  annotation("jakarta.persistence.Entity")
+dependencyCheck {
+  skipConfigurations.add("detekt")
 }
 
-dependencyCheck {
-  nvd.datafeedUrl = "file:///opt/vulnz/cache"
-  suppressionFiles.add("cvl-api-suppressions.xml")
+allOpen {
+  annotation("jakarta.persistence.Entity")
 }

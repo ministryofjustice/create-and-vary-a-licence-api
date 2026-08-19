@@ -659,6 +659,108 @@ class ConditionFormatterTest {
   }
 
   @Test
+  fun `Two pairs of curfew times are displayed correctly with the right separating words`() {
+    val data = listOf(
+      AdditionalConditionData(
+        id = 1,
+        dataField = "firstCurfewStart",
+        dataValue = "08:00am",
+        dataSequence = 0,
+        additionalCondition = condition,
+      ),
+      AdditionalConditionData(
+        id = 2,
+        dataField = "firstCurfewEnd",
+        dataValue = "09:00am",
+        dataSequence = 1,
+        additionalCondition = condition,
+      ),
+      AdditionalConditionData(
+        id = 3,
+        dataField = "secondCurfewStart",
+        dataValue = "06:00pm",
+        dataSequence = 2,
+        additionalCondition = condition,
+      ),
+      AdditionalConditionData(
+        id = 4,
+        dataField = "secondCurfewEnd",
+        dataValue = "10:00pm",
+        dataSequence = 3,
+        additionalCondition = condition,
+      ),
+    )
+    val result = conditionFormatter.format(additionalConditionConfigWithTwoTimes(), data)
+    assertThat(result).isEqualTo("Don't do stuff between 08:00am and 09:00am or between 06:00pm and 10:00pm without the prior approval of your supervising officer.")
+  }
+
+  @Test
+  fun `If only one pair of curfew times are selected they are displayed correctly with the right separating words`() {
+    val data = listOf(
+      AdditionalConditionData(
+        id = 1,
+        dataField = "firstCurfewStart",
+        dataValue = "08:00am",
+        dataSequence = 0,
+        additionalCondition = condition,
+      ),
+      AdditionalConditionData(
+        id = 2,
+        dataField = "firstCurfewEnd",
+        dataValue = "09:00am",
+        dataSequence = 1,
+        additionalCondition = condition,
+      ),
+    )
+    val result = conditionFormatter.format(additionalConditionConfigWithTwoTimes(), data)
+    assertThat(result).isEqualTo("Don't do stuff between 08:00am and 09:00am without the prior approval of your supervising officer.")
+  }
+
+  @Test
+  fun `No values submitted uses the default value correctly`() {
+    val result = conditionFormatter.format(additionalConditionConfigWithTwoTimes(), emptyList())
+    assertThat(result).isEqualTo("Don't do stuff at any time without the prior approval of your supervising officer.")
+  }
+
+  private fun additionalConditionConfigWithTwoTimes() = AdditionalConditionAp(
+    code = "5db26ab3-9b6f-4bee-b2aa-53aa3f3be7dd",
+    category = "Freedom of movement",
+    text = "Don't do stuff [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer.",
+    tpl = "Don't do stuff {firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer.",
+    requiresInput = true,
+    inputs = listOf(
+      Input(
+        type = TIME_PICKER,
+        label = "First curfew start",
+        name = "firstCurfewStart",
+        includeBefore = "between ",
+        defaultValue = "at any time",
+      ),
+      Input(
+        type = TIME_PICKER,
+        label = "First curfew end",
+        name = "firstCurfewEnd",
+        includeBefore = " and ",
+      ),
+      Input(
+        type = TIME_PICKER,
+        label = "Second curfew start",
+        name = "secondCurfewStart",
+        includeBefore = " or between ",
+      ),
+      Input(
+        type = TIME_PICKER,
+        label = "Second curfew end",
+        name = "secondCurfewEnd",
+        includeBefore = " and ",
+      ),
+    ),
+    categoryShort = null,
+    subtext = null,
+    type = null,
+  )
+
+  @Test
   fun `Will replace placeholders for a list of values with commas and an 'OR' between them (list type OR)`() {
     val data = listOf(
       AdditionalConditionData(

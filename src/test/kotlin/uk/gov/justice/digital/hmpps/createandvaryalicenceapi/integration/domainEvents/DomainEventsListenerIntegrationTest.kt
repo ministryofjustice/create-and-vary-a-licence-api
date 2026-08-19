@@ -3,9 +3,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.domain
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -17,30 +16,39 @@ import org.springframework.test.context.jdbc.Sql
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.WorkFlowMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.WorkFlowMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.AdditionalInformationPrisonerMerged
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.AdditionalInformationPrisonerUpdated
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.COM_ALLOCATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DiffCategory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSPrisonerMergedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSPrisonerUpdatedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISONER_UPDATED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISON_OFFENDER_MERGED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_INSERTED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_UPDATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallInsertedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Duration
+import java.time.LocalDate
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = ["domain.event.listener.disabled=false"])
@@ -48,6 +56,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var comAllocatedHandler: ComAllocatedHandler
+
+  @MockitoSpyBean
+  lateinit var prisonerMergedHandler: PrisonerMergedHandler
 
   @MockitoSpyBean
   lateinit var prisonerUpdatedHandler: PrisonerUpdatedHandler
@@ -60,6 +71,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var recallInsertedHandler: RecallInsertedHandler
+
+  @MockitoSpyBean
+  lateinit var recallUpdatedHandler: RecallUpdatedHandler
 
   @MockitoSpyBean
   lateinit var staffService: StaffService
@@ -179,11 +193,12 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     assertComExistsInDb(staffIdentifier, staffCode, userName, emailAddress, firstName, lastName)
   }
 
-  private fun sendEventAndVerifyProcessed(message: String?, eventType: String?) {
+  private fun sendEventAndVerifyProcessed(message: String?, eventType: String?, eventsExpected: Int = 1) {
     sendEvent(message, eventType)
 
     awaitAtMost30Secs untilAsserted {
-      verify(domainEventListener).finishedEventProcessing(any())
+      // Two because we will also raise a licence inactivated event
+      verify(domainEventListener, times(eventsExpected)).finishedEventProcessing(any())
     }
     assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
   }
@@ -277,23 +292,177 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     val message = mapper.writeValueAsString(event)
 
-    sendEvent(message, event.eventType)
-
     // wait for two events as a licence deactivation event will be generated by the recall inserted handler
-    awaitAtMost30Secs untilAsserted {
-      verify(domainEventListener, times(2)).finishedEventProcessing(any())
-    }
+    sendEventAndVerifyProcessed(message, event.eventType, 2)
 
     verify(recallInsertedHandler).handleEvent(message)
 
     val licence = testRepository.findLicence(3)
     assertThat(licence.forename).isEqualTo("Person")
     assertThat(licence.surname).isEqualTo("One")
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licence.statusCode).isEqualTo(INACTIVE)
 
     val auditEvent = testRepository.findFirstAuditEvent(3)
     assertThat(auditEvent.summary).isEqualTo("Licence inactivated due to the offender returning to custody on a standard recall for Person One")
     assertThat(auditEvent.changes).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-prrd-licence-id-1.sql",
+  )
+  fun `A recall updated event is processed and converts a fixed term recall to a standard recall licence`() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetSentenceAndRecallTypesWithStandardRecall()
+
+    val event = HMPPSDomainEvent(
+      eventType = RECALL_UPDATED_EVENT_TYPE,
+      additionalInformation = mapOf(
+        "source" to "NOMIS",
+        "recallId" to "dfd1e5c2-318c-4f56-b4c8-2d236696e52c",
+        "previousRecallId" to "4c1f5640-c278-4682-ba2e-d16ee438bd75",
+        "sentenceIds" to "[c2a7159c-383a-4a98-9f00-7c410b6e1900]",
+      ),
+      detailUrl = "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk/recall/dfd1e5c2-318c-4f56-b4c8-2d236696e52c",
+      version = 1,
+      occurredAt = "2026-03-27T09:27:38.6679417Z",
+      description = "Recall updated",
+      personReference = PersonReference(
+        identifiers = listOf(Identifiers("NOMS", "A1234AA")),
+      ),
+    )
+
+    val message = mapper.writeValueAsString(event)
+
+    sendEventAndVerifyProcessed(message, event.eventType)
+
+    verify(recallUpdatedHandler).handleEvent(message)
+
+    val licence = testRepository.findLicence()
+    assertThat(licence.eligibleKind).isEqualTo(EligibleKind.STANDARD)
+
+    val auditEvent = testRepository.findFirstAuditEvent()
+    assertThat(auditEvent.summary).isEqualTo("Licence kind updated on licence for Person One")
+    assertThat(auditEvent.changes).isEqualTo(
+      mapOf(
+        "type" to "Licence kind updated on licence",
+        "changes" to mapOf(
+          "oldKind" to "PRRD",
+          "newKind" to "PRRD",
+          "oldEligibleKind" to "FIXED_TERM",
+          "newEligibleKind" to "STANDARD",
+        ),
+      ),
+    )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `A supporting prison changed event is processed`() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(aRestrictedPatientRecord)
+    prisonApiMockServer.stubGetPrison()
+
+    val currentLicence = testRepository.findLicence()
+
+    val event = HMPPSPrisonerUpdatedEvent(
+      eventType = PRISONER_UPDATED_EVENT_TYPE,
+      additionalInformation = AdditionalInformationPrisonerUpdated(
+        nomsNumber = "A1234AA",
+        categoriesChanged = listOf(DiffCategory.RESTRICTED_PATIENT),
+      ),
+      version = 1,
+      occurredAt = "2026-05-22T00:00:00Z",
+      description = "A prisoner record has been updated",
+    )
+
+    val message = mapper.writeValueAsString(event)
+
+    sendEventAndVerifyProcessed(message, event.eventType)
+
+    verify(prisonerUpdatedHandler).handleEvent(message)
+
+    val updatedLicence = testRepository.findLicence()
+    assertThat(currentLicence.prisonCode).isEqualTo("MDI")
+    assertThat(updatedLicence.prisonCode).isEqualTo("ABC")
+
+    val auditEvent = testRepository.findFirstAuditEvent()
+    assertThat(auditEvent.summary).isEqualTo("Supporting prison information changed for Person One")
+    assertThat(auditEvent.changes)
+      .containsEntry("field", "prisonCode")
+      .containsEntry("previousValue", "MDI")
+      .containsEntry("newValue", "ABC")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licences-to-merge.sql",
+  )
+  fun `A prisoner merged event is processed`() {
+    val oldNomisId = "G5678XT"
+    val newNomisId = "A1234AA"
+
+    prisonApiMockServer.stubGetPrisonerDetail(nomsId = newNomisId)
+    deliusMockServer.stubGetProbationCase()
+
+    val event = HMPPSPrisonerMergedEvent(
+      eventType = PRISON_OFFENDER_MERGED_EVENT_TYPE,
+      additionalInformation = AdditionalInformationPrisonerMerged(
+        bookingId = "123",
+        nomsNumber = newNomisId,
+        removedNomsNumber = oldNomisId,
+        reason = "MERGED",
+      ),
+      version = 1,
+      occurredAt = "2026-05-22T00:00:00Z",
+      description = "A prisoner record has been updated",
+    )
+
+    val message = mapper.writeValueAsString(event)
+
+    // Excpect two events as a licence deactivation event will be generated when deactivating the old licence
+    sendEventAndVerifyProcessed(message, event.eventType, 2)
+
+    verify(prisonerMergedHandler).handleEvent(message)
+
+    val oldBookingLicence = testRepository.findLicence(1L)
+    assertThat(oldBookingLicence.statusCode).isEqualTo(INACTIVE)
+
+    val auditEvents = testRepository.findAllAuditEvents()
+    assertThat(auditEvents).hasSize(2)
+    assertThat(auditEvents.first().summary).isEqualTo("Deactivating licence on old booking after prisoner merge for Person One")
+
+    val mergedAuditEvent = auditEvents[1]
+    assertThat(mergedAuditEvent.summary).isEqualTo("Prisoner merged event for A Prisoner")
+    assertThat(mergedAuditEvent.changes).isEqualTo(
+      mapOf(
+        "type" to "Updating licence details due to prisoner merge event",
+        "changes" to mapOf(
+          "oldNomisId" to oldNomisId,
+          "newNomisId" to newNomisId,
+          "oldForename" to "Person",
+          "newForename" to "A",
+          "oldMiddleName" to null,
+          "newMiddleName" to null,
+          "oldSurname" to "One",
+          "newSurname" to "Prisoner",
+          "oldPrisonCode" to "MDI",
+          "newPrisonCode" to "ABC",
+          "oldDateOfBirth" to "2020-10-25",
+          "newDateOfBirth" to "1985-12-28",
+          "oldCRO" to "CRO1",
+          "newCRO" to "SF39/6W",
+          "oldPNC" to "2015/1234",
+          "newPNC" to "7428/85493",
+        ),
+      ),
+    )
+
+    val newBookingLicence = testRepository.findLicence(2L)
+    assertThat(newBookingLicence.nomsId).isEqualTo(newNomisId)
+    assertThat(newBookingLicence.forename).isEqualTo("A")
+    assertThat(newBookingLicence.surname).isEqualTo("Prisoner")
   }
 
   private fun assertComExistsInDb(
@@ -404,27 +573,42 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
     val prisonerSearchMockServer = PrisonerSearchMockServer()
+
+    @RegisterExtension
     val workFlowMockServer = WorkFlowMockServer()
 
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      deliusMockServer.start()
-      prisonApiMockServer.start()
-      prisonerSearchMockServer.start()
-      workFlowMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      deliusMockServer.stop()
-      prisonApiMockServer.stop()
-      prisonerSearchMockServer.stop()
-      workFlowMockServer.stop()
-    }
+    val aRestrictedPatientRecord = """[{
+      "prisonerNumber": "A1234AA",
+      "bookingId": "123",
+      "status": "INACTIVE OUT",
+      "mostSeriousOffence": "Robbery",
+      "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+      "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+      "homeDetentionCurfewEligibilityDate": null,
+      "releaseDate": null,
+      "confirmedReleaseDate": null,
+      "conditionalReleaseDate": null,
+      "paroleEligibilityDate": null,
+      "actualParoleDate" : null,
+      "postRecallReleaseDate": null,
+      "legalStatus": "SENTENCED",
+      "indeterminateSentence": false,
+      "recall": false,
+      "restrictedPatient": true,
+      "prisonId": "OUT",
+      "bookNumber": "12345A",
+      "firstName": "Test1",
+      "lastName": "Person1",
+      "dateOfBirth": "1985-01-01",
+      "supportingPrisonId": "ABC"
+    }]"""
   }
 }

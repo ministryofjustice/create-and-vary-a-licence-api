@@ -166,15 +166,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getProbationCase(@Parameter(required = true) @PathVariable nomsId: String): ProbationCase {
-    val deliusRecord = caseService.getProbationCase(nomsId)
-    return ProbationCase(
-      crn = deliusRecord.crn,
-      prisonNumber = deliusRecord.nomisId,
-      croNumber = deliusRecord.croNumber,
-      pncNumber = deliusRecord.pncNumber,
-    )
-  }
+  fun getProbationCase(@Parameter(required = true) @PathVariable nomsId: String) = caseService.getProbationAndAllocationInfo(nomsId)
 
   @PostMapping("/caseload/prison-approver/approval-needed")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -506,49 +498,6 @@ class CaseloadController(
       defaultValue = "false",
     ) isAdminUser: Boolean,
   ) = comCreateCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier, isAdminUser)
-
-  @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/create-case-load/hdc")
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Returns the create caseload for an officer filtered to HDC cases",
-    description = "Returns an enriched list of cases which require an HDC licence to be created for an officer",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returning an enriched list of HDC cases which require a licence to be created for an officer",
-        content = [
-          Content(
-            mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ComCreateCase::class)),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun getStaffCreateCaseloadHdc(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCreateCaseloadService.getStaffCreateCaseloadHdc(deliusStaffIdentifier)
 
   @PostMapping("/caseload/com/team/create-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

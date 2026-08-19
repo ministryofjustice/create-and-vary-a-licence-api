@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 
 @Service
 class TelemetryService(
@@ -24,6 +25,23 @@ class TelemetryService(
     telemetryClient.trackEvent("LicenceCreated", properties, null)
   }
 
+  fun recordLicenceCreatedEvent(licence: Licence, nomisRecord: PrisonerSearchPrisoner) {
+    val properties = mapOf(
+      "kind" to licence.kind.name,
+      "licenceId" to licence.id.toString(),
+      "bookingId" to licence.bookingId.toString(),
+      "nomsId" to licence.nomsId,
+      "crn" to licence.crn,
+      "prisonCode" to licence.prisonCode,
+      "probationTeamCode" to licence.probationTeamCode,
+      "probationAreaCode" to licence.probationAreaCode,
+      "probationLauCode" to licence.probationLauCode,
+      "probationPduCode" to licence.probationPduCode,
+      "restrictedPatient" to nomisRecord.restrictedPatient.toString(),
+    )
+    telemetryClient.trackEvent("LicenceCreated", properties, null)
+  }
+
   fun recordPromptComJobEvent(casesProcessed: Int = 0) {
     telemetryClient.trackEvent("PromptComJob", mapOf("cases" to casesProcessed.toString()), null)
   }
@@ -31,6 +49,14 @@ class TelemetryService(
   fun recordDeactivateHdcLicencesJobEvent(licencesDeactivated: Int = 0) {
     telemetryClient.trackEvent(
       "DeactivateHdcLicencesJob",
+      mapOf("licences" to licencesDeactivated.toString()),
+      null,
+    )
+  }
+
+  fun recordDeactivateProgressionLicencesJobEvent(licencesDeactivated: Int = 0) {
+    telemetryClient.trackEvent(
+      "DeactivateProgressionLicencesJob",
       mapOf("licences" to licencesDeactivated.toString()),
       null,
     )

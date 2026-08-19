@@ -10,6 +10,7 @@ object SentenceDateHolderAdapter {
     override val actualReleaseDate = confirmedReleaseDate
     override val licenceStartDate = licenceStartDate
     override val homeDetentionCurfewActualDate = this@toSentenceDateHolder.homeDetentionCurfewActualDate
+    override val homeDetentionCurfewEligibilityDate = this@toSentenceDateHolder.homeDetentionCurfewEligibilityDate
     override val postRecallReleaseDate = this@toSentenceDateHolder.postRecallReleaseDate
   }
 }
