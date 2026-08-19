@@ -479,8 +479,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       fieldsToIgnore = listOf("id", "additionalConditionId", "licence"),
     )
     assertListsNotEqual(listOf(uploadNew), listOf(uploadOld), listOf("originalData", "fullSizeImage"))
+    // Should pull through up to date standard conditions instead of copying from parent
+    assertListsNotEqual(newLicence.standardConditions, oldLicence.standardConditions)
 
-    assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
     assertListsEqual(newLicence.additionalConditions, oldLicence.additionalConditions)
     assertListsEqual(newLicence.bespokeConditions, oldLicence.bespokeConditions)
   }
