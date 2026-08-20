@@ -21,6 +21,7 @@ class TelemetryService(
       "probationAreaCode" to licence.probationAreaCode,
       "probationLauCode" to licence.probationLauCode,
       "probationPduCode" to licence.probationPduCode,
+      "policyVersion" to licence.version,
     )
     telemetryClient.trackEvent("LicenceCreated", properties, null)
   }
@@ -38,6 +39,7 @@ class TelemetryService(
       "probationLauCode" to licence.probationLauCode,
       "probationPduCode" to licence.probationPduCode,
       "restrictedPatient" to nomisRecord.restrictedPatient.toString(),
+      "policyVersion" to licence.version,
     )
     telemetryClient.trackEvent("LicenceCreated", properties, null)
   }
