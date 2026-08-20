@@ -18,8 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.NO_APPOINTMENT_NEEDED
 import java.time.LocalDateTime
 
 @Service
@@ -36,7 +36,7 @@ class AppointmentService(
 
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
-    if (request.appointmentPersonType == AppointmentType.NO_APPOINTMENT_NEEDED && request.appointmentPerson != null) {
+    if (request.appointmentPersonType == NO_APPOINTMENT_NEEDED && request.appointmentPerson != null) {
       throw ValidationException("Appointment person must be empty when an appointment is not needed.")
     }
 
@@ -76,11 +76,10 @@ class AppointmentService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    if (request.appointmentTimeType === AppointmentTimeType.SPECIFIC_DATE_TIME) {
-      if (request.appointmentTime == null) {
-        throw ValidationException("Appointment time must not be null if Appointment Type is SPECIFIC_DATE_TIME")
-      }
+    if (licenceEntity.probationContact?.appointmentType === NO_APPOINTMENT_NEEDED && request.appointmentTime != null) {
+      throw ValidationException("Appointment time must not be specified if Appointment Type is NO_APPOINTMENT_NEEDED")
     }
+
     val previousTime = licenceEntity.probationContact?.appointmentTime
 
     val staffMember = getStaffUser()

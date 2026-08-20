@@ -3,11 +3,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -25,8 +28,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anotherCommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType.SPECIFIC_DATE_TIME
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.DUTY_OFFICER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.NO_APPOINTMENT_NEEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.SPECIFIC_PERSON
@@ -95,7 +99,7 @@ class AppointmentServiceTest {
   @Test
   fun `update initial appointment clears specific person if not a appointment type is not with a specific person `() {
     // Given
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(probationContact = TestData.createProbationContact())))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(probationContact = createProbationContact())))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
     // When
@@ -160,14 +164,22 @@ class AppointmentServiceTest {
 
   @Test
   fun `update initial appointment time persists the updated entity`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(
+        aLicenceEntity.copy(
+          probationContact = createProbationContact(
+            appointmentType = SPECIFIC_PERSON,
+          ),
+        ),
+      ),
+    )
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
     service.updateAppointmentTime(
       1L,
       AppointmentTimeRequest(
         appointmentTime = tenDaysFromNow,
-        appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
+        appointmentTimeType = SPECIFIC_DATE_TIME,
       ),
     )
 
@@ -183,6 +195,32 @@ class AppointmentServiceTest {
   }
 
   @Test
+  fun `update initial appointment time is prevented if no appointment needed`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(
+        aLicenceEntity.copy(
+          probationContact = createProbationContact(
+            appointmentType = NO_APPOINTMENT_NEEDED,
+          ),
+        ),
+      ),
+    )
+
+    assertThatThrownBy {
+      service.updateAppointmentTime(
+        1L,
+        AppointmentTimeRequest(
+          appointmentTime = tenDaysFromNow,
+          appointmentTimeType = SPECIFIC_DATE_TIME,
+        ),
+      )
+    }.isInstanceOf(ValidationException::class.java)
+      .hasMessage("Appointment time must not be specified if Appointment Type is NO_APPOINTMENT_NEEDED")
+
+    verify(licenceRepository, never()).saveAndFlush(any())
+  }
+
+  @Test
   fun `update initial appointment time throws not found exception if licence not found`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
@@ -191,7 +229,7 @@ class AppointmentServiceTest {
         1L,
         AppointmentTimeRequest(
           appointmentTime = tenDaysFromNow,
-          appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
+          appointmentTimeType = SPECIFIC_DATE_TIME,
         ),
       )
     }

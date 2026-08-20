@@ -184,6 +184,8 @@ feature:
       enabled: ${HDC_ENABLED}
     hdcCreation:
       enabled: ${HDC_CREATION_ENABLED:#{false}}
+    remand:
+      enabled: ${REMAND_ENABLED}
 
 progression:
   model:

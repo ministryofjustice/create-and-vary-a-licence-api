@@ -2,8 +2,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremo
 
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import tools.jackson.databind.ObjectMapper
@@ -40,9 +42,21 @@ class PrisonApiMockServer :
 
   fun stubGetCourtOutcomes() {
     stubFor(
-      post(urlEqualTo("/api/bookings/court-event-outcomes?outcomeReasonCodes=3006,4022,5500,5502")).willReturn(
+      post(urlPathEqualTo("/api/bookings/court-event-outcomes")).withQueryParam("outcomeReasonCodes", matching(".*")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
-          """[]""",
+          """[
+                {
+                "bookingId": 901,
+                "eventId": 1,
+                "outcomeReasonCode": "2507"
+                },
+                {
+                "bookingId": 12,
+                "eventId": 2,
+                "outcomeReasonCode": "5500"
+                }
+                ]
+          """.trimIndent(),
         ).withStatus(200),
       ),
     )

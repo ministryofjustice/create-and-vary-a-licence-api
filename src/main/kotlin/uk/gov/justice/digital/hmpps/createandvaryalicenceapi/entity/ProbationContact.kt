@@ -13,6 +13,7 @@ import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.NO_APPOINTMENT_NEEDED
 import java.time.LocalDateTime
 
 @Entity
@@ -44,4 +45,7 @@ class ProbationContact(
   var address: Address? = null,
   var dateCreated: LocalDateTime? = LocalDateTime.now(),
   var dateLastUpdated: LocalDateTime? = null,
-) : AbstractIdEntity(idInternal = id)
+) : AbstractIdEntity(idInternal = id) {
+
+  fun isMissingAppointmentTime() = this.appointmentTime == null && this.appointmentType != NO_APPOINTMENT_NEEDED
+}

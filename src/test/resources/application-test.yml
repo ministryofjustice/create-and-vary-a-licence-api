@@ -127,6 +127,8 @@ feature:
     isr:
       repeal:
         date: "2026-05-16"
+    remand:
+      enabled: true
 os:
   places:
     api:
