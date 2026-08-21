@@ -12,19 +12,19 @@
     "currentText" : "You must reside overnight within [REGION] probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
     "previousText" : "Attend all appointments arranged for you with a [PSYCHIATRIST / PSYCHOLOGIST / MEDICAL PRACTITIONER].",
     "currentText" : "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner, unless otherwise approved by your supervising officer.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
     "previousText" : "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
     "currentText" : "Attend appointments, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
     "previousText" : "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems at the [NAME OF COURSE / CENTRE].",
     "currentText" : "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems.",
@@ -42,7 +42,7 @@
     "currentText" : "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
     "previousText" : "Notify your supervising officer of any developing intimate relationships with [WOMEN / MEN / WOMEN OR MEN].",
     "currentText" : "Notify your supervising officer of any developing relationships, including the ending of any relationships.",
@@ -78,7 +78,7 @@
     "currentText" : "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
     "previousText" : "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Not to take any action that could hamper or frustrate the drug testing process.",
     "currentText" : "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
@@ -178,19 +178,19 @@
       "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
     "previousText" : "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as required by the police or your supervising officer. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
     "previousText" : "Notify your supervising officer of any developing intimate relationships with [WOMEN / MEN / WOMEN OR MEN].",
     "currentText" : "Notify your supervising officer of any developing relationships, including status changes such as engagement, marriage, pregnancies or the ending of any relationships, and disclose the details of the person you are in a relationship with.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "8686a815-b7f0-43b6-9886-f01df6a48773",
     "previousText" : "Provide your supervising officer with the details of any bank accounts to which you are a signatory and of any credit cards you possess. You must also notify your supervising officer when becoming a signatory to any new bank account or credit card, and provide the account/card details. This condition will be reviewed on a monthly basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
     "currentText" : "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
@@ -208,7 +208,7 @@
       "currentText" : "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
     "previousText" : "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
     "currentText" : "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
@@ -226,7 +226,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
     "previousText" : "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "currentText" : "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
@@ -238,7 +238,7 @@
     "currentText" : "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
     "previousText" : "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Not to take any action that could hamper or frustrate the drug testing process.",
     "currentText" : "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
@@ -344,13 +344,13 @@
       "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
     "previousText" : "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as required by the police or your supervising officer. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
     "previousText" : "Notify your supervising officer of any developing intimate relationships with [WOMEN / MEN / WOMEN OR MEN].",
     "currentText" : "Notify your supervising officer of any developing relationships, including status changes such as engagement, marriage, pregnancies or the ending of any relationships, and disclose the details of the person you are in a relationship with.",
@@ -362,7 +362,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "8686a815-b7f0-43b6-9886-f01df6a48773",
     "previousText" : "Provide your supervising officer with the details of any bank accounts to which you are a signatory and of any credit cards you possess. You must also notify your supervising officer when becoming a signatory to any new bank account or credit card, and provide the account/card details. This condition will be reviewed on a monthly basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
     "currentText" : "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
@@ -386,7 +386,7 @@
       "currentText" : "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE]."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
     "previousText" : "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
     "currentText" : "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
@@ -404,7 +404,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
     "previousText" : "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "currentText" : "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
@@ -422,13 +422,13 @@
     "currentText" : "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop or disrupt the test.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
     "previousText" : "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Not to take any action that could hamper or frustrate the drug testing process.",
     "currentText" : "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. Do not try to stop or disrupt the test.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
     "previousText" : "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
     "currentText" : "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",
@@ -456,19 +456,19 @@
     "currentText" : "You must reside overnight within [REGION] probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
     "previousText" : "Attend all appointments arranged for you with a [PSYCHIATRIST / PSYCHOLOGIST / MEDICAL PRACTITIONER].",
     "currentText" : "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner, unless otherwise approved by your supervising officer.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
     "previousText" : "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
     "currentText" : "Attend appointments, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
     "previousText" : "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems at the [NAME OF COURSE / CENTRE].",
     "currentText" : "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems.",
@@ -486,7 +486,7 @@
     "currentText" : "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
     "previousText" : "Notify your supervising officer of any developing intimate relationships with [WOMEN / MEN / WOMEN OR MEN].",
     "currentText" : "Notify your supervising officer of any developing relationships, including the ending of any relationships.",
@@ -522,7 +522,7 @@
     "currentText" : "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
     "previousText" : "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Not to take any action that could hamper or frustrate the drug testing process.",
     "currentText" : "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
@@ -622,19 +622,19 @@
       "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
     "previousText" : "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as required by the police or your supervising officer. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
     "previousText" : "Notify your supervising officer of any developing intimate relationships with [WOMEN / MEN / WOMEN OR MEN].",
     "currentText" : "Notify your supervising officer of any developing relationships, including status changes such as engagement, marriage, pregnancies or the ending of any relationships, and disclose the details of the person you are in a relationship with.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "8686a815-b7f0-43b6-9886-f01df6a48773",
     "previousText" : "Provide your supervising officer with the details of any bank accounts to which you are a signatory and of any credit cards you possess. You must also notify your supervising officer when becoming a signatory to any new bank account or credit card, and provide the account/card details. This condition will be reviewed on a monthly basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
     "currentText" : "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
@@ -652,7 +652,7 @@
       "currentText" : "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
     "previousText" : "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
     "currentText" : "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
@@ -670,7 +670,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
     "previousText" : "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "currentText" : "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
@@ -682,7 +682,7 @@
     "currentText" : "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
     "previousText" : "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Not to take any action that could hamper or frustrate the drug testing process.",
     "currentText" : "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
@@ -788,13 +788,13 @@
       "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
     "previousText" : "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as required by the police or your supervising officer. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
     "previousText" : "Notify your supervising officer of any developing intimate relationships with [WOMEN / MEN / WOMEN OR MEN].",
     "currentText" : "Notify your supervising officer of any developing relationships, including status changes such as engagement, marriage, pregnancies or the ending of any relationships, and disclose the details of the person you are in a relationship with.",
@@ -806,7 +806,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "8686a815-b7f0-43b6-9886-f01df6a48773",
     "previousText" : "Provide your supervising officer with the details of any bank accounts to which you are a signatory and of any credit cards you possess. You must also notify your supervising officer when becoming a signatory to any new bank account or credit card, and provide the account/card details. This condition will be reviewed on a monthly basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
     "currentText" : "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
@@ -830,7 +830,7 @@
       "currentText" : "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE]."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
     "previousText" : "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
     "currentText" : "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
@@ -848,7 +848,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
     "previousText" : "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "currentText" : "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
@@ -866,13 +866,13 @@
     "currentText" : "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop or disrupt the test.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
     "previousText" : "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Not to take any action that could hamper or frustrate the drug testing process.",
     "currentText" : "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. Do not try to stop or disrupt the test.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
     "previousText" : "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
     "currentText" : "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",
@@ -900,7 +900,7 @@
     "currentText" : "Not to reside (not even to stay for one night) in the same household as [ANY / ANY FEMALE / ANY MALE] child under the age of [INSERT AGE] without the prior approval of your supervising officer.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
     "previousText" : "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner, unless otherwise approved by your supervising officer.",
     "currentText" : "Attend all appointments arranged for you with a [PSYCHIATRIST / PSYCHOLOGIST / MEDICAL PRACTITIONER] unless otherwise approved by your supervising officer.",
@@ -966,7 +966,7 @@
       "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
     "previousText" : "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
@@ -978,13 +978,13 @@
     "currentText" : "Notify your supervising officer of any developing relationships, including status changes such as engagement, marriage, pregnancies or the ending of any relationships, and disclose the details of the person you are in a relationship with.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "8686a815-b7f0-43b6-9886-f01df6a48773",
     "previousText" : "Provide your supervising officer with the details of any bank accounts to which you are a signatory and of any credit cards you possess. You must also notify your supervising officer when becoming a signatory to any new bank account or credit card, and provide the account/card details. This condition will be reviewed on a monthly basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
     "currentText" : "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
     "previousText" : "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
     "currentText" : "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
@@ -996,7 +996,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
     "previousText" : "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "currentText" : "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
@@ -1018,7 +1018,7 @@
     "currentText" : "Not to reside (not even to stay for one night) in the same household as [ANY / ANY FEMALE / ANY MALE] child under the age of [INSERT AGE] without the prior approval of your supervising officer.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
     "previousText" : "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner, unless otherwise approved by your supervising officer.",
     "currentText" : "Attend all appointments arranged for you with a [PSYCHIATRIST / PSYCHOLOGIST / MEDICAL PRACTITIONER] unless otherwise approved by your supervising officer.",
@@ -1090,7 +1090,7 @@
       "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software."
     } ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
     "previousText" : "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
     "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
@@ -1108,7 +1108,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "8686a815-b7f0-43b6-9886-f01df6a48773",
     "previousText" : "Provide your supervising officer with the details of any bank accounts to which you are a signatory and of any credit cards you possess. You must also notify your supervising officer when becoming a signatory to any new bank account or credit card, and provide the account/card details. This condition will be reviewed on a monthly basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
     "currentText" : "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
@@ -1120,7 +1120,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
     "previousText" : "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
     "currentText" : "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
@@ -1132,7 +1132,7 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
     "previousText" : "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
     "currentText" : "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
@@ -1150,7 +1150,7 @@
     "currentText" : "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. Do not try to stop or disrupt the test.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
     "previousText" : "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
     "currentText" : "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",
@@ -1196,7 +1196,7 @@
     "currentText" : "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. Do not try to stop or disrupt the test.",
     "suggestions" : [ ]
   }, {
-    "changeType" : "NEW_OPTIONS",
+    "changeType" : "TEXT_CHANGE",
     "code" : "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
     "previousText" : "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
     "currentText" : "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",

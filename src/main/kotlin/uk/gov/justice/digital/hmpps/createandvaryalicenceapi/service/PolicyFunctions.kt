@@ -58,8 +58,8 @@ private fun conditionUpdated(
   val added = (current.inputs ?: emptyList()) - (previous.inputs ?: emptyList()).toSet()
   val dataHasChanged = removed.isNotEmpty() || added.isNotEmpty()
   return when {
-    dataHasChanged -> NEW_OPTIONS.update(previous, current, removed, added)
     textHasChanged -> TEXT_CHANGE.update(previous, current)
+    dataHasChanged -> NEW_OPTIONS.update(previous, current, removed, added)
     else -> null
   }
 }

@@ -62,7 +62,7 @@ class PolicyMigrationTest {
       allPolicyVersionChanges.add(policyChanges)
     }
 
-    val expectedDiffJson = readFile("allPolicyVersionChanges")
+    val expectedDiffJson = readFile("allPolicyVersionChanges").trim()
     val actualDiffJson = diffsAsJson(allPolicyVersionChanges)
 
     // compareJson(expectedDiffJson, actualDiffJson)
