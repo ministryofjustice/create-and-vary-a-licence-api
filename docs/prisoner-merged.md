@@ -97,7 +97,7 @@ out-of-date details.
 
 ## References
 
-1. [PrisonerMergedHandler.kt:25-30](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L30) — merge handling only runs if switched on via the `prisoner.merged.handler.enabled` setting
+[^1]. [PrisonerMergedHandler.kt:25-30](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L30) — merge handling only runs if switched on via the `prisoner.merged.handler.enabled` setting
 2. [PrisonerMergedHandler.kt:48-49](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L48-L49) — licences are looked up by the old (removed) NOMIS ID
 3. [PrisonerMergedHandler.kt:51-57](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L51-L57) — licences are split into "old booking" and "new booking" groups and handled differently
 4. [PrisonerMergedHandler.kt:61-65](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L61-L65) — licences on an old booking are deactivated with a reason recorded
