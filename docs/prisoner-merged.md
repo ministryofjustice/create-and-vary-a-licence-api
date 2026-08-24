@@ -25,7 +25,7 @@ licences it holds in step with this change, so that:
 
 This is triggered by a "prisoner merged" notification sent by the prison system, which is
 only acted on if merge handling has been switched on via a
-setting [1](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L30).
+setting [^1]
 
 ## Key terms
 
