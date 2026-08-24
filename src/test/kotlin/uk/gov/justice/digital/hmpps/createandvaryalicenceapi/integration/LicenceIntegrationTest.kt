@@ -450,7 +450,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence.variationOfId).isEqualTo(1)
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
 
-    assertThat(newLicence.standardConditions.size).isEqualTo(oldLicence.standardConditions.size)
+    // Should pull through up to date standard conditions instead of copying from parent
+    assertThat(newLicence.standardConditions.size).isNotEqualTo(oldLicence.standardConditions.size)
+
     assertThat(newLicence.additionalConditions.size).isEqualTo(oldLicence.additionalConditions.size)
     assertThat(newLicence.bespokeConditions.size).isEqualTo(oldLicence.bespokeConditions.size)
 
@@ -479,8 +481,9 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       fieldsToIgnore = listOf("id", "additionalConditionId", "licence"),
     )
     assertListsNotEqual(listOf(uploadNew), listOf(uploadOld), listOf("originalData", "fullSizeImage"))
+    // Should pull through up to date standard conditions instead of copying from parent
+    assertListsNotEqual(newLicence.standardConditions, oldLicence.standardConditions)
 
-    assertListsEqual(newLicence.standardConditions, oldLicence.standardConditions)
     assertListsEqual(newLicence.additionalConditions, oldLicence.additionalConditions)
     assertListsEqual(newLicence.bespokeConditions, oldLicence.bespokeConditions)
   }
