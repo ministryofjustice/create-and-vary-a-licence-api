@@ -25,7 +25,7 @@ licences it holds in step with this change, so that:
 
 This is triggered by a "prisoner merged" notification sent by the prison system, which is
 only acted on if merge handling has been switched on via a
-setting [^1]
+setting[^1]
 
 ## Key terms
 
@@ -44,7 +44,7 @@ setting [^1]
 ## What happens when a merge notification is received
 
 When the notification arrives, the system looks at every licence it holds for the old
-NOMIS ID [^2].
+NOMIS ID[^2].
 If there are none, nothing further happens.
 
 If licences are found, they are split into two groups depending on whether they belong
@@ -53,13 +53,13 @@ to the same booking that the merge notification says is now the current one:
 - licences that belong to a **different, older booking** are treated as no longer
   relevant to the person's current time in custody, and
 - licences that already belong to the **new, current booking** are treated as still
-  relevant and are simply updated with the person's latest details [^3].
+  relevant and are simply updated with the person's latest details[^3].
 
 ### Licences on an old booking are switched off
 
 Any licence found on a different, older booking is deactivated, so it's no longer
 treated as a live licence. This is recorded as a system action, with a note explaining
-it was deactivated because of a prisoner merge [^4].
+it was deactivated because of a prisoner merge[^4].
 
 ### Licences on the current booking are refreshed with the latest details
 
@@ -71,18 +71,17 @@ updated so that its details match the surviving identity. This includes:
   the prison system,
 - refreshing which prison the person is held at,
 - refreshing the CRO number, and
-- refreshing the PNC number from probation records [^5].
+- refreshing the PNC number from probation records[^5].
 
 Before and after values for every one of these fields are recorded in an audit trail, so
-there's a clear record of exactly what changed on the licence as a result of the merge
-[^6].
+there's a clear record of exactly what changed on the licence as a result of the merge[^6].
 
 ## Where the CRO number comes from
 
 When refreshing a licence's CRO number, the system prefers the CRO number held by
 probation records over the one held by the prison system, but only if it looks like a
 genuinely valid CRO number; if neither source has a valid-looking value, the CRO number
-on the licence is cleared [^7].
+on the licence is cleared[^7].
 
 ## How it all comes together
 
