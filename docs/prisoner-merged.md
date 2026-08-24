@@ -1,101 +1,106 @@
-# How the system handles a prisoner record merge
+# How the system handles merged offender records
 
-> This document explains, in plain language, how the system handles merged offenders. It is
-> aimed at non-technical readers.
+> This document explains, in plain language, how the system handles merged offender
+> records. It is aimed at non-technical readers.
 >
 > This document is checked automatically for staleness: if a developer changes the
-> underlying prisoner-merge logic in the code, an automated test will fail until someone
+> underlying prisoner merge logic in the code, an automated test will fail until someone
 > reviews this document and confirms it's still accurate (or updates it). See
 > `docs-change-tracking.yaml` at the root of the repository if you want to understand
 > how that check works.
 
 ## What this is for
 
-Sometimes the prison system discovers that two prison records actually belong to the same
-person - for example, someone was booked in under two different identities, or a data entry
-error created a duplicate record. When this happens, the prison system "merges" the two
-records: one identity (the "old" one) is retired, and everything is consolidated under the
-"new" identity going forward.[1](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L29-L33)
+Sometimes two prison records that were created for the same person are found to be
+duplicates, and the prison system (NOMIS) merges them into a single record. When this
+happens, one of the two prison identifiers (the "NOMIS ID") is retired and all future
+activity continues under the other, surviving NOMIS ID, usually alongside a new "booking"
+(NOMIS's term for a specific period spent in custody). The system needs to keep any
+licences it holds in step with this change, so that:
 
-When this merge happens, this service is told about it, so that any licences linked to the
-old identity are moved across to the new one, and the person's personal details on those
-licences are refreshed to match the latest confirmed record. Without this, a licence could
-be left pointing at an identity that no longer exists, or could show out-of-date personal
-details.
+- licences that were created against the identifier that's been retired end up filed
+  under the surviving identifier, with up-to-date personal details, and
+- licences that are no longer relevant because they belonged to an older, now-superseded
+  period in custody are switched off rather than left active by mistake.
 
-## The merge event, and the on/off switch
+This is triggered by a "prisoner merged" notification sent by the prison system, which is
+only acted on if merge handling has been switched on via a
+setting [1](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L30).
 
-The prison system sends a "prisoner merged" event containing:
+## Key terms
 
-- the **old prison number** (Nomis ID) that has been retired
-- the **new prison number** (Nomis ID) that replaces it
-- the **new booking ID** - the identifier for the specific prison "booking" (a period in
-  custody) that the new prison number is currently associated with[2](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerUpdatedHandler.kt#L164-L169)
+- **NOMIS ID**: the identifier the prison system uses for a person. Also referred to as
+  a "noms number".
+- **Old NOMIS ID**: the identifier that has been retired as part of the merge (the
+  "removed" one).
+- **New NOMIS ID**: the identifier that survives the merge and is used going forward.
+- **Booking ID**: an identifier for a specific period a person has spent in custody. A
+  new booking ID usually accompanies a merge.
+- **CRO number**: a Criminal Records Office reference number used to identify offenders
+  across police and prison records.
+- **PNC number**: a Police National Computer reference number, another identifier used
+  to cross-reference offenders.
 
-This handling can be switched off entirely via a configuration setting. If it is switched
-off, the event is simply logged and ignored, and no licences are changed.[3](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L38)
+## What happens when a merge notification is received
 
-## What happens when a merge event is received
+When the notification arrives, the system looks at every licence it holds for the old
+NOMIS ID [2](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L48-L49).
+If there are none, nothing further happens.
 
-The system looks up every licence currently held under the old prison number.[4](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L47-L49) If there
-are none, nothing further happens. If there are licences, they are split into two groups
-depending on whether they belong to the same booking as the new prison number, or a
-different (older) booking:[5](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L50-L56)
+If licences are found, they are split into two groups depending on whether they belong
+to the same booking that the merge notification says is now the current one:
 
-- **Licences on a different, older booking** - these are deactivated (see below).
-- **Licences on the same booking as the new prison number** - these have their offender
-  details updated to match the new, confirmed record (see below).
+- licences that belong to a **different, older booking** are treated as no longer
+  relevant to the person's current time in custody, and
+- licences that already belong to the **new, current booking** are treated as still
+  relevant and are simply updated with the person's latest details [3](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L51-L57).
 
-### Deactivating licences on the old booking
+### Licences on an old booking are switched off
 
-Any licence that relates to an older booking, rather than the specific booking now
-associated with the new prison number, is automatically deactivated as part of the merge,
-with a note recorded against it explaining that it was deactivated because of the prisoner
-merge.[6](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L58-L62) This mirrors how the system deactivates any other licence that is no longer
-current: its status is set to inactive, an audit trail entry and a licence history entry
-are created, and other parts of the system are notified that the licence is now
-inactive.[7](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/LicenceService.kt#L566-L599)
+Any licence found on a different, older booking is deactivated, so it's no longer
+treated as a live licence. This is recorded as a system action, with a note explaining
+it was deactivated because of a prisoner merge [4](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L61-L65).
 
-### Updating licence details for the current booking
+### Licences on the current booking are refreshed with the latest details
 
-For any licence that is on the same booking as the new prison number, the system fetches
-the latest confirmed record for that person - both from the prison system and from the
-probation system (Delius) - and then updates the licence with:[8](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L64-L105)
+Any licence that already belongs to the new, current booking is kept active, but is
+updated so that its details match the surviving identity. This includes:
 
-- the new prison number, replacing the old one
-- first name, middle name(s) and surname
-- date of birth
-- the prison the person is currently held at
-- a criminal record office (CRO) number
-- a police national computer (PNC) number, taken from the probation record
+- swapping the old NOMIS ID for the new one,
+- refreshing the person's first name, middle name(s), surname and date of birth from
+  the prison system,
+- refreshing which prison the person is held at,
+- refreshing the CRO number, and
+- refreshing the PNC number from probation records [5](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L67-L104).
 
-Before every change is applied, the system records an audit entry showing the old and new
-value of each of these fields, so there is a clear trail of exactly what changed as a
-result of the merge.[9](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L75-L95)
+Before and after values for every one of these fields are recorded in an audit trail, so
+there's a clear record of exactly what changed on the licence as a result of the merge
+[6](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L75-L99).
 
-**How the CRO number is chosen**: the system prefers the CRO number held by probation, but
-only if it is in a valid CRO format; if that isn't available or valid, it falls back to
-the CRO number held by the prison system, again only if that is in a valid format;
-otherwise it is left blank rather than saving something that doesn't look like a genuine
-CRO number.[10](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/LicenceFactory.kt#L446-L464)
+## Where the CRO number comes from
 
-## A couple of important edge cases
+When refreshing a licence's CRO number, the system prefers the CRO number held by
+probation records over the one held by the prison system, but only if it looks like a
+genuinely valid CRO number; if neither source has a valid-looking value, the CRO number
+on the licence is cleared [7](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerUpdatedHandler.kt).
 
-- If the merge event message itself cannot be understood (for example, it's missing
-  expected information), the failure is logged and the event is not processed further -
-  no licences are changed as a result of a message the system couldn't make sense of.[3](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L38)
-- If a person has no licences at all under their old prison number, the merge event is
-  simply logged and no further action is taken - there is nothing to move across.[4](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L47-L49)
+## How it all comes together
+
+A single merge notification can affect several licences at once, if the same person had
+more than one licence recorded against their old identifier. Each affected licence is
+routed independently: it's either deactivated (if it belongs to a booking that's now
+been superseded) or refreshed with the latest personal details (if it belongs to the
+booking the person is currently on). This means a person's licence history stays intact
+under their surviving identifier, while any licences tied to the retired identity that
+are no longer relevant are cleanly switched off rather than left active under
+out-of-date details.
 
 ## References
 
-1. [PrisonerMergedHandler.kt:29-33](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L29-L33) — the event carries the old and new Nomis IDs and the new booking ID
-2. [PrisonerUpdatedHandler.kt:164-169](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerUpdatedHandler.kt#L164-L169) — the shape of the prisoner merged event's additional information
-3. [PrisonerMergedHandler.kt:25-38](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L38) — the enabled/disabled check, and handling of unparseable messages
-4. [PrisonerMergedHandler.kt:47-49](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L47-L49) — looking up licences by the old Nomis ID
-5. [PrisonerMergedHandler.kt:50-56](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L50-L56) — splitting licences by booking ID
-6. [PrisonerMergedHandler.kt:58-62](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L58-L62) — deactivating licences on the old booking with a merge-specific reason
-7. [LicenceService.kt:566-599](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/LicenceService.kt#L566-L599) — what deactivating a licence does (status, audit, licence history, domain event)
-8. [PrisonerMergedHandler.kt:64-105](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L64-L105) — fetching the latest prison and probation records and updating licence fields
-9. [PrisonerMergedHandler.kt:75-95](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L75-L95) — recording the before/after changes as an audit event
-10. [LicenceFactory.kt:446-464](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/LicenceFactory.kt#L446-L464) — how the CRO number is chosen between the probation and prison records
+1. [PrisonerMergedHandler.kt:25-30](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L30) — merge handling only runs if switched on via the `prisoner.merged.handler.enabled` setting
+2. [PrisonerMergedHandler.kt:48-49](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L48-L49) — licences are looked up by the old (removed) NOMIS ID
+3. [PrisonerMergedHandler.kt:51-57](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L51-L57) — licences are split into "old booking" and "new booking" groups and handled differently
+4. [PrisonerMergedHandler.kt:61-65](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L61-L65) — licences on an old booking are deactivated with a reason recorded
+5. [PrisonerMergedHandler.kt:67-104](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L67-L104) — licences on the new booking have their NOMIS ID and personal details refreshed
+6. [PrisonerMergedHandler.kt:75-99](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L75-L99) — before/after values for each field are recorded for audit purposes
+7. [PrisonerUpdatedHandler.kt:456-464](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerUpdatedHandler.kt#L456-L464) — the rule for choosing between the probation and prison CRO numbers

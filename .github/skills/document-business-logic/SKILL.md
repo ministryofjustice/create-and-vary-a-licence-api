@@ -1,6 +1,6 @@
 ---
 name: document-business-logic
-description: How to write a new non-technical business-logic doc under /docs (in the style of docs/eligibility.md and docs/licence-start-date.md), optionally with an opt-in reference list (footnote-style markdown links back to source file/line ranges), and register/update it in docs-change-tracking.yaml so DocsChangeTrackingTest stays green. Use when asked to document business rules/logic for a service or class, add a doc to /docs, add code citations/references to a business-logic doc, or when DocsChangeTrackingTest fails because source code drifted from its doc.
+description: How to write a new non-technical business-logic doc under /docs (in the style of docs/eligibility.md and docs/licence-start-date.md), optionally with an opt-in reference list (numbered, direct markdown links back to source file/line ranges — not GitHub's `[^1]` footnote syntax), and register/update it in docs-change-tracking.yaml so DocsChangeTrackingTest stays green. Use when asked to document business rules/logic for a service or class, add a doc to /docs, add code citations/references to a business-logic doc, or when DocsChangeTrackingTest fails because source code drifted from its doc.
 metadata:
   author: create-and-vary-a-licence-api
   version: "1.0"
@@ -39,11 +39,13 @@ paraphrase from memory or from tests. Look especially for:
 
 Before writing, ask the user (every time this skill runs — for a brand-new doc and for a refresh of an existing
 one alike): **"Would you like a reference list linking statements in this doc back to the source code?"**
-Briefly explain what that means: inline footnote markers (e.g. `[^1]`) added at the end of key sentences/bullets,
+Briefly explain what that means: inline numbered markers (e.g. `[1]`) added at the end of key sentences/bullets,
 each backed by an entry in a `## References` section at the bottom of the doc linking to the exact file and line
 range in the code that the statement was derived from. Don't add this unless the user opts in — plain docs
 without references remain the default, matching the existing style of `eligibility.md` and
 `licence-start-date.md`.
+
+Do **not** use GitHub's native `[^1]` footnote syntax for this — see step 4 for why and what to use instead.
 
 ## 3. Write the doc in `/docs`
 
@@ -107,25 +109,39 @@ Start every doc with a blockquote exactly in this style (adjust the first senten
 
 ## 4. Add a reference list (only if the user opted in at step 2)
 
-If the user asked for a reference list, add it now, after the doc's prose is otherwise finished:
+If the user asked for a reference list, add it now, after the doc's prose is otherwise finished.
 
-- As you identify the source location backing each key claim, add an inline footnote marker (`[^1]`, `[^2]`,
-  ...) at the end of the sentence or bullet it belongs to. Use one marker per distinct claim/section, not one per
-  word — usually a handful per doc, similar in density to how many `##`/`###` sections it has.
+**Do not use GitHub's native `[^1]` ... `[^1]:` footnote syntax.** GitHub renders that syntax with its own
+generated jump-to-footnote anchors (`user-content-fnref-*` / `user-content-fn-*`), so clicking the marker just
+scrolls to the footnote definition elsewhere on the same page instead of opening the source file — and that
+generated anchor breaks entirely when the doc is viewed at a pinned-commit blob URL (e.g.
+`.../blob/<sha>/docs/foo.md#user-content-fnref-...`). Use plain direct markdown links instead, so each marker is
+a one-click jump straight to the source:
+
+- As you identify the source location backing each key claim, add an inline numbered link (e.g. `[1](...)`,
+  `[2](...)`) at the end of the sentence or bullet it belongs to, linking directly to the same repo-relative path
+  and line range used in the References list below (see below). Use one marker per distinct claim/section, not
+  one per word — usually a handful per doc, similar in density to how many `##`/`###` sections it has.
 - At the very end of the doc (after any "how it all comes together" section), add a `## References` heading
-  followed by one footnote definition per marker used. Each definition must be a **markdown link**, not a plain
-  code span, using a repo-relative path (from the repo root, with a leading `/`) and a GitHub-style `#L<start>-
-  L<end>` line-range anchor, followed by a short description of what the reference backs:
+  followed by a plain numbered markdown list — **not** footnote-definition (`[^1]:`) syntax — with one entry per
+  marker used. Each entry must be a **markdown link**, not a plain code span, using a repo-relative path (from
+  the repo root, with a leading `/`) and a GitHub-style `#L<start>-L<end>` line-range anchor, followed by a short
+  description of what the reference backs:
 
   ```markdown
   ## References
 
-  [^1]: [ReleaseDateService.kt:120-135](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/dates/ReleaseDateService.kt#L120-L135) — how the CRD adjustment for non-working days is calculated
-  [^2]: [ReleaseDateService.kt:210-225](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/dates/ReleaseDateService.kt#L210-L225) — the fallback used when the PRRD is missing
+  1. [ReleaseDateService.kt:120-135](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/dates/ReleaseDateService.kt#L120-L135) — how the CRD adjustment for non-working days is calculated
+  2. [ReleaseDateService.kt:210-225](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/dates/ReleaseDateService.kt#L210-L225) — the fallback used when the PRRD is missing
   ```
 
+  And the corresponding inline markers in the prose would be `[1](/src/main/kotlin/.../ReleaseDateService.kt#L120-L135)`
+  and `[2](/src/main/kotlin/.../ReleaseDateService.kt#L210-L225)` respectively — the exact same link target as the
+  matching References entry.
+
   This form renders as a clickable link on GitHub (which highlights the given line range when opening the file)
-  and resolves in most local editors too, without depending on a commit SHA or branch that could go stale.
+  and resolves in most local editors too, without depending on a commit SHA or branch that could go stale, and
+  without any GitHub-specific footnote indirection.
 - The `## References` section is metadata, not prose: it's the one place in the doc that's **exempt** from the
   "no class names, method names, or code snippets" tone rule above — file names and line ranges belong here.
 - Don't reference every line of every method — only the specific lines that most directly evidence the claim
