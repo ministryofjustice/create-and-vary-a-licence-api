@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ConditionPolicyData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.getLicenceConditionPolicyData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -97,6 +98,7 @@ class LicenceService(
   private val auditService: AuditService,
   private val cvlRecordService: CvlRecordService,
   private val migrationService: MigrationService,
+  private val licenceConditionService: LicenceConditionService,
 ) {
 
   @Transactional(readOnly = true)
@@ -933,9 +935,7 @@ class LicenceService(
     copy.additionalConditions.clear()
 
     copy.version = licencePolicyService.currentPolicy(original.licenceStartDate).version
-    copy.standardConditions.addAll(
-      original.standardConditions.map { it.copy(id = null, licence = copy) },
-    )
+    licenceConditionService.updateStandardConditions(copy)
 
     copy.bespokeConditions.addAll(
       original.bespokeConditions.map { it.copy(id = null, licence = copy) },
