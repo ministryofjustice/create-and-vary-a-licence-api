@@ -1,0 +1,41 @@
+{
+  "fromVersion" : "3.0",
+  "toVersion" : "4.0",
+  "changes" : [ {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "8e52e16e-1abf-4251-baca-2fabfcb243d0",
+    "previousText" : "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+    "currentText" : "Not to own or possess more than one mobile phone or SIM card, or install an e-sim, without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "REMOVED_NO_REPLACEMENTS",
+    "code" : "79ac033f-9d7a-4dab-8344-475106e58b71",
+    "previousText" : "To notify your supervising officer of the details of any passport that you possess (including passport number), and of any intention to apply for a new passport.",
+    "currentText" : null,
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "REMOVED_NO_REPLACEMENTS",
+    "code" : "0a370862-5426-49c1-b6d4-3d074d78a81a",
+    "previousText" : "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
+    "currentText" : null,
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "1dc7ee29-df47-48a8-90b6-69e286692d8a",
+    "previousText" : "To comply with any instruction given by your supervising officer requiring you to attend polygraph testing. To participate in polygraph sessions and examinations as instructed by or under the authority of your supervising officer and to comply with any instruction given to you during a polygraph session by the person conducting the polygraph.",
+    "currentText" : "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop or disrupt the test.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
+    "previousText" : "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
+    "currentText" : "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. Do not try to stop or disrupt the test.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
+    "previousText" : "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
+    "currentText" : "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",
+    "suggestions" : [ ]
+  } ]
+}

@@ -40,7 +40,6 @@ class PolicyMigrationTest {
   @Test
   fun `check the changes between different policy versions are as expected`() {
     val allPolicies = licencePolicyService.allPolicies()
-    val allPolicyVersionChanges = mutableListOf<PolicyDifferences>()
 
     val versions = allPolicies.map { it.version }.sorted()
     versions.flatMapIndexed { i, version1 ->
@@ -55,13 +54,13 @@ class PolicyMigrationTest {
         conditionChanges(version1Policy.additionalConditions.ap, version2Policy.additionalConditions.ap, replacements)
 
       val policyChanges = conditionChangesToPolicyChanges(version1, version2, changesFromPolicyV1ToV2)
-      allPolicyVersionChanges.add(policyChanges)
+
+      val fileName = "policyChangesV${version1.replace(".", "_")}_to_V${version2.replace(".", "_")}"
+
+      val expectedDiffJson = readFile(fileName).trim()
+      val actualDiffJson = diffsAsJson(policyChanges)
+      assertEquals(expectedDiffJson, actualDiffJson)
     }
-
-    val expectedDiffJson = readFile("allPolicyVersionChanges").trim()
-    val actualDiffJson = diffsAsJson(allPolicyVersionChanges)
-
-    assertEquals(expectedDiffJson, actualDiffJson)
   }
 
   private fun conditionChangesToPolicyChanges(
@@ -88,7 +87,7 @@ class PolicyMigrationTest {
     )
   }
 
-  private fun diffsAsJson(diffs: List<PolicyDifferences>): String = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(diffs)
+  private fun diffsAsJson(diffs: PolicyDifferences): String = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(diffs)
 
   fun readFile(filename: String): String = this.javaClass.getResourceAsStream("/test_data/policy_conditions/$filename.json")!!.bufferedReader(UTF_8).readText()
 }
