@@ -96,10 +96,10 @@ out-of-date details.
 
 ## References
 
-[^1]. [PrisonerMergedHandler.kt:25-30](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L30) — merge handling only runs if switched on via the `prisoner.merged.handler.enabled` setting
-[^2]. [PrisonerMergedHandler.kt:48-49](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L48-L49) — licences are looked up by the old (removed) NOMIS ID
-[^3]. [PrisonerMergedHandler.kt:51-57](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L51-L57) — licences are split into "old booking" and "new booking" groups and handled differently
-[^4]. [PrisonerMergedHandler.kt:61-65](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L61-L65) — licences on an old booking are deactivated with a reason recorded
-[^5]. [PrisonerMergedHandler.kt:67-104](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L67-L104) — licences on the new booking have their NOMIS ID and personal details refreshed
-[6^]. [PrisonerMergedHandler.kt:75-99](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L75-L99) — before/after values for each field are recorded for audit purposes
+[^1]: [PrisonerMergedHandler.kt:25-30](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L25-L30) — merge handling only runs if switched on via the `prisoner.merged.handler.enabled` setting
+[^2]: [PrisonerMergedHandler.kt:48-49](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L48-L49) — licences are looked up by the old (removed) NOMIS ID
+[^3]: [PrisonerMergedHandler.kt:51-57](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L51-L57) — licences are split into "old booking" and "new booking" groups and handled differently
+[^4]: [PrisonerMergedHandler.kt:61-65](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L61-L65) — licences on an old booking are deactivated with a reason recorded
+[^5]: [PrisonerMergedHandler.kt:67-104](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L67-L104) — licences on the new booking have their NOMIS ID and personal details refreshed
+[6^]: [PrisonerMergedHandler.kt:75-99](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt#L75-L99) — before/after values for each field are recorded for audit purposes
 7. [PrisonerUpdatedHandler.kt:456-464](/src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerUpdatedHandler.kt#L456-L464) — the rule for choosing between the probation and prison CRO numbers
