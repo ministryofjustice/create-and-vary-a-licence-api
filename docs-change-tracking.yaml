@@ -35,7 +35,7 @@ entries:
     doc: docs/sentence-date-updates.md
     sources:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/UpdateSentenceDateService.kt
-    hash: 87e9a5d3d42b02ca0c8160bcb6431b32
+    hash: aafa2f29c13d0ce3e1c5cc9fb8f09133
 
   - id: scheduled-jobs
     description: "The scheduled background jobs (controllers + services) that keep licences up to date and notify probation automatically"
