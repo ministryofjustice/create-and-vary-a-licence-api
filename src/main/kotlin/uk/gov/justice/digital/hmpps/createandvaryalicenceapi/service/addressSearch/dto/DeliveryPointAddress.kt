@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.dto
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -6,48 +6,48 @@ import java.time.LocalDate
 
 data class DeliveryPointAddress(
   @field:JsonProperty("UPRN")
-  val uprn: String,
+  override val uprn: String,
 
   @field:JsonProperty("ADDRESS")
-  val address: String,
+  override val address: String,
 
   @field:JsonProperty("SUB_BUILDING_NAME")
-  val subBuildingName: String? = null,
+  override val subBuildingName: String? = null,
 
   @field:JsonProperty("ORGANISATION_NAME")
-  val organisationName: String? = null,
+  override val organisationName: String? = null,
 
   @field:JsonProperty("BUILDING_NAME")
-  val buildingName: String? = null,
+  override val buildingName: String? = null,
 
   @field:JsonProperty("BUILDING_NUMBER")
-  val buildingNumber: String? = null,
+  override val buildingNumber: String? = null,
 
   @field:JsonProperty("THOROUGHFARE_NAME")
-  val thoroughfareName: String?,
+  override val thoroughfareName: String?,
 
   @field:JsonProperty("DEPENDENT_LOCALITY")
-  val locality: String?,
+  override val locality: String?,
 
   @field:JsonProperty("POST_TOWN")
-  val postTown: String,
+  override val postTown: String,
 
   @field:JsonProperty("LOCAL_CUSTODIAN_CODE_DESCRIPTION")
-  val county: String?,
+  override val county: String?,
 
   @field:JsonProperty("POSTCODE")
-  val postcode: String,
+  override val postcode: String,
 
   @field:JsonProperty("COUNTRY_CODE_DESCRIPTION")
-  val countryDescription: String,
+  override val countryDescription: String,
 
   @field:JsonProperty("X_COORDINATE")
-  val xCoordinate: Double,
+  override val xCoordinate: Double,
 
   @field:JsonProperty("Y_COORDINATE")
-  val yCoordinate: Double,
+  override val yCoordinate: Double,
 
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   @field:JsonProperty("LAST_UPDATE_DATE")
-  val lastUpdateDate: LocalDate,
-)
+  override val lastUpdateDate: LocalDate,
+) : OsCommonAddress

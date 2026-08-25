@@ -2,13 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressSearchResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.DeliveryPointAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.dto.DeliveryPointAddress
 
 private const val ADDRESS_ITEM_SEPARATOR = ", "
 private val KNOWN_COUNTRIES = listOf("England", "Scotland", "Wales", "Northern Ireland", "Ireland")
 
 @Component
-class OsPlacesMapperToAddressSearchResponseMapper {
+class OsPlacesDpaMapperToAddressSearchResponseMapper {
 
   fun map(deliveryPointAddress: DeliveryPointAddress): AddressSearchResponse {
     var useThoroughfareInSecondLine = deliveryPointAddress.locality == null
@@ -40,8 +40,8 @@ class OsPlacesMapperToAddressSearchResponseMapper {
   }
 
   private fun buildFirstLine(dpa: DeliveryPointAddress, excludeThoroughfare: Boolean): String = listOfNotNull(
-    dpa.subBuildingName,
     dpa.organisationName,
+    dpa.subBuildingName,
     dpa.buildingName,
     getBuildingNumberOrThoroughfare(dpa, excludeThoroughfare),
   ).joinToString(ADDRESS_ITEM_SEPARATOR)

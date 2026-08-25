@@ -7,14 +7,18 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressSearchResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesMapperToAddressSearchResponseMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.dto.DeliveryPointAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.dto.OsPlacesApiAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesDpaMapperToAddressSearchResponseMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesLpiMapperToAddressSearchResponseMapper
 import java.time.LocalDate
 
 class AddressSearchPaginatorTest {
 
   private val apiClient: OsPlacesApiClient = mock()
-  private val mapper = OsPlacesMapperToAddressSearchResponseMapper()
-  private val paginator = AddressSearchPaginator(apiClient, mapper, 50, 200)
+  private val mapperDpa = OsPlacesDpaMapperToAddressSearchResponseMapper()
+  private val mapperLpi = OsPlacesLpiMapperToAddressSearchResponseMapper()
+  private val paginator = AddressSearchPaginator(apiClient, mapperDpa, mapperLpi, 50, 200)
 
   @Test
   fun `searchByText returns mapped results over multiple pages`() {
@@ -96,28 +100,30 @@ class AddressSearchPaginatorTest {
       .thenReturn(pages[0], *pages.drop(1).toTypedArray())
   }
 
-  private fun createResults(totalResults: Int): List<List<DeliveryPointAddress>> {
+  private fun createResults(totalResults: Int): List<List<OsPlacesApiAddress>> {
     val pageSize = 50
     return (1..totalResults)
       .map(::createOsPlacesAddress)
       .chunked(pageSize)
   }
 
-  private fun createOsPlacesAddress(index: Int): DeliveryPointAddress = DeliveryPointAddress(
-    uprn = "uprn-$index",
-    address = "Some Address $index",
-    subBuildingName = null,
-    organisationName = null,
-    buildingName = "Building $index",
-    buildingNumber = "$index",
-    thoroughfareName = "Street $index",
-    locality = "Locality $index",
-    postTown = "Town $index",
-    county = "County $index",
-    postcode = "PC${index}AA",
-    countryDescription = "England",
-    xCoordinate = 123456.0 + index,
-    yCoordinate = 654321.0 + index,
-    lastUpdateDate = LocalDate.now(), // ← Set to today's date
+  private fun createOsPlacesAddress(index: Int): OsPlacesApiAddress = OsPlacesApiAddress(
+    DeliveryPointAddress(
+      uprn = "uprn-$index",
+      address = "Some Address $index",
+      subBuildingName = null,
+      organisationName = null,
+      buildingName = "Building $index",
+      buildingNumber = "$index",
+      thoroughfareName = "Street $index",
+      locality = "Locality $index",
+      postTown = "Town $index",
+      county = "County $index",
+      postcode = "PC${index}AA",
+      countryDescription = "England",
+      xCoordinate = 123456.0 + index,
+      yCoordinate = 654321.0 + index,
+      lastUpdateDate = LocalDate.now(), // ← Set to today's date
+    ),
   )
 }
