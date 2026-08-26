@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.DateC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion.V3_0
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PRE_PROGRESSION_POLICY_VERSIONS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion.V4_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -312,7 +312,7 @@ class UpdateSentenceDateService(
     recordAuditEvent(licence, dateChanges)
   }
 
-  private fun shouldBeProgressionLicence(licence: Licence, dateChanges: DateChanges): Boolean = licence.version == V3_0.version &&
+  private fun shouldBeProgressionLicence(licence: Licence, dateChanges: DateChanges): Boolean = PRE_PROGRESSION_POLICY_VERSIONS.contains(licence.version) &&
     licence.statusCode in LicenceStatus.PRE_RELEASE_STATUSES &&
     dateChanges[LicenceDateType.LSD]?.newDate?.isOnOrAfter(progressionModelPolicyStartDate) == true
 
