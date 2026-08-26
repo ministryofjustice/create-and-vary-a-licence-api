@@ -28,9 +28,7 @@ class PrisonerReceivedHandler(
   private val remandEnabled: Boolean,
 ) : EventHandler {
 
-  companion object {
-    private val log = LoggerFactory.getLogger(PrisonerReceivedHandler::class.java)
-  }
+  private val log = LoggerFactory.getLogger(this::class.java)
 
   @Transactional
   override fun handleEvent(message: String) {

@@ -61,11 +61,7 @@ class DomainEventListener(
         }
 
         PRISON_OFFENDER_RECEIVED_EVENT_TYPE -> {
-          if (remandEnabled) {
-            prisonerReceivedHandler.handleEvent(message)
-          } else {
-            log.info("Remand is disabled, ignoring prisoner received event")
-          }
+          prisonerReceivedHandler.handleEvent(message)
         }
 
         else -> {
