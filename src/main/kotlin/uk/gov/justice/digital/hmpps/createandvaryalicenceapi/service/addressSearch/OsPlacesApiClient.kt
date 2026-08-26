@@ -35,7 +35,7 @@ class OsPlacesApiClient(
       .bodyToMono(OsPlacesApiResponse::class.java)
       .block()
 
-    return searchResult?.results?.map { it } ?: emptyList()
+    return searchResult?.results?.map { it }.orEmpty()
   }
 
   fun searchForAddressByReference(reference: String): DeliveryPointAddress {
