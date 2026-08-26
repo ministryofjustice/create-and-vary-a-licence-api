@@ -50,4 +50,6 @@ data class DeliveryPointAddress(
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   @field:JsonProperty("LAST_UPDATE_DATE")
   override val lastUpdateDate: LocalDate,
-) : OsCommonAddress
+) : OsCommonAddress {
+  override fun isDeliveryPointAddress(): Boolean = true
+}

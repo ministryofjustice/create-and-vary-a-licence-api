@@ -69,6 +69,6 @@ class OsPlacesLpiMapperToAddressSearchResponseMapper {
 
     return KNOWN_COUNTRIES.firstOrNull {
       description.contains(it, ignoreCase = true)
-    } ?: ""
+    }.orEmpty()
   }
 }
