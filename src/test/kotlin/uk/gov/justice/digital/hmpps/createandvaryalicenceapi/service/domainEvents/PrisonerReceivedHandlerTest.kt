@@ -15,7 +15,6 @@ import org.mockito.kotlin.whenever
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -72,12 +71,10 @@ class PrisonerReceivedHandlerTest {
       ),
     )
 
-    val licenceCaptor = argumentCaptor<CrdLicence>()
     val auditCaptor = argumentCaptor<AuditEvent>()
     val nomsIdCaptor = argumentCaptor<String>()
     val statusesCaptor = argumentCaptor<List<LicenceStatus>>()
 
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(nomsIdCaptor.capture(), statusesCaptor.capture())
     verify(prisonApiClient, times(1)).getPrisonInformation("ABC")
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
@@ -89,10 +86,6 @@ class PrisonerReceivedHandlerTest {
       LicenceStatus.REJECTED,
       LicenceStatus.APPROVED,
     )
-
-    val updatedLicence = licenceCaptor.firstValue
-    assertThat(updatedLicence.prisonCode).isEqualTo("ABC")
-    assertThat(updatedLicence.prisonDescription).isEqualTo("ABC (HMP)")
 
     val auditEvent = auditCaptor.firstValue
     assertThat(auditEvent.licenceId).isEqualTo(aLicence.id)
@@ -131,18 +124,12 @@ class PrisonerReceivedHandlerTest {
       ),
     )
 
-    val licenceCaptor = argumentCaptor<CrdLicence>()
     val auditCaptor = argumentCaptor<AuditEvent>()
     val statusesCaptor = argumentCaptor<List<LicenceStatus>>()
 
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), statusesCaptor.capture())
     verify(prisonApiClient, times(1)).getPrisonInformation(any())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    val updatedLicence = licenceCaptor.firstValue
-    assertThat(updatedLicence.prisonCode).isEqualTo("ABC")
-    assertThat(updatedLicence.prisonDescription).isEqualTo("ABC (HMP)")
 
     val auditEvent = auditCaptor.firstValue
     assertThat(auditEvent.licenceId).isEqualTo(aLicence.id)
@@ -173,16 +160,13 @@ class PrisonerReceivedHandlerTest {
       ),
     )
 
-    val licenceCaptor = argumentCaptor<CrdLicence>()
     val auditCaptor = argumentCaptor<AuditEvent>()
 
     verify(prisonApiClient, times(1)).getPrisonInformation("ABC")
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(any())
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
-    assertThat(licenceCaptor.firstValue.prisonCode).isEqualTo("ABC")
     assertThat(auditCaptor.firstValue.licenceId).isEqualTo(licenceToUpdate.id)
   }
 

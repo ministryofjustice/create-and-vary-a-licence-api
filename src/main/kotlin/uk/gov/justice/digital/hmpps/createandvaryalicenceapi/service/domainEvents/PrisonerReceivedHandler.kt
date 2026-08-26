@@ -60,7 +60,7 @@ class PrisonerReceivedHandler(
 
   private fun getLicences(nomsId: String, licenceStatuses: List<LicenceStatus>): List<Licence> = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, licenceStatuses)
 
-  fun updateLicences(licences: List<Licence>, prisonInformation: Prison) {
+  private fun updateLicences(licences: List<Licence>, prisonInformation: Prison) {
     licences.map {
       val previousPrisonCode = it.prisonCode
       if (previousPrisonCode == prisonInformation.prisonId) {
@@ -74,6 +74,7 @@ class PrisonerReceivedHandler(
         staffRepository.findByUsernameIgnoreCase(
           SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER,
         )
+
       it.updatePrisonInfo(
         prisonCode = prisonInformation.prisonId,
         prisonDescription = prisonInformation.description,
@@ -81,13 +82,11 @@ class PrisonerReceivedHandler(
         staffMember = user,
       )
 
-      licenceRepository.saveAndFlush(it)
-
       auditEventRepository.saveAndFlush(
         AuditEvent(
           licenceId = it.id,
-          username = "SYSTEM",
-          fullName = "SYSTEM",
+          username = SYSTEM_USER,
+          fullName = SYSTEM_USER,
           eventType = AuditEventType.SYSTEM_EVENT,
           summary = "Prison information changed for ${it.forename} ${it.surname} on prisoner receive event",
           detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode} version ${it.version}",
@@ -102,5 +101,5 @@ class PrisonerReceivedHandler(
     }
   }
 
-  data class AdditionalInformationPrisonerReceived(val reason: String, val prisonId: String, val nomsNumber: String)
+  private data class AdditionalInformationPrisonerReceived(val reason: String, val prisonId: String, val nomsNumber: String)
 }
