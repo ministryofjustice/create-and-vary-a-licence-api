@@ -19,4 +19,5 @@ interface OsCommonAddress {
   val yCoordinate: Double
   val lastUpdateDate: LocalDate
   fun isDeliveryPointAddress(): Boolean = false
+  fun isInvalid(): Boolean = false
 }

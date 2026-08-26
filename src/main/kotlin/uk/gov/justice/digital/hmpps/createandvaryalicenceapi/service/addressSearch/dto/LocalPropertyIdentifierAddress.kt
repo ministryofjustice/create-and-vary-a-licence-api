@@ -132,4 +132,6 @@ data class LocalPropertyIdentifierAddress(
 
   @field:JsonProperty("MATCH_DESCRIPTION")
   val matchDescription: String? = null,
-) : OsCommonAddress
+) : OsCommonAddress {
+  override fun isInvalid(): Boolean = lpiLogicalStatusCodeDescription.equals("HISTORICAL", ignoreCase = true)
+}

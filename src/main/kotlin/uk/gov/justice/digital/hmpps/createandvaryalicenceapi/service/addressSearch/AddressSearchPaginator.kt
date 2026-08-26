@@ -20,7 +20,7 @@ class AddressSearchPaginator(
 
   fun searchByText(searchQuery: String): List<AddressSearchResponse> = paginate(
     fetchCallBack = { _, pageable ->
-      flattenToList(osPlacesApiClient.searchForAddressesByText(pageable, searchQuery))
+      osPlacesApiClient.searchForAddressesByText(pageable, searchQuery)
     },
     mapResults = { address ->
       if (address.isDeliveryPointAddress()) {
@@ -32,7 +32,7 @@ class AddressSearchPaginator(
   )
 
   private fun paginate(
-    fetchCallBack: (page: Int, pageable: PageRequest) -> List<OsCommonAddress>,
+    fetchCallBack: (page: Int, pageable: PageRequest) -> List<OsPlacesApiAddress>,
     mapResults: (OsCommonAddress) -> AddressSearchResponse?,
   ): List<AddressSearchResponse> {
     val totalResults = mutableListOf<OsCommonAddress>()
@@ -43,7 +43,7 @@ class AddressSearchPaginator(
       val resultsFromApiCall = fetchCallBack(pageCount, PageRequest.of(pageCount, pageSize))
 
       if (resultsFromApiCall.isNotEmpty()) {
-        add(resultsFromApiCall, listOfDpaUprn, totalResults)
+        add(flattenToList(resultsFromApiCall), listOfDpaUprn, totalResults)
       }
 
       if (resultsFromApiCall.size < pageSize) break
@@ -65,18 +65,16 @@ class AddressSearchPaginator(
       }
     }
     totalResults.addAll(resultsFromApiCall)
-    totalResults.removeIf { !it.isDeliveryPointAddress() && listOfDpaUprn.contains(it.uprn) }
+    totalResults.removeIf {
+      !it.isDeliveryPointAddress() && (listOfDpaUprn.contains(it.uprn) || it.isInvalid())
+    }
   }
 
   private fun flattenToList(addresses: List<OsPlacesApiAddress>): List<OsCommonAddress> {
     val addressList = mutableListOf<OsCommonAddress>()
     addresses.forEach { results ->
       results.dpa?.let { addressList.add(it) }
-      results.lpi?.let {
-        if (!it.lpiLogicalStatusCodeDescription.equals("HISTORICAL", ignoreCase = true)) {
-          addressList.add(it)
-        }
-      }
+      results.lpi?.let { addressList.add(it) }
     }
     return addressList
   }
