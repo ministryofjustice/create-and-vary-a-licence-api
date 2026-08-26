@@ -32,15 +32,20 @@ class PrisonerReceivedHandler(
 
   @Transactional
   override fun handleEvent(message: String) {
-    log.info("Received prisoner received event")
+    if (!remandEnabled) {
+      log.info("Ignoring prisoner received event as handler is disabled")
+      return
+    } else {
+      log.info("Received prisoner received event")
+    }
     val event = mapper.readValue(message, HMPPSDomainEvent::class.java)
 
     val additionalInformation = mapper.convertValue(event.additionalInformation, AdditionalInformationPrisonerReceived::class.java)
     val reason = additionalInformation.reason
     val prisonId = additionalInformation.prisonId
     val nomsId = additionalInformation.nomsNumber
-    val validPrisonerReceivedStatuses = if (remandEnabled) LicenceStatus.PRISONER_RECEIVED_VALID_STATUSES else LicenceStatus.PRISONER_RECEIVED_VALID_STATUSES - LicenceStatus.ACTIVE
-    val validPrisonerReceivedReasons = if (remandEnabled) listOf("ADMISSION", "TRANSFERRED") else listOf("TRANSFERRED")
+    val validPrisonerReceivedStatuses = LicenceStatus.PRISONER_RECEIVED_VALID_STATUSES
+    val validPrisonerReceivedReasons = listOf("ADMISSION", "TRANSFERRED")
 
     if (reason in validPrisonerReceivedReasons) {
       val licences = getLicences(nomsId, validPrisonerReceivedStatuses.toList())

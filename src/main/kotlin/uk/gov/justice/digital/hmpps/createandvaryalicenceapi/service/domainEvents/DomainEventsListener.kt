@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEven
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
@@ -25,8 +24,6 @@ class DomainEventListener(
   private val prisonerMergedHandler: PrisonerMergedHandler,
   private val prisonerReceivedHandler: PrisonerReceivedHandler,
   private val mapper: ObjectMapper,
-  @param:Value("\${feature.toggle.remand.enabled:false}")
-  private val remandEnabled: Boolean,
 ) {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

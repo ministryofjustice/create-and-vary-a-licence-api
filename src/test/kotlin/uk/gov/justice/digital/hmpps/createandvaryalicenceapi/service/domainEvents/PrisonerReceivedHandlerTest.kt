@@ -38,7 +38,7 @@ class PrisonerReceivedHandlerTest {
     staffRepository,
     auditEventRepository,
     licenceRepository,
-    remandEnabled = false,
+    remandEnabled = true,
   )
 
   @BeforeEach
@@ -85,6 +85,7 @@ class PrisonerReceivedHandlerTest {
       LicenceStatus.SUBMITTED,
       LicenceStatus.REJECTED,
       LicenceStatus.APPROVED,
+      LicenceStatus.ACTIVE,
     )
 
     val auditEvent = auditCaptor.firstValue
@@ -95,15 +96,6 @@ class PrisonerReceivedHandlerTest {
   @Test
   fun `should process prisoner received event for remand`() {
     val aLicence = aLicence.copy(statusCode = LicenceStatus.ACTIVE)
-
-    val handler = PrisonerReceivedHandler(
-      mapper,
-      prisonApiClient,
-      staffRepository,
-      auditEventRepository,
-      licenceRepository,
-      remandEnabled = true,
-    )
 
     whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
@@ -171,32 +163,26 @@ class PrisonerReceivedHandlerTest {
   }
 
   @Test
-  fun `should query valid statuses excluding ACTIVE when remand is disabled`() {
-    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any()))
-      .thenReturn(emptyList())
+  fun `should not process prisoner received when remand is false`() {
+    val handler = PrisonerReceivedHandler(
+      mapper,
+      prisonApiClient,
+      staffRepository,
+      auditEventRepository,
+      licenceRepository,
+      remandEnabled = false,
+    )
 
     handler.handleEvent(
       aPrisonerReceivedEventMessage(
         aLicence.nomsId!!,
         PRISON_OFFENDER_RECEIVED_EVENT_TYPE,
         prisonId = "ABC",
-        reason = "TRANSFERRED",
+        reason = "REASON",
       ),
     )
 
-    val statusesCaptor = argumentCaptor<List<LicenceStatus>>()
-    verify(licenceRepository).findAllByNomsIdAndStatusCodeIn(any(), statusesCaptor.capture())
-
-    assertThat(statusesCaptor.firstValue).containsExactlyInAnyOrder(
-      LicenceStatus.IN_PROGRESS,
-      LicenceStatus.SUBMITTED,
-      LicenceStatus.REJECTED,
-      LicenceStatus.APPROVED,
-    )
-    assertThat(statusesCaptor.firstValue).doesNotContain(
-      LicenceStatus.ACTIVE,
-    )
-
+    verifyNoInteractions(licenceRepository)
     verifyNoInteractions(auditEventRepository)
   }
 
@@ -266,23 +252,6 @@ class PrisonerReceivedHandlerTest {
     verify(licenceRepository).findAllByNomsIdAndStatusCodeIn(any(), any())
     verifyNoInteractions(prisonApiClient)
     verifyNoMoreInteractions(licenceRepository)
-    verifyNoInteractions(auditEventRepository)
-  }
-
-  @Test
-  fun `should not process prisoner received event when reason is ADMISSION and remand is disabled`() {
-    handler.handleEvent(
-      aPrisonerReceivedEventMessage(
-        aLicence.nomsId!!,
-        PRISON_OFFENDER_RECEIVED_EVENT_TYPE,
-        prisonId = "ABC",
-        reason = "ADMISSION",
-      ),
-    )
-
-    verifyNoInteractions(licenceRepository)
-    verifyNoInteractions(prisonApiClient)
-    verifyNoInteractions(staffRepository)
     verifyNoInteractions(auditEventRepository)
   }
 
