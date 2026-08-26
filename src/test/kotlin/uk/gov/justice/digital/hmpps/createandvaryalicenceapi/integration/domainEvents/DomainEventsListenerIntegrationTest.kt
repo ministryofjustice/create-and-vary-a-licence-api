@@ -37,8 +37,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISONER_UPDATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISON_OFFENDER_MERGED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISON_OFFENDER_RECEIVED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerReceivedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_INSERTED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_UPDATED_EVENT_TYPE
@@ -74,6 +76,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var recallUpdatedHandler: RecallUpdatedHandler
+
+  @MockitoSpyBean
+  lateinit var prisonerReceivedHandler: PrisonerReceivedHandler
 
   @MockitoSpyBean
   lateinit var staffService: StaffService
@@ -463,6 +468,49 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(newBookingLicence.nomsId).isEqualTo(newNomisId)
     assertThat(newBookingLicence.forename).isEqualTo("A")
     assertThat(newBookingLicence.surname).isEqualTo("Prisoner")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `A prisoner received event is processed`() {
+    val nomsId = "A1234AA"
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetPrison()
+    val sentEvent = HMPPSDomainEvent(
+      additionalInformation = mapOf(
+        "reason" to "TRANSFERRED",
+        "prisonId" to "ABC",
+        "nomsNumber" to nomsId,
+      ),
+      version = 1,
+      occurredAt = "2026-08-24T00:00:00Z",
+      description = "A prisoner has been received into prison",
+      eventType = PRISON_OFFENDER_RECEIVED_EVENT_TYPE,
+      personReference = PersonReference(identifiers = listOf(Identifiers("NOMS", nomsId))),
+    )
+
+    val message = mapper.writeValueAsString(sentEvent)
+
+    sendEventAndVerifyProcessed(message, sentEvent.eventType)
+
+    verify(prisonerReceivedHandler).handleEvent(message)
+
+    val licence = testRepository.findLicence(1)
+    assertThat(licence.forename).isEqualTo("Person")
+    assertThat(licence.surname).isEqualTo("One")
+    assertThat(licence.dateOfBirth).isEqualTo("2020-10-25")
+
+    val auditEvent = testRepository.findFirstAuditEvent(1)
+    assertThat(auditEvent.summary).isEqualTo("Prison information changed for Person One on prisoner receive event")
+    assertThat(auditEvent.changes).isEqualTo(
+      mapOf(
+        "field" to "prisonCode",
+        "newValue" to "ABC",
+        "previousValue" to "MDI",
+      ),
+    )
   }
 
   private fun assertComExistsInDb(
