@@ -1,3 +1,5 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper
+
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
