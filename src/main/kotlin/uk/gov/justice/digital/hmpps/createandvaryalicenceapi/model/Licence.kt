@@ -199,6 +199,9 @@ sealed interface Licence {
   @get:Schema(description = "The type of appointment time of the initial appointment", example = "SPECIFIC_DATE_TIME")
   val appointmentTimeType: AppointmentTimeType?
 
+  @get:Schema(description = "Whether a licence is missing appointment time", example = "false")
+  val missingAppointmentTime: Boolean?
+
   @get:Schema(
     description = "The address of initial appointment",
     example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
