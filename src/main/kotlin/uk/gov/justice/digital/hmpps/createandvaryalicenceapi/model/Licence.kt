@@ -37,7 +37,7 @@ object LicenceKinds {
     DiscriminatorMapping(value = LicenceKinds.HDC_VARIATION, schema = HdcVariationLicence::class),
   ],
 )
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "kind")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "kind")
 sealed interface Licence {
   val kind: String
 

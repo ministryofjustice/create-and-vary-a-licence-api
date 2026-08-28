@@ -7,12 +7,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Condition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
-
-enum class ConditionType(val description: String) {
-  AP("AP"),
-  BESPOKE("Bespoke"),
-}
 
 data class ImageUploadSummary(
   val text: String?,
@@ -23,29 +22,7 @@ data class ImageUploadSummary(
 data class ConditionAndImageUploads(
   val additionalCondition: AdditionalCondition,
   val expandedText: String,
-  val uploadSummaries: List<ImageUploadSummary?>?,
-)
-
-interface Condition {
-  val category: String?
-  val condition: String
-}
-
-data class VariedAdditionalCondition(
-  override val category: String?,
-  override val condition: String,
-  val uploadSummaries: List<ImageUploadSummary?>? = emptyList(),
-) : Condition
-
-data class VariedBespokeCondition(
-  override val category: String,
-  override val condition: String,
-) : Condition
-
-data class VariedConditions(
-  val licenceConditionsAdded: List<Condition>,
-  val licenceConditionsRemoved: List<Condition>,
-  val licenceConditionsAmended: List<Condition>,
+  val uploadSummaries: List<ImageUploadSummary> = emptyList(),
 )
 
 @Service
@@ -61,15 +38,10 @@ class VariationService(
     }
 
     val originalLicence = licenceService.getLicenceById((variationLicence as VariationLicence).variationOf!!)
-    return compareVariationToOriginal(originalLicence, variationLicence)
+    return compareLicenceConditions(originalLicence, variationLicence)
   }
 
-  fun compareVariationToOriginal(originalLicence: Licence, variationLicence: Licence): VariedConditions {
-    val variedConditions = compareLicenceConditions(originalLicence, variationLicence)
-    return variedConditions
-  }
-
-  private fun compareLicenceConditions(originalLicence: Licence, variation: Licence): VariedConditions {
+  fun compareLicenceConditions(originalLicence: Licence, variation: Licence): VariedConditions {
     val variedAdditionalLicenceConditions = compareAdditionalConditionSet(
       originalLicence.additionalLicenceConditions,
       variation.additionalLicenceConditions,
@@ -88,23 +60,8 @@ class VariationService(
     originalConditionSet: List<AdditionalCondition>,
     variedConditionSet: List<AdditionalCondition>,
   ): VariedConditions {
-    val originalConditions = originalConditionSet.groupBy { it.code }.map { (_, conditions) ->
-      val conditionsText = conditions.map { it.expandedText ?: it.text }.joinToString("\n\n")
-      ConditionAndImageUploads(
-        additionalCondition = conditions.first(),
-        expandedText = conditionsText,
-        uploadSummaries = createConditionAndUploads(conditions),
-      )
-    }
-
-    val variedConditions = variedConditionSet.groupBy { it.code }.map { (_, conditions) ->
-      val conditionsText = conditions.map { it.expandedText ?: it.text }.joinToString("\n\n")
-      ConditionAndImageUploads(
-        additionalCondition = conditions.first(),
-        expandedText = conditionsText,
-        uploadSummaries = createConditionAndUploads(conditions),
-      )
-    }
+    val originalConditions = groupConditions(originalConditionSet)
+    val variedConditions = groupConditions(variedConditionSet)
 
     val sortedOriginalConditions: MutableList<ConditionAndImageUploads> =
       originalConditions.sortedBy { it.additionalCondition.code }.toMutableList()
@@ -166,7 +123,16 @@ class VariationService(
     )
   }
 
-  fun createConditionAndUploads(additionalConditions: List<AdditionalCondition>): List<ImageUploadSummary?> = additionalConditions.map { condition ->
+  private fun groupConditions(conditionSet: List<AdditionalCondition>): List<ConditionAndImageUploads> = conditionSet.groupBy { it.code }.map { (_, conditions) ->
+    val conditionsText = conditions.map { it.expandedText ?: it.text }.joinToString("\n\n")
+    ConditionAndImageUploads(
+      additionalCondition = conditions.first(),
+      expandedText = conditionsText,
+      uploadSummaries = createConditionAndUploads(conditions),
+    )
+  }
+
+  fun createConditionAndUploads(additionalConditions: List<AdditionalCondition>): List<ImageUploadSummary> = additionalConditions.map { condition ->
     val uploadSummary = condition.uploadSummary
     if (uploadSummary.isNotEmpty()) {
       ImageUploadSummary(
