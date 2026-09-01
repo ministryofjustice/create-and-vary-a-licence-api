@@ -14,10 +14,10 @@
     "currentText" : null,
     "suggestions" : [ ]
   }, {
-    "changeType" : "REMOVED_NO_REPLACEMENTS",
+    "changeType" : "NEW_OPTIONS",
     "code" : "0a370862-5426-49c1-b6d4-3d074d78a81a",
     "previousText" : "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-    "currentText" : null,
+    "currentText" : "You must stay at the address approved by your supervising officer between [TIME] and [TIME] each day, unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
     "suggestions" : [ ]
   }, {
     "changeType" : "TEXT_CHANGE",
