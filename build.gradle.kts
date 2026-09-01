@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("dev.detekt") version "2.0.0-alpha.6"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.4"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.6"
   id("org.owasp.dependencycheck") version "12.2.2"
   kotlin("plugin.spring") version "2.4.10"
   kotlin("plugin.jpa") version "2.4.10"
@@ -45,7 +45,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:6.1.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:6.2.0-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:3.0.8")
@@ -203,6 +203,10 @@ tasks {
   getByName("check") {
     dependsOn(":ktlintCheck", "detekt")
   }
+}
+
+dependencyCheck {
+  skipConfigurations.add("detekt")
 }
 
 allOpen {

@@ -32,6 +32,10 @@ updates:
       default-days: 7
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "postgres"
+        versions:
+          - ">=18"
 
   - package-ecosystem: "helm"
     directory: "/helm_deploy/create-and-vary-a-licence-api"

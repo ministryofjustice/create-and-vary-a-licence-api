@@ -58,8 +58,8 @@ private fun conditionUpdated(
   val added = (current.inputs ?: emptyList()) - (previous.inputs ?: emptyList()).toSet()
   val dataHasChanged = removed.isNotEmpty() || added.isNotEmpty()
   return when {
-    textHasChanged -> TEXT_CHANGE.update(previous, current)
     dataHasChanged -> NEW_OPTIONS.update(previous, current, removed, added)
+    textHasChanged -> TEXT_CHANGE.update(previous, current)
     else -> null
   }
 }
@@ -68,7 +68,7 @@ private fun conditionRemoved(
   condition: ILicenceCondition,
   allReplacements: List<Replacements>,
 ): LicenceConditionChanges {
-  val replacements = allReplacements.find { it.code === condition.code }
+  val replacements = allReplacements.find { it.code == condition.code }
   return when (replacements?.changeType) {
     DELETED -> DELETED.removal(condition, replacements.alternatives)
     REPLACED -> REPLACED.removal(condition, replacements.alternatives)

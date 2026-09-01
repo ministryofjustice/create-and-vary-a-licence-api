@@ -64,7 +64,8 @@ class DocsChangeTrackingTest {
           "(source files: ${sourceFiles.map { it.relativeTo(repoRoot).path }}).\n" +
           "Please review the documentation at '${entry.doc}', update it if the business " +
           "rules changed, then update the entry in $REGISTRY_FILE to:\n" +
-          "    hash: $actualHash",
+          "    hash: $actualHash.\n" +
+          "Please also ensure any changes are reflected in implementation notes in confluence.",
       )
       .isEqualTo(entry.hash)
   }
@@ -103,7 +104,8 @@ class DocsChangeTrackingTest {
   private fun findRepoRoot(): File {
     var dir = File(System.getProperty("user.dir")).absoluteFile
     while (!File(dir, REGISTRY_FILE).exists()) {
-      dir = dir.parentFile ?: error("Could not locate $REGISTRY_FILE by walking up from ${System.getProperty("user.dir")}")
+      dir =
+        dir.parentFile ?: error("Could not locate $REGISTRY_FILE by walking up from ${System.getProperty("user.dir")}")
     }
     return dir
   }

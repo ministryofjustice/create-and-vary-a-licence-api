@@ -198,6 +198,9 @@ data class VariationLicence(
   @field:Schema(description = "The type of appointment time of the initial appointment", example = "SPECIFIC_DATE_TIME")
   override val appointmentTimeType: AppointmentTimeType? = null,
 
+  @field:Schema(description = "Whether a licence is missing appointment time", example = "false")
+  override val missingAppointmentTime: Boolean? = null,
+
   @field:Schema(
     description = "The address of initial appointment",
     example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",

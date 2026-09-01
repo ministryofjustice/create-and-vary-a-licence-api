@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType.SPECIFIC_DATE_TIME
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -142,14 +143,11 @@ class AppointmentControllerTest {
   }
 
   @Test
-  fun `update initial appointment time should throw error when Appointment time is null and Appointment type is SPECIFIC_DATE_TIME`() {
-    val anAppointmentTimeRequestDateNull = anAppointmentTimeRequestDateOnly.copy(appointmentTime = null)
-    whenever(
-      appointmentService.updateAppointmentTime(
-        4,
-        anAppointmentTimeRequestDateNull,
-      ),
-    ).thenThrow(ValidationException("Appointment time must not be null if Appointment Type is SPECIFIC_DATE_TIME"))
+  fun `update initial appointment time should throw error when Appointment time is null and Appointment time type is SPECIFIC_DATE_TIME`() {
+    val anAppointmentTimeRequestDateNull = anAppointmentTimeRequestDateOnly.copy(
+      appointmentTime = null,
+      appointmentTimeType = SPECIFIC_DATE_TIME,
+    )
 
     val result = mvc.perform(
       put("/licence/id/4/appointmentTime")
@@ -161,12 +159,7 @@ class AppointmentControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).contains("Appointment time must not be null if Appointment Type is SPECIFIC_DATE_TIME")
-
-    verify(appointmentService, times(1)).updateAppointmentTime(
-      4,
-      anAppointmentTimeRequestDateNull,
-    )
+    assertThat(result.response.contentAsString).contains("Appointment time must not be null if Appointment time type is SPECIFIC_DATE_TIME")
   }
 
   @Test
