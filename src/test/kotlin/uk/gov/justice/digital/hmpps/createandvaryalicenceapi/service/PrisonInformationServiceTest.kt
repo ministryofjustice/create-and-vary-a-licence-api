@@ -53,7 +53,7 @@ class PrisonInformationServiceTest {
     whenever(prisonApiClient.getPrisonInformation("BAI")).thenReturn(aPrison)
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
-    service.updatePrisonInformation(MOVEMENT, licence, "BAI")
+    service.updatePrisonInformation(MOVEMENT, listOf(licence), "BAI")
 
     assertThat(licence.prisonCode).isEqualTo("BAI")
     assertThat(licence.prisonDescription).isEqualTo("Belmarsh (HMP)")
@@ -84,7 +84,7 @@ class PrisonInformationServiceTest {
     whenever(prisonApiClient.getPrisonInformation("BAI")).thenReturn(aPrison)
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
-    service.updatePrisonInformation(SUPPORTING_PRISON_UPDATE, licence, "BAI")
+    service.updatePrisonInformation(SUPPORTING_PRISON_UPDATE, listOf(licence), "BAI")
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
@@ -111,7 +111,7 @@ class PrisonInformationServiceTest {
     val licence = createCrdLicence().copy(prisonCode = "BAI")
     whenever(prisonApiClient.getPrisonInformation("BAI")).thenReturn(aPrison)
 
-    service.updatePrisonInformation(MOVEMENT, licence, "BAI")
+    service.updatePrisonInformation(MOVEMENT, listOf(licence), "BAI")
 
     assertThat(licence.prisonDescription).isNotEqualTo("Belmarsh (HMP)")
     verify(auditEventRepository, never()).saveAndFlush(any())
@@ -123,7 +123,7 @@ class PrisonInformationServiceTest {
     whenever(prisonApiClient.getPrisonInformation("BAI")).thenReturn(aPrison)
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(null)
 
-    service.updatePrisonInformation(MOVEMENT, licence, "BAI")
+    service.updatePrisonInformation(MOVEMENT, listOf(licence), "BAI")
 
     assertThat(licence.updatedByUsername).isEqualTo(SYSTEM_USER)
 

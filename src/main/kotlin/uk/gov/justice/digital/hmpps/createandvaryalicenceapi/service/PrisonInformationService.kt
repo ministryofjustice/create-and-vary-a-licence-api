@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
@@ -31,10 +32,7 @@ class PrisonInformationService(
     ),
   }
 
-  fun updatePrisonInformation(updateType: UpdateType, licence: Licence, prisonCode: String) {
-    updatePrisonInformation(updateType, listOf(licence), prisonCode)
-  }
-
+  @Transactional
   fun updatePrisonInformation(updateType: UpdateType, licences: List<Licence>, prisonCode: String) {
     val prison = prisonApiClient.getPrisonInformation(prisonCode)
     updateLicences(updateType, licences, prison)
