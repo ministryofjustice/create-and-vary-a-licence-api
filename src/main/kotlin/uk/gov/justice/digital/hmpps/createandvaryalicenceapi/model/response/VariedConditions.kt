@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ImageUploadSummary
 
-@Schema(description = "Describes a licence within this service")
+@Schema(description = "Describes a type of condition that can be varied on a licence.")
 object ConditionType {
   const val AP = "AP"
   const val BESPOKE = "BESPOKE"
@@ -34,7 +34,7 @@ data class VariedAdditionalCondition(
   override val type: String = ConditionType.AP,
   override val category: String?,
   override val condition: String,
-  val uploadSummaries: List<ImageUploadSummary?>? = emptyList(),
+  val uploadSummaries: List<ImageUploadSummary>? = emptyList(),
 ) : Condition
 
 @Schema(description = "Describes a bespoke condition that has changed when a licence was varied.")

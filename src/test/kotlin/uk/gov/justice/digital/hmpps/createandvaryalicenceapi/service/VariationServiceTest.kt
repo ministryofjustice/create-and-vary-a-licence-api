@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -398,14 +396,5 @@ class VariationServiceTest {
     assertThat(result.licenceConditionsAmended).contains(
       VariedAdditionalCondition(category = "category 1", condition = "amended text 1"),
     )
-  }
-
-  @Test
-  fun jackson() {
-    val mapper = jacksonObjectMapper().registerModule(JavaTimeModule())
-
-    val licence = aModelLicence()
-    val licenceJson = mapper.writeValueAsString(licence)
-    println(licenceJson)
   }
 }
