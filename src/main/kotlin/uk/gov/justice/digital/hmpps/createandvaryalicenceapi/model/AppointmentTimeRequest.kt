@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.constraints.AssertTrue
+import jakarta.validation.constraints.AssertFalse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType.SPECIFIC_DATE_TIME
 import java.time.LocalDateTime
@@ -20,6 +20,6 @@ data class AppointmentTimeRequest(
   val appointmentTimeType: AppointmentTimeType = SPECIFIC_DATE_TIME,
 ) {
   @JsonIgnore
-  @AssertTrue(message = "Appointment time must not be null if Appointment time type is SPECIFIC_DATE_TIME")
-  fun isAppointmentTimeValid() = appointmentTimeType != SPECIFIC_DATE_TIME || appointmentTime != null
+  @AssertFalse(message = "Appointment time must not be null if Appointment time type is SPECIFIC_DATE_TIME")
+  fun isMissingTime() = appointmentTimeType == SPECIFIC_DATE_TIME && appointmentTime == null
 }

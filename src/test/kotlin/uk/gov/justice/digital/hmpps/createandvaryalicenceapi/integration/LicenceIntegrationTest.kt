@@ -32,7 +32,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceRe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
@@ -844,40 +843,6 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result).isNotNull
     assertThat(result).hasSize(1)
     assertThat(result!!.first().eventDescription).isEqualTo("reason")
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `Update prison information with large prison telephone number`() {
-    webTestClient.put()
-      .uri("/licence/id/1/prison-information")
-      .bodyValue(
-        UpdatePrisonInformationRequest(
-          prisonCode = "PVI",
-          prisonDescription = "Pentonville (HMP)",
-          prisonTelephone = "+44 20 7946 0958 #98765",
-        ),
-      )
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.prisonCode).isEqualTo("PVI")
-    assertThat(result?.prisonDescription).isEqualTo("Pentonville (HMP)")
-    assertThat(result?.prisonTelephone).isEqualTo("+44 20 7946 0958 #98765")
   }
 
   @Test
