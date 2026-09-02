@@ -20,6 +20,12 @@
     "currentText" : "You must stay at the address approved by your supervising officer between [TIME] and [TIME] each day, unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
     "suggestions" : [ ]
   }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
+    "previousText" : "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+    "currentText" : "Report to staff at the Approved Premises where you reside at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+    "suggestions" : [ ]
+  }, {
     "changeType" : "TEXT_CHANGE",
     "code" : "1dc7ee29-df47-48a8-90b6-69e286692d8a",
     "previousText" : "To comply with any instruction given by your supervising officer requiring you to attend polygraph testing. To participate in polygraph sessions and examinations as instructed by or under the authority of your supervising officer and to comply with any instruction given to you during a polygraph session by the person conducting the polygraph.",
