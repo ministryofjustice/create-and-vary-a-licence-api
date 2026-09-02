@@ -958,6 +958,7 @@ class LicenceController(
     licenceService.discardLicence(licenceId)
   }
 
+  @Deprecated("Will not be required post remand work")
   @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/prison-information"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
