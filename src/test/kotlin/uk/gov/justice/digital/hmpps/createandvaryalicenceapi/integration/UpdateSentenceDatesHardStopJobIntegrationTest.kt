@@ -49,7 +49,7 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-2.sql",
+    "classpath:test_data/seed-v4-licence.sql",
   )
   fun `Update sentence dates should add an entry to potential hard stop cases when licence was in hard stop period but is no longer`() {
     prisonApiMockServer.stubGetHdcLatest()
