@@ -7,36 +7,32 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonInformationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonInformationService.UpdateType.MOVEMENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 
 class PrisonerReceivedHandlerTest {
   private val mapper: ObjectMapper = createTestMapper()
-  private val prisonApiClient = mock<PrisonApiClient>()
-  private val staffRepository = mock<StaffRepository>()
-  private val auditEventRepository = mock<AuditEventRepository>()
+  private val prisonInformationService = mock<PrisonInformationService>()
   private val licenceRepository = mock<LicenceRepository>()
 
   private val handler = PrisonerReceivedHandler(
     mapper,
-    prisonApiClient,
-    staffRepository,
-    auditEventRepository,
+    prisonInformationService,
     licenceRepository,
     remandEnabled = true,
   )
@@ -44,9 +40,7 @@ class PrisonerReceivedHandlerTest {
   @BeforeEach
   fun reset() {
     reset(
-      prisonApiClient,
-      staffRepository,
-      auditEventRepository,
+      prisonInformationService,
       licenceRepository,
     )
   }
@@ -59,9 +53,6 @@ class PrisonerReceivedHandlerTest {
       ),
     )
 
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(aCom)
-
     handler.handleEvent(
       aPrisonerReceivedEventMessage(
         aLicence.nomsId!!,
@@ -71,26 +62,13 @@ class PrisonerReceivedHandlerTest {
       ),
     )
 
-    val auditCaptor = argumentCaptor<AuditEvent>()
-    val nomsIdCaptor = argumentCaptor<String>()
-    val statusesCaptor = argumentCaptor<List<LicenceStatus>>()
+    argumentCaptor<List<Licence>> {
+      verify(prisonInformationService, times(1)).updatePrisonInformation(eq(MOVEMENT), capture(), eq("ABC"))
 
-    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(nomsIdCaptor.capture(), statusesCaptor.capture())
-    verify(prisonApiClient, times(1)).getPrisonInformation("ABC")
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(nomsIdCaptor.firstValue).isEqualTo(aLicence.nomsId)
-    assertThat(statusesCaptor.firstValue).containsExactlyInAnyOrder(
-      LicenceStatus.IN_PROGRESS,
-      LicenceStatus.SUBMITTED,
-      LicenceStatus.REJECTED,
-      LicenceStatus.APPROVED,
-      LicenceStatus.ACTIVE,
-    )
-
-    val auditEvent = auditCaptor.firstValue
-    assertThat(auditEvent.licenceId).isEqualTo(aLicence.id)
-    assertThat(auditEvent.summary).isEqualTo("Prison information changed for ${aLicence.forename} ${aLicence.surname} on prisoner receive event")
+      assertThat(firstValue.size).isEqualTo(1)
+      assertThat(firstValue.first().id).isEqualTo(aLicence.id)
+      assertThat(firstValue.first().nomsId).isEqualTo(aLicence.nomsId)
+    }
   }
 
   @Test
@@ -103,10 +81,6 @@ class PrisonerReceivedHandlerTest {
       ),
     )
 
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(aCom)
-
     handler.handleEvent(
       aPrisonerReceivedEventMessage(
         aLicence.nomsId!!,
@@ -116,59 +90,14 @@ class PrisonerReceivedHandlerTest {
       ),
     )
 
-    val auditCaptor = argumentCaptor<AuditEvent>()
-    val statusesCaptor = argumentCaptor<List<LicenceStatus>>()
-
-    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), statusesCaptor.capture())
-    verify(prisonApiClient, times(1)).getPrisonInformation(any())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    val auditEvent = auditCaptor.firstValue
-    assertThat(auditEvent.licenceId).isEqualTo(aLicence.id)
-    assertThat(auditEvent.summary).isEqualTo("Prison information changed for ${aLicence.forename} ${aLicence.surname} on prisoner receive event")
-
-    val statuses = statusesCaptor.firstValue
-    assertThat(statuses).contains(LicenceStatus.ACTIVE)
-    assertThat(statuses).doesNotContain(LicenceStatus.TIMED_OUT)
-  }
-
-  @Test
-  fun `should update and audit only licences with changed prison code when multiple licences are returned`() {
-    val licenceToUpdate = aLicence.copy(prisonCode = "MDI", prisonDescription = "Moorland (HMP)")
-    val licenceToSkip = aLicence.copy(prisonCode = "ABC", prisonDescription = "ABC (HMP)")
-
-    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
-      listOf(licenceToUpdate, licenceToSkip),
-    )
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(aCom)
-
-    handler.handleEvent(
-      aPrisonerReceivedEventMessage(
-        aLicence.nomsId!!,
-        PRISON_OFFENDER_RECEIVED_EVENT_TYPE,
-        prisonId = "ABC",
-        reason = "TRANSFERRED",
-      ),
-    )
-
-    val auditCaptor = argumentCaptor<AuditEvent>()
-
-    verify(prisonApiClient, times(1)).getPrisonInformation("ABC")
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(any())
-    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(auditCaptor.firstValue.licenceId).isEqualTo(licenceToUpdate.id)
+    verify(prisonInformationService, times(1)).updatePrisonInformation(eq(MOVEMENT), any<List<Licence>>(), eq("ABC"))
   }
 
   @Test
   fun `should not process prisoner received when remand is false`() {
     val handler = PrisonerReceivedHandler(
       mapper,
-      prisonApiClient,
-      staffRepository,
-      auditEventRepository,
+      prisonInformationService,
       licenceRepository,
       remandEnabled = false,
     )
@@ -183,7 +112,7 @@ class PrisonerReceivedHandlerTest {
     )
 
     verifyNoInteractions(licenceRepository)
-    verifyNoInteractions(auditEventRepository)
+    verifyNoInteractions(prisonInformationService)
   }
 
   @Test
@@ -198,47 +127,12 @@ class PrisonerReceivedHandlerTest {
     )
 
     verifyNoInteractions(licenceRepository)
-    verifyNoInteractions(auditEventRepository)
-  }
-
-  @Test
-  fun `should not process prisoner received event when prison code is the same as the licence`() {
-    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
-      listOf(
-        aLicence.copy(),
-      ),
-    )
-
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(
-      somePrisonInformation.copy(
-        prisonId = "MDI",
-        description = "Moorland (HMP)",
-      ),
-    )
-
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(aCom)
-
-    handler.handleEvent(
-      aPrisonerReceivedEventMessage(
-        aLicence.nomsId!!,
-        PRISON_OFFENDER_RECEIVED_EVENT_TYPE,
-        prisonId = "MDI",
-        reason = "TRANSFERRED",
-      ),
-    )
-
-    verify(licenceRepository).findAllByNomsIdAndStatusCodeIn(any(), any())
-    verify(prisonApiClient, times(1)).getPrisonInformation(any())
-    verifyNoMoreInteractions(licenceRepository)
-    verifyNoMoreInteractions(prisonApiClient)
-    verifyNoInteractions(staffRepository)
-    verifyNoInteractions(auditEventRepository)
+    verifyNoInteractions(prisonInformationService)
   }
 
   @Test
   fun `should return early when no licences found`() {
-    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any()))
-      .thenReturn(emptyList())
+    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 
     handler.handleEvent(
       aPrisonerReceivedEventMessage(
@@ -250,30 +144,29 @@ class PrisonerReceivedHandlerTest {
     )
 
     verify(licenceRepository).findAllByNomsIdAndStatusCodeIn(any(), any())
-    verifyNoInteractions(prisonApiClient)
+
     verifyNoMoreInteractions(licenceRepository)
-    verifyNoInteractions(auditEventRepository)
+    verifyNoInteractions(prisonInformationService)
   }
 
-  private fun aPrisonerReceivedEventMessage(nomsId: String, eventType: String, prisonId: String, reason: String) = mapper
-    .writeValueAsString(
-      HMPPSDomainEvent(
-        eventType = eventType,
-        additionalInformation = mapOf(
-          "currentLocation" to "IN_PRISON",
-          "currentPrisonStatus" to "UNDER_PRISON_CARE",
-          "details" to "ACTIVE IN: ABC-D",
-          "nomisMovementReasonCode" to "D",
-          "nomsNumber" to nomsId,
-          "prisonId" to prisonId,
-          "reason" to reason,
-        ),
-        version = 0,
-        occurredAt = "2026-08-24T00:00:00Z",
-        description = "A prisoner has been received into prison",
-        personReference = PersonReference(identifiers = listOf(Identifiers("NOMS", nomsId))),
+  private fun aPrisonerReceivedEventMessage(nomsId: String, eventType: String, prisonId: String, reason: String) = mapper.writeValueAsString(
+    HMPPSDomainEvent(
+      eventType = eventType,
+      additionalInformation = mapOf(
+        "currentLocation" to "IN_PRISON",
+        "currentPrisonStatus" to "UNDER_PRISON_CARE",
+        "details" to "ACTIVE IN: ABC-D",
+        "nomisMovementReasonCode" to "D",
+        "nomsNumber" to nomsId,
+        "prisonId" to prisonId,
+        "reason" to reason,
       ),
-    )
+      version = 0,
+      occurredAt = "2026-08-24T00:00:00Z",
+      description = "A prisoner has been received into prison",
+      personReference = PersonReference(identifiers = listOf(Identifiers("NOMS", nomsId))),
+    ),
+  )
 
   private companion object {
     val aLicence = createCrdLicence()

@@ -516,7 +516,7 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Curfew arrangement",
-        code = "52faefcf-15f0-42c5-b908-621b4a7ecdb9",
+        code = "0a370862-5426-49c1-b6d4-3d074d78a81a",
         inputs = listOf(
           Input(
             label = "Select the number of curfews needed",
