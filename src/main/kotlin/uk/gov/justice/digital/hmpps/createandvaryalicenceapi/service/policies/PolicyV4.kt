@@ -913,28 +913,6 @@ val POLICY_V4_0 = LicencePolicy(
         code = "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
         inputs = listOf(
           Input(
-            label = "Choose what information to enter",
-            name = "addressOrGeneric",
-            options = listOf(
-              Option(
-                value = "The approved premises where you reside",
-              ),
-              Option(
-                value = "Name of approved premises",
-                conditional = Conditional(
-                  inputs = listOf(
-                    ConditionalInput(
-                      label = "Enter name of approved premises",
-                      name = "approvedPremises",
-                      type = TEXT,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            type = RADIO,
-          ),
-          Input(
             label = "Select when the person needs to report",
             name = "reportingFrequency",
             options = listOf(
@@ -1028,9 +1006,9 @@ val POLICY_V4_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        tpl = "Report to staff at {approvedPremises} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        type = "ReportToApprovedPremisesPolicyV3",
+        text = "Report to staff at the Approved Premises where you reside at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        tpl = "Report to staff at the Approved Premises where you reside at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        type = "ReportToApprovedPremisesPolicyV4",
       ),
       AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
