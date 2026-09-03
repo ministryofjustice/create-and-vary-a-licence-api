@@ -6,12 +6,18 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aModelHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aModelHdcVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aModelVariation
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 class VariationServiceTest {
   private val licenceService = mock<LicenceService>()
@@ -351,6 +357,53 @@ class VariationServiceTest {
   }
 
   @Test
+  fun `should return a change to an exclusion zone map`() {
+    val uploadSummary = AdditionalConditionUploadSummary(id = 1)
+    uploadSummary.thumbnailImage = "an image"
+
+    val originalLicence = aModelLicence()
+      .copy(
+        additionalLicenceConditions = listOf(
+          AdditionalCondition(
+            code = "1",
+            category = "Freedom of movement",
+            expandedText = "Wales",
+            uploadSummary = listOf(
+              uploadSummary,
+            ),
+          ),
+        ),
+      )
+
+    val variationUploadSummary = AdditionalConditionUploadSummary(id = 1)
+    variationUploadSummary.thumbnailImage = "a different image"
+
+    val variationLicence = aModelVariation()
+      .copy(
+        additionalLicenceConditions = listOf(
+          AdditionalCondition(
+            code = "1",
+            category = "Freedom of movement",
+            expandedText = "Wales",
+            uploadSummary = listOf(variationUploadSummary),
+          ),
+        ),
+      )
+
+    val result = variationService.compareLicenceConditions(originalLicence, variationLicence)
+
+    assertThat(result.licenceConditionsAdded).isEmpty()
+    assertThat(result.licenceConditionsRemoved).isEmpty()
+    assertThat(result.licenceConditionsAmended).contains(
+      VariedAdditionalCondition(
+        category = "Freedom of movement",
+        condition = "Wales",
+        uploadSummaries = listOf(ImageUploadSummary(thumbnailImage = "a different image")),
+      ),
+    )
+  }
+
+  @Test
   fun `should return added multiple exclusion zones when parent licence had none present`() {
     val originalLicence = aModelLicence()
       .copy(
@@ -396,5 +449,64 @@ class VariationServiceTest {
     assertThat(result.licenceConditionsAmended).contains(
       VariedAdditionalCondition(category = "category 1", condition = "amended text 1"),
     )
+  }
+
+  @Test
+  fun `should compare curfew conditions on HDC licences and return no changes`() {
+    val originalLicence = aModelHdcLicence()
+      .copy(
+        weeklyCurfewTimes = listOf(
+          CurfewTimes(
+            fromTime = LocalTime.of(12, 0),
+            untilTime = LocalTime.of(13, 0),
+            createdTimestamp = LocalDateTime.now(),
+          ),
+        ),
+      )
+    val variationLicence = aModelHdcVariation().copy(weeklyCurfewTimes = originalLicence.weeklyCurfewTimes)
+
+    whenever(licenceService.getLicenceById(variationLicence.id)).thenReturn(variationLicence)
+    whenever(licenceService.getLicenceById(variationLicence.variationOf!!)).thenReturn(originalLicence)
+    val result = variationService.variationDiffFromParent(variationLicence.id)
+
+    assertThat(result.licenceConditionsAdded).isEmpty()
+    assertThat(result.licenceConditionsRemoved).isEmpty()
+    assertThat(result.licenceConditionsAmended).isEmpty()
+    assertThat(result.hasUpdatedCurfewAddress).isFalse
+    assertThat(result.hasUpdatedCurfewHours).isFalse
+  }
+
+  @Test
+  fun `should compare curfew conditions on HDC licences and return if there are changes`() {
+    val originalLicence = aModelHdcLicence().copy(
+      weeklyCurfewTimes = listOf(
+        CurfewTimes(
+          fromTime = LocalTime.of(12, 0),
+          untilTime = LocalTime.of(13, 0),
+          createdTimestamp = LocalDateTime.now(),
+        ),
+      ),
+    )
+    val variationLicence = aModelHdcVariation()
+      .copy(
+        weeklyCurfewTimes = listOf(
+          CurfewTimes(
+            fromTime = LocalTime.of(12, 0),
+            untilTime = LocalTime.of(14, 0),
+            createdTimestamp = LocalDateTime.now(),
+          ),
+        ),
+      )
+
+    whenever(licenceService.getLicenceById(variationLicence.id)).thenReturn(variationLicence)
+    whenever(licenceService.getLicenceById(variationLicence.variationOf!!)).thenReturn(originalLicence)
+
+    val result = variationService.variationDiffFromParent(variationLicence.id)
+
+    assertThat(result.licenceConditionsAdded).isEmpty()
+    assertThat(result.licenceConditionsRemoved).isEmpty()
+    assertThat(result.licenceConditionsAmended).isEmpty()
+    assertThat(result.hasUpdatedCurfewAddress).isFalse
+    assertThat(result.hasUpdatedCurfewHours).isTrue
   }
 }

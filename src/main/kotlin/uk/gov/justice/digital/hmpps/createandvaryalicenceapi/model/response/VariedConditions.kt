@@ -23,8 +23,19 @@ object ConditionType {
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
 sealed interface Condition {
+  @get:Schema(description = "The type of licence condition", example = "AP")
   val type: String
+
+  @get:Schema(
+    description = "The category code of the condition",
+    example = "Making or maintaining contact with a persons",
+  )
   val category: String?
+
+  @get:Schema(
+    description = "The condition text",
+    example = "Receive home visits from a Mental Health Worker.",
+  )
   val condition: String
 }
 
@@ -49,4 +60,22 @@ data class VariedConditions(
   val licenceConditionsAdded: List<Condition>,
   val licenceConditionsRemoved: List<Condition>,
   val licenceConditionsAmended: List<Condition>,
+)
+
+@Schema(description = "Describes changes between a varied licence and it's parent.")
+data class VariationChanges(
+  @get:Schema(description = "A list of licence conditions that have been added to the variation")
+  val licenceConditionsAdded: List<Condition>,
+
+  @get:Schema(description = "A list of licence conditions that have been removed from the variation")
+  val licenceConditionsRemoved: List<Condition>,
+
+  @get:Schema(description = "A list of licence conditions that have been amended in the variation")
+  val licenceConditionsAmended: List<Condition>,
+
+  @get:Schema(description = "Has the curfew address been updated in the variation", example = "true")
+  val hasUpdatedCurfewAddress: Boolean,
+
+  @get:Schema(description = "Have the curfew hours been updated in the variation", example = "false")
+  val hasUpdatedCurfewHours: Boolean,
 )
