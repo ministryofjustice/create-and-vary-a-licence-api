@@ -39,7 +39,7 @@ class VariationsController(
       ApiResponse(
         responseCode = "200",
         description = "Differences between the variation and the original licence returned",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = VariedConditions::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = VariationChanges::class))],
       ),
       ApiResponse(
         responseCode = "401",
