@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.reactive.server.expectBody
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedConditions
 
 class VariationsIntegrationTest : IntegrationTestBase() {
 
@@ -22,7 +22,7 @@ class VariationsIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody<VariedConditions>()
+      .expectBody<VariationChanges>()
       .returnResult().responseBody
 
     assertThat(result.licenceConditionsAdded).isEqualTo(
@@ -49,5 +49,7 @@ class VariationsIntegrationTest : IntegrationTestBase() {
         ),
       ),
     )
+    assertThat(result.hasUpdatedCurfewHours).isFalse()
+    assertThat(result.hasUpdatedCurfewAddress).isFalse()
   }
 }

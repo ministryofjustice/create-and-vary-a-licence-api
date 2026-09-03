@@ -4,13 +4,30 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ImageUploadSummary
 
 @Schema(description = "Describes a type of condition that can be varied on a licence.")
 object ConditionType {
   const val AP = "AP"
   const val BESPOKE = "BESPOKE"
 }
+
+@Schema(description = "Describes a image uploaded linked to a condition.")
+data class ImageUploadSummary(
+  @get:Schema(description = "The text associated with the image", example = "An exclusion zone map")
+  val text: String? = null,
+
+  @get:Schema(
+    description = "The description of the image",
+    example = "A map showing where licence holder cannot enter.",
+  )
+  val description: String? = null,
+
+  @get:Schema(
+    description = "The thumbnail for the  exclusion zone map as a base64-encoded JPEG image",
+    example = "Base64 string",
+  )
+  val thumbnailImage: String?,
+)
 
 @Schema(
   description = "Describes a condition that has changed when a licence was varied.",
@@ -45,7 +62,7 @@ data class VariedAdditionalCondition(
   override val type: String = ConditionType.AP,
   override val category: String?,
   override val condition: String,
-  val uploadSummaries: List<ImageUploadSummary>? = emptyList(),
+  val uploadSummaries: List<ImageUploadSummary> = emptyList(),
 ) : Condition
 
 @Schema(description = "Describes a bespoke condition that has changed when a licence was varied.")

@@ -12,18 +12,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Condition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ImageUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import java.security.MessageDigest
-
-data class ImageUploadSummary(
-  val text: String? = null,
-  val description: String? = null,
-  val thumbnailImage: String?,
-)
 
 data class ConditionAndImageUploads(
   val additionalCondition: AdditionalCondition,
@@ -164,19 +159,32 @@ class VariationService(
     )
   }
 
-  fun createConditionAndUploads(additionalConditions: List<AdditionalCondition>): List<ImageUploadSummary> = additionalConditions.map { condition ->
+  fun createConditionAndUploads(additionalConditions: List<AdditionalCondition>): List<ImageUploadSummary> = additionalConditions.mapNotNull { condition ->
     val uploadSummary = condition.uploadSummary
     if (uploadSummary.isNotEmpty()) {
-      return listOf(
-        ImageUploadSummary(
-          text = condition.text,
-          description = uploadSummary[0].description,
-          thumbnailImage = uploadSummary[0].thumbnailImage,
-        ),
+      ImageUploadSummary(
+        text = condition.text,
+        description = uploadSummary[0].description,
+        thumbnailImage = uploadSummary[0].thumbnailImage,
       )
+    } else {
+      null
     }
-    return emptyList()
   }
+
+  // fun createConditionAndUploads(additionalConditions: List<AdditionalCondition>): List<ImageUploadSummary> = additionalConditions.map { condition ->
+  //   val uploadSummary = condition.uploadSummary
+  //   if (uploadSummary.isNotEmpty()) {
+  //     return listOf(
+  //       ImageUploadSummary(
+  //         text = condition.text,
+  //         description = uploadSummary[0].description,
+  //         thumbnailImage = uploadSummary[0].thumbnailImage,
+  //       ),
+  //     )
+  //   }
+  //   return emptyList()
+  // }
 
   fun compareBespokeConditionSet(
     originalConditionSet: List<BespokeCondition>,
@@ -236,16 +244,12 @@ class VariationService(
       originalAddress?.townOrCity != variedAddress?.townOrCity
     )
 
-  fun hasUpdatedCurfewHours(originalCurfewHours: List<CurfewTimes>, variedCurfewHours: List<CurfewTimes>): Boolean {
-    return originalCurfewHours.any { curfew ->
-      val variedCurfew = variedCurfewHours.find { v -> v.curfewTimesSequence == curfew.curfewTimesSequence }
-      return (
-        curfew.fromTime != variedCurfew?.fromTime ||
-          curfew.untilTime != variedCurfew?.untilTime ||
-          curfew.fromDay != variedCurfew?.fromDay ||
-          curfew.untilDay != variedCurfew?.untilDay
-        )
-    }
+  fun hasUpdatedCurfewHours(originalCurfewHours: List<CurfewTimes>, variedCurfewHours: List<CurfewTimes>): Boolean = originalCurfewHours.any { curfew ->
+    val variedCurfew = variedCurfewHours.find { v -> v.curfewTimesSequence == curfew.curfewTimesSequence }
+    curfew.fromTime != variedCurfew?.fromTime ||
+      curfew.untilTime != variedCurfew?.untilTime ||
+      curfew.fromDay != variedCurfew?.fromDay ||
+      curfew.untilDay != variedCurfew?.untilDay
   }
 
   private fun Licence.isHdcLicence() = kind == LicenceKinds.HDC || kind == LicenceKinds.HDC_VARIATION
