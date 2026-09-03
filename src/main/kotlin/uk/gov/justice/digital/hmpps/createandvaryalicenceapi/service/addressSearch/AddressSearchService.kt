@@ -3,12 +3,12 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSea
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressSearchResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesMapperToAddressSearchResponseMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesDpaMapperToAddressSearchResponseMapper
 
 @Service
 class AddressSearchService(
   private val osPlacesApiClient: OsPlacesApiClient,
-  private val mapper: OsPlacesMapperToAddressSearchResponseMapper,
+  private val mapper: OsPlacesDpaMapperToAddressSearchResponseMapper,
   private val addressSearchPaginator: AddressSearchPaginator,
 ) {
 

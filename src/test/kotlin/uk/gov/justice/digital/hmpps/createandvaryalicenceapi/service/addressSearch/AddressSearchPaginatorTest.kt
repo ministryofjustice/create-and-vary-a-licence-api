@@ -6,15 +6,21 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressSearchResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesMapperToAddressSearchResponseMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.dto.DeliveryPointAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.dto.LocalPropertyIdentifierAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.dto.OsPlacesApiAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesDpaMapperToAddressSearchResponseMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesLpiMapperToAddressSearchResponseMapper
 import java.time.LocalDate
 
 class AddressSearchPaginatorTest {
 
   private val apiClient: OsPlacesApiClient = mock()
-  private val mapper = OsPlacesMapperToAddressSearchResponseMapper()
-  private val paginator = AddressSearchPaginator(apiClient, mapper, 50, 200)
+  private val mapperDpa = OsPlacesDpaMapperToAddressSearchResponseMapper()
+  private val mapperLpi = OsPlacesLpiMapperToAddressSearchResponseMapper()
+  private val paginator = AddressSearchPaginator(apiClient, mapperDpa, mapperLpi, 50, 200)
 
   @Test
   fun `searchByText returns mapped results over multiple pages`() {
@@ -76,6 +82,96 @@ class AddressSearchPaginatorTest {
     assertThat(result.last().uprn).isEqualTo("uprn-200")
   }
 
+  @Test
+  fun `searchByText excludes historical LPI addresses`() {
+    // Given
+    val lpi = createLpiAddress(
+      index = 1,
+      lpiLogicalStatusCodeDescription = "HISTORICAL",
+    )
+
+    whenever(apiClient.searchForAddressesByText(any(), eq("Street")))
+      .thenReturn(listOf(OsPlacesApiAddress(lpi = lpi)))
+
+    // When
+    val result = paginator.searchByText("Street")
+
+    // Then
+    assertThat(result).isEmpty()
+  }
+
+  @Test
+  fun `searchByText returns non historical LPI addresses`() {
+    // Given
+    val lpi = createLpiAddress(
+      index = 1,
+      lpiLogicalStatusCodeDescription = "APPROVED",
+    )
+
+    whenever(apiClient.searchForAddressesByText(any(), eq("Street")))
+      .thenReturn(listOf(OsPlacesApiAddress(lpi = lpi)))
+
+    // When
+    val result = paginator.searchByText("Street")
+
+    // Then
+    assertThat(result).hasSize(1)
+    assertThat(result[0].uprn).isEqualTo("uprn-1")
+  }
+
+  @Test
+  fun `searchByText prefers DPA over LPI with same UPRN`() {
+    // Given
+    val lpi = createLpiAddress(
+      index = 1,
+      lpiLogicalStatusCodeDescription = "APPROVED",
+    )
+    val dpa = createDeliveryPointAddress(1)
+
+    whenever(apiClient.searchForAddressesByText(any(), eq("Street")))
+      .thenReturn(
+        listOf(
+          OsPlacesApiAddress(lpi = lpi, dpa = dpa),
+        ),
+      )
+
+    // When
+    val result = paginator.searchByText("Street")
+
+    // Then
+    assertThat(result).hasSize(1)
+    assertThat(result[0].uprn).isEqualTo("uprn-1")
+  }
+
+  @Test
+  fun `searchByText removes LPI when DPA with same UPRN is returned on later page`() {
+    // Given
+    val lpi = createOsPlacesAddressForLpi(index = 300)
+    val dpa = createOsPlacesAddress(300)
+
+    val results = createResults(98, 49)
+    val firstPage = results[0]
+    val secondPage = results[1]
+    firstPage.add(lpi)
+    secondPage.add(dpa)
+
+    whenever(apiClient.searchForAddressesByText(any(), eq("Street")))
+      .thenAnswer { invocation ->
+        when (invocation.getArgument<Pageable>(0).pageNumber) {
+          0 -> firstPage
+          1 -> secondPage
+          else -> emptyList()
+        }
+      }
+
+    // When
+    val result = paginator.searchByText("Street")
+
+    // Then
+    assertThat(result.count { it.uprn == "uprn-300" }).isEqualTo(1)
+    assertThat(result.first { it.uprn == "uprn-300" }.postcode).isEqualTo("PC300DPA")
+  }
+
   private fun assertResults(result: List<AddressSearchResponse>, expectedResultSize: Int) {
     assertThat(result).hasSize(expectedResultSize)
     result.forEachIndexed { i, addr ->
@@ -85,7 +181,7 @@ class AddressSearchPaginatorTest {
       assertThat(addr.secondLine).isEqualTo("Locality $index")
       assertThat(addr.townOrCity).isEqualTo("Town $index")
       assertThat(addr.county).isEqualTo("County $index")
-      assertThat(addr.postcode).isEqualTo("PC${index}AA")
+      assertThat(addr.postcode).isEqualTo("PC${index}DPA")
       assertThat(addr.country).isEqualTo("England")
     }
   }
@@ -96,14 +192,23 @@ class AddressSearchPaginatorTest {
       .thenReturn(pages[0], *pages.drop(1).toTypedArray())
   }
 
-  private fun createResults(totalResults: Int): List<List<DeliveryPointAddress>> {
-    val pageSize = 50
-    return (1..totalResults)
-      .map(::createOsPlacesAddress)
-      .chunked(pageSize)
-  }
+  private fun createResults(
+    totalResults: Int,
+    pageSize: Int = 50,
+  ): List<MutableList<OsPlacesApiAddress>> = (1..totalResults)
+    .map(::createOsPlacesAddress)
+    .chunked(pageSize)
+    .map { it.toMutableList() }
 
-  private fun createOsPlacesAddress(index: Int): DeliveryPointAddress = DeliveryPointAddress(
+  private fun createOsPlacesAddress(index: Int): OsPlacesApiAddress = OsPlacesApiAddress(
+    dpa = createDeliveryPointAddress(index),
+  )
+
+  private fun createOsPlacesAddressForLpi(index: Int): OsPlacesApiAddress = OsPlacesApiAddress(
+    lpi = createLpiAddress(index),
+  )
+
+  private fun createDeliveryPointAddress(index: Int): DeliveryPointAddress = DeliveryPointAddress(
     uprn = "uprn-$index",
     address = "Some Address $index",
     subBuildingName = null,
@@ -114,10 +219,32 @@ class AddressSearchPaginatorTest {
     locality = "Locality $index",
     postTown = "Town $index",
     county = "County $index",
-    postcode = "PC${index}AA",
+    postcode = "PC${index}DPA",
     countryDescription = "England",
     xCoordinate = 123456.0 + index,
     yCoordinate = 654321.0 + index,
     lastUpdateDate = LocalDate.now(), // ← Set to today's date
+  )
+
+  private fun createLpiAddress(
+    index: Int,
+    lpiLogicalStatusCodeDescription: String? = "APPROVED",
+  ): LocalPropertyIdentifierAddress = LocalPropertyIdentifierAddress(
+    uprn = "uprn-$index",
+    address = "First Line $index, Second lines $index",
+    subBuildingName = null,
+    organisationName = null,
+    buildingName = "Building $index",
+    buildingNumber = "$index",
+    thoroughfareName = "Street $index",
+    locality = "Locality $index",
+    postTown = "Town $index",
+    county = "County $index",
+    postcode = "PC${index}LPI",
+    countryDescription = "England",
+    xCoordinate = 123456.0 + index,
+    yCoordinate = 654321.0 + index,
+    lastUpdateDate = LocalDate.now(),
+    lpiLogicalStatusCodeDescription = lpiLogicalStatusCodeDescription,
   )
 }

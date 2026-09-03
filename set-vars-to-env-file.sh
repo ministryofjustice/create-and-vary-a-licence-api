@@ -34,7 +34,10 @@ echo "Getting NOTIFY_API_KEY..."
 export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json | jq -r '.data.NOTIFY_API_KEY | @base64d')
 
 # --- Booleans / Flags ---
-export HDC_ENABLED=false
+export HDC_ENABLED=true
+export USE_CURRENT_HDC_STATUS=false
+export REMAND_ENABLED=false
+export PROGRESSION_MODEL_POLICY_START_DATE=2026-01-14
 
 # --- Write to .env file ---
 fileDir=~/env-config/
@@ -62,7 +65,9 @@ cat > "$fileToAddVars" <<EOF
 
 # --- Flags ---
   HDC_ENABLED=${HDC_ENABLED}
+  USE_CURRENT_HDC_STATUS=${USE_CURRENT_HDC_STATUS}
   REMAND_ENABLED=${REMAND_ENABLED}
+  PROGRESSION_MODEL_POLICY_START_DATE=${PROGRESSION_MODEL_POLICY_START_DATE}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"
