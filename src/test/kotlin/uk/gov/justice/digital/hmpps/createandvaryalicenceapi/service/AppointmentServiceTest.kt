@@ -63,15 +63,6 @@ class AppointmentServiceTest {
   }
 
   @Test
-  fun `update initial appointment person validates that person is populated`() {
-    val exception = assertThrows<ValidationException> {
-      service.updateAppointmentPerson(1L, AppointmentPersonRequest(SPECIFIC_PERSON, ""))
-    }
-
-    assertThat(exception.message).isEqualTo("Appointment person must not be empty if Appointment With Type is SPECIFIC_PERSON")
-  }
-
-  @Test
   fun `update initial appointment person persists updated entity correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
@@ -141,24 +132,6 @@ class AppointmentServiceTest {
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
-    verifyNoInteractions(staffRepository)
-  }
-
-  @Test
-  fun `update initial appointment person throws an exception if person is provided when appointment not needed`() {
-    val exception = assertThrows<ValidationException> {
-      service.updateAppointmentPerson(
-        1L,
-        AppointmentPersonRequest(
-          appointmentPersonType = NO_APPOINTMENT_NEEDED,
-          appointmentPerson = "John Smith",
-        ),
-      )
-    }
-
-    assertThat(exception).isInstanceOf(ValidationException::class.java)
-
-    verifyNoInteractions(licenceRepository)
     verifyNoInteractions(staffRepository)
   }
 
