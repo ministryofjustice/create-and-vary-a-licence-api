@@ -25,14 +25,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.AdditionalInformationPrisonerMerged
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.AdditionalInformationPrisonerUpdated
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.COM_ALLOCATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DiffCategory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSPrisonerMergedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSPrisonerUpdatedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISONER_UPDATED_EVENT_TYPE
@@ -40,6 +38,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISON_OFFENDER_RECEIVED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler.AdditionalInformationPrisonerMerged
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler.HMPPSPrisonerMergedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerReceivedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_INSERTED_EVENT_TYPE

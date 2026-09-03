@@ -893,6 +893,7 @@ class LicenceService(
     uploadFileConditionsService.deleteDocuments(deletableDocumentUuids)
   }
 
+  @Deprecated("use PrisonInformationService instead")
   @Transactional
   fun updatePrisonInformation(licenceId: Long, prisonInformationRequest: UpdatePrisonInformationRequest) {
     val licenceEntity = getLicence(licenceId)

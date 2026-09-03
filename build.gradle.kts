@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("dev.detekt") version "2.0.0-alpha.6"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.6"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.7"
   id("org.owasp.dependencycheck") version "12.2.2"
   kotlin("plugin.spring") version "2.4.10"
   kotlin("plugin.jpa") version "2.4.10"
@@ -25,8 +25,8 @@ dependencies {
     }
   }
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
 
   implementation("io.netty:netty-codec-http")
   implementation("io.netty:netty-handler")
@@ -64,8 +64,8 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:16.4.1")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.8.0")
-  implementation("org.jsoup:jsoup:1.23.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.8.1")
+  implementation("org.jsoup:jsoup:1.23.2")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
   implementation("org.springframework.boot:spring-boot-starter-webclient")

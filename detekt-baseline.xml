@@ -48,6 +48,7 @@
     <ID>ReturnCount:LicenceCreationService.kt:LicenceCreationService$fun getOrCreateCom: CommunityOffenderManager?</ID>
     <ID>ReturnCount:LsdRecalculationService.kt:LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate: Long</ID>
     <ID>ReturnCount:NotifyService.kt:NotifyService$private fun sendEmail: Boolean</ID>
+    <ID>ReturnCount:PrisonerReceivedHandler.kt:PrisonerReceivedHandler$@Transactional override fun handleEvent</ID>
     <ID>SwallowedException:MigrationService.kt:MigrationService$e: IllegalStateException</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt:ComAllocatedHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:UploadFileConditionsService.kt:UploadFileConditionsService$e: Exception</ID>
@@ -74,6 +75,7 @@
     <ID>TooManyFunctions:ToEntityTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToEntityTransformers.kt</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
+    <ID>TooManyFunctions:UpdateSentenceDateService.kt:UpdateSentenceDateService</ID>
     <ID>TooManyFunctions:WebClientConfiguration.kt:WebClientConfiguration</ID>
     <ID>UnusedParameter:ConditionController.kt:ConditionController$@PathVariable conditionType: String</ID>
     <ID>UtilityClassWithPublicConstructor:ProbationContactMapper.kt:ProbationContactMapper</ID>

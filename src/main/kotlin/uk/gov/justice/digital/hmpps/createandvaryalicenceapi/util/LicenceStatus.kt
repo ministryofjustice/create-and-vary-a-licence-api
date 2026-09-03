@@ -61,13 +61,5 @@ enum class LicenceStatus {
       VARIATION_APPROVED,
       VARIATION_REJECTED,
     )
-
-    val PRISONER_RECEIVED_VALID_STATUSES = setOf(
-      IN_PROGRESS,
-      SUBMITTED,
-      REJECTED,
-      APPROVED,
-      ACTIVE,
-    )
   }
 }
