@@ -28,7 +28,7 @@ sealed interface Condition {
 
   @get:Schema(
     description = "The category code of the condition",
-    example = "Making or maintaining contact with a persons",
+    example = "Making or maintaining contact with a person",
   )
   val category: String?
 
