@@ -906,7 +906,7 @@
         "headerCaption": null
       },
       {
-        "code": "52faefcf-15f0-42c5-b908-621b4a7ecdb9",
+        "code": "0a370862-5426-49c1-b6d4-3d074d78a81a",
         "category": "Curfew arrangement",
         "text": "You must stay at the address approved by your supervising officer between [TIME] and [TIME] each day, unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
         "textPlural": null,
@@ -1561,48 +1561,11 @@
       {
         "code": "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
-        "text": "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        "text": "Report to staff at the Approved Premises where you reside at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "textPlural": null,
-        "tpl": "Report to staff at {approvedPremises} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        "tpl": "Report to staff at the Approved Premises where you reside at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "requiresInput": true,
         "inputs": [
-          {
-            "type": "radio",
-            "label": "Choose what information to enter",
-            "name": "addressOrGeneric",
-            "listType": null,
-            "options": [
-              {
-                "value": "The approved premises where you reside",
-                "conditional": null
-              },
-              {
-                "value": "Name of approved premises",
-                "conditional": {
-                  "inputs": [
-                    {
-                      "type": "text",
-                      "label": "Enter name of approved premises",
-                      "name": "approvedPremises",
-                      "case": null,
-                      "handleIndefiniteArticle": null,
-                      "includeBefore": null,
-                      "subtext": null,
-                      "defaultValue": null,
-                      "hideHintText": false
-                    }
-                  ]
-                }
-              }
-            ],
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
-          },
           {
             "type": "radio",
             "label": "Select when the person needs to report",
@@ -1750,7 +1713,7 @@
         ],
         "categoryShort": "Supervision in the community",
         "subtext": null,
-        "type": "ReportToApprovedPremisesPolicyV3",
+        "type": "ReportToApprovedPremisesPolicyV4",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false,
         "headerCaption": null
