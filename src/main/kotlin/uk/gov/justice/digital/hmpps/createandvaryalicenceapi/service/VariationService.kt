@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Vari
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import java.security.MessageDigest
 
 data class ConditionAndImageUploads(
@@ -34,9 +33,7 @@ class VariationService(
   fun variationDiffFromParent(variationId: Long): VariationChanges {
     val variationLicence = licenceService.getLicenceById(variationId)
     val kind = variationLicence.kind
-    if (kind != LicenceKinds.VARIATION && kind != LicenceKinds.HDC_VARIATION) {
-      throw InvalidStateException("Licence with id $variationId is not a variation")
-    }
+    require(kind == LicenceKinds.VARIATION || kind == LicenceKinds.HDC_VARIATION) { "Licence with id $variationId is not a variation" }
 
     val originalLicence =
       if (variationLicence.kind == LicenceKinds.VARIATION) {

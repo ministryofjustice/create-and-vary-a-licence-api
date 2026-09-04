@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ImageUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedBespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aModelHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aModelHdcVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aModelLicence
@@ -28,7 +27,7 @@ class VariationServiceTest {
   fun `should throw an exception if the licence is not a variation`() {
     val aLicence = aModelLicence()
     whenever(licenceService.getLicenceById(aLicence.id)).thenReturn(aLicence)
-    val exception = assertThrows<InvalidStateException> {
+    val exception = assertThrows<IllegalArgumentException> {
       variationService.variationDiffFromParent(aLicence.id)
     }
     assertThat(exception.message).isEqualTo("Licence with id ${aLicence.id} is not a variation")
