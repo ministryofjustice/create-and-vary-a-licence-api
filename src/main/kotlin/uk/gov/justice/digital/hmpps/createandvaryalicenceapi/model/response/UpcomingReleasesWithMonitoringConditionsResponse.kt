@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Schema(description = "Response representing a case with Electronic monitoring conditions, coming up for release")
 data class UpcomingReleasesWithMonitoringConditionsResponse(
@@ -16,6 +17,9 @@ data class UpcomingReleasesWithMonitoringConditionsResponse(
   @field:Schema(description = "Licence start date", example = "15/07/2024")
   @field:JsonFormat(pattern = "dd/MM/yyyy")
   val licenceStartDate: LocalDate?,
+  @field:Schema(description = "The date that this licence was submitted for approval", example = "24/08/2024")
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
+  val submittedDate: LocalDateTime?,
   @field:Schema(description = "em condition codes", example = "14a, 14b, 14c, 5a")
   val emConditionCodes: String?,
   @field:Schema(description = "full name of prisoner", example = "Forename Surname")
