@@ -33,6 +33,7 @@
     <ID>LongMethod:UpdateSentenceDateService.kt:UpdateSentenceDateService$@Transactional fun updateSentenceDates</ID>
     <ID>LongMethod:VariationLicence.kt:VariationLicence$fun copy: VariationLicence</ID>
     <ID>LongMethod:VariationLicence.kt:VariationLicence$override fun toString: String</ID>
+    <ID>LongMethod:VariationService.kt:VariationService$private fun compareAdditionalConditionSet: VariedConditions</ID>
     <ID>MagicNumber:AddressSearchService.kt:AddressSearchService$3</ID>
     <ID>MagicNumber:EligibilityService.kt:EligibilityService$4</ID>
     <ID>MagicNumber:HdcLicenceRepository.kt:HdcLicenceRepository$9</ID>
