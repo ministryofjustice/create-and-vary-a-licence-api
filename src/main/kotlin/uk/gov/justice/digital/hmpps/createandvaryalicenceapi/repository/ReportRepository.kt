@@ -32,6 +32,7 @@ ranked AS (
     l.crn,
     l.status_code,
     l.licence_start_date,
+    l.submitted_date,
     STRING_AGG(DISTINCT cl.condition_value, ', ') AS em_condition_codes,
     l.forename AS forename,
     l.surname AS surname,
@@ -48,13 +49,14 @@ ranked AS (
     ON cl.condition_code = ac.condition_code
     WHERE l.status_code IN ('SUBMITTED', 'APPROVED')
     AND l.licence_start_date >= CURRENT_DATE
-  GROUP BY l.noms_id, l.crn, l.status_code, l.licence_start_date, l.id, l.surname, l.forename
+  GROUP BY l.noms_id, l.crn, l.status_code, l.licence_start_date, l.submitted_date, l.id, l.surname, l.forename
 )
 SELECT
   nomis_number AS "prisonNumber",
   crn,
   status_code AS "status",
   licence_start_date AS "licenceStartDate",
+  submitted_date::timestamp AS "submittedDate",
   em_condition_codes,
   forename,
   surname

@@ -27,7 +27,8 @@ insert into licence (kind,
                      probation_team_code,
                      responsible_com_id,
                      created_by_com_id,
-                     licence_version)
+                     licence_version,
+                     submitted_date)
 values ('CRD',
         'AP',
         '3.0',
@@ -57,7 +58,8 @@ values ('CRD',
         'TEAM1',
         1,
         1,
-        '1.0');
+        '1.0',
+        '2024-08-24 11:30:33');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
@@ -103,7 +105,8 @@ insert into licence (kind,
                      probation_team_code,
                      responsible_com_id,
                      created_by_com_id,
-                     licence_version)
+                     licence_version,
+                     submitted_date)
 values ('CRD',
         'AP',
         '3.0',
@@ -133,7 +136,8 @@ values ('CRD',
         'TEAM1',
         1,
         1,
-        '1.0');
+        '1.0',
+        '2024-08-20 09:15:00');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (2, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');

@@ -15,6 +15,7 @@ class UpcomingReleasesWithMonitoringConditionsReportService(
       prisonNumber = it.prisonNumber,
       status = LicenceStatus.valueOf(it.status),
       licenceStartDate = it.licenceStartDate,
+      submittedDate = it.submittedDate,
       emConditionCodes = it.emConditionCodes,
       fullName = it.fullName,
     )
