@@ -172,20 +172,6 @@ class VariationService(
     }
   }
 
-  // fun createConditionAndUploads(additionalConditions: List<AdditionalCondition>): List<ImageUploadSummary> = additionalConditions.map { condition ->
-  //   val uploadSummary = condition.uploadSummary
-  //   if (uploadSummary.isNotEmpty()) {
-  //     return listOf(
-  //       ImageUploadSummary(
-  //         text = condition.text,
-  //         description = uploadSummary[0].description,
-  //         thumbnailImage = uploadSummary[0].thumbnailImage,
-  //       ),
-  //     )
-  //   }
-  //   return emptyList()
-  // }
-
   fun compareBespokeConditionSet(
     originalConditionSet: List<BespokeCondition>,
     variedConditionSet: List<BespokeCondition>,
