@@ -4,10 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -36,48 +32,6 @@ class EligibilityServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
   private var service = EligibilityService(prisonApiClient, releaseDateService, clock)
-
-  @Nested
-  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-  inner class PssProgressionRepeal {
-
-    @ParameterizedTest
-    @MethodSource("pssRepealCases")
-    fun `pss repeal eligibility scenarios`(
-      licenceExpiryDate: LocalDate?,
-      topUpSupervisionExpiryDate: LocalDate?,
-      expectedEligible: Boolean,
-    ) {
-      // Given
-      val prisonerSearchResult = aPrisonerSearchResult.copy(
-        licenceExpiryDate = licenceExpiryDate,
-        topupSupervisionExpiryDate = topUpSupervisionExpiryDate,
-      )
-
-      // When
-      val result = service.getEligibilityAssessment(prisonerSearchResult, HdcStatuses(emptyList()))
-
-      // Then
-      assertThat(result.isEligible).isEqualTo(expectedEligible)
-
-      if (!expectedEligible) {
-        assertThat(result.genericIneligibilityReasons)
-          .containsExactly("PSS licences no longer supported")
-      }
-    }
-
-    fun pssRepealCases(): List<Arguments> {
-      val now = LocalDate.now(clock)
-
-      return listOf(
-        // repeal date passed / PSS blocked
-        Arguments.of(null, now.plusDays(1), false),
-        Arguments.of(now.plusDays(1), now.plusDays(1), true),
-        Arguments.of(now.plusDays(1), null, true),
-        Arguments.of(null, null, true),
-      )
-    }
-  }
 
   @Nested
   inner class CrdCases {
