@@ -8,6 +8,7 @@ data class UpcomingReleasesWithMonitoringConditions(
   val crn: String,
   val status: String,
   val licenceStartDate: LocalDate?,
+  val submittedDate: LocalDate?,
   val emConditionCodes: String?,
   val forename: String?,
   val surname: String?,
