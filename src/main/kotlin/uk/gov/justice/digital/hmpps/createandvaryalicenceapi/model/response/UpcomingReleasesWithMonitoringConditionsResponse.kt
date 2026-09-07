@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Schema(description = "Response representing a case with Electronic monitoring conditions, coming up for release")
 data class UpcomingReleasesWithMonitoringConditionsResponse(
