@@ -1636,6 +1636,10 @@ val POLICY_V4_0 = LicencePolicy(
         "f1d2888b-be86-4732-8874-44cb867865c2",
       ),
     ),
+    ChangeHint(
+      previousCode = "79ac033f-9d7a-4dab-8344-475106e58b71",
+      replacements = emptyList(),
+    ),
   ),
   standardConditions = StandardConditions(
     standardConditionsAp = listOf(
