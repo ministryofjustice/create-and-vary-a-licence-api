@@ -56,7 +56,7 @@ SELECT
   crn,
   status_code AS "status",
   licence_start_date AS "licenceStartDate",
-  submitted_date AS "submittedDate",
+  submitted_date::date AS "submittedDate",
   em_condition_codes,
   forename,
   surname
