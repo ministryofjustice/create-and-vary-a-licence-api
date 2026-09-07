@@ -71,11 +71,8 @@ class AddressSearchPaginator(
   }
 
   private fun flattenToList(addresses: List<OsPlacesApiAddress>): List<OsCommonAddress> {
-    val addressList = mutableListOf<OsCommonAddress>()
-    addresses.forEach { results ->
-      results.dpa?.let { addressList.add(it) }
-      results.lpi?.let { addressList.add(it) }
-    }
-    return addressList
+      return addresses.flatMap { results ->
+          listOfNotNull(results.dpa, results.lpi)
+      }
   }
 }
