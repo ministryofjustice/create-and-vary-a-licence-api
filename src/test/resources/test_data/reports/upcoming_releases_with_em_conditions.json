@@ -4,6 +4,7 @@
     "crn": "CRN1",
     "status": "SUBMITTED",
     "licenceStartDate": "{{LICENCE_START_DATE}}",
+    "submittedDate": "24/08/2024",
     "emConditionCodes" : "14d",
     "fullName": "Person One"
   },
@@ -12,6 +13,7 @@
     "crn": "CRN2",
     "status": "APPROVED",
     "licenceStartDate": "{{LICENCE_START_DATE}}",
+    "submittedDate": "20/08/2024",
     "emConditionCodes": "14b",
     "fullName": "Person Two"
   }
