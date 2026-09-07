@@ -70,9 +70,7 @@ class AddressSearchPaginator(
     }
   }
 
-  private fun flattenToList(addresses: List<OsPlacesApiAddress>): List<OsCommonAddress> {
-      return addresses.flatMap { results ->
-          listOfNotNull(results.dpa, results.lpi)
-      }
+  private fun flattenToList(addresses: List<OsPlacesApiAddress>): List<OsCommonAddress> = addresses.flatMap { results ->
+    listOfNotNull(results.dpa, results.lpi)
   }
 }
