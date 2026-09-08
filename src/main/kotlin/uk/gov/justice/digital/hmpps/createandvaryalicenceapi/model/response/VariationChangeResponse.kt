@@ -80,7 +80,7 @@ data class VariedConditions(
 )
 
 @Schema(description = "Describes changes between a varied licence and its parent.")
-data class VariationChanges(
+data class VariationChangeResponse(
   @get:Schema(description = "A list of licence conditions that have been added to the variation")
   val licenceConditionsAdded: List<Condition>,
 

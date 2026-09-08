@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.reactive.server.expectBody
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChangeResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
 
 class VariationsIntegrationTest : IntegrationTestBase() {
@@ -22,7 +22,7 @@ class VariationsIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody<VariationChanges>()
+      .expectBody<VariationChangeResponse>()
       .returnResult().responseBody
 
     assertThat(result.licenceConditionsAdded).isEqualTo(

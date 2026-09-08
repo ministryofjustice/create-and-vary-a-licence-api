@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Condition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ImageUploadSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChangeResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedConditions
@@ -30,7 +30,7 @@ class VariationService(
   private val licenceService: LicenceService,
 ) {
   @Transactional
-  fun variationDiffFromParent(variationId: Long): VariationChanges {
+  fun variationDiffFromParent(variationId: Long): VariationChangeResponse {
     val variationLicence = licenceService.getLicenceById(variationId)
     val kind = variationLicence.kind
     require(kind == LicenceKinds.VARIATION || kind == LicenceKinds.HDC_VARIATION) { "Licence with id $variationId is not a variation" }
@@ -51,7 +51,7 @@ class VariationService(
       updatedCurfewAddress = hasUpdatedCurfewAddress(original.curfewAddress, variation.curfewAddress)
       updatedCurfewHours = hasUpdatedCurfewHours(originalLicence.weeklyCurfewTimes, variation.weeklyCurfewTimes)
     }
-    return VariationChanges(
+    return VariationChangeResponse(
       licenceConditionsAdded = variedConditions.licenceConditionsAdded,
       licenceConditionsRemoved = variedConditions.licenceConditionsRemoved,
       licenceConditionsAmended = variedConditions.licenceConditionsAmended,
