@@ -5,6 +5,7 @@ import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
+import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryEx
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.MissingStaffException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.PrisonerReleasedOnExistingCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
@@ -168,10 +170,10 @@ class ControllerAdvice {
   fun handleResourceAlreadyExists(e: ResourceAlreadyExistsException): ResponseEntity<EntityAlreadyExistsResponse> {
     log.info("ResourceAlreadyExistsException: {}, resource: {}", e.message, e.existingResourceId)
     return ResponseEntity
-      .status(HttpStatus.CONFLICT)
+      .status(CONFLICT)
       .body(
         EntityAlreadyExistsResponse(
-          status = HttpStatus.CONFLICT.value(),
+          status = CONFLICT.value(),
           userMessage = "Validation failure: ${e.message}",
           developerMessage = e.message,
           existingResourceId = e.existingResourceId,
@@ -180,7 +182,7 @@ class ControllerAdvice {
   }
 
   @ExceptionHandler(InvalidStateException::class)
-  fun handleInvalidStateException(e: InvalidStateException): ResponseEntity<ErrorResponse?> {
+  fun handleInvalidStateException(e: InvalidStateException): ResponseEntity<ErrorResponse> {
     log.error("InvalidStateException: ${e.message}")
     return ResponseEntity
       .status(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -203,7 +205,7 @@ class ControllerAdvice {
   }
 
   @ExceptionHandler(Exception::class)
-  fun handleException(e: Exception): ResponseEntity<ErrorResponse?>? {
+  fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
     log.error("Unexpected exception: {}", e.stackTraceToString())
     return ResponseEntity
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -229,8 +231,25 @@ class ControllerAdvice {
       .body(
         ErrorResponse(
           status = BAD_REQUEST.value(),
-          userMessage = "Unexpected error: ${e.message}",
+          userMessage = "NoRetryMigration error: ${e.message}",
           developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(
+    PrisonerReleasedOnExistingCvlLicenceException::class,
+  )
+  fun handleNoRetryPrisonerReleasedOnExistingCvlLicenceException(e: Exception): ResponseEntity<ErrorResponse> {
+    log.info("NoRetryPrisonerReleasedOnExistingCvlLicenceException: {}", e.message)
+    return ResponseEntity
+      .status(CONFLICT)
+      .body(
+        ErrorResponse(
+          status = CONFLICT,
+          userMessage = "NoRetryMigration error: ${e.message}",
+          developerMessage = e.message,
+          moreInfo = "PRISONER_RELEASED_ON_EXISTING_CVL_LICENCE",
         ),
       )
   }
