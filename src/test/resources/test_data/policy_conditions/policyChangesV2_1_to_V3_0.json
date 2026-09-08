@@ -1,0 +1,119 @@
+{
+  "fromVersion" : "2.1",
+  "toVersion" : "3.0",
+  "changes" : [ {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
+    "previousText" : "Not to reside (not even to stay for one night) in the same household as [ANY / ANY FEMALE / ANY MALE] child under the age of [INSERT AGE] without the prior approval of your supervising officer.",
+    "currentText" : "Not to reside (not even to stay for one night) in the same household as [ANY / ANY FEMALE / ANY MALE] child under the age of [INSERT AGE] without the prior approval of your supervising officer.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
+    "previousText" : "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner, unless otherwise approved by your supervising officer.",
+    "currentText" : "Attend all appointments arranged for you with a [PSYCHIATRIST / PSYCHOLOGIST / MEDICAL PRACTITIONER] unless otherwise approved by your supervising officer.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "REPLACED",
+    "code" : "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
+    "previousText" : "Attend appointments, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
+    "currentText" : null,
+    "suggestions" : [ {
+      "code" : "f1d2888b-be86-4732-8874-44cb867865c2",
+      "currentText" : "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A CONTROLLED DRUG / ALCOHOL / SOLVENTS]."
+    } ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
+    "previousText" : "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT] except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
+    "currentText" : "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT] except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "REPLACED",
+    "code" : "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
+    "previousText" : "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems.",
+    "currentText" : null,
+    "suggestions" : [ {
+      "code" : "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
+      "currentText" : "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your [SEXUAL OFFENDING / VIOLENT OFFENDING / GAMBLING / PROLIFIC OFFENDING / OFFENDING BEHAVIOUR]."
+    }, {
+      "code" : "f1d2888b-be86-4732-8874-44cb867865c2",
+      "currentText" : "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A CONTROLLED DRUG / ALCOHOL / SOLVENTS]."
+    } ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "9da214a3-c6ae-45e1-a465-12e22adf7c87",
+    "previousText" : "Not to undertake work or other organised activity which will involve a person under the age of [INSERT AGE], either on a paid or unpaid basis without the prior approval of your supervising officer.",
+    "currentText" : "Not to undertake work or other organised activity which will involve a person under the age of [INSERT AGE], either on a paid or unpaid basis without the prior approval of your supervising officer.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "DELETED",
+    "code" : "72d281c3-b194-43ab-812d-fea0683ada65",
+    "previousText" : "Not to own or possess a mobile phone with a photographic function without the prior approval of your supervising officer.",
+    "currentText" : null,
+    "suggestions" : [ {
+      "code" : "3932e5c9-4d21-4251-a747-ce6dc52dc9c0",
+      "currentText" : "Not to own or possess a [SPECIFIED ITEM] without the prior approval of your supervising officer."
+    } ]
+  }, {
+    "changeType" : "DELETED",
+    "code" : "ed607a91-fe3a-4816-8eb9-b447c945935c",
+    "previousText" : "Not to own or use a camera without the prior approval of your supervising officer.",
+    "currentText" : null,
+    "suggestions" : [ {
+      "code" : "3932e5c9-4d21-4251-a747-ce6dc52dc9c0",
+      "currentText" : "Not to own or possess a [SPECIFIED ITEM] without the prior approval of your supervising officer."
+    } ]
+  }, {
+    "changeType" : "DELETED",
+    "code" : "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
+    "previousText" : "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection upon request.",
+    "currentText" : null,
+    "suggestions" : [ {
+      "code" : "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
+      "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software."
+    } ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
+    "previousText" : "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+    "currentText" : "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
+    "previousText" : "Notify your supervising officer of any developing relationships, including the ending of any relationships.",
+    "currentText" : "Notify your supervising officer of any developing relationships, including status changes such as engagement, marriage, pregnancies or the ending of any relationships, and disclose the details of the person you are in a relationship with.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "8686a815-b7f0-43b6-9886-f01df6a48773",
+    "previousText" : "Provide your supervising officer with the details of any bank accounts to which you are a signatory and of any credit cards you possess. You must also notify your supervising officer when becoming a signatory to any new bank account or credit card, and provide the account/card details. This condition will be reviewed on a monthly basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
+    "currentText" : "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
+    "previousText" : "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
+    "currentText" : "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "REMOVED_NO_REPLACEMENTS",
+    "code" : "bb401b88-2137-4154-be4a-5e05c168638a",
+    "previousText" : "On release to be escorted by police to Approved Premises.",
+    "currentText" : null,
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
+    "previousText" : "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+    "currentText" : "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "d36a3b77-30ba-40ce-8953-83e761d3b487",
+    "previousText" : "You must not drink any alcohol until [END DATE] unless your probation officer says you can. You will need to wear an electronic tag all the time so we can check this.",
+    "currentText" : "You must not drink any alcohol until [END DATE]. You will need to wear an electronic tag all the time so we can check this.",
+    "suggestions" : [ ]
+  } ]
+}

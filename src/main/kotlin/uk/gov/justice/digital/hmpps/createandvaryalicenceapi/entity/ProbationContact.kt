@@ -47,5 +47,5 @@ class ProbationContact(
   var dateLastUpdated: LocalDateTime? = null,
 ) : AbstractIdEntity(idInternal = id) {
 
-  fun isMissingAppointmentTime() = this.appointmentTime == null && this.appointmentType != NO_APPOINTMENT_NEEDED
+  fun isMissingAppointmentTime() = this.appointmentType != NO_APPOINTMENT_NEEDED && this.appointmentTimeType == null
 }

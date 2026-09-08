@@ -56,6 +56,8 @@ class LicenceController(
   private val licenceCreationService: LicenceCreationService,
   @param:Value("\${prison.event.listener.enabled:false}")
   private val prisonEventHandlerEnabled: Boolean,
+  @param:Value("\${feature.toggle.remand.enabled:false}")
+  private val remandEnabled: Boolean,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -956,6 +958,7 @@ class LicenceController(
     licenceService.discardLicence(licenceId)
   }
 
+  @Deprecated("Will not be required post remand work")
   @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/prison-information"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -1017,7 +1020,14 @@ class LicenceController(
     @Valid @RequestBody
     request: UpdatePrisonInformationRequest,
   ) {
-    licenceService.updatePrisonInformation(licenceId, request)
+    if (remandEnabled) {
+      log.debug(
+        "Not updating prison information for licenceId: {} as remand toggle is enabled",
+        licenceId,
+      )
+    } else {
+      licenceService.updatePrisonInformation(licenceId, request)
+    }
   }
 
   @Tag(name = Tags.LICENCES)

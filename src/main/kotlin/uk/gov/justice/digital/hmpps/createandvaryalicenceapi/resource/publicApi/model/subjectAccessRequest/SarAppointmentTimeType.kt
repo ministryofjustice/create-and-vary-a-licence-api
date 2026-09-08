@@ -16,7 +16,6 @@ enum class SarAppointmentTimeType(@JsonValue val description: String) {
       AppointmentTimeType.IMMEDIATE_UPON_RELEASE -> IMMEDIATE_UPON_RELEASE
       AppointmentTimeType.NEXT_WORKING_DAY_2PM -> NEXT_WORKING_DAY_2PM
       AppointmentTimeType.SPECIFIC_DATE_TIME -> SPECIFIC_DATE_TIME
-      AppointmentTimeType.NO_APPOINTMENT_NEEDED -> NO_APPOINTMENT_NEEDED
     }
   }
 }

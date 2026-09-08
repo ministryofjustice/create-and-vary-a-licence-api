@@ -110,4 +110,19 @@ class PrisonerMergedHandler(
   companion object {
     private val log = LoggerFactory.getLogger(PrisonerMergedHandler::class.java)
   }
+
+  data class HMPPSPrisonerMergedEvent(
+    val eventType: String? = PRISON_OFFENDER_MERGED_EVENT_TYPE,
+    val additionalInformation: AdditionalInformationPrisonerMerged,
+    val version: Int,
+    val occurredAt: String,
+    val description: String,
+  )
+
+  data class AdditionalInformationPrisonerMerged(
+    val bookingId: String,
+    val nomsNumber: String,
+    val removedNomsNumber: String,
+    val reason: String,
+  )
 }

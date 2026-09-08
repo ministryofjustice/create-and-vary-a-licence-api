@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.DateC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PRE_PROGRESSION_POLICY_VERSIONS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion.V4_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -36,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
 import java.time.LocalDate
 
 @Service
@@ -118,7 +120,11 @@ class UpdateSentenceDateService(
     val hardstopChangeType = getHardstopChangeType(currentLicenceStartDate, currentLicenceKind, updatedLicence)
 
     when {
-      hardstopChangeType == NOW_IN_HARDSTOP -> licenceService.timeout(updatedLicence, reason = "due to sentence dates update")
+      hardstopChangeType == NOW_IN_HARDSTOP -> licenceService.timeout(
+        updatedLicence,
+        reason = "due to sentence dates update",
+      )
+
       else -> saveAndRecordIfChanged(updatedLicence, dateChanges)
     }
 
@@ -148,9 +154,12 @@ class UpdateSentenceDateService(
       updatedLicence
     }
 
-    if (shouldInactivateForPolicyVersionChange(licenceForPolicyCheck, dateChanges)) {
-      inactivateForPolicyVersionChange(licenceForPolicyCheck, dateChanges)
+    if (isProgressionLicenceReleasingEarly(licenceForPolicyCheck, dateChanges)) {
+      inactivateForProgressionLicenceReleasingEarly(licenceForPolicyCheck, dateChanges)
       notifyComOfPolicyVersionInactivation(licenceForPolicyCheck)
+    } else if (shouldBeProgressionLicence(licenceForPolicyCheck, dateChanges)) {
+      inactivateForNeedingProgressionLicence(licenceForPolicyCheck, dateChanges)
+      notifyComOfNeedingProgressionLicenceDeactivation(licenceForPolicyCheck)
     } else if (dateChanges.isMaterial) {
       val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
         licenceForPolicyCheck.bookingId!!,
@@ -173,6 +182,22 @@ class UpdateSentenceDateService(
         crn = licence.crn,
       )
     } ?: log.info("Cannot notify COM of policy version inactivation as licence has no responsible COM: ${licence.id}")
+  }
+
+  private fun notifyComOfNeedingProgressionLicenceDeactivation(licence: Licence) {
+    if (licence.responsibleCom == null) {
+      log.info("Unable to notify COM of progression licence deactivation as licence id: ${licence.id} has no responsible com")
+      return
+    }
+
+    notifyService.sendLicenceDeactivatedForProgressionEmail(
+      emailAddress = licence.responsibleCom?.email,
+      crn = licence.crn!!,
+      comFirstName = licence.responsibleCom!!.firstName!!,
+      comLastName = licence.responsibleCom!!.lastName!!,
+      pipFirstName = licence.forename!!,
+      pipLastName = licence.surname!!,
+    )
   }
 
   private fun notifyComOfUpdate(
@@ -266,7 +291,7 @@ class UpdateSentenceDateService(
     }
   }
 
-  private fun shouldInactivateForPolicyVersionChange(
+  private fun isProgressionLicenceReleasingEarly(
     licence: Licence,
     dateChanges: DateChanges,
   ): Boolean = licence.isEligibleForPolicyVersionCheck &&
@@ -278,10 +303,23 @@ class UpdateSentenceDateService(
   private val Licence.isEligibleForPolicyVersionCheck: Boolean
     get() = version == V4_0.version && statusCode in LicenceStatus.PRE_RELEASE_STATUSES
 
-  private fun inactivateForPolicyVersionChange(licence: Licence, dateChanges: DateChanges) {
+  private fun inactivateForProgressionLicenceReleasingEarly(licence: Licence, dateChanges: DateChanges) {
     licenceService.inactivateLicences(
       listOf(licence),
-      LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE,
+      LICENCE_DEACTIVATION_PROGRESSION_LICENCE_RELEASING_EARLY,
+      deactivateInProgressVersions = false,
+    )
+    recordAuditEvent(licence, dateChanges)
+  }
+
+  private fun shouldBeProgressionLicence(licence: Licence, dateChanges: DateChanges): Boolean = PRE_PROGRESSION_POLICY_VERSIONS.contains(licence.version) &&
+    licence.statusCode in LicenceStatus.PRE_RELEASE_STATUSES &&
+    dateChanges[LicenceDateType.LSD]?.newDate?.isOnOrAfter(progressionModelPolicyStartDate) == true
+
+  private fun inactivateForNeedingProgressionLicence(licence: Licence, dateChanges: DateChanges) {
+    licenceService.inactivateLicences(
+      listOf(licence),
+      LICENCE_DEACTIVATION_NEEDS_PROGRESSION_LICENCE,
       deactivateInProgressVersions = false,
     )
     recordAuditEvent(licence, dateChanges)
@@ -301,8 +339,10 @@ class UpdateSentenceDateService(
       "Licence automatically inactivated as licence is no longer in hard stop period"
     const val LICENCE_DEACTIVATION_HARD_STOP_TASK =
       "Licence automatically inactivated by task as licence is still not in hard stop period"
-    const val LICENCE_DEACTIVATION_POLICY_VERSION_CHANGE =
-      "Licence automatically inactivated as the licence start date moved before 02/09/2026 and the case must be recreated on policy V3"
+    const val LICENCE_DEACTIVATION_PROGRESSION_LICENCE_RELEASING_EARLY =
+      "Licence automatically inactivated as the licence start date moved prior to V4 start date and the case must be recreated on policy V3"
+    const val LICENCE_DEACTIVATION_NEEDS_PROGRESSION_LICENCE =
+      "Licence automatically inactivated as the licence start date has moved beyond policy v4 start date, while being on an older policy version"
   }
 
   private enum class HardstopChangeType {

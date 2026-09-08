@@ -97,6 +97,12 @@ jobs:
     cron: "30 11 20 12 *" # 11:30 UTC on 20/12/2026
     allowRetry: false
 
+  - name: deactivate-progression-licences-job
+    enabled: true
+    path: /deactivate-progression-licences
+    cron: "30 3 1 12 *" # 03:30 UTC on 1st December each year
+    allowRetry: false
+
 #CloudPlatform AlertManager receiver to route prometheus alerts to slack
 #See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:

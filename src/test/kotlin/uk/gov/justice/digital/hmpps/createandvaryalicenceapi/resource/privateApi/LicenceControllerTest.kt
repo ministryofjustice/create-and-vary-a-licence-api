@@ -83,6 +83,7 @@ class LicenceControllerTest {
           updateSentenceDateService,
           licenceCreationService,
           prisonEventHandlerEnabled = false,
+          remandEnabled = false,
         ),
       )
       .setControllerAdvice(ControllerAdvice())

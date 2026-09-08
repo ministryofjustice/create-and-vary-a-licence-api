@@ -7,26 +7,23 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.times
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonInformationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonInformationService.UpdateType.SUPPORTING_PRISON_UPDATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateOffenderDetailsEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 
@@ -35,18 +32,14 @@ class PrisonerUpdatedHandlerTest {
   private val offenderService = mock<OffenderService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val licenceRepository = mock<LicenceRepository>()
-  private val prisonApiClient = mock<PrisonApiClient>()
-  private val staffRepository = mock<StaffRepository>()
-  private val auditEventRepository = mock<AuditEventRepository>()
+  private val prisonInformationService = mock<PrisonInformationService>()
 
   val handler = PrisonerUpdatedHandler(
     mapper,
     offenderService,
     prisonerSearchApiClient,
     licenceRepository,
-    prisonApiClient,
-    staffRepository,
-    auditEventRepository,
+    prisonInformationService,
   )
 
   @BeforeEach
@@ -55,9 +48,7 @@ class PrisonerUpdatedHandlerTest {
       offenderService,
       prisonerSearchApiClient,
       licenceRepository,
-      prisonApiClient,
-      staffRepository,
-      auditEventRepository,
+      prisonInformationService,
     )
   }
 
@@ -109,15 +100,17 @@ class PrisonerUpdatedHandlerTest {
   fun `should process supporting prison updated event`() {
     whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
-        aLicence,
+        aLicence.copy(prisonCode = "MDI"),
       ),
     )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisoner))
-
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(aCom)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        aPrisoner.copy(
+          supportingPrisonId = "ABC",
+        ),
+      ),
+    )
 
     handler.handleEvent(
       aPrisonerUpdatedEventMessage(
@@ -129,19 +122,18 @@ class PrisonerUpdatedHandlerTest {
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(listOf(aLicence.nomsId!!))
 
-    val licenceCaptor = argumentCaptor<CrdLicence>()
-    val auditCaptor = argumentCaptor<AuditEvent>()
+    argumentCaptor<List<CrdLicence>> {
+      verify(prisonInformationService).updatePrisonInformation(
+        eq(SUPPORTING_PRISON_UPDATE),
+        capture(),
+        eq("ABC"),
+      )
 
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    val updatedLicence = licenceCaptor.firstValue
-    assertThat(updatedLicence.prisonCode).isEqualTo("ABC")
-    assertThat(updatedLicence.prisonDescription).isEqualTo("ABC (HMP)")
-
-    val auditEvent = auditCaptor.firstValue
-    assertThat(auditEvent.licenceId).isEqualTo(aLicence.id)
-    assertThat(auditEvent.summary).isEqualTo("Supporting prison information changed for ${aLicence.forename} ${aLicence.surname}")
+      assertThat(firstValue.size).isEqualTo(1)
+      val updatedLicence = firstValue.first()
+      assertThat(updatedLicence.prisonCode).isEqualTo("MDI")
+      assertThat(updatedLicence.prisonDescription).isEqualTo("Moorland (HMP)")
+    }
   }
 
   @Test
@@ -168,7 +160,7 @@ class PrisonerUpdatedHandlerTest {
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(listOf(nomisId))
-    verifyNoInteractions(licenceRepository, prisonApiClient)
+    verifyNoInteractions(licenceRepository, prisonInformationService)
   }
 
   @Test
@@ -188,8 +180,7 @@ class PrisonerUpdatedHandlerTest {
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(listOf(aPrisoner.prisonerNumber))
     verify(licenceRepository).findAllByNomsIdAndStatusCodeIn(any(), any())
-    verifyNoInteractions(prisonApiClient)
-    verifyNoMoreInteractions(licenceRepository)
+    verifyNoInteractions(prisonInformationService)
   }
 
   @Test
@@ -206,9 +197,6 @@ class PrisonerUpdatedHandlerTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
       .thenReturn(listOf(aPrisoner))
 
-    whenever(prisonApiClient.getPrisonInformation(any()))
-      .thenReturn(somePrisonInformation.copy(prisonId = existingPrisonCode)) // Same prison code
-
     handler.handleEvent(
       aPrisonerUpdatedEventMessage(
         aPrisoner.prisonerNumber,
@@ -216,9 +204,6 @@ class PrisonerUpdatedHandlerTest {
         listOf(DiffCategory.RESTRICTED_PATIENT),
       ),
     )
-
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
   }
 
   private fun aPrisonerUpdatedEventMessage(nomsId: String, eventType: String, categories: List<DiffCategory>) = mapper

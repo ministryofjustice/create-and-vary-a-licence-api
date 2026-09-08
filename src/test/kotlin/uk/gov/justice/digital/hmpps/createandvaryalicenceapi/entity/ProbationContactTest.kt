@@ -4,9 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.NO_APPOINTMENT_NEEDED
-import java.time.LocalDateTime
 
 class ProbationContactTest {
 
@@ -15,7 +15,7 @@ class ProbationContactTest {
   fun `is missing appointment time when appointment time is null and an appointment is required`(appointmentType: AppointmentType) {
     val probationContact = ProbationContact(
       appointmentType = appointmentType,
-      appointmentTime = null,
+      appointmentTimeType = null,
     )
 
     assertThat(probationContact.isMissingAppointmentTime()).isTrue
@@ -25,7 +25,7 @@ class ProbationContactTest {
   fun `is not missing appointment time when appointment time is set and an appointment is required`() {
     val probationContact = ProbationContact(
       appointmentType = AppointmentType.SPECIFIC_PERSON,
-      appointmentTime = LocalDateTime.now(),
+      appointmentTimeType = AppointmentTimeType.IMMEDIATE_UPON_RELEASE,
     )
 
     assertThat(probationContact.isMissingAppointmentTime()).isFalse
@@ -35,7 +35,7 @@ class ProbationContactTest {
   fun `is not missing appointment time when no appointment is needed even if appointment time is null`() {
     val probationContact = ProbationContact(
       appointmentType = NO_APPOINTMENT_NEEDED,
-      appointmentTime = null,
+      appointmentTimeType = null,
     )
 
     assertThat(probationContact.isMissingAppointmentTime()).isFalse

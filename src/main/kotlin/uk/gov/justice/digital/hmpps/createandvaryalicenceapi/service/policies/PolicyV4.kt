@@ -516,7 +516,7 @@ val POLICY_V4_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Curfew arrangement",
-        code = "52faefcf-15f0-42c5-b908-621b4a7ecdb9",
+        code = "0a370862-5426-49c1-b6d4-3d074d78a81a",
         inputs = listOf(
           Input(
             label = "Select the number of curfews needed",
@@ -913,28 +913,6 @@ val POLICY_V4_0 = LicencePolicy(
         code = "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
         inputs = listOf(
           Input(
-            label = "Choose what information to enter",
-            name = "addressOrGeneric",
-            options = listOf(
-              Option(
-                value = "The approved premises where you reside",
-              ),
-              Option(
-                value = "Name of approved premises",
-                conditional = Conditional(
-                  inputs = listOf(
-                    ConditionalInput(
-                      label = "Enter name of approved premises",
-                      name = "approvedPremises",
-                      type = TEXT,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            type = RADIO,
-          ),
-          Input(
             label = "Select when the person needs to report",
             name = "reportingFrequency",
             options = listOf(
@@ -1028,9 +1006,9 @@ val POLICY_V4_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        tpl = "Report to staff at {approvedPremises} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        type = "ReportToApprovedPremisesPolicyV3",
+        text = "Report to staff at the Approved Premises where you reside at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        tpl = "Report to staff at the Approved Premises where you reside at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        type = "ReportToApprovedPremisesPolicyV4",
       ),
       AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
@@ -1458,8 +1436,8 @@ val POLICY_V4_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",
-        tpl = "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking {electronicMonitoringTypes} until {endDate}.",
+        text = "Your electronic monitoring tag will check [CONDITIONS TO BE MONITORED]. You must wear the tag until [END DATE].",
+        tpl = "Your electronic monitoring tag will check {electronicMonitoringTypes}. You must wear the tag until {endDate}.",
         type = "ElectronicMonitoringTypesV4",
         requiresElectronicMonitoringResponse = true,
       ),
@@ -1657,6 +1635,10 @@ val POLICY_V4_0 = LicencePolicy(
         "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
         "f1d2888b-be86-4732-8874-44cb867865c2",
       ),
+    ),
+    ChangeHint(
+      previousCode = "79ac033f-9d7a-4dab-8344-475106e58b71",
+      replacements = emptyList(),
     ),
   ),
   standardConditions = StandardConditions(
