@@ -16,5 +16,14 @@
     "county": "FAKESHIRE",
     "postcode": "FA11KE",
     "country": "Wales"
+  },
+  {
+    "uprn": "234567893",
+    "firstLine": "14 THE FAKE AV",
+    "secondLine": "FAKETON",
+    "townOrCity": "FAKESVILLE",
+    "county": "FAKESHIRE",
+    "postcode": "FA11KE",
+    "country": "Wales"
   }
 ]
