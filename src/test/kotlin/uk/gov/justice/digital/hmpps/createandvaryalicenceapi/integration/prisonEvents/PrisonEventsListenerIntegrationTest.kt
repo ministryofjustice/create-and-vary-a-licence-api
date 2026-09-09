@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
@@ -18,7 +17,6 @@ import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.PrisonEventsListener
@@ -29,7 +27,6 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
-import kotlin.jvm.optionals.getOrNull
 
 const val BOOKING_ID = 4576L
 
@@ -44,9 +41,6 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var prisonEventsListener: PrisonEventsListener
-
-  @Autowired
-  lateinit var licenceRepository: LicenceRepository
 
   private val awaitAtMost30Secs
     get() = await.atMost(Duration.ofSeconds(30))
@@ -89,10 +83,10 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
 
     verify(sentenceDatesChangedHandler).handleEvent(message)
     verify(updateSentenceDateService, never()).updateSentenceDates(any())
-    val activeLicence = licenceRepository.findById(1).getOrNull()
-    val variationLicence = licenceRepository.findById(2).getOrNull()
-    assertThat(activeLicence?.conditionalReleaseDate).isEqualTo(newCrd)
-    assertThat(variationLicence?.conditionalReleaseDate).isEqualTo(newCrd)
+    val activeLicence = testRepository.findLicence(1)
+    val variationLicence = testRepository.findLicence(2)
+    assertThat(activeLicence.conditionalReleaseDate).isEqualTo(newCrd)
+    assertThat(variationLicence.conditionalReleaseDate).isEqualTo(newCrd)
   }
 
   @Test
@@ -114,8 +108,8 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
 
     verify(sentenceDatesChangedHandler).handleEvent(message)
     verify(updateSentenceDateService, never()).updateSentenceDates(any())
-    val licence = licenceRepository.findById(1).getOrNull()
-    assertThat(licence?.conditionalReleaseDate).isEqualTo(newCrd)
+    val licence = testRepository.findLicence(1)
+    assertThat(licence.conditionalReleaseDate).isEqualTo(newCrd)
   }
 
   private fun sendEvent(message: String) {
