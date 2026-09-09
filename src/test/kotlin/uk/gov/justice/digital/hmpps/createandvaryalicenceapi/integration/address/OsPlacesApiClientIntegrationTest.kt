@@ -37,7 +37,7 @@ class OsPlacesApiClientIntegrationTest {
     val client = OsPlacesApiClient(
       osPlacesApiWebClient = webClient,
       apiKey = API_KEY,
-      dataset = "DPA,LPI"
+      dataset = "DPA,LPI",
     )
 
     val pageable = PageRequest.of(0, 10)
@@ -67,7 +67,7 @@ class OsPlacesApiClientIntegrationTest {
     val client = OsPlacesApiClient(
       osPlacesApiWebClient = webClient,
       apiKey = API_KEY,
-      dataset = "DPA,LPI"
+      dataset = "DPA,LPI",
     )
 
     val pageable = PageRequest.of(0, 10)
