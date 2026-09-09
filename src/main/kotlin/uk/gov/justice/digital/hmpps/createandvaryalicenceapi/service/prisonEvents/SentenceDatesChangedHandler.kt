@@ -45,16 +45,24 @@ class SentenceDatesChangedHandler(
     val activeLicence = getActiveLicence(nomisId)
     if (activeLicence != null) {
       log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
-      processDeactivationChecks(activeLicence)
+      processActiveLicenceDateChanges(activeLicence)
     } else {
       log.info("updating sentence dates for nomisId: $nomisId")
       updateSentenceDates(nomisId)
     }
   }
 
-  private fun processDeactivationChecks(licence: Licence) {
+  private fun processActiveLicenceDateChanges(licence: Licence) {
+    updateCrdForActiveHdcLicences(licence)
     deactivateLicencesIfPrisonerResentenced(licence)
     deactivateLicencesIfFuturePrrd(licence)
+  }
+
+  private fun updateCrdForActiveHdcLicences(activeLicence: Licence) {
+    activeLicence.takeIf { it.kind.isHdc() }?.let { licence ->
+      val newCrd = prisonService.getPrisonerDetail(licence.nomsId!!).sentenceDetail.toSentenceDates().conditionalReleaseDate
+      licenceService.updateCrdForHdcLicences(licence.id, newCrd)
+    }
   }
 
   private fun deactivateLicencesIfPrisonerResentenced(licence: Licence) {
@@ -89,17 +97,17 @@ class SentenceDatesChangedHandler(
   }
 
   private fun updateSentenceDates(nomisId: String) {
-    val licences = licenceRepository.findAllByNomsIdAndStatusCodeIn(
-      nomisId,
-      listOf(
-        LicenceStatus.IN_PROGRESS,
-        LicenceStatus.SUBMITTED,
-        LicenceStatus.REJECTED,
-        LicenceStatus.APPROVED,
-        LicenceStatus.TIMED_OUT,
-      ),
-    )
-    licences.forEach { licence -> updateSentenceDateService.updateSentenceDates(licence.id) }
+    val licences = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomisId, LicenceStatus.SENTENCE_DATE_SYNC_STATUSES)
+    val (hdcLicences, nonHdcLicences) = licences.partition { it.kind.isHdc() }
+    nonHdcLicences.forEach { licence -> updateSentenceDateService.updateSentenceDates(licence.id) }
+    updateCrdForPreReleaseHdcLicences(nomisId, hdcLicences)
+  }
+
+  private fun updateCrdForPreReleaseHdcLicences(nomisId: String, hdcLicences: List<Licence>) {
+    hdcLicences.takeIf { it.isNotEmpty() }?.let { licences ->
+      val newCrd = prisonService.getPrisonerDetail(nomisId).sentenceDetail.toSentenceDates().conditionalReleaseDate
+      licences.forEach { licence -> licenceService.updateCrdForHdcLicences(licence.id, newCrd, includeVariations = false) }
+    }
   }
 
   private fun getActiveLicence(nomisId: String): Licence? = licenceRepository.findAllByNomsIdAndStatusCodeIn(

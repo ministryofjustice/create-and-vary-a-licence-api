@@ -95,8 +95,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -125,6 +128,7 @@ class LicenceServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val migrationService = mock<MigrationService>()
   private val licenceConditionService = mock<LicenceConditionService>()
+  private val clock: Clock = Clock.fixed(Instant.parse("2023-11-03T00:00:00Z"), ZoneId.systemDefault())
 
   private val service =
     LicenceService(
@@ -146,6 +150,7 @@ class LicenceServiceTest {
       cvlRecordService,
       migrationService,
       licenceConditionService,
+      clock,
     )
 
   @BeforeEach
@@ -3078,6 +3083,109 @@ class LicenceServiceTest {
       .isEqualTo(listOf(2L, LicenceEventType.SUPERSEDED, "SYSTEM", "SYSTEM"))
   }
 
+  @Nested
+  inner class UpdateCrdForActiveHdcLicences {
+    private val today = LocalDate.now(clock)
+    private val newCrd = today.plusDays(30)
+
+    @Test
+    fun `updates CRD on HDC licences and variations for the nomsId when the new CRD is in the future`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val hdcVariationLicence = createHdcVariationLicence().copy(id = 2L, nomsId = "A1234AA")
+      whenever(licenceRepository.findLicenceAndVariations(1)).thenReturn(
+        listOf(activeHdcLicence, hdcVariationLicence),
+      )
+
+      service.updateCrdForHdcLicences(1, newCrd)
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(newCrd)
+      assertThat(hdcVariationLicence.conditionalReleaseDate).isEqualTo(newCrd)
+      verify(licenceRepository, never()).saveAllAndFlush(any<List<EntityLicence>>())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is today`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = activeHdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today)
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findLicenceAndVariations(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is in the past`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = activeHdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today.minusDays(1))
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findLicenceAndVariations(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is null`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = activeHdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, null)
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findLicenceAndVariations(any())
+    }
+  }
+
+  @Nested
+  inner class UpdateCrdForPreReleaseHdcLicence {
+    private val today = LocalDate.now(clock)
+    private val newCrd = today.plusDays(30)
+
+    @Test
+    fun `updates CRD on the HDC licence when the new CRD is in the future`() {
+      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      whenever(licenceRepository.findById(1)).thenReturn(Optional.of(hdcLicence))
+
+      service.updateCrdForHdcLicences(1, newCrd, includeVariations = false)
+
+      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(newCrd)
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is today`() {
+      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = hdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today, includeVariations = false)
+
+      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findById(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is in the past`() {
+      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = hdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today.minusDays(1), includeVariations = false)
+
+      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findById(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is null`() {
+      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = hdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, null, includeVariations = false)
+
+      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findById(any())
+    }
+  }
+
   @Test
   fun `should get access permissions for a licence`() {
     val variationLicence = aLicenceEntity.copy(
@@ -3545,6 +3653,7 @@ class LicenceServiceTest {
           cvlRecordService,
           migrationService,
           licenceConditionService,
+          clock,
         )
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)

@@ -54,6 +54,14 @@ enum class LicenceStatus {
       TIMED_OUT,
     )
 
+    val SENTENCE_DATE_SYNC_STATUSES = listOf(
+      IN_PROGRESS,
+      SUBMITTED,
+      REJECTED,
+      APPROVED,
+      TIMED_OUT,
+    )
+
     val ON_PROBATION_STATUSES = setOf(
       ACTIVE,
       VARIATION_IN_PROGRESS,
