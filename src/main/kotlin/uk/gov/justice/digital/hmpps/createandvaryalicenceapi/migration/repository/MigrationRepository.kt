@@ -79,7 +79,7 @@ interface MigrationRepository : JpaRepository<Licence, Long> {
     """,
     nativeQuery = true,
   )
-  fun hasPrisonBeenReleasedOnCvlLicence(nomsId: String): Boolean
+  fun hasHdcLicenceBeenSupersededByCvlLicence(nomsId: String): Boolean
 
   @Query(
     value = """

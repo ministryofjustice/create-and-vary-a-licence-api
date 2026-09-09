@@ -18,13 +18,15 @@ import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.HdcLicencesSupersededByCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.MissingStaffException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.PrisonerReleasedOnExistingCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.InvalidStateException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
+
+private const val HDC_LICENCES_SUPERSEDED_BY_CVL_LICENCE = "HDC_LICENCES_SUPERSEDED_BY_CVL_LICENCE"
 
 @RestControllerAdvice
 class ControllerAdvice {
@@ -238,7 +240,7 @@ class ControllerAdvice {
   }
 
   @ExceptionHandler(
-    PrisonerReleasedOnExistingCvlLicenceException::class,
+    HdcLicencesSupersededByCvlLicenceException::class,
   )
   fun handleNoRetryPrisonerReleasedOnExistingCvlLicenceException(e: Exception): ResponseEntity<ErrorResponse> {
     log.info("NoRetryPrisonerReleasedOnExistingCvlLicenceException: {}", e.message)
@@ -249,7 +251,7 @@ class ControllerAdvice {
           status = CONFLICT,
           userMessage = "NoRetryMigration error: ${e.message}",
           developerMessage = e.message,
-          moreInfo = "PRISONER_RELEASED_ON_EXISTING_CVL_LICENCE",
+          moreInfo = HDC_LICENCES_SUPERSEDED_BY_CVL_LICENCE,
         ),
       )
   }

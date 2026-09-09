@@ -17,10 +17,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.HdcLicencesSupersededByCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.MissingStaffException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.PrisonerReleasedOnExistingCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAppointmentAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateCurfewTime
@@ -77,8 +77,8 @@ class MigrationService(
       throw LicenceAlreadyMigratedException(request.licence.licenceVersionId)
     }
     if (migrationRepository.hasExistingLicence(request.prisoner.prisonerNumber)) {
-      if (migrationRepository.hasPrisonBeenReleasedOnCvlLicence(request.prisoner.prisonerNumber)) {
-        throw PrisonerReleasedOnExistingCvlLicenceException()
+      if (migrationRepository.hasHdcLicenceBeenSupersededByCvlLicence(request.prisoner.prisonerNumber)) {
+        throw HdcLicencesSupersededByCvlLicenceException()
       } else {
         throw ExistingCvlLicenceException()
       }

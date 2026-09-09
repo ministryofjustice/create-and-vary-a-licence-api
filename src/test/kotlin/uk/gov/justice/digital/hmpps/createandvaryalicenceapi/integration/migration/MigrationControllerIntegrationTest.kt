@@ -151,8 +151,8 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     // Then
     result.expectStatus().isEqualTo(HttpStatus.CONFLICT)
     assertThat(testRepository.hasMetaData()).isFalse
-    assertThat(errorResponse.userMessage).contains("NoRetryMigration error: HDC Licence should not be used, the prisoner has already been release on a CVL Licence!")
-    assertThat(errorResponse.moreInfo).contains("PRISONER_RELEASED_ON_EXISTING_CVL_LICENCE")
+    assertThat(errorResponse.userMessage).contains("NoRetryMigration error: HDC Licence is superseded by a CVL Licence with a release date")
+    assertThat(errorResponse.moreInfo).contains("HDC_LICENCES_SUPERSEDED_BY_CVL_LICENCE")
   }
 
   @Test
