@@ -140,7 +140,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-with-lsd.sql",
   )
-  fun `should not migrate if prisoner has been released on an existing licence in CVL`() {
+  fun `should not migrate if prisoner has an existing licence with LSD in CVL`() {
     // Given
     val request = validRequest()
 
@@ -152,7 +152,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isEqualTo(HttpStatus.CONFLICT)
     assertThat(testRepository.hasMetaData()).isFalse
     assertThat(errorResponse.userMessage).contains("NoRetryMigration error: HDC Licence is superseded by a CVL Licence with a release date")
-    assertThat(errorResponse.moreInfo).contains("HDC_LICENCES_SUPERSEDED_BY_CVL_LICENCE")
+    assertThat(errorResponse.moreInfo).contains("HDC_LICENCE_SUPERSEDED_BY_CVL_LICENCE")
   }
 
   @Test
