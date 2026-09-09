@@ -14,12 +14,12 @@ class OsPlacesMockServer(private val apiKey: String) :
   fun stubSearchForAddresses(searchQuery: String, offset: Int = 0, maxResults: Int = 100) {
     val json = """{
     "header": {
-      "uri": "https://api.os.uk/search/places/v1/find?query=$searchQuery&offset=$offset&maxresults=$maxResults&lr=EN&dataset=LPI,DPA",
+      "uri": "https://api.os.uk/search/places/v1/find?query=$searchQuery&offset=$offset&maxresults=$maxResults&lr=EN&dataset=DPA,LPI",
       "query": "query=$searchQuery",
       "offset": $offset,
       "totalresults": 29,
       "format": "JSON",
-      "dataset": "LPI,DPA",
+      "dataset": "DPA,LPI",
       "lr": "EN,CY",
       "maxresults": $maxResults,
       "epoch": "112",
@@ -240,7 +240,7 @@ class OsPlacesMockServer(private val apiKey: String) :
     """.trimIndent()
 
     stubFor(
-      WireMock.get(WireMock.urlEqualTo("/find?query=$searchQuery&key=$apiKey&offset=$offset&maxresults=$maxResults&lr=EN&dataset=LPI,DPA"))
+      WireMock.get(WireMock.urlEqualTo("/find?query=$searchQuery&key=$apiKey&offset=$offset&maxresults=$maxResults&lr=EN&dataset=DPA,LPI"))
         .willReturn(
           WireMock.aResponse().withHeader(
             "Content-Type",
