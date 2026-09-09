@@ -108,6 +108,7 @@ os:
     api:
       url: "https://api.os.uk/search/places/v1"
       key: ${os.places.api.key}
+    dataset: ${OS_PLACES_DATASET:DPA,LPI}
 
 # Template IDs for the test Notify account (overridden in production)
 notify:
