@@ -17,13 +17,14 @@ import java.nio.charset.StandardCharsets
 class OsPlacesApiClient(
   @param:Qualifier("osPlacesClient") private val osPlacesApiWebClient: WebClient,
   @param:Value("\${os.places.api.key}") private val apiKey: String,
+  @param:Value("\${os.places.dataset}") private val dataset: String,
 ) {
   fun searchForAddressesByText(pageable: PageRequest, searchQuery: String): List<OsPlacesApiAddress> {
     val escapedSearchQuery = URLEncoder.encode(searchQuery, StandardCharsets.UTF_8)
 
     val searchResult = osPlacesApiWebClient
       .get()
-      .uri("/find?query=$escapedSearchQuery&key=$apiKey&offset=${pageable.offset}&maxresults=${pageable.pageSize}&lr=EN&dataset=LPI,DPA")
+      .uri("/find?query=$escapedSearchQuery&key=$apiKey&offset=${pageable.offset}&maxresults=${pageable.pageSize}&lr=EN&dataset=$dataset")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .onStatus({ it.is4xxClientError }) { response ->
