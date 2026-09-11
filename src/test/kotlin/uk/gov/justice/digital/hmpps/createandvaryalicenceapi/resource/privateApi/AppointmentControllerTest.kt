@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import jakarta.validation.ValidationException
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -25,7 +23,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumber
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType.SPECIFIC_DATE_TIME
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.DUTY_OFFICER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.NO_APPOINTMENT_NEEDED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.SPECIFIC_PERSON
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -53,43 +53,82 @@ class AppointmentControllerTest {
 
   @Test
   fun `update initial appointment person with type DUTY_OFFICER`() {
+    val request = AppointmentPersonRequest(
+      appointmentPersonType = DUTY_OFFICER,
+      appointmentPerson = null,
+    )
+
     mvc.perform(
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateAppointmentPersonRequest)),
+        .content(mapper.writeValueAsBytes(request)),
     )
       .andExpect(status().isOk)
 
-    verify(appointmentService, times(1)).updateAppointmentPerson(4, anUpdateAppointmentPersonRequest)
+    verify(appointmentService, times(1)).updateAppointmentPerson(4, request)
   }
 
   @Test
-  fun `update initial appointment person - invalid request body`() {
-    val anNullUpdateAppointmentPersonRequest = anUpdateAppointmentPersonRequest.copy(
-      appointmentPersonType = AppointmentType.SPECIFIC_PERSON,
+  fun `update initial appointment person when no appointment is needed`() {
+    val request = AppointmentPersonRequest(
+      appointmentPersonType = NO_APPOINTMENT_NEEDED,
       appointmentPerson = null,
     )
-    whenever(
-      appointmentService.updateAppointmentPerson(
-        4,
-        anNullUpdateAppointmentPersonRequest,
-      ),
-    ).thenThrow(ValidationException("Appointment person must not be null if Appointment With Type is SPECIFIC_PERSON"))
+
+    mvc.perform(
+      put("/licence/id/4/appointmentPerson")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(request)),
+    )
+      .andExpect(status().isOk)
+
+    verify(appointmentService, times(1)).updateAppointmentPerson(4, request)
+  }
+
+  @Test
+  fun `update initial appointment person - person present when no appointment needed`() {
+    val request = AppointmentPersonRequest(
+      appointmentPersonType = NO_APPOINTMENT_NEEDED,
+      appointmentPerson = "Some person",
+    )
 
     val result = mvc.perform(
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(
-          mapper.writeValueAsBytes(anNullUpdateAppointmentPersonRequest),
+          mapper.writeValueAsBytes(request),
         ),
     )
       .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).contains("Appointment person must not be null if Appointment With Type is SPECIFIC_PERSON")
+    assertThat(result.response.contentAsString).contains("Appointment person must be absent when an appointment is not needed.")
+  }
+
+  @Test
+  fun `update initial appointment person - missing person when a specific person is specified`() {
+    val request = anUpdateAppointmentPersonRequest.copy(
+      appointmentPersonType = SPECIFIC_PERSON,
+      appointmentPerson = null,
+    )
+
+    val result = mvc.perform(
+      put("/licence/id/4/appointmentPerson")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(
+          mapper.writeValueAsBytes(request),
+        ),
+    )
+      .andExpect(status().isBadRequest)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString).contains("Appointment person must not be missing if Appointment With Type is SPECIFIC_PERSON")
   }
 
   @Test
@@ -101,7 +140,7 @@ class AppointmentControllerTest {
         .content(
           mapper.writeValueAsBytes(
             anUpdateAppointmentPersonRequest.copy(
-              appointmentPersonType = AppointmentType.SPECIFIC_PERSON,
+              appointmentPersonType = SPECIFIC_PERSON,
             ),
           ),
         ),
@@ -111,7 +150,7 @@ class AppointmentControllerTest {
     verify(appointmentService, times(1)).updateAppointmentPerson(
       4,
       anUpdateAppointmentPersonRequest.copy(
-        appointmentPersonType = AppointmentType.SPECIFIC_PERSON,
+        appointmentPersonType = SPECIFIC_PERSON,
       ),
     )
   }
@@ -193,7 +232,7 @@ class AppointmentControllerTest {
 
   private companion object {
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentPersonType = AppointmentType.DUTY_OFFICER,
+      appointmentPersonType = SPECIFIC_PERSON,
       appointmentPerson = "John Smith",
     )
 
