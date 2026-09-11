@@ -591,7 +591,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     fun `Update sentence dates should inactivate V4 in-flight licence when progressionModelPolicyStartDate is null`() {
       prisonApiMockServer.stubGetHdcLatest()
       prisonApiMockServer.stubGetCourtOutcomes()
-      val crdDate = LocalDate.parse("2026-09-10")
+      val crdDate = LocalDate.parse("2026-09-19")
       prisonApiMockServer.stubGetPrisonerDetail(
         "A1234AA",
         SentenceDetail(
