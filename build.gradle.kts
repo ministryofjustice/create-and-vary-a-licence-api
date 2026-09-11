@@ -13,7 +13,7 @@ repositories {
   mavenCentral()
 }
 
-ext["logback.version"] = "1.5.25"
+ext["logback.version"] = "1.5.37"
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
