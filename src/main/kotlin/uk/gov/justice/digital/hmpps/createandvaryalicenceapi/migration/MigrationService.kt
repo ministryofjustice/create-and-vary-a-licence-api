@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.HdcLicenceSupersededByCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.LicenceAlreadyMigratedException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.MissingStaffException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.OffenderManagerNotFoundException
@@ -76,7 +77,11 @@ class MigrationService(
       throw LicenceAlreadyMigratedException(request.licence.licenceVersionId)
     }
     if (migrationRepository.hasExistingLicence(request.prisoner.prisonerNumber)) {
-      throw ExistingCvlLicenceException(request.prisoner.prisonerNumber)
+      if (migrationRepository.hasHdcLicenceBeenSupersededByCvlLicence(request.prisoner.prisonerNumber)) {
+        throw HdcLicenceSupersededByCvlLicenceException()
+      } else {
+        throw ExistingCvlLicenceException()
+      }
     }
   }
 
@@ -287,7 +292,7 @@ class MigrationService(
   )
 
   private fun getOffenderManager(prisonNumber: String): CommunityManager = deliusApiClient.getOffenderManager(prisonNumber)
-    ?: throw OffenderManagerNotFoundException(prisonNumber)
+    ?: throw OffenderManagerNotFoundException()
 
   private fun MutableSet<CommunityOffenderManager>.getCommAndAdd(
     userName: String?,

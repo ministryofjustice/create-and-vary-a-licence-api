@@ -3,8 +3,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.migrat
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -48,37 +50,10 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
   )
   fun `should migrate licence successfully`() {
     // Given
-    deliusMockServer.stubGetProbationCase()
-    deliusMockServer.stubGetOffenderManagerWithNomsId("A1234AA")
-    deliusMockServer.stubGetUserByUserName(
-      2L,
-      userName = "submittedByUserName",
-      firstName = "submittedByFirstName",
-      lastName = "submittedByLastName",
-    )
-    deliusMockServer.stubGetUserByUserName(
-      3L,
-      userName = "createdByUserName",
-      firstName = "createdByFirstName",
-      lastName = "createdByLastName",
-    )
-    deliusMockServer.stubGetUserByUserName(
-      4L,
-      userName = "approvedByUsername",
-      firstName = "approvedByFirstName",
-      lastName = "approvedByLastName",
-    )
-
-    val request = validRequest()
-    prisonApiMockServer.stubGetPrison(prisonId = request.prison.prisonCode)
+    val request = setUpTestToPass()
 
     // When
-    val result = webTestClient.post()
-      .uri(MIGRATE_URL)
-      .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .bodyValue(request)
-      .exchange()
+    val result = sendMigrationRequest(request)
 
     // Then
     result.expectStatus().isOk
@@ -86,6 +61,23 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     val licence = testRepository.findLicence(1)
     assertHdcLicenceMatches(request, licence)
     assertThat(testRepository.hasMetaData()).isTrue
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-staff-for-migration.sql",
+    "classpath:test_data/seed-timed_out_licence-with-lsd.sql",
+    "classpath:test_data/seed-inactive_licence-with-lsd.sql",
+  )
+  fun `should migrate licence successfully with existing timed out licence and inactive`() {
+    // Given
+    val request = setUpTestToPass()
+
+    // When
+    val result = sendMigrationRequest(request)
+
+    // Then
+    result.expectStatus().isOk
   }
 
   @Test
@@ -101,12 +93,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison(request.prison.prisonCode)
 
     // When
-    val result = webTestClient.post()
-      .uri(MIGRATE_URL)
-      .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .bodyValue(request)
-      .exchange()
+    val result = sendMigrationRequest(request)
 
     // Then
     result.expectStatus().isOk
@@ -122,12 +109,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     val request = validRequest()
 
     // When
-    val result = webTestClient.post()
-      .uri(MIGRATE_URL)
-      .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .bodyValue(request)
-      .exchange()
+    val result = sendMigrationRequest(request)
 
     // Then
     result.expectStatus().isBadRequest
@@ -145,12 +127,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     val request = validRequest()
 
     // When
-    val result = webTestClient.post()
-      .uri(MIGRATE_URL)
-      .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .bodyValue(request)
-      .exchange()
+    val result = sendMigrationRequest(request)
     val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
 
     // Then
@@ -161,25 +138,80 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-licence-with-lsd.sql",
   )
-  fun `should not migrate if prisoner has an existing licence in process`() {
+  fun `should not migrate if prisoner has an existing licence with LSD in CVL`() {
     // Given
     val request = validRequest()
 
     // When
-    val result = webTestClient.post()
-      .uri(MIGRATE_URL)
-      .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .bodyValue(request)
-      .exchange()
+    val result = sendMigrationRequest(request)
     val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
 
     // Then
-    result.expectStatus().isBadRequest
+    result.expectStatus().isEqualTo(HttpStatus.CONFLICT)
     assertThat(testRepository.hasMetaData()).isFalse
-    assertThat(errorResponse.userMessage).contains("Unexpected error: Licence for prisoner already exists (prisonNumber : A1234AA)")
+    assertThat(errorResponse.userMessage).contains("NoRetryMigration error: HDC Licence is superseded by a CVL Licence with a release date")
+    assertThat(errorResponse.moreInfo).contains("HDC_LICENCE_SUPERSEDED_BY_CVL_LICENCE")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-without-lsd.sql",
+  )
+  fun `should not migrate if prisoner has an existing licence in CVL`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = sendMigrationRequest(request)
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+
+    // Then
+    result.expectStatus().isEqualTo(HttpStatus.BAD_REQUEST)
+    assertThat(testRepository.hasMetaData()).isFalse
+    assertThat(errorResponse.userMessage).contains("NoRetryMigration error: Licence for prisoner already exists in CVL")
+    assertThat(errorResponse.moreInfo).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-staff-for-migration.sql",
+    "classpath:test_data/seed-hdc_licence-with-lsd.sql",
+  )
+  fun `should not migrate and return correct error when existing HDC licence`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = sendMigrationRequest(request)
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+
+    // Then
+    result.expectStatus().isEqualTo(HttpStatus.BAD_REQUEST)
+    assertThat(testRepository.hasMetaData()).isFalse
+    assertThat(errorResponse.userMessage).contains("NoRetryMigration error: Licence for prisoner already exists in CVL")
+    assertThat(errorResponse.moreInfo).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-staff-for-migration.sql",
+    "classpath:test_data/seed-hdc_variation_licence-with-lsd.sql",
+  )
+  fun `should not migrate and return correct error when existing HDC variation licence`() {
+    // Given
+    val request = validRequest()
+
+    // When
+    val result = sendMigrationRequest(request)
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+
+    // Then
+    result.expectStatus().isEqualTo(HttpStatus.BAD_REQUEST)
+    assertThat(testRepository.hasMetaData()).isFalse
+    assertThat(errorResponse.userMessage).contains("NoRetryMigration error: Licence for prisoner already exists in CVL")
+    assertThat(errorResponse.moreInfo).isNull()
   }
 
   @Test
@@ -191,18 +223,13 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     val request = validRequest()
 
     // When
-    val result = webTestClient.post()
-      .uri(MIGRATE_URL)
-      .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .bodyValue(request)
-      .exchange()
+    val result = sendMigrationRequest(request)
     val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
 
     // Then
     result.expectStatus().isBadRequest
     assertThat(testRepository.hasMetaData()).isFalse
-    assertThat(errorResponse.userMessage).contains("Unexpected error: Could not find offender manager for A1234AA in delius")
+    assertThat(errorResponse.userMessage).contains("NoRetryMigration error: Could not find offender manager in delius")
   }
 
   @Test
@@ -257,6 +284,40 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isForbidden
     assertThat(testRepository.hasMetaData()).isFalse
   }
+
+  private fun setUpTestToPass(): MigrateFromHdcToCvlRequest {
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManagerWithNomsId("A1234AA")
+    deliusMockServer.stubGetUserByUserName(
+      2L,
+      userName = "submittedByUserName",
+      firstName = "submittedByFirstName",
+      lastName = "submittedByLastName",
+    )
+    deliusMockServer.stubGetUserByUserName(
+      3L,
+      userName = "createdByUserName",
+      firstName = "createdByFirstName",
+      lastName = "createdByLastName",
+    )
+    deliusMockServer.stubGetUserByUserName(
+      4L,
+      userName = "approvedByUsername",
+      firstName = "approvedByFirstName",
+      lastName = "approvedByLastName",
+    )
+
+    val request = validRequest()
+    prisonApiMockServer.stubGetPrison(prisonId = request.prison.prisonCode)
+    return request
+  }
+
+  private fun sendMigrationRequest(request: MigrateFromHdcToCvlRequest): WebTestClient.ResponseSpec = webTestClient.post()
+    .uri(MIGRATE_URL)
+    .contentType(MediaType.APPLICATION_JSON)
+    .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+    .bodyValue(request)
+    .exchange()
 
   fun assertHdcLicenceMatches(
     request: MigrateFromHdcToCvlRequest,
