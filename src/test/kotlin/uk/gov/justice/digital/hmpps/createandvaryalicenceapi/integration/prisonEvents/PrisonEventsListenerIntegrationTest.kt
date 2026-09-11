@@ -6,6 +6,7 @@ import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
@@ -17,11 +18,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.Integra
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.PrisonEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SENTENCE_DATES_CHANGED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SentenceDatesChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prisonEvents.SentenceDatesChangedHandler
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
 
@@ -58,6 +61,55 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
 
     verify(sentenceDatesChangedHandler).handleEvent(message)
     verify(updateSentenceDateService).updateSentenceDates(1L)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-active-hdc-licence-id-1.sql",
+  )
+  fun `A sentence dates changed event updates the CRD for an active HDC licence and its in-progress variation`() {
+    val newCrd = LocalDate.now().plusDays(30)
+    prisonApiMockServer.stubGetSentencesAndOffences(54321)
+    prisonApiMockServer.stubGetPrisonerDetail(
+      nomsId = "A1234AA",
+      sentenceDetail = SentenceDetail(conditionalReleaseDate = newCrd),
+    )
+    prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
+
+    val event = buildSentenceDatesChangedEventJson()
+    val message = mapper.writeValueAsString(event)
+
+    sendEvent(message)
+
+    verify(sentenceDatesChangedHandler).handleEvent(message)
+    verify(updateSentenceDateService, never()).updateSentenceDates(any())
+    val activeLicence = testRepository.findLicence(1)
+    val variationLicence = testRepository.findLicence(2)
+    assertThat(activeLicence.conditionalReleaseDate).isEqualTo(newCrd)
+    assertThat(variationLicence.conditionalReleaseDate).isEqualTo(newCrd)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-hdc-licence-id-1.sql",
+  )
+  fun `A sentence dates changed event updates the CRD for a pre-release HDC licence`() {
+    val newCrd = LocalDate.now().plusDays(30)
+    prisonApiMockServer.stubGetPrisonerDetail(
+      nomsId = "A1234AA",
+      sentenceDetail = SentenceDetail(conditionalReleaseDate = newCrd),
+    )
+    prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
+
+    val event = buildSentenceDatesChangedEventJson()
+    val message = mapper.writeValueAsString(event)
+
+    sendEvent(message)
+
+    verify(sentenceDatesChangedHandler).handleEvent(message)
+    verify(updateSentenceDateService, never()).updateSentenceDates(any())
+    val licence = testRepository.findLicence(1)
+    assertThat(licence.conditionalReleaseDate).isEqualTo(newCrd)
   }
 
   private fun sendEvent(message: String) {
