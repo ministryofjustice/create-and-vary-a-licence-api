@@ -5,9 +5,7 @@ enum class LicenceStatus {
   SUBMITTED,
   APPROVED,
   ACTIVE,
-  REJECTED,
   INACTIVE,
-  RECALLED,
   VARIATION_IN_PROGRESS,
   VARIATION_SUBMITTED,
   VARIATION_REJECTED,
@@ -24,13 +22,11 @@ enum class LicenceStatus {
       IN_PROGRESS -> LicenceEventType.BACK_IN_PROGRESS
       APPROVED -> LicenceEventType.APPROVED
       ACTIVE -> LicenceEventType.ACTIVATED
-      REJECTED -> LicenceEventType.VARIATION_REFERRED
       VARIATION_IN_PROGRESS -> LicenceEventType.VARIATION_IN_PROGRESS
       VARIATION_SUBMITTED -> LicenceEventType.VARIATION_SUBMITTED
       VARIATION_REJECTED -> LicenceEventType.VARIATION_REFERRED
       VARIATION_APPROVED -> LicenceEventType.VARIATION_APPROVED
       INACTIVE -> LicenceEventType.INACTIVE
-      RECALLED -> LicenceEventType.RECALLED
       NOT_STARTED -> LicenceEventType.NOT_STARTED
       TIMED_OUT -> LicenceEventType.TIMED_OUT
     }
