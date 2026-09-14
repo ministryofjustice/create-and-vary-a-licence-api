@@ -74,7 +74,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
-import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -100,7 +99,6 @@ class LicenceService(
   private val cvlRecordService: CvlRecordService,
   private val migrationService: MigrationService,
   private val licenceConditionService: LicenceConditionService,
-  private val clock: Clock,
 ) {
 
   @Transactional(readOnly = true)
@@ -1129,6 +1127,8 @@ class LicenceService(
     val deactivationReason = body.reason.message
     inactivateLicences(licences, deactivationReason, false)
   }
+
+  @Transactional
   fun getLicencePermissions(licenceId: Long, teamCodes: List<String>): LicencePermissionsResponse {
     val licenceEntity = getLicence(licenceId)
     val offenderManager = deliusApiClient.getOffenderManager(licenceEntity.crn!!)

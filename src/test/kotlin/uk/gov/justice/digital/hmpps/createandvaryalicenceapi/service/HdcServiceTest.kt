@@ -161,10 +161,10 @@ class HdcServiceTest {
     )
 
     val details = listOf(
-      mapOf("bookingId" to 1L, "hdced" to LocalDate.now(clock)),
+      mapOf("bookingId" to 1L, "hdced" to LocalDate.now()),
       mapOf("bookingId" to 2L, "hdced" to null),
-      mapOf("bookingId" to 3L, "hdced" to LocalDate.now(clock)),
-      mapOf("bookingId" to 4L, "hdced" to LocalDate.now(clock)),
+      mapOf("bookingId" to 3L, "hdced" to LocalDate.now()),
+      mapOf("bookingId" to 4L, "hdced" to LocalDate.now()),
     )
 
     val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
@@ -186,7 +186,7 @@ class HdcServiceTest {
       hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED"),
     )
 
-    assertThat(service.isApprovedForHdc(1L, LocalDate.now(clock))).isTrue
+    assertThat(service.isApprovedForHdc(1L, LocalDate.now())).isTrue
     assertThat(service.isApprovedForHdc(1L, null)).isFalse
   }
 
@@ -196,7 +196,7 @@ class HdcServiceTest {
       hdcPrisonerStatus().copy(bookingId = 2L, approvalStatus = "NOT_APPROVED"),
     )
 
-    assertThat(service.isApprovedForHdc(2L, LocalDate.now(clock))).isFalse
+    assertThat(service.isApprovedForHdc(2L, LocalDate.now())).isFalse
     assertThat(service.isApprovedForHdc(2L, null)).isFalse
   }
 
@@ -240,8 +240,8 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence does not throw error when all conditions are met`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(clock),
-        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
+        homeDetentionCurfewActualDate = LocalDate.now(),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(),
       )
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
         hdcPrisonerStatus().copy(
@@ -258,7 +258,7 @@ class HdcServiceTest {
     fun `checkEligibleForHdcLicence throws error when HDCAD is missing`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
         homeDetentionCurfewActualDate = null,
-        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(),
       )
       val exception = assertThrows<IllegalStateException> {
         service.checkEligibleForHdcLicence(aPrisonerSearchResult, someHdcLicenceData)
@@ -269,7 +269,7 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence throws error when HDCED is missing`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(clock),
+        homeDetentionCurfewActualDate = LocalDate.now(),
         homeDetentionCurfewEligibilityDate = null,
       )
       val exception = assertThrows<IllegalStateException> {
@@ -281,8 +281,8 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence throws error when not approved for HDC`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(clock),
-        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
+        homeDetentionCurfewActualDate = LocalDate.now(),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(),
       )
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(hdcPrisonerStatus())
       val exception = assertThrows<IllegalStateException> {
@@ -294,8 +294,8 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence throws error when there is no curfew address`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(clock),
-        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
+        homeDetentionCurfewActualDate = LocalDate.now(),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(),
       )
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
         hdcPrisonerStatus().copy(
@@ -321,8 +321,8 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence throws error when there are no curfew times`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(clock),
-        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
+        homeDetentionCurfewActualDate = LocalDate.now(),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(),
       )
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
         hdcPrisonerStatus().copy(
@@ -453,11 +453,11 @@ class HdcServiceTest {
       )
 
       val details = listOf(
-        mapOf("bookingId" to 1L, "hdced" to LocalDate.now(clock)),
+        mapOf("bookingId" to 1L, "hdced" to LocalDate.now()),
         mapOf("bookingId" to 2L, "hdced" to null),
-        mapOf("bookingId" to 3L, "hdced" to LocalDate.now(clock)),
-        mapOf("bookingId" to 4L, "hdced" to LocalDate.now(clock)),
-        mapOf("bookingId" to 5L, "hdced" to LocalDate.now(clock)),
+        mapOf("bookingId" to 3L, "hdced" to LocalDate.now()),
+        mapOf("bookingId" to 4L, "hdced" to LocalDate.now()),
+        mapOf("bookingId" to 5L, "hdced" to LocalDate.now()),
       )
 
       val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })

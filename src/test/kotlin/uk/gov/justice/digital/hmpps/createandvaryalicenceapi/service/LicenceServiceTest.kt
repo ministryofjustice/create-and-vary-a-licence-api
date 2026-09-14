@@ -95,11 +95,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.Clock
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -128,7 +125,6 @@ class LicenceServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val migrationService = mock<MigrationService>()
   private val licenceConditionService = mock<LicenceConditionService>()
-  private val clock: Clock = Clock.fixed(Instant.parse("2023-11-03T00:00:00Z"), ZoneId.systemDefault())
 
   private val service =
     LicenceService(
@@ -150,7 +146,6 @@ class LicenceServiceTest {
       cvlRecordService,
       migrationService,
       licenceConditionService,
-      clock,
     )
 
   @BeforeEach
@@ -3550,7 +3545,6 @@ class LicenceServiceTest {
           cvlRecordService,
           migrationService,
           licenceConditionService,
-          clock,
         )
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)

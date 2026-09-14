@@ -36,24 +36,20 @@ import java.time.Month
 import java.time.ZoneId
 
 const val BOOKING_ID = 4576L
+private val FIXED_INSTANT = Instant.parse("2024-04-22T00:00:00Z")
+private val FIXED_ZONE = ZoneId.of("UTC")
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = ["domain.event.listener.disabled=false", "prison.event.listener.enabled=true"])
 @Import(PrisonEventsListenerIntegrationTest.FixedClockTestConfiguration::class)
 class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
-  private val testClock = Clock.fixed(
-    Instant.parse("2024-04-22T00:00:00Z"),
-    ZoneId.of("UTC"),
-  )
+  private val fixedClock = Clock.fixed(FIXED_INSTANT, FIXED_ZONE)
 
   @TestConfiguration
   class FixedClockTestConfiguration {
     @Bean
     @Primary
-    fun clock(): Clock = Clock.fixed(
-      Instant.parse("2024-04-22T00:00:00Z"),
-      ZoneId.of("UTC"),
-    )
+    fun clock(): Clock = Clock.fixed(FIXED_INSTANT, FIXED_ZONE)
   }
 
   @MockitoSpyBean
@@ -91,7 +87,7 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-active-hdc-licence-id-1.sql",
   )
   fun `A sentence dates changed event updates the CRD for an active HDC licence and its in-progress variation`() {
-    val newCrd = LocalDate.now(testClock).plusDays(30)
+    val newCrd = LocalDate.now(fixedClock).plusDays(30)
     prisonApiMockServer.stubGetSentencesAndOffences(54321)
     prisonApiMockServer.stubGetPrisonerDetail(
       nomsId = "A1234AA",
