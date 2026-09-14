@@ -1129,29 +1129,6 @@ class LicenceService(
     val deactivationReason = body.reason.message
     inactivateLicences(licences, deactivationReason, false)
   }
-
-  @Transactional
-  fun updateCrdForHdcLicences(licenceId: Long, newCrd: LocalDate?, includeVariations: Boolean = true) {
-    val validNewCrd = newCrd?.takeIf { it.isAfter(LocalDate.now(clock)) } ?: run {
-      log.info("Not updating CRD for HDC licence $licenceId as new CRD is not in the future: $newCrd")
-      return
-    }
-
-    val candidateLicences = when {
-      includeVariations -> licenceRepository.findLicenceAndVariations(licenceId).filter { it.kind.isHdc() }
-      else -> listOf(getLicence(licenceId))
-    }
-    val hdcLicences = candidateLicences.filter { it.conditionalReleaseDate != validNewCrd }.ifEmpty { return }
-
-    log.info("Updating CRD to $validNewCrd for HDC licences: ${hdcLicences.map { it.id }} for licenceId: $licenceId")
-    hdcLicences.forEach { hdcLicence ->
-      hdcLicence.conditionalReleaseDate = validNewCrd
-      hdcLicence.dateLastUpdated = LocalDateTime.now()
-      hdcLicence.updatedByUsername = SYSTEM_USER
-    }
-  }
-
-  @Transactional
   fun getLicencePermissions(licenceId: Long, teamCodes: List<String>): LicencePermissionsResponse {
     val licenceEntity = getLicence(licenceId)
     val offenderManager = deliusApiClient.getOffenderManager(licenceEntity.crn!!)

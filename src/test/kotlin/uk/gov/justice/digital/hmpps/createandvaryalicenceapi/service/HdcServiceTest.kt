@@ -14,6 +14,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -49,6 +50,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+import java.time.Clock
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.SATURDAY
@@ -56,8 +58,10 @@ import java.time.DayOfWeek.SUNDAY
 import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.DayOfWeek.WEDNESDAY
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.CurfewTimes as ClientCurfewTimes
@@ -70,6 +74,13 @@ class HdcServiceTest {
   private val staffRepository = mock<StaffRepository>()
   private val auditService = mock<AuditService>()
 
+  private val testClock = Clock.fixed(
+    Instant.parse("2024-04-22T00:00:00Z"),
+    ZoneId.of("UTC"),
+  )
+
+  private val clock: Clock = testClock
+
   private val service =
     HdcService(
       hdcApiClient,
@@ -77,6 +88,7 @@ class HdcServiceTest {
       licenceRepository,
       staffRepository,
       auditService,
+      clock,
     )
 
   @BeforeEach
@@ -149,10 +161,10 @@ class HdcServiceTest {
     )
 
     val details = listOf(
-      mapOf("bookingId" to 1L, "hdced" to LocalDate.now()),
+      mapOf("bookingId" to 1L, "hdced" to LocalDate.now(clock)),
       mapOf("bookingId" to 2L, "hdced" to null),
-      mapOf("bookingId" to 3L, "hdced" to LocalDate.now()),
-      mapOf("bookingId" to 4L, "hdced" to LocalDate.now()),
+      mapOf("bookingId" to 3L, "hdced" to LocalDate.now(clock)),
+      mapOf("bookingId" to 4L, "hdced" to LocalDate.now(clock)),
     )
 
     val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
@@ -174,7 +186,7 @@ class HdcServiceTest {
       hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED"),
     )
 
-    assertThat(service.isApprovedForHdc(1L, LocalDate.now())).isTrue
+    assertThat(service.isApprovedForHdc(1L, LocalDate.now(clock))).isTrue
     assertThat(service.isApprovedForHdc(1L, null)).isFalse
   }
 
@@ -184,7 +196,7 @@ class HdcServiceTest {
       hdcPrisonerStatus().copy(bookingId = 2L, approvalStatus = "NOT_APPROVED"),
     )
 
-    assertThat(service.isApprovedForHdc(2L, LocalDate.now())).isFalse
+    assertThat(service.isApprovedForHdc(2L, LocalDate.now(clock))).isFalse
     assertThat(service.isApprovedForHdc(2L, null)).isFalse
   }
 
@@ -228,8 +240,8 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence does not throw error when all conditions are met`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(),
-        homeDetentionCurfewEligibilityDate = LocalDate.now(),
+        homeDetentionCurfewActualDate = LocalDate.now(clock),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
       )
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
         hdcPrisonerStatus().copy(
@@ -246,7 +258,7 @@ class HdcServiceTest {
     fun `checkEligibleForHdcLicence throws error when HDCAD is missing`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
         homeDetentionCurfewActualDate = null,
-        homeDetentionCurfewEligibilityDate = LocalDate.now(),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
       )
       val exception = assertThrows<IllegalStateException> {
         service.checkEligibleForHdcLicence(aPrisonerSearchResult, someHdcLicenceData)
@@ -257,7 +269,7 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence throws error when HDCED is missing`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(),
+        homeDetentionCurfewActualDate = LocalDate.now(clock),
         homeDetentionCurfewEligibilityDate = null,
       )
       val exception = assertThrows<IllegalStateException> {
@@ -269,8 +281,8 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence throws error when not approved for HDC`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(),
-        homeDetentionCurfewEligibilityDate = LocalDate.now(),
+        homeDetentionCurfewActualDate = LocalDate.now(clock),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
       )
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(hdcPrisonerStatus())
       val exception = assertThrows<IllegalStateException> {
@@ -282,8 +294,8 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence throws error when there is no curfew address`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(),
-        homeDetentionCurfewEligibilityDate = LocalDate.now(),
+        homeDetentionCurfewActualDate = LocalDate.now(clock),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
       )
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
         hdcPrisonerStatus().copy(
@@ -309,8 +321,8 @@ class HdcServiceTest {
     @Test
     fun `checkEligibleForHdcLicence throws error when there are no curfew times`() {
       val aPrisonerSearchResult = aPrisonerSearchResult.copy(
-        homeDetentionCurfewActualDate = LocalDate.now(),
-        homeDetentionCurfewEligibilityDate = LocalDate.now(),
+        homeDetentionCurfewActualDate = LocalDate.now(clock),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(clock),
       )
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(
         hdcPrisonerStatus().copy(
@@ -424,6 +436,7 @@ class HdcServiceTest {
         licenceRepository,
         staffRepository,
         auditService,
+        clock,
         useCurrentHdcStatus = true,
       )
 
@@ -440,11 +453,11 @@ class HdcServiceTest {
       )
 
       val details = listOf(
-        mapOf("bookingId" to 1L, "hdced" to LocalDate.now()),
+        mapOf("bookingId" to 1L, "hdced" to LocalDate.now(clock)),
         mapOf("bookingId" to 2L, "hdced" to null),
-        mapOf("bookingId" to 3L, "hdced" to LocalDate.now()),
-        mapOf("bookingId" to 4L, "hdced" to LocalDate.now()),
-        mapOf("bookingId" to 5L, "hdced" to LocalDate.now()),
+        mapOf("bookingId" to 3L, "hdced" to LocalDate.now(clock)),
+        mapOf("bookingId" to 4L, "hdced" to LocalDate.now(clock)),
+        mapOf("bookingId" to 5L, "hdced" to LocalDate.now(clock)),
       )
 
       val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
@@ -460,6 +473,109 @@ class HdcServiceTest {
         ),
 
       )
+    }
+  }
+
+  @Nested
+  inner class UpdateCrdForActiveHdcLicences {
+    private val today = LocalDate.now(clock)
+    private val newCrd = today.plusDays(30)
+
+    @Test
+    fun `updates CRD on HDC licences and variations for the nomsId when the new CRD is in the future`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val hdcVariationLicence = createHdcVariationLicence().copy(id = 2L, nomsId = "A1234AA")
+      whenever(licenceRepository.findLicenceAndVariations(1)).thenReturn(
+        listOf(activeHdcLicence, hdcVariationLicence),
+      )
+
+      service.updateCrdForHdcLicences(1, newCrd)
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(newCrd)
+      assertThat(hdcVariationLicence.conditionalReleaseDate).isEqualTo(newCrd)
+      verify(licenceRepository, never()).saveAllAndFlush(any<List<uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence>>())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is today`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = activeHdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today)
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findLicenceAndVariations(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is in the past`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = activeHdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today.minusDays(1))
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findLicenceAndVariations(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is null`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = activeHdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, null)
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findLicenceAndVariations(any())
+    }
+  }
+
+  @Nested
+  inner class UpdateCrdForPreReleaseHdcLicence {
+    private val today = LocalDate.now(clock)
+    private val newCrd = today.plusDays(30)
+
+    @Test
+    fun `updates CRD on the HDC licence when the new CRD is in the future`() {
+      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      whenever(licenceRepository.findById(1)).thenReturn(Optional.of(hdcLicence))
+
+      service.updateCrdForHdcLicences(1, newCrd, includeVariations = false)
+
+      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(newCrd)
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is today`() {
+      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = hdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today, includeVariations = false)
+
+      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findById(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is in the past`() {
+      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = hdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today.minusDays(1), includeVariations = false)
+
+      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findById(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is null`() {
+      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = hdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, null, includeVariations = false)
+
+      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findById(any())
     }
   }
 
