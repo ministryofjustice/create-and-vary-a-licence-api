@@ -63,18 +63,16 @@ class HdcService(
   fun isApprovedForHdc(bookingId: Long, hdced: LocalDate?) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
 
   @Transactional
-  fun updateCrdForHdcLicences(licenceId: Long, newCrd: LocalDate?, includeVariations: Boolean = true) {
+  fun updateCrdForHdcLicences(licenceId: Long, newCrd: LocalDate?) {
     val validNewCrd = newCrd?.takeIf { it.isAfter(LocalDate.now(clock)) } ?: run {
       log.info("Not updating CRD for HDC licence $licenceId as new CRD is not in the future: $newCrd")
       return
     }
 
-    val candidateLicences = when {
-      includeVariations -> licenceRepository.findLicenceAndVariations(licenceId).filter { it.kind.isHdc() }
-      else -> listOf(licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") })
-        .filter { it.kind.isHdc() }
-    }
-    val hdcLicences = candidateLicences.filter { it.conditionalReleaseDate != validNewCrd }.ifEmpty { return }
+    val hdcLicences = licenceRepository.findLicenceAndVariations(licenceId)
+      .filter { it.kind.isHdc() }
+      .filter { it.conditionalReleaseDate != validNewCrd }
+      .ifEmpty { return }
 
     log.info("Updating CRD to $validNewCrd for HDC licences: ${hdcLicences.map { it.id }} for licenceId: $licenceId")
     hdcLicences.forEach { hdcLicence ->

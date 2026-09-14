@@ -531,55 +531,6 @@ class HdcServiceTest {
   }
 
   @Nested
-  inner class UpdateCrdForPreReleaseHdcLicence {
-    private val today = LocalDate.now(clock)
-    private val newCrd = today.plusDays(30)
-
-    @Test
-    fun `updates CRD on the HDC licence when the new CRD is in the future`() {
-      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
-      whenever(licenceRepository.findById(1)).thenReturn(Optional.of(hdcLicence))
-
-      service.updateCrdForHdcLicences(1, newCrd, includeVariations = false)
-
-      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(newCrd)
-    }
-
-    @Test
-    fun `does not update CRD when the new CRD is today`() {
-      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
-      val originalCrd = hdcLicence.conditionalReleaseDate
-
-      service.updateCrdForHdcLicences(1, today, includeVariations = false)
-
-      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
-      verify(licenceRepository, never()).findById(any())
-    }
-
-    @Test
-    fun `does not update CRD when the new CRD is in the past`() {
-      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
-      val originalCrd = hdcLicence.conditionalReleaseDate
-
-      service.updateCrdForHdcLicences(1, today.minusDays(1), includeVariations = false)
-
-      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
-      verify(licenceRepository, never()).findById(any())
-    }
-
-    @Test
-    fun `does not update CRD when the new CRD is null`() {
-      val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
-      val originalCrd = hdcLicence.conditionalReleaseDate
-
-      service.updateCrdForHdcLicences(1, null, includeVariations = false)
-
-      assertThat(hdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
-      verify(licenceRepository, never()).findById(any())
-    }
-  }
-
-  @Nested
   inner class `add HDC curfew address` {
 
     @Test

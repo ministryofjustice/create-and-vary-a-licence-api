@@ -191,7 +191,7 @@ class SentenceDatesChangedHandlerTest {
 
     sentenceDatesChangedHandler.handleEvent(message)
 
-    verify(hdcService, never()).updateCrdForHdcLicences(any(), any(), any())
+    verify(hdcService, never()).updateCrdForHdcLicences(any(), any())
   }
 
   @Test
@@ -216,7 +216,7 @@ class SentenceDatesChangedHandlerTest {
 
     verify(updateSentenceDateService).updateSentenceDates(preReleaseHdcLicence.id)
     verify(updateSentenceDateService).updateSentenceDates(preReleaseNonHdcLicence.id)
-    verify(hdcService, never()).updateCrdForHdcLicences(any(), any(), any())
+    verify(hdcService, never()).updateCrdForHdcLicences(any(), any())
   }
 
   @Test
@@ -239,6 +239,6 @@ class SentenceDatesChangedHandlerTest {
     sentenceDatesChangedHandler.handleEvent(message)
 
     verify(updateSentenceDateService).updateSentenceDates(submittedHdcLicence.id)
-    verify(hdcService, never()).updateCrdForHdcLicences(any(), any(), any())
+    verify(hdcService, never()).updateCrdForHdcLicences(any(), any())
   }
 }
