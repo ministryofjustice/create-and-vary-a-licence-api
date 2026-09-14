@@ -206,7 +206,7 @@ VALUES ('SPECIFIC_PERSON', -- person_type
         '2024-07-21 11:12:00');
 
 -- 3. Link licence <> appointment
-INSERT INTO licence_appointment (licence_id, appointment_id)
+INSERT INTO licence_probation_contact (licence_id, probation_contact_id)
 VALUES (2,
         (SELECT MAX(id) FROM probation_contact));
 
@@ -253,7 +253,7 @@ VALUES ('RESPONSIBLE_COM', -- person_type
         '2024-03-21 11:12:00');
 
 -- 3. Link licence <> appointment
-INSERT INTO licence_appointment (licence_id, appointment_id)
+INSERT INTO licence_probation_contact (licence_id, probation_contact_id)
 VALUES (1,
         (SELECT MAX(id) FROM probation_contact));
 

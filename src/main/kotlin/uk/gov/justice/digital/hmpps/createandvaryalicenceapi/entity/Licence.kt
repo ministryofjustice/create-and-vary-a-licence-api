@@ -90,9 +90,9 @@ abstract class Licence(
 
   @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
   @JoinTable(
-    name = "licence_appointment",
+    name = "licence_probation_contact",
     joinColumns = [JoinColumn(name = "licence_id")],
-    inverseJoinColumns = [JoinColumn(name = "appointment_id")],
+    inverseJoinColumns = [JoinColumn(name = "probation_contact_id")],
   )
   var probationContact: ProbationContact? = null,
   var approvedDate: LocalDateTime? = null,

@@ -83,7 +83,7 @@ VALUES ('SPECIFIC_PERSON',
         current_timestamp);
 
 -- 3. Link licence <> appointment
-INSERT INTO licence_appointment (licence_id, appointment_id)
+INSERT INTO licence_probation_contact (licence_id, probation_contact_id)
 VALUES ((SELECT MAX(id) FROM licence),
         (SELECT MAX(id) FROM probation_contact));
 
