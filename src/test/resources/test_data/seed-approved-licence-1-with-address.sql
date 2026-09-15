@@ -103,7 +103,7 @@ VALUES ('REF-123456',
         'MANUAL');
 
 -- 5. Link appointment to address
-INSERT INTO probation_contact_appointment_address (appointment_id, address_id)
+INSERT INTO probation_contact_address (probation_contact_id, address_id)
 VALUES ((SELECT max(id) FROM probation_contact),
         (SELECT max(id) FROM address));
 
