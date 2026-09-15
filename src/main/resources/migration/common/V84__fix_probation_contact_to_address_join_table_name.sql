@@ -1,0 +1,18 @@
+-- Fix incorrect probation_contact_appointment_address join table name to probation_contact_address
+ALTER TABLE probation_contact_appointment_address
+	RENAME TO probation_contact_address;
+
+ALTER TABLE probation_contact_address
+	RENAME COLUMN appointment_id TO probation_contact_id;
+
+ALTER TABLE probation_contact_address
+	RENAME CONSTRAINT appointment_address_pk
+	TO probation_contact_address_pk;
+
+ALTER TABLE probation_contact_address
+	RENAME CONSTRAINT appointment_address_address_fk
+	TO probation_contact_address_address_fk;
+
+ALTER TABLE probation_contact_address
+	RENAME CONSTRAINT appointment_address_appointment_fk
+	TO probation_contact_address_probation_contact_fk;

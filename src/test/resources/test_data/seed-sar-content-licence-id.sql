@@ -206,7 +206,7 @@ VALUES ('SPECIFIC_PERSON', -- person_type
         '2024-07-21 11:12:00');
 
 -- 3. Link licence <> appointment
-INSERT INTO licence_appointment (licence_id, appointment_id)
+INSERT INTO licence_probation_contact (licence_id, probation_contact_id)
 VALUES (2,
         (SELECT MAX(id) FROM probation_contact));
 
@@ -227,7 +227,7 @@ VALUES ('550e8400-e29b-41d4-a716-446655440000',
         'MANUAL');
 
 -- 5. Appointment <> Address join
-INSERT INTO probation_contact_appointment_address (appointment_id, address_id)
+INSERT INTO probation_contact_address (probation_contact_id, address_id)
 VALUES ((SELECT MAX(id) FROM probation_contact),
         (SELECT MAX(id) FROM address));
 
@@ -253,7 +253,7 @@ VALUES ('RESPONSIBLE_COM', -- person_type
         '2024-03-21 11:12:00');
 
 -- 3. Link licence <> appointment
-INSERT INTO licence_appointment (licence_id, appointment_id)
+INSERT INTO licence_probation_contact (licence_id, probation_contact_id)
 VALUES (1,
         (SELECT MAX(id) FROM probation_contact));
 
@@ -274,7 +274,7 @@ VALUES ('550e8400-e29b-41d4-a716-1211212121',
         'MANUAL');
 
 -- 5. Appointment <> Address join
-INSERT INTO probation_contact_appointment_address (appointment_id, address_id)
+INSERT INTO probation_contact_address (probation_contact_id, address_id)
 VALUES ((SELECT MAX(id) FROM probation_contact),
         (SELECT MAX(id) FROM address));
 

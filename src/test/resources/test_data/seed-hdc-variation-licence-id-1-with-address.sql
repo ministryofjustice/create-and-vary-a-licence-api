@@ -84,8 +84,7 @@ VALUES ('SPECIFIC_PERSON', -- person_type
        );
 
 -- 3. Link licence <> appointment
-INSERT INTO licence_appointment (licence_id,
-                                 appointment_id)
+INSERT INTO licence_probation_contact (licence_id, probation_contact_id)
 VALUES ((SELECT MAX(id) FROM licence),
         (SELECT MAX(id) FROM probation_contact));
 
@@ -106,7 +105,7 @@ VALUES ('REF-123456',
         'MANUAL');
 
 -- 5. Link appointment <> address
-INSERT INTO probation_contact_appointment_address (appointment_id,
+INSERT INTO probation_contact_address (probation_contact_id,
                                                    address_id)
 VALUES ((SELECT MAX(id) FROM probation_contact),
         (SELECT MAX(id) FROM address));
