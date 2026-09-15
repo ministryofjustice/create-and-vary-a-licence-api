@@ -37,10 +37,10 @@ class ProbationContact(
     orphanRemoval = true,
   )
   @JoinTable(
-    name = "PROBATION_CONTACT_APPOINTMENT_ADDRESS",
-    joinColumns = [JoinColumn(name = "appointment_id")],
+    name = "PROBATION_CONTACT_ADDRESS",
+    joinColumns = [JoinColumn(name = "probation_contact_id")],
     inverseJoinColumns = [JoinColumn(name = "address_id")],
-    uniqueConstraints = [UniqueConstraint(columnNames = ["appointment_id", "address_id"])],
+    uniqueConstraints = [UniqueConstraint(columnNames = ["probation_contact_id", "address_id"])],
   )
   var address: Address? = null,
   var dateCreated: LocalDateTime? = LocalDateTime.now(),
