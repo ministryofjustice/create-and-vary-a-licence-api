@@ -68,7 +68,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
@@ -307,7 +306,6 @@ class LicenceService(
 
     val summaryText = when (licenceEntity.statusCode) {
       APPROVED -> "Licence approved for $licenceFullName"
-      REJECTED -> "Licence rejected for $licenceFullName"
       IN_PROGRESS -> "Licence edited for $licenceFullName"
       ACTIVE -> "Licence set to ACTIVE for $licenceFullName"
       INACTIVE -> "Licence set to INACTIVE for $licenceFullName"
