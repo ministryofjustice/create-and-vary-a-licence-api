@@ -168,16 +168,6 @@ abstract class Licence(
     this.updatedBy = staffMember ?: this.updatedBy
   }
 
-  fun updateAppointmentAddress(appointmentAddressText: String?, staffMember: Staff?) {
-    if (this.probationContact == null) {
-      this.probationContact = ProbationContact()
-    }
-    this.probationContact?.addressText = appointmentAddressText
-    this.dateLastUpdated = LocalDateTime.now()
-    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
-    this.updatedBy = staffMember ?: this.updatedBy
-  }
-
   fun updateAppointmentContactNumber(
     telephoneContactNumber: String?,
     alternativeTelephoneContactNumber: String?,

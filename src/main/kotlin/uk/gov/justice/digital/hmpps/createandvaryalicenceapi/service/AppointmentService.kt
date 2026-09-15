@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ProbationContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
@@ -18,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.NO_APPOINTMENT_NEEDED
 import java.time.LocalDateTime
 
@@ -36,15 +34,6 @@ class AppointmentService(
 
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
-    if (request.appointmentPersonType == NO_APPOINTMENT_NEEDED && request.appointmentPerson != null) {
-      throw ValidationException("Appointment person must be empty when an appointment is not needed.")
-    }
-
-    if (request.appointmentPersonType === AppointmentType.SPECIFIC_PERSON) {
-      if (request.appointmentPerson.isNullOrBlank()) {
-        throw ValidationException("Appointment person must not be empty if Appointment With Type is SPECIFIC_PERSON")
-      }
-    }
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
@@ -143,33 +132,6 @@ class AppointmentService(
         staffMember,
       )
     }
-  }
-
-  @Deprecated(" Use updateAppointmentAddress(licenceId: Long, request: AddAddressRequest) ")
-  @Transactional
-  fun updateAppointmentAddress(licenceId: Long, request: AppointmentAddressRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val previousAddress = licenceEntity.probationContact?.addressText
-    val staffMember = getStaffUser()
-
-    licenceEntity.updateAppointmentAddress(
-      appointmentAddressText = request.appointmentAddress,
-      staffMember = staffMember,
-    )
-
-    licenceRepository.saveAndFlush(licenceEntity)
-    auditService.recordAuditEventInitialAppointmentUpdate(
-      licenceEntity,
-      mapOf(
-        "field" to "appointmentAddress",
-        "previousValue" to (previousAddress ?: ""),
-        "newValue" to (licenceEntity.probationContact?.addressText ?: ""),
-      ),
-      staffMember,
-    )
   }
 
   @Transactional
