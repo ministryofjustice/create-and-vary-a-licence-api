@@ -20,8 +20,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AppointmentPersonUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType.NO_APPOINTMENT_NEEDED
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
@@ -35,15 +37,20 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update person to meet at initial appointment`() {
-    webTestClient.put()
+    val response = webTestClient.put()
       .uri("/licence/id/1/appointmentPerson")
       .bodyValue(anUpdateAppointmentPersonRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody<AppointmentPersonUpdateResponse>()
+      .returnResult().responseBody
 
-    val result = webTestClient.get()
+    assertThat(response.missingAppointmentTime).isTrue
+
+    val response2 = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -53,8 +60,21 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
       .expectBody<Licence>()
       .returnResult().responseBody
 
-    assertThat(result.appointmentPersonType).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPersonType)
-    assertThat(result.appointmentPerson).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPerson)
+    assertThat(response2.appointmentPersonType).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPersonType)
+    assertThat(response2.appointmentPerson).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPerson)
+
+    val response3 = webTestClient.put()
+      .uri("/licence/id/1/appointmentPerson")
+      .bodyValue(AppointmentPersonRequest(appointmentPersonType = NO_APPOINTMENT_NEEDED, appointmentPerson = null))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody<AppointmentPersonUpdateResponse>()
+      .returnResult().responseBody
+
+    assertThat(response3.missingAppointmentTime).isFalse
   }
 
   @Test
