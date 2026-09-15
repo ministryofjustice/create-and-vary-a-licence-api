@@ -106,6 +106,12 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
     val variationLicence = testRepository.findLicence(2)
     assertThat(activeLicence.conditionalReleaseDate).isEqualTo(newCrd)
     assertThat(variationLicence.conditionalReleaseDate).isEqualTo(newCrd)
+
+    val auditEvent = testRepository.findFirstAuditEvent(1)
+    assertThat(auditEvent.summary).contains("Updated HDC conditional release date")
+    assertThat(auditEvent.changes).containsEntry("type", "Updated HDC conditional release date")
+      .containsKey("before")
+      .containsKey("after")
   }
 
   private fun sendEvent(message: String) {

@@ -76,9 +76,15 @@ class HdcService(
 
     log.info("Updating CRD to $validNewCrd for HDC licences: ${hdcLicences.map { it.id }} for licenceId: $licenceId")
     hdcLicences.forEach { hdcLicence ->
+      val previousConditionalReleaseDate = hdcLicence.conditionalReleaseDate
       hdcLicence.conditionalReleaseDate = validNewCrd
       hdcLicence.dateLastUpdated = LocalDateTime.now()
       hdcLicence.updatedByUsername = SYSTEM_USER
+      auditService.recordAuditEventUpdateHdcConditionalReleaseDate(
+        hdcLicence,
+        previousConditionalReleaseDate,
+        validNewCrd,
+      )
     }
   }
 

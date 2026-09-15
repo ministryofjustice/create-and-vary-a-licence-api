@@ -493,6 +493,11 @@ class HdcServiceTest {
 
       assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(newCrd)
       assertThat(hdcVariationLicence.conditionalReleaseDate).isEqualTo(newCrd)
+      verify(auditService, times(2)).recordAuditEventUpdateHdcConditionalReleaseDate(
+        any(),
+        any(),
+        any(),
+      )
       verify(licenceRepository, never()).saveAllAndFlush(any<List<uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence>>())
     }
 
