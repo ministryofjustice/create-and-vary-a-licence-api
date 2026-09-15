@@ -45,3 +45,10 @@ entries:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/jobs
     hash: 79bb89726b9fb2f0429fe5c292b59748
 
+  - id: prisoner-merged-handler
+    description: "How the service reacts to a prisoner record merge: deactivating licences on the retired booking and refreshing offender details for the current one"
+    doc: docs/prisoner-merged.md
+    sources:
+      - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/domainEvents/PrisonerMergedHandler.kt
+    hash: 9a3a21802612c8b79ab6e51e595d9736
+
