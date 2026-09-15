@@ -103,7 +103,7 @@ VALUES ('550e8400-e29b-41d4-a716-446655440000',
         'MANUAL');
 
 -- 5. Appointment <> Address join
-INSERT INTO probation_contact_appointment_address (appointment_id, address_id)
+INSERT INTO probation_contact_address (probation_contact_id, address_id)
 VALUES ((SELECT MAX(id) FROM probation_contact),
         (SELECT MAX(id) FROM address));
 

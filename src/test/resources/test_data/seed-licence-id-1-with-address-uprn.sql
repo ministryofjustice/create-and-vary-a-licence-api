@@ -105,7 +105,7 @@ VALUES ('uprn',
         'OS_PLACES');
 
 -- 5. Link appointment to address
-INSERT INTO probation_contact_appointment_address (appointment_id, address_id)
+INSERT INTO probation_contact_address (probation_contact_id, address_id)
 VALUES ((SELECT MAX(id) FROM probation_contact),
         (SELECT MAX(id) FROM address));
 
