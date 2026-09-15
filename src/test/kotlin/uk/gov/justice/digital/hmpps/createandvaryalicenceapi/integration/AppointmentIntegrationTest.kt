@@ -315,9 +315,9 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
     val savedAddress = getAndAssertAddress(licence)
     assertThat(savedAddress.id).isEqualTo(4)
     assertThat(testRepository.findAllAddresses().size).isEqualTo(4)
-    val savedAppointmentAddresses = licence.responsibleCom!!.savedAppointmentAddresses
-    assertThat(savedAppointmentAddresses.size).isEqualTo(2)
-    assertThat(savedAppointmentAddresses.first().id).isEqualTo(2)
+    val savedContactAddresses = licence.responsibleCom!!.savedAppointmentAddresses
+    assertThat(savedContactAddresses.size).isEqualTo(2)
+    assertThat(savedContactAddresses.first().id).isEqualTo(2)
   }
 
   @Test
@@ -338,10 +338,10 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
     val savedAddress = getAndAssertAddress(licence)
     assertThat(testRepository.findAllAddresses().size).isEqualTo(2)
     assertThat(savedAddress.id).isEqualTo(1)
-    val savedAppointmentAddresses = licence.responsibleCom?.savedAppointmentAddresses
-    assertThat(savedAppointmentAddresses).isNotNull()
-    assertThat(savedAppointmentAddresses!!.size).isEqualTo(1)
-    assertThat(savedAppointmentAddresses.last().id).isEqualTo(2)
+    val savedContactAddresses = licence.responsibleCom?.savedAppointmentAddresses
+    assertThat(savedContactAddresses).isNotNull()
+    assertThat(savedContactAddresses!!.size).isEqualTo(1)
+    assertThat(savedContactAddresses.last().id).isEqualTo(2)
     val auditEvent = testRepository.findFirstAuditEvent()
     assertThat(auditEvent.changes).doesNotContainEntry("savedToStaffMember", "test-client")
   }
