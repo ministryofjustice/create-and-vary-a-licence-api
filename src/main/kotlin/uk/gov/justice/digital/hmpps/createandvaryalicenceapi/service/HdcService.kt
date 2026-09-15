@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -35,6 +36,7 @@ class HdcService(
   private val licenceRepository: LicenceRepository,
   private val staffRepository: StaffRepository,
   private val auditService: AuditService,
+  private val clock: Clock,
   @param:Value("\${feature.toggle.hdcCreation.enabled}") private val useCurrentHdcStatus: Boolean = false,
 ) {
 
@@ -59,6 +61,32 @@ class HdcService(
   }
 
   fun isApprovedForHdc(bookingId: Long, hdced: LocalDate?) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
+
+  @Transactional
+  fun updateCrdForHdcLicences(licenceId: Long, newCrd: LocalDate?) {
+    val validNewCrd = newCrd?.takeIf { it.isAfter(LocalDate.now(clock)) } ?: run {
+      log.info("Not updating CRD for HDC licence $licenceId as new CRD is not in the future: $newCrd")
+      return
+    }
+
+    val hdcLicences = licenceRepository.findLicenceAndVariations(licenceId)
+      .filter { it.kind.isHdc() }
+      .filter { it.conditionalReleaseDate != validNewCrd }
+      .ifEmpty { return }
+
+    log.info("Updating CRD to $validNewCrd for HDC licences: ${hdcLicences.map { it.id }} for licenceId: $licenceId")
+    hdcLicences.forEach { hdcLicence ->
+      val previousConditionalReleaseDate = hdcLicence.conditionalReleaseDate
+      hdcLicence.conditionalReleaseDate = validNewCrd
+      hdcLicence.dateLastUpdated = LocalDateTime.now()
+      hdcLicence.updatedByUsername = SYSTEM_USER
+      auditService.recordAuditEventUpdateHdcConditionalReleaseDate(
+        hdcLicence,
+        previousConditionalReleaseDate,
+        validNewCrd,
+      )
+    }
+  }
 
   @Transactional
   fun getHdcLicenceDataByBookingId(bookingId: Long): HdcLicence = this.hdcApiClient.getByBookingId(bookingId)

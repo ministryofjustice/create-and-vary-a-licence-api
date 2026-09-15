@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
+import org.mockito.kotlin.any
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -11,9 +12,11 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
@@ -30,6 +33,7 @@ class SentenceDatesChangedHandlerTest {
   private val licenceService = mock<LicenceService>()
   private val prisonService = mock<PrisonService>()
   private val updateSentenceDateService = mock<UpdateSentenceDateService>()
+  private val hdcService = mock<HdcService>()
 
   private val sentenceDatesChangedHandler =
     SentenceDatesChangedHandler(
@@ -38,6 +42,7 @@ class SentenceDatesChangedHandlerTest {
       licenceService,
       prisonService,
       updateSentenceDateService,
+      hdcService,
     )
 
   private val bookingId = 73892L
@@ -55,7 +60,7 @@ class SentenceDatesChangedHandlerTest {
 
   @BeforeEach
   fun setup() {
-    reset(licenceService, prisonService, updateSentenceDateService)
+    reset(licenceService, prisonService, updateSentenceDateService, hdcService)
   }
 
   @Test
@@ -153,5 +158,87 @@ class SentenceDatesChangedHandlerTest {
     sentenceDatesChangedHandler.handleEvent(message)
 
     verify(updateSentenceDateService).updateSentenceDates(inProgressLicence.id)
+  }
+
+  @Test
+  fun `should delegate CRD update to licence service when active HDC licence has a new CRD`() {
+    val activeHdcLicence = createHdcLicence().copy(statusCode = ACTIVE, bookingId = bookingId, nomsId = nomisId)
+    val newCrd = LocalDate.now().plusDays(30)
+    val prisonApiPrisonerNewCrd = prisonApiPrisoner.copy(
+      sentenceDetail = prisonApiPrisoner.sentenceDetail.copy(conditionalReleaseDate = newCrd),
+    )
+
+    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
+    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisonerNewCrd)
+    whenever(prisonService.getPrisonerLatestSentenceStartDate(bookingId)).thenReturn(null)
+    whenever(
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(nomisId, listOf(ACTIVE)),
+    ).thenReturn(listOf(activeHdcLicence))
+
+    sentenceDatesChangedHandler.handleEvent(message)
+
+    verify(hdcService).updateCrdForHdcLicences(activeHdcLicence.id, newCrd)
+  }
+
+  @Test
+  fun `should not delegate CRD update for a standard CRD licence`() {
+    whenever(prisonService.getPrisonerDetail(nomisId)).thenReturn(prisonApiPrisoner)
+    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
+    whenever(prisonService.getPrisonerLatestSentenceStartDate(bookingId)).thenReturn(null)
+    whenever(
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(nomisId, listOf(ACTIVE)),
+    ).thenReturn(listOf(activeLicence))
+
+    sentenceDatesChangedHandler.handleEvent(message)
+
+    verify(hdcService, never()).updateCrdForHdcLicences(any(), any())
+  }
+
+  @Test
+  fun `should process a pre-release HDC licence like a normal licence and sync via updateSentenceDateService`() {
+    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
+    val preReleaseHdcLicence = createHdcLicence(id = 2).copy(nomsId = nomisId)
+    val preReleaseNonHdcLicence = createCrdLicence()
+    whenever(
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(
+        nomisId,
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.REJECTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.TIMED_OUT,
+        ),
+      ),
+    ).thenReturn(listOf(preReleaseHdcLicence, preReleaseNonHdcLicence))
+
+    sentenceDatesChangedHandler.handleEvent(message)
+
+    verify(updateSentenceDateService).updateSentenceDates(preReleaseHdcLicence.id)
+    verify(updateSentenceDateService).updateSentenceDates(preReleaseNonHdcLicence.id)
+    verify(hdcService, never()).updateCrdForHdcLicences(any(), any())
+  }
+
+  @Test
+  fun `should process a SUBMITTED pre-release HDC licence like a normal licence and sync via updateSentenceDateService`() {
+    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
+    val submittedHdcLicence = createHdcLicence(id = 3).copy(nomsId = nomisId, statusCode = LicenceStatus.SUBMITTED)
+    whenever(
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(
+        nomisId,
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.REJECTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.TIMED_OUT,
+        ),
+      ),
+    ).thenReturn(listOf(submittedHdcLicence))
+
+    sentenceDatesChangedHandler.handleEvent(message)
+
+    verify(updateSentenceDateService).updateSentenceDates(submittedHdcLicence.id)
+    verify(hdcService, never()).updateCrdForHdcLicences(any(), any())
   }
 }
