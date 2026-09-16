@@ -59,7 +59,7 @@ abstract class Staff(
     orphanRemoval = true,
   )
   @JoinTable(
-    name = "STAFF_SAVED_APPOINTMENT_ADDRESS",
+    name = "SAVED_CONTACT_ADDRESSES",
     joinColumns = [JoinColumn(name = "staff_id")],
     inverseJoinColumns = [JoinColumn(name = "address_id")],
     uniqueConstraints = [UniqueConstraint(columnNames = ["staff_id", "address_id"])],
