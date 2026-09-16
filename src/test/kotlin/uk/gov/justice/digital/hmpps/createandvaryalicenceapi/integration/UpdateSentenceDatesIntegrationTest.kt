@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
@@ -35,8 +37,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import kotlin.jvm.optionals.getOrNull
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -575,14 +575,13 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
 
-          @JvmStatic
-          @DynamicPropertySource
-          fun properties(registry: DynamicPropertyRegistry) {
-              registry.add("progression.model.policy-start-date") {
-                  LocalDate.now().plusMonths(1).withDayOfMonth(20).toString()
-              }
-          }
-
+    @JvmStatic
+    @DynamicPropertySource
+    fun properties(registry: DynamicPropertyRegistry) {
+      registry.add("progression.model.policy-start-date") {
+        LocalDate.now().plusMonths(1).withDayOfMonth(20).toString()
+      }
+    }
   }
 
   @Nested
@@ -688,7 +687,4 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
       assertThat(result?.version).isEqualTo("4.0")
     }
   }
-
-
-
 }
