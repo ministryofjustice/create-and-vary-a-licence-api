@@ -31,7 +31,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -266,7 +265,7 @@ class LicenceCreationService(
 
   private fun verifyNoInFlightLicence(nomsId: String) {
     val inflightLicences =
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED))
 
     if (inflightLicences.isNotEmpty()) {
       val currentInflightLicence = when {
@@ -274,7 +273,7 @@ class LicenceCreationService(
         else -> inflightLicences.first { it.statusCode != APPROVED }
       }
       throw ResourceAlreadyExistsException(
-        message = "A licence already exists for person with prison number: $nomsId (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)",
+        message = "A licence already exists for person with prison number: $nomsId (IN_PROGRESS, SUBMITTED or APPROVED)",
         existingResourceId = currentInflightLicence.id,
       )
     }

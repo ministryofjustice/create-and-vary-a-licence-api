@@ -65,7 +65,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -458,7 +457,7 @@ class LicenceCreationServiceTest {
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
             PRISON_NUMBER,
-            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED),
           ),
       ).thenReturn(listOf(existingLicence))
 
@@ -468,7 +467,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(ResourceAlreadyExistsException::class.java)
-        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED or APPROVED)")
 
       assertThat(exception.existingResourceId).isEqualTo(existingLicence.id)
 
@@ -487,7 +486,7 @@ class LicenceCreationServiceTest {
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
             PRISON_NUMBER,
-            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED),
           ),
       ).thenReturn(listOf(approvedLicence, notApprovedLicence))
 
@@ -497,7 +496,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(ResourceAlreadyExistsException::class.java)
-        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED or APPROVED)")
 
       assertThat(exception.existingResourceId).isEqualTo(notApprovedLicence.id)
 
@@ -1048,7 +1047,7 @@ class LicenceCreationServiceTest {
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
             PRISON_NUMBER,
-            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED),
           ),
       ).thenReturn(listOf(existingLicence))
 
@@ -1077,7 +1076,7 @@ class LicenceCreationServiceTest {
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
             PRISON_NUMBER,
-            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED),
           ),
       ).thenReturn(listOf(approvedLicence, notApprovedLicence))
 
@@ -1087,7 +1086,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(ResourceAlreadyExistsException::class.java)
-        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED or APPROVED)")
 
       assertThat(exception.existingResourceId).isEqualTo(notApprovedLicence.id)
 
@@ -1644,7 +1643,7 @@ class LicenceCreationServiceTest {
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
             PRISON_NUMBER,
-            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED),
           ),
       ).thenReturn(listOf(existingLicence))
 
@@ -1654,7 +1653,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(ResourceAlreadyExistsException::class.java)
-        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED or APPROVED)")
       assertThat(exception.existingResourceId).isEqualTo(existingLicence.id)
 
       verify(licenceRepository, times(0)).saveAndFlush(any<EntityLicence>())
@@ -2378,7 +2377,7 @@ class LicenceCreationServiceTest {
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
             PRISON_NUMBER,
-            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED),
           ),
       ).thenReturn(listOf(existingLicence))
 
@@ -2388,7 +2387,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(ResourceAlreadyExistsException::class.java)
-        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED or APPROVED)")
 
       assertThat(exception.existingResourceId).isEqualTo(existingLicence.id)
 
@@ -2407,7 +2406,7 @@ class LicenceCreationServiceTest {
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
             PRISON_NUMBER,
-            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED),
           ),
       ).thenReturn(listOf(approvedLicence, notApprovedLicence))
 
@@ -2417,7 +2416,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(ResourceAlreadyExistsException::class.java)
-        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED or APPROVED)")
 
       assertThat(exception.existingResourceId).isEqualTo(notApprovedLicence.id)
 
