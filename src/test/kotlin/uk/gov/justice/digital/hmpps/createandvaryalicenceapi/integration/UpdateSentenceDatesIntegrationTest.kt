@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
@@ -38,7 +40,6 @@ import kotlin.jvm.optionals.getOrNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["progression.model.policy-start-date=2026-09-20"])
 class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   @Autowired
@@ -573,6 +574,14 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   private companion object {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @JvmStatic
+    @DynamicPropertySource
+    fun properties(registry: DynamicPropertyRegistry) {
+      registry.add("progression.model.policy-start-date") {
+        LocalDate.now().plusMonths(1).withDayOfMonth(20).toString()
+      }
+    }
   }
 
   @Nested
