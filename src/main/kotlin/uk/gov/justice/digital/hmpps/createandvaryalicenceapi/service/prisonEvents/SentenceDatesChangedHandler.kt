@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -55,14 +56,15 @@ class SentenceDatesChangedHandler(
   }
 
   private fun processActiveLicenceDateChanges(licence: Licence) {
-    updateCrdForActiveHdcLicences(licence)
+    val prisoner = prisonService.getPrisonerDetail(licence.nomsId!!)
+    updateCrdForActiveHdcLicences(licence, prisoner)
     deactivateLicencesIfPrisonerResentenced(licence)
-    deactivateLicencesIfFuturePrrd(licence)
+    deactivateLicencesIfFuturePrrd(licence, prisoner)
   }
 
-  private fun updateCrdForActiveHdcLicences(activeLicence: Licence) {
+  private fun updateCrdForActiveHdcLicences(activeLicence: Licence, prisoner: PrisonApiPrisoner) {
     activeLicence.takeIf { it.kind.isHdc() }?.let { licence ->
-      val newCrd = prisonService.getPrisonerDetail(licence.nomsId!!).sentenceDetail.toSentenceDates().conditionalReleaseDate
+      val newCrd = prisoner.sentenceDetail.toSentenceDates().conditionalReleaseDate
       hdcService.updateCrdForHdcLicences(licence.id, newCrd)
     }
   }
@@ -77,9 +79,7 @@ class SentenceDatesChangedHandler(
     }
   }
 
-  private fun deactivateLicencesIfFuturePrrd(licence: Licence) {
-    val prisoner = prisonService.getPrisonerDetail(licence.nomsId!!)
-
+  private fun deactivateLicencesIfFuturePrrd(licence: Licence, prisoner: PrisonApiPrisoner) {
     val prrd = prisoner.sentenceDetail.postRecallReleaseOverrideDate ?: prisoner.sentenceDetail.postRecallReleaseDate
     if (prrd != null) {
       if (prrd == licence.postRecallReleaseDate) {
