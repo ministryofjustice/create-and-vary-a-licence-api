@@ -76,7 +76,7 @@ class AppointmentServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
-    service.updateAppointmentPerson(
+    val response = service.updateAppointmentPerson(
       1L,
       AppointmentPersonRequest(
         appointmentPersonType = SPECIFIC_PERSON,
@@ -94,6 +94,42 @@ class AppointmentServiceTest {
     assertThat(appointment.person).isEqualTo("John Smith")
     assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
     assertThat(licence.updatedBy!!.username).isEqualTo(aCom.username)
+
+    assertThat(response.missingAppointmentTime).isTrue
+  }
+
+  @Test
+  fun `update initial appointment person returns missingAppointmentTime false when a time is already set`() {
+    whenever(
+      licenceRepository.findById(1L),
+    ).thenReturn(Optional.of(aLicenceEntity.copy(probationContact = createProbationContact())))
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
+
+    val response = service.updateAppointmentPerson(
+      1L,
+      AppointmentPersonRequest(
+        appointmentPersonType = SPECIFIC_PERSON,
+        appointmentPerson = "John Smith",
+      ),
+    )
+
+    assertThat(response.missingAppointmentTime).isFalse
+  }
+
+  @Test
+  fun `update initial appointment person returns missingAppointmentTime false when appointment is not needed`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
+
+    val response = service.updateAppointmentPerson(
+      1L,
+      AppointmentPersonRequest(
+        appointmentPersonType = NO_APPOINTMENT_NEEDED,
+        appointmentPerson = null,
+      ),
+    )
+
+    assertThat(response.missingAppointmentTime).isFalse
   }
 
   @Test
@@ -103,7 +139,7 @@ class AppointmentServiceTest {
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
     // When
-    service.updateAppointmentPerson(
+    val response = service.updateAppointmentPerson(
       1L,
       AppointmentPersonRequest(
         appointmentPersonType = DUTY_OFFICER,
@@ -122,6 +158,8 @@ class AppointmentServiceTest {
     assertThat(appointment.person).isNull()
     assertThat(licence.updatedByUsername).isEqualTo(aCom.username)
     assertThat(licence.updatedBy).isEqualTo(aCom)
+
+    assertThat(response.missingAppointmentTime).isFalse
   }
 
   @Test
