@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.pr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
@@ -199,7 +200,6 @@ class SentenceDatesChangedHandlerTest {
         listOf(
           LicenceStatus.IN_PROGRESS,
           LicenceStatus.SUBMITTED,
-          LicenceStatus.REJECTED,
           LicenceStatus.APPROVED,
           LicenceStatus.TIMED_OUT,
         ),
@@ -223,7 +223,6 @@ class SentenceDatesChangedHandlerTest {
         listOf(
           LicenceStatus.IN_PROGRESS,
           LicenceStatus.SUBMITTED,
-          LicenceStatus.REJECTED,
           LicenceStatus.APPROVED,
           LicenceStatus.TIMED_OUT,
         ),
