@@ -14,6 +14,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -49,6 +50,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+import java.time.Clock
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.SATURDAY
@@ -56,8 +58,10 @@ import java.time.DayOfWeek.SUNDAY
 import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.DayOfWeek.WEDNESDAY
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.CurfewTimes as ClientCurfewTimes
@@ -70,6 +74,13 @@ class HdcServiceTest {
   private val staffRepository = mock<StaffRepository>()
   private val auditService = mock<AuditService>()
 
+  private val testClock = Clock.fixed(
+    Instant.parse("2024-04-22T00:00:00Z"),
+    ZoneId.of("UTC"),
+  )
+
+  private val clock: Clock = testClock
+
   private val service =
     HdcService(
       hdcApiClient,
@@ -77,6 +88,7 @@ class HdcServiceTest {
       licenceRepository,
       staffRepository,
       auditService,
+      clock,
     )
 
   @BeforeEach
@@ -424,6 +436,7 @@ class HdcServiceTest {
         licenceRepository,
         staffRepository,
         auditService,
+        clock,
         useCurrentHdcStatus = true,
       )
 
@@ -460,6 +473,65 @@ class HdcServiceTest {
         ),
 
       )
+    }
+  }
+
+  @Nested
+  inner class UpdateCrdForActiveHdcLicences {
+    private val today = LocalDate.now(clock)
+    private val newCrd = today.plusDays(30)
+
+    @Test
+    fun `updates CRD on HDC licences and variations for the nomsId when the new CRD is in the future`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val hdcVariationLicence = createHdcVariationLicence().copy(id = 2L, nomsId = "A1234AA")
+      whenever(licenceRepository.findLicenceAndVariations(1)).thenReturn(
+        listOf(activeHdcLicence, hdcVariationLicence),
+      )
+
+      service.updateCrdForHdcLicences(1, newCrd)
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(newCrd)
+      assertThat(hdcVariationLicence.conditionalReleaseDate).isEqualTo(newCrd)
+      verify(auditService, times(2)).recordAuditEventUpdateHdcConditionalReleaseDate(
+        any(),
+        any(),
+        any(),
+      )
+      verify(licenceRepository, never()).saveAllAndFlush(any<List<uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence>>())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is today`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = activeHdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today)
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findLicenceAndVariations(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is in the past`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = activeHdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, today.minusDays(1))
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findLicenceAndVariations(any())
+    }
+
+    @Test
+    fun `does not update CRD when the new CRD is null`() {
+      val activeHdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+      val originalCrd = activeHdcLicence.conditionalReleaseDate
+
+      service.updateCrdForHdcLicences(1, null)
+
+      assertThat(activeHdcLicence.conditionalReleaseDate).isEqualTo(originalCrd)
+      verify(licenceRepository, never()).findLicenceAndVariations(any())
     }
   }
 

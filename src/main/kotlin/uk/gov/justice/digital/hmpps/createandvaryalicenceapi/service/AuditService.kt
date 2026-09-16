@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 
@@ -318,6 +319,22 @@ class AuditService(
     )
 
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
+  }
+
+  fun recordAuditEventUpdateHdcConditionalReleaseDate(
+    licence: Licence,
+    previousConditionalReleaseDate: LocalDate?,
+    updatedConditionalReleaseDate: LocalDate?,
+  ) {
+    val summary = "Updated HDC conditional release date"
+
+    val changes = linkedMapOf<String, Any>(
+      "type" to summary,
+    )
+    previousConditionalReleaseDate?.let { changes["before"] = it }
+    updatedConditionalReleaseDate?.let { changes["after"] = it }
+
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, null))
   }
 
   fun recordAuditEventComUpdated(
