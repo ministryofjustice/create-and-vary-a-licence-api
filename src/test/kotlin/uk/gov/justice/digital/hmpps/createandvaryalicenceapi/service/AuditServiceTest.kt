@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.pr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Optional
@@ -283,6 +284,32 @@ class AuditServiceTest {
         "field" to "appointmentPerson",
         "previousValue" to "Joe Bloggs",
         "newValue" to "John Doe",
+      ),
+    )
+  }
+
+  @Test
+  fun `records an event when hdc conditional release date is updated`() {
+    val previousDate = LocalDate.of(2024, 4, 20)
+    val updatedDate = LocalDate.of(2024, 4, 30)
+
+    service.recordAuditEventUpdateHdcConditionalReleaseDate(aHdcLicenceEntity, previousDate, updatedDate)
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo("SYSTEM")
+    assertThat(captured.fullName).isEqualTo("SYSTEM")
+    assertThat(captured.eventType).isEqualTo(AuditEventType.SYSTEM_EVENT)
+    assertThat(captured.summary)
+      .isEqualTo("Updated HDC conditional release date for ${aHdcLicenceEntity.forename} ${aHdcLicenceEntity.surname}")
+    assertThat(captured.changes).isEqualTo(
+      linkedMapOf(
+        "type" to "Updated HDC conditional release date",
+        "before" to previousDate,
+        "after" to updatedDate,
       ),
     )
   }
