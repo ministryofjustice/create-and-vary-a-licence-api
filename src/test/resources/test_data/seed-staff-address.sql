@@ -14,7 +14,7 @@ INSERT INTO address (id, uprn, reference, first_line, second_line, town_or_city,
 VALUES
     (2,'UPRN','REF-123457', '1234 Test Street', 'Apt 4BC', 'Testville1', 'Testshire1', 'TE5 7AB','OS_PLACES');
 
-INSERT INTO staff_saved_appointment_address (staff_id, address_id)
+INSERT INTO saved_contact_addresses (staff_id, address_id)
 VALUES
     (15, 1),
     (15, 2);

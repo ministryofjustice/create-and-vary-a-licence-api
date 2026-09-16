@@ -94,6 +94,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactiv
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -286,7 +289,7 @@ class LicenceServiceTest {
   @Test
   fun `find licences matching criteria - multiple parameters`() {
     val licenceQueryObject = LicenceQueryObject(
-      statusCodes = listOf(LicenceStatus.APPROVED),
+      statusCodes = listOf(APPROVED),
       nomsIds = listOf("A1234AA"),
     )
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
@@ -372,7 +375,7 @@ class LicenceServiceTest {
   @Test
   fun `find licences matching criteria - updated by full name populated`() {
     val licenceQueryObject = LicenceQueryObject(
-      statusCodes = listOf(LicenceStatus.APPROVED),
+      statusCodes = listOf(APPROVED),
       nomsIds = listOf("A1234AA"),
     )
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
@@ -458,7 +461,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       1L,
-      StatusUpdateRequest(status = LicenceStatus.REJECTED, username = aCom.username, fullName = "Y"),
+      StatusUpdateRequest(status = IN_PROGRESS, username = aCom.username, fullName = "Y"),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -471,7 +474,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
-      .isEqualTo(listOf(1L, LicenceStatus.REJECTED, aCom.username, null, aCom))
+      .isEqualTo(listOf(1L, IN_PROGRESS, aCom.username, null, aCom))
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary", "eventType")
@@ -480,7 +483,7 @@ class LicenceServiceTest {
           1L,
           aCom.username,
           "${aCom.firstName} ${aCom.lastName}",
-          "Licence rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence edited for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           USER_EVENT,
         ),
       )
@@ -493,7 +496,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       1L,
-      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = "Y"),
+      StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = "Y"),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -508,7 +511,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName", "licenceActivatedDate")
-      .isEqualTo(listOf(1L, LicenceStatus.APPROVED, aCom.username, "Y", null))
+      .isEqualTo(listOf(1L, APPROVED, aCom.username, "Y", null))
 
     assertThat(licenceCaptor.value.approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
 
@@ -540,7 +543,7 @@ class LicenceServiceTest {
     val newLicenceId = 23L
     val fullName = "user 1"
     val firstVersionOfLicence = aLicenceEntity.copy(
-      statusCode = LicenceStatus.APPROVED,
+      statusCode = APPROVED,
       approvedByUsername = aCom.username,
       approvedByName = fullName,
       approvedDate = LocalDateTime.now(),
@@ -558,7 +561,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       newLicenceId,
-      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = fullName),
+      StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = fullName),
     )
 
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -574,7 +577,7 @@ class LicenceServiceTest {
 
     assertThat(newVersionOfLicence)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
-      .isEqualTo(listOf(newVersionOfLicence.id, LicenceStatus.APPROVED, aCom.username, fullName))
+      .isEqualTo(listOf(newVersionOfLicence.id, APPROVED, aCom.username, fullName))
     assertThat(newVersionOfLicence.approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
 
     assertThat(eventCaptor.allValues[0])
@@ -627,7 +630,7 @@ class LicenceServiceTest {
     val newLicenceId = 23L
     val fullName = "user 1"
     val firstVersionOfLicence = anHdcLicenceEntity.copy(
-      statusCode = LicenceStatus.APPROVED,
+      statusCode = APPROVED,
       approvedByUsername = aCom.username,
       approvedByName = fullName,
       approvedDate = LocalDateTime.now(),
@@ -645,7 +648,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       newLicenceId,
-      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = fullName),
+      StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = fullName),
     )
 
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -661,7 +664,7 @@ class LicenceServiceTest {
 
     assertThat(newVersionOfLicence)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
-      .isEqualTo(listOf(newVersionOfLicence.id, LicenceStatus.APPROVED, aCom.username, fullName))
+      .isEqualTo(listOf(newVersionOfLicence.id, APPROVED, aCom.username, fullName))
     assertThat(newVersionOfLicence.approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
 
     assertThat(eventCaptor.allValues[0])
@@ -716,7 +719,7 @@ class LicenceServiceTest {
 
     val aPrrdLicence = createPrrdLicence()
     val firstVersionOfLicence = aPrrdLicence.copy(
-      statusCode = LicenceStatus.APPROVED,
+      statusCode = APPROVED,
       approvedByUsername = aCom.username,
       approvedByName = fullName,
       approvedDate = LocalDateTime.now(),
@@ -734,7 +737,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       newLicenceId,
-      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = fullName),
+      StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = fullName),
     )
 
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -750,7 +753,7 @@ class LicenceServiceTest {
 
     assertThat(newVersionOfLicence)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
-      .isEqualTo(listOf(newVersionOfLicence.id, LicenceStatus.APPROVED, aCom.username, fullName))
+      .isEqualTo(listOf(newVersionOfLicence.id, APPROVED, aCom.username, fullName))
     assertThat(newVersionOfLicence.approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
 
     assertThat(eventCaptor.allValues[0])
@@ -802,7 +805,7 @@ class LicenceServiceTest {
   fun `update licence status to APPROVED works for HardStop licence`() {
     val hardstopLicence = createHardStopLicence().copy(
       id = 1L,
-      statusCode = LicenceStatus.APPROVED,
+      statusCode = APPROVED,
       approvedByUsername = aCom.username,
       approvedByName = "user 1",
       approvedDate = LocalDateTime.now(),
@@ -814,7 +817,7 @@ class LicenceServiceTest {
     service.updateLicenceStatus(
       1L,
       StatusUpdateRequest(
-        status = LicenceStatus.APPROVED,
+        status = APPROVED,
         username = aCom.username,
         fullName = hardstopLicence.approvedByName,
       ),
@@ -831,7 +834,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
-      .isEqualTo(listOf(hardstopLicence.id, LicenceStatus.APPROVED, aCom.username, hardstopLicence.approvedByName))
+      .isEqualTo(listOf(hardstopLicence.id, APPROVED, aCom.username, hardstopLicence.approvedByName))
     assertThat(licenceCaptor.allValues[0].approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
 
     assertThat(eventCaptor.allValues[0])
@@ -863,7 +866,7 @@ class LicenceServiceTest {
       .thenReturn(
         Optional.of(
           aLicenceEntity.copy(
-            statusCode = LicenceStatus.APPROVED,
+            statusCode = APPROVED,
             approvedByUsername = "X",
             approvedByName = "Y",
           ),
@@ -931,7 +934,7 @@ class LicenceServiceTest {
     val username = aCom.username
     val fullName = "Y"
 
-    val request = StatusUpdateRequest(status = LicenceStatus.SUBMITTED, username = username, fullName = fullName)
+    val request = StatusUpdateRequest(status = SUBMITTED, username = username, fullName = fullName)
     val omuContact = OmuContact(
       prisonCode = "BXI",
       email = "test@test.com",
@@ -939,7 +942,7 @@ class LicenceServiceTest {
     )
 
     whenever(licenceRepository.findById(1L))
-      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = APPROVED)))
 
     whenever(omuService.getOmuContactEmail(any())).thenReturn(omuContact)
     whenever(staffRepository.findByUsernameIgnoreCase(username)).thenReturn(aCom)
@@ -964,7 +967,7 @@ class LicenceServiceTest {
       .thenReturn(
         Optional.of(
           aLicenceEntity.copy(
-            statusCode = LicenceStatus.APPROVED,
+            statusCode = APPROVED,
             approvedByUsername = "X",
             approvedByName = "Y",
           ),
@@ -1028,13 +1031,13 @@ class LicenceServiceTest {
   @Test
   fun `update licence status to ACTIVE deactivates any in progress version of licence`() {
     val inProgressLicenceVersion =
-      aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
+      aLicenceEntity.copy(id = 99999, statusCode = SUBMITTED, versionOfId = aLicenceEntity.id)
 
     whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(aLicenceEntity.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
@@ -1150,12 +1153,12 @@ class LicenceServiceTest {
   @Test
   fun `updating licence status to INACTIVE deactivates any in progress version of the licence`() {
     val inProgressLicenceVersion =
-      aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
+      aLicenceEntity.copy(id = 99999, statusCode = SUBMITTED, versionOfId = aLicenceEntity.id)
     whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(aLicenceEntity.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
@@ -1223,7 +1226,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       1L,
-      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = "Y"),
+      StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = "Y"),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1235,7 +1238,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
-      .isEqualTo(listOf(1L, LicenceStatus.APPROVED, aCom.username, licence.licenceActivatedDate, aCom))
+      .isEqualTo(listOf(1L, APPROVED, aCom.username, licence.licenceActivatedDate, aCom))
   }
 
   @Test
@@ -1246,7 +1249,7 @@ class LicenceServiceTest {
     assertThrows<IllegalStateException> {
       service.updateLicenceStatus(
         1L,
-        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = "Y"),
+        StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = "Y"),
       )
     }
 
@@ -1265,7 +1268,7 @@ class LicenceServiceTest {
     assertThrows<IllegalStateException> {
       service.updateLicenceStatus(
         1L,
-        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = "Y"),
+        StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = "Y"),
       )
     }
 
@@ -1286,7 +1289,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       1L,
-      StatusUpdateRequest(status = LicenceStatus.SUBMITTED, username = aCom.username, fullName = "Y"),
+      StatusUpdateRequest(status = SUBMITTED, username = aCom.username, fullName = "Y"),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1298,7 +1301,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, aCom.username, aCom))
+      .isEqualTo(listOf(1L, SUBMITTED, aCom.username, aCom))
   }
 
   @Test
@@ -1306,7 +1309,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.REJECTED, username = "X"))
+      service.updateLicenceStatus(1L, StatusUpdateRequest(status = APPROVED, username = "X"))
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
@@ -1356,7 +1359,7 @@ class LicenceServiceTest {
     assertThat(licenceCaptor.value.submittedDate).isNotNull()
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, aCom.username, aCom))
+      .isEqualTo(listOf(1L, SUBMITTED, aCom.username, aCom))
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "eventDescription")
@@ -1415,7 +1418,7 @@ class LicenceServiceTest {
     assertThat(licenceCaptor.value.submittedDate).isNotNull()
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, caseAdmin.username, caseAdmin))
+      .isEqualTo(listOf(1L, SUBMITTED, caseAdmin.username, caseAdmin))
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "eventDescription")
@@ -1520,7 +1523,7 @@ class LicenceServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+    service.activateLicences(listOf(aLicenceEntity.copy(statusCode = APPROVED)))
 
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
     assertThat(licenceCaptor.allValues[0])
@@ -1556,7 +1559,7 @@ class LicenceServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), "Test reason")
+    service.activateLicences(listOf(aLicenceEntity.copy(statusCode = APPROVED)), "Test reason")
 
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
     assertThat(licenceCaptor.allValues[0])
@@ -1592,7 +1595,7 @@ class LicenceServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    val approvedLicenceVersion = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    val approvedLicenceVersion = aLicenceEntity.copy(statusCode = APPROVED)
     val inProgressVersion = approvedLicenceVersion.copy(
       id = 99999,
       statusCode = LicenceStatus.IN_PROGRESS,
@@ -1601,7 +1604,7 @@ class LicenceServiceTest {
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(approvedLicenceVersion.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressVersion))
 
@@ -1668,7 +1671,7 @@ class LicenceServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    val approvedLicenceVersion = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    val approvedLicenceVersion = aLicenceEntity.copy(statusCode = APPROVED)
     val timedOutVersion = approvedLicenceVersion.copy(
       id = 99999,
       statusCode = LicenceStatus.TIMED_OUT,
@@ -1744,7 +1747,7 @@ class LicenceServiceTest {
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
     service.inactivateLicences(
-      listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)),
+      listOf(aLicenceEntity.copy(statusCode = APPROVED)),
       deactivateInProgressVersions = true,
     )
 
@@ -1778,7 +1781,7 @@ class LicenceServiceTest {
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
     service.inactivateLicences(
-      listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)),
+      listOf(aLicenceEntity.copy(statusCode = APPROVED)),
       "Test reason",
       deactivateInProgressVersions = true,
     )
@@ -1813,16 +1816,16 @@ class LicenceServiceTest {
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
     val inProgressLicenceVersion =
-      aLicenceEntity.copy(id = 7843, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
+      aLicenceEntity.copy(id = 7843, statusCode = SUBMITTED, versionOfId = aLicenceEntity.id)
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(aLicenceEntity.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
 
     service.inactivateLicences(
-      listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)),
+      listOf(aLicenceEntity.copy(statusCode = APPROVED)),
       deactivateInProgressVersions = true,
     )
 
@@ -1870,7 +1873,7 @@ class LicenceServiceTest {
 
   @Test
   fun `inActivateLicencesByIds calls inactivateLicences with the licences associated with the given IDs`() {
-    val licence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    val licence = aLicenceEntity.copy(statusCode = APPROVED)
     whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(licence))
 
     service.inActivateLicencesByIds(listOf(1))
@@ -2138,7 +2141,7 @@ class LicenceServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
-    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    val approvedLicence = aLicenceEntity.copy(statusCode = APPROVED)
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(approvedLicence),
     )
@@ -2179,7 +2182,7 @@ class LicenceServiceTest {
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(
-      statusCode = LicenceStatus.APPROVED,
+      statusCode = APPROVED,
       additionalConditions = additionalConditions,
     )
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2215,7 +2218,7 @@ class LicenceServiceTest {
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
     val approvedLicence = aLicenceEntity.copy(
-      statusCode = LicenceStatus.APPROVED,
+      statusCode = APPROVED,
       additionalConditions = additionalConditions,
     )
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2260,7 +2263,7 @@ class LicenceServiceTest {
     whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(isEligible = false))
 
     val approvedLicence = aLicenceEntity.copy(
-      statusCode = LicenceStatus.APPROVED,
+      statusCode = APPROVED,
       additionalConditions = additionalConditions,
     )
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2278,7 +2281,7 @@ class LicenceServiceTest {
   @Test
   fun `editing an approved licence which already has an in progress version returns that version`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    val approvedLicence = aLicenceEntity.copy(statusCode = APPROVED)
     val inProgressLicenceVersion =
       approvedLicence.copy(id = 9032, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = approvedLicence.id)
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2287,7 +2290,7 @@ class LicenceServiceTest {
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(approvedLicence.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     )
       .thenReturn(
@@ -2304,7 +2307,7 @@ class LicenceServiceTest {
   @Test
   fun `editing an approved licence which already has an in progress version does not send a reapproval email`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    val approvedLicence = aLicenceEntity.copy(statusCode = APPROVED)
     val inProgressLicenceVersion =
       approvedLicence.copy(id = 9032, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = approvedLicence.id)
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -2313,7 +2316,7 @@ class LicenceServiceTest {
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(approvedLicence.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     )
       .thenReturn(
@@ -2747,13 +2750,13 @@ class LicenceServiceTest {
   @Test
   fun `update licence status to ACTIVE`() {
     val approvedLicence =
-      aLicenceEntity.copy(id = 2L, statusCode = LicenceStatus.APPROVED, licenceVersion = "2.0")
+      aLicenceEntity.copy(id = 2L, statusCode = APPROVED, licenceVersion = "2.0")
 
     whenever(licenceRepository.findById(approvedLicence.id)).thenReturn(Optional.of(approvedLicence))
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(approvedLicence.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     ).thenReturn(emptyList())
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
@@ -2800,13 +2803,13 @@ class LicenceServiceTest {
   @Test
   fun `update licence status to INACTIVE`() {
     val approvedLicence =
-      aLicenceEntity.copy(id = 2L, statusCode = LicenceStatus.APPROVED, licenceVersion = "2.0")
+      aLicenceEntity.copy(id = 2L, statusCode = APPROVED, licenceVersion = "2.0")
 
     whenever(licenceRepository.findById(approvedLicence.id)).thenReturn(Optional.of(approvedLicence))
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(approvedLicence.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     ).thenReturn(emptyList())
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
@@ -2859,7 +2862,7 @@ class LicenceServiceTest {
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(variationApprovedLicence.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     ).thenReturn(emptyList())
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
@@ -2912,7 +2915,7 @@ class LicenceServiceTest {
     whenever(
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
         listOf(variationLicence.id),
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
       ),
     ).thenReturn(emptyList())
     whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
@@ -3493,7 +3496,7 @@ class LicenceServiceTest {
 
       service.updateLicenceStatus(
         1L,
-        StatusUpdateRequest(status = LicenceStatus.REJECTED, username = aCom.username, fullName = "Y"),
+        StatusUpdateRequest(status = IN_PROGRESS, username = aCom.username, fullName = "Y"),
       )
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -3505,7 +3508,7 @@ class LicenceServiceTest {
 
       assertThat(licenceCaptor.value)
         .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
-        .isEqualTo(listOf(1L, LicenceStatus.REJECTED, SYSTEM_USER, null, aPreviousUser))
+        .isEqualTo(listOf(1L, IN_PROGRESS, SYSTEM_USER, null, aPreviousUser))
 
       assertThat(auditCaptor.value)
         .extracting("licenceId", "username", "fullName", "summary", "eventType")
@@ -3514,7 +3517,7 @@ class LicenceServiceTest {
             1L,
             SYSTEM_USER,
             SYSTEM_USER,
-            "Licence rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+            "Licence edited for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
             SYSTEM_EVENT,
           ),
         )
@@ -3547,14 +3550,14 @@ class LicenceServiceTest {
           licenceConditionService,
         )
       val submittedLicence =
-        createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
+        createHardStopLicence().copy(id = 2L, statusCode = SUBMITTED)
 
       whenever(licenceRepository.findById(submittedLicence.id)).thenReturn(Optional.of(submittedLicence))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
       service.updateLicenceStatus(
         submittedLicence.id,
-        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = "Y"),
+        StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = "Y"),
       )
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -3562,7 +3565,7 @@ class LicenceServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, LicenceStatus.APPROVED)
+      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, APPROVED)
       verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
       verify(notifyService, times(1)).sendReviewableLicenceApprovedEmail(
         aCom.email,
@@ -3580,7 +3583,7 @@ class LicenceServiceTest {
         .isEqualTo(
           listOf(
             submittedLicence.id,
-            LicenceStatus.APPROVED,
+            APPROVED,
             aCom.username,
             aCom.username,
             aCom,
@@ -3602,14 +3605,14 @@ class LicenceServiceTest {
     @Test
     fun `approving a hard stop licence sends a hard stop reviewable licence approval email`() {
       val submittedLicence =
-        createHardStopLicence().copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
+        createHardStopLicence().copy(id = 2L, statusCode = SUBMITTED)
 
       whenever(licenceRepository.findById(submittedLicence.id)).thenReturn(Optional.of(submittedLicence))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
       service.updateLicenceStatus(
         submittedLicence.id,
-        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = "Y"),
+        StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = "Y"),
       )
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -3617,7 +3620,7 @@ class LicenceServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, LicenceStatus.APPROVED)
+      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, APPROVED)
       verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
       verify(notifyService, times(1)).sendReviewableLicenceApprovedEmail(
         aCom.email,
@@ -3635,7 +3638,7 @@ class LicenceServiceTest {
         .isEqualTo(
           listOf(
             submittedLicence.id,
-            LicenceStatus.APPROVED,
+            APPROVED,
             aCom.username,
             aCom.username,
             aCom,
@@ -3657,14 +3660,14 @@ class LicenceServiceTest {
     @Test
     fun `approving a time served licence sends a hard stop licence approval email`() {
       val submittedLicence =
-        aTimeServedLicence.copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
+        aTimeServedLicence.copy(id = 2L, statusCode = SUBMITTED)
 
       whenever(licenceRepository.findById(submittedLicence.id)).thenReturn(Optional.of(submittedLicence))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
       service.updateLicenceStatus(
         submittedLicence.id,
-        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = "Y"),
+        StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = "Y"),
       )
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -3672,7 +3675,7 @@ class LicenceServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, LicenceStatus.APPROVED)
+      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, APPROVED)
       verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
       verify(notifyService, times(1)).sendReviewableLicenceApprovedEmail(
         aCom.email,
@@ -3690,7 +3693,7 @@ class LicenceServiceTest {
         .isEqualTo(
           listOf(
             submittedLicence.id,
-            LicenceStatus.APPROVED,
+            APPROVED,
             aCom.username,
             aCom.username,
             aCom,
@@ -3712,14 +3715,14 @@ class LicenceServiceTest {
     @Test
     fun `approving a CRD licence does not send a hard stop licence approval email`() {
       val submittedLicence =
-        aLicenceEntity.copy(id = 2L, statusCode = LicenceStatus.SUBMITTED)
+        aLicenceEntity.copy(id = 2L, statusCode = SUBMITTED)
 
       whenever(licenceRepository.findById(submittedLicence.id)).thenReturn(Optional.of(submittedLicence))
       whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
       service.updateLicenceStatus(
         submittedLicence.id,
-        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = "Y"),
+        StatusUpdateRequest(status = APPROVED, username = aCom.username, fullName = "Y"),
       )
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -3727,7 +3730,7 @@ class LicenceServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, LicenceStatus.APPROVED)
+      verify(domainEventsService, times(1)).recordDomainEvent(submittedLicence, APPROVED)
       verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
       verifyNoInteractions(notifyService)
 
@@ -3736,7 +3739,7 @@ class LicenceServiceTest {
         .isEqualTo(
           listOf(
             submittedLicence.id,
-            LicenceStatus.APPROVED,
+            APPROVED,
             aCom.username,
             aCom.username,
             aCom,
@@ -3944,7 +3947,7 @@ class LicenceServiceTest {
 
       assertThat(licenceCaptor.value)
         .extracting("id", "kind", "statusCode", "updatedByUsername", "updatedBy")
-        .isEqualTo(listOf(1L, LicenceKind.HDC, LicenceStatus.SUBMITTED, aCom.username, aCom))
+        .isEqualTo(listOf(1L, LicenceKind.HDC, SUBMITTED, aCom.username, aCom))
 
       assertThat(eventCaptor.value)
         .extracting("licenceId", "eventType", "eventDescription")
@@ -4040,7 +4043,7 @@ class LicenceServiceTest {
           changeHints = emptyList(),
         ),
       )
-      val approvedLicence = anHdcLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+      val approvedLicence = anHdcLicenceEntity.copy(statusCode = APPROVED)
       whenever(licenceRepository.findById(1L)).thenReturn(
         Optional.of(approvedLicence),
       )
@@ -4087,7 +4090,7 @@ class LicenceServiceTest {
       )
 
       val approvedLicence = anHdcLicenceEntity.copy(
-        statusCode = LicenceStatus.APPROVED,
+        statusCode = APPROVED,
         additionalConditions = additionalConditions,
       )
       whenever(licenceRepository.findById(1L)).thenReturn(
@@ -4125,7 +4128,7 @@ class LicenceServiceTest {
     @Test
     fun `editing an approved licence which already has an in progress version returns that version`() {
       whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(communityOffenderManager())
-      val approvedLicence = anHdcLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+      val approvedLicence = anHdcLicenceEntity.copy(statusCode = APPROVED)
       val inProgressLicenceVersion =
         approvedLicence.copy(id = 9032, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = approvedLicence.id)
       whenever(licenceRepository.findById(1L)).thenReturn(
@@ -4134,7 +4137,7 @@ class LicenceServiceTest {
       whenever(
         licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
           listOf(approvedLicence.id),
-          listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+          listOf(LicenceStatus.IN_PROGRESS, SUBMITTED),
         ),
       )
         .thenReturn(

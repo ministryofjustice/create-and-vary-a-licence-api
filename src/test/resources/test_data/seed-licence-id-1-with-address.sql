@@ -103,7 +103,7 @@ VALUES ('550e8400-e29b-41d4-a716-446655440000',
         'MANUAL');
 
 -- 5. Appointment <> Address join
-INSERT INTO probation_contact_appointment_address (appointment_id, address_id)
+INSERT INTO probation_contact_address (probation_contact_id, address_id)
 VALUES ((SELECT MAX(id) FROM probation_contact),
         (SELECT MAX(id) FROM address));
 
@@ -162,7 +162,7 @@ VALUES ((SELECT MAX(id) FROM additional_condition),
         '64f8163c-6c97-4ff2-932b-ae24feb0c114');
 
 
--- 10. Another address + staff_saved_appointment_address
+-- 10. Another address + saved_contact_addresses
 INSERT INTO address (reference,
                      first_line,
                      second_line,
@@ -178,5 +178,5 @@ VALUES ('550e8400-e29b-41d4-a716-446655440001',
         'TE5 7AA',
         'MANUAL');
 
-INSERT INTO staff_saved_appointment_address (staff_id, address_id)
+INSERT INTO saved_contact_addresses (staff_id, address_id)
 VALUES (1, (SELECT MAX(id) FROM address));
