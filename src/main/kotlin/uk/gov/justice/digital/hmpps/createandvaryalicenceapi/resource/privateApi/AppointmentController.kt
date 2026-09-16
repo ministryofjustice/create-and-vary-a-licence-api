@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AppointmentPersonUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AppointmentService
 
@@ -44,6 +45,7 @@ class AppointmentController(
       ApiResponse(
         responseCode = "200",
         description = "Appointment person updated",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = AppointmentPersonUpdateResponse::class))],
       ),
       ApiResponse(
         responseCode = "400",
@@ -71,9 +73,7 @@ class AppointmentController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     request: AppointmentPersonRequest,
-  ) {
-    appointmentService.updateAppointmentPerson(licenceId, request)
-  }
+  ): AppointmentPersonUpdateResponse = appointmentService.updateAppointmentPerson(licenceId, request)
 
   @PutMapping(value = ["/id/{licenceId}/appointmentTime"])
   @Operation(

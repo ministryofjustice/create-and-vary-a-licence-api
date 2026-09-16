@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AppointmentPersonUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
@@ -35,7 +36,7 @@ class AppointmentService(
   }
 
   @Transactional
-  fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
+  fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest): AppointmentPersonUpdateResponse {
     if (request.appointmentPersonType == NO_APPOINTMENT_NEEDED && request.appointmentPerson != null) {
       throw ValidationException("Appointment person must be empty when an appointment is not needed.")
     }
@@ -67,6 +68,10 @@ class AppointmentService(
         "newValue" to (licenceEntity.probationContact?.person ?: ""),
       ),
       staffMember,
+    )
+
+    return AppointmentPersonUpdateResponse(
+      missingAppointmentTime = licenceEntity.probationContact?.isMissingAppointmentTime() ?: false,
     )
   }
 
