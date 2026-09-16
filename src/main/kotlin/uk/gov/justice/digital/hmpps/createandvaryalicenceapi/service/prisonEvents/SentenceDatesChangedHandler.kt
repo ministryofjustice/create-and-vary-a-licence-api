@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import java.time.LocalDate
 
 @Service
@@ -89,16 +89,7 @@ class SentenceDatesChangedHandler(
   }
 
   private fun updateSentenceDates(nomisId: String) {
-    val licences = licenceRepository.findAllByNomsIdAndStatusCodeIn(
-      nomisId,
-      listOf(
-        LicenceStatus.IN_PROGRESS,
-        LicenceStatus.SUBMITTED,
-        LicenceStatus.REJECTED,
-        LicenceStatus.APPROVED,
-        LicenceStatus.TIMED_OUT,
-      ),
-    )
+    val licences = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomisId, PRE_RELEASE_STATUSES.toList())
     licences.forEach { licence -> updateSentenceDateService.updateSentenceDates(licence.id) }
   }
 

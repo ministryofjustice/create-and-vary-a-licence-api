@@ -44,10 +44,10 @@ data class AdditionalCondition(
   val uploadSummary: List<AdditionalConditionUploadSummary> = emptyList(),
 
   @field:Schema(description = "Whether the condition is ready to submit for approval")
-  val readyToSubmit: Boolean?,
+  val readyToSubmit: Boolean? = null,
 
   @field:Schema(description = "Whether the condition requires input from the user")
-  val requiresInput: Boolean?,
+  val requiresInput: Boolean? = null,
 
   @field:Schema(description = "An additional caption to appear above the header of this additional condition")
   val headerCaption: String? = null,
