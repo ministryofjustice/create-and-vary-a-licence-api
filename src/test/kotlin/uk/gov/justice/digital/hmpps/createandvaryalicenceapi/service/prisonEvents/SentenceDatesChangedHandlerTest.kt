@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.pr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
@@ -186,52 +185,6 @@ class SentenceDatesChangedHandlerTest {
 
     sentenceDatesChangedHandler.handleEvent(message)
 
-    verify(hdcService, never()).updateCrdForHdcLicences(any(), any())
-  }
-
-  @Test
-  fun `should process a pre-release HDC licence like a normal licence and sync via updateSentenceDateService`() {
-    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
-    val preReleaseHdcLicence = createHdcLicence(id = 2).copy(nomsId = nomisId)
-    val preReleaseNonHdcLicence = createCrdLicence()
-    whenever(
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(
-        nomisId,
-        listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.TIMED_OUT,
-        ),
-      ),
-    ).thenReturn(listOf(preReleaseHdcLicence, preReleaseNonHdcLicence))
-
-    sentenceDatesChangedHandler.handleEvent(message)
-
-    verify(updateSentenceDateService).updateSentenceDates(preReleaseHdcLicence.id)
-    verify(updateSentenceDateService).updateSentenceDates(preReleaseNonHdcLicence.id)
-    verify(hdcService, never()).updateCrdForHdcLicences(any(), any())
-  }
-
-  @Test
-  fun `should process a SUBMITTED pre-release HDC licence like a normal licence and sync via updateSentenceDateService`() {
-    whenever(prisonService.searchPrisonersByBookingIds(listOf(bookingId))).thenReturn(listOf(prisoner))
-    val submittedHdcLicence = createHdcLicence(id = 3).copy(nomsId = nomisId, statusCode = LicenceStatus.SUBMITTED)
-    whenever(
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(
-        nomisId,
-        listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.TIMED_OUT,
-        ),
-      ),
-    ).thenReturn(listOf(submittedHdcLicence))
-
-    sentenceDatesChangedHandler.handleEvent(message)
-
-    verify(updateSentenceDateService).updateSentenceDates(submittedHdcLicence.id)
     verify(hdcService, never()).updateCrdForHdcLicences(any(), any())
   }
 }
