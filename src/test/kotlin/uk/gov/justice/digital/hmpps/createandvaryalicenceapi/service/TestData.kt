@@ -80,6 +80,7 @@ import java.time.LocalTime
 import java.util.UUID
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as ModelHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as ModelHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
@@ -232,16 +233,6 @@ object TestData {
     additionalConditionData = mutableListOf(),
     additionalConditionUpload = mutableListOf(),
     conditionCategory = HARD_STOP_CONDITION.categoryShort!!,
-  )
-
-  fun aStandardConditionEntity(licence: Licence) = StandardCondition(
-    id = 1,
-    conditionCode = "goodBehaviour",
-    conditionSequence = 1,
-    conditionText = "Be of good behaviour",
-    conditionType = "AP",
-    licence = licence,
-    conditionVersion = licence.version,
   )
 
   fun someEntityStandardConditions(licence: Licence) = listOf(
@@ -1103,6 +1094,53 @@ object TestData {
     additionalPssConditions = someModelAdditionalConditions(),
     bespokeConditions = someModelBespokeConditions(),
     variationOf = 1,
+  )
+
+  fun aModelHdcLicence() = ModelHdcLicence(
+    id = 1,
+    typeCode = AP,
+    version = "1.1",
+    statusCode = LicenceStatus.ACTIVE,
+    nomsId = "A1234AA",
+    bookingNo = "123456",
+    bookingId = 54321,
+    crn = "X12345",
+    pnc = "2019/123445",
+    cro = "12345",
+    prisonCode = "MDI",
+    prisonDescription = "Moorland (HMP)",
+    forename = "Person",
+    surname = "One",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    actualReleaseDate = LocalDate.of(2021, 10, 22),
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceEndDate = LocalDate.of(2021, 10, 22),
+    licenceStartDate = LocalDate.of(2021, 10, 22),
+    licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    comUsername = "X12345",
+    comStaffId = 12345,
+    comEmail = "test.com@probation.gov.uk",
+    probationAreaCode = "N01",
+    probationAreaDescription = "Wales",
+    probationPduCode = "N01A",
+    probationPduDescription = "Cardiff",
+    probationLauCode = "N01A2",
+    probationLauDescription = "Cardiff South",
+    probationTeamCode = "NA01A2-A",
+    probationTeamDescription = "Cardiff South Team A",
+    dateCreated = LocalDateTime.now(),
+    createdByUsername = "X12345",
+    standardLicenceConditions = someModelStandardConditions(),
+    standardPssConditions = someModelStandardConditions(),
+    additionalLicenceConditions = someModelAdditionalConditions(),
+    additionalPssConditions = someModelAdditionalConditions(),
+    bespokeConditions = someModelBespokeConditions(),
+    homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 22),
+    homeDetentionCurfewEndDate = LocalDate.of(2022, 10, 22),
+    homeDetentionCurfewEligibilityDate = LocalDate.of(2022, 10, 22),
   )
 
   fun aModelHdcVariation() = ModelHdcVariationLicence(

@@ -47,16 +47,14 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.size).isEqualTo(6)
     assertThat(result)
       .extracting<Tuple> { tuple(it.licenceId, it.licenceStatus) }
-      .contains(
+      .containsExactly(
         tuple(1L, LicenceStatus.SUBMITTED),
         tuple(2L, LicenceStatus.SUBMITTED),
         tuple(3L, LicenceStatus.ACTIVE),
         tuple(4L, LicenceStatus.APPROVED),
         tuple(5L, LicenceStatus.IN_PROGRESS),
-        tuple(6L, LicenceStatus.REJECTED),
       )
   }
 
@@ -80,14 +78,12 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.size).isEqualTo(4)
     assertThat(result)
       .extracting<Tuple> { tuple(it.licenceId, it.nomisId, it.licenceStatus) }
-      .contains(
+      .containsExactly(
         tuple(3L, "C1234CC", LicenceStatus.ACTIVE),
         tuple(4L, "C1234DD", LicenceStatus.APPROVED),
         tuple(5L, "C1234EE", LicenceStatus.IN_PROGRESS),
-        tuple(6L, "C1234FF", LicenceStatus.REJECTED),
       )
   }
 
@@ -131,13 +127,11 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.size).isEqualTo(6)
     assertThat(result)
       .extracting<Tuple> {
         tuple(it.licenceId, it.conditionalReleaseDate)
       }
       .containsExactly(
-        tuple(6L, LocalDate.parse("2036-04-28")),
         tuple(5L, LocalDate.parse("2035-04-28")),
         tuple(4L, LocalDate.parse("2034-04-28")),
         tuple(3L, LocalDate.parse("2033-04-28")),
