@@ -62,7 +62,7 @@ class DeactivateProgressionLicencesIntegrationTest : IntegrationTestBase() {
       .uri("/licence/match")
       .bodyValue(MatchLicencesRequest(status = listOf(INACTIVE)))
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody

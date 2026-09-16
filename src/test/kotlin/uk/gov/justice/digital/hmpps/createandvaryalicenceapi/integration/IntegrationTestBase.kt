@@ -156,6 +156,12 @@ abstract class IntegrationTestBase {
     private val localStackContainer = LocalStackContainer.instance
     private val postgresContainer = PostgresContainer.instance
 
+    const val ROLE_LEGACY_API_ACCESS = "ROLE_CVL__LEGACY_API_ACCESS__RO"
+    const val ROLE_CVL_ADMIN = "ROLE_CVL_ADMIN"
+
+    @JvmStatic
+    fun cvlRoles() = listOf(ROLE_LEGACY_API_ACCESS, ROLE_CVL_ADMIN)
+
     @JvmStatic
     @DynamicPropertySource
     fun containers(registry: DynamicPropertyRegistry) {
