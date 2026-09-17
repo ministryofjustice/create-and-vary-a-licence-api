@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.NotSecuredWe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AppointmentPersonUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType.SPECIFIC_DATE_TIME
@@ -53,6 +54,9 @@ class AppointmentControllerTest {
 
   @Test
   fun `update initial appointment person with type DUTY_OFFICER`() {
+    whenever(appointmentService.updateAppointmentPerson(4, anUpdateAppointmentPersonRequest))
+      .thenReturn(AppointmentPersonUpdateResponse(missingAppointmentTime = false))
+
     mvc.perform(
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
@@ -60,6 +64,7 @@ class AppointmentControllerTest {
         .content(mapper.writeValueAsBytes(anUpdateAppointmentPersonRequest)),
     )
       .andExpect(status().isOk)
+      .andExpect(content().json("{\"missingAppointmentTime\":false}"))
 
     verify(appointmentService, times(1)).updateAppointmentPerson(4, anUpdateAppointmentPersonRequest)
   }
@@ -94,6 +99,13 @@ class AppointmentControllerTest {
 
   @Test
   fun `update initial appointment person with default type SPECIFIC_PERSON`() {
+    whenever(
+      appointmentService.updateAppointmentPerson(
+        4,
+        anUpdateAppointmentPersonRequest.copy(appointmentPersonType = AppointmentType.SPECIFIC_PERSON),
+      ),
+    ).thenReturn(AppointmentPersonUpdateResponse(missingAppointmentTime = false))
+
     mvc.perform(
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)

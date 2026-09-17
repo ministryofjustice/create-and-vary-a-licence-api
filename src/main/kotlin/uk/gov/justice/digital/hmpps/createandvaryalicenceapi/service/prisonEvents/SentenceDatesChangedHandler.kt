@@ -9,8 +9,10 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -24,6 +26,7 @@ class SentenceDatesChangedHandler(
   private val licenceService: LicenceService,
   private val prisonService: PrisonService,
   private val updateSentenceDateService: UpdateSentenceDateService,
+  private val hdcService: HdcService,
 ) {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -45,16 +48,25 @@ class SentenceDatesChangedHandler(
     val activeLicence = getActiveLicence(nomisId)
     if (activeLicence != null) {
       log.info("nomisId: $nomisId, has active licence: ${activeLicence.id}")
-      processDeactivationChecks(activeLicence)
+      processActiveLicenceDateChanges(activeLicence)
     } else {
       log.info("updating sentence dates for nomisId: $nomisId")
       updateSentenceDates(nomisId)
     }
   }
 
-  private fun processDeactivationChecks(licence: Licence) {
+  private fun processActiveLicenceDateChanges(licence: Licence) {
+    val prisoner = prisonService.getPrisonerDetail(licence.nomsId!!)
+    updateCrdForActiveHdcLicences(licence, prisoner)
     deactivateLicencesIfPrisonerResentenced(licence)
-    deactivateLicencesIfFuturePrrd(licence)
+    deactivateLicencesIfFuturePrrd(licence, prisoner)
+  }
+
+  private fun updateCrdForActiveHdcLicences(activeLicence: Licence, prisoner: PrisonApiPrisoner) {
+    activeLicence.takeIf { it.kind.isHdc() }?.let { licence ->
+      val newCrd = prisoner.sentenceDetail.toSentenceDates().conditionalReleaseDate
+      hdcService.updateCrdForHdcLicences(licence.id, newCrd)
+    }
   }
 
   private fun deactivateLicencesIfPrisonerResentenced(licence: Licence) {
@@ -67,9 +79,7 @@ class SentenceDatesChangedHandler(
     }
   }
 
-  private fun deactivateLicencesIfFuturePrrd(licence: Licence) {
-    val prisoner = prisonService.getPrisonerDetail(licence.nomsId!!)
-
+  private fun deactivateLicencesIfFuturePrrd(licence: Licence, prisoner: PrisonApiPrisoner) {
     val prrd = prisoner.sentenceDetail.postRecallReleaseOverrideDate ?: prisoner.sentenceDetail.postRecallReleaseDate
     if (prrd != null) {
       if (prrd == licence.postRecallReleaseDate) {

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChangeResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.VariationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.variations.VariationService
 
 @RestController
 @RequestMapping("/variations", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -78,5 +78,5 @@ class VariationsController(
       ),
     ],
   )
-  fun variationDiffFromParent(@PathVariable("newVariationId") variationId: Long) = variationService.variationDiffFromParent(variationId)
+  fun variationDiffFromParent(@PathVariable("newVariationId") variationId: Long) = variationService.calculateDiffFromOriginal(variationId)
 }
