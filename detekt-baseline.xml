@@ -50,6 +50,7 @@
     <ID>ReturnCount:NotifyService.kt:NotifyService$private fun sendEmail: Boolean</ID>
     <ID>ReturnCount:PrisonerReceivedHandler.kt:PrisonerReceivedHandler$@Transactional override fun handleEvent</ID>
     <ID>SwallowedException:MigrationService.kt:MigrationService$e: IllegalStateException</ID>
+    <ID>ThrowsCount:MigrationService.kt:MigrationService$private fun checkForNoRetryExceptions</ID>
     <ID>TooGenericExceptionCaught:ComAllocatedHandler.kt:ComAllocatedHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:UploadFileConditionsService.kt:UploadFileConditionsService$e: Exception</ID>
     <ID>TooManyFunctions:AuditService.kt:AuditService</ID>
