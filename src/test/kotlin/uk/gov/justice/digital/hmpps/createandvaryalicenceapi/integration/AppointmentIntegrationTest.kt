@@ -53,7 +53,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
     val response2 = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +112,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -140,7 +140,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -169,7 +169,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -195,7 +195,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
