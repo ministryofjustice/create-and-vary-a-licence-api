@@ -57,12 +57,12 @@ class DeactivateHdcLicencesIntegrationTest : IntegrationTestBase() {
       .uri("/licence/match")
       .bodyValue(MatchLicencesRequest(status = listOf(INACTIVE)))
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(deactivatedHdcLicences?.size).isEqualTo(3)
+    assertThat(deactivatedHdcLicences.size).isEqualTo(3)
     verify(telemetryClient).trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to "3"), null)
     assertThat(deactivatedHdcLicences)
       .extracting<Tuple> {

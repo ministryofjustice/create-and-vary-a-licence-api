@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus.FORBIDDEN
@@ -56,7 +58,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as VariationLicenceDto
 
-open class LicenceIntegrationTest : IntegrationTestBase() {
+class LicenceIntegrationTest : IntegrationTestBase() {
 
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
@@ -69,7 +71,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -90,6 +92,19 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.electronicMonitoringProviderStatus).isEqualTo(ElectronicMonitoringProviderStatus.COMPLETE)
   }
 
+  @ParameterizedTest(name = "Get a licence using {0}")
+  @MethodSource("cvlRoles")
+  @Sql("classpath:test_data/seed-licence-id-1.sql")
+  fun `Get a licence using role`(role: String) {
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf(role)))
+      .exchange()
+
+    result.expectStatus().isOk
+  }
+
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-5.sql",
@@ -98,7 +113,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +136,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/3")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -176,7 +191,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -229,7 +244,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val licenceV1 = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -242,7 +257,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val licenceV2 = webTestClient.get()
       .uri("/licence/id/2")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -779,7 +794,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/2")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -807,7 +822,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/2")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -842,7 +857,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result).isNotNull
     assertThat(result).hasSize(1)
-    assertThat(result!!.first().eventDescription).isEqualTo("reason")
+    assertThat(result.first().eventDescription).isEqualTo("reason")
   }
 
   @Test
@@ -861,7 +876,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -892,7 +907,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/3")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -922,7 +937,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -952,7 +967,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -1000,7 +1015,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
         val result = webTestClient.get()
           .uri("/licence/id/1")
           .accept(MediaType.APPLICATION_JSON)
-          .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+          .headers(setAuthorisation(roles = cvlRoles()))
           .exchange()
           .expectStatus().isOk
           .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -1024,7 +1039,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
         val result = webTestClient.get()
           .uri("/licence/id/1")
           .accept(MediaType.APPLICATION_JSON)
-          .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+          .headers(setAuthorisation(roles = cvlRoles()))
           .exchange()
           .expectStatus().isOk
           .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -1142,7 +1157,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       val result = webTestClient.get()
         .uri("/licence/id/1")
         .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .headers(setAuthorisation(roles = cvlRoles()))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -1167,7 +1182,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       webTestClient.post()
         .uri("/licence/id/1/edit")
         .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .headers(setAuthorisation(roles = cvlRoles()))
         .exchange()
         .expectStatus().is4xxClientError
 
@@ -1176,7 +1191,7 @@ open class LicenceIntegrationTest : IntegrationTestBase() {
       val licence = webTestClient.get()
         .uri("/licence/id/1")
         .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .headers(setAuthorisation(roles = cvlRoles()))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)

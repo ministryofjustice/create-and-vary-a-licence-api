@@ -171,7 +171,7 @@ class LicenceController(
 
   @Tag(name = Tags.LICENCES)
   @GetMapping(value = ["/id/{licenceId}"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('ROLE_CVL_ADMIN','ROLE_CVL__LEGACY_API_ACCESS__RO')")
   @ResponseBody
   @Operation(
     summary = "Get a licence by its licence id",
@@ -222,7 +222,7 @@ class LicenceController(
 
   @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/match"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('ROLE_CVL_ADMIN','ROLE_CVL__LEGACY_API_ACCESS__RO')")
   @Operation(
     summary = "Get a list of licence summaries matching the supplied criteria.",
     description = "Get the licences matching the supplied lists of status, prison, staffId, nomsId and PDU. Requires ROLE_CVL_ADMIN.",
