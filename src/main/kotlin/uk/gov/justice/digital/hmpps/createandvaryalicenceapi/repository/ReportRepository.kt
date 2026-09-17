@@ -2,10 +2,12 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.NativeQuery
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.ElectronicMonitoringData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.UpcomingReleasesWithMonitoringConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14B
@@ -28,6 +30,7 @@ WITH condition_lookup (condition_code, condition_value) AS (
 ),
 ranked AS (
   SELECT
+    l.id as licence_id,
     l.noms_id AS nomis_number,
     l.crn,
     l.status_code,
@@ -52,6 +55,7 @@ ranked AS (
   GROUP BY l.noms_id, l.crn, l.status_code, l.licence_start_date, l.submitted_date, l.id, l.surname, l.forename
 )
 SELECT
+  licence_id,
   nomis_number AS "prisonNumber",
   crn,
   status_code AS "status",
@@ -66,4 +70,23 @@ ORDER BY nomis_number;
   """,
   )
   fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditions>
+
+  @Query(
+    value = """
+        SELECT
+            ac.licence_id AS licenceId,
+            acd.data_value AS "value",
+            acd.data_field AS "type"
+        FROM additional_condition ac
+        JOIN additional_condition_data acd ON acd.additional_condition_id = ac.id 
+        WHERE   ac.licence_id in (:licenceIds)  AND 
+                ac.condition_category = 'Electronic monitoring' AND 
+                acd.data_field in ('electronicMonitoringTypes','endDate')
+        ORDER BY ac.licence_id, acd.data_value
+    """,
+    nativeQuery = true,
+  )
+  fun findElectronicMonitoringData(
+    licenceIds: List<Long>,
+  ): List<ElectronicMonitoringData>
 }

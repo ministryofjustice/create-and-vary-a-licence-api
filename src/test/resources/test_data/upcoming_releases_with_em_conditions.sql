@@ -70,8 +70,10 @@ values (1,1, '3.0', 'Electronic monitoring', 'd36a3b77-30ba-40ce-8953-83e761d3b4
 	(2,1, '3.0', 'Exclusion zone', 'd36a3b77-30ba-40ce-8953-83e761d3b487', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP'),
 	(3,1, '3.0', 'Electronic monitoring', '3932e5c9-4d21-4251-a747-ce6dc52dc9c0', 3, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
 
-insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (1, 1, 1, 'Electronic monitoring', 'Town centre');
+insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
+values 	(1, 1, 'electronicMonitoringTypes', 'exclusion zone'),
+		(1, 2, 'electronicMonitoringTypes', 'alcohol abstinence'),
+		( 1, 3, 'endDate', 'Sunday 16 January 2028');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (1, true, 'Test Programme');
@@ -148,8 +150,8 @@ values (4, 2, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2
         'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
-insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (2, 4, 1, 'Electronic monitoring', 'Town centre');
+insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
+values ( 4, 1, 'Electronic monitoring', 'Town centre');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (2, true, 'Test Programme');
@@ -225,8 +227,8 @@ values (5, 3, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2
         'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
-insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (3, 5, 1, 'Electronic monitoring', 'Town centre');
+insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
+values ( 5, 1, 'Electronic monitoring', 'Town centre');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (3, true, 'Test Programme');
@@ -374,8 +376,8 @@ values (7, 5, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2
         'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
-insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (4, 7, 1, 'Electronic monitoring', 'Town centre');
+insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
+values ( 7, 1, 'Electronic monitoring', 'Town centre');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (5, true, 'Test Programme');
