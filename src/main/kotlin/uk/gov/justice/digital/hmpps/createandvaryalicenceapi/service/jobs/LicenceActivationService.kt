@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.RemandCourtEve
 import java.time.LocalDate
 
 data class LicenceWithPrisoner(val licence: Licence, val prisoner: PrisonerSearchPrisoner) {
-  val bookingId = licence.bookingId!!
+  val bookingId = prisoner.bookingId!!.toLong()
   val homeDetentionCurfewEligibilityDate = prisoner.homeDetentionCurfewEligibilityDate
 }
 
@@ -34,13 +34,13 @@ class LicenceActivationService(
 
   @Transactional
   fun licenceActivation() {
-    val potentialLicences = licenceRepository.getApprovedLicencesOnOrPassedReleaseDate().associateBy { it.bookingId!! }
+    val potentialLicences = licenceRepository.getApprovedLicencesOnOrPassedReleaseDate().associateBy { it.nomsId!! }
     log.info("Licence activation job started: found ${potentialLicences.size} approved licences on or past release date")
     if (potentialLicences.isEmpty()) {
       return
     }
-    val matchedLicences = prisonerSearchApiClient.searchPrisonersByBookingIds(potentialLicences.keys)
-      .map { LicenceWithPrisoner(potentialLicences[it.bookingId?.toLong()]!!, it) }
+    val matchedLicences = prisonerSearchApiClient.searchPrisonersByNomisIds(potentialLicences.keys.toList())
+      .map { LicenceWithPrisoner(potentialLicences[it.prisonerNumber]!!, it) }
     val (eligibleLicences, ineligibleLicences) = determineActivationEligibility(matchedLicences)
     val licencesToActivate = findLicencesToActivate(eligibleLicences)
 

@@ -79,7 +79,7 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job calls for non-HDC, non-IS91 licences to be activated on their release date if the offender has been released`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
@@ -100,7 +100,7 @@ class LicenceActivationServiceTest {
     val licence = aLicenceEntity.copy(licenceStartDate = LocalDate.now().minusDays(10))
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(licence))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(licence.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(emptyList())
@@ -125,7 +125,7 @@ class LicenceActivationServiceTest {
       ),
     )
     val prisoners = listOf(aPrisonerSearchPrisoner)
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
       .thenReturn(prisoners)
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(listOf(aIS91CourtEventOutcome))
@@ -150,7 +150,7 @@ class LicenceActivationServiceTest {
       ),
     )
     val prisoners = listOf(aPrisonerSearchPrisoner)
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
       .thenReturn(prisoners)
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(listOf(aIS91CourtEventOutcome))
@@ -179,7 +179,7 @@ class LicenceActivationServiceTest {
         mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE",
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
       .thenReturn(prisoners)
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(emptyList())
@@ -200,7 +200,7 @@ class LicenceActivationServiceTest {
     val prisoners = listOf(
       aPrisonerSearchPrisoner.copy(homeDetentionCurfewEligibilityDate = LocalDate.now()),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
       .thenReturn(prisoners)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(
@@ -222,7 +222,7 @@ class LicenceActivationServiceTest {
   fun `licence activation job call for HDC approved CRD licence to be activated if no HDCED`() {
     val prisoners = listOf(aPrisonerSearchPrisoner.copy(homeDetentionCurfewEligibilityDate = null))
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
       .thenReturn(prisoners)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(emptyList()),
@@ -241,7 +241,7 @@ class LicenceActivationServiceTest {
     val prisoners = listOf(aPrisonerSearchPrisoner)
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
       .thenReturn(prisoners)
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any())).thenReturn(
       emptyList(),
@@ -263,7 +263,7 @@ class LicenceActivationServiceTest {
     val unreleasedPrisoner = aPrisonerSearchPrisoner.copy(status = "ACTIVE IN")
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner.copy(status = "ACTIVE IN")))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(emptyList())
@@ -282,7 +282,7 @@ class LicenceActivationServiceTest {
   @Test
   fun `licence activation job does not call for non-IS91 licences to be activated if the licence has no LSD`() {
     val prisoners = listOf(nonHdcPrisoner)
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(nonHdcLicence.bookingId!!))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!))).thenReturn(
       prisoners,
     )
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
@@ -312,7 +312,7 @@ class LicenceActivationServiceTest {
     val prisoners = listOf(
       nonHdcPrisoner,
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(nonHdcLicence.bookingId!!))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nonHdcLicence.nomsId!!))).thenReturn(
       prisoners,
     )
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
@@ -342,7 +342,7 @@ class LicenceActivationServiceTest {
     val prisoners = listOf(
       nonHdcPrisoner,
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(nonHdcLicence.bookingId!!))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nonHdcLicence.nomsId!!))).thenReturn(
       prisoners,
     )
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
@@ -368,28 +368,35 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job calls for activation and deactivation of different licences simultaneously`() {
-    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate())
-      .thenReturn(listOf(aLicenceEntity, hdcLicence))
-
-    val prisoners = listOf(
-      aPrisonerSearchPrisoner.copy(
-        homeDetentionCurfewEligibilityDate = LocalDate.now(),
-      ),
-      hdcPrisoner,
+    val crdPrisoner = aPrisonerSearchPrisoner.copy(
+      prisonerNumber = "A1234BC",
+      bookingId = "12345",
+      homeDetentionCurfewEligibilityDate = LocalDate.now(),
     )
+    val crdLicence = aLicenceEntity.copy(nomsId = crdPrisoner.prisonerNumber, bookingId = crdPrisoner.bookingId!!.toLong())
+
+    val hdcPrisoner = aPrisonerSearchPrisoner.copy(
+      prisonerNumber = "B1234CD",
+      bookingId = "54321",
+      homeDetentionCurfewEligibilityDate = LocalDate.now(),
+    )
+    val hdcLicence = hdcLicence.copy(nomsId = hdcPrisoner.prisonerNumber, bookingId = hdcPrisoner.bookingId!!.toLong())
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate())
+      .thenReturn(listOf(crdLicence, hdcLicence))
 
     whenever(
-      prisonerSearchApiClient.searchPrisonersByBookingIds(
-        setOf(aLicenceEntity.bookingId!!, hdcLicence.bookingId!!),
+      prisonerSearchApiClient.searchPrisonersByNomisIds(
+        listOf(crdLicence.nomsId!!, hdcLicence.nomsId!!),
       ),
-    ).thenReturn(prisoners)
+    ).thenReturn(listOf(crdPrisoner, hdcPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(emptyList())
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(
         listOf(
           hdcPrisonerStatus().copy(bookingId = hdcLicence.bookingId!!, approvalStatus = "APPROVED"),
-          hdcPrisonerStatus().copy(bookingId = aLicenceEntity.bookingId!!, approvalStatus = "APPROVED"),
+          hdcPrisonerStatus().copy(bookingId = crdLicence.bookingId!!, approvalStatus = "APPROVED"),
         ),
       ),
     )
@@ -398,7 +405,7 @@ class LicenceActivationServiceTest {
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity), LICENCE_DEACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(listOf(crdLicence), LICENCE_DEACTIVATION)
   }
 
   @Test
@@ -411,7 +418,8 @@ class LicenceActivationServiceTest {
         licenceWithOffender,
       ),
     )
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(54321, 54322))).thenReturn(
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA", "A1234AB"))).thenReturn(
       listOf(
         aPrisonerSearchPrisoner.copy(bookingId = "54322", prisonerNumber = "A1234AB"),
       ),
@@ -434,7 +442,7 @@ class LicenceActivationServiceTest {
     val prisoners = listOf(hdcPrisoner)
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(hdcLicence))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(hdcLicence.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(hdcLicence.nomsId!!)))
       .thenReturn(prisoners)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
       HdcStatuses(
@@ -454,9 +462,9 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job ignores HDC licences not approved for HDC `() {
-    val anotherHdcLicence = hdcLicence.copy(bookingId = 22222)
+    val anotherHdcLicence = hdcLicence.copy(nomsId = "C1234DE", bookingId = 22222)
 
-    val anotherHdcPrisoner = hdcPrisoner.copy(bookingId = anotherHdcLicence.bookingId.toString())
+    val anotherHdcPrisoner = hdcPrisoner.copy(prisonerNumber = "C1234DE", bookingId = anotherHdcLicence.bookingId.toString())
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
       listOf(
@@ -466,10 +474,10 @@ class LicenceActivationServiceTest {
     )
     val prisoners = listOf(hdcPrisoner, anotherHdcPrisoner)
     whenever(
-      prisonerSearchApiClient.searchPrisonersByBookingIds(
-        setOf(
-          hdcLicence.bookingId!!,
-          anotherHdcLicence.bookingId!!,
+      prisonerSearchApiClient.searchPrisonersByNomisIds(
+        listOf(
+          hdcLicence.nomsId!!,
+          anotherHdcLicence.nomsId!!,
         ),
       ),
     )
@@ -505,7 +513,7 @@ class LicenceActivationServiceTest {
     val remandPrisoner = nonHdcPrisoner
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(remandLicence.nomsId!!)))
       .thenReturn(listOf(remandPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(listOf(aRemandCourtEventOutcome.copy(bookingId = remandLicence.bookingId!!)))
@@ -530,14 +538,16 @@ class LicenceActivationServiceTest {
       prisonApiClient,
       remandEnabled = true,
     )
-    val is91Licence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1), bookingId = 123456)
-    val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
-    val is91Prisoner = nonHdcPrisoner.copy(bookingId = is91Licence.bookingId.toString())
-    val remandPrisoner = nonHdcPrisoner
+
+    val is91Licence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1), bookingId = 123456, nomsId = "A1234BC")
+    val is91Prisoner = nonHdcPrisoner.copy(bookingId = is91Licence.bookingId.toString(), prisonerNumber = is91Licence.nomsId!!)
+
+    val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1), bookingId = 789012, nomsId = "B1234CD")
+    val remandPrisoner = nonHdcPrisoner.copy(bookingId = remandLicence.bookingId.toString(), prisonerNumber = remandLicence.nomsId!!)
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(is91Licence, remandLicence))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!, is91Licence.bookingId!!)))
-      .thenReturn(listOf(remandPrisoner, is91Prisoner))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(is91Licence.nomsId!!, remandLicence.nomsId!!)))
+      .thenReturn(listOf(is91Prisoner, remandPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(listOf(aIS91CourtEventOutcome.copy(bookingId = is91Licence.bookingId!!), aRemandCourtEventOutcome.copy(bookingId = remandLicence.bookingId!!)))
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
@@ -564,7 +574,7 @@ class LicenceActivationServiceTest {
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().plusDays(1))
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(remandLicence.nomsId!!)))
       .thenReturn(listOf(nonHdcPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(listOf(aRemandCourtEventOutcome))
@@ -592,7 +602,7 @@ class LicenceActivationServiceTest {
     val remandLicence = nonHdcLicence.copy(licenceStartDate = null)
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(remandLicence.bookingId!!)))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(remandLicence.nomsId!!)))
       .thenReturn(listOf(nonHdcPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
       .thenReturn(listOf(aRemandCourtEventOutcome))
