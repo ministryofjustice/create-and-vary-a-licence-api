@@ -30,6 +30,7 @@ enum class SarLicenceStatus(@JsonValue val description: String) {
       LicenceStatus.VARIATION_APPROVED -> VARIATION_APPROVED
       LicenceStatus.NOT_STARTED -> NOT_STARTED
       LicenceStatus.TIMED_OUT -> TIMED_OUT
+      LicenceStatus.REJECTED -> throw IllegalArgumentException("No licence event for status $type")
     }
   }
 }
