@@ -117,6 +117,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun beforeEach() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(mockPrisoners)
+    prisonerSearchMockServer.stubSearchPrisonersByBookingIds(mockPrisoners)
     prisonApiMockServer.stubGetCourtOutcomes()
     hdcApiMockServer.stubGetHdcStatuses(
       listOf(
