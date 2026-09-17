@@ -41,7 +41,7 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       .uri("/licence/match")
       .bodyValue(MatchLicencesRequest(status = listOf(INACTIVE)))
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectBodyList<LicenceSummary>()
       .returnResult().responseBody
@@ -64,7 +64,7 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       .uri("/licence/match")
       .bodyValue(MatchLicencesRequest(status = IN_FLIGHT_LICENCES))
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectBodyList<LicenceSummary>()
       .returnResult().responseBody

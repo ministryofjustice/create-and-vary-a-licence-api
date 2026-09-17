@@ -52,7 +52,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
       .uri("/licence/match")
       .bodyValue(MatchLicencesRequest(status = listOf(TIMED_OUT)))
       .accept(APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
@@ -61,7 +61,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
     val isOnBankHolidayOrWeekEnd = workingDaysService.isNonWorkingDay(jobExecutionDate)
 
     if (!isOnBankHolidayOrWeekEnd) {
-      assertThat(timedOutLicences?.size).isEqualTo(5)
+      assertThat(timedOutLicences.size).isEqualTo(5)
 
       assertThat(timedOutLicences)
         .extracting<Tuple> {

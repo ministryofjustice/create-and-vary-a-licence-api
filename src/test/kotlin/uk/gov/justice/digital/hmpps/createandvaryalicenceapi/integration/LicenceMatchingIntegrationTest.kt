@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -22,10 +24,10 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .uri("/licence/match")
       .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.APPROVED)))
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody!!
+      .returnResult().responseBody
 
     assertThat(result.size).isEqualTo(5)
     assertThat(result.map { it.licenceId }).containsExactly(1L, 2L, 3L, 4L, 5L)
@@ -40,7 +42,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .uri("/licence/match")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(MatchLicencesRequest())
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +73,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
           nomsId = listOf("C1234CC", "C1234DD", "C1234EE", "C1234FF"),
         ),
       )
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -87,6 +89,21 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       )
   }
 
+  @ParameterizedTest(name = "Get licences matches using role {0}")
+  @MethodSource("cvlRoles")
+  @Sql("classpath:test_data/seed-matching-candidates.sql")
+  fun `Get licences matches using role`(role: String) {
+    val result = webTestClient.post()
+      .uri("/licence/match")
+      .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(MatchLicencesRequest(nomsId = listOf("C1234CC")))
+      .headers(setAuthorisation(roles = listOf(role)))
+      .exchange()
+      .expectStatus().isOk
+
+    result.expectStatus().isOk
+  }
+
   @Test
   @Sql(
     "classpath:test_data/seed-matching-candidates.sql",
@@ -95,7 +112,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.post()
       .uri("/licence/match")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .bodyValue(
         MatchLicencesRequest(
           nomsId = listOf("XXX"),
@@ -120,7 +137,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .uri("/licence/match?sortBy=conditionalReleaseDate&sortOrder=DESC")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(MatchLicencesRequest())
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = cvlRoles()))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
