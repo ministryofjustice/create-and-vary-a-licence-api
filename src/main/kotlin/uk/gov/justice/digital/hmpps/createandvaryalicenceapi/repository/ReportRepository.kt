@@ -80,6 +80,7 @@ ORDER BY nomis_number;
         FROM additional_condition ac
         JOIN additional_condition_data acd ON acd.additional_condition_id = ac.id 
         WHERE   ac.licence_id in (:licenceIds)  AND 
+                ac.condition_code = '${ELECTRONIC_TAG_COND_CODE_14A}' AND    
                 ac.condition_category = 'Electronic monitoring' AND 
                 acd.data_field in ('electronicMonitoringTypes','endDate')
         ORDER BY ac.licence_id, acd.data_value

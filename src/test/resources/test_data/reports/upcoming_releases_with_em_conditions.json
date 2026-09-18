@@ -5,7 +5,7 @@
     "status": "SUBMITTED",
     "licenceStartDate": "{{LICENCE_START_DATE}}",
     "submittedDate": "24/08/2024",
-    "emConditionCodes" : "14d",
+    "emConditionCodes" : "14a, 14d",
     "fullName": "Person One",
     "electronicMonitoringTypes" : "ALCOHOL_ABSTINENCE,EXCLUSION_ZONE",
     "emEndDate" : "16/01/2028"

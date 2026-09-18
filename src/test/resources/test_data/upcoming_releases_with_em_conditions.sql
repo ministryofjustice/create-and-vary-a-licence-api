@@ -66,7 +66,7 @@ values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
 
 insert into additional_condition (id,licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (1,1, '3.0', 'Electronic monitoring', 'd36a3b77-30ba-40ce-8953-83e761d3b487', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]','AP'),
+values (1,1, '3.0', 'Electronic monitoring', 'fd129172-bdd3-4d97-a4a0-efd7b47a49d4', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]','AP'),
 	(2,1, '3.0', 'Exclusion zone', 'd36a3b77-30ba-40ce-8953-83e761d3b487', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP'),
 	(3,1, '3.0', 'Electronic monitoring', '3932e5c9-4d21-4251-a747-ce6dc52dc9c0', 3, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
 
