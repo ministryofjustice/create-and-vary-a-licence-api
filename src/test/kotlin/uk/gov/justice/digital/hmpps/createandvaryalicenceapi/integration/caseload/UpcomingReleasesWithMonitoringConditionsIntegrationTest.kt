@@ -8,12 +8,13 @@ import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
-import org.springframework.test.json.JsonCompareMode.STRICT
+import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonRecord.CorePersonRecordApiClientTest.Companion.objectMapper
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -45,10 +46,17 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
       .exchange()
 
     // Then
-    result.expectStatus().isOk
+    val actualJson = result.expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
-      .expectBody()
-      .json(expectedJson, STRICT)
+      .expectBody<String>()
+      .returnResult()
+      .responseBody
+
+    val expected = objectMapper.readTree(expectedJson)
+    val actual = objectMapper.readTree(actualJson)
+
+    assertThat(actual.toPrettyString())
+      .isEqualTo(expected.toPrettyString())
   }
 
   private fun serializedContent(name: String) = this.javaClass.getResourceAsStream("/test_data/reports/$name.json")!!.bufferedReader(
