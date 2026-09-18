@@ -19,7 +19,7 @@ class LicencePolicyServiceTest {
     LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
 
   @Nested
-  inner class `Progression policy start date is today`() {
+  inner class `Progression policy start date is today` {
     private val progressionModelPolicyStartDate = LocalDate.now()
     private val licencePolicyService =
       LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
