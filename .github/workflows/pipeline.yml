@@ -56,7 +56,7 @@ jobs:
     with:
       gradle-command: ' ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest'
       localstack-tag: 'community-archive'
-      postgres-tag: "17.5"
+      postgres-tag: "17.11"
       upload-build-artifacts: ${{ github.ref == 'refs/heads/main' }}
       postgres-db: create-and-vary-a-licence-db
       postgres-username: cvl
