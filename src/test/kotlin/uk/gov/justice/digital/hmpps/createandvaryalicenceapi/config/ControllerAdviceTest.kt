@@ -29,7 +29,7 @@ class ControllerAdviceTest {
 
   @Test
   fun handleExistingCvlLicenceException() {
-    val exception = ExistingCvlLicenceException("A2345BC")
+    val exception = ExistingCvlLicenceException()
 
     val response = controllerAdvice.handleNoRetryMigrationLicenceException(exception)
 
@@ -37,7 +37,7 @@ class ControllerAdviceTest {
     assertThat(response.body).isEqualTo(
       ErrorResponse(
         status = HttpStatus.BAD_REQUEST,
-        userMessage = "Unexpected error: ${exception.message}",
+        userMessage = "NoRetryMigration error: ${exception.message}",
         developerMessage = exception.message,
       ),
     )
@@ -53,7 +53,7 @@ class ControllerAdviceTest {
     assertThat(response.body).isEqualTo(
       ErrorResponse(
         status = HttpStatus.BAD_REQUEST,
-        userMessage = "Unexpected error: ${exception.message}",
+        userMessage = "NoRetryMigration error: ${exception.message}",
         developerMessage = exception.message,
       ),
     )
@@ -61,7 +61,7 @@ class ControllerAdviceTest {
 
   @Test
   fun handleOffenderManagerNotFoundException() {
-    val exception = OffenderManagerNotFoundException("A2345BC")
+    val exception = OffenderManagerNotFoundException()
 
     val response = controllerAdvice.handleNoRetryMigrationLicenceException(exception)
 
@@ -69,7 +69,7 @@ class ControllerAdviceTest {
     assertThat(response.body).isEqualTo(
       ErrorResponse(
         status = HttpStatus.BAD_REQUEST,
-        userMessage = "Unexpected error: ${exception.message}",
+        userMessage = "NoRetryMigration error: ${exception.message}",
         developerMessage = exception.message,
       ),
     )

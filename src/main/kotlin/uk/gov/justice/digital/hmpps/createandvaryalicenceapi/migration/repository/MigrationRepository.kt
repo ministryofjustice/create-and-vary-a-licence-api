@@ -60,12 +60,26 @@ interface MigrationRepository : JpaRepository<Licence, Long> {
   @Query(
     value = """
         SELECT EXISTS (
-            SELECT 1 FROM licence l WHERE l.noms_id = :nomsId and l.status_code != 'INACTIVE'
+            SELECT 1 FROM licence l WHERE l.noms_id = :nomsId AND
+                l.status_code not in ('INACTIVE','TIMED_OUT')
         )
     """,
     nativeQuery = true,
   )
   fun hasExistingLicence(nomsId: String): Boolean
+
+  @Query(
+    value = """
+        SELECT EXISTS (
+            SELECT 1 FROM licence l WHERE l.noms_id = :nomsId AND 
+                l.kind NOT IN ('HDC_VARIATION','HDC') AND
+                l.status_code not in ('INACTIVE','TIMED_OUT') AND 
+                l.licence_start_date IS NOT NULL
+        )
+    """,
+    nativeQuery = true,
+  )
+  fun hasHdcLicenceBeenSupersededByCvlLicence(nomsId: String): Boolean
 
   @Query(
     value = """
