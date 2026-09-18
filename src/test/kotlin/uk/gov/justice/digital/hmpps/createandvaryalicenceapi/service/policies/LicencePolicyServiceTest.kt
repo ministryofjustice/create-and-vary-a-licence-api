@@ -14,9 +14,36 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PS
 import java.time.LocalDate
 
 class LicencePolicyServiceTest {
-  private val progressionModelPolicyStartDate = LocalDate.now()
+  private val progressionModelPolicyStartDate = LocalDate.now().plusMonths(1)
   private val licencePolicyService =
     LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
+
+  @Nested
+  inner class `Progression policy start date is today`() {
+    private val progressionModelPolicyStartDate = LocalDate.now()
+    private val licencePolicyService =
+      LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
+
+    @Test
+    fun `Policy version 4 is returned if licence start date is not provided`() {
+      val policy = licencePolicyService.currentPolicy(null)
+      assertThat(policy.version).isEqualTo("4.0")
+    }
+
+    @Test
+    fun `Policy version 3 is returned if progress model policy start date is null`() {
+      val licencePolicyServiceNullStartDate = LicencePolicyService(progressionModelPolicyStartDate = null)
+
+      val policy = licencePolicyServiceNullStartDate.currentPolicy(LocalDate.now())
+      assertThat(policy.version).isEqualTo("3.0")
+    }
+
+    @Test
+    fun `Policy version 4 is returned if licence start date is on or after progress model policy start date`() {
+      assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate).version).isEqualTo("4.0")
+      assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate.plusDays(1)).version).isEqualTo("4.0")
+    }
+  }
 
   @Test
   fun `Check all policy versions are mapped`() {
