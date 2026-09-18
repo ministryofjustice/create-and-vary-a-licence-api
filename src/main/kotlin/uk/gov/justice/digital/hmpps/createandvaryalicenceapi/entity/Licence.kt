@@ -57,8 +57,8 @@ abstract class Licence(
   var statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
 
   var nomsId: String? = null,
-  val bookingNo: String? = null,
-  val bookingId: Long? = null,
+  var bookingNo: String? = null,
+  var bookingId: Long? = null,
   val crn: String? = null,
   var pnc: String? = null,
   var cro: String? = null,

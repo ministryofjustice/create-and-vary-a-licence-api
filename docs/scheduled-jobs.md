@@ -72,17 +72,40 @@ stale, incorrect drafts.
 
 This job looks for **approved licences** whose licence start date is **today or
 earlier** — i.e. release day has arrived or passed — and haven't yet been switched on.
+People are matched to their up-to-date prison record by their prison (NOMIS) identifier,
+so the job always checks against their latest known booking rather than whatever
+booking was recorded on the licence itself.
+
 For each one, it checks the person's current HDC (Home Detention Curfew) status, then:
 
-- **Activates** the licence once it's clear the person has genuinely been released on
-  this basis — for IS91/extradition/remand cases, once their licence start date has passed;
-  for everyone else, once their licence start date has passed *and* the prison's own
-  records show them as released.
+- Leaves alone anyone whose HDC status is still undecided, to avoid activating or
+  cancelling the wrong licence too early.
 - **Deactivates** an approved standard licence instead, if it turns out the person has
   since been approved for release on HDC — in that case, the HDC licence takes over,
   and the standard one is no longer needed.
-- Leaves alone anyone whose HDC status is still undecided, to avoid activating or
-  cancelling the wrong licence too early.
+- Otherwise, sorts the remaining licences into one of three groups, and **activates**
+  each once its own condition for genuine release is met:
+    - **IS91/extradition licences** — for people held under an immigration detention
+      warrant (identified by their recorded "most serious offence" description), or
+      whose latest court appearance outcome is one of a fixed set of IS91/extradition
+      result codes. These are activated as soon as their licence start date has passed.
+    - **Remand licences** — for anyone not already counted as IS91/extradition whose
+      latest court appearance outcome is one of a fixed set of remand-related result
+      codes. These are also activated as soon as their licence start date has passed.
+      This group is only ever considered when a "remand" feature toggle is switched on;
+      while it's off, these cases are treated as standard licences instead.
+    - **Standard licences** — everyone else. These are only activated once their
+      licence start date has passed *and* the prison's own records show them as
+      released (rather than still in custody).
+
+Before any of these licences are activated, the job also checks whether the person's
+**booking ID and booking number** (the identifiers for their specific spell in
+custody) on the licence still match what the prison's records currently show. A
+mismatch can happen if, for example, someone was re-booked into custody after the
+licence was first created. Where it finds a mismatch, the licence's booking ID and
+number are updated to the current values, and an audit record is kept of the change
+(showing the old and new booking ID and number), so there's a trail of exactly when
+and why a licence's booking details changed.
 
 ## Deactivate licences past release date
 
