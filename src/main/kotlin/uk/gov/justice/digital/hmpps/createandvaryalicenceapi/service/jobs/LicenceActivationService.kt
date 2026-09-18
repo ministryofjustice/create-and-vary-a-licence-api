@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.IS91_RESULT_CODES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.OFFENCE_DESCRIPTION
@@ -28,6 +29,7 @@ class LicenceActivationService(
   private val hdcService: HdcService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
+  private val auditService: AuditService,
   @param:Value("\${feature.toggle.remand.enabled}") private val remandEnabled: Boolean = false,
 
 ) {
@@ -41,8 +43,13 @@ class LicenceActivationService(
     }
     val matchedLicences = prisonerSearchApiClient.searchPrisonersByNomisIds(potentialLicences.keys.toList())
       .map { LicenceWithPrisoner(potentialLicences[it.prisonerNumber]!!, it) }
+
     val (eligibleLicences, ineligibleLicences) = determineActivationEligibility(matchedLicences)
     val licencesToActivate = findLicencesToActivate(eligibleLicences)
+
+    updateChangedBookings(
+      licencesToActivate.iS91Licences + licencesToActivate.remandLicences + licencesToActivate.standardLicences,
+    )
 
     log.info(
       "Licence activation job: activating ${licencesToActivate.iS91Licences.size} IS91 licences, " +
@@ -51,9 +58,9 @@ class LicenceActivationService(
         "inactivating ${ineligibleLicences.size} licences",
     )
 
-    licenceService.activateLicences(licencesToActivate.iS91Licences, IS91_LICENCE_ACTIVATION)
-    licenceService.activateLicences(licencesToActivate.remandLicences, REMAND_LICENCE_ACTIVATION)
-    licenceService.activateLicences(licencesToActivate.standardLicences, LICENCE_ACTIVATION)
+    licenceService.activateLicences(licencesToActivate.iS91Licences.map { it.licence }, IS91_LICENCE_ACTIVATION)
+    licenceService.activateLicences(licencesToActivate.remandLicences.map { it.licence }, REMAND_LICENCE_ACTIVATION)
+    licenceService.activateLicences(licencesToActivate.standardLicences.map { it.licence }, LICENCE_ACTIVATION)
     licenceService.inactivateLicences(ineligibleLicences.map { it.licence }, LICENCE_DEACTIVATION)
   }
 
@@ -69,9 +76,9 @@ class LicenceActivationService(
   private fun findLicencesToActivate(licences: List<LicenceWithPrisoner>): LicencesToActivate {
     val licenceBuckets = filterLicencesIntoTypes(licences)
     return LicencesToActivate(
-      iS91Licences = licenceBuckets.iS91Licences.filter { isPassedLicenceStartDate(it.licence.licenceStartDate) }.map { it.licence },
-      remandLicences = licenceBuckets.remandLicences.filter { isPassedLicenceStartDate(it.licence.licenceStartDate) }.map { it.licence },
-      standardLicences = licenceBuckets.standardLicences.filter { it.isStandardLicenceForActivation() }.map { it.licence },
+      iS91Licences = licenceBuckets.iS91Licences.filter { isPassedLicenceStartDate(it.licence.licenceStartDate) },
+      remandLicences = licenceBuckets.remandLicences.filter { isPassedLicenceStartDate(it.licence.licenceStartDate) },
+      standardLicences = licenceBuckets.standardLicences.filter { it.isStandardLicenceForActivation() },
     )
   }
 
@@ -110,6 +117,29 @@ class LicenceActivationService(
 
   private fun isPassedLicenceStartDate(licenceStartDate: LocalDate?): Boolean = licenceStartDate != null && licenceStartDate <= LocalDate.now()
 
+  private fun updateChangedBookings(licences: List<LicenceWithPrisoner>) {
+    val licencesWithChangedBooking = licences.filter { it.licence.bookingId != it.bookingId }
+
+    licencesWithChangedBooking.map {
+      val oldBookingId = it.licence.bookingId
+      val oldBookingNo = it.licence.bookingNo
+
+      it.licence.bookingId = it.bookingId
+      it.licence.bookingNo = it.prisoner.bookNumber
+      licenceRepository.save(it.licence)
+
+      auditService.recordAuditEventBookingChanged(
+        licence = it.licence,
+        oldBookingId = oldBookingId,
+        newBookingId = it.bookingId,
+        oldBookingNo = oldBookingNo,
+        newBookingNo = it.prisoner.bookNumber,
+      )
+
+      log.info("Updated booking for licence id ${it.licence.id}")
+    }
+  }
+
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
     const val IS91_LICENCE_ACTIVATION = "IS91 licence automatically activated via repeating job"
@@ -125,8 +155,8 @@ class LicenceActivationService(
   )
 
   private data class LicencesToActivate(
-    val iS91Licences: List<Licence>,
-    val remandLicences: List<Licence>,
-    val standardLicences: List<Licence>,
+    val iS91Licences: List<LicenceWithPrisoner>,
+    val remandLicences: List<LicenceWithPrisoner>,
+    val standardLicences: List<LicenceWithPrisoner>,
   )
 }

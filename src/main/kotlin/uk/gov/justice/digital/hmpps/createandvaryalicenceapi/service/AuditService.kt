@@ -425,6 +425,27 @@ class AuditService(
     )
   }
 
+  fun recordAuditEventBookingChanged(
+    licence: Licence,
+    oldBookingId: Long?,
+    newBookingId: Long?,
+    oldBookingNo: String?,
+    newBookingNo: String?,
+  ) {
+    val summary = "Booking ID and number updated on licence"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to mapOf(
+        "oldBookingId" to oldBookingId,
+        "newBookingId" to newBookingId,
+        "oldBookingNo" to oldBookingNo,
+        "newBookingNo" to newBookingNo,
+      ),
+    )
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, null))
+  }
+
   private fun getAuditEventsForLicence(auditRequest: AuditRequest): List<ModelAuditEvent> {
     licenceRepository
       .findById(auditRequest.licenceId!!)

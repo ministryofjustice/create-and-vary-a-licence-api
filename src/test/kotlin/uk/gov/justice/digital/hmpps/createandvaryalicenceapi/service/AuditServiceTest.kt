@@ -1217,6 +1217,45 @@ class AuditServiceTest {
     assertThat(captured.changes).isEqualTo(changes)
   }
 
+  @Test
+  fun `records an audit event when the booking is changed`() {
+    val changes = mapOf(
+      "oldBookingId" to 12345L,
+      "newBookingId" to 67890L,
+      "oldBookingNo" to "12345A",
+      "newBookingNo" to "67890B",
+    )
+
+    service.recordAuditEventBookingChanged(
+      licence = aLicenceEntity,
+      oldBookingId = 12345L,
+      newBookingId = 67890L,
+      oldBookingNo = "12345A",
+      newBookingNo = "67890B",
+    )
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository).save(auditCaptor.capture())
+    val auditEvent = auditCaptor.value
+
+    assertThat(auditEvent.username).isEqualTo("SYSTEM")
+    assertThat(auditEvent.summary)
+      .isEqualTo("Booking ID and number updated on licence for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
+    assertThat(auditEvent.detail)
+      .isEqualTo(
+        "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+          "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+      )
+    assertThat(auditEvent.changes)
+      .extracting("type", "changes")
+      .isEqualTo(
+        listOf(
+          "Booking ID and number updated on licence",
+          changes,
+        ),
+      )
+  }
+
   companion object {
     val anEvent = AuditEvent(
       licenceId = 1L,

@@ -98,6 +98,15 @@ For each one, it checks the person's current HDC (Home Detention Curfew) status,
       licence start date has passed *and* the prison's own records show them as
       released (rather than still in custody).
 
+Before any of these licences are activated, the job also checks whether the person's
+**booking ID and booking number** (the identifiers for their specific spell in
+custody) on the licence still match what the prison's records currently show. A
+mismatch can happen if, for example, someone was re-booked into custody after the
+licence was first created. Where it finds a mismatch, the licence's booking ID and
+number are updated to the current values, and an audit record is kept of the change
+(showing the old and new booking ID and number), so there's a trail of exactly when
+and why a licence's booking details changed.
+
 ## Deactivate licences past release date
 
 **Runs**: 2am, Monday to Friday.

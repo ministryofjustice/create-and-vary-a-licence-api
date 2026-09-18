@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -12,7 +14,9 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder.setContext
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -38,12 +42,15 @@ class LicenceActivationServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
   private val prisonApiClient = mock<PrisonApiClient>()
+  private val auditService = mock<AuditService>()
+
   private var service = LicenceActivationService(
     licenceRepository,
     licenceService,
     hdcService,
     prisonerSearchApiClient,
     prisonApiClient,
+    auditService,
   )
 
   @BeforeEach
@@ -507,6 +514,7 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       prisonApiClient,
+      auditService,
       remandEnabled = true,
     )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
@@ -536,6 +544,7 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       prisonApiClient,
+      auditService,
       remandEnabled = true,
     )
 
@@ -569,6 +578,7 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       prisonApiClient,
+      auditService,
       remandEnabled = true,
     )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().plusDays(1))
@@ -597,6 +607,7 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       prisonApiClient,
+      auditService,
       remandEnabled = true,
     )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = null)
@@ -615,6 +626,109 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+  }
+
+  @Test
+  fun `licence activation job does not update booking or record an audit event when booking id has not changed`() {
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
+      .thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(emptyList())
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    verify(licenceRepository, times(0)).save(any())
+    verify(auditService, times(0)).recordAuditEventBookingChanged(any(), any(), any(), any(), any())
+  }
+
+  @Test
+  fun `licence activation job updates booking id and booking number and records an audit event when the booking id has changed`() {
+    val licence = aLicenceEntity.copy(bookingId = 54321, bookingNo = "12345A")
+    val prisoner = aPrisonerSearchPrisoner.copy(bookingId = "78901", bookNumber = "67890B")
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(licence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)))
+      .thenReturn(listOf(prisoner))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(emptyList())
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    val licenceCaptor = argumentCaptor<Licence>()
+    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    assertThat(licenceCaptor.firstValue.bookingId).isEqualTo(78901L)
+    assertThat(licenceCaptor.firstValue.bookingNo).isEqualTo("67890B")
+
+    verify(auditService).recordAuditEventBookingChanged(
+      licence = licence,
+      oldBookingId = 54321L,
+      newBookingId = 78901L,
+      oldBookingNo = "12345A",
+      newBookingNo = "67890B",
+    )
+  }
+
+  @Test
+  fun `licence activation job only updates the booking for licences whose booking id has changed when multiple licences are present`() {
+    val unchangedLicence = aLicenceEntity
+    val changedLicence = nonHdcLicence.copy(bookingId = 54321, bookingNo = "12345A")
+    val changedPrisoner = nonHdcPrisoner.copy(bookingId = "78901", bookNumber = "67890B")
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate())
+      .thenReturn(listOf(unchangedLicence, changedLicence))
+    whenever(
+      prisonerSearchApiClient.searchPrisonersByNomisIds(
+        listOf(unchangedLicence.nomsId!!, changedLicence.nomsId!!),
+      ),
+    ).thenReturn(listOf(aPrisonerSearchPrisoner, changedPrisoner))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(emptyList())
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    val licenceCaptor = argumentCaptor<Licence>()
+    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    assertThat(licenceCaptor.firstValue.id).isEqualTo(changedLicence.id)
+    assertThat(licenceCaptor.firstValue.bookingId).isEqualTo(78901L)
+    assertThat(licenceCaptor.firstValue.bookingNo).isEqualTo("67890B")
+
+    verify(auditService).recordAuditEventBookingChanged(
+      licence = changedLicence,
+      oldBookingId = 54321L,
+      newBookingId = 78901L,
+      oldBookingNo = "12345A",
+      newBookingNo = "67890B",
+    )
+  }
+
+  @Test
+  fun `licence activation job does not update the booking when the licence is not yet due for activation even though its booking id has changed`() {
+    val licence = aLicenceEntity.copy(
+      licenceStartDate = LocalDate.now().plusDays(5),
+      bookingId = 54321,
+      bookingNo = "12345A",
+    )
+    val prisoner = aPrisonerSearchPrisoner.copy(bookingId = "78901", bookNumber = "67890B")
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(licence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licence.nomsId!!)))
+      .thenReturn(listOf(prisoner))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(emptyList())
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    verify(licenceRepository, times(0)).save(any())
+    verify(auditService, times(0)).recordAuditEventBookingChanged(any(), any(), any(), any(), any())
   }
 
   private val aLicenceEntity = createCrdLicence().copy(
