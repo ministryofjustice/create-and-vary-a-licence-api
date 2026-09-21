@@ -3,12 +3,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RecallSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RemandSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.RemandCourtEvents
 
 @Service
 class SupportService(
@@ -30,12 +33,7 @@ class SupportService(
   }
 
   fun getRecallInfo(prisonNumber: String): RecallSupportInfo {
-    val prisoner = getPrisonerByPrisonNumber(prisonNumber)
-    if (prisoner.bookingId == null) {
-      error("Prison number $prisonNumber has no booking id")
-    }
-
-    val bookingSentenceAndRecallTypes = prisonService.getSentenceAndRecallTypes(prisoner.bookingId.toLong())
+    val bookingSentenceAndRecallTypes = prisonService.getSentenceAndRecallTypes(getBookingIdFromPrisonId(prisonNumber))
 
     val sentenceRecallTypes = bookingSentenceAndRecallTypes?.sentenceTypeRecallTypes.orEmpty()
 
@@ -50,6 +48,34 @@ class SupportService(
       standardRecallSentenceTypes = standardRecalls.map { it.sentenceType },
       otherSentenceTypes = otherSentences.map { it.sentenceType }.distinct(),
     )
+  }
+
+  fun getRemandInfo(prisonerNumber: String): RemandSupportInfo {
+    val remandCourtEventOutcomes =
+      prisonService.getCourtOutcomeEvents(
+        listOf(getBookingIdFromPrisonId(prisonerNumber)),
+        RemandCourtEvents.getRemandCourtCodes(),
+      )
+
+    val outcomeReasonCode = remandCourtEventOutcomes.firstOrNull()?.outcomeReasonCode
+      ?: return RemandSupportInfo()
+
+    return RemandSupportInfo(
+      true,
+      outcomeReasonCode,
+      RemandCourtEvents.getCourtEventDescriptionByCode(outcomeReasonCode),
+    )
+  }
+
+  fun getSupportInfo(prisonerNumber: String): SupportInfo = SupportInfo(
+    isIS91Case = getIS91Status(prisonerNumber),
+    recallSupportInfo = getRecallInfo(prisonerNumber),
+    remandSupportInfo = getRemandInfo(prisonerNumber),
+  )
+
+  private fun getBookingIdFromPrisonId(prisonerNumber: String): Long {
+    val prisoner = getPrisonerByPrisonNumber(prisonerNumber)
+    return prisoner.bookingId?.toLong() ?: error("Prison number $prisonerNumber has no booking id")
   }
 
   private fun getPrisonerByPrisonNumber(prisonNumber: String): PrisonerSearchPrisoner {
