@@ -23,4 +23,9 @@ data class UpcomingReleasesWithMonitoringConditionsResponse(
   val emConditionCodes: String?,
   @field:Schema(description = "full name of prisoner", example = "Forename Surname")
   val fullName: String?,
+  @field:Schema(description = "electronic monitoring types", example = "EXCLUSION_ZONE, LOCATION_MONITORING, CURFEW")
+  val electronicMonitoringTypes: String,
+  @field:Schema(description = "electronic monitoring end date", example = "24/08/2024")
+  @field:JsonFormat(pattern = "dd/MM/yyyy")
+  val emEndDate: LocalDate?,
 )

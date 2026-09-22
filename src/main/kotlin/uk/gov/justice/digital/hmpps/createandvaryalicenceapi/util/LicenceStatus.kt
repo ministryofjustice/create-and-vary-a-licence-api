@@ -12,6 +12,9 @@ enum class LicenceStatus {
   VARIATION_APPROVED,
   NOT_STARTED,
   TIMED_OUT,
+
+  // Temporarily adding back in to handle frontend call
+  REJECTED,
   ;
 
   fun isOnProbation() = ON_PROBATION_STATUSES.contains(this)
@@ -29,6 +32,7 @@ enum class LicenceStatus {
       INACTIVE -> LicenceEventType.INACTIVE
       NOT_STARTED -> LicenceEventType.NOT_STARTED
       TIMED_OUT -> LicenceEventType.TIMED_OUT
+      REJECTED -> throw IllegalArgumentException("No licence event for status $status")
     }
 
     val IN_FLIGHT_LICENCES = listOf(

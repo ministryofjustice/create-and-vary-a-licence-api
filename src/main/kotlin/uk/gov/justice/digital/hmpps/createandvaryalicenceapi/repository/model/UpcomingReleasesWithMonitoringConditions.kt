@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import java.time.LocalDate
 
 data class UpcomingReleasesWithMonitoringConditions(
+  val licenceId: Long,
   val prisonNumber: String,
   val crn: String,
   val status: String,
