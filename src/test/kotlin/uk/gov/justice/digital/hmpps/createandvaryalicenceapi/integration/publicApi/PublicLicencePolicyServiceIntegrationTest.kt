@@ -85,7 +85,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `get latest policy is v3 `() {
+    fun `get latest policy is v4 `() {
       webTestClient.get()
         .uri("/public/policy/latest")
         .accept(MediaType.APPLICATION_JSON)
@@ -94,7 +94,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
-        .json(policy("V3"), STRICT)
+        .json(policy("V4"), STRICT)
     }
 
     @Test
