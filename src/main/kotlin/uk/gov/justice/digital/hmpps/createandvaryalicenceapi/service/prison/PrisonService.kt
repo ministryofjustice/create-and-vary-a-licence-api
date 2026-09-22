@@ -36,5 +36,7 @@ class PrisonService(val prisonApiClient: PrisonApiClient, val prisonerSearchApi:
     }
   }
 
+  fun getCourtOutcomeEvents(bookingIds: List<Long>, outcomeReasonCodes: List<String>) = prisonApiClient.getCourtEventOutcomes(bookingIds, outcomeReasonCodes)
+
   fun getPrisonInformation(prisonCode: String): Prison = prisonApiClient.getPrisonInformation(prisonCode)
 }

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RecallSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MergeOffendersRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
@@ -81,6 +82,7 @@ class SupportController(
     @PathVariable nomsId: String,
   ) = supportService.getIneligibilityReasons(nomsId)
 
+  @Deprecated("Use /offender/nomisid/{nomsId}/support-info instead")
   @GetMapping(
     value = ["/nomisid/{nomsId}/is-91-status"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -129,6 +131,55 @@ class SupportController(
     @PathVariable nomsId: String,
   ) = supportService.getIS91Status(nomsId)
 
+  @GetMapping(
+    value = ["/nomisid/{nomsId}/support-info"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Retrieve support information for offender",
+    description = "Returns IS91 status, recall and remand information for creating a licence for a specific prisoner. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Support information for the offender",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = SupportInfo::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Could not find prisoner",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getSupportInfo(
+    @PathVariable nomsId: String,
+  ) = supportService.getSupportInfo(nomsId)
+
+  @Deprecated("Use /offender/nomisid/{nomsId}/support-info instead")
   @GetMapping(
     value = ["/nomisid/{nomsId}/recall-info"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
