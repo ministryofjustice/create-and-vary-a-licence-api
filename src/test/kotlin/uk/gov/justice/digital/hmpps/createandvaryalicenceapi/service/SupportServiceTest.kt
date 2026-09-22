@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.CourtEventOutcome
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Reca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.RemandCourtEvents
 import java.time.LocalDate
 
 class SupportServiceTest {
@@ -61,7 +63,14 @@ class SupportServiceTest {
   @Test
   fun `get ineligibility reasons for present offender`() {
     val hdcPrisoner = aPrisonerSearchResult.copy(homeDetentionCurfewEligibilityDate = LocalDate.now())
-    val hdcStatuses = HdcStatuses(listOf(hdcPrisonerStatus().copy(bookingId = hdcPrisoner.bookingId?.toLong(), approvalStatus = "APPROVED")))
+    val hdcStatuses = HdcStatuses(
+      listOf(
+        hdcPrisonerStatus().copy(
+          bookingId = hdcPrisoner.bookingId?.toLong(),
+          approvalStatus = "APPROVED",
+        ),
+      ),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
     whenever(hdcService.getHdcStatus(listOf(hdcPrisoner))).thenReturn(hdcStatuses)
@@ -132,14 +141,27 @@ class SupportServiceTest {
 
   @Test
   fun `get recall info returns standard recall`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
 
     val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(
       bookingId = 123456L,
       sentenceTypeRecallTypes = listOf(
-        SentenceAndRecallType("LR", SentenceRecallType("Standard Recall", isStandardRecall = true, isFixedTermRecall = false)),
-        SentenceAndRecallType("ADIMP_ORA", SentenceRecallType("Other", isStandardRecall = false, isFixedTermRecall = false)),
-        SentenceAndRecallType("ADIMP_ORA", SentenceRecallType("None", isStandardRecall = false, isFixedTermRecall = false)),
+        SentenceAndRecallType(
+          "LR",
+          SentenceRecallType("Standard Recall", isStandardRecall = true, isFixedTermRecall = false),
+        ),
+        SentenceAndRecallType(
+          "ADIMP_ORA",
+          SentenceRecallType("Other", isStandardRecall = false, isFixedTermRecall = false),
+        ),
+        SentenceAndRecallType(
+          "ADIMP_ORA",
+          SentenceRecallType("None", isStandardRecall = false, isFixedTermRecall = false),
+        ),
       ),
     )
 
@@ -157,12 +179,19 @@ class SupportServiceTest {
 
   @Test
   fun `get recall info returns fixed term recall`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
 
     val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(
       bookingId = 123456L,
       sentenceTypeRecallTypes = listOf(
-        SentenceAndRecallType("FTR_ORA", SentenceRecallType("14 Day Fixed Term Recall", isStandardRecall = false, isFixedTermRecall = true)),
+        SentenceAndRecallType(
+          "FTR_ORA",
+          SentenceRecallType("14 Day Fixed Term Recall", isStandardRecall = false, isFixedTermRecall = true),
+        ),
       ),
     )
 
@@ -176,6 +205,93 @@ class SupportServiceTest {
     assertThat(result.fixTermSentenceTypes).containsExactly("FTR_ORA")
     assertThat(result.standardRecallSentenceTypes).isEmpty()
     assertThat(result.otherSentenceTypes).isEmpty()
+  }
+
+  @Test
+  fun `get remand info returns expected false if not on remand`() {
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+
+    whenever(
+      prisonService.getCourtOutcomeEvents(
+        listOf(123456L),
+        RemandCourtEvents.getRemandCourtCodes(),
+      ),
+    ).thenReturn(emptyList())
+
+    val result = service.getRemandInfo("A1234AA")
+
+    assertThat(result.isRemand).isFalse()
+    assertThat(result.courtEventOutcomeCode).isNull()
+    assertThat(result.courtEventOutcomeDescription).isNull()
+  }
+
+  @Test
+  fun `get remand info returns a correctly populated object`() {
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+
+    whenever(
+      prisonService.getCourtOutcomeEvents(
+        listOf(123456L),
+        RemandCourtEvents.getRemandCourtCodes(),
+      ),
+    ).thenReturn(
+      listOf(
+        CourtEventOutcome(
+          bookingId = 123456L,
+          eventId = 1L,
+          outcomeReasonCode = "4531",
+        ),
+      ),
+    )
+
+    val result = service.getRemandInfo("A1234AA")
+
+    assertThat(result.isRemand).isTrue()
+    assertThat(result.courtEventOutcomeCode).isEqualTo("4531")
+    assertThat(result.courtEventOutcomeDescription).isEqualTo("Remand in Custody (Bail Refused)")
+  }
+
+  @Test
+  fun `get support info returns a correctly populated object`() {
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA")))
+      .thenReturn(listOf(aPrisonerSearchResult))
+
+    val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(
+      bookingId = 123456L,
+      sentenceTypeRecallTypes = emptyList(),
+    )
+
+    whenever(prisonService.getSentenceAndRecallTypes(123456L))
+      .thenReturn(bookingSentenceAndRecallTypes)
+    whenever(prisonService.getRecallType(bookingSentenceAndRecallTypes))
+      .thenReturn(RecallType.NONE)
+
+    whenever(prisonService.getCourtOutcomeEvents(listOf(123456L), RemandCourtEvents.getRemandCourtCodes()))
+      .thenReturn(
+        listOf(
+          CourtEventOutcome(
+            bookingId = 123456L,
+            eventId = 1L,
+            outcomeReasonCode = "4531",
+          ),
+        ),
+      )
+
+    whenever(iS91DeterminationService.isIS91Case(aPrisonerSearchResult)).thenReturn(false)
+
+    val result = service.getSupportInfo("A1234AA")
+
+    assertThat(result.isIS91Case).isFalse()
+    assertThat(result.recallSupportInfo?.recallType).isEqualTo(RecallType.NONE)
+    assertThat(result.remandSupportInfo?.isRemand).isTrue()
   }
 
   private companion object {
