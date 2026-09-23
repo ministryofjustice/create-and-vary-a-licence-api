@@ -195,7 +195,7 @@ tasks {
   }
 
   register<Copy>("installLocalGitHook") {
-    from(File(rootProject.rootDir, ".scripts/pre-commit"))
+    from(File(rootProject.rootDir, "scripts/pre-commit"))
     into(File(rootProject.rootDir, ".git/hooks"))
     filePermissions { unix("755") }
   }
