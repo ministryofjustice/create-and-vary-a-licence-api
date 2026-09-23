@@ -39,3 +39,40 @@ Run directly from the `scripts/` directory:
 
 e.g. ./export-conditions.sh v3
 ```
+
+### check-events
+
+`check-events/` contains a small Node.js (`.mjs`) tool for exercising licence event flows (e.g. transferring a
+prisoner between prisons) against the create-and-vary-a-licence-api dev environment. It authenticates via HMPPS
+Auth using client-credentials from a Kubernetes secret, then dispatches to a "mode" handler.
+
+Files:
+
+- `run.sh` — bash entrypoint. Fetches `CLIENT_ID`/`CLIENT_SECRET`/`TEST_PRISON_USER` from the
+  `create-and-vary-a-licence-api-smoke-test-client-creds` secret in the `create-and-vary-a-licence-api-dev`
+  namespace, then runs `run.mjs`, forwarding all arguments.
+- `run.mjs` — parses CLI arguments and dispatches to the handler for the requested mode.
+- `transfer.mjs` — implements the `transfer` mode: looks up a prisoner's in-flight licence, checks it belongs to
+  the `--from-prison`, and reports the outcome.
+- `utils/args.mjs` — dependency-free CLI argument parser (no third-party libraries).
+- `utils/client.mjs` — HMPPS Auth token fetching and create-and-vary-a-licence-api HTTP client helpers.
+- `utils/prisonApi.mjs` — dependency-free client for the prison-api `transfer-in`, `transfer-out` and `release`
+  endpoints, ported from
+  [`basm-move-generator/scripts/prison-api`](https://github.com/ministryofjustice/basm-move-generator/blob/main/scripts/prison-api).
+  Exports `transferIn`, `transferOut` and `release`, each taking a bearer `token` and prisoner offender number
+  (plus mode-specific parameters such as `toLocation`).
+
+Dependencies: `jq`, `kubectl` (with access to the `create-and-vary-a-licence-api-dev` namespace), Node.js.
+
+Run directly from the `scripts/check-events/` directory:
+
+```bash
+./run.sh transfer --from-prison=MDI --to-prison=LEI --prison_number=A1234AA
+```
+
+Arguments:
+
+- Mode (positional, first argument) — currently only `transfer` is supported.
+- `--from-prison=<prisonCode>` — the prison code the prisoner is transferring from.
+- `--to-prison=<prisonCode>` — the prison code the prisoner is transferring to.
+- `--prison_number=<prisonNumber>` — the prisoner's NOMIS prison number.
