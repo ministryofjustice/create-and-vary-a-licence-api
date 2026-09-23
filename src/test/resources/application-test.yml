@@ -89,6 +89,10 @@ hmpps:
         dlqName: domainevents-queue-dlq
         subscribeTopicId: domainevents
         dlqMaxReceiveCount: 2
+      hdccvleventsqueue:
+        queueName: hmpps_hdc_api_queue
+        dlqName: hmpps_hdc_api_dlq
+        dlqMaxReceiveCount: 2
       prisoneventsqueue:
         queueName: prisonevents-queue
         dlqName: prisonevents-queue-dlq
