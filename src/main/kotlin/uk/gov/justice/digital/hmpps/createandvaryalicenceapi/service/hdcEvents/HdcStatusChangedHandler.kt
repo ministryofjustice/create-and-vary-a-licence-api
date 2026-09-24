@@ -1,15 +1,13 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 
-const val HDC_OPT_OUT_EVENT_TYPE = "OPT_OUT"
-
 @Service
 class HdcStatusChangedHandler(
   private val mapper: ObjectMapper,
-) : EventHandler {
+) {
   companion object {
     private val log = LoggerFactory.getLogger(HdcStatusChangedHandler::class.java)
   }
@@ -27,9 +25,5 @@ class HdcStatusChangedHandler(
       event.triggeredBy,
       event.reason,
     )
-  }
-
-  override fun handleEvent(message: String) {
-    handleOptout(message)
   }
 }

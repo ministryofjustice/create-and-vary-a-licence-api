@@ -14,12 +14,12 @@ import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.EventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HDC_OPT_OUT_EVENT_TYPE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HdcStatusChangedEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HdcStatusChangedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Message
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.MessageAttributes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcEventsListener
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -39,7 +39,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
   @Test
   fun `An HDC opt out event is processed`() {
     val event = HdcStatusChangedEvent(
-      eventType = HDC_OPT_OUT_EVENT_TYPE,
+      eventType = HdcCvlEventType.OPT_OUT.toString(),
       occurredAt = LocalDateTime.now(),
       licenceId = 123L,
       bookingId = 456L,
@@ -52,7 +52,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val wrappedMessage = Message(
       message = eventJson,
       messageId = "test-message-id",
-      messageAttributes = MessageAttributes(eventType = EventType(value = HDC_OPT_OUT_EVENT_TYPE, type = "String")),
+      messageAttributes = MessageAttributes(eventType = EventType(value = HdcCvlEventType.OPT_OUT.toString(), type = "String")),
     )
     val messageBody = mapper.writeValueAsString(wrappedMessage)
 
@@ -62,7 +62,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         .messageBody(messageBody)
         .messageAttributes(
           mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(HDC_OPT_OUT_EVENT_TYPE).build(),
+            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(HdcCvlEventType.OPT_OUT.toString()).build(),
           ),
         )
         .build(),
@@ -72,7 +72,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     awaitAtMost30Secs untilAsserted {
       verify(hdcEventsListener, times(1)).finishedEventProcessing(any())
       verify(hdcStatusChangedHandler).handleOptout(eventJson)
-      assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
     }
+    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
 }

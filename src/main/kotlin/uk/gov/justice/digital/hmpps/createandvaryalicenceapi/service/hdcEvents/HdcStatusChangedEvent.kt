@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents
 
 import java.time.LocalDateTime
 

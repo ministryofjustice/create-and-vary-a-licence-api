@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents
 
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.LoggerFactory
@@ -6,8 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.EventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HDC_OPT_OUT_EVENT_TYPE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HdcStatusChangedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Message
 
 @ConditionalOnProperty(name = ["hdc.event.listener.disabled"], havingValue = "false", matchIfMissing = true)
@@ -25,9 +23,16 @@ class HdcEventsListener(
     val (message, _, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
 
     try {
-      when (val eventType = messageAttributes.eventType.value) {
-        HDC_OPT_OUT_EVENT_TYPE -> hdcStatusChangedHandler.handleOptout(message)
-        else -> log.warn("Ignoring HDC event with type {}", eventType)
+      val eventType = try {
+        HdcCvlEventType.valueOf(messageAttributes.eventType.value)
+      } catch (e: IllegalArgumentException) {
+        log.warn("Ignoring HDC event with unknown type {}", messageAttributes.eventType.value, e)
+        return
+      }
+
+      when (eventType) {
+        HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(message)
+        HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
       }
     } finally {
       finishedEventProcessing(messageAttributes.eventType)
