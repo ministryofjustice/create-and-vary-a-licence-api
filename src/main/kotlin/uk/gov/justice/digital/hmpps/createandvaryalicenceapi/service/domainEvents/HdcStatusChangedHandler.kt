@@ -14,11 +14,11 @@ class HdcStatusChangedHandler(
     private val log = LoggerFactory.getLogger(HdcStatusChangedHandler::class.java)
   }
 
-  override fun handleEvent(message: String) {
+  fun handleOptout(message: String) {
     val event = mapper.readValue(message, HdcStatusChangedEvent::class.java)
 
     log.info(
-      "Received HDC event eventType={} occurredAt={} licenceId={} bookingId={} nomsNumber={} triggeredBy={} reason={}",
+      "HDC opt-out processed: eventType={} occurredAt={} licenceId={} bookingId={} nomsNumber={} triggeredBy={} reason={}",
       event.eventType,
       event.occurredAt,
       event.licenceId,
@@ -27,5 +27,9 @@ class HdcStatusChangedHandler(
       event.triggeredBy,
       event.reason,
     )
+  }
+
+  override fun handleEvent(message: String) {
+    handleOptout(message)
   }
 }

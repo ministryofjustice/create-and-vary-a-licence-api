@@ -26,7 +26,7 @@ class HdcEventsListener(
 
     try {
       when (val eventType = messageAttributes.eventType.value) {
-        HDC_OPT_OUT_EVENT_TYPE -> hdcStatusChangedHandler.handleEvent(message)
+        HDC_OPT_OUT_EVENT_TYPE -> hdcStatusChangedHandler.handleOptout(message)
         else -> log.warn("Ignoring HDC event with type {}", eventType)
       }
     } finally {

@@ -71,7 +71,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     // Verify listener and handler are called, and queue is drained
     awaitAtMost30Secs untilAsserted {
       verify(hdcEventsListener, times(1)).finishedEventProcessing(any())
-      verify(hdcStatusChangedHandler).handleEvent(eventJson)
+      verify(hdcStatusChangedHandler).handleOptout(eventJson)
       assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
     }
   }
