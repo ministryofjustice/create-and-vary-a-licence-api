@@ -65,8 +65,8 @@ hmpps.sqs:
       dlqName: domainevents-queue-dlq
       subscribeTopicId: domainevents
     hdccvleventsqueue:
-      queueName: hmpps_hdc_api_queue
-      dlqName: hmpps_hdc_api_dlq
+      queueName: hdc-cvl-events-queue
+      dlqName: hdc-cvl-events-queue-dlq
     prisoneventsqueue:
       queueName: prisonevents-queue
       dlqName: prisonevents-queue-dlq
