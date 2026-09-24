@@ -65,8 +65,6 @@ OffenderService(
       it.dateLastUpdated = LocalDateTime.now()
     }
 
-    licenceRepository.saveAllAndFlush(offenderLicences)
-
     notifyComIfLateAllocation(offenderLicences, crn)
 
     notifyComIfFirstAllocation(offenderLicences, crn, previousCom)
