@@ -110,6 +110,326 @@ class LicenceCreationServiceTest {
   )
 
   @Nested
+  inner class PreV4Tests {
+    private val licencePolicyService = LicencePolicyService(progressionModelPolicyStartDate = LocalDate.now().plusMonths(1))
+    private val service = LicenceCreationService(
+      licenceRepository,
+      crdLicenceRepository,
+      staffRepository,
+      standardConditionRepository,
+      additionalConditionRepository,
+      licenceEventRepository,
+      licencePolicyService,
+      auditEventRepository,
+      prisonerSearchApiClient,
+      prisonApiClient,
+      deliusApiClient,
+      cvlRecordService,
+      telemetryService,
+      timeServedExternalRecordsService,
+      caseService,
+    )
+
+    @BeforeEach
+    fun reset() {
+      reset(
+        licenceRepository,
+        licenceEventRepository,
+        auditEventRepository,
+        prisonerSearchApiClient,
+        prisonApiClient,
+        deliusApiClient,
+        cvlRecordService,
+        caseService,
+      )
+      val authentication = mock<Authentication>()
+      val securityContext = mock<SecurityContext>()
+
+      whenever(authentication.name).thenReturn(com.username)
+      whenever(securityContext.authentication).thenReturn(authentication)
+      SecurityContextHolder.setContext(securityContext)
+
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
+      whenever(staffRepository.findByUsernameIgnoreCase(com.username)).thenReturn(com)
+      whenever(staffRepository.findByUsernameIgnoreCase(prisonUser.username)).thenReturn(prisonUser)
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
+
+      whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
+      whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
+      whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
+    }
+
+    @Nested
+    inner class PrisonUser {
+
+      @BeforeEach
+      fun reset() {
+        val authentication = mock<Authentication>()
+        val securityContext = mock<SecurityContext>()
+        whenever(authentication.name).thenReturn(prisonUser.username)
+        whenever(securityContext.authentication).thenReturn(authentication)
+        SecurityContextHolder.setContext(securityContext)
+      }
+
+      @Test
+      fun `Populates licence with conditions for an AP and PSS licence`() {
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+          listOf(
+            prisonerSearchResult().copy(
+              topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+              licenceExpiryDate = LocalDate.now(),
+            ),
+          ),
+        )
+        whenever(caseService.getProbationCase(any())).thenReturn(
+          aProbationCaseResult,
+        )
+        whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+          aCvlRecord(
+            eligibleKind = EligibleKind.CRD,
+            creationKind = LicenceKind.HARD_STOP,
+            licenceType = LicenceType.AP_PSS,
+          ),
+        )
+
+        service.createHardStopLicence(PRISON_NUMBER)
+
+        argumentCaptor<HardStopLicence>().apply {
+          verify(licenceRepository, times(1)).saveAndFlush(capture())
+          assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
+        }
+        argumentCaptor<List<StandardCondition>>().apply {
+          verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+          val apConditions = firstValue.filter { it.conditionType == "AP" }
+          assertThat(apConditions).isNotEmpty()
+          val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+          assertThat(pssConditions).isNotEmpty()
+        }
+        argumentCaptor<List<AdditionalCondition>>().apply {
+          verify(additionalConditionRepository, times(1)).saveAllAndFlush(capture())
+          val apConditions = firstValue.filter { it.conditionType == "AP" }
+          assertThat(apConditions).isNotEmpty()
+          assertThat(apConditions.first().conditionCode).isEqualTo(HARD_STOP_CONDITION.code)
+
+          val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+          assertThat(pssConditions).isEmpty()
+        }
+      }
+    }
+
+    @Nested
+    inner class ComUser {
+      @Test
+      fun `Populates PRRD licence with standard conditions for an AP and PSS licence`() {
+        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+          listOf(
+            prisonerSearchResult(postRecallReleaseDate = LocalDate.now()).copy(
+              topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+              licenceExpiryDate = LocalDate.now(),
+            ),
+          ),
+        )
+        whenever(deliusApiClient.getProbationCase(any())).thenReturn(
+          aProbationCaseResult,
+        )
+        whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+          aCvlRecord(
+            eligibleKind = EligibleKind.FIXED_TERM,
+            licenceType = LicenceType.AP_PSS,
+          ),
+        )
+
+        service.createLicence(PRISON_NUMBER)
+
+        argumentCaptor<PrrdLicence>().apply {
+          verify(licenceRepository, times(1)).saveAndFlush(capture())
+          assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
+        }
+        argumentCaptor<List<StandardCondition>>().apply {
+          verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+          verifyNoInteractions(additionalConditionRepository)
+          val apConditions = firstValue.filter { it.conditionType == "AP" }
+          assertThat(apConditions).isNotEmpty()
+          val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+          assertThat(pssConditions).isNotEmpty()
+        }
+      }
+    }
+
+    @Test
+    fun `Populates PRRD licence with conditions for PSS licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          prisonerSearchResult(postRecallReleaseDate = LocalDate.now()).copy(
+            topupSupervisionExpiryDate = LocalDate.now(),
+            licenceExpiryDate = null,
+          ),
+        ),
+      )
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
+        aProbationCaseResult,
+      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.FIXED_TERM,
+          licenceType = LicenceType.PSS,
+        ),
+      )
+
+      service.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<PrrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        verifyNoInteractions(additionalConditionRepository)
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isNotEmpty()
+      }
+    }
+
+    @Test
+    fun `Populates HDC licence with standard conditions for an AP and PSS licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          prisonerSearchResult().copy(
+            topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+            licenceExpiryDate = LocalDate.now(),
+          ),
+        ),
+      )
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
+        aProbationCaseResult,
+      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.HDC,
+          licenceType = LicenceType.AP_PSS,
+        ),
+      )
+
+      service.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<HdcLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        verifyNoInteractions(additionalConditionRepository)
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isNotEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isNotEmpty()
+      }
+    }
+
+    @Test
+    fun `Populates HDC licence with conditions for PSS licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisonerSearchResult().copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
+      )
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
+        aProbationCaseResult,
+      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.HDC,
+          licenceType = LicenceType.PSS,
+        ),
+      )
+
+      service.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<HdcLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        verifyNoInteractions(additionalConditionRepository)
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isNotEmpty()
+      }
+    }
+
+    @Test
+    fun `Populates CRD licence with standard conditions for an AP and PSS licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          prisonerSearchResult().copy(
+            topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+            licenceExpiryDate = LocalDate.now(),
+          ),
+        ),
+      )
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
+        aProbationCaseResult,
+      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.CRD,
+          licenceType = LicenceType.AP_PSS,
+        ),
+      )
+
+      service.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        verifyNoInteractions(additionalConditionRepository)
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isNotEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isNotEmpty()
+      }
+    }
+
+    @Test
+    fun `Populates CRD licence with conditions for PSS licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisonerSearchResult().copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
+      )
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
+        aProbationCaseResult,
+      )
+      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
+        aCvlRecord(
+          eligibleKind = EligibleKind.CRD,
+          licenceType = LicenceType.PSS,
+        ),
+      )
+
+      service.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        verifyNoInteractions(additionalConditionRepository)
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isNotEmpty()
+      }
+    }
+  }
+
+  @Nested
   inner class CreatingCrdLicences {
 
     @BeforeEach
@@ -168,7 +488,7 @@ class LicenceCreationServiceTest {
           assertThat(kind).isEqualTo(LicenceKind.CRD)
           assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
-          assertThat(version).isEqualTo("3.0")
+          assertThat(version).isEqualTo("4.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
           assertThat(versionOfId).isNull()
           assertThat(licenceVersion).isEqualTo("1.0")
@@ -341,73 +661,6 @@ class LicenceCreationServiceTest {
         assertThat(apConditions).isNotEmpty()
         val pssConditions = firstValue.filter { it.conditionType == "PSS" }
         assertThat(pssConditions).isEmpty()
-      }
-    }
-
-    @Test
-    fun `Populates licence with conditions for PSS licence`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisonerSearchResult().copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
-      )
-      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
-        aProbationCaseResult,
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
-        aCvlRecord(
-          eligibleKind = EligibleKind.CRD,
-          licenceType = LicenceType.PSS,
-        ),
-      )
-
-      service.createLicence(PRISON_NUMBER)
-
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
-      }
-      argumentCaptor<List<StandardCondition>>().apply {
-        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-        verifyNoInteractions(additionalConditionRepository)
-        val apConditions = firstValue.filter { it.conditionType == "AP" }
-        assertThat(apConditions).isEmpty()
-        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-        assertThat(pssConditions).isNotEmpty()
-      }
-    }
-
-    @Test
-    fun `Populates licence with standard conditions for an AP and PSS licence`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(
-          prisonerSearchResult().copy(
-            topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-            licenceExpiryDate = LocalDate.now(),
-          ),
-        ),
-      )
-      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
-        aProbationCaseResult,
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
-        aCvlRecord(
-          eligibleKind = EligibleKind.CRD,
-          licenceType = LicenceType.AP_PSS,
-        ),
-      )
-
-      service.createLicence(PRISON_NUMBER)
-
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
-      }
-      argumentCaptor<List<StandardCondition>>().apply {
-        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-        verifyNoInteractions(additionalConditionRepository)
-        val apConditions = firstValue.filter { it.conditionType == "AP" }
-        assertThat(apConditions).isNotEmpty()
-        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-        assertThat(pssConditions).isNotEmpty()
       }
     }
 
@@ -712,7 +965,7 @@ class LicenceCreationServiceTest {
           assertThat(kind).isEqualTo(LicenceKind.PRRD)
           assertThat(eligibleKind).isEqualTo(EligibleKind.FIXED_TERM)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
-          assertThat(version).isEqualTo("3.0")
+          assertThat(version).isEqualTo("4.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
           assertThat(versionOfId).isNull()
           assertThat(licenceVersion).isEqualTo("1.0")
@@ -770,7 +1023,7 @@ class LicenceCreationServiceTest {
           assertThat(kind).isEqualTo(LicenceKind.PRRD)
           assertThat(eligibleKind).isEqualTo(EligibleKind.STANDARD)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
-          assertThat(version).isEqualTo("3.0")
+          assertThat(version).isEqualTo("4.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
           assertThat(versionOfId).isNull()
           assertThat(licenceVersion).isEqualTo("1.0")
@@ -926,78 +1179,6 @@ class LicenceCreationServiceTest {
         assertThat(apConditions).isNotEmpty()
         val pssConditions = firstValue.filter { it.conditionType == "PSS" }
         assertThat(pssConditions).isEmpty()
-      }
-    }
-
-    @Test
-    fun `Populates licence with conditions for PSS licence`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(
-          prisonerSearchResult(postRecallReleaseDate = LocalDate.now()).copy(
-            topupSupervisionExpiryDate = LocalDate.now(),
-            licenceExpiryDate = null,
-          ),
-        ),
-      )
-      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
-        aProbationCaseResult,
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
-        aCvlRecord(
-          eligibleKind = EligibleKind.FIXED_TERM,
-          licenceType = LicenceType.PSS,
-        ),
-      )
-
-      service.createLicence(PRISON_NUMBER)
-
-      argumentCaptor<PrrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
-      }
-      argumentCaptor<List<StandardCondition>>().apply {
-        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-        verifyNoInteractions(additionalConditionRepository)
-        val apConditions = firstValue.filter { it.conditionType == "AP" }
-        assertThat(apConditions).isEmpty()
-        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-        assertThat(pssConditions).isNotEmpty()
-      }
-    }
-
-    @Test
-    fun `Populates licence with standard conditions for an AP and PSS licence`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(
-          prisonerSearchResult(postRecallReleaseDate = LocalDate.now()).copy(
-            topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-            licenceExpiryDate = LocalDate.now(),
-          ),
-        ),
-      )
-      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
-        aProbationCaseResult,
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
-        aCvlRecord(
-          eligibleKind = EligibleKind.FIXED_TERM,
-          licenceType = LicenceType.AP_PSS,
-        ),
-      )
-
-      service.createLicence(PRISON_NUMBER)
-
-      argumentCaptor<PrrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
-      }
-      argumentCaptor<List<StandardCondition>>().apply {
-        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-        verifyNoInteractions(additionalConditionRepository)
-        val apConditions = firstValue.filter { it.conditionType == "AP" }
-        assertThat(apConditions).isNotEmpty()
-        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-        assertThat(pssConditions).isNotEmpty()
       }
     }
 
@@ -1316,7 +1497,7 @@ class LicenceCreationServiceTest {
           assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
           assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
-          assertThat(version).isEqualTo("3.0")
+          assertThat(version).isEqualTo("4.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
           assertThat(licenceVersion).isEqualTo("1.0")
           assertThat(nomsId).isEqualTo(nomsId)
@@ -1507,84 +1688,6 @@ class LicenceCreationServiceTest {
         assertThat(pssConditions).isEmpty()
       }
 
-      argumentCaptor<List<AdditionalCondition>>().apply {
-        verify(additionalConditionRepository, times(1)).saveAllAndFlush(capture())
-        val apConditions = firstValue.filter { it.conditionType == "AP" }
-        assertThat(apConditions).isNotEmpty()
-        assertThat(apConditions.first().conditionCode).isEqualTo(HARD_STOP_CONDITION.code)
-
-        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-        assertThat(pssConditions).isEmpty()
-      }
-    }
-
-    @Test
-    fun `Populates licence with standard conditions for PSS licence`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisonerSearchResult().copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
-      )
-      whenever(caseService.getProbationCase(any())).thenReturn(
-        aProbationCaseResult,
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
-        aCvlRecord(
-          eligibleKind = EligibleKind.CRD,
-          creationKind = LicenceKind.HARD_STOP,
-          licenceType = LicenceType.PSS,
-        ),
-      )
-
-      service.createHardStopLicence(PRISON_NUMBER)
-
-      argumentCaptor<HardStopLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
-      }
-      argumentCaptor<List<StandardCondition>>().apply {
-        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-        val apConditions = firstValue.filter { it.conditionType == "AP" }
-        assertThat(apConditions).isEmpty()
-        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-        assertThat(pssConditions).isNotEmpty()
-      }
-
-      verify(additionalConditionRepository).saveAllAndFlush(emptyList())
-    }
-
-    @Test
-    fun `Populates licence with conditions for an AP and PSS licence`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(
-          prisonerSearchResult().copy(
-            topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-            licenceExpiryDate = LocalDate.now(),
-          ),
-        ),
-      )
-      whenever(caseService.getProbationCase(any())).thenReturn(
-        aProbationCaseResult,
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
-        aCvlRecord(
-          eligibleKind = EligibleKind.CRD,
-          creationKind = LicenceKind.HARD_STOP,
-          licenceType = LicenceType.AP_PSS,
-        ),
-      )
-
-      service.createHardStopLicence(PRISON_NUMBER)
-
-      argumentCaptor<HardStopLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
-      }
-      argumentCaptor<List<StandardCondition>>().apply {
-        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-        val apConditions = firstValue.filter { it.conditionType == "AP" }
-        assertThat(apConditions).isNotEmpty()
-        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-        assertThat(pssConditions).isNotEmpty()
-      }
       argumentCaptor<List<AdditionalCondition>>().apply {
         verify(additionalConditionRepository, times(1)).saveAllAndFlush(capture())
         val apConditions = firstValue.filter { it.conditionType == "AP" }
@@ -1829,7 +1932,7 @@ class LicenceCreationServiceTest {
           assertThat(kind).isEqualTo(LicenceKind.TIME_SERVED)
           assertThat(eligibleKind).isEqualTo(EligibleKind.CRD)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
-          assertThat(version).isEqualTo("3.0")
+          assertThat(version).isEqualTo("4.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
           assertThat(licenceVersion).isEqualTo("1.0")
           assertThat(nomsId).isEqualTo(nomsId)
@@ -2088,7 +2191,7 @@ class LicenceCreationServiceTest {
           assertThat(kind).isEqualTo(LicenceKind.HDC)
           assertThat(eligibleKind).isEqualTo(EligibleKind.HDC)
           assertThat(typeCode).isEqualTo(LicenceType.AP)
-          assertThat(version).isEqualTo("3.0")
+          assertThat(version).isEqualTo("4.0")
           assertThat(statusCode).isEqualTo(IN_PROGRESS)
           assertThat(versionOfId).isNull()
           assertThat(licenceVersion).isEqualTo("1.0")
@@ -2261,73 +2364,6 @@ class LicenceCreationServiceTest {
         assertThat(apConditions).isNotEmpty()
         val pssConditions = firstValue.filter { it.conditionType == "PSS" }
         assertThat(pssConditions).isEmpty()
-      }
-    }
-
-    @Test
-    fun `Populates licence with conditions for PSS licence`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisonerSearchResult().copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
-      )
-      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
-        aProbationCaseResult,
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
-        aCvlRecord(
-          eligibleKind = EligibleKind.CRD,
-          licenceType = LicenceType.PSS,
-        ),
-      )
-
-      service.createLicence(PRISON_NUMBER)
-
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
-      }
-      argumentCaptor<List<StandardCondition>>().apply {
-        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-        verifyNoInteractions(additionalConditionRepository)
-        val apConditions = firstValue.filter { it.conditionType == "AP" }
-        assertThat(apConditions).isEmpty()
-        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-        assertThat(pssConditions).isNotEmpty()
-      }
-    }
-
-    @Test
-    fun `Populates licence with standard conditions for an AP and PSS licence`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(
-          prisonerSearchResult().copy(
-            topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-            licenceExpiryDate = LocalDate.now(),
-          ),
-        ),
-      )
-      whenever(deliusApiClient.getProbationCase(any())).thenReturn(
-        aProbationCaseResult,
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(
-        aCvlRecord(
-          eligibleKind = EligibleKind.CRD,
-          licenceType = LicenceType.AP_PSS,
-        ),
-      )
-
-      service.createLicence(PRISON_NUMBER)
-
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
-      }
-      argumentCaptor<List<StandardCondition>>().apply {
-        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-        verifyNoInteractions(additionalConditionRepository)
-        val apConditions = firstValue.filter { it.conditionType == "AP" }
-        assertThat(apConditions).isNotEmpty()
-        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-        assertThat(pssConditions).isNotEmpty()
       }
     }
 

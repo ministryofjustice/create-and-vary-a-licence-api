@@ -68,7 +68,9 @@ class LicencePolicyService(
   }
 
   fun currentPolicy(licenceStartDate: LocalDate? = null): LicencePolicy {
-    if (licenceStartDate?.isOnOrAfter(progressionModelPolicyStartDate) == true) {
+    if (licenceStartDate?.isOnOrAfter(progressionModelPolicyStartDate) == true ||
+      LocalDate.now().isOnOrAfter(progressionModelPolicyStartDate)
+    ) {
       return POLICY_V4_0
     }
     return POLICY_V3_0
