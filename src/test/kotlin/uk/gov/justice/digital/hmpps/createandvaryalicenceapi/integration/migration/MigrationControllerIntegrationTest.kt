@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigratePrisonerDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateSentenceDetails
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V3_0
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V4_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -367,9 +367,9 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
     assertThat(licence.licenceStartDate).isEqualTo(request.licence.homeDetentionCurfewActualDate)
 
     assertThat(licence.bespokeConditions).extracting<Int> { it.conditionSequence }.containsExactly(0, 1)
-    assertThat(licence.standardConditions.size).isEqualTo(POLICY_V3_0.standardConditions.standardConditionsAp.size)
+    assertThat(licence.standardConditions.size).isEqualTo(POLICY_V4_0.standardConditions.standardConditionsAp.size)
     assertThat(licence.standardConditions.map { it.conditionText }).containsExactlyElementsOf(
-      POLICY_V3_0.standardConditions.standardConditionsAp.map { it.text },
+      POLICY_V4_0.standardConditions.standardConditionsAp.map { it.text },
     )
 
     val actualConditions = licence.bespokeConditions.map { it.conditionText }
