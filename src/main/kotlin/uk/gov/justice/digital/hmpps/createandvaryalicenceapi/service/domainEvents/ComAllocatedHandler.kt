@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEven
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
@@ -26,6 +27,7 @@ class ComAllocatedHandler(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
+  @Transactional
   fun syncComAllocation(crn: String) {
     log.info("Syncing COM allocation for CRN: {}", crn)
     val offenderManager = getOffenderManagerFromDelius(crn)
@@ -34,6 +36,7 @@ class ComAllocatedHandler(
     }
   }
 
+  @Transactional
   override fun handleEvent(message: String) {
     log.info("Received COM allocation event")
 
