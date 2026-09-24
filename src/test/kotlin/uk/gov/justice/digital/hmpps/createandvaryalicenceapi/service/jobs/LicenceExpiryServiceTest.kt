@@ -7,26 +7,32 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import java.time.LocalDate
 
 class LicenceExpiryServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceService = mock<LicenceService>()
+  private val telemetryService = mock<TelemetryService>()
 
   private val service = LicenceExpiryService(
     licenceRepository,
     licenceService,
+    telemetryService,
   )
 
   @BeforeEach
   fun reset() {
     reset(
       licenceRepository,
+      licenceService,
+      telemetryService,
     )
   }
 
@@ -37,10 +43,15 @@ class LicenceExpiryServiceTest {
     service.expireLicences()
 
     verify(licenceRepository, times(0)).saveAndFlush(any<Licence>())
+    verifyNoInteractions(telemetryService)
   }
 
   @Test
   fun `expire licences job runs successfully`() {
+    val aLicence = createCrdLicence().copy(
+      topupSupervisionExpiryDate = LocalDate.now().minusDays(1),
+    )
+
     val licences = listOf(
       aLicence,
     )
@@ -53,11 +64,6 @@ class LicenceExpiryServiceTest {
       licences = licences,
       reason = "Licence inactivated due to passing expiry date",
     )
-  }
-
-  private companion object {
-    val aLicence = createCrdLicence().copy(
-      topupSupervisionExpiryDate = LocalDate.now().minusDays(1),
-    )
+    verify(telemetryService).recordExpireLicencesJobEvent(1)
   }
 }

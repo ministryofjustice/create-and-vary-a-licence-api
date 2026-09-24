@@ -7,22 +7,26 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceReviewRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 
 class LicenceReviewOverdueServiceTest {
   private val licenceReviewRepository = mock<LicenceReviewRepository>()
   private val notifyService = mock<NotifyService>()
+  private val telemetryService = mock<TelemetryService>()
 
   private val service = LicenceReviewOverdueService(
     licenceReviewRepository,
     notifyService,
+    telemetryService,
   )
 
   @BeforeEach
@@ -37,6 +41,7 @@ class LicenceReviewOverdueServiceTest {
     reset(
       licenceReviewRepository,
       notifyService,
+      telemetryService,
     )
   }
 
@@ -56,10 +61,12 @@ class LicenceReviewOverdueServiceTest {
       end = any(),
     )
     verify(licenceReviewRepository, times(0)).saveAllAndFlush(emptyList())
+    verifyNoInteractions(telemetryService)
   }
 
   @Test
   fun `should send notifications if there are eligible licences`() {
+    val aLicenceReviewEntity = createHardStopLicence()
     whenever(
       licenceReviewRepository.getLicencesNeedingReview(
         start = any(),
@@ -87,9 +94,6 @@ class LicenceReviewOverdueServiceTest {
       aLicenceReviewEntity.id.toString(),
       aLicenceReviewEntity.kind == TIME_SERVED,
     )
-  }
-
-  private companion object {
-    val aLicenceReviewEntity = TestData.createHardStopLicence().copy()
+    verify(telemetryService).recordComReviewEmailJobEvent(1)
   }
 }

@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
@@ -27,6 +28,7 @@ class TimeOutLicencesServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val workingDaysService = mock<WorkingDaysService>()
   private val licenceService = mock<LicenceService>()
+  private val telemetryService = mock<TelemetryService>()
 
   private val service = TimeOutLicencesService(
     licenceRepository,
@@ -34,6 +36,7 @@ class TimeOutLicencesServiceTest {
     workingDaysService,
     clock,
     licenceService,
+    telemetryService,
   )
 
   @BeforeEach
@@ -50,6 +53,7 @@ class TimeOutLicencesServiceTest {
       releaseDateService,
       workingDaysService,
       licenceService,
+      telemetryService,
     )
   }
 
@@ -60,6 +64,7 @@ class TimeOutLicencesServiceTest {
     service.timeOutLicences()
 
     verify(licenceRepository, times(0)).getAllLicencesToTimeOut()
+    verifyNoInteractions(telemetryService)
   }
 
   @Test
@@ -72,6 +77,7 @@ class TimeOutLicencesServiceTest {
     verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
 
     verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
+    verifyNoInteractions(telemetryService)
   }
 
   @Test
@@ -82,15 +88,21 @@ class TimeOutLicencesServiceTest {
         aLicenceEntity,
       ),
     )
-    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity.licenceStartDate, aLicenceEntity.kind, clock)).thenReturn(
+    whenever(
+      releaseDateService.isInHardStopPeriod(
+        aLicenceEntity.licenceStartDate,
+        aLicenceEntity.kind,
+        clock,
+      ),
+    ).thenReturn(
       true,
     )
 
     service.timeOutLicences()
 
     verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
-
     verify(licenceService, times(1)).timeout(aLicenceEntity, "due to reaching hard stop")
+    verify(telemetryService).recordTimeOutLicenceJobEvent(1)
   }
 
   @Test
@@ -107,10 +119,22 @@ class TimeOutLicencesServiceTest {
         anIneligibleLicence,
       ),
     )
-    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity.licenceStartDate, aLicenceEntity.kind, clock)).thenReturn(
+    whenever(
+      releaseDateService.isInHardStopPeriod(
+        aLicenceEntity.licenceStartDate,
+        aLicenceEntity.kind,
+        clock,
+      ),
+    ).thenReturn(
       true,
     )
-    whenever(releaseDateService.isInHardStopPeriod(anIneligibleLicence.licenceStartDate, anIneligibleLicence.kind, clock)).thenReturn(
+    whenever(
+      releaseDateService.isInHardStopPeriod(
+        anIneligibleLicence.licenceStartDate,
+        anIneligibleLicence.kind,
+        clock,
+      ),
+    ).thenReturn(
       false,
     )
 
@@ -120,6 +144,7 @@ class TimeOutLicencesServiceTest {
 
     verify(licenceService, times(1)).timeout(aLicenceEntity, "due to reaching hard stop")
     verify(licenceService, times(0)).timeout(anIneligibleLicence, "due to reaching hard stop")
+    verify(telemetryService).recordTimeOutLicenceJobEvent(1)
   }
 
   @Test
@@ -130,7 +155,13 @@ class TimeOutLicencesServiceTest {
         aTimeServedLicence,
       ),
     )
-    whenever(releaseDateService.isInHardStopPeriod(aTimeServedLicence.licenceStartDate, aTimeServedLicence.kind, clock)).thenReturn(
+    whenever(
+      releaseDateService.isInHardStopPeriod(
+        aTimeServedLicence.licenceStartDate,
+        aTimeServedLicence.kind,
+        clock,
+      ),
+    ).thenReturn(
       false,
     )
 
@@ -139,6 +170,7 @@ class TimeOutLicencesServiceTest {
     verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
 
     verifyNoInteractions(licenceService)
+    verifyNoInteractions(telemetryService)
   }
 
   private companion object {

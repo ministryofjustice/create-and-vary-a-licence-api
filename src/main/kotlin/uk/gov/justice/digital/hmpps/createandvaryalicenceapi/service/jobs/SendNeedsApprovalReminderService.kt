@@ -5,11 +5,13 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 
 @Service
 class SendNeedsApprovalReminderService(
   private val licenceRepository: LicenceRepository,
   private val notifyService: NotifyService,
+  private val telemetryService: TelemetryService,
 ) {
 
   fun sendEmailsToProbationPractitioner() {
@@ -24,8 +26,13 @@ class SendNeedsApprovalReminderService(
         comEmail = licence.getComEmail(),
       )
     }
-    log.info("Found {} previously approved licences that have been edited but not re-approved by prisoners release date ", licences.size)
+    log.info(
+      "Found {} previously approved licences that have been edited but not re-approved by prisoners release date ",
+      licences.size,
+    )
     notifyService.sendUnapprovedLicenceEmail(licences)
+
+    telemetryService.recordNotifyProbationOfUnapprovedLicencesJobEvent(licences.size)
   }
 
   companion object {

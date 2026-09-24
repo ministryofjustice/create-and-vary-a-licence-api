@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -25,6 +26,7 @@ class DeactivateLicencesService(
   private val licenceEventRepository: LicenceEventRepository,
   private val domainEventsService: DomainEventsService,
   private val staffRepository: StaffRepository,
+  private val telemetryService: TelemetryService,
 ) {
 
   companion object {
@@ -39,9 +41,12 @@ class DeactivateLicencesService(
       log.info("Job deactivateLicencesJob has no licences to deactivate")
       return
     }
+
     log.info("deactivateLicencesJob is updating status INACTIVE on ${licencesToDeactivate.size} licences")
     updateLicencesStatus(licencesToDeactivate)
+
     log.info("deactivateLicencesJob updated status to INACTIVE on ${licencesToDeactivate.size} licences")
+    telemetryService.recordDeactivateLicencesJobEvent(licencesToDeactivate.size)
   }
 
   private fun updateLicencesStatus(licences: List<Licence>, reason: String? = null) {

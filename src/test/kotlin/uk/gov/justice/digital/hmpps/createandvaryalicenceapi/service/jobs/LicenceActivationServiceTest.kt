@@ -5,11 +5,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditServic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
@@ -43,6 +44,7 @@ class LicenceActivationServiceTest {
   private val iS91DeterminationService = mock<IS91DeterminationService>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val auditService = mock<AuditService>()
+  private val telemetryService = mock<TelemetryService>()
 
   private var service = LicenceActivationService(
     licenceRepository,
@@ -51,6 +53,7 @@ class LicenceActivationServiceTest {
     prisonerSearchApiClient,
     prisonApiClient,
     auditService,
+    telemetryService,
   )
 
   @BeforeEach
@@ -68,6 +71,7 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       iS91DeterminationService,
+      telemetryService,
     )
   }
 
@@ -77,11 +81,10 @@ class LicenceActivationServiceTest {
 
     service.licenceActivation()
 
-    verify(licenceService, times(0)).activateLicences(emptyList(), "")
-    verify(licenceService, times(0)).activateLicences(emptyList(), "")
-    verify(licenceService, times(0)).inactivateLicences(emptyList(), "")
-    verify(hdcService, times(0)).getHdcStatus<LicenceWithPrisoner>(eq(emptyList()), any(), any())
-    verify(prisonerSearchApiClient, times(0)).searchPrisonersByBookingIds(emptyList())
+    verifyNoInteractions(licenceService)
+    verifyNoInteractions(hdcService)
+    verifyNoInteractions(prisonerSearchApiClient)
+    verifyNoInteractions(telemetryService)
   }
 
   @Test
@@ -97,9 +100,10 @@ class LicenceActivationServiceTest {
 
     service.licenceActivation()
 
-    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(licenceService).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService).activateLicences(listOf(aLicenceEntity), LICENCE_ACTIVATION)
+    verify(licenceService).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 0)
   }
 
   @Test
@@ -120,6 +124,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(licence), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 0)
   }
 
   @Test
@@ -145,6 +150,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(1, 0, 0, 0)
   }
 
   @Test
@@ -170,6 +176,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(1, 0, 0, 0)
   }
 
   @Test
@@ -199,6 +206,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(1, 0, 0, 0)
   }
 
   @Test
@@ -223,6 +231,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 1)
   }
 
   @Test
@@ -241,6 +250,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 0)
   }
 
   @Test
@@ -263,12 +273,11 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 0)
   }
 
   @Test
   fun `licence activation job does not call for non-IS91 licences to be activated if the offender has not been released`() {
-    val unreleasedPrisoner = aPrisonerSearchPrisoner.copy(status = "ACTIVE IN")
-
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner.copy(status = "ACTIVE IN")))
@@ -284,6 +293,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 0)
   }
 
   @Test
@@ -312,6 +322,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 0)
   }
 
   @Test
@@ -342,6 +353,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 0)
   }
 
   @Test
@@ -371,6 +383,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 0)
   }
 
   @Test
@@ -380,7 +393,8 @@ class LicenceActivationServiceTest {
       bookingId = "12345",
       homeDetentionCurfewEligibilityDate = LocalDate.now(),
     )
-    val crdLicence = aLicenceEntity.copy(nomsId = crdPrisoner.prisonerNumber, bookingId = crdPrisoner.bookingId!!.toLong())
+    val crdLicence =
+      aLicenceEntity.copy(nomsId = crdPrisoner.prisonerNumber, bookingId = crdPrisoner.bookingId!!.toLong())
 
     val hdcPrisoner = aPrisonerSearchPrisoner.copy(
       prisonerNumber = "B1234CD",
@@ -413,6 +427,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(listOf(crdLicence), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 1)
   }
 
   @Test
@@ -442,6 +457,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(licenceWithOffender), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 0)
   }
 
   @Test
@@ -465,13 +481,15 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 0)
   }
 
   @Test
   fun `licence activation job ignores HDC licences not approved for HDC `() {
     val anotherHdcLicence = hdcLicence.copy(nomsId = "C1234DE", bookingId = 22222)
 
-    val anotherHdcPrisoner = hdcPrisoner.copy(prisonerNumber = "C1234DE", bookingId = anotherHdcLicence.bookingId.toString())
+    val anotherHdcPrisoner =
+      hdcPrisoner.copy(prisonerNumber = "C1234DE", bookingId = anotherHdcLicence.bookingId.toString())
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
       listOf(
@@ -504,6 +522,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 0)
   }
 
   @Test
@@ -515,6 +534,7 @@ class LicenceActivationServiceTest {
       prisonerSearchApiClient,
       prisonApiClient,
       auditService,
+      telemetryService,
       remandEnabled = true,
     )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
@@ -534,6 +554,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 1, 0, 0)
   }
 
   @Test
@@ -545,20 +566,35 @@ class LicenceActivationServiceTest {
       prisonerSearchApiClient,
       prisonApiClient,
       auditService,
+      telemetryService,
       remandEnabled = true,
     )
 
-    val is91Licence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1), bookingId = 123456, nomsId = "A1234BC")
-    val is91Prisoner = nonHdcPrisoner.copy(bookingId = is91Licence.bookingId.toString(), prisonerNumber = is91Licence.nomsId!!)
+    val is91Licence =
+      nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1), bookingId = 123456, nomsId = "A1234BC")
+    val is91Prisoner =
+      nonHdcPrisoner.copy(bookingId = is91Licence.bookingId.toString(), prisonerNumber = is91Licence.nomsId!!)
 
-    val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1), bookingId = 789012, nomsId = "B1234CD")
-    val remandPrisoner = nonHdcPrisoner.copy(bookingId = remandLicence.bookingId.toString(), prisonerNumber = remandLicence.nomsId!!)
+    val remandLicence =
+      nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1), bookingId = 789012, nomsId = "B1234CD")
+    val remandPrisoner =
+      nonHdcPrisoner.copy(bookingId = remandLicence.bookingId.toString(), prisonerNumber = remandLicence.nomsId!!)
 
-    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(is91Licence, remandLicence))
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
+      listOf(
+        is91Licence,
+        remandLicence,
+      ),
+    )
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(is91Licence.nomsId!!, remandLicence.nomsId!!)))
       .thenReturn(listOf(is91Prisoner, remandPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
-      .thenReturn(listOf(aIS91CourtEventOutcome.copy(bookingId = is91Licence.bookingId!!), aRemandCourtEventOutcome.copy(bookingId = remandLicence.bookingId!!)))
+      .thenReturn(
+        listOf(
+          aIS91CourtEventOutcome.copy(bookingId = is91Licence.bookingId!!),
+          aRemandCourtEventOutcome.copy(bookingId = remandLicence.bookingId!!),
+        ),
+      )
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
       .thenReturn(HdcStatuses(emptyList()))
 
@@ -568,6 +604,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(listOf(is91Licence), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(1, 1, 0, 0)
   }
 
   @Test
@@ -579,6 +616,7 @@ class LicenceActivationServiceTest {
       prisonerSearchApiClient,
       prisonApiClient,
       auditService,
+      telemetryService,
       remandEnabled = true,
     )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().plusDays(1))
@@ -597,6 +635,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 0)
   }
 
   @Test
@@ -608,6 +647,7 @@ class LicenceActivationServiceTest {
       prisonerSearchApiClient,
       prisonApiClient,
       auditService,
+      telemetryService,
       remandEnabled = true,
     )
     val remandLicence = nonHdcLicence.copy(licenceStartDate = null)
@@ -622,10 +662,11 @@ class LicenceActivationServiceTest {
 
     service.licenceActivation()
 
-    verify(licenceService, times(1)).activateLicences(emptyList(), REMAND_LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(licenceService).activateLicences(emptyList(), REMAND_LICENCE_ACTIVATION)
+    verify(licenceService).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 0)
   }
 
   @Test
@@ -641,7 +682,8 @@ class LicenceActivationServiceTest {
     service.licenceActivation()
 
     verify(licenceRepository, times(0)).save(any())
-    verify(auditService, times(0)).recordAuditEventBookingChanged(any(), any(), any(), any(), any())
+    verifyNoInteractions(auditService)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 0)
   }
 
   @Test
@@ -671,6 +713,7 @@ class LicenceActivationServiceTest {
       oldBookingNo = "12345A",
       newBookingNo = "67890B",
     )
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 1, 0)
   }
 
   @Test
@@ -706,6 +749,7 @@ class LicenceActivationServiceTest {
       oldBookingNo = "12345A",
       newBookingNo = "67890B",
     )
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 2, 0)
   }
 
   @Test
@@ -729,6 +773,7 @@ class LicenceActivationServiceTest {
 
     verify(licenceRepository, times(0)).save(any())
     verify(auditService, times(0)).recordAuditEventBookingChanged(any(), any(), any(), any(), any())
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 0)
   }
 
   private val aLicenceEntity = createCrdLicence().copy(

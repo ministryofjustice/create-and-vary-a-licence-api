@@ -21,8 +21,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -34,6 +35,7 @@ class DeactivateLicencesServiceTest {
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val domainEventsService = mock<DomainEventsService>()
   private val staffRepository = mock<StaffRepository>()
+  private val telemetryService = mock<TelemetryService>()
 
   private val service = DeactivateLicencesService(
     licenceRepository,
@@ -41,6 +43,7 @@ class DeactivateLicencesServiceTest {
     licenceEventRepository,
     domainEventsService,
     staffRepository,
+    telemetryService,
   )
 
   @BeforeEach
@@ -63,7 +66,9 @@ class DeactivateLicencesServiceTest {
   @Test
   fun `Given there no licences with release date in past When deactivateLicencesJob Then should not deactivate any licence`() {
     whenever(licenceRepository.getDraftLicencesPassedReleaseDate()).thenReturn(emptyList())
+
     service.deactivateLicences()
+
     verify(licenceRepository, times(1)).getDraftLicencesPassedReleaseDate()
     verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
     verify(auditEventRepository, times(0)).saveAndFlush(any<AuditEvent>())
@@ -85,18 +90,18 @@ class DeactivateLicencesServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
-    verify(licenceRepository, times(1)).getDraftLicencesPassedReleaseDate()
-
-    verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
+    verify(licenceRepository).getDraftLicencesPassedReleaseDate()
+    verify(licenceRepository).saveAllAndFlush(licenceCaptor.capture())
 
     assertThat(licenceCaptor.firstValue[0])
       .extracting("statusCode", "updatedByUsername", "updatedBy")
       .isEqualTo(listOf(LicenceStatus.INACTIVE, aCom.username, aCom))
 
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, LicenceStatus.INACTIVE)
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+    verify(auditEventRepository).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService).recordDomainEvent(aLicenceEntity, LicenceStatus.INACTIVE)
+    verify(staffRepository).findByUsernameIgnoreCase(aCom.username)
+    verify(telemetryService).recordDeactivateLicencesJobEvent(1)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "eventType", "summary", "detail")
@@ -126,7 +131,7 @@ class DeactivateLicencesServiceTest {
   }
 
   private companion object {
-    val aLicenceEntity = TestData.createCrdLicence().copy()
+    val aLicenceEntity = createCrdLicence()
     val aCom = communityOffenderManager()
   }
 }

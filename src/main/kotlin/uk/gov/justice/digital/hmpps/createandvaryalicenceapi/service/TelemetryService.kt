@@ -56,10 +56,76 @@ class TelemetryService(
     )
   }
 
+  fun recordDeactivateLicencesJobEvent(licencesDeactivated: Int = 0) {
+    telemetryClient.trackEvent(
+      "DeactivateLicencesJob",
+      mapOf("licences" to licencesDeactivated.toString()),
+      null,
+    )
+  }
+
+  fun recordActivateLicencesJobEvent(
+    iS91Licences: Int = 0,
+    remandLicences: Int = 0,
+    standardLicences: Int = 0,
+    ineligibleLicences: Int = 0,
+  ) {
+    telemetryClient.trackEvent(
+      "ActivateLicencesJob",
+      mapOf(
+        "IS91" to iS91Licences.toString(),
+        "remand" to remandLicences.toString(),
+        "standard" to standardLicences.toString(),
+        "ineligible" to ineligibleLicences.toString(),
+      ),
+      null,
+    )
+  }
+
+  fun recordExpireLicencesJobEvent(licencesExpired: Int = 0) {
+    telemetryClient.trackEvent(
+      "ExpireLicencesJob",
+      mapOf("licences" to licencesExpired.toString()),
+      null,
+    )
+  }
+
+  fun recordComReviewEmailJobEvent(licencesToReview: Int = 0) {
+    telemetryClient.trackEvent(
+      "ComReviewEmailJob",
+      mapOf("licences" to licencesToReview.toString()),
+      null,
+    )
+  }
+
+  fun recordMigrateStandardConditionsJobEvent(licencesMigrated: Int = 0) {
+    telemetryClient.trackEvent(
+      "MigrateStandardConditionsJob",
+      mapOf("licences" to licencesMigrated.toString()),
+      null,
+    )
+  }
+
+  fun recordNotifyProbationOfUnapprovedLicencesJobEvent(emailsSent: Int = 0) {
+    telemetryClient.trackEvent(
+      "NotifyProbationOfUnapprovedLicencesJob",
+      mapOf("emailsSent" to emailsSent.toString()),
+      null,
+    )
+  }
+
   fun recordDeactivateProgressionLicencesJobEvent(licencesDeactivated: Int = 0) {
     telemetryClient.trackEvent(
       "DeactivateProgressionLicencesJob",
       mapOf("licences" to licencesDeactivated.toString()),
+      null,
+    )
+  }
+
+  fun recordTimeOutLicenceJobEvent(licencesTimedOut: Int = 0) {
+    telemetryClient.trackEvent(
+      "TimeOutLicencesJob",
+      mapOf("licences" to licencesTimedOut.toString()),
       null,
     )
   }

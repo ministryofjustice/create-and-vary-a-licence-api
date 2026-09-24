@@ -74,6 +74,101 @@ class TelemetryServiceTest {
   }
 
   @Test
+  fun `recordDeactivateLicencesJobEvent tracks event`() {
+    val licencesDeactivated = 126
+    service.recordDeactivateLicencesJobEvent(licencesDeactivated)
+
+    verify(telemetryClient).trackEvent(
+      eq("DeactivateLicencesJob"),
+      eq(mapOf("licences" to licencesDeactivated.toString())),
+      eq(null),
+    )
+  }
+
+  @Test
+  fun `recordActivateLicencesJobEvent tracks event`() {
+    val iS91Licences = 4
+    val remandLicences = 29
+    val standardLicences = 17
+    val ineligibleLicences = 3
+
+    service.recordActivateLicencesJobEvent(iS91Licences, remandLicences, standardLicences, ineligibleLicences)
+
+    verify(telemetryClient).trackEvent(
+      eq("ActivateLicencesJob"),
+      eq(
+        mapOf(
+          "IS91" to iS91Licences.toString(),
+          "remand" to remandLicences.toString(),
+          "standard" to standardLicences.toString(),
+          "ineligible" to ineligibleLicences.toString(),
+        ),
+      ),
+      eq(null),
+    )
+  }
+
+  @Test
+  fun `recordExpireLicencesJobEvent tracks event`() {
+    val licencesExpired = 26
+    service.recordExpireLicencesJobEvent(licencesExpired)
+
+    verify(telemetryClient).trackEvent(
+      eq("ExpireLicencesJob"),
+      eq(mapOf("licences" to licencesExpired.toString())),
+      eq(null),
+    )
+  }
+
+  @Test
+  fun `recordComReviewEmailJobEvent tracks event`() {
+    val licencesToReview = 52
+    service.recordComReviewEmailJobEvent(licencesToReview)
+
+    verify(telemetryClient).trackEvent(
+      eq("ComReviewEmailJob"),
+      eq(mapOf("licences" to licencesToReview.toString())),
+      eq(null),
+    )
+  }
+
+  @Test
+  fun `recordMigrateStandardConditionsJobEvent tracks event`() {
+    val licencesMigrated = 803
+    service.recordMigrateStandardConditionsJobEvent(licencesMigrated)
+
+    verify(telemetryClient).trackEvent(
+      eq("MigrateStandardConditionsJob"),
+      eq(mapOf("licences" to licencesMigrated.toString())),
+      eq(null),
+    )
+  }
+
+  @Test
+  fun `recordNotifyProbationOfUnapprovedLicencesJobEvent tracks event`() {
+    val emailsSent = 12
+    service.recordNotifyProbationOfUnapprovedLicencesJobEvent(emailsSent)
+
+    verify(telemetryClient).trackEvent(
+      eq("NotifyProbationOfUnapprovedLicencesJob"),
+      eq(mapOf("emailsSent" to emailsSent.toString())),
+      eq(null),
+    )
+  }
+
+  @Test
+  fun `recordTimeOutLicenceJobEvent tracks event`() {
+    val licencesTimedOut = 52
+    service.recordTimeOutLicenceJobEvent(licencesTimedOut)
+
+    verify(telemetryClient).trackEvent(
+      eq("TimeOutLicencesJob"),
+      eq(mapOf("licences" to licencesTimedOut.toString())),
+      eq(null),
+    )
+  }
+
+  @Test
   fun `should track event with correct properties`() {
     // Given
 

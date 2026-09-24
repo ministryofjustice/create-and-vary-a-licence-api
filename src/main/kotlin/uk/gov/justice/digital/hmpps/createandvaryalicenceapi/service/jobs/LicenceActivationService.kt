@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.IS91_RESULT_CODES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.OFFENCE_DESCRIPTION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -30,10 +31,9 @@ class LicenceActivationService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val auditService: AuditService,
+  private val telemetryService: TelemetryService,
   @param:Value("\${feature.toggle.remand.enabled}") private val remandEnabled: Boolean = false,
-
 ) {
-
   @Transactional
   fun licenceActivation() {
     val potentialLicences = licenceRepository.getApprovedLicencesOnOrPassedReleaseDate().associateBy { it.nomsId!! }
@@ -41,6 +41,7 @@ class LicenceActivationService(
     if (potentialLicences.isEmpty()) {
       return
     }
+
     val matchedLicences = prisonerSearchApiClient.searchPrisonersByNomisIds(potentialLicences.keys.toList())
       .map { LicenceWithPrisoner(potentialLicences[it.prisonerNumber]!!, it) }
 
@@ -51,17 +52,28 @@ class LicenceActivationService(
       licencesToActivate.iS91Licences + licencesToActivate.remandLicences + licencesToActivate.standardLicences,
     )
 
+    val numIS91Licences = licencesToActivate.iS91Licences.size
+    val numRemandLicences = licencesToActivate.remandLicences.size
+    val numStandardLicences = licencesToActivate.standardLicences.size
+    val numIneligibleLicences = ineligibleLicences.size
     log.info(
-      "Licence activation job: activating ${licencesToActivate.iS91Licences.size} IS91 licences, " +
-        "${licencesToActivate.remandLicences.size} remand licences, " +
-        "${licencesToActivate.standardLicences.size} standard licences, " +
-        "inactivating ${ineligibleLicences.size} licences",
+      "Licence activation job: activating $numIS91Licences IS91 licences, " +
+        "$numRemandLicences remand licences, " +
+        "$numStandardLicences standard licences, " +
+        "$numIneligibleLicences ineligible licences",
     )
 
     licenceService.activateLicences(licencesToActivate.iS91Licences.map { it.licence }, IS91_LICENCE_ACTIVATION)
     licenceService.activateLicences(licencesToActivate.remandLicences.map { it.licence }, REMAND_LICENCE_ACTIVATION)
     licenceService.activateLicences(licencesToActivate.standardLicences.map { it.licence }, LICENCE_ACTIVATION)
     licenceService.inactivateLicences(ineligibleLicences.map { it.licence }, LICENCE_DEACTIVATION)
+
+    telemetryService.recordActivateLicencesJobEvent(
+      numIS91Licences,
+      numRemandLicences,
+      numStandardLicences,
+      numIneligibleLicences,
+    )
   }
 
   private fun determineActivationEligibility(licences: List<LicenceWithPrisoner>): Pair<List<LicenceWithPrisoner>, List<LicenceWithPrisoner>> {
