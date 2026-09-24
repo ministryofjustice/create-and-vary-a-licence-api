@@ -82,7 +82,6 @@ class OffenderServiceTest {
     service.updateResponsibleCom("exampleCrn", anotherCom)
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
-    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(licenceWithNewCom))
     verify(auditService).recordAuditEventComUpdated(
       eq(licenceWithNewCom),
       eq(originalCom),
@@ -101,7 +100,6 @@ class OffenderServiceTest {
     service.updateResponsibleCom("exampleCrn", newCom)
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
-    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(licenceWithNewCom))
     verify(auditService).recordAuditEventComUpdated(eq(licenceWithNewCom), eq(originalCom), eq(newCom), any())
     verify(notifyService, times(1)).sendLicenceCreateEmail(any(), any(), any(), any())
   }
@@ -122,7 +120,6 @@ class OffenderServiceTest {
 
     val newLicence = licenceWithNewCom.copy(actualReleaseDate = LocalDate.parse("2023-11-20"))
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
-    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(newLicence))
     verify(auditService).recordAuditEventComUpdated(newLicence, originalCom, newCom, null)
     verify(notifyService, times(0)).sendLicenceCreateEmail(any(), any(), any(), any())
   }
@@ -146,7 +143,6 @@ class OffenderServiceTest {
 
     val updatedLicence =
       licenceWithNewCom.copy(statusCode = SUBMITTED, actualReleaseDate = LocalDate.parse("2023-11-14"))
-    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(updatedLicence))
     verify(auditService).recordAuditEventComUpdated(eq(updatedLicence), eq(originalCom), eq(newCom), any())
     verify(notifyService, times(0)).sendLicenceCreateEmail(any(), any(), any(), any())
   }

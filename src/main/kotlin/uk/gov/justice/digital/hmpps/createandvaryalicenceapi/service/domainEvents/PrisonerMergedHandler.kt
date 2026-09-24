@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JacksonException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -24,6 +25,7 @@ class PrisonerMergedHandler(
   private val prisonApiClient: PrisonApiClient,
   @param:Value("\${prisoner.merged.handler.enabled:false}") private val prisonerMergedHandlerEnabled: Boolean = false,
 ) : EventHandler {
+  @Transactional
   override fun handleEvent(message: String) {
     if (!prisonerMergedHandlerEnabled) {
       log.info("Ignoring prisoner merge event as handler is disabled")
