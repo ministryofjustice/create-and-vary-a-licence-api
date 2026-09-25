@@ -18,31 +18,28 @@ class HdcEventsListener(
 
   @SqsListener("hdccvleventsqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun onMessage(rawMessage: String) {
-    log.info("Raw HDC event message received: {}", rawMessage)
+    var eventType: HdcCvlEventType? = null
     try {
+      log.info("Raw HDC event message received: {}", rawMessage)
       val event = mapper.readValue(rawMessage, HdcStatusChangedEvent::class.java)
       log.info("Successfully parsed HDC event | eventType={} | licenceId={}", event.eventType, event.licenceId)
 
-      val eventType = try {
-        HdcCvlEventType.valueOf(event.eventType)
-      } catch (e: IllegalArgumentException) {
-        log.warn("Ignoring HDC event with unknown type {}", event.eventType, e)
-        return
-      }
+      eventType = HdcCvlEventType.valueOf(event.eventType)
 
       log.info("Processing HDC event | eventType={}", eventType)
       when (eventType) {
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
         HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
       }
-      finishedEventProcessing(eventType)
-    } catch (@Suppress("TooGenericExceptionCaught") e: RuntimeException) {
+    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)
       throw e
+    } finally {
+      finishedEventProcessing(eventType)
     }
   }
 
-  fun finishedEventProcessing(eventType: HdcCvlEventType) {
+  fun finishedEventProcessing(eventType: HdcCvlEventType?) {
     log.info("Processed HDC event: {}", eventType)
   }
 }
