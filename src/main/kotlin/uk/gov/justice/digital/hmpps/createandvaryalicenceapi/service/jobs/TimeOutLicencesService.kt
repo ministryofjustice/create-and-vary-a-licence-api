@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import java.time.Clock
@@ -18,6 +19,7 @@ class TimeOutLicencesService(
   private val workingDaysService: WorkingDaysService,
   private val clock: Clock,
   private val licenceService: LicenceService,
+  private val telemetryService: TelemetryService,
 ) {
 
   companion object {
@@ -31,16 +33,21 @@ class TimeOutLicencesService(
     if (workingDaysService.isNonWorkingDay(jobExecutionDate)) {
       return
     }
+
     val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut().filter {
       releaseDateService.isInHardStopPeriod(it.licenceStartDate, it.kind, clock)
     }
+
     if (licencesToTimeOut.isEmpty()) {
       log.info("Job to runTimeOutLicencesService has no licences to time out")
       return
     }
+
     log.info("TimeOutLicencesServiceJob is updating status TIMED_OUT on ${licencesToTimeOut.size} licences")
     updateLicencesStatus(licencesToTimeOut)
+
     log.info("TimeOutLicencesServiceJob updated status TIMED_OUT on ${licencesToTimeOut.size} licences")
+    telemetryService.recordTimeOutLicenceJobEvent(licencesToTimeOut.size)
   }
 
   private fun updateLicencesStatus(licences: List<Licence>) {

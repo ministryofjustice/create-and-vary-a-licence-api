@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceReviewRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -15,6 +16,7 @@ import java.time.LocalTime
 class LicenceReviewOverdueService(
   private val licenceReviewRepository: LicenceReviewRepository,
   private val notifyService: NotifyService,
+  private val telemetryService: TelemetryService,
 ) {
 
   companion object {
@@ -34,6 +36,8 @@ class LicenceReviewOverdueService(
     log.info("Sending review emails for ${licencesToReview.size} hard stop licences")
     sendReviewEmailNotification(licencesToReview)
     log.info("Job to runLicenceReviewOverdueJob finished")
+
+    telemetryService.recordComReviewEmailJobEvent(licencesToReview.size)
   }
 
   private fun sendReviewEmailNotification(licences: List<Licence>) {
