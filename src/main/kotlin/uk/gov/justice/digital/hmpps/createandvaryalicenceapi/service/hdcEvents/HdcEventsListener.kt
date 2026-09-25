@@ -38,10 +38,11 @@ class HdcEventsListener(
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(message)
         HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
       }
-      finishedEventProcessing(messageAttributes.eventType)
     } catch (@Suppress("TooGenericExceptionCaught") e: RuntimeException) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)
       throw e
+    } finally {
+      finishedEventProcessing(messageAttributes.eventType)
     }
   }
 
