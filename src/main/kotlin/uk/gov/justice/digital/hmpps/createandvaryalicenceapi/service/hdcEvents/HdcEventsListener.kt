@@ -21,16 +21,16 @@ class HdcEventsListener(
   fun onMessage(message: Message<String>) {
     val rawMessage = message.payload
     log.info("Raw HDC event message received: {}", rawMessage)
+    var eventType: HdcCvlEventType? = null
     try {
       val event = mapper.readValue(rawMessage, HdcStatusChangedEvent::class.java)
 
-      // Get eventType from SQS message attributes (passed via Spring Message headers)
       val eventTypeValue = message.headers["eventType"] as? String
         ?: throw IllegalArgumentException("Missing eventType in message attributes")
 
       log.info("Successfully parsed HDC event | eventType={} | licenceId={}", eventTypeValue, event.licenceId)
 
-      val eventType = try {
+      eventType = try {
         HdcCvlEventType.valueOf(eventTypeValue)
       } catch (e: IllegalArgumentException) {
         log.warn("Ignoring HDC event with unknown type {}", eventTypeValue, e)
@@ -42,10 +42,13 @@ class HdcEventsListener(
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
         HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
       }
-      finishedEventProcessing(eventType)
     } catch (@Suppress("TooGenericExceptionCaught") e: RuntimeException) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)
       throw e
+    } finally {
+      if (eventType != null) {
+        finishedEventProcessing(eventType)
+      }
     }
   }
 
