@@ -25,7 +25,7 @@ class HdcEventsListener(
       val (eventJson, messageAttributes) = mapper.readValue(rawMessage, HdcMessage::class.java)
         .let { it.message to it.messageAttributes }
       val event = mapper.readValue(eventJson, HdcStatusChangedEvent::class.java)
-      val eventTypeValue = messageAttributes.eventType.value
+      val eventTypeValue = messageAttributes.eventType
 
       log.info("Successfully parsed HDC event | eventType={} | licenceId={}", eventTypeValue, event.licenceId)
 

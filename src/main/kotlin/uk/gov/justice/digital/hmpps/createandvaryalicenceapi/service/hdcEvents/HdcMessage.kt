@@ -8,10 +8,5 @@ data class HdcMessage(
 )
 
 data class HdcMessageAttributes(
-  @field:JsonProperty("eventType") val eventType: HdcEventTypeAttribute,
-)
-
-data class HdcEventTypeAttribute(
-  @field:JsonProperty("Value") val value: String,
-  @field:JsonProperty("Type") val type: String,
+  @field:JsonProperty("eventType") val eventType: String,
 )

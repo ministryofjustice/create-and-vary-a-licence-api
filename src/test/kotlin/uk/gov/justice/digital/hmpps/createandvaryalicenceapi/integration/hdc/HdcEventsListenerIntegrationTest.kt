@@ -13,7 +13,6 @@ import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventTypeAttribute
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcMessage
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcMessageAttributes
@@ -50,9 +49,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val eventJson = mapper.writeValueAsString(event)
     val wrappedMessage = HdcMessage(
       message = eventJson,
-      messageAttributes = HdcMessageAttributes(
-        eventType = HdcEventTypeAttribute(value = HdcCvlEventType.OPT_OUT.toString(), type = "String"),
-      ),
+      messageAttributes = HdcMessageAttributes(eventType = HdcCvlEventType.OPT_OUT.toString()),
     )
     val messageBody = mapper.writeValueAsString(wrappedMessage)
 
