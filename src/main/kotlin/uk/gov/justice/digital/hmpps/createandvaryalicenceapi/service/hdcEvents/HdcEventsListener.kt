@@ -20,23 +20,21 @@ class HdcEventsListener(
 
   @SqsListener("hdccvleventsqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun onMessage(rawMessage: String) {
+    log.info("Raw HDC event message received: {}", rawMessage)
     val (message, _, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
 
-    try {
-      val eventType = try {
-        HdcCvlEventType.valueOf(messageAttributes.eventType.value)
-      } catch (e: IllegalArgumentException) {
-        log.warn("Ignoring HDC event with unknown type {}", messageAttributes.eventType.value, e)
-        return
-      }
-
-      when (eventType) {
-        HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(message)
-        HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
-      }
-    } finally {
-      finishedEventProcessing(messageAttributes.eventType)
+    val eventType = try {
+      HdcCvlEventType.valueOf(messageAttributes.eventType.value)
+    } catch (e: IllegalArgumentException) {
+      log.warn("Ignoring HDC event with unknown type {}", messageAttributes.eventType.value, e)
+      return
     }
+
+    when (eventType) {
+      HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(message)
+      HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
+    }
+    finishedEventProcessing(messageAttributes.eventType)
   }
 
   fun finishedEventProcessing(eventType: EventType) {
