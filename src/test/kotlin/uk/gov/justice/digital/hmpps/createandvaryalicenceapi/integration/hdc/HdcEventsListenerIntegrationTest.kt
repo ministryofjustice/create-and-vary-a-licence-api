@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.test.annotation.DirtiesContext
@@ -13,11 +12,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.EventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Message
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.MessageAttributes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventTypeAttribute
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcMessage
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcMessageAttributes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
 import java.time.Duration
@@ -49,10 +48,11 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     )
 
     val eventJson = mapper.writeValueAsString(event)
-    val wrappedMessage = Message(
+    val wrappedMessage = HdcMessage(
       message = eventJson,
-      messageId = "test-message-id",
-      messageAttributes = MessageAttributes(eventType = EventType(value = HdcCvlEventType.OPT_OUT.toString(), type = "String")),
+      messageAttributes = HdcMessageAttributes(
+        eventType = HdcEventTypeAttribute(value = HdcCvlEventType.OPT_OUT.toString(), type = "String"),
+      ),
     )
     val messageBody = mapper.writeValueAsString(wrappedMessage)
 
@@ -70,7 +70,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     // Verify listener and handler are called, and queue is drained
     awaitAtMost30Secs untilAsserted {
-      verify(hdcEventsListener, times(1)).finishedEventProcessing(anyOrNull())
+      verify(hdcEventsListener, times(1)).finishedEventProcessing(HdcCvlEventType.OPT_OUT)
       verify(hdcStatusChangedHandler).handleOptout(eventJson)
     }
     assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
