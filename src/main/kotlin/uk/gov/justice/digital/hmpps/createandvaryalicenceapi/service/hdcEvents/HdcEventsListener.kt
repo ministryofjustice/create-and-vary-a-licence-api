@@ -20,9 +20,12 @@ class HdcEventsListener(
 
   @SqsListener("hdccvleventsqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun onMessage(rawMessage: String) {
-    val (message, _, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
-
+    log.info("Raw HDC event message received: {}", rawMessage)
     try {
+      val (message, messageId, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
+      log.info("Successfully parsed message | messageId={} | eventType={}", messageId, messageAttributes.eventType.value)
+      log.debug("Message body: {}", message)
+
       val eventType = try {
         HdcCvlEventType.valueOf(messageAttributes.eventType.value)
       } catch (e: IllegalArgumentException) {
@@ -30,12 +33,15 @@ class HdcEventsListener(
         return
       }
 
+      log.info("Processing HDC event | eventType={}", eventType)
       when (eventType) {
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(message)
         HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
       }
-    } finally {
       finishedEventProcessing(messageAttributes.eventType)
+    } catch (@Suppress("TooGenericExceptionCaught") e: RuntimeException) {
+      log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)
+      throw e
     }
   }
 
