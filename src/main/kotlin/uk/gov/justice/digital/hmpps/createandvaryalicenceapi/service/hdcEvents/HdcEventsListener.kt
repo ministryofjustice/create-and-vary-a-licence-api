@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.messaging.Message
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 
@@ -17,15 +18,16 @@ class HdcEventsListener(
   }
 
   @SqsListener("hdccvleventsqueue", factory = "hmppsQueueContainerFactoryProxy")
-  fun onMessage(rawMessage: String) {
+  fun onMessage(message: Message<String>) {
+    val rawMessage = message.payload
     log.info("Raw HDC event message received: {}", rawMessage)
 
     var processedEventType: HdcCvlEventType? = null
     try {
-      val (eventJson, messageAttributes) = mapper.readValue(rawMessage, HdcMessage::class.java)
-        .let { it.message to it.messageAttributes }
-      val event = mapper.readValue(eventJson, HdcStatusChangedEvent::class.java)
-      val eventTypeValue = messageAttributes.eventType
+      val event = mapper.readValue(rawMessage, HdcStatusChangedEvent::class.java)
+      val eventTypeValue = requireNotNull(message.headers["eventType"] as? String) {
+        "Missing eventType in message attributes"
+      }
 
       log.info("Successfully parsed HDC event | eventType={} | licenceId={}", eventTypeValue, event.licenceId)
 
@@ -40,7 +42,7 @@ class HdcEventsListener(
       log.info("Processing HDC event | eventType={}", eventType)
 
       when (eventType) {
-        HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(eventJson, eventType)
+        HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage, eventType)
         HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {

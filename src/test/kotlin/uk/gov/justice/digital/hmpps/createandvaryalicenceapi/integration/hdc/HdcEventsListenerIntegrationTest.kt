@@ -14,8 +14,6 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcMessage
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcMessageAttributes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
 import java.time.Duration
@@ -46,16 +44,11 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     )
 
     val eventJson = mapper.writeValueAsString(event)
-    val wrappedMessage = HdcMessage(
-      message = eventJson,
-      messageAttributes = HdcMessageAttributes(eventType = HdcCvlEventType.OPT_OUT.toString()),
-    )
-    val messageBody = mapper.writeValueAsString(wrappedMessage)
 
     hdcCvlEventsSqsClient.sendMessage(
       SendMessageRequest.builder()
         .queueUrl(hdcCvlEventsQueueUrl)
-        .messageBody(messageBody)
+        .messageBody(eventJson)
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(HdcCvlEventType.OPT_OUT.toString()).build(),
