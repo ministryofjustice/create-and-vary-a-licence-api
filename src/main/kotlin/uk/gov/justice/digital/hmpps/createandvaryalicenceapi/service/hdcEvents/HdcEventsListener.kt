@@ -24,7 +24,7 @@ class HdcEventsListener(
       val event = mapper.readValue(rawMessage, HdcStatusChangedEvent::class.java)
       log.info("Successfully parsed HDC event | eventType={} | licenceId={}", event.eventType, event.licenceId)
 
-      eventType = HdcCvlEventType.valueOf(event.eventType)
+      eventType = event.eventType
 
       log.info("Processing HDC event | eventType={}", eventType)
       when (eventType) {

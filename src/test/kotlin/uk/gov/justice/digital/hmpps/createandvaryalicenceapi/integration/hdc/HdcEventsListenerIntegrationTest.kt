@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.test.annotation.DirtiesContext
@@ -39,7 +39,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
   @Test
   fun `An HDC opt out event is processed`() {
     val event = HdcStatusChangedEvent(
-      eventType = HdcCvlEventType.OPT_OUT.toString(),
+      eventType = HdcCvlEventType.OPT_OUT,
       occurredAt = LocalDateTime.now(),
       licenceId = 123L,
       bookingId = 456L,
@@ -70,7 +70,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     // Verify listener and handler are called, and queue is drained
     awaitAtMost30Secs untilAsserted {
-      verify(hdcEventsListener, times(1)).finishedEventProcessing(any())
+      verify(hdcEventsListener, times(1)).finishedEventProcessing(anyOrNull())
       verify(hdcStatusChangedHandler).handleOptout(eventJson)
     }
     assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
