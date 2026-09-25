@@ -60,7 +60,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     // Verify listener and handler are called, and queue is drained
     awaitAtMost30Secs untilAsserted {
       verify(hdcEventsListener, times(1)).finishedEventProcessing(HdcCvlEventType.OPT_OUT)
-      verify(hdcStatusChangedHandler).handleOptout(eventJson, HdcCvlEventType.OPT_OUT)
+      verify(hdcStatusChangedHandler).handleOptout(eventJson)
     }
     assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }

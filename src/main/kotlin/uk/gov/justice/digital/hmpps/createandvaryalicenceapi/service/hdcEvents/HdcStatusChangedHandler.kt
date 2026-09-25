@@ -12,12 +12,11 @@ class HdcStatusChangedHandler(
     private val log = LoggerFactory.getLogger(HdcStatusChangedHandler::class.java)
   }
 
-  fun handleOptout(message: String, eventType: HdcCvlEventType) {
+  fun handleOptout(message: String) {
     val event = mapper.readValue(message, HdcStatusChangedEvent::class.java)
 
     log.info(
-      "HDC opt-out processed: eventType={} occurredAt={} licenceId={} bookingId={} nomsNumber={} triggeredBy={} reason={}",
-      eventType,
+      "HDC opt-out processed: occurredAt={} licenceId={} bookingId={} nomsNumber={} triggeredBy={} reason={}",
       event.occurredAt,
       event.licenceId,
       event.bookingId,

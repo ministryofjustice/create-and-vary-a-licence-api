@@ -42,7 +42,7 @@ class HdcEventsListener(
       log.info("Processing HDC event | eventType={}", eventType)
 
       when (eventType) {
-        HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage, eventType)
+        HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
         HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
