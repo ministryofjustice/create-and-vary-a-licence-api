@@ -97,13 +97,6 @@ abstract class IntegrationTestBase {
   protected val domainEventsSqsClient by lazy { domainEventsQueue.sqsClient }
   protected val domainEventsQueueUrl by lazy { domainEventsQueue.queueUrl }
 
-  protected val hdcCvlEventsQueue by lazy {
-    hmppsQueueService.findByQueueId("hdccvleventsqueue")
-      ?: throw MissingQueueException("HmppsQueue hdccvleventsqueue not found")
-  }
-  protected val hdcCvlEventsSqsClient by lazy { hdcCvlEventsQueue.sqsClient }
-  protected val hdcCvlEventsQueueUrl by lazy { hdcCvlEventsQueue.queueUrl }
-
   protected val prisonEventsTopic by lazy {
     hmppsQueueService.findByTopicId("prisonevents")
       ?: throw MissingQueueException("HmppsTopic prisonevents not found")
@@ -148,10 +141,6 @@ abstract class IntegrationTestBase {
     await untilCallTo {
       domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueue.queueUrl).get()
     } matches { it == 0 }
-    hdcCvlEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(hdcCvlEventsQueue.queueUrl).build())
-    await untilCallTo {
-      hdcCvlEventsQueue.sqsClient.countMessagesOnQueue(hdcCvlEventsQueue.queueUrl).get()
-    } matches { it == 0 }
     reset(telemetryClient)
   }
 
@@ -161,8 +150,6 @@ abstract class IntegrationTestBase {
   }
 
   fun getNumberOfMessagesCurrentlyOnQueue(): Int? = domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueueUrl).get()
-
-  fun getNumberOfMessagesCurrentlyOnHdcQueue(): Int? = hdcCvlEventsQueue.sqsClient.countMessagesOnQueue(hdcCvlEventsQueueUrl).get()
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
