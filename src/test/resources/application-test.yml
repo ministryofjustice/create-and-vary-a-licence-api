@@ -89,10 +89,6 @@ hmpps:
         dlqName: domainevents-queue-dlq
         subscribeTopicId: domainevents
         dlqMaxReceiveCount: 2
-      hdccvleventsqueue:
-        queueName: hmpps_hdc_api_queue
-        dlqName: hmpps_hdc_api_dlq
-        dlqMaxReceiveCount: 2
       prisoneventsqueue:
         queueName: prisonevents-queue
         dlqName: prisonevents-queue-dlq
@@ -110,7 +106,7 @@ hmpps:
       attachments-expected: true
       # When changing expected schema version this should act as a prompt to consider whether SAR requires updating
       # check with the rest of the team to see if this is required
-      expected-flyway-schema-version: 86
+      expected-flyway-schema-version: 87
       expected-jpa-entity-schema:
         path: /sar/entity-schema.json
       expected-api-response:
