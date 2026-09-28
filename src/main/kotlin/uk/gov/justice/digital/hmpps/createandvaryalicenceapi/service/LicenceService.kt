@@ -61,7 +61,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.TIME_SERVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -617,23 +616,15 @@ class LicenceService(
     val licence = getLicence(licenceId)
     val creator = getCommunityOffenderManagerForCurrentUser()
 
-    val (kind, licenceCopy) = when (licence) {
-      is HdcLicence -> {
-        HDC_VARIATION to LicenceFactory.createHdcVariation(licence, creator)
-      }
-
-      is HdcVariationLicence -> {
-        HDC_VARIATION to LicenceFactory.createHdcVariation(licence, creator)
-      }
-
-      else -> {
-        VARIATION to LicenceFactory.createVariation(licence, creator)
-      }
+    val licenceCopy = when (licence) {
+      is HdcLicence -> LicenceFactory.createHdcVariation(licence, creator)
+      is HdcVariationLicence -> LicenceFactory.createHdcVariation(licence, creator)
+      else -> LicenceFactory.createVariation(licence, creator)
     }
 
     val licenceVariation = populateCopy(licence, licenceCopy)
-    createLicenceEventForCopy(kind, licence, licenceVariation, creator)
-    createAuditEventForCopy(kind, licence, licenceVariation, creator)
+    createLicenceEventForCopy(licence, licenceVariation, creator)
+    createAuditEventForCopy(licence, licenceVariation, creator)
 
     telemetryService.recordLicenceCreatedEvent(licenceVariation)
     return CreateVariationResponse(licenceVariation.id)
@@ -666,8 +657,8 @@ class LicenceService(
     }
 
     val licenceCopy = populateCopy(licence, copyToEdit)
-    createLicenceEventForCopy(licence.kind, licence, licenceCopy, creator)
-    createAuditEventForCopy(licence.kind, licence, licenceCopy, creator)
+    createLicenceEventForCopy(licence, licenceCopy, creator)
+    createAuditEventForCopy(licence, licenceCopy, creator)
 
     notifyOmuReApprovalNeeded(licence)
     return EditLicenceResponse(licenceCopy.id)
@@ -924,7 +915,8 @@ class LicenceService(
     )
   }
 
-  private fun populateCopy(
+  @Transactional
+  fun populateCopy(
     original: EntityLicence,
     copy: EntityLicence,
   ): EntityLicence {
@@ -968,7 +960,6 @@ class LicenceService(
   }
 
   private fun createLicenceEventForCopy(
-    kind: LicenceKind,
     original: EntityLicence,
     copy: EntityLicence,
     creator: CommunityOffenderManager,
@@ -981,7 +972,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = copy.id,
-        eventType = kind.copyEventType(),
+        eventType = copy.kind.copyEventType(),
         username = creator.username,
         forenames = creator.firstName,
         surname = creator.lastName,
@@ -991,12 +982,11 @@ class LicenceService(
   }
 
   private fun createAuditEventForCopy(
-    kind: LicenceKind,
     original: EntityLicence,
     copy: EntityLicence,
     creator: CommunityOffenderManager,
   ) {
-    val newStatus = kind.initialStatus()
+    val newStatus = copy.kind.initialStatus()
     val auditEventSummary = when (newStatus) {
       VARIATION_IN_PROGRESS -> "Licence varied for ${copy.forename} ${copy.surname}"
       IN_PROGRESS -> "New licence version created for ${copy.forename} ${copy.surname}"
