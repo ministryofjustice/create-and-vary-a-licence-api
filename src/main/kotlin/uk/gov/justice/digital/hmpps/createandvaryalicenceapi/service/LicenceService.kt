@@ -963,9 +963,8 @@ class LicenceService(
 
     // Save now so the copied conditions receive their IDs.
     copy.additionalConditions.addAll(copiedAdditionalConditions)
-    licenceRepository.saveAndFlush(copy)
 
-    return copy
+    return licenceRepository.saveAndFlush(copy)
   }
 
   private fun createLicenceEventForCopy(
