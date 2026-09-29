@@ -20,42 +20,35 @@ class HdcEventsListener(
   @SqsListener("hdccvleventsqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun onMessage(message: Message<String>) {
     val rawMessage = message.payload
-    log.debug("HDC event message received: {}", rawMessage)
+    log.info("Raw HDC event message received: {}", rawMessage)
 
-    var processedEventType: HdcCvlEventType? = null
+    var eventType: HdcCvlEventType? = null
     try {
       val event = mapper.readValue(rawMessage, HdcStatusChangedEvent::class.java)
-      val eventType = getHdcEventType(message)
-
-      log.debug("Successfully parsed HDC event | eventType={} | licenceId={}", eventType, event.licenceId)
-
-      processedEventType = eventType
-
+      eventType = getHdcEventType(message)
+      log.info("Successfully parsed HDC event | eventType={} | licenceId={}", eventType, event.licenceId)
       when (eventType) {
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
-        HdcCvlEventType.POSTPONE -> log.warn("POSTPONE event received but handler not yet implemented - licenceId={}", event.licenceId)
+        HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-      log.error("Failed to process HDC message", e)
+      log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)
       throw e
     } finally {
-      processedEventType?.let(::finishedEventProcessing)
+      finishedEventProcessing(eventType)
     }
   }
 
-  private fun getHdcEventType(message: Message<String>): HdcCvlEventType {
+  private fun getHdcEventType(
+    message: Message<String>,
+  ): HdcCvlEventType {
     val eventTypeValue = requireNotNull(message.headers["eventType"] as? String) {
       "Missing eventType in message attributes"
     }
-    return runCatching {
-      HdcCvlEventType.valueOf(eventTypeValue)
-    }.getOrElse { e ->
-      log.error("Unknown HDC event type: {}", eventTypeValue, e)
-      throw e
-    }
+    return HdcCvlEventType.valueOf(eventTypeValue)
   }
 
-  fun finishedEventProcessing(eventType: HdcCvlEventType) {
+  fun finishedEventProcessing(eventType: HdcCvlEventType?) {
     log.info("Processed HDC event: {}", eventType)
   }
 }
