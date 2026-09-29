@@ -20,36 +20,38 @@ class HdcEventsListener(
   @SqsListener("hdccvleventsqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun onMessage(message: Message<String>) {
     val rawMessage = message.payload
-    log.info("Raw HDC event message received: {}", rawMessage)
+    log.debug("HDC event message received: {}", rawMessage)
 
     var processedEventType: HdcCvlEventType? = null
     try {
       val event = mapper.readValue(rawMessage, HdcStatusChangedEvent::class.java)
-      val eventTypeValue = requireNotNull(message.headers["eventType"] as? String) {
-        "Missing eventType in message attributes"
-      }
+      val eventType = getHdcEventType(message)
 
-      log.info("Successfully parsed HDC event | eventType={} | licenceId={}", eventTypeValue, event.licenceId)
-
-      val eventType = runCatching {
-        HdcCvlEventType.valueOf(eventTypeValue)
-      }.getOrElse { e ->
-        log.error("Unknown HDC event type: {}", eventTypeValue, e)
-        throw e
-      }
+      log.debug("Successfully parsed HDC event | eventType={} | licenceId={}", eventType, event.licenceId)
 
       processedEventType = eventType
-      log.info("Processing HDC event | eventType={}", eventType)
 
       when (eventType) {
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
-        HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
+        HdcCvlEventType.POSTPONE -> log.warn("POSTPONE event received but handler not yet implemented - licenceId={}", event.licenceId)
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-      log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)
+      log.error("Failed to process HDC message", e)
       throw e
     } finally {
       processedEventType?.let(::finishedEventProcessing)
+    }
+  }
+
+  private fun getHdcEventType(message: Message<String>): HdcCvlEventType {
+    val eventTypeValue = requireNotNull(message.headers["eventType"] as? String) {
+      "Missing eventType in message attributes"
+    }
+    return runCatching {
+      HdcCvlEventType.valueOf(eventTypeValue)
+    }.getOrElse { e ->
+      log.error("Unknown HDC event type: {}", eventTypeValue, e)
+      throw e
     }
   }
 
