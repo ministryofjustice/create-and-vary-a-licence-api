@@ -34,8 +34,8 @@ class HdcEventsListener(
       val eventType = runCatching {
         HdcCvlEventType.valueOf(eventTypeValue)
       }.getOrElse { e ->
-        log.warn("Ignoring HDC event with unknown type {}", eventTypeValue, e)
-        return
+        log.error("Unknown HDC event type: {}", eventTypeValue, e)
+        throw e
       }
 
       processedEventType = eventType
