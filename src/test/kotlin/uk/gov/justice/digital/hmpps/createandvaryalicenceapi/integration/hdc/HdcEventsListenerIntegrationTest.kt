@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.test.annotation.DirtiesContext
@@ -61,6 +62,39 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     awaitAtMost30Secs untilAsserted {
       verify(hdcEventsListener, times(1)).finishedEventProcessing(HdcCvlEventType.OPT_OUT)
       verify(hdcStatusChangedHandler).handleOptout(eventJson)
+    }
+    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
+  }
+
+  @Test
+  fun `An HDC event with unknown event type is sent to DLQ`() {
+    val event = HdcStatusChangedEvent(
+      occurredAt = LocalDateTime.now(),
+      licenceId = 123L,
+      bookingId = 456L,
+      nomsNumber = "A1234BC",
+      triggeredBy = "test.user",
+      reason = "Some reason",
+    )
+
+    val eventJson = mapper.writeValueAsString(event)
+
+    hdcCvlEventsSqsClient.sendMessage(
+      SendMessageRequest.builder()
+        .queueUrl(hdcCvlEventsQueueUrl)
+        .messageBody(eventJson)
+        .messageAttributes(
+          mapOf(
+            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue("UNKNOWN_TYPE").build(),
+          ),
+        )
+        .build(),
+    )
+
+    // Wait for message to be retried 3 times and sent to DLQ
+    awaitAtMost30Secs untilAsserted {
+      verify(hdcEventsListener, times(0)).finishedEventProcessing(any())
+      verify(hdcStatusChangedHandler, times(0)).handleOptout(eventJson)
     }
     assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
