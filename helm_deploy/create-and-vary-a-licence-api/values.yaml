@@ -42,6 +42,7 @@ generic-service:
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
     HDC_ENABLED: true
     HDC_CREATION_ENABLED: false
+    HDC_EVENT_LISTENER_DISABLED: false
     PRISONER_MERGED_HANDLER_ENABLED: false
     REMAND_ENABLED: true
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-10-01
@@ -68,6 +69,8 @@ generic-service:
       DB_PASS: "database_password"
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
+    sqs-hdc-cvl-events-queue-secret:
+      HMPPS_SQS_QUEUES_HDCCVLEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
 
   allowlist:
     dxw-vpn: 54.76.254.148/32
@@ -133,3 +136,10 @@ jobs:
     path: /deactivate-progression-licences
     cron: "30 3 1 12 *" # 03:30 UTC on 1st December each year
     allowRetry: false
+
+  - name: migrate-standard-conditions-v4-job
+    enabled: true
+    path: /migrate-standard-conditions?policyVersion=4.0
+    cron: "30 00 01 10 *" # 00:30 UTC on 1st October each year
+    allowRetry: false
+
