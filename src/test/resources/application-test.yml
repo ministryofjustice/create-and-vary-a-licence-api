@@ -92,7 +92,7 @@ hmpps:
       hdccvleventsqueue:
         queueName: hmpps_hdc_api_queue
         dlqName: hmpps_hdc_api_dlq
-        dlqMaxReceiveCount: 2
+        dlqMaxReceiveCount: 1
       prisoneventsqueue:
         queueName: prisonevents-queue
         dlqName: prisonevents-queue-dlq

@@ -996,7 +996,7 @@ class LicenceService(
       AuditEvent(
         licenceId = original.id,
         username = creator.username,
-        fullName = "${creator.firstName} ${creator.lastName}",
+        fullName = creator.fullName,
         summary = auditEventSummary,
         detail = "Old ID ${original.id}, new ID ${copy.id} type ${copy.typeCode} status ${copy.statusCode.name} version ${copy.version}",
       ),

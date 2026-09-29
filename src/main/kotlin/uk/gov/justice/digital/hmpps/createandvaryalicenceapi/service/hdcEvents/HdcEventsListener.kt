@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.EventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Message
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.MessageAttributes
 
 @ConditionalOnProperty(name = ["hdc.event.listener.disabled"], havingValue = "false", matchIfMissing = true)
 @Service
@@ -23,12 +24,7 @@ class HdcEventsListener(
     val (message, _, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
 
     try {
-      val eventType = try {
-        HdcCvlEventType.valueOf(messageAttributes.eventType.value)
-      } catch (e: IllegalArgumentException) {
-        log.warn("Ignoring HDC event with unknown type {}", messageAttributes.eventType.value, e)
-        return
-      }
+      val eventType = getEventType(messageAttributes)
 
       when (eventType) {
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(message)
@@ -38,6 +34,8 @@ class HdcEventsListener(
       finishedEventProcessing(messageAttributes.eventType)
     }
   }
+
+  private fun getEventType(messageAttributes: MessageAttributes): HdcCvlEventType = HdcCvlEventType.valueOf(messageAttributes.eventType.value)
 
   fun finishedEventProcessing(eventType: EventType) {
     log.info("Processed HDC event: {}", eventType)
