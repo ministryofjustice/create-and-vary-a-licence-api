@@ -26,9 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
@@ -97,69 +95,6 @@ class LicenceConditionServiceTest {
       staffRepository,
       uploadFileConditionsService,
     )
-  }
-
-  @Nested
-  inner class `update standard conditions` {
-    @Test
-    fun `update standard conditions for an individual licence`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(policyService.currentPolicy(any())).thenReturn(aPolicy)
-      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
-
-      val apConditions = listOf(
-        StandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-      )
-
-      val pssConditions = listOf(
-        StandardCondition(id = 2, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-        StandardCondition(id = 3, code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
-      )
-
-      service.updateStandardConditions(
-        1,
-        UpdateStandardConditionDataRequest(
-          standardLicenceConditions = apConditions,
-          standardPssConditions = pssConditions,
-        ),
-      )
-
-      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
-
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateStandardCondition(any(), any(), any())
-
-      assertThat(licenceCaptor.value)
-        .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf(aCom.username, aCom))
-
-      assertThat(licenceCaptor.value.standardConditions).containsExactly(
-        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-          conditionCode = "goodBehaviour",
-          conditionSequence = 1,
-          conditionText = "Be of good behaviour",
-          conditionType = "AP",
-          licence = aLicenceEntity,
-          conditionVersion = aLicenceEntity.version,
-        ),
-        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-          conditionCode = "goodBehaviour",
-          conditionSequence = 1,
-          conditionText = "Be of good behaviour",
-          conditionType = "PSS",
-          licence = aLicenceEntity,
-          conditionVersion = aLicenceEntity.version,
-        ),
-        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-          conditionCode = "doNotBreakLaw",
-          conditionSequence = 2,
-          conditionText = "Do not break any law",
-          conditionType = "PSS",
-          licence = aLicenceEntity,
-          conditionVersion = aLicenceEntity.version,
-        ),
-      )
-    }
   }
 
   @Nested
