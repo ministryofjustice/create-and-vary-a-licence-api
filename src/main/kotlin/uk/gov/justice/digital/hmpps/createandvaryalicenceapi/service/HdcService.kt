@@ -333,11 +333,11 @@ class HdcService(
         copy = crdLicenceFactory.createFromHdc(licence, LicenceStatus.IN_PROGRESS),
       )
 
-      addConvertAuditToOldLicence(licence, newLicence)
+      addAuditToOldLicence(licence, newLicence)
     }
   }
 
-  private fun addConvertAuditToOldLicence(
+  private fun addAuditToOldLicence(
     licence: HdcLicenceEntity,
     newLicence: Licence,
   ) {

@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 @Service
 class HdcStatusChangedHandler(
   private val mapper: ObjectMapper,
-  private val licenceService: HdcService,
+  private val hdcService: HdcService,
 ) {
 
   private val log = LoggerFactory.getLogger(HdcStatusChangedHandler::class.java)
@@ -28,6 +28,6 @@ class HdcStatusChangedHandler(
       event.reason,
     )
 
-    licenceService.convertToCrdLicence(event.nomsNumber)
+    hdcService.convertToCrdLicence(event.nomsNumber)
   }
 }
