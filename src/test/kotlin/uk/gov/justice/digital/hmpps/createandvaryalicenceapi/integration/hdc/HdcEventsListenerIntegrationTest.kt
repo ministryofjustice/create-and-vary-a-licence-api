@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.test.annotation.DirtiesContext
@@ -15,9 +14,6 @@ import org.springframework.test.context.jdbc.SqlGroup
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.EventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Message
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.MessageAttributes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
@@ -81,7 +77,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     hdcCvlEventsSqsClient.sendMessage(
       SendMessageRequest.builder()
         .queueUrl(hdcCvlEventsQueueUrl)
-        .messageBody(messageBody)
+        .messageBody(eventJson)
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String")
