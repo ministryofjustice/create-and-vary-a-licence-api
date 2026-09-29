@@ -25,7 +25,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.PolicyUpdateResponse
@@ -349,73 +348,6 @@ class ConditionController(
     @Valid @RequestBody
     request: AdditionalConditionsRequest,
   ) = licenceConditionService.updateAdditionalConditions(licenceId, request)
-
-  /**
-   * This functionality to set standard conditions from the frontend could be removed - we should be able to set/refresh standard conditions at various points in the licence lifecycle.
-   */
-  @Tag(name = Tags.LICENCE_CONDITIONS)
-  @PutMapping("/id/{licenceId}/standard-conditions")
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Update the standard conditions for a licence.",
-    description = "Replace the standard conditions against a licence if policy changes. " +
-      "Existing data for a condition which does not appear in this request will be deleted. " +
-      "Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Standard conditions updated",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun updateStandardConditions(
-    @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody
-    request: UpdateStandardConditionDataRequest,
-  ) = licenceConditionService.updateStandardConditions(licenceId, request)
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping(value = ["/id/{licenceId}/additional-conditions/condition/{additionalConditionId}"])

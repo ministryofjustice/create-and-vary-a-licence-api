@@ -12,6 +12,7 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
     SPRINGDOC_API-DOCS_ENABLED: "true"
     SPRINGDOC_SWAGGER-UI_ENABLED: "true"
+    HDC_EVENT_LISTENER_DISABLED: "true"
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     HMPPS_AUTH_TOKEN_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_DELIUS_API_URL: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
@@ -32,13 +33,10 @@ generic-service:
     PRISONER_MERGED_HANDLER_ENABLED: true
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-01-14
     PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE: 2026-12-31
-    HDC_EVENT_LISTENER_DISABLED: false
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
       HMPPS_SQS_QUEUES_DOMAINEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
-    sqs-hdc-cvl-events-queue-secret:
-      HMPPS_SQS_QUEUES_HDCCVLEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
 
     sqs-prison-events-queue-secret:
       HMPPS_SQS_QUEUES_PRISONEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
