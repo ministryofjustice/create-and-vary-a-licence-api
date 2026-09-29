@@ -20,9 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
 
@@ -115,19 +113,6 @@ class ConditionControllerTest {
   }
 
   @Test
-  fun `update the list of standard conditions`() {
-    mvc.perform(
-      put("/licence/id/4/standard-conditions")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateStandardConditionRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceConditionService, times(1)).updateStandardConditions(4, anUpdateStandardConditionRequest)
-  }
-
-  @Test
   fun `update the data associated with an additional condition`() {
     mvc.perform(
       put("/licence/id/4/additional-conditions/condition/1")
@@ -145,14 +130,6 @@ class ConditionControllerTest {
   }
 
   private companion object {
-
-    val anUpdateStandardConditionRequest = UpdateStandardConditionDataRequest(
-      standardLicenceConditions = listOf(
-        StandardCondition(id = 1, code = "code1", sequence = 0, text = "text"),
-        StandardCondition(id = 2, code = "code2", sequence = 1, text = "text"),
-        StandardCondition(id = 3, code = "code3", sequence = 2, text = "text"),
-      ),
-    )
 
     val anAddAdditionalConditionRequest = AddAdditionalConditionRequest(
       conditionCode = "code",

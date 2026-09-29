@@ -14,9 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.PolicyUpdateResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
@@ -30,40 +28,6 @@ private const val EM_CONDITION_CODE = "fd129172-bdd3-4d97-a4a0-efd7b47a49d4"
 class LicenceConditionIntegrationTest : IntegrationTestBase() {
   @Autowired
   lateinit var additionalConditionRepository: AdditionalConditionRepository
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `Update the standard conditions`() {
-    webTestClient.put()
-      .uri("/licence/id/1/standard-conditions")
-      .bodyValue(anUpdateStandardConditionRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = cvlRoles()))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody<Licence>()
-      .returnResult().responseBody
-
-    assertThat(result.standardLicenceConditions)
-      .extracting<Tuple> { tuple(it.code, it.text, it.sequence) }
-      .containsAll(
-        listOf(
-          tuple("code1", "text", 0),
-          tuple("code2", "text", 1),
-          tuple("code3", "text", 2),
-        ),
-      )
-  }
 
   @Test
   @Sql(
@@ -327,14 +291,6 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val anUpdateStandardConditionRequest = UpdateStandardConditionDataRequest(
-      standardLicenceConditions = listOf(
-        StandardCondition(id = 1, code = "code1", sequence = 0, text = "text"),
-        StandardCondition(id = 2, code = "code2", sequence = 1, text = "text"),
-        StandardCondition(id = 3, code = "code3", sequence = 2, text = "text"),
-      ),
-    )
-
     val anAddAdditionalConditionRequest = AddAdditionalConditionRequest(
       conditionCode = CONDITION_CODE,
       conditionType = "AP",

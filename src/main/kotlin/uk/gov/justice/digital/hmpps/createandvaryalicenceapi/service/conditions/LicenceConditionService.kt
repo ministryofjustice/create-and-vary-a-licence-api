@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.PolicyUpdateResponse
@@ -30,7 +29,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Li
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transform
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityAdditional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityAdditionalData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityStandard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 
 @Service
@@ -45,28 +43,6 @@ class LicenceConditionService(
   private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService,
   private val uploadFileConditionsService: UploadFileConditionsService,
 ) {
-  @Transactional
-  fun updateStandardConditions(licenceId: Long, request: UpdateStandardConditionDataRequest) {
-    val licenceEntity = getLicence(licenceId)
-
-    val entityStandardLicenceConditions =
-      request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
-    val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
-
-    val username = getCurrentUserName()
-
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
-
-    licenceEntity.updateConditions(
-      updatedStandardConditions = entityStandardLicenceConditions + entityStandardPssConditions,
-      staffMember = staffMember,
-    )
-
-    val currentPolicyVersion = licencePolicyService.currentPolicy(licenceEntity.licenceStartDate).version
-
-    licenceRepository.saveAndFlush(licenceEntity)
-    auditService.recordAuditEventUpdateStandardCondition(licenceEntity, currentPolicyVersion, staffMember)
-  }
 
   @Transactional
   fun updateStandardConditions(licence: Licence) {
