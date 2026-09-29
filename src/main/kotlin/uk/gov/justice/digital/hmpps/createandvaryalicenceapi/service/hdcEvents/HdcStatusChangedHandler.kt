@@ -16,8 +16,7 @@ class HdcStatusChangedHandler(
     val event = mapper.readValue(message, HdcStatusChangedEvent::class.java)
 
     log.info(
-      "HDC opt-out processed: eventType={} occurredAt={} licenceId={} bookingId={} nomsNumber={} triggeredBy={} reason={}",
-      event.eventType,
+      "HDC opt-out processed: occurredAt={} licenceId={} bookingId={} nomsNumber={} triggeredBy={} reason={}",
       event.occurredAt,
       event.licenceId,
       event.bookingId,
