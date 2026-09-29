@@ -42,7 +42,6 @@ generic-service:
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
     HDC_ENABLED: true
     HDC_CREATION_ENABLED: false
-    HDC_EVENT_LISTENER_DISABLED: false
     PRISONER_MERGED_HANDLER_ENABLED: false
     REMAND_ENABLED: true
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-10-01
@@ -69,8 +68,6 @@ generic-service:
       DB_PASS: "database_password"
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
-    sqs-hdc-cvl-events-queue-secret:
-      HMPPS_SQS_QUEUES_HDCCVLEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
 
   allowlist:
     dxw-vpn: 54.76.254.148/32
