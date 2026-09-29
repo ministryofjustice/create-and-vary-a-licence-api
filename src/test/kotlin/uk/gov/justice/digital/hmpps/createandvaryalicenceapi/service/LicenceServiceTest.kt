@@ -1961,7 +1961,8 @@ class LicenceServiceTest {
     whenever(licenceRepository.save(any<Licence>())).thenReturn(aLicenceEntity)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
-
+    whenever(licenceRepository.saveAndFlush(any<Licence>()))
+      .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
     service.createVariation(1L)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -1993,7 +1994,8 @@ class LicenceServiceTest {
     whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcVariationLicence)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
-
+    whenever(licenceRepository.saveAndFlush(any<Licence>()))
+      .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
     service.createVariation(1L)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -2035,7 +2037,8 @@ class LicenceServiceTest {
     whenever(licenceRepository.save(any<Licence>())).thenReturn(anHdcVariationLicence)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
-
+    whenever(licenceRepository.saveAndFlush(any<Licence>()))
+      .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
     service.createVariation(1L)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -2081,6 +2084,9 @@ class LicenceServiceTest {
         typeCode = LicenceType.AP_PSS,
       ),
     )
+    whenever(licenceRepository.saveAndFlush(any<Licence>()))
+      .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
+
     val newLicenceCaptor = argumentCaptor<Licence>()
 
     service.createVariation(1L)
@@ -2110,6 +2116,8 @@ class LicenceServiceTest {
     whenever(licenceRepository.save(any<Licence>())).thenReturn(aTimeServedLicence)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+    whenever(licenceRepository.saveAndFlush(any<Licence>()))
+      .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
 
     service.createVariation(1L)
 
@@ -2149,6 +2157,8 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
     val auditEventCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    whenever(licenceRepository.saveAndFlush(any<Licence>()))
+      .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
     service.editLicence(1L)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -2190,6 +2200,8 @@ class LicenceServiceTest {
     )
 
     whenever(licenceRepository.save(any<Licence>())).thenReturn(approvedLicence)
+    whenever(licenceRepository.saveAndFlush(any<Licence>()))
+      .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
 
     val newLicenceCaptor = argumentCaptor<Licence>()
     service.editLicence(1L)
@@ -2232,7 +2244,8 @@ class LicenceServiceTest {
       ),
     )
     whenever(licenceRepository.save(any<Licence>())).thenReturn(approvedLicence)
-
+    whenever(licenceRepository.saveAndFlush(any<Licence>()))
+      .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
     service.editLicence(1L)
     verify(notifyService, times(1)).sendLicenceToOmuForReApprovalEmail(
       eq("test@test.com"),
@@ -4055,7 +4068,8 @@ class LicenceServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
       val auditEventCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-
+      whenever(licenceRepository.saveAndFlush(any<Licence>()))
+        .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
       service.editLicence(1L)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -4102,7 +4116,8 @@ class LicenceServiceTest {
       whenever(licenceRepository.save(any<Licence>())).thenReturn(approvedLicence)
 
       val newLicenceCaptor = argumentCaptor<Licence>()
-
+      whenever(licenceRepository.saveAndFlush(any<Licence>()))
+        .thenAnswer { invocation -> invocation.getArgument<Licence>(0) }
       service.editLicence(1L)
 
       verify(licenceRepository, times(1)).saveAndFlush(newLicenceCaptor.capture())
