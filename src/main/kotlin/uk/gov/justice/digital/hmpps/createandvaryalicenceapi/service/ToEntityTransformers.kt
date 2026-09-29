@@ -13,32 +13,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes as EntityCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 /*
 ** Functions which transform API models into their JPA entity objects equivalents.
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
-
-// Transform a list of model standard conditions to a list of entity StandardConditions, setting the licenceId
-fun List<ModelStandardCondition>.transformToEntityStandard(
-  licence: EntityLicence,
-  conditionType: String,
-): List<EntityStandardCondition> = map { term -> transform(term, licence, conditionType) }
-
-fun transform(model: ModelStandardCondition, licence: EntityLicence, conditionType: String): EntityStandardCondition = EntityStandardCondition(
-  licence = licence,
-  conditionCode = model.code,
-  conditionSequence = model.sequence,
-  conditionText = model.text,
-  conditionType = conditionType,
-  conditionVersion = licence.version,
-)
 
 fun transform(
   model: AdditionalConditionRequest,
