@@ -1,20 +1,25 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Lazy
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
@@ -23,6 +28,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -34,15 +41,19 @@ class HdcService(
   private val hdcApiClient: HdcApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val licenceRepository: LicenceRepository,
+  private val hdcLicenceRepository: HdcLicenceRepository,
   private val staffRepository: StaffRepository,
   private val auditService: AuditService,
   private val clock: Clock,
+  private val crdLicenceFactory: CrdLicenceFactory,
   @param:Value("\${feature.toggle.hdcCreation.enabled}") private val useCurrentHdcStatus: Boolean = false,
 ) {
 
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
-  }
+  @Lazy
+  @Autowired
+  lateinit var licenceService: LicenceService
+
+  private val log = LoggerFactory.getLogger(this::class.java)
 
   fun getHdcStatus(records: List<PrisonerSearchPrisoner>) = getHdcStatus(records, { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
 
@@ -309,4 +320,36 @@ class HdcService(
   }
 
   private fun getUserName(staff: Staff?) = staff?.username ?: SYSTEM_USER
+
+  @Transactional
+  fun convertToCrdLicence(nomsNumber: String) {
+    val licence = hdcLicenceRepository.getLicenceEligibleForCrdConversion(nomsNumber)
+    licence?.let {
+      licence.statusCode = INACTIVE
+      licenceRepository.saveAndFlush(licence)
+
+      val newLicence = licenceService.populateCopy(
+        original = licence,
+        copy = crdLicenceFactory.createFromHdc(licence, LicenceStatus.IN_PROGRESS),
+      )
+
+      addConvertAuditToOldLicence(licence, newLicence)
+    }
+  }
+
+  private fun addConvertAuditToOldLicence(
+    licence: HdcLicenceEntity,
+    newLicence: Licence,
+  ) {
+    val detail =
+      "Old ID ${licence.id}, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}"
+    val summary = "Hdc licence converted to CRD licence for ${newLicence.forename} ${newLicence.surname}"
+
+    val audit = AuditEvent(
+      licenceId = licence.id,
+      summary = summary,
+      detail = detail,
+    )
+    auditService.recordAuditEvent(audit)
+  }
 }

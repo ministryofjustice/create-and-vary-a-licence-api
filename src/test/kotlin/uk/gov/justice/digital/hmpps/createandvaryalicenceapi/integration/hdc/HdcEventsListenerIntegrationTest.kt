@@ -4,12 +4,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.context.jdbc.SqlGroup
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
@@ -35,6 +37,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `An HDC opt out event is processed`() {
+    // Given
     val event = HdcStatusChangedEvent(
       occurredAt = LocalDateTime.now(),
       licenceId = 123L,
@@ -46,28 +49,18 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     val eventJson = mapper.writeValueAsString(event)
 
-    hdcCvlEventsSqsClient.sendMessage(
-      SendMessageRequest.builder()
-        .queueUrl(hdcCvlEventsQueueUrl)
-        .messageBody(eventJson)
-        .messageAttributes(
-          mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(HdcCvlEventType.OPT_OUT.toString()).build(),
-          ),
-        )
-        .build(),
-    )
+    // When
+    sendMessage(eventJson, HdcCvlEventType.OPT_OUT.toString())
 
-    // Verify listener and handler are called, and queue is drained
-    awaitAtMost30Secs untilAsserted {
-      verify(hdcEventsListener, times(1)).finishedEventProcessing(HdcCvlEventType.OPT_OUT)
-      verify(hdcStatusChangedHandler).handleOptout(eventJson)
-    }
+    // Then
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handleOptout(eventJson)
     assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
 
   @Test
   fun `An HDC event with unknown event type is sent to DLQ`() {
+    // Given
     val event = HdcStatusChangedEvent(
       occurredAt = LocalDateTime.now(),
       licenceId = 123L,
@@ -79,23 +72,59 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     val eventJson = mapper.writeValueAsString(event)
 
+    // When
+    sendMessage(eventJson, "unknown-event-type")
+
+    // Then
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler, times(0)).handleOptout(eventJson)
+    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
+  }
+
+  @SqlGroup(
+    Sql("classpath:test_data/seed-completed-hdc-licence-1.sql"),
+    Sql("classpath:test_data/seed-hdc-conversion-details.sql"),
+  )
+  @Test
+  fun `An HDC opt out event is processed with a existing HDC licence`() {
+    // Given
+
+    val event = HdcStatusChangedEvent(
+      occurredAt = LocalDateTime.now(),
+      licenceId = 1L,
+      bookingId = 12347L,
+      nomsNumber = "C1234CC",
+      triggeredBy = "test.user",
+      reason = "Offender opted out",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+
+    // When
+    sendMessage(eventJson, HdcCvlEventType.OPT_OUT.toString())
+
+    // Then
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handleOptout(eventJson)
+    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
+  }
+
+  private fun sendMessage(messageBody: String, eventType: String) {
     hdcCvlEventsSqsClient.sendMessage(
       SendMessageRequest.builder()
         .queueUrl(hdcCvlEventsQueueUrl)
-        .messageBody(eventJson)
+        .messageBody(messageBody)
         .messageAttributes(
           mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue("UNKNOWN_TYPE").build(),
+            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(eventType).build(),
           ),
         )
         .build(),
     )
+  }
 
-    // Wait for message to be retried 3 times and sent to DLQ
+  private fun assertSqsProcessed() {
     awaitAtMost30Secs untilAsserted {
-      verify(hdcEventsListener, times(0)).finishedEventProcessing(any())
-      verify(hdcStatusChangedHandler, times(0)).handleOptout(eventJson)
+      verify(hdcEventsListener, times(1)).finishedEventProcessing(anyOrNull())
     }
-    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
 }

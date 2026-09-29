@@ -13,9 +13,7 @@ class HdcEventsListener(
   private val hdcStatusChangedHandler: HdcStatusChangedHandler,
   private val mapper: ObjectMapper,
 ) {
-  companion object {
-    private val log = LoggerFactory.getLogger(HdcEventsListener::class.java)
-  }
+  private val log = LoggerFactory.getLogger(HdcEventsListener::class.java)
 
   @SqsListener("hdccvleventsqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun onMessage(message: Message<String>) {
