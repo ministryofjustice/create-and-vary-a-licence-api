@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.springframework.messaging.support.GenericMessage
@@ -28,9 +30,11 @@ class HdcEventsListenerTest {
     val headers = mapOf<String, Any>("eventType" to "UNKNOWN_TYPE").toMutableMap()
     val message = GenericMessage(eventJson, headers)
 
-    assertThrows<IllegalArgumentException> {
+    val exception = assertThrows<IllegalArgumentException> {
       listener.onMessage(message)
     }
+
+    assertThat(exception.message).contains("No enum constant")
   }
 
   @Test
@@ -50,6 +54,8 @@ class HdcEventsListenerTest {
 
     listener.onMessage(message)
 
-    verify(handler).handleOptout(eventJson)
+    val captor = argumentCaptor<String>()
+    verify(handler).handleOptout(captor.capture())
+    assertThat(captor.firstValue).isEqualTo(eventJson)
   }
 }
