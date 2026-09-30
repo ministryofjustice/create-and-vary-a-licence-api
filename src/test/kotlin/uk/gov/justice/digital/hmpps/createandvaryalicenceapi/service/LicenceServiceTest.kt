@@ -50,7 +50,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Additi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
@@ -90,11 +89,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.RECALLED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.RESENTENCED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -573,7 +574,7 @@ class LicenceServiceTest {
 
     assertThat(firstVersionOfLicence)
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
-      .isEqualTo(listOf(firstVersionOfLicence.id, LicenceStatus.INACTIVE, aCom.username, null, aCom))
+      .isEqualTo(listOf(firstVersionOfLicence.id, INACTIVE, aCom.username, null, aCom))
 
     assertThat(newVersionOfLicence)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
@@ -660,7 +661,7 @@ class LicenceServiceTest {
 
     assertThat(firstVersionOfLicence)
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
-      .isEqualTo(listOf(firstVersionOfLicence.id, LicenceStatus.INACTIVE, aCom.username, null, aCom))
+      .isEqualTo(listOf(firstVersionOfLicence.id, INACTIVE, aCom.username, null, aCom))
 
     assertThat(newVersionOfLicence)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
@@ -749,7 +750,7 @@ class LicenceServiceTest {
 
     assertThat(firstVersionOfLicence)
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
-      .isEqualTo(listOf(firstVersionOfLicence.id, LicenceStatus.INACTIVE, aCom.username, null, aCom))
+      .isEqualTo(listOf(firstVersionOfLicence.id, INACTIVE, aCom.username, null, aCom))
 
     assertThat(newVersionOfLicence)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
@@ -1064,7 +1065,7 @@ class LicenceServiceTest {
       .isEqualTo(listOf(1L, LicenceStatus.ACTIVE, aCom.username, licenceCaptor.value.licenceActivatedDate, aCom))
     assertThat(inProgressLicenceCaptor.firstValue[0])
       .extracting("id", "statusCode")
-      .isEqualTo(listOf(inProgressLicenceVersion.id, LicenceStatus.INACTIVE))
+      .isEqualTo(listOf(inProgressLicenceVersion.id, INACTIVE))
 
     assertThat(auditCaptor.allValues[0])
       .extracting("licenceId", "username", "fullName", "summary", "eventType")
@@ -1125,7 +1126,7 @@ class LicenceServiceTest {
       .isEqualTo(listOf(1L, LicenceStatus.ACTIVE, aCom.username, licenceCaptor.value.licenceActivatedDate, aCom))
     assertThat(timedOutLicenceCaptor.firstValue[0])
       .extracting("id", "statusCode")
-      .isEqualTo(listOf(timedOutLicenceVersion.id, LicenceStatus.INACTIVE))
+      .isEqualTo(listOf(timedOutLicenceVersion.id, INACTIVE))
 
     assertThat(auditCaptor.allValues[0])
       .extracting("licenceId", "username", "fullName", "summary", "eventType")
@@ -1165,7 +1166,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       1L,
-      StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = aCom.username, fullName = "Y"),
+      StatusUpdateRequest(status = INACTIVE, username = aCom.username, fullName = "Y"),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1175,7 +1176,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceRepository, times(1)).saveAllAndFlush(inProgressLicenceCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(licenceCaptor.value, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(licenceCaptor.value, INACTIVE)
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
@@ -1183,7 +1184,7 @@ class LicenceServiceTest {
       .isEqualTo(
         listOf(
           aLicenceEntity.id,
-          LicenceStatus.INACTIVE,
+          INACTIVE,
           aCom.username,
           licenceCaptor.value.licenceActivatedDate,
           aCom,
@@ -1191,7 +1192,7 @@ class LicenceServiceTest {
       )
     assertThat(inProgressLicenceCaptor.firstValue[0])
       .extracting("id", "statusCode")
-      .isEqualTo(listOf(inProgressLicenceVersion.id, LicenceStatus.INACTIVE))
+      .isEqualTo(listOf(inProgressLicenceVersion.id, INACTIVE))
 
     assertThat(auditCaptor.allValues[0]).extracting("licenceId", "username", "fullName", "summary", "eventType")
       .isEqualTo(
@@ -1623,13 +1624,13 @@ class LicenceServiceTest {
       .extracting("statusCode")
       .isEqualTo(
         listOf(
-          LicenceStatus.INACTIVE,
+          INACTIVE,
         ),
       )
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceVersion, LicenceStatus.ACTIVE)
-    verify(domainEventsService, times(1)).recordDomainEvent(inProgressVersion, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(inProgressVersion, INACTIVE)
 
     val auditCaptors = auditCaptor.allValues
     assertThat(auditCaptors[0])
@@ -1699,13 +1700,13 @@ class LicenceServiceTest {
       .extracting("statusCode")
       .isEqualTo(
         listOf(
-          LicenceStatus.INACTIVE,
+          INACTIVE,
         ),
       )
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceVersion, LicenceStatus.ACTIVE)
-    verify(domainEventsService, times(1)).recordDomainEvent(timedOutVersion, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(timedOutVersion, INACTIVE)
 
     val auditCaptors = auditCaptor.allValues
     assertThat(auditCaptors[0])
@@ -1754,10 +1755,10 @@ class LicenceServiceTest {
     verify(
       licenceRepository,
       times(1),
-    ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
+    ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = INACTIVE)))
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, INACTIVE)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -1789,10 +1790,10 @@ class LicenceServiceTest {
     verify(
       licenceRepository,
       times(1),
-    ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
+    ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = INACTIVE)))
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, INACTIVE)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -1832,11 +1833,11 @@ class LicenceServiceTest {
     verify(
       licenceRepository,
       times(1),
-    ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
+    ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = INACTIVE)))
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, LicenceStatus.INACTIVE)
-    verify(domainEventsService, times(1)).recordDomainEvent(inProgressLicenceVersion, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(inProgressLicenceVersion, INACTIVE)
 
     assertThat(auditCaptor.allValues[0])
       .extracting("licenceId", "username", "fullName", "summary")
@@ -1882,8 +1883,8 @@ class LicenceServiceTest {
     verify(
       licenceRepository,
       times(1),
-    ).saveAllAndFlush(listOf(licence.copy(statusCode = LicenceStatus.INACTIVE)))
-    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, LicenceStatus.INACTIVE)
+    ).saveAllAndFlush(listOf(licence.copy(statusCode = INACTIVE)))
+    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, INACTIVE)
   }
 
   @Test
@@ -2829,7 +2830,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       approvedLicence.id,
-      StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = aCom.username, fullName = "Y"),
+      StatusUpdateRequest(status = INACTIVE, username = aCom.username, fullName = "Y"),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -2837,7 +2838,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(approvedLicence, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(approvedLicence, INACTIVE)
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value.licenceActivatedDate).isNull()
@@ -2847,7 +2848,7 @@ class LicenceServiceTest {
       .isEqualTo(
         listOf(
           approvedLicence.id,
-          LicenceStatus.INACTIVE,
+          INACTIVE,
           aCom.username,
           licenceCaptor.value.supersededDate,
           aCom,
@@ -2935,7 +2936,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       variationLicence.id,
-      StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = aCom.username, fullName = "Y"),
+      StatusUpdateRequest(status = INACTIVE, username = aCom.username, fullName = "Y"),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -2943,7 +2944,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(variationLicence, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(variationLicence, INACTIVE)
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value.licenceActivatedDate).isNull()
@@ -2953,7 +2954,7 @@ class LicenceServiceTest {
       .isEqualTo(
         listOf(
           variationLicence.id,
-          LicenceStatus.INACTIVE,
+          INACTIVE,
           aCom.username,
           licenceCaptor.value.supersededDate,
           aCom,
@@ -2976,10 +2977,7 @@ class LicenceServiceTest {
   fun `deactivateLicenceAndVariations returns when no active licences are found`() {
     whenever(licenceRepository.findLicenceAndVariations(aLicenceEntity.id)).thenReturn(emptyList())
 
-    service.deactivateLicenceAndVariations(
-      aLicenceEntity.id,
-      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RESENTENCED),
-    )
+    service.deactivateLicenceAndVariations(aLicenceEntity.id, RESENTENCED)
     verify(
       licenceRepository,
       times(0),
@@ -3006,24 +3004,21 @@ class LicenceServiceTest {
       ),
     )
 
-    service.deactivateLicenceAndVariations(
-      activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RESENTENCED),
-    )
+    service.deactivateLicenceAndVariations(activeLicence.id, RESENTENCED)
 
     verify(
       licenceRepository,
       times(1),
     ).saveAllAndFlush(
       listOf(
-        activeLicence.copy(statusCode = LicenceStatus.INACTIVE),
-        variationLicence.copy(statusCode = LicenceStatus.INACTIVE),
+        activeLicence.copy(statusCode = INACTIVE),
+        variationLicence.copy(statusCode = INACTIVE),
       ),
     )
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(activeLicence, LicenceStatus.INACTIVE)
-    verify(domainEventsService, times(1)).recordDomainEvent(variationLicence, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(activeLicence, INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(variationLicence, INACTIVE)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -3059,24 +3054,21 @@ class LicenceServiceTest {
       ),
     )
 
-    service.deactivateLicenceAndVariations(
-      activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RECALLED),
-    )
+    service.deactivateLicenceAndVariations(activeLicence.id, RECALLED)
 
     verify(
       licenceRepository,
       times(1),
     ).saveAllAndFlush(
       listOf(
-        activeLicence.copy(statusCode = LicenceStatus.INACTIVE),
-        variationLicence.copy(statusCode = LicenceStatus.INACTIVE),
+        activeLicence.copy(statusCode = INACTIVE),
+        variationLicence.copy(statusCode = INACTIVE),
       ),
     )
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(activeLicence, LicenceStatus.INACTIVE)
-    verify(domainEventsService, times(1)).recordDomainEvent(variationLicence, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(activeLicence, INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(variationLicence, INACTIVE)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -3270,7 +3262,7 @@ class LicenceServiceTest {
         assertThat(firstValue.statusCode).isEqualTo(LicenceStatus.ACTIVE)
 
         assertThat(secondValue).isInstanceOf(CrdLicence::class.java)
-        assertThat(secondValue.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+        assertThat(secondValue.statusCode).isEqualTo(INACTIVE)
       }
 
       argumentCaptor<EntityAuditEvent>().apply {
@@ -3326,7 +3318,7 @@ class LicenceServiceTest {
         assertThat(secondValue).isInstanceOf(HardStopLicence::class.java)
         assertThat((secondValue as HardStopLicence).reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
 
-        assertThat(secondValue.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+        assertThat(secondValue.statusCode).isEqualTo(INACTIVE)
       }
 
       argumentCaptor<EntityAuditEvent>().apply {
@@ -3376,7 +3368,7 @@ class LicenceServiceTest {
         assertThat(firstValue.statusCode).isEqualTo(LicenceStatus.ACTIVE)
 
         assertThat(secondValue).isInstanceOf(HdcLicence::class.java)
-        assertThat(secondValue.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+        assertThat(secondValue.statusCode).isEqualTo(INACTIVE)
       }
 
       argumentCaptor<EntityAuditEvent>().apply {
@@ -3464,7 +3456,7 @@ class LicenceServiceTest {
         assertThat(secondValue).isInstanceOf(TimeServedLicence::class.java)
         assertThat((secondValue as TimeServedLicence).reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
 
-        assertThat(secondValue.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+        assertThat(secondValue.statusCode).isEqualTo(INACTIVE)
       }
 
       argumentCaptor<EntityAuditEvent>().apply {
