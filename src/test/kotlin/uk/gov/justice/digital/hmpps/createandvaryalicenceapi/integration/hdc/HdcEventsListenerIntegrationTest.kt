@@ -14,11 +14,14 @@ import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.jdbc.SqlGroup
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -55,7 +58,6 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     // Then
     assertSqsProcessed()
     verify(hdcStatusChangedHandler).handleOptout(eventJson)
-    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
 
   @Test
@@ -78,7 +80,6 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     // Then
     assertSqsProcessed()
     verify(hdcStatusChangedHandler, times(0)).handleOptout(eventJson)
-    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
 
   @SqlGroup(
@@ -105,7 +106,35 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     // Then
     assertSqsProcessed()
     verify(hdcStatusChangedHandler).handleOptout(eventJson)
-    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(2)
+
+    val hdcLicence = licences.single { it.kind == LicenceKind.HDC }
+    assertThat(hdcLicence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    val crdLicence = testRepository.findLicence(licences.single { it.kind == LicenceKind.CRD }.id) as CrdLicence
+    assertThat(crdLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(crdLicence.versionOfId).isEqualTo(hdcLicence.id)
+    assertThat(crdLicence.nomsId).isEqualTo(hdcLicence.nomsId)
+    assertThat(crdLicence.bookingId).isEqualTo(hdcLicence.bookingId)
+    assertThat(crdLicence.licenceStartDate).isEqualTo(hdcLicence.licenceStartDate)
+    assertThat(crdLicence.probationContact).isNull()
+
+    assertThat(crdLicence.additionalConditions).hasSize(1)
+    assertThat(crdLicence.additionalConditions.single().expandedConditionText)
+      .isEqualTo("Not to enter exclusion zone Town centre")
+    assertThat(crdLicence.additionalConditions.single().additionalConditionData.single().dataValue)
+      .isEqualTo("Town centre")
+    assertThat(crdLicence.bespokeConditions.single().conditionText)
+      .isEqualTo("Do not contact Person A")
+
+    val auditEvent = testRepository.findFirstAuditEvent(hdcLicence.id)
+    assertThat(auditEvent.summary)
+      .isEqualTo("Hdc licence converted to CRD licence for ${crdLicence.forename} ${crdLicence.surname}")
+    assertThat(auditEvent.detail)
+      .isEqualTo(
+        "Old ID ${hdcLicence.id}, new ID ${crdLicence.id} type ${crdLicence.typeCode} " +
+          "status ${crdLicence.statusCode.name} version ${crdLicence.version}",
+      )
   }
 
   private fun sendMessage(messageBody: String, eventType: String) {
@@ -126,5 +155,6 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     awaitAtMost30Secs untilAsserted {
       verify(hdcEventsListener, times(1)).finishedEventProcessing(anyOrNull())
     }
+    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
 }

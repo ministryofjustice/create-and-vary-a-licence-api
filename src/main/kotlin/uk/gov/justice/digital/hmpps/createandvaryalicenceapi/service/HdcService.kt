@@ -28,8 +28,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -325,7 +325,7 @@ class HdcService(
   fun convertToCrdLicence(nomsNumber: String) {
     val licence = hdcLicenceRepository.getLicenceEligibleForCrdConversion(nomsNumber)
     licence?.let {
-      licence.statusCode = INACTIVE
+      licence.deactivate()
       licenceRepository.saveAndFlush(licence)
 
       val newLicence = licenceService.populateCopy(
@@ -349,6 +349,7 @@ class HdcService(
       licenceId = licence.id,
       summary = summary,
       detail = detail,
+      eventType = SYSTEM_EVENT,
     )
     auditService.recordAuditEvent(audit)
   }
