@@ -20,7 +20,7 @@ class HdcStatusChangedHandler(
   fun handleOptout(message: String) {
     if (!hdcCreationEnabled) {
       log.info("HDC opt-out processing disabled")
-        return
+      return
     }
 
     val event = mapper.readValue(message, HdcStatusChangedEvent::class.java)
