@@ -17,14 +17,14 @@ class MigrateStandardConditionsService(
   @Async
   fun migrateStandardConditions(policyVersion: String) {
     log.info("Migrating standard conditions on in flight licences to version $policyVersion")
-    val inflightLicenceIds =
-      isrProgressionLicenceRepository.findInFlightLicenceIds()
-    log.info("Found ${inflightLicenceIds.size} inflight licences to potentially update")
-    inflightLicenceIds.chunked(BATCH_SIZE).forEach {
+    val activeLicenceIds =
+      isrProgressionLicenceRepository.findActiveLicenceIds()
+    log.info("Found ${activeLicenceIds.size} active licences to potentially update")
+    activeLicenceIds.chunked(BATCH_SIZE).forEach {
       migrateStandardConditionsChunkService.migrateStandardConditions(it, policyVersion)
     }
 
-    telemetryService.recordMigrateStandardConditionsJobEvent(inflightLicenceIds.size)
+    telemetryService.recordMigrateStandardConditionsJobEvent(activeLicenceIds.size)
   }
 
   companion object {
