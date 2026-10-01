@@ -1135,7 +1135,7 @@ class LicenceService(
     val offenderManager = deliusApiClient.getOffenderManager(licenceEntity.crn!!)
       ?: error("No active offender manager found for CRN: ${licenceEntity.crn}")
 
-    val licences = findLicencesMatchingCriteria(LicenceQueryObject(nomsIds = listOf(licenceEntity.nomsId!!)))
+    val licences = licenceRepository.findAllByNomsId(licenceEntity.nomsId!!)
     val viewAccess = licences.any {
       teamCodes.contains(offenderManager.team.code)
     }

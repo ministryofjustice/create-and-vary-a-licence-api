@@ -2,12 +2,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Is91SupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RecallSupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RemandSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RemandSupportInfo.RemandCourtEventOutcome
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.Is91CourtEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -27,13 +30,8 @@ class SupportService(
     return eligibilityService.getEligibilityAssessment(prisoner, hdcStatus)
   }
 
-  fun getIS91Status(prisonNumber: String): Boolean {
-    val prisoner = getPrisonerByPrisonNumber(prisonNumber)
-    return iS91DeterminationService.isIS91Case(prisoner)
-  }
-
-  fun getRecallInfo(prisonNumber: String): RecallSupportInfo {
-    val bookingSentenceAndRecallTypes = prisonService.getSentenceAndRecallTypes(getBookingIdFromPrisonId(prisonNumber))
+  fun getRecallInfo(bookingId: Long): RecallSupportInfo {
+    val bookingSentenceAndRecallTypes = prisonService.getSentenceAndRecallTypes(bookingId)
 
     val sentenceRecallTypes = bookingSentenceAndRecallTypes?.sentenceTypeRecallTypes.orEmpty()
 
@@ -50,28 +48,43 @@ class SupportService(
     )
   }
 
-  fun getRemandInfo(prisonerNumber: String): RemandSupportInfo {
-    val remandCourtEventOutcomes =
-      prisonService.getCourtOutcomeEvents(
-        listOf(getBookingIdFromPrisonId(prisonerNumber)),
-        RemandCourtEvents.getRemandCourtCodes(),
-      )
-
-    val outcomeReasonCode = remandCourtEventOutcomes.firstOrNull()?.outcomeReasonCode
-      ?: return RemandSupportInfo()
+  fun getRemandInfo(bookingId: Long): RemandSupportInfo {
+    val remandCourtEventOutcomes = prisonService.getCourtOutcomeEvents(listOf(bookingId), RemandCourtEvents.getCodes())
 
     return RemandSupportInfo(
-      true,
-      outcomeReasonCode,
-      RemandCourtEvents.getCourtEventDescriptionByCode(outcomeReasonCode),
+      remandCourtEventOutcomes.map {
+        RemandCourtEventOutcome(
+          it.outcomeReasonCode,
+          RemandCourtEvents.getCourtEventDescriptionByCode(it.outcomeReasonCode!!),
+        )
+      },
     )
   }
 
-  fun getSupportInfo(prisonerNumber: String): SupportInfo = SupportInfo(
-    isIS91Case = getIS91Status(prisonerNumber),
-    recallSupportInfo = getRecallInfo(prisonerNumber),
-    remandSupportInfo = getRemandInfo(prisonerNumber),
-  )
+  fun getIs91Info(bookingId: Long): Is91SupportInfo {
+    val is91CourtEventOutcomes = prisonService.getCourtOutcomeEvents(listOf(bookingId), Is91CourtEvents.getCodes())
+
+    return Is91SupportInfo(
+      is91CourtEventOutcomes.map {
+        Is91SupportInfo.Is91CourtEventOutcome(
+          it.outcomeReasonCode,
+          Is91CourtEvents.getCourtEventDescriptionByCode(it.outcomeReasonCode!!),
+        )
+      },
+    )
+  }
+
+  fun getSupportInfo(prisonerNumber: String): SupportInfo {
+    val bookingId = getBookingIdFromPrisonId(prisonerNumber)
+    val is91SupportInfo = getIs91Info(bookingId)
+
+    return SupportInfo(
+      isIS91Case = is91SupportInfo.isIs91Case,
+      recallSupportInfo = getRecallInfo(bookingId),
+      remandSupportInfo = getRemandInfo(bookingId),
+      is91SupportInfo = is91SupportInfo,
+    )
+  }
 
   private fun getBookingIdFromPrisonId(prisonerNumber: String): Long {
     val prisoner = getPrisonerByPrisonNumber(prisonerNumber)
