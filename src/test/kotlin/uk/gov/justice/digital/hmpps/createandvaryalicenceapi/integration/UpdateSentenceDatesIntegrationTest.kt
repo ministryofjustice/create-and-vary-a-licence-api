@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
+import java.time.Month.OCTOBER
 import kotlin.jvm.optionals.getOrNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -579,7 +580,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     @DynamicPropertySource
     fun properties(registry: DynamicPropertyRegistry) {
       registry.add("progression.model.policy-start-date") {
-        LocalDate.now().plusMonths(1).withDayOfMonth(20).toString()
+        LocalDate.of(2026, OCTOBER, 20).toString()
       }
     }
   }
