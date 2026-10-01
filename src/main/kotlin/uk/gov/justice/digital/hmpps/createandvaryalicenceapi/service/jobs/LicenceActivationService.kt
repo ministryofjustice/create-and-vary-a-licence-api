@@ -8,8 +8,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.IS91_RESULT_CODES
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.OFFENCE_DESCRIPTION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.IMMIGRATION_OFFENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.Is91CourtEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
@@ -97,22 +97,22 @@ class LicenceActivationService(
   private fun filterLicencesIntoTypes(licences: List<LicenceWithPrisoner>): LicenceBuckets {
     val prisoners = licences.map { it.prisoner }
 
-    val (immigrationDetainees, nonImmigrationDetainees) = prisoners.partition { it.mostSeriousOffence == OFFENCE_DESCRIPTION }
+    val (immigrationDetainees, nonImmigrationDetainees) = prisoners.partition { it.mostSeriousOffence == IMMIGRATION_OFFENCE }
 
     val immigrationDetaineeBookingIds = immigrationDetainees.mapNotNull { it.bookingId?.toLong() }
     val nonImmigrationBookingIds = nonImmigrationDetainees.mapNotNull { it.bookingId?.toLong() }
 
     val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(
       nonImmigrationBookingIds,
-      if (remandEnabled) IS91_RESULT_CODES + RemandCourtEvents.getRemandCourtCodes() else IS91_RESULT_CODES,
+      if (remandEnabled) Is91CourtEvents.getCodes() + RemandCourtEvents.getCodes() else Is91CourtEvents.getCodes(),
     )
 
     val iS91OutcomeBookingIds = courtEventOutcomes
-      .filter { it.outcomeReasonCode in IS91_RESULT_CODES }
+      .filter { it.outcomeReasonCode in Is91CourtEvents.getCodes() }
       .map { it.bookingId }
 
     val remandOutcomeBookingIds = courtEventOutcomes
-      .filter { it.outcomeReasonCode in RemandCourtEvents.getRemandCourtCodes() }
+      .filter { it.outcomeReasonCode in RemandCourtEvents.getCodes() }
       .map { it.bookingId }
 
     val iS91BookingIds = immigrationDetaineeBookingIds + iS91OutcomeBookingIds
@@ -132,7 +132,7 @@ class LicenceActivationService(
   private fun updateChangedBookings(licences: List<LicenceWithPrisoner>) {
     val licencesWithChangedBooking = licences.filter { it.licence.bookingId != it.bookingId }
 
-    licencesWithChangedBooking.map {
+    licencesWithChangedBooking.forEach {
       val oldBookingId = it.licence.bookingId
       val oldBookingNo = it.licence.bookingNo
 

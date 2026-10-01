@@ -4,12 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
-import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.CourtEventOutcome
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.LocalDate
@@ -45,37 +41,6 @@ class IS91DeterminationServiceTest {
 
       val is91BookingIds = service.getIS91AndExtraditionBookingIds(prisoners)
       assertThat(is91BookingIds).containsExactlyInAnyOrderElementsOf(expectedIS91s)
-    }
-  }
-
-  @Nested
-  inner class IsIS91Case {
-    @Test
-    fun `Returns true for a case with an illegal immigrant offence code`() {
-      val prisoner = aPrisonerSearchResult.copy(bookingId = "54322", mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE")
-      assertThat(service.isIS91Case(prisoner)).isTrue()
-    }
-
-    @Test
-    fun `Returns false for a case with any other offence code`() {
-      val prisoner = aPrisonerSearchResult.copy(bookingId = "54322", mostSeriousOffence = "OFFENCE1")
-      assertThat(service.isIS91Case(prisoner)).isFalse()
-    }
-
-    @ParameterizedTest(name = "returns true for {0}")
-    @ValueSource(strings = ["3006", "4022", "5500", "5502"])
-    fun `Returns true for a case with an IS91 related court outcome code`(outcomeCode: String) {
-      whenever(prisonApiClient.getCourtEventOutcomes(listOf(54322), resultCodes)).thenReturn(
-        listOf(CourtEventOutcome(bookingId = 43566, eventId = 1, outcomeReasonCode = outcomeCode)),
-      )
-      val prisoner = aPrisonerSearchResult.copy(bookingId = "54322")
-      assertThat(service.isIS91Case(prisoner)).isTrue()
-    }
-
-    @Test
-    fun `Returns false if the case has no booking ID`() {
-      val prisoner = aPrisonerSearchResult.copy(bookingId = null)
-      assertThat(service.isIS91Case(prisoner)).isFalse()
     }
   }
 
