@@ -114,6 +114,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val crdLicence = testRepository.findLicence(licences.single { it.kind == LicenceKind.CRD }.id) as CrdLicence
     assertThat(crdLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(crdLicence.versionOfId).isEqualTo(hdcLicence.id)
+    assertThat(crdLicence.licenceVersion).isEqualTo("1.1")
     assertThat(crdLicence.nomsId).isEqualTo(hdcLicence.nomsId)
     assertThat(crdLicence.bookingId).isEqualTo(hdcLicence.bookingId)
     assertThat(crdLicence.licenceStartDate).isEqualTo(hdcLicence.licenceStartDate)

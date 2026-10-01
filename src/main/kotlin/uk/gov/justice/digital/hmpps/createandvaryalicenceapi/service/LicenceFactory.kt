@@ -463,7 +463,7 @@ object LicenceFactory {
     }
   }
 
-  private fun getNextLicenceVersion(currentVersion: String): String {
+  fun getNextLicenceVersion(currentVersion: String): String {
     val (majorVersion, minorVersion) = getVersionParts(currentVersion)
     return "$majorVersion.${minorVersion + 1}"
   }

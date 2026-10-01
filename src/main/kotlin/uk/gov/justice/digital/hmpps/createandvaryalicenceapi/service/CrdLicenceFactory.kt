@@ -53,7 +53,7 @@ class CrdLicenceFactory {
     dateCreated = LocalDateTime.now(),
     dateLastUpdated = licence.dateLastUpdated,
     updatedByUsername = licence.updatedByUsername,
-    licenceVersion = licence.licenceVersion,
+    licenceVersion = licence.licenceVersion?.let { LicenceFactory.getNextLicenceVersion(it) },
     updatedBy = licence.updatedBy,
     createdBy = licence.createdBy,
     versionOfId = licence.id,
