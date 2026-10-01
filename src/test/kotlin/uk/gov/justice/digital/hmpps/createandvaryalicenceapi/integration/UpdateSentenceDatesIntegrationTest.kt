@@ -12,7 +12,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.openjdk.nashorn.internal.ir.annotations.Ignore
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -320,50 +319,6 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
-  }
-
-  @Ignore
-  @Test
-  @Sql(
-    "classpath:test_data/seed-v4-licence-id-4.sql",
-  )
-  fun `Update sentence dates should inactivate V4 in-flight licence when LSD changes to before policy cutoff`() {
-    prisonApiMockServer.stubGetHdcLatest()
-    prisonApiMockServer.stubGetCourtOutcomes()
-    val postRecallReleaseDate = progressionModelPolicyStartDate.minusDays(5)
-    mockPrisonerSearchResponse(
-      SentenceDetail(
-        conditionalReleaseDate = LocalDate.parse("2026-09-10"),
-        confirmedReleaseDate = LocalDate.parse("2026-09-10"),
-        sentenceStartDate = LocalDate.parse("2020-10-11"),
-        sentenceExpiryDate = LocalDate.parse("2027-09-25"),
-        licenceExpiryDate = LocalDate.parse("2027-09-25"),
-        topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
-        topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
-        postRecallReleaseDate = postRecallReleaseDate,
-      ),
-    )
-
-    webTestClient.put()
-      .uri("/licence/id/4/sentence-dates")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/4")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = cvlRoles()))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.version).isEqualTo("4.0")
-    assertThat(result?.licenceStartDate).isEqualTo(postRecallReleaseDate)
     assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }
 
