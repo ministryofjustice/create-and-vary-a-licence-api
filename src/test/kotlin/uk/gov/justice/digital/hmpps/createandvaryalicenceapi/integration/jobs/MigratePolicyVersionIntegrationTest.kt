@@ -18,11 +18,11 @@ class MigratePolicyVersionIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-active-licence-id-1.sql",
   )
   fun `Migrate standard conditions`() {
     webTestClient.post()
-      .uri("/jobs/migrate-standard-conditions?policyVersion=4.0")
+      .uri("/jobs/active-licences/migrate-standard-conditions?policyVersion=4.0")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isNoContent
