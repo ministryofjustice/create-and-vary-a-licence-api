@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
+import java.time.Month.OCTOBER
 import kotlin.jvm.optionals.getOrNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -324,6 +325,49 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
+    "classpath:test_data/seed-v4-licence-id-4.sql",
+  )
+  fun `Update sentence dates should inactivate V4 in-flight licence when LSD changes to before policy cutoff`() {
+    prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    val postRecallReleaseDate = progressionModelPolicyStartDate.minusDays(5)
+    mockPrisonerSearchResponse(
+      SentenceDetail(
+        conditionalReleaseDate = LocalDate.parse("2026-09-10"),
+        confirmedReleaseDate = LocalDate.parse("2026-09-10"),
+        sentenceStartDate = LocalDate.parse("2020-10-11"),
+        sentenceExpiryDate = LocalDate.parse("2027-09-25"),
+        licenceExpiryDate = LocalDate.parse("2027-09-25"),
+        topupSupervisionStartDate = LocalDate.parse("2027-09-25"),
+        topupSupervisionExpiryDate = LocalDate.parse("2028-09-25"),
+        postRecallReleaseDate = postRecallReleaseDate,
+      ),
+    )
+
+    webTestClient.put()
+      .uri("/licence/id/4/sentence-dates")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/4")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = cvlRoles()))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.version).isEqualTo("4.0")
+    assertThat(result?.licenceStartDate).isEqualTo(postRecallReleaseDate)
+    assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+  }
+
+  @Test
+  @Sql(
     "classpath:test_data/seed-licence-id-2.sql",
   )
   fun `Update sentence dates should set licence status to timed out when the licence is in hard stop period`() {
@@ -536,7 +580,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     @DynamicPropertySource
     fun properties(registry: DynamicPropertyRegistry) {
       registry.add("progression.model.policy-start-date") {
-        LocalDate.now().plusMonths(1).withDayOfMonth(20).toString()
+        LocalDate.of(2026, OCTOBER, 20).toString()
       }
     }
   }
