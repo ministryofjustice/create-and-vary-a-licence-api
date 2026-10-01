@@ -19,6 +19,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.NotSecuredWebMvcTest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RecallSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RemandSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
@@ -78,42 +80,41 @@ class SupportControllerTest {
   }
 
   @Test
-  fun `get is-91 status`() {
-    whenever(supportService.getIS91Status("A1234AA")).thenReturn(true)
-
-    val request = get("/offender/nomisid/A1234AA/is-91-status")
-      .accept(MediaType.APPLICATION_JSON)
-      .contentType(MediaType.APPLICATION_JSON)
-
-    val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
-
-    assertThat(mapper.readValue(response, String::class.java)).isEqualTo("true")
-  }
-
-  @Test
-  fun `get recall info`() {
-    whenever(supportService.getRecallInfo("A1234AA")).thenReturn(
-      RecallSupportInfo(
-        recallType = RecallType.STANDARD,
-        recallName = "Standard Recall",
-        fixTermSentenceTypes = listOf("FTR_ORA"),
-        standardRecallSentenceTypes = listOf("LR"),
-        otherSentenceTypes = listOf("ADIMP_ORA"),
+  fun `get support info`() {
+    whenever(supportService.getSupportInfo("A1234AA")).thenReturn(
+      SupportInfo(
+        isIS91Case = true,
+        RecallSupportInfo(
+          recallType = RecallType.STANDARD,
+          recallName = "Standard Recall",
+          fixTermSentenceTypes = listOf("FTR_ORA"),
+          standardRecallSentenceTypes = listOf("LR"),
+          otherSentenceTypes = listOf("ADIMP_ORA"),
+        ),
+        RemandSupportInfo(
+          isRemand = true,
+          courtEventOutcomeCode = "RC1",
+          courtEventOutcomeDescription = "Remand Court Outcome",
+        ),
       ),
     )
 
-    val request = get("/offender/nomisid/A1234AA/recall-info")
+    val request = get("/offender/nomisid/A1234AA/support-info")
       .accept(MediaType.APPLICATION_JSON)
       .contentType(MediaType.APPLICATION_JSON)
 
     val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
-    val result = mapper.readValue(response, RecallSupportInfo::class.java)
+    val result = mapper.readValue(response, SupportInfo::class.java)
 
-    assertThat(result.recallType).isEqualTo(RecallType.STANDARD)
-    assertThat(result.recallName).isEqualTo("Standard Recall")
-    assertThat(result.fixTermSentenceTypes).isEqualTo(listOf("FTR_ORA"))
-    assertThat(result.standardRecallSentenceTypes).isEqualTo(listOf("LR"))
-    assertThat(result.otherSentenceTypes).isEqualTo(listOf("ADIMP_ORA"))
+    assertThat(result.isIS91Case).isTrue
+    assertThat(result.recallSupportInfo?.recallType).isEqualTo(RecallType.STANDARD)
+    assertThat(result.recallSupportInfo?.recallName).isEqualTo("Standard Recall")
+    assertThat(result.recallSupportInfo?.fixTermSentenceTypes).isEqualTo(listOf("FTR_ORA"))
+    assertThat(result.recallSupportInfo?.standardRecallSentenceTypes).isEqualTo(listOf("LR"))
+    assertThat(result.recallSupportInfo?.otherSentenceTypes).isEqualTo(listOf("ADIMP_ORA"))
+    assertThat(result.remandSupportInfo?.isRemand).isEqualTo(true)
+    assertThat(result.remandSupportInfo?.courtEventOutcomeCode).isEqualTo("RC1")
+    assertThat(result.remandSupportInfo?.courtEventOutcomeDescription).isEqualTo("Remand Court Outcome")
   }
 
   @Test
