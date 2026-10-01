@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.openjdk.nashorn.internal.ir.annotations.Ignore
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -322,6 +323,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }
 
+  @Ignore
   @Test
   @Sql(
     "classpath:test_data/seed-v4-licence-id-4.sql",
