@@ -28,5 +28,6 @@ data class HdcStatuses(
       (kind != HDC && !approved)
   }
 
-  fun isExpectedHdcRelease(bookingId: Long): Boolean = hdcStatuses[bookingId]?.let { it != HdcStatus.NOT_A_HDC_RELEASE } == true
+  fun isExpectedHdcRelease(bookingId: Long): Boolean =
+    hdcStatuses[bookingId]?.let { it in listOf(HdcStatus.RISK_CHECKS_COMPLETE, HdcStatus.APPROVED) } == true
 }
