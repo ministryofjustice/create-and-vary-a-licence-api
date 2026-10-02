@@ -31,7 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.Lic
 @RequestMapping("/licence/id/{licenceId}/override", produces = [MediaType.APPLICATION_JSON_VALUE])
 class LicenceOverrideController(private val licenceOverrideService: LicenceOverrideService) {
   @PostMapping(value = ["/status"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN','CVL__LEGACY_API_ACCESS__RO')")
   @ResponseBody
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(

@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -60,9 +62,10 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
     assertThat(result?.userMessage).contains("Access Denied")
   }
 
-  @Test
+  @ParameterizedTest(name = "Override licence status using role {0}")
+  @MethodSource("cvlRoles")
   @Sql("classpath:test_data/seed-licence-id-1.sql")
-  fun `Override licence with new status code and record licence activated event`() {
+  fun `Override licence with new status code and record licence activated event`(role: String) {
     webTestClient.post()
       .uri("/licence/id/1/override/status")
       .bodyValue(
@@ -72,7 +75,7 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
         ),
       )
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = listOf(role)))
       .exchange()
       .expectStatus()
       .isAccepted
