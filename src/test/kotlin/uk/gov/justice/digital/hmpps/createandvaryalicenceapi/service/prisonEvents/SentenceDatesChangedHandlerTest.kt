@@ -9,8 +9,6 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -20,7 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.RECALLED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.RESENTENCED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
@@ -84,14 +83,8 @@ class SentenceDatesChangedHandlerTest {
 
     sentenceDatesChangedHandler.handleEvent(message)
 
-    verify(licenceService).deactivateLicenceAndVariations(
-      activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = LicenceDeactivationReason.RESENTENCED),
-    )
-    verify(licenceService, never()).deactivateLicenceAndVariations(
-      activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = LicenceDeactivationReason.RECALLED),
-    )
+    verify(licenceService).deactivateLicenceAndVariations(activeLicence.id, RESENTENCED)
+    verify(licenceService, never()).deactivateLicenceAndVariations(activeLicence.id, RECALLED)
   }
 
   @Test
@@ -115,10 +108,7 @@ class SentenceDatesChangedHandlerTest {
 
     sentenceDatesChangedHandler.handleEvent(message)
 
-    verify(licenceService).deactivateLicenceAndVariations(
-      activeLicence.id,
-      DeactivateLicenceAndVariationsRequest(reason = LicenceDeactivationReason.RECALLED),
-    )
+    verify(licenceService).deactivateLicenceAndVariations(activeLicence.id, RECALLED)
   }
 
   @Test
@@ -129,16 +119,6 @@ class SentenceDatesChangedHandlerTest {
         postRecallReleaseDate = LocalDate.now().plusDays(1),
       ),
     )
-    whenever(
-      licenceService.findLicencesMatchingCriteria(
-        LicenceQueryObject(
-          nomsIds = listOf(nomisId),
-          statusCodes = listOf(
-            ACTIVE,
-          ),
-        ),
-      ),
-    ).thenReturn(emptyList())
     val inProgressLicence = createCrdLicence()
     whenever(
       licenceRepository.findAllByNomsIdAndStatusCodeIn(
