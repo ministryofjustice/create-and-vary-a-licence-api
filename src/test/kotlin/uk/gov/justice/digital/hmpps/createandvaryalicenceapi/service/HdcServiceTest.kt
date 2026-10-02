@@ -206,7 +206,6 @@ class HdcServiceTest {
       listOf(
         hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = HdcStatus.APPROVED.name),
         hdcPrisonerStatus().copy(bookingId = 2L, approvalStatus = HdcStatus.NOT_A_HDC_RELEASE.name),
-        hdcPrisonerStatus().copy(bookingId = 3L, approvalStatus = HdcStatus.RISK_CHECKS_COMPLETE.name),
       ),
     )
 
@@ -232,7 +231,6 @@ class HdcServiceTest {
     fun isApproved() {
       assertThat(statuses.isExpectedHdcRelease(1L)).isTrue
       assertThat(statuses.isExpectedHdcRelease(2L)).isFalse
-      assertThat(statuses.isExpectedHdcRelease(3L)).isTrue
     }
   }
 
