@@ -46,6 +46,7 @@ generic-service:
     REMAND_ENABLED: true
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-10-01
     PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE: 2026-12-31
+    USE_POLICY_4_DOT_1: false
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:

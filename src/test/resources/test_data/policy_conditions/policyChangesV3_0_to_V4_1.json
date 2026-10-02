@@ -1,0 +1,77 @@
+{
+  "fromVersion" : "3.0",
+  "toVersion" : "4.1",
+  "changes" : [ {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "4858cd8b-bca6-4f11-b6ee-439e27216d7d",
+    "previousText" : "Not to seek to approach or communicate with [INSERT NAME OF VICTIM AND / OR FAMILY MEMBERS] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT].",
+    "currentText" : "Not to seek to approach or communicate with [INSERT NAME OF VICTIM AND / OR FAMILY MEMBERS] without the prior approval of your supervising officer.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
+    "previousText" : "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT] except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
+    "currentText" : "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "8e52e16e-1abf-4251-baca-2fabfcb243d0",
+    "previousText" : "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+    "currentText" : "Not to own or possess more than one mobile phone or SIM card, or install an e-sim, without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "bfbc693c-ab65-4042-920e-ddb085bc7aba",
+    "previousText" : "Not to use or access any computer or device which is internet enabled without the prior approval of your supervising officer; and only for the purpose, and only at a specific location, as specified by that officer.",
+    "currentText" : "Not to use or access any computer or device which is internet enabled without the prior approval of your supervising officer; and only for a purpose, and only at a specific location, as specified by that officer.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "REMOVED_NO_REPLACEMENTS",
+    "code" : "79ac033f-9d7a-4dab-8344-475106e58b71",
+    "previousText" : "To notify your supervising officer of the details of any passport that you possess (including passport number), and of any intention to apply for a new passport.",
+    "currentText" : null,
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "0a370862-5426-49c1-b6d4-3d074d78a81a",
+    "previousText" : "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
+    "currentText" : "You must stay at the address approved by your supervising officer between [TIME] and [TIME] each day, unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
+    "previousText" : "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+    "currentText" : "Report to staff at the Approved Premises where you reside at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
+    "previousText" : "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+    "currentText" : "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "1dc7ee29-df47-48a8-90b6-69e286692d8a",
+    "previousText" : "To comply with any instruction given by your supervising officer requiring you to attend polygraph testing. To participate in polygraph sessions and examinations as instructed by or under the authority of your supervising officer and to comply with any instruction given to you during a polygraph session by the person conducting the polygraph.",
+    "currentText" : "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop, interfere with, or otherwise undermine the test.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
+    "previousText" : "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
+    "currentText" : "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. You must not try to stop, interfere with, or otherwise undermine the test.",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "NEW_OPTIONS",
+    "code" : "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
+    "previousText" : "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
+    "currentText" : "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",
+    "suggestions" : [ ]
+  }, {
+    "changeType" : "TEXT_CHANGE",
+    "code" : "2F8A5418-C6E4-4F32-9E58-64B23550E504",
+    "previousText" : "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
+    "currentText" : "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities your probation officer asks you to.",
+    "suggestions" : [ ]
+  } ]
+}
