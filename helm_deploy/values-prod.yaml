@@ -11,7 +11,6 @@ generic-service:
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
-    HDC_EVENT_LISTENER_DISABLED: "false"
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
     HMPPS_AUTH_TOKEN_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_DELIUS_API_URL: "https://create-and-vary-a-licence-and-delius.hmpps.service.justice.gov.uk"
@@ -31,6 +30,7 @@ generic-service:
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
     PRISON_EVENT_LISTENER_ENABLED: true
     PRISONER_MERGED_HANDLER_ENABLED: true
+    HDC_EVENT_LISTENER_DISABLED: "false"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:

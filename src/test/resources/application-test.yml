@@ -88,16 +88,16 @@ hmpps:
         queueName: domainevents-queue
         dlqName: domainevents-queue-dlq
         subscribeTopicId: domainevents
-        dlqMaxReceiveCount: 2
+        dlqMaxReceiveCount: 1
       hdccvleventsqueue:
         queueName: hmpps_hdc_api_queue
         dlqName: hmpps_hdc_api_dlq
-        dlqMaxReceiveCount: 2
+        dlqMaxReceiveCount: 1
       prisoneventsqueue:
         queueName: prisonevents-queue
         dlqName: prisonevents-queue-dlq
         subscribeTopicId: prisonevents
-        dlqMaxReceiveCount: 2
+        dlqMaxReceiveCount: 1
     topics:
       domainevents:
         arn: arn:aws:sns:eu-west-2:000000000000:domainevents-topic
