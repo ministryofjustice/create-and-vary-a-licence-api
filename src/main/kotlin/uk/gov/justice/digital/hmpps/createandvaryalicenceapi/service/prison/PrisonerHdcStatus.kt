@@ -11,14 +11,7 @@ data class PrisonerHdcStatus(
   val passed: Boolean = false,
   val refusedReason: String? = null,
 ) : HdcStatusHolder {
-  override val hdcStatus: HdcStatus = parseHdcStatus(approvalStatus)
-
+  override val hdcStatus: HdcStatus = if (isApproved()) HdcStatus.APPROVED else HdcStatus.NOT_A_HDC_RELEASE
   override fun isApproved() = approvalStatus == "APPROVED"
   override fun isHdcRelease() = isApproved()
-
-  private fun parseHdcStatus(status: String?): HdcStatus {
-    if (status == null) return HdcStatus.NOT_A_HDC_RELEASE
-    return runCatching { HdcStatus.valueOf(status) }
-      .getOrDefault(HdcStatus.NOT_A_HDC_RELEASE)
-  }
 }
