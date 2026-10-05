@@ -32,7 +32,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceRe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicencePermissionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
@@ -1030,6 +1029,7 @@ class LicenceController(
     }
   }
 
+  @Deprecated("This only used for integration tests - need to rewrite to be sqs based tests")
   @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/sentence-dates"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -1159,70 +1159,6 @@ class LicenceController(
     @PathVariable("licenceId") licenceId: Long,
   ) {
     licenceService.reviewWithNoVariationRequired(licenceId)
-  }
-
-  @Tag(name = Tags.LICENCES)
-  @PostMapping(value = ["/id/{licenceId}/deactivate-licence-and-variations"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Deactivate an active licence and any associated variations",
-    description = "Deactivate the supplied ACTIVE licence, and any variations of that licence. Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Licence(s) deactivated",
-        content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class)),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun deactivateLicenceAndVariations(
-    @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody
-    body: DeactivateLicenceAndVariationsRequest,
-  ) {
-    if (prisonEventHandlerEnabled) {
-      log.debug(
-        "Not deactivating licence and variations for licenceId: {} as prison events handler is enabled",
-        licenceId,
-      )
-    } else {
-      licenceService.deactivateLicenceAndVariations(licenceId, body)
-    }
   }
 
   @Tag(name = Tags.LICENCES)
