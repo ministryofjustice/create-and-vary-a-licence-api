@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -29,7 +30,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -323,34 +325,59 @@ class HdcService(
 
   @Transactional
   fun convertToCrdLicence(nomsNumber: String) {
-    val licence = hdcLicenceRepository.getLicenceEligibleForCrdConversion(nomsNumber)
-    licence?.let {
-      licence.deactivate()
-      licenceRepository.saveAndFlush(licence)
+    val licences = hdcLicenceRepository.getLicenceEligibleForCrdConversion(nomsNumber)
+    if (licences.isNotEmpty()) {
+      val crdCopies = licences.associate { it.id to copyLicence(licences, it) }
 
-      val newLicence = licenceService.populateCopy(
-        original = licence,
-        copy = crdLicenceFactory.createFromHdc(licence, LicenceStatus.IN_PROGRESS),
-      )
+      licenceService.inactivateLicences(licences, deactivateInProgressVersions = true)
 
-      addAuditToOldLicence(licence, newLicence)
+      licences.forEach { licence ->
+
+        val newLicence = licenceService.populateCopy(
+          original = licence,
+          copy = crdCopies[licence.id]!!,
+        )
+
+        addAudits(licence, newLicence)
+      }
     }
   }
 
-  private fun addAuditToOldLicence(
+  private fun copyLicence(
+    licences: List<HdcLicenceEntity>,
+    licence: HdcLicenceEntity,
+  ): CrdLicence {
+    val keepAsApproved = licences.size > 1 && licence.statusCode == APPROVED
+    return if (keepAsApproved) {
+      crdLicenceFactory.createFromHdc(licence)
+    } else {
+      crdLicenceFactory.createFromHdc(licence, IN_PROGRESS)
+    }
+  }
+
+  private fun addAudits(
     licence: HdcLicenceEntity,
     newLicence: Licence,
   ) {
-    val detail =
-      "Old ID ${licence.id}, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}"
-    val summary = "Hdc licence converted to CRD licence for ${newLicence.forename} ${newLicence.surname}"
+    val detail = "Old ID ${licence.id}, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}"
+    val summaryParent = "Hdc licence converted to CRD licence on Opt Out"
 
-    val audit = AuditEvent(
+    val auditForParent = AuditEvent(
       licenceId = licence.id,
-      summary = summary,
+      summary = summaryParent,
       detail = detail,
       eventType = SYSTEM_EVENT,
     )
-    auditService.recordAuditEvent(audit)
+    auditService.recordAuditEvent(auditForParent)
+
+    val summaryChild = "CRD licence converted from HDC on Opt Out"
+
+    val auditForChild = AuditEvent(
+      licenceId = newLicence.id,
+      summary = summaryChild,
+      detail = detail,
+      eventType = SYSTEM_EVENT,
+    )
+    auditService.recordAuditEvent(auditForChild)
   }
 }

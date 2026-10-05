@@ -64,13 +64,39 @@ values (
 	   );
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
-values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
+values ((select max(id) from licence), 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
-values (1, 'notBreakLaw', 2, 'Do not break the law', 'AP');
+values ((select max(id) from licence), 'notBreakLaw', 2, 'Do not break the law', 'AP');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
-values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');
+values ((select max(id) from licence), 'attendMeetings', 3, 'Attend meetings', 'PSS');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
-VALUES (1, true, 'HDC Programme');
+VALUES ((select max(id) from licence), true, 'HDC Programme');
+
+insert into probation_contact (
+  appointment_type,
+  person,
+  appointment_time_type,
+  appointment_time,
+  address_text,
+  telephone_contact_number,
+  alternative_telephone_contact_number,
+  date_created,
+  date_last_updated
+)
+values (
+  'SPECIFIC_PERSON',
+  'Probation Officer IP',
+  'SPECIFIC_DATE_TIME',
+  '2026-10-01 10:00:00+00',
+  '1 Probation Street, London',
+  '07123456789',
+  '07000000000',
+  current_timestamp,
+  current_timestamp
+);
+
+insert into licence_probation_contact (licence_id, probation_contact_id)
+values ((select max(id) from licence), (select max(id) from probation_contact));

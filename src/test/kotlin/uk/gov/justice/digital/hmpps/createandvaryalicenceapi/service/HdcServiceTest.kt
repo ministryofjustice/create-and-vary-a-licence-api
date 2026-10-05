@@ -53,7 +53,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import java.time.Clock
 import java.time.DayOfWeek.FRIDAY
@@ -131,7 +130,7 @@ class HdcServiceTest {
     val populatedCrd = crdToPopulate.copy(id = 2)
     val auditCaptor = argumentCaptor<AuditEvent>()
 
-    whenever(hdcLicenceRepository.getLicenceEligibleForCrdConversion("A1234AA")).thenReturn(hdcLicence)
+    whenever(hdcLicenceRepository.getLicenceEligibleForCrdConversion("A1234AA")).thenReturn(listOf(hdcLicence))
     whenever(crdLicenceFactory.createFromHdc(hdcLicence, IN_PROGRESS)).thenReturn(crdToPopulate)
     whenever(licenceService.populateCopy(hdcLicence, crdToPopulate)).thenReturn(populatedCrd)
 
@@ -141,13 +140,22 @@ class HdcServiceTest {
     // Then
     verify(crdLicenceFactory).createFromHdc(hdcLicence, IN_PROGRESS)
     verify(licenceService).populateCopy(hdcLicence, crdToPopulate)
-    verify(auditService).recordAuditEvent(auditCaptor.capture())
-    assertThat(auditCaptor.firstValue.licenceId).isEqualTo(hdcLicence.id)
-    assertThat(auditCaptor.firstValue.summary)
-      .isEqualTo("Hdc licence converted to CRD licence for ${populatedCrd.forename} ${populatedCrd.surname}")
-    assertThat(auditCaptor.firstValue.detail)
+    verify(licenceService).inactivateLicences(listOf(hdcLicence), deactivateInProgressVersions = true)
+    verify(auditService, times(2)).recordAuditEvent(auditCaptor.capture())
+
+    val hdcAuditEvent = auditCaptor.firstValue
+    assertThat(hdcAuditEvent.licenceId).isEqualTo(hdcLicence.id)
+    assertThat(hdcAuditEvent.summary)
+      .isEqualTo("Hdc licence converted to CRD licence on Opt Out")
+    assertThat(hdcAuditEvent.detail)
       .isEqualTo("Old ID 1, new ID 2 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
-    assertThat(hdcLicence.statusCode).isEqualTo(INACTIVE)
+
+    val crdAuditEvent = auditCaptor.secondValue
+    assertThat(crdAuditEvent.licenceId).isEqualTo(populatedCrd.id)
+    assertThat(crdAuditEvent.summary)
+      .isEqualTo("CRD licence converted from HDC on Opt Out")
+    assertThat(crdAuditEvent.detail)
+      .isEqualTo("Old ID 1, new ID 2 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
   }
 
   @Test
