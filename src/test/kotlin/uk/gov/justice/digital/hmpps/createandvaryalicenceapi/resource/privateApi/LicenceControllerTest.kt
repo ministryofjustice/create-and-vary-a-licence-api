@@ -34,7 +34,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -48,7 +47,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.SentenceDates
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -442,19 +440,6 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).reviewWithNoVariationRequired(4L)
-  }
-
-  @Test
-  fun `deactivate a licence and variations`() {
-    val request = DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.RECALLED)
-    mvc.perform(
-      post("/licence/id/4/deactivate-licence-and-variations")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(request)),
-    )
-
-    verify(licenceService, times(1)).deactivateLicenceAndVariations(4, request)
   }
 
   private companion object {
