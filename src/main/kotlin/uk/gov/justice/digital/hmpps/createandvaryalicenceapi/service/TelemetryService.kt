@@ -101,7 +101,7 @@ class TelemetryService(
   fun recordMigrateStandardConditionsJobEvent(licencesMigrated: Int = 0) {
     telemetryClient.trackEvent(
       "MigrateStandardConditionsJob",
-      mapOf("licences" to licencesMigrated.toString()),
+      mapOf("active licences" to licencesMigrated.toString()),
       null,
     )
   }

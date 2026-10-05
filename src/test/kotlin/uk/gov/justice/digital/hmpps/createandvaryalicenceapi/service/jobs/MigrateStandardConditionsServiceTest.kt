@@ -24,7 +24,7 @@ class MigrateStandardConditionsServiceTest {
     val version = "4.0"
     val licenceIds = listOf(1L, 2L, 3L)
 
-    whenever(isrProgressionLicenceRepository.findInFlightLicenceIds()).thenReturn(licenceIds)
+    whenever(isrProgressionLicenceRepository.findActiveLicenceIds()).thenReturn(licenceIds)
 
     service.migrateStandardConditions(version)
 

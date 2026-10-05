@@ -139,7 +139,7 @@ class TelemetryServiceTest {
 
     verify(telemetryClient).trackEvent(
       eq("MigrateStandardConditionsJob"),
-      eq(mapOf("licences" to licencesMigrated.toString())),
+      eq(mapOf("active licences" to licencesMigrated.toString())),
       eq(null),
     )
   }
