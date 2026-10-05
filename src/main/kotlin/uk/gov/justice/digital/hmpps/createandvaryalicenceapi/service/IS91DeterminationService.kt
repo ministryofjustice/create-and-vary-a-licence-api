@@ -10,27 +10,31 @@ class IS91DeterminationService(
 ) {
 
   companion object IS91Constants {
-    const val OFFENCE_DESCRIPTION = "ILLEGAL IMMIGRANT/DETAINEE"
-    const val DEPORTATION_RECOMMENDED = "3006"
-    const val IMMIGRATION_DETAINEE = "5500"
-    const val IMMIGRATION_DECISION_TO_DEPORT = "5502"
-    const val EXTRADITED = "4022"
-
-    val IS91_RESULT_CODES =
-      listOf(DEPORTATION_RECOMMENDED, EXTRADITED, IMMIGRATION_DETAINEE, IMMIGRATION_DECISION_TO_DEPORT)
+    const val IMMIGRATION_OFFENCE = "ILLEGAL IMMIGRANT/DETAINEE"
   }
 
-  fun isIS91Case(prisoner: PrisonerSearchPrisoner) = getIS91AndExtraditionBookingIds(listOf(prisoner)).isNotEmpty()
+  enum class Is91CourtEvents(val code: String, val description: String) {
+    DEPORTATION_RECOMMENDED("3006", "Deportation recommended"),
+    IMMIGRATION_DETAINEE("5500", "Immigration detainee"),
+    IMMIGRATION_DECISION_TO_DEPORT("5502", "Immigration decision to deport"),
+    EXTRADITED("4022", "Extradited"),
+    ;
+
+    companion object {
+      fun getCodes() = entries.map { it.code }
+      fun getCourtEventDescriptionByCode(code: String) = entries.firstOrNull { it.code == code }?.description
+    }
+  }
 
   fun getIS91AndExtraditionBookingIds(prisoners: List<PrisonerSearchPrisoner>): List<Long> {
-    val (immigrationDetainees, nonImmigrationDetainees) = prisoners.partition { it.mostSeriousOffence == OFFENCE_DESCRIPTION }
+    val (immigrationDetainees, nonImmigrationDetainees) = prisoners.partition { it.mostSeriousOffence == IMMIGRATION_OFFENCE }
     val immigrationDetaineeBookings = immigrationDetainees.mapNotNull { it.bookingId?.toLong() }
     val is91OutcomeBookings = bookingsWithIS91Outcomes(nonImmigrationDetainees.mapNotNull { it.bookingId?.toLong() })
     return immigrationDetaineeBookings + is91OutcomeBookings
   }
 
   private fun bookingsWithIS91Outcomes(bookingIds: List<Long>): List<Long> {
-    val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(bookingIds, IS91_RESULT_CODES)
+    val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(bookingIds, Is91CourtEvents.getCodes())
     return courtEventOutcomes.map { it.bookingId }
   }
 }

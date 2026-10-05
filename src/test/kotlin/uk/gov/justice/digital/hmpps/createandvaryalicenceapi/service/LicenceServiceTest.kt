@@ -3094,7 +3094,7 @@ class LicenceServiceTest {
       licenceVersion = "2.0",
     )
     whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+    whenever(licenceRepository.findAllByNomsId(aLicenceEntity.nomsId!!)).thenReturn(
       listOf(
         aLicenceEntity,
         variationLicence,
