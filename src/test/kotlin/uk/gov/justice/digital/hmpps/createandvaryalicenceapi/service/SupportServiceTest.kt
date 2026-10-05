@@ -9,6 +9,9 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Is91SupportInfo.Is91CourtEventOutcome
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RemandSupportInfo.RemandCourtEventOutcome
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.Is91CourtEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
@@ -95,58 +98,7 @@ class SupportServiceTest {
   }
 
   @Test
-  fun `get is-91 status for absent offender`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
-
-    val exception = assertThrows<IllegalStateException> {
-      service.getIS91Status("A1234AA")
-    }
-
-    assertThat(exception.message).isEqualTo("Found 0 prisoners for: A1234AA")
-  }
-
-  @Test
-  fun `get is-91 status for present offender returns true for an illegal immigrant offence code`() {
-    val prisoner = aPrisonerSearchResult.copy(mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE")
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
-    whenever(iS91DeterminationService.isIS91Case(prisoner)).thenReturn(true)
-
-    val status = service.getIS91Status("A1234AA")
-    assertThat(status).isTrue()
-  }
-
-  @Test
-  fun `get is-91 status for present offender returns false for any other outcome code`() {
-    val prisoner = aPrisonerSearchResult.copy(mostSeriousOffence = "OFFENCE1")
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
-    whenever(iS91DeterminationService.isIS91Case(prisoner)).thenReturn(false)
-
-    val status = service.getIS91Status("A1234AA")
-    assertThat(status).isFalse()
-  }
-
-  @Test
-  fun `get recall info errors when prisoner has no booking id`() {
-    val prisoner = aPrisonerSearchResult.copy(bookingId = null)
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
-
-    val exception = assertThrows<IllegalStateException> {
-      service.getRecallInfo("A1234AA")
-    }
-
-    assertThat(exception.message).isEqualTo("Prison number A1234AA has no booking id")
-  }
-
-  @Test
   fun `get recall info returns standard recall`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        aPrisonerSearchResult,
-      ),
-    )
-
     val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(
       bookingId = 123456L,
       sentenceTypeRecallTypes = listOf(
@@ -168,7 +120,7 @@ class SupportServiceTest {
     whenever(prisonService.getSentenceAndRecallTypes(123456L)).thenReturn(bookingSentenceAndRecallTypes)
     whenever(prisonService.getRecallType(bookingSentenceAndRecallTypes)).thenReturn(RecallType.STANDARD)
 
-    val result = service.getRecallInfo("A1234AA")
+    val result = service.getRecallInfo(123456L)
 
     assertThat(result.recallType).isEqualTo(RecallType.STANDARD)
     assertThat(result.recallName).isEqualTo("Standard Recall")
@@ -179,12 +131,6 @@ class SupportServiceTest {
 
   @Test
   fun `get recall info returns fixed term recall`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        aPrisonerSearchResult,
-      ),
-    )
-
     val bookingSentenceAndRecallTypes = BookingSentenceAndRecallTypes(
       bookingId = 123456L,
       sentenceTypeRecallTypes = listOf(
@@ -198,7 +144,7 @@ class SupportServiceTest {
     whenever(prisonService.getSentenceAndRecallTypes(123456L)).thenReturn(bookingSentenceAndRecallTypes)
     whenever(prisonService.getRecallType(bookingSentenceAndRecallTypes)).thenReturn(RecallType.FIXED_TERM)
 
-    val result = service.getRecallInfo("A1234AA")
+    val result = service.getRecallInfo(123456L)
 
     assertThat(result.recallType).isEqualTo(RecallType.FIXED_TERM)
     assertThat(result.recallName).isEqualTo("14 Day Fixed Term Recall")
@@ -209,20 +155,14 @@ class SupportServiceTest {
 
   @Test
   fun `get remand info returns expected false if not on remand`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        aPrisonerSearchResult,
-      ),
-    )
-
     whenever(
       prisonService.getCourtOutcomeEvents(
         listOf(123456L),
-        RemandCourtEvents.getRemandCourtCodes(),
+        RemandCourtEvents.getCodes(),
       ),
     ).thenReturn(emptyList())
 
-    val result = service.getRemandInfo("A1234AA")
+    val result = service.getRemandInfo(123456L)
 
     assertThat(result.isRemand).isFalse()
     assertThat(result.courtEventOutcomeCode).isNull()
@@ -231,16 +171,10 @@ class SupportServiceTest {
 
   @Test
   fun `get remand info returns a correctly populated object`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        aPrisonerSearchResult,
-      ),
-    )
-
     whenever(
       prisonService.getCourtOutcomeEvents(
         listOf(123456L),
-        RemandCourtEvents.getRemandCourtCodes(),
+        RemandCourtEvents.getCodes(),
       ),
     ).thenReturn(
       listOf(
@@ -252,11 +186,45 @@ class SupportServiceTest {
       ),
     )
 
-    val result = service.getRemandInfo("A1234AA")
+    val result = service.getRemandInfo(123456L)
 
     assertThat(result.isRemand).isTrue()
     assertThat(result.courtEventOutcomeCode).isEqualTo("4531")
     assertThat(result.courtEventOutcomeDescription).isEqualTo("Remand in Custody (Bail Refused)")
+    assertThat(result.remandCourtEventOutcomes).containsExactly(
+      RemandCourtEventOutcome(
+        "4531",
+        "Remand in Custody (Bail Refused)",
+      ),
+    )
+  }
+
+  @Test
+  fun `get IS91 info returns a correctly populated object`() {
+    whenever(
+      prisonService.getCourtOutcomeEvents(
+        listOf(123456L),
+        Is91CourtEvents.getCodes(),
+      ),
+    ).thenReturn(
+      listOf(
+        CourtEventOutcome(
+          bookingId = 123456L,
+          eventId = 1L,
+          outcomeReasonCode = "3006",
+        ),
+      ),
+    )
+
+    val result = service.getIs91Info(123456L)
+
+    assertThat(result.isIs91Case).isTrue()
+    assertThat(result.is91CourtEventOutcomes).containsExactly(
+      Is91CourtEventOutcome(
+        "3006",
+        "Deportation recommended",
+      ),
+    )
   }
 
   @Test
@@ -274,7 +242,7 @@ class SupportServiceTest {
     whenever(prisonService.getRecallType(bookingSentenceAndRecallTypes))
       .thenReturn(RecallType.NONE)
 
-    whenever(prisonService.getCourtOutcomeEvents(listOf(123456L), RemandCourtEvents.getRemandCourtCodes()))
+    whenever(prisonService.getCourtOutcomeEvents(listOf(123456L), RemandCourtEvents.getCodes()))
       .thenReturn(
         listOf(
           CourtEventOutcome(
@@ -285,13 +253,27 @@ class SupportServiceTest {
         ),
       )
 
-    whenever(iS91DeterminationService.isIS91Case(aPrisonerSearchResult)).thenReturn(false)
+    whenever(
+      prisonService.getCourtOutcomeEvents(
+        listOf(123456L),
+        Is91CourtEvents.getCodes(),
+      ),
+    ).thenReturn(
+      listOf(
+        CourtEventOutcome(
+          bookingId = 123456L,
+          eventId = 1L,
+          outcomeReasonCode = "3006",
+        ),
+      ),
+    )
 
     val result = service.getSupportInfo("A1234AA")
 
-    assertThat(result.isIS91Case).isFalse()
+    assertThat(result.isIS91Case).isTrue()
     assertThat(result.recallSupportInfo?.recallType).isEqualTo(RecallType.NONE)
     assertThat(result.remandSupportInfo?.isRemand).isTrue()
+    assertThat(result.is91SupportInfo?.isIs91Case).isTrue()
   }
 
   private companion object {
