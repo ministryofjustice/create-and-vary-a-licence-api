@@ -16,4 +16,14 @@ interface ISRProgressionLicenceRepository : JpaRepository<Licence, Long> {
     nativeQuery = true,
   )
   fun findInFlightLicenceIds(): List<Long>
+
+  @Query(
+    value = """
+            SELECT l.id
+            FROM licence l
+            WHERE l.status_code IN ('ACTIVE')
+              """,
+    nativeQuery = true,
+  )
+  fun findActiveLicenceIds(): List<Long>
 }
