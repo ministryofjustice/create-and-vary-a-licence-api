@@ -7,14 +7,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.RECALLED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.RESENTENCED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import java.time.LocalDate
@@ -75,7 +75,7 @@ class SentenceDatesChangedHandler(
 
     log.info("Checking if prisoner resentenced, ssd: {}, lsd: {}", ssd, lsd)
     if (ssd != null && lsd != null && ssd.isAfter(lsd)) {
-      deactivateLicenceAndVariations(licence.id, LicenceDeactivationReason.RESENTENCED)
+      licenceService.deactivateLicenceAndVariations(licence.id, RESENTENCED)
     }
   }
 
@@ -86,16 +86,9 @@ class SentenceDatesChangedHandler(
         return
       }
       if (prrd.isAfter(LocalDate.now())) {
-        deactivateLicenceAndVariations(licence.id, LicenceDeactivationReason.RECALLED)
+        licenceService.deactivateLicenceAndVariations(licence.id, RECALLED)
       }
     }
-  }
-
-  private fun deactivateLicenceAndVariations(licenceId: Long, reason: LicenceDeactivationReason) {
-    licenceService.deactivateLicenceAndVariations(
-      licenceId,
-      DeactivateLicenceAndVariationsRequest(reason),
-    )
   }
 
   private fun updateSentenceDates(nomisId: String) {
