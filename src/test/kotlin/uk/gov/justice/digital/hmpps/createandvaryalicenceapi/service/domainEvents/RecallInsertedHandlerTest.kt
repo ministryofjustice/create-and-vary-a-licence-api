@@ -8,7 +8,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import tools.jackson.module.kotlin.jacksonObjectMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -18,7 +17,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceAndRecallType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceRecallType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.FIXED_TERM
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.STANDARD_RECALL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 
 class RecallInsertedHandlerTest {
@@ -56,12 +56,7 @@ class RecallInsertedHandlerTest {
 
     handler.handleEvent(mapper.writeValueAsString(aRecallInsertedEvent()))
 
-    verify(
-      licenceService,
-    ).deactivateLicenceAndVariations(
-      licence.id,
-      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.FIXED_TERM),
-    )
+    verify(licenceService).deactivateLicenceAndVariations(licence.id, FIXED_TERM)
   }
 
   @Test
@@ -81,12 +76,7 @@ class RecallInsertedHandlerTest {
 
     handler.handleEvent(mapper.writeValueAsString(aRecallInsertedEvent()))
 
-    verify(
-      licenceService,
-    ).deactivateLicenceAndVariations(
-      licence.id,
-      DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.STANDARD_RECALL),
-    )
+    verify(licenceService).deactivateLicenceAndVariations(licence.id, STANDARD_RECALL)
   }
 
   @Test
