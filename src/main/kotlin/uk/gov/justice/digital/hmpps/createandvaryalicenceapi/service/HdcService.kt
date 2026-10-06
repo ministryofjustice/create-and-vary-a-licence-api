@@ -30,6 +30,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import java.time.Clock
@@ -329,7 +331,8 @@ class HdcService(
     if (licences.isNotEmpty()) {
       val crdCopies = licences.associate { it.id to copyLicence(licences, it) }
 
-      licenceService.inactivateLicences(licences, deactivateInProgressVersions = true)
+      val reason = "Licence automatically inactivated after HDC opt out event"
+      licenceService.inactivateLicences(licences, reason = reason, deactivateInProgressVersions = true, username = SYSTEM_USER)
 
       licences.forEach { licence ->
 
@@ -338,7 +341,8 @@ class HdcService(
           copy = crdCopies[licence.id]!!,
         )
 
-        addAudits(licence, newLicence)
+        addOptOutAudits(licence, newLicence)
+        addLicenceOptOutEvents(licence, newLicence)
       }
     }
   }
@@ -355,7 +359,24 @@ class HdcService(
     }
   }
 
-  private fun addAudits(
+  private fun addLicenceOptOutEvents(
+    licence: HdcLicenceEntity,
+    newLicence: Licence,
+  ) {
+    licenceService.createLicenceEvent(
+      licenceId = licence.id,
+      eventType = INACTIVE_WHEN_HDC_OPT_OUT,
+      eventDescription = "This HDC licence was converted to CRD licence on Opt Out",
+    )
+
+    licenceService.createLicenceEvent(
+      licenceId = newLicence.id,
+      eventType = CRD_CREATED_WHEN_HDC_OPT_OUT,
+      eventDescription = "This CRD Licence was converted from Hdc a licence on Opt Out",
+    )
+  }
+
+  private fun addOptOutAudits(
     licence: HdcLicenceEntity,
     newLicence: Licence,
   ) {

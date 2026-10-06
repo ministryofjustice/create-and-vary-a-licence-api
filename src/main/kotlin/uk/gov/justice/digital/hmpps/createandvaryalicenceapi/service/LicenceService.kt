@@ -566,6 +566,7 @@ class LicenceService(
     licences: List<EntityLicence>,
     reason: String? = null,
     deactivateInProgressVersions: Boolean? = true,
+    username: String? = null,
   ) {
     licences.forEach { it.deactivate() }
     if (licences.isNotEmpty()) {
@@ -575,7 +576,7 @@ class LicenceService(
         auditEventRepository.saveAndFlush(
           AuditEvent(
             licenceId = licence.id,
-            username = "SYSTEM",
+            username = username ?: "SYSTEM",
             fullName = "SYSTEM",
             eventType = AuditEventType.SYSTEM_EVENT,
             summary = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
@@ -1181,6 +1182,27 @@ class LicenceService(
     } else {
       licence
     }
+  }
+
+  @Transactional
+  fun createLicenceEvent(
+    licenceId: Long,
+    eventType: LicenceEventType,
+    username: String? = SYSTEM_USER,
+    forenames: String? = "SYSTEM",
+    surname: String? = "SYSTEM",
+    eventDescription: String? = null,
+  ): LicenceEvent {
+    val licenceEvent = LicenceEvent(
+      licenceId = licenceId,
+      eventType = eventType,
+      username = username,
+      forenames = forenames,
+      surname = surname,
+      eventDescription = eventDescription,
+    )
+
+    return licenceEventRepository.save(licenceEvent)
   }
 
   private fun EntityLicence.toSummary(): LicenceSummary = transformToLicenceSummary(

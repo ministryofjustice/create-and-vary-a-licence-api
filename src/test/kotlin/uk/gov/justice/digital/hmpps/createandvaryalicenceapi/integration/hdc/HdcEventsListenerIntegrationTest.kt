@@ -24,6 +24,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.H
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.SUPERSEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -159,7 +162,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .hasSize(2)
       .extracting("summary")
       .containsExactlyInAnyOrder(
-        "Licence automatically inactivated for Person Three",
+        "Licence automatically inactivated after HDC opt out event for Person Three",
         "Hdc licence converted to CRD licence on Opt Out",
       )
 
@@ -182,22 +185,31 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       }
 
     assertThat(testRepository.findAllEventRepository())
-      .extracting(
-        "licenceId",
-        "eventType",
-        "username",
-        "forenames",
-        "surname",
-        "eventDescription",
-      )
+      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
       .containsExactly(
         tuple(
-          hdcLicence.id,
+          1L,
           SUPERSEDED,
           "SYSTEM",
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically inactivated for Person Three",
+          "Licence automatically inactivated after HDC opt out event for Person Three",
+        ),
+        tuple(
+          1L,
+          INACTIVE_WHEN_HDC_OPT_OUT,
+          "SYSTEM_USER",
+          "SYSTEM",
+          "SYSTEM",
+          "This HDC licence was converted to CRD licence on Opt Out",
+        ),
+        tuple(
+          2L,
+          CRD_CREATED_WHEN_HDC_OPT_OUT,
+          "SYSTEM_USER",
+          "SYSTEM",
+          "SYSTEM",
+          "This CRD Licence was converted from Hdc a licence on Opt Out",
         ),
       )
 
@@ -250,23 +262,25 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(licences[3].statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licences[3].probationContact).isNull()
 
-    val allEvents = testRepository.findAllEventRepository()
-
-    assertThat(allEvents.filter { it.id == 1L }).hasSize(1)
-    assertThat(allEvents.filter { it.id == 2L }).hasSize(1)
-    assertThat(allEvents.filter { it.id == 3L }).hasSize(0)
-    assertThat(allEvents.filter { it.id == 4L }).hasSize(0)
+    val allEvents = testRepository.findAllEventRepository().sortedBy { it.licenceId }
+    assertThat(allEvents).hasSize(6)
+    assertThat(allEvents[0].eventType).isEqualTo(SUPERSEDED)
+    assertThat(allEvents[1].eventType).isEqualTo(LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT)
+    assertThat(allEvents[2].eventType).isEqualTo(SUPERSEDED)
+    assertThat(allEvents[3].eventType).isEqualTo(INACTIVE_WHEN_HDC_OPT_OUT)
+    assertThat(allEvents[4].eventType).isEqualTo(CRD_CREATED_WHEN_HDC_OPT_OUT)
+    assertThat(allEvents[5].eventType).isEqualTo(CRD_CREATED_WHEN_HDC_OPT_OUT)
 
     val allAudits = testRepository.findAllAuditEvents().sortedBy { it.licenceId }
     assertThat(allAudits).hasSize(8)
 
     assertThat(allAudits[0].licenceId).isEqualTo(1L)
-    assertThat(allAudits[0].summary).isEqualTo("Licence automatically inactivated for Person Approved")
+    assertThat(allAudits[0].summary).isEqualTo("Licence automatically inactivated after HDC opt out event for Person Approved")
     assertThat(allAudits[1].licenceId).isEqualTo(1L)
     assertThat(allAudits[1].summary).isEqualTo("Hdc licence converted to CRD licence on Opt Out")
 
     assertThat(allAudits[2].licenceId).isEqualTo(2L)
-    assertThat(allAudits[2].summary).isEqualTo("Licence automatically inactivated for Person Three")
+    assertThat(allAudits[2].summary).isEqualTo("Licence automatically inactivated after HDC opt out event for Person Three")
     assertThat(allAudits[3].licenceId).isEqualTo(2L)
     assertThat(allAudits[3].summary).isEqualTo("Hdc licence converted to CRD licence on Opt Out")
 
