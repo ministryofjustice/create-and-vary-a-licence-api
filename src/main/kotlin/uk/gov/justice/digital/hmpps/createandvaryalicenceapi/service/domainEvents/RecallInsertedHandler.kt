@@ -6,12 +6,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.FIXED_TERM
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceDeactivationReason.STANDARD_RECALL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 
 @Service
@@ -48,17 +48,11 @@ class RecallInsertedHandler(
 
       val recallType = prisonService.getRecallType(bookingId = nomisRecord.bookingId?.toLong()!!)
       if (recallType == RecallType.STANDARD) {
-        log.info("deactivating licence: ${activeLicence.id} due to STANDARD recall, reason ${LicenceDeactivationReason.STANDARD_RECALL.message}")
-        licenceService.deactivateLicenceAndVariations(
-          activeLicence.id,
-          DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.STANDARD_RECALL),
-        )
+        log.info("deactivating licence: ${activeLicence.id} due to STANDARD recall, reason ${STANDARD_RECALL.message}")
+        licenceService.deactivateLicenceAndVariations(activeLicence.id, STANDARD_RECALL)
       } else if (recallType == RecallType.FIXED_TERM) {
-        log.info("deactivating licence: ${activeLicence.id} due to FIXED_TERM recall, reason ${LicenceDeactivationReason.FIXED_TERM.message}")
-        licenceService.deactivateLicenceAndVariations(
-          activeLicence.id,
-          DeactivateLicenceAndVariationsRequest(LicenceDeactivationReason.FIXED_TERM),
-        )
+        log.info("deactivating licence: ${activeLicence.id} due to FIXED_TERM recall, reason ${FIXED_TERM.message}")
+        licenceService.deactivateLicenceAndVariations(activeLicence.id, FIXED_TERM)
       }
     }
   }
