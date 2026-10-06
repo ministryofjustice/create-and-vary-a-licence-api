@@ -62,6 +62,19 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  fun policyV4() {
+    webTestClient.get()
+      .uri("/licence-policy/version/4.0")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json(policy("V4"), STRICT)
+  }
+
+  @Test
   fun currentPolicy() {
     webTestClient.get()
       .uri("/licence-policy/active?licenceStartDate=2026-02-18")
@@ -71,6 +84,6 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
-      .json(policy("V4"), STRICT)
+      .json(policy("V4_1"), STRICT)
   }
 }
