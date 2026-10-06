@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.reactive.server.expectBody
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChangeResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
 
@@ -51,5 +52,19 @@ class VariationsIntegrationTest : IntegrationTestBase() {
     )
     assertThat(result.hasUpdatedCurfewHours).isFalse()
     assertThat(result.hasUpdatedCurfewAddress).isFalse()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-variation-submitted-licence.sql",
+  )
+  fun `edits a submitted variation`() {
+    webTestClient.post()
+      .uri("/variations/2/edit")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(EditVariationRequest(username = "TEST_USER"))
+      .exchange()
+      .expectStatus().isOk
   }
 }
