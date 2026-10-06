@@ -61,17 +61,23 @@ class LicencePolicyService(
   private var policies: List<LicencePolicy> = emptyList(),
   @param:Value("\${progression.model.policy-start-date:#{null}}")
   private val progressionModelPolicyStartDate: LocalDate? = null,
+  @param:Value("\${progression.model.use-policy-4-dot-1:#{false}}")
+  private val usePolicy4dot1: Boolean? = null,
 ) {
 
   init {
-    policies = listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3_0, POLICY_V4_0)
+    policies = listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3_0, POLICY_V4_0, POLICY_V4_1)
   }
 
   fun currentPolicy(licenceStartDate: LocalDate? = null): LicencePolicy {
     if (licenceStartDate?.isOnOrAfter(progressionModelPolicyStartDate) == true ||
       LocalDate.now().isOnOrAfter(progressionModelPolicyStartDate)
     ) {
-      return POLICY_V4_0
+      return if (usePolicy4dot1 == true) {
+        POLICY_V4_1
+      } else {
+        POLICY_V4_0
+      }
     }
     return POLICY_V3_0
   }
