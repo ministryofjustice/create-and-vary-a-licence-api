@@ -153,7 +153,7 @@ cache:
 domain:
   event:
     listener:
-      disabled: true
+      enabled: false
 
 prison:
   event:
