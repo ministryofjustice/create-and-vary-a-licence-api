@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 const val SENTENCE_DATES_CHANGED_EVENT_TYPE = "SENTENCE_DATES-CHANGED"
 const val CONFIRMED_RELEASE_DATE_CHANGED_EVENT_TYPE = "CONFIRMED_RELEASE_DATE-CHANGED"
 
-@ConditionalOnProperty(name = ["prison.event.listener.enabled"], havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = ["prison.event.listener.enabled"], havingValue = "true", matchIfMissing = true)
 @Service
 class PrisonEventsListener(
   private val sentenceDatesChangedHandler: SentenceDatesChangedHandler,
