@@ -25,8 +25,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Licen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PRE_PROGRESSION_POLICY_VERSIONS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion.V4_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion.V4_0
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion.V4_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
