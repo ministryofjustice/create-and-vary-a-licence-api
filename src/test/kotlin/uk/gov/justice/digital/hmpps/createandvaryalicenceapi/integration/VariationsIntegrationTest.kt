@@ -8,6 +8,7 @@ import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChangeResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariedAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 class VariationsIntegrationTest : IntegrationTestBase() {
 
@@ -66,5 +67,11 @@ class VariationsIntegrationTest : IntegrationTestBase() {
       .bodyValue(EditVariationRequest(username = "TEST_USER"))
       .exchange()
       .expectStatus().isOk
+
+    val variation = testRepository.findLicence(2)
+    assertThat(variation.statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+
+    val audit = testRepository.findFirstAuditEvent(2)
+    assertThat(audit.summary).isEqualTo("Licence variation changed to in progress for Test User2")
   }
 }
