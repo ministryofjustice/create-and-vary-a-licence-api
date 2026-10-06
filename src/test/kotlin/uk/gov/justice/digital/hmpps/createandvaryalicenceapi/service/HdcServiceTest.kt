@@ -140,7 +140,7 @@ class HdcServiceTest {
     // Then
     verify(crdLicenceFactory).createFromHdc(hdcLicence, IN_PROGRESS)
     verify(licenceService).populateCopy(hdcLicence, crdToPopulate)
-    verify(licenceService).inactivateLicences(listOf(hdcLicence), deactivateInProgressVersions = true)
+    verify(licenceService).inactivateLicences(listOf(hdcLicence), "Licence automatically inactivated after HDC opt out event", deactivateInProgressVersions = true)
     verify(auditService, times(2)).recordAuditEvent(auditCaptor.capture())
 
     val hdcAuditEvent = auditCaptor.firstValue

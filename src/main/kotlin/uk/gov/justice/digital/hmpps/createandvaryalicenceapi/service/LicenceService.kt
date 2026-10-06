@@ -566,7 +566,6 @@ class LicenceService(
     licences: List<EntityLicence>,
     reason: String? = null,
     deactivateInProgressVersions: Boolean? = true,
-    username: String? = null,
   ) {
     licences.forEach { it.deactivate() }
     if (licences.isNotEmpty()) {
@@ -576,7 +575,7 @@ class LicenceService(
         auditEventRepository.saveAndFlush(
           AuditEvent(
             licenceId = licence.id,
-            username = username ?: "SYSTEM",
+            username = "SYSTEM",
             fullName = "SYSTEM",
             eventType = AuditEventType.SYSTEM_EVENT,
             summary = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",

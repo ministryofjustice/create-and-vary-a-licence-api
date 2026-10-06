@@ -332,7 +332,7 @@ class HdcService(
       val crdCopies = licences.associate { it.id to copyLicence(licences, it) }
 
       val reason = "Licence automatically inactivated after HDC opt out event"
-      licenceService.inactivateLicences(licences, reason = reason, deactivateInProgressVersions = true, username = SYSTEM_USER)
+      licenceService.inactivateLicences(licences, reason = reason, deactivateInProgressVersions = true)
 
       licences.forEach { licence ->
 
