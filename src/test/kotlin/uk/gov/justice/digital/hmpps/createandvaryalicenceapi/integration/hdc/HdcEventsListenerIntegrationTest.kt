@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.H
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.LicenceLinkType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.SUPERSEDED
@@ -216,6 +216,13 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     argumentCaptor<HMPPSDomainEvent>().apply {
       verify(eventsPublisher, times(1)).publishDomainEvent(capture())
     }
+
+    val links = testRepository.findAllLicenceLinks()
+    assertThat(links)
+      .filteredOn { it.linkType == LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE }
+      .hasSize(1)
+      .extracting("fromLicenceId", "toLicenceId")
+      .containsExactly(tuple(1L, 2L))
   }
 
   @SqlGroup(
@@ -265,7 +272,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val allEvents = testRepository.findAllEventRepository().sortedBy { it.licenceId }
     assertThat(allEvents).hasSize(6)
     assertThat(allEvents[0].eventType).isEqualTo(SUPERSEDED)
-    assertThat(allEvents[1].eventType).isEqualTo(LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT)
+    assertThat(allEvents[1].eventType).isEqualTo(INACTIVE_WHEN_HDC_OPT_OUT)
     assertThat(allEvents[2].eventType).isEqualTo(SUPERSEDED)
     assertThat(allEvents[3].eventType).isEqualTo(INACTIVE_WHEN_HDC_OPT_OUT)
     assertThat(allEvents[4].eventType).isEqualTo(CRD_CREATED_WHEN_HDC_OPT_OUT)
@@ -293,6 +300,13 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(allAudits[6].summary).isEqualTo("Updated standard conditions to policy version 4.0 for Person Three")
     assertThat(allAudits[7].licenceId).isEqualTo(4L)
     assertThat(allAudits[7].summary).isEqualTo("CRD licence converted from HDC on Opt Out")
+
+    val links = testRepository.findAllLicenceLinks()
+    assertThat(links)
+      .filteredOn { it.linkType == LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE }
+      .hasSize(2)
+      .extracting("fromLicenceId", "toLicenceId")
+      .containsExactly(tuple(1L, 3L), tuple(2L, 4L))
   }
 
   private fun sendMessage(messageBody: String, eventType: String) {

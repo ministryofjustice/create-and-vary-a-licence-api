@@ -50,6 +50,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.CurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.FirstNight
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.LicenceLinkingService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
@@ -81,6 +82,7 @@ class HdcServiceTest {
   private val auditService = mock<AuditService>()
   private val crdLicenceFactory = mock<CrdLicenceFactory>()
   private val licenceService = mock<LicenceService>()
+  private val licenceLinkingService = mock<LicenceLinkingService>()
 
   private val testClock = Clock.fixed(
     Instant.parse("2024-04-22T00:00:00Z"),
@@ -99,6 +101,7 @@ class HdcServiceTest {
       auditService,
       clock,
       crdLicenceFactory,
+      licenceLinkingService,
     )
 
   @BeforeEach
@@ -490,6 +493,7 @@ class HdcServiceTest {
         auditService,
         clock,
         crdLicenceFactory,
+        licenceLinkingService,
         useCurrentHdcStatus = true,
       )
 

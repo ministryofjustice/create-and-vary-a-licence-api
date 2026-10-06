@@ -26,6 +26,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedExternalRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedProbationConfirmContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.LicenceLinkType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.entity.LicenceLink
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.CurfewTimesMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -49,6 +51,11 @@ interface TestLicenceRepository : JpaRepository<Licence, Long> {
 interface TestAuditEventRepository : JpaRepository<AuditEvent, Long> {
   fun findAllByLicenceIdIn(licenceIds: List<Long>): List<AuditEvent>
   fun findAllByLicenceIdNull(): List<AuditEvent>
+}
+
+@Repository
+interface TestLicenceLinkRepository : JpaRepository<LicenceLink, Long> {
+  fun existsByToLicenceIdAndLinkType(toLicenceId: Long, linkType: LicenceLinkType): Boolean
 }
 
 @Repository
@@ -133,6 +140,7 @@ class TestRepository(
   private val migrationRepository: TestMigrationRepository,
   private val hdcCurfewAddressRepository: TestHdcCurfewAddressRepository,
   private val licenceEventRepository: TestLicenceEventRepository,
+  private val licenceLinkRepository: TestLicenceLinkRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -222,6 +230,8 @@ class TestRepository(
   fun findAllAuditEvents(): List<AuditEvent> = auditEventRepository.findAll()
 
   fun findAllEventRepository(): List<LicenceEvent> = licenceEventRepository.findAll()
+
+  fun findAllLicenceLinks(): List<LicenceLink> = licenceLinkRepository.findAll()
 
   fun findFirstAuditEvent(licenceId: Long = 1L): AuditEvent {
     val event = auditEventRepository.findAllByLicenceIdIn(listOf(licenceId)).firstOrNull()

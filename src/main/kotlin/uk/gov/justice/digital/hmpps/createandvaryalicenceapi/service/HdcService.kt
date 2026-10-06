@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatusHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.LicenceLinkingService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
@@ -50,6 +51,7 @@ class HdcService(
   private val auditService: AuditService,
   private val clock: Clock,
   private val crdLicenceFactory: CrdLicenceFactory,
+  private val linkingService: LicenceLinkingService,
   @param:Value("\${feature.toggle.hdcCreation.enabled}") private val useCurrentHdcStatus: Boolean = false,
 ) {
 
@@ -334,15 +336,17 @@ class HdcService(
       val reason = "Licence automatically inactivated after HDC opt out event"
       licenceService.inactivateLicences(licences, reason = reason, deactivateInProgressVersions = true)
 
-      licences.forEach { licence ->
+      licences.forEach { original ->
 
         val newLicence = licenceService.populateCopy(
-          original = licence,
-          copy = crdCopies[licence.id]!!,
+          original = original,
+          copy = crdCopies[original.id]!!,
         )
 
-        addOptOutAudits(licence, newLicence)
-        addLicenceOptOutEvents(licence, newLicence)
+        addOptOutAudits(original, newLicence)
+        addLicenceOptOutEvents(original, newLicence)
+
+        linkingService.setCrdReplacementForOptedOutLicence(original.id, newLicence.id)
       }
     }
   }
