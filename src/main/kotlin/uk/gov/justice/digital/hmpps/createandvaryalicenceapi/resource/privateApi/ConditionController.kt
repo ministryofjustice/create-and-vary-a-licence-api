@@ -452,6 +452,7 @@ class ConditionController(
       ),
     ],
   )
+  @Deprecated(message = "No need to call this endpoint, the policy on variations will be updated automatically when the variation is edited or submitted")
   fun updateLicencePolicy(
     @PathVariable("licenceId") licenceId: Long,
   ): PolicyUpdateResponse = licenceConditionService.updateLicencePolicy(licenceId)
