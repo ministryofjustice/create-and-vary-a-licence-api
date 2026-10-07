@@ -3,7 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>ConstructorParameterNaming:TimeServedProbationConfirmContactRequest.kt:TimeServedProbationConfirmContactRequest$@JsonProperty("contactStatus") @field:NotNull(message = "Confirm if you have contacted the probation team") private val _contactStatus: ContactStatus? = null</ID>
-    <ID>CyclomaticComplexMethod:LicenceService.kt:LicenceService$private fun updateLicenceStatus</ID>
+    <ID>CyclomaticComplexMethod:LicenceService.kt:LicenceService$fun updateLicenceStatus</ID>
     <ID>LargeClass:CaseloadController.kt:CaseloadController</ID>
     <ID>LargeClass:LicenceController.kt:LicenceController</ID>
     <ID>LargeClass:LicenceService.kt:LicenceService</ID>
@@ -18,8 +18,7 @@
     <ID>LongMethod:LicenceOverrideService.kt:LicenceOverrideService$@Transactional fun changeDates</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$@Transactional fun submitLicence</ID>
     <ID>LongMethod:LicenceService.kt:LicenceService$fun transform: Licence</ID>
-    <ID>LongMethod:LicenceService.kt:LicenceService$private fun populateCopyAndAudit: EntityLicence</ID>
-    <ID>LongMethod:LicenceService.kt:LicenceService$private fun updateLicenceStatus</ID>
+    <ID>LongMethod:LicenceService.kt:LicenceService$fun updateLicenceStatus</ID>
     <ID>LongMethod:MigrationService.kt:MigrationService$fun MigrateFromHdcToCvlRequest.toHdcLicence: HdcLicence</ID>
     <ID>LongMethod:PrrdLicence.kt:PrrdLicence$override fun toString: String</ID>
     <ID>LongMethod:TimeServedLicence.kt:TimeServedLicence$override fun toString: String</ID>
@@ -74,7 +73,6 @@
     <ID>TooManyFunctions:NotifyService.kt:NotifyService</ID>
     <ID>TooManyFunctions:ReleaseDateService.kt:ReleaseDateService</ID>
     <ID>TooManyFunctions:TelemetryService.kt:TelemetryService</ID>
-    <ID>TooManyFunctions:ToEntityTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToEntityTransformers.kt</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:UpdateSentenceDateService.kt:UpdateSentenceDateService</ID>

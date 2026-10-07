@@ -36,11 +36,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISONER_UPDATED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISON_OFFENDER_MERGED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISON_OFFENDER_RECEIVED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PRISON_OFFENDER_RELEASED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler.AdditionalInformationPrisonerMerged
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler.HMPPSPrisonerMergedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerReceivedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerReleasedHandler
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerReleasedHandler.AdditionalInformationPrisonerReleased
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerReleasedHandler.HMPPSPrisonerReleasedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_INSERTED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RECALL_UPDATED_EVENT_TYPE
@@ -48,12 +52,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.RecallUpdatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Duration
 import java.time.LocalDate
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["domain.event.listener.enabled=true"])
+@TestPropertySource(
+  properties = [
+    "domain.event.listener.enabled=true",
+    "prisoner.released.handler.enabled=true",
+  ],
+)
 class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
@@ -79,6 +89,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var prisonerReceivedHandler: PrisonerReceivedHandler
+
+  @MockitoSpyBean
+  lateinit var prisonerReleasedHandler: PrisonerReleasedHandler
 
   @MockitoSpyBean
   lateinit var staffService: StaffService
@@ -511,6 +524,53 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
         "previousValue" to "MDI",
       ),
     )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1-approved.sql",
+  )
+  fun `A prisoner released event is processed and activates an approved licence`() {
+    val nomsId = "A1234AA"
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(
+      prisonerSearchResponse = """
+        [
+          {
+            "prisonerNumber": "$nomsId",
+            "bookingId": "123",
+            "mostSeriousOffence": "Robbery",
+            "firstName": "Person",
+            "lastName": "One",
+            "dateOfBirth": "2020-10-25"
+          }
+        ]
+      """.trimIndent(),
+    )
+
+    val event = HMPPSPrisonerReleasedEvent(
+      eventType = PRISON_OFFENDER_RELEASED_EVENT_TYPE,
+      additionalInformation = AdditionalInformationPrisonerReleased(
+        nomsNumber = nomsId,
+        reason = "RELEASED",
+      ),
+      version = 1,
+      occurredAt = "2026-08-24T00:00:00Z",
+      description = "A prisoner has been released from prison",
+    )
+
+    val message = mapper.writeValueAsString(event)
+
+    // Expect two events as a licence activated domain event will also be published
+    sendEventAndVerifyProcessed(message, event.eventType, 2)
+
+    verify(prisonerReleasedHandler).handleEvent(message)
+
+    val licence = testRepository.findLicence(1)
+    assertThat(licence.statusCode).isEqualTo(ACTIVE)
+    assertThat(licence.licenceActivatedDate).isNotNull()
+
+    val auditEvent = testRepository.findFirstAuditEvent(1)
+    assertThat(auditEvent.summary).isEqualTo("Licence set to ACTIVE for Person One")
   }
 
   private fun assertComExistsInDb(

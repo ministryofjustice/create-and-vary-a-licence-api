@@ -60,7 +60,7 @@ class HdcService(
     return HdcStatuses(hdcStatuses)
   }
 
-  fun isApprovedForHdc(bookingId: Long, hdced: LocalDate?) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
+  fun isApprovedForHdc(bookingId: Long, dateToCheck: LocalDate?) = if (dateToCheck == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
 
   @Transactional
   fun updateCrdForHdcLicences(licenceId: Long, newCrd: LocalDate?) {
