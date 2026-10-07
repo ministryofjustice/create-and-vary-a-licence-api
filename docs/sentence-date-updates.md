@@ -126,11 +126,11 @@ under normal (non-hard-stop) rules:
 
 ### Policy version safeguard
 
-Separately, if a licence was created under a the licence progression policy version (version
-4.0) and is still at a pre-release stage, and the date change causes the licence start
-date to move to before the licence progression policy start date, the licence is automatically **deactivated**, 
+Separately, if a licence was created under a post- licence progression policy version (currently version 4.0 and 4.1) 
+and is still at a pre-release stage, and the date change causes the licence start date
+to move to before the licence progression policy start date, the licence is automatically **deactivated**, 
 so that the case can be re-created under the correct, older policy version instead. 
-In this case, theresponsible practitioner is notified separately that this has happened, rather than
+In this case, the responsible practitioner is notified separately that this has happened, rather than
 being sent the usual "dates changed" notification.
 
 The inverse of this scenario is also true. If a licence was created under an older version of policy 
@@ -138,7 +138,7 @@ The inverse of this scenario is also true. If a licence was created under an old
 licence start date to move after the licence progression policy start date, the licence is automatically
 **deactivated**. This is to allow the licence to be re-recreated on the correct, more recent
 policy version.
-In this case, theresponsible practitioner is notified separately that this has happened, rather than
+In this case, the responsible practitioner is notified separately that this has happened, rather than
 being sent the usual "dates changed" notification.
 
 ## A couple of important edge cases

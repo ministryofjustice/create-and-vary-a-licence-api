@@ -23,24 +23,56 @@ class LicencePolicyServiceTest {
     private val licencePolicyService =
       LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
 
-    @Test
-    fun `Policy version 4 is returned if licence start date is not provided`() {
-      val policy = licencePolicyService.currentPolicy(null)
-      assertThat(policy.version).isEqualTo("4.0")
+    @Nested
+    inner class `useV4_1Policy enabled` {
+      private val licencePolicyService =
+        LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate, usePolicy4dot1 = true)
+
+      @Test
+      fun `Policy version 4_1 is returned if licence start date is not provided`() {
+        val policy = licencePolicyService.currentPolicy(null)
+        assertThat(policy.version).isEqualTo("4.1")
+      }
+
+      @Test
+      fun `Policy version 3 is returned if progress model policy start date is null`() {
+        val licencePolicyServiceNullStartDate = LicencePolicyService(progressionModelPolicyStartDate = null)
+
+        val policy = licencePolicyServiceNullStartDate.currentPolicy(LocalDate.now())
+        assertThat(policy.version).isEqualTo("3.0")
+      }
+
+      @Test
+      fun `Policy version 4_1 is returned if licence start date is on or after progress model policy start date`() {
+        assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate).version).isEqualTo("4.1")
+        assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate.plusDays(1)).version).isEqualTo("4.1")
+      }
     }
 
-    @Test
-    fun `Policy version 3 is returned if progress model policy start date is null`() {
-      val licencePolicyServiceNullStartDate = LicencePolicyService(progressionModelPolicyStartDate = null)
+    @Nested
+    inner class `useV4_1Policy disabled` {
+      private val licencePolicyService =
+        LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate, usePolicy4dot1 = false)
 
-      val policy = licencePolicyServiceNullStartDate.currentPolicy(LocalDate.now())
-      assertThat(policy.version).isEqualTo("3.0")
-    }
+      @Test
+      fun `Policy version 4 is returned if licence start date is not provided`() {
+        val policy = licencePolicyService.currentPolicy(null)
+        assertThat(policy.version).isEqualTo("4.0")
+      }
 
-    @Test
-    fun `Policy version 4 is returned if licence start date is on or after progress model policy start date`() {
-      assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate).version).isEqualTo("4.0")
-      assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate.plusDays(1)).version).isEqualTo("4.0")
+      @Test
+      fun `Policy version 3 is returned if progress model policy start date is null`() {
+        val licencePolicyServiceNullStartDate = LicencePolicyService(progressionModelPolicyStartDate = null)
+
+        val policy = licencePolicyServiceNullStartDate.currentPolicy(LocalDate.now())
+        assertThat(policy.version).isEqualTo("3.0")
+      }
+
+      @Test
+      fun `Policy version 4 is returned if licence start date is on or after progress model policy start date`() {
+        assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate).version).isEqualTo("4.0")
+        assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate.plusDays(1)).version).isEqualTo("4.0")
+      }
     }
   }
 
@@ -79,7 +111,7 @@ class LicencePolicyServiceTest {
 
   @Test
   fun `All versions are accessible`() {
-    assertThat(licencePolicyService.allPolicies()).hasSize(5)
+    assertThat(licencePolicyService.allPolicies()).hasSize(6)
   }
 
   @Test

@@ -29,7 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.El
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.LOCATION_MONITORING
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.RESTRICTION_ZONE
 
-val POLICY_V4_0 = LicencePolicy(
+val POLICY_V4_1 = LicencePolicy(
   additionalConditions = AdditionalConditions(
     ap = listOf(
       AdditionalConditionAp(
@@ -167,18 +167,11 @@ val POLICY_V4_0 = LicencePolicy(
             name = "name",
             type = TEXT,
           ),
-          Input(
-            case = CAPITALISED,
-            includeBefore = " and / or ",
-            label = "Enter social services department (optional)",
-            name = "socialServicesDepartment",
-            type = TEXT,
-          ),
         ),
         requiresInput = true,
-        text = "Not to seek to approach or communicate with [INSERT NAME OF VICTIM AND / OR FAMILY MEMBERS] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT].",
-        tpl = "Not to seek to approach or communicate with {name} without the prior approval of your supervising officer{socialServicesDepartment}.",
-        type = "NoContactWithVictim",
+        text = "Not to seek to approach or communicate with [INSERT NAME OF VICTIM AND / OR FAMILY MEMBERS] without the prior approval of your supervising officer.",
+        tpl = "Not to seek to approach or communicate with {name} without the prior approval of your supervising officer.",
+        type = "NoContactWithVictimV4_1",
       ),
       AdditionalConditionAp(
         category = "Making or maintaining contact with a person",
@@ -207,18 +200,11 @@ val POLICY_V4_0 = LicencePolicy(
             name = "age",
             type = TEXT,
           ),
-          Input(
-            case = CAPITALISED,
-            includeBefore = " and / or ",
-            label = "Enter social services department (optional)",
-            name = "socialServicesDepartment",
-            type = TEXT,
-          ),
         ),
         requiresInput = true,
-        text = "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT] except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
-        tpl = "Not to have unsupervised contact with {gender} children under the age of {age} without the prior approval of your supervising officer{socialServicesDepartment} except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
-        type = "UnsupervisedContactPolicyV3",
+        text = "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
+        tpl = "Not to have unsupervised contact with {gender} children under the age of {age} without the prior approval of your supervising officer except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
+        type = "UnsupervisedContactPolicyV4_1",
       ),
       AdditionalConditionAp(
         category = "Making or maintaining contact with a person",
@@ -417,7 +403,7 @@ val POLICY_V4_0 = LicencePolicy(
         categoryShort = "Items and documents",
         code = "bfbc693c-ab65-4042-920e-ddb085bc7aba",
         requiresInput = false,
-        text = "Not to use or access any computer or device which is internet enabled without the prior approval of your supervising officer; and only for the purpose, and only at a specific location, as specified by that officer.",
+        text = "Not to use or access any computer or device which is internet enabled without the prior approval of your supervising officer; and only for a purpose, and only at a specific location, as specified by that officer.",
       ),
       AdditionalConditionAp(
         category = "Possession, ownership, control or inspection of specified items or documents",
@@ -807,8 +793,8 @@ val POLICY_V4_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "Not to enter a drinking establishment [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
-        tpl = "Not to enter a drinking establishment {firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) and also serve alcohol.",
+        text = "Not to enter a drinking establishment [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) which also serve alcohol.",
+        tpl = "Not to enter a drinking establishment {firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) which also serve alcohol.",
         type = "DrinkingEstablishment",
       ),
       AdditionalConditionAp(
@@ -1115,7 +1101,7 @@ val POLICY_V4_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        text = "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         tpl = "Report to staff at {policeStation} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         type = "ReportToPoliceStation",
       ),
@@ -1361,13 +1347,13 @@ val POLICY_V4_0 = LicencePolicy(
         category = "Polygraph",
         code = "1dc7ee29-df47-48a8-90b6-69e286692d8a",
         requiresInput = false,
-        text = "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop or disrupt the test.",
+        text = "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop, interfere with, or otherwise undermine the test.",
       ),
       AdditionalConditionAp(
         category = "Drug, alcohol and solvent abuse",
         code = "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
         requiresInput = false,
-        text = "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. Do not try to stop or disrupt the test.",
+        text = "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. You must not try to stop, interfere with, or otherwise undermine the test.",
       ),
       AdditionalConditionAp(
         category = "Drug, alcohol and solvent abuse",
@@ -1502,8 +1488,8 @@ val POLICY_V4_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
-        tpl = "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
+        text = "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities your probation officer asks you to.",
+        tpl = "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities your probation officer asks you to.",
         type = "ElectronicTagPeriod",
         skippable = true,
         requiresElectronicMonitoringResponse = true,
@@ -1678,5 +1664,5 @@ val POLICY_V4_0 = LicencePolicy(
     ),
     standardConditionsPss = emptyList(),
   ),
-  version = "4.0",
+  version = "4.1",
 )

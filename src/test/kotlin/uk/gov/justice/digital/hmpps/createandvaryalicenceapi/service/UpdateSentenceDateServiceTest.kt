@@ -779,6 +779,69 @@ class UpdateSentenceDateServiceTest {
   }
 
   @Test
+  fun `should inactivate in-flight V4_1 licence when LSD moves before policy cutover date`() {
+    val v4dot1Licence = aCrdLicenceEntity.copy(
+      statusCode = IN_PROGRESS,
+      version = "4.1",
+      licenceStartDate = LocalDate.of(2026, 9, 5),
+    )
+    val recalculatedLsd = LocalDate.of(2026, 9, 1)
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(v4dot1Licence))
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(v4dot1Licence)
+    whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(recalculatedLsd)
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        ),
+      ),
+    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
+
+    service.updateSentenceDates(1L)
+
+    val licencesCaptor = argumentCaptor<List<EntityLicence>>()
+    verify(licenceService).inactivateLicences(
+      licencesCaptor.capture(),
+      eq(UpdateSentenceDateService.LICENCE_DEACTIVATION_PROGRESSION_LICENCE_RELEASING_EARLY),
+      eq(false),
+    )
+    assertThat(licencesCaptor.firstValue).hasSize(1)
+    assertThat(licencesCaptor.firstValue.first().id).isEqualTo(v4dot1Licence.id)
+    assertThat(licencesCaptor.firstValue.first().licenceStartDate).isEqualTo(recalculatedLsd)
+
+    verify(notifyService).sendPolicyVersionInactivatedEmail(
+      licenceId = "1",
+      emailAddress = aCrdLicenceEntity.getCom().email,
+      comFirstName = aCrdLicenceEntity.getCom().firstName.orEmpty(),
+      comLastName = aCrdLicenceEntity.getCom().lastName.orEmpty(),
+      pipFirstName = aCrdLicenceEntity.forename.orEmpty(),
+      pipLastName = aCrdLicenceEntity.surname.orEmpty(),
+      crn = aCrdLicenceEntity.crn,
+    )
+    verify(notifyService, never()).sendDatesChangedEmail(any(), any(), any(), any(), anyOrNull(), any())
+
+    verify(licenceRepository).saveAndFlush(any())
+    verify(licenceService, never()).timeout(any(), any())
+    verify(notifyService).sendPolicyVersionInactivatedEmail(
+      licenceId = "1",
+      emailAddress = aCrdLicenceEntity.getCom().email,
+      comFirstName = aCrdLicenceEntity.getCom().firstName.orEmpty(),
+      comLastName = aCrdLicenceEntity.getCom().lastName.orEmpty(),
+      pipFirstName = aCrdLicenceEntity.forename.orEmpty(),
+      pipLastName = aCrdLicenceEntity.surname.orEmpty(),
+      crn = aCrdLicenceEntity.crn,
+    )
+  }
+
+  @Test
   fun `should inactivate and timeout when both policy version rollback and hard-stop timeout conditions are true`() {
     val v4Licence = aCrdLicenceEntity.copy(
       statusCode = IN_PROGRESS,
@@ -919,6 +982,45 @@ class UpdateSentenceDateServiceTest {
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(v4Licence))
     whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(v4Licence)
+    whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(recalculatedLsd)
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2026-10-02"),
+          confirmedReleaseDate = LocalDate.parse("2026-10-02"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2028-09-11"),
+          licenceExpiryDate = LocalDate.parse("2028-09-11"),
+          topupSupervisionStartDate = null,
+          topupSupervisionExpiryDate = null,
+        ),
+      ),
+    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
+
+    service.updateSentenceDates(1L)
+
+    verify(licenceService, never()).inactivateLicences(
+      any(),
+      any(),
+      any(),
+    )
+    verify(licenceRepository).saveAndFlush(any())
+    verify(notifyService).sendDatesChangedEmail(eq("1"), any(), any(), any(), anyOrNull(), any())
+  }
+
+  @Test
+  fun `should not inactivate V4_1 licence when LSD moves post-policy cutoff`() {
+    val v4dot1Licence = aCrdLicenceEntity.copy(
+      statusCode = IN_PROGRESS,
+      version = "4.1",
+      licenceStartDate = LocalDate.of(2026, 10, 1),
+    )
+
+    val recalculatedLsd = LocalDate.of(2026, 10, 2)
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(v4dot1Licence))
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(v4dot1Licence)
     whenever(releaseDateService.getLicenceStartDate(any(), anyOrNull())).thenReturn(recalculatedLsd)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
