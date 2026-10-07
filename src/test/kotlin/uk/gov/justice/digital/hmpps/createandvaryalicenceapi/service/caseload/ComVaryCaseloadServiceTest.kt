@@ -321,7 +321,7 @@ class ComVaryCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = VARIATION,
-          typeCode = LicenceType.PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = VARIATION_IN_PROGRESS,
           licenceStartDate = tenDaysFromNow,
           forename = "ABCX XYZ",
@@ -366,7 +366,7 @@ class ComVaryCaseloadServiceTest {
       caseload[1],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = VARIATION_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(

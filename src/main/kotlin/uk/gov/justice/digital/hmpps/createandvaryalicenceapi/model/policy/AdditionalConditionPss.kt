@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy
 
+// PSS has been repealed - this is retained only to correctly
+// render/vary existing historical PSS licences
 data class AdditionalConditionPss(
   override var code: String,
   override val category: String,

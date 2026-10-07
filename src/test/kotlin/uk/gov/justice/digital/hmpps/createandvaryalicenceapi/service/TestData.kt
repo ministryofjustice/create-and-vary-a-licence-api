@@ -1194,7 +1194,7 @@ object TestData {
   fun aLicenceSummary(
     id: Long = 1,
     kind: LicenceKind = LicenceKind.CRD,
-    type: LicenceType = LicenceType.AP_PSS,
+    type: LicenceType = LicenceType.AP,
     status: LicenceStatus = LicenceStatus.IN_PROGRESS,
     nomsId: String = "AB1234E",
     startDate: LocalDate = TEN_DAYS_FROM_NOW,

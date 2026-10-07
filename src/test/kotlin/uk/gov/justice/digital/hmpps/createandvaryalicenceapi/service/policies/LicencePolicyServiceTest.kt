@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someOldModelAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 import java.time.LocalDate
 
@@ -179,20 +178,6 @@ class LicencePolicyServiceTest {
     @Test
     fun `get HardStop conditions for AP`() {
       val pssLicence = createCrdLicence().copy(id = 2L, typeCode = AP)
-      val conditions = licencePolicyService.getHardStopAdditionalConditions(pssLicence)
-      assertThat(conditions).hasSize(1)
-      with(conditions.first()) {
-        assertThat(licence.id).isEqualTo(2L)
-        assertThat(conditionCode).isEqualTo(HARD_STOP_CONDITION.code)
-        assertThat(conditionText).isEqualTo(HARD_STOP_CONDITION.text)
-        assertThat(conditionSequence).isEqualTo(0L)
-        assertThat(conditionType).isEqualTo("AP")
-      }
-    }
-
-    @Test
-    fun `get HardStop conditions for AP_PSS`() {
-      val pssLicence = createCrdLicence().copy(id = 2L, typeCode = AP_PSS)
       val conditions = licencePolicyService.getHardStopAdditionalConditions(pssLicence)
       assertThat(conditions).hasSize(1)
       with(conditions.first()) {

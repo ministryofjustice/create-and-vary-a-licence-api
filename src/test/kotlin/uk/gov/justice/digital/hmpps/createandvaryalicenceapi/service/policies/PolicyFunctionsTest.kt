@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.removal
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.update
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 
 class PolicyFunctionsTest {
 
@@ -287,7 +287,7 @@ class PolicyFunctionsTest {
     subtext = null,
   )
 
-  fun licence() = VariationLicence(id = 1, typeCode = PSS, version = "2.0", statusCode = ACTIVE, eligibleKind = LicenceKinds.CRD)
+  fun licence() = VariationLicence(id = 1, typeCode = AP, version = "2.0", statusCode = ACTIVE, eligibleKind = LicenceKinds.CRD)
 
   fun additionalCondition() = AdditionalCondition(
     id = 2,

@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licencePolicyChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
 import java.time.LocalDate
@@ -201,7 +200,7 @@ class LicencePolicyService(
   )
 
   fun getHardStopAdditionalConditions(licence: Licence): List<AdditionalCondition> = when {
-    licence.typeCode == AP || licence.typeCode == AP_PSS -> listOf(HARD_STOP_CONDITION).mapIndexed(
+    licence.typeCode == AP -> listOf(HARD_STOP_CONDITION).mapIndexed(
       toEntityAdditionalCondition(
         licence,
         "AP",
