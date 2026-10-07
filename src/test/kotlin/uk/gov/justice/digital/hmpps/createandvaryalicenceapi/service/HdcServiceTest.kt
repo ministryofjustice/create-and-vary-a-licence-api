@@ -54,6 +54,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.Clock
@@ -954,6 +955,22 @@ class HdcServiceTest {
       assertThat(auditEvent.summary).isEqualTo("HDC postponed - licence moved to IN_PROGRESS")
       assertThat(auditEvent.detail).contains("SUBMITTED")
       assertThat(auditEvent.detail).contains("IN_PROGRESS")
+    }
+
+    @Test
+    fun `does not transition HDC licence from ACTIVE to IN_PROGRESS`() {
+      // Given
+      val hdcLicence = createHdcLicence(id = 789L)
+      hdcLicence.statusCode = ACTIVE
+      hdcLicence.nomsId = "A1234BC"
+      whenever(hdcLicenceRepository.findHdcLicenceEligibleForPostpone("A1234BC")).thenReturn(hdcLicence)
+
+      // When
+      service.transitionHdcLicenceToInProgress("A1234BC")
+
+      // Then
+      assertThat(hdcLicence.statusCode).isEqualTo(ACTIVE)
+      verify(auditService, never()).recordAuditEvent(any())
     }
 
     @Test

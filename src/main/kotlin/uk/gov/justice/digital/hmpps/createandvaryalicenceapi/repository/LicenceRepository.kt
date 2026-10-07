@@ -221,13 +221,4 @@ interface LicenceRepository :
   """,
   )
   fun getLicencesForProgressionDeactivation(policyV4GoLiveDate: LocalDate): List<Licence>
-
-  @Query(
-    """
-    SELECT l FROM Licence l
-    WHERE l.nomsId = :nomsNumber
-    AND l.kind = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
-    """,
-  )
-  fun findHdcLicenceByNomsNumber(nomsNumber: String): Licence?
 }
