@@ -166,6 +166,13 @@ update:
       handler:
         enabled: false
 
+prisoner:
+  received:
+    handler:
+      enabled: true
+  merged:
+    handler:
+      enabled: true
 
 progression:
   model:
@@ -178,8 +185,3 @@ dpr:
     manage-users:
       host: http://localhost:8096
 
-
-prisoner:
-  merged:
-    handler:
-      enabled: true

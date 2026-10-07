@@ -31,7 +31,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
@@ -883,36 +882,6 @@ class LicenceService(
     licenceRepository.delete(licenceEntity)
     // Delete Documents after all above work is done, just encase exception is thrown before now!
     uploadFileConditionsService.deleteDocuments(deletableDocumentUuids)
-  }
-
-  @Deprecated("use PrisonInformationService instead")
-  @Transactional
-  fun updatePrisonInformation(licenceId: Long, prisonInformationRequest: UpdatePrisonInformationRequest) {
-    val licenceEntity = getLicence(licenceId)
-
-    val username = SecurityContextHolder.getContext().authentication?.name!!
-
-    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
-
-    licenceEntity.updatePrisonInfo(
-      prisonCode = prisonInformationRequest.prisonCode,
-      prisonDescription = prisonInformationRequest.prisonDescription,
-      prisonTelephone = prisonInformationRequest.prisonTelephone,
-      staffMember = staffMember,
-    )
-
-    licenceRepository.saveAndFlush(licenceEntity)
-
-    auditEventRepository.saveAndFlush(
-      AuditEvent(
-        licenceId = licenceEntity.id,
-        username = "SYSTEM",
-        fullName = "SYSTEM",
-        eventType = AuditEventType.SYSTEM_EVENT,
-        summary = "Prison information updated for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
-      ),
-    )
   }
 
   @Transactional

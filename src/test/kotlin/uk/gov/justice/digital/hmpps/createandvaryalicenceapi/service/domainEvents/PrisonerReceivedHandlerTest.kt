@@ -34,7 +34,7 @@ class PrisonerReceivedHandlerTest {
     mapper,
     prisonInformationService,
     licenceRepository,
-    remandEnabled = true,
+    handlerEnabled = true,
   )
 
   @BeforeEach
@@ -99,7 +99,7 @@ class PrisonerReceivedHandlerTest {
       mapper,
       prisonInformationService,
       licenceRepository,
-      remandEnabled = false,
+      handlerEnabled = false,
     )
 
     handler.handleEvent(

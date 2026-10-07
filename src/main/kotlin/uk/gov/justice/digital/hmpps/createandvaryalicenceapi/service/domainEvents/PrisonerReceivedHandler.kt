@@ -16,8 +16,7 @@ class PrisonerReceivedHandler(
   private val mapper: ObjectMapper,
   private val prisonInformationService: PrisonInformationService,
   private val licenceRepository: LicenceRepository,
-  @param:Value("\${feature.toggle.remand.enabled:false}")
-  private val remandEnabled: Boolean,
+  @param:Value("\${prisoner.received.handler.enabled:false}") private val handlerEnabled: Boolean = false,
 ) : EventHandler {
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -25,7 +24,7 @@ class PrisonerReceivedHandler(
 
   @Transactional
   override fun handleEvent(message: String) {
-    if (!remandEnabled) {
+    if (!handlerEnabled) {
       log.info("Ignoring prisoner received event as handler is disabled")
       return
     }
