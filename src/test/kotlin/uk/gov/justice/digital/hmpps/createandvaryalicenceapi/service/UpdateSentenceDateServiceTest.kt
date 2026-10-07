@@ -949,8 +949,9 @@ class UpdateSentenceDateServiceTest {
 
     verify(licenceService).inactivateLicences(
       licencesCaptor.capture(),
-      eq(UpdateSentenceDateService.LICENCE_DEACTIVATION_NEEDS_PROGRESSION_LICENCE),
-      eq(false),
+      reason = eq(UpdateSentenceDateService.LICENCE_DEACTIVATION_NEEDS_PROGRESSION_LICENCE),
+      deactivateInProgressVersions = eq(false),
+
     )
     assertThat(licencesCaptor.firstValue).hasSize(1)
     assertThat(licencesCaptor.firstValue.first().id).isEqualTo(v3Licence.id)
