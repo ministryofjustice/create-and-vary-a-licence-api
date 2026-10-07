@@ -6,6 +6,7 @@ import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.context.TestConfiguration
@@ -129,7 +130,7 @@ class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
     )
 
     awaitAtMost30Secs untilAsserted {
-      verify(prisonEventsListener).finishedEventProcessing(any())
+      verify(prisonEventsListener).finishedEventProcessing(anyOrNull())
     }
     assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
   }
