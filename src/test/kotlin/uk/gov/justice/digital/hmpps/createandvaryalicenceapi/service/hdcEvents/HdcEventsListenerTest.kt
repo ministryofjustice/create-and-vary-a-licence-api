@@ -5,14 +5,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.messaging.support.GenericMessage
 import tools.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import java.time.LocalDateTime
 
 class HdcEventsListenerTest {
-  private val mapper = ObjectMapper()
+  private val mapper = spy(ObjectMapper())
   private val handler = mock<HdcStatusChangedHandler>()
+  private val hdcService = mock<HdcService>()
+
   private val listener = HdcEventsListener(handler, mapper)
 
   @Test
@@ -35,6 +40,23 @@ class HdcEventsListenerTest {
     }
 
     assertThat(exception.message).contains("No enum constant")
+  }
+
+  @Test
+  fun `does not process HDC opt out when HDC creation is disabled`() {
+    // Given
+    val handler = HdcStatusChangedHandler(
+      mapper = mapper,
+      hdcService = hdcService,
+      hdcCreationEnabled = false,
+    )
+
+    // When
+    handler.handleOptout("message")
+
+    // Then
+    verifyNoInteractions(mapper)
+    verifyNoInteractions(hdcService)
   }
 
   @Test

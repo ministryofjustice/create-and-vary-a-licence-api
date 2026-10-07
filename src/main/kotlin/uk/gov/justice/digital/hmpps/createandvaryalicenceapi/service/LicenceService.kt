@@ -996,7 +996,7 @@ class LicenceService(
       AuditEvent(
         licenceId = original.id,
         username = creator.username,
-        fullName = "${creator.firstName} ${creator.lastName}",
+        fullName = creator.fullName,
         summary = auditEventSummary,
         detail = "Old ID ${original.id}, new ID ${copy.id} type ${copy.typeCode} status ${copy.statusCode.name} version ${copy.version}",
       ),
@@ -1181,6 +1181,27 @@ class LicenceService(
     } else {
       licence
     }
+  }
+
+  @Transactional
+  fun createLicenceEvent(
+    licenceId: Long,
+    eventType: LicenceEventType,
+    username: String? = SYSTEM_USER,
+    forenames: String? = "SYSTEM",
+    surname: String? = "SYSTEM",
+    eventDescription: String? = null,
+  ): LicenceEvent {
+    val licenceEvent = LicenceEvent(
+      licenceId = licenceId,
+      eventType = eventType,
+      username = username,
+      forenames = forenames,
+      surname = surname,
+      eventDescription = eventDescription,
+    )
+
+    return licenceEventRepository.save(licenceEvent)
   }
 
   private fun EntityLicence.toSummary(): LicenceSummary = transformToLicenceSummary(

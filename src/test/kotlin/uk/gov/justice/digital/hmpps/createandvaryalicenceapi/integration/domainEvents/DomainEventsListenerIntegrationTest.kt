@@ -5,7 +5,7 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -216,7 +216,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     awaitAtMost30Secs untilAsserted {
       // Two because we will also raise a licence inactivated event
-      verify(domainEventListener, times(eventsExpected)).finishedEventProcessing(any())
+      verify(domainEventListener, times(eventsExpected)).finishedEventProcessing(anyOrNull())
     }
     assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
   }
