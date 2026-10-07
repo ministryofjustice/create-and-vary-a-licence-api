@@ -59,6 +59,7 @@ class PrisonerReleasedHandler(
     processLicencesOnRelease(prisonNumber)
   }
 
+  @Transactional
   fun processLicencesOnRelease(prisonNumber: String) {
     val licences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(prisonNumber, PRE_RELEASE_STATUSES.toList())
 

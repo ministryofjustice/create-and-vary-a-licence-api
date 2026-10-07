@@ -13,7 +13,7 @@ const val RECALL_INSERTED_EVENT_TYPE = "recall.inserted"
 const val RECALL_UPDATED_EVENT_TYPE = "recall.updated"
 const val PRISON_OFFENDER_MERGED_EVENT_TYPE = "prison-offender-events.prisoner.merged"
 const val PRISON_OFFENDER_RECEIVED_EVENT_TYPE = "prison-offender-events.prisoner.received"
-const val PRISON_OFFENDER_RELEASED_EVENT_TYPE = "prisoner-offender-search.prisoner.released"
+const val PRISON_OFFENDER_RELEASED_EVENT_TYPE = "prisoner-offender-search.prisoner.released.."
 
 @ConditionalOnProperty(name = ["domain.event.listener.enabled"], havingValue = "true", matchIfMissing = true)
 @Service

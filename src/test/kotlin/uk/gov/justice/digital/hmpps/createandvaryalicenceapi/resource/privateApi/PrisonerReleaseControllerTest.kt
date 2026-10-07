@@ -69,7 +69,7 @@ class PrisonerReleaseControllerTest {
   }
 
   @Test
-  fun `Request not processed when handler disabled `() {
+  fun `Request not processed when handler enabled`() {
     mvc = MockMvcBuilders
       .standaloneSetup(PrisonerReleaseController(prisonerReleasedHandler, handlerEnabled = true))
       .setControllerAdvice(ControllerAdvice())
