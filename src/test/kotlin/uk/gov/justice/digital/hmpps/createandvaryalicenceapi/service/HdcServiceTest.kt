@@ -28,15 +28,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.OS_PLACES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.CAS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.RESIDENTIAL
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CurfewTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.FirstNightCurfewTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.currentPrisonerHdcStatus
@@ -50,6 +53,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import java.time.Clock
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
@@ -68,11 +72,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence as HdcLicenceFromClient
 
 class HdcServiceTest {
+
   private val hdcApiClient = mock<HdcApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val licenceRepository = mock<LicenceRepository>()
+  private val hdcLicenceRepository = mock<HdcLicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val auditService = mock<AuditService>()
+  private val crdLicenceFactory = mock<CrdLicenceFactory>()
+  private val licenceService = mock<LicenceService>()
 
   private val testClock = Clock.fixed(
     Instant.parse("2024-04-22T00:00:00Z"),
@@ -86,13 +94,16 @@ class HdcServiceTest {
       hdcApiClient,
       prisonApiClient,
       licenceRepository,
+      hdcLicenceRepository,
       staffRepository,
       auditService,
       clock,
+      crdLicenceFactory,
     )
 
   @BeforeEach
   fun reset() {
+    service.licenceService = licenceService
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
     whenever(authentication.name).thenReturn("tcom")
@@ -102,9 +113,49 @@ class HdcServiceTest {
 
     reset(
       licenceRepository,
+      hdcLicenceRepository,
       hdcApiClient,
       staffRepository,
+      auditService,
+      crdLicenceFactory,
+      licenceService,
     )
+  }
+
+  @Test
+  fun `convertToCrdLicence creates a CRD copy audits the conversion and inactivates the HDC licence`() {
+    // Given
+    val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+    val crdToPopulate = createCrdLicence().copy(id = null, versionOfId = hdcLicence.id)
+    val populatedCrd = crdToPopulate.copy(id = 2)
+    val auditCaptor = argumentCaptor<AuditEvent>()
+
+    whenever(hdcLicenceRepository.getLicenceEligibleForCrdConversion("A1234AA")).thenReturn(listOf(hdcLicence))
+    whenever(crdLicenceFactory.createFromHdc(hdcLicence, IN_PROGRESS)).thenReturn(crdToPopulate)
+    whenever(licenceService.populateCopy(hdcLicence, crdToPopulate)).thenReturn(populatedCrd)
+
+    // When
+    service.convertToCrdLicence("A1234AA")
+
+    // Then
+    verify(crdLicenceFactory).createFromHdc(hdcLicence, IN_PROGRESS)
+    verify(licenceService).populateCopy(hdcLicence, crdToPopulate)
+    verify(licenceService).inactivateLicences(listOf(hdcLicence), "Licence automatically inactivated after HDC opt out event", deactivateInProgressVersions = true)
+    verify(auditService, times(2)).recordAuditEvent(auditCaptor.capture())
+
+    val hdcAuditEvent = auditCaptor.firstValue
+    assertThat(hdcAuditEvent.licenceId).isEqualTo(hdcLicence.id)
+    assertThat(hdcAuditEvent.summary)
+      .isEqualTo("Hdc licence converted to CRD licence on Opt Out")
+    assertThat(hdcAuditEvent.detail)
+      .isEqualTo("Old ID 1, new ID 2 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
+
+    val crdAuditEvent = auditCaptor.secondValue
+    assertThat(crdAuditEvent.licenceId).isEqualTo(populatedCrd.id)
+    assertThat(crdAuditEvent.summary)
+      .isEqualTo("CRD licence converted from HDC on Opt Out")
+    assertThat(crdAuditEvent.detail)
+      .isEqualTo("Old ID 1, new ID 2 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
   }
 
   @Test
@@ -434,9 +485,11 @@ class HdcServiceTest {
         hdcApiClient,
         prisonApiClient,
         licenceRepository,
+        hdcLicenceRepository,
         staffRepository,
         auditService,
         clock,
+        crdLicenceFactory,
         useCurrentHdcStatus = true,
       )
 

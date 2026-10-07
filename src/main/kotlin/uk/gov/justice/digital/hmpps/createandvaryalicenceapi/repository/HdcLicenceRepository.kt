@@ -21,4 +21,19 @@ interface HdcLicenceRepository :
 """,
   )
   fun getDraftLicencesIneligibleForHdcRelease(cutoffDate: LocalDate? = LocalDate.now().plusDays(9)): List<HdcLicence>
+
+  @Query(
+    """
+        SELECT l FROM HdcLicence l
+        WHERE l.statusCode IN ('IN_PROGRESS', 'SUBMITTED', 'APPROVED')
+          AND l.kind = 'HDC'
+          AND l.nomsId = :nomsId
+        ORDER BY CASE l.statusCode
+            WHEN 'APPROVED' THEN 1
+            WHEN 'SUBMITTED' THEN 2
+            WHEN 'IN_PROGRESS' THEN 3
+        END
+""",
+  )
+  fun getLicenceEligibleForCrdConversion(nomsId: String): List<HdcLicence>
 }
