@@ -401,4 +401,25 @@ class HdcService(
     )
     auditService.recordAuditEvent(auditForChild)
   }
+
+  @Transactional
+  fun transitionHdcLicenceToInProgress(nomsNumber: String) {
+    val licence = hdcLicenceRepository.findHdcLicenceEligibleForPostpone(nomsNumber)
+      ?: run {
+        log.warn("HDC postpone: HDC licence not found for nomsNumber={}", nomsNumber)
+        return
+      }
+
+    val currentStatus = licence.statusCode
+    licence.statusCode = IN_PROGRESS
+
+    auditService.recordAuditEvent(
+      AuditEvent(
+        licenceId = licence.id,
+        summary = "HDC postponed - licence moved to IN_PROGRESS",
+        detail = "HDC Application postponed. Licence status changed from $currentStatus to IN_PROGRESS",
+        eventType = SYSTEM_EVENT,
+      ),
+    )
+  }
 }

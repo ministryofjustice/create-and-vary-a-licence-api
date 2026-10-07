@@ -53,7 +53,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.Clock
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
@@ -905,5 +907,65 @@ class HdcServiceTest {
     )
 
     val aPrisonerSearchResult = prisonerSearchResult()
+  }
+
+  @Nested
+  inner class TransitionHdcLicenceToInProgress {
+
+    @Test
+    fun `transitions HDC licence from APPROVED to IN_PROGRESS`() {
+      // Given
+      val hdcLicence = createHdcLicence(id = 123L)
+      hdcLicence.statusCode = APPROVED
+      hdcLicence.nomsId = "A1234BC"
+      whenever(hdcLicenceRepository.findHdcLicenceEligibleForPostpone("A1234BC")).thenReturn(hdcLicence)
+
+      // When
+      service.transitionHdcLicenceToInProgress("A1234BC")
+
+      // Then
+      assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
+      val auditCaptor = argumentCaptor<AuditEvent>()
+      verify(auditService).recordAuditEvent(auditCaptor.capture())
+      val auditEvent = auditCaptor.firstValue
+      assertThat(auditEvent.licenceId).isEqualTo(hdcLicence.id)
+      assertThat(auditEvent.summary).isEqualTo("HDC postponed - licence moved to IN_PROGRESS")
+      assertThat(auditEvent.detail).contains("APPROVED")
+      assertThat(auditEvent.detail).contains("IN_PROGRESS")
+    }
+
+    @Test
+    fun `transitions HDC licence from SUBMITTED to IN_PROGRESS`() {
+      // Given
+      val hdcLicence = createHdcLicence(id = 456L)
+      hdcLicence.statusCode = SUBMITTED
+      hdcLicence.nomsId = "A1234BC"
+      whenever(hdcLicenceRepository.findHdcLicenceEligibleForPostpone("A1234BC")).thenReturn(hdcLicence)
+
+      // When
+      service.transitionHdcLicenceToInProgress("A1234BC")
+
+      // Then
+      assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
+      val auditCaptor = argumentCaptor<AuditEvent>()
+      verify(auditService).recordAuditEvent(auditCaptor.capture())
+      val auditEvent = auditCaptor.firstValue
+      assertThat(auditEvent.licenceId).isEqualTo(hdcLicence.id)
+      assertThat(auditEvent.summary).isEqualTo("HDC postponed - licence moved to IN_PROGRESS")
+      assertThat(auditEvent.detail).contains("SUBMITTED")
+      assertThat(auditEvent.detail).contains("IN_PROGRESS")
+    }
+
+    @Test
+    fun `does not process when licence not found`() {
+      // Given
+      whenever(hdcLicenceRepository.findHdcLicenceEligibleForPostpone("A1234BC")).thenReturn(null)
+
+      // When
+      service.transitionHdcLicenceToInProgress("A1234BC")
+
+      // Then
+      verify(auditService, never()).recordAuditEvent(any())
+    }
   }
 }

@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents
 
-import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -16,17 +15,20 @@ class HdcStatusChangedHandler(
 
   private val log = LoggerFactory.getLogger(HdcStatusChangedHandler::class.java)
 
-  @Transactional
-  fun handleOptout(message: String) {
+  private fun processIfEnabled(eventType: HdcCvlEventType, block: () -> Unit) {
     if (!hdcCreationEnabled) {
-      log.info("HDC opt-out processing disabled")
+      log.info("HDC {} processing disabled", eventType.name.lowercase())
       return
     }
+    block()
+  }
 
-    val event = mapper.readValue(message, HdcStatusChangedEvent::class.java)
+  private fun parseEvent(message: String) = mapper.readValue(message, HdcStatusChangedEvent::class.java)
 
+  private fun logEventProcessed(eventType: HdcCvlEventType, event: HdcStatusChangedEvent) {
     log.info(
-      "HDC opt-out processed: occurredAt={} licenceId={} bookingId={} nomsNumber={} triggeredBy={} reason={}",
+      "HDC {} processed: occurredAt={} licenceId={} bookingId={} nomsNumber={} triggeredBy={} reason={}",
+      eventType.name.lowercase(),
       event.occurredAt,
       event.licenceId,
       event.bookingId,
@@ -34,7 +36,21 @@ class HdcStatusChangedHandler(
       event.triggeredBy,
       event.reason,
     )
+  }
 
-    hdcService.convertToCrdLicence(event.nomsNumber)
+  fun handleOptout(message: String) {
+    processIfEnabled(HdcCvlEventType.OPT_OUT) {
+      val event = parseEvent(message)
+      hdcService.convertToCrdLicence(event.nomsNumber)
+      logEventProcessed(HdcCvlEventType.OPT_OUT, event)
+    }
+  }
+
+  fun handlePostpone(message: String) {
+    processIfEnabled(HdcCvlEventType.POSTPONE) {
+      val event = parseEvent(message)
+      hdcService.transitionHdcLicenceToInProgress(event.nomsNumber)
+      logEventProcessed(HdcCvlEventType.POSTPONE, event)
+    }
   }
 }
