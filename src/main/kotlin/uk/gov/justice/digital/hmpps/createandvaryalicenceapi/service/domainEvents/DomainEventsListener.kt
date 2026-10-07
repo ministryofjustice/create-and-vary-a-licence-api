@@ -14,7 +14,7 @@ const val RECALL_UPDATED_EVENT_TYPE = "recall.updated"
 const val PRISON_OFFENDER_MERGED_EVENT_TYPE = "prison-offender-events.prisoner.merged"
 const val PRISON_OFFENDER_RECEIVED_EVENT_TYPE = "prison-offender-events.prisoner.received"
 
-@ConditionalOnProperty(name = ["domain.event.listener.disabled"], havingValue = "false", matchIfMissing = true)
+@ConditionalOnProperty(name = ["domain.event.listener.enabled"], havingValue = "true", matchIfMissing = true)
 @Service
 class DomainEventListener(
   private val comAllocatedHandler: ComAllocatedHandler,

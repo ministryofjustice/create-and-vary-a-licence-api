@@ -1,95 +1,49 @@
 {
-  "version": "3.0",
+  "version": "4.1",
   "standardConditions": {
     "AP": [
       {
         "code": "9ce9d594-e346-4785-9642-c87e764bee37",
-        "text": "Be of good behaviour and not behave in a way which undermines the purpose of the licence period.",
-        "tpl": null
-      },
-      {
-        "code": "3b19fdb0-4ca3-4615-9fdd-61fabc1587af",
-        "text": "Not commit any offence.",
-        "tpl": null
-      },
-      {
-        "code": "3361683a-504a-4357-ae22-6aa01b370b4a",
-        "text": "Keep in touch with the supervising officer in accordance with instructions given by the supervising officer.",
-        "tpl": null
-      },
-      {
-        "code": "9fc04065-df29-4bda-9b1d-bced8335c356",
-        "text": "Receive visits from the supervising officer in accordance with any instructions given by the supervising officer.",
+        "text": "Behave well in a way that supports the purpose of you being on licence, and do not commit any crime.",
         "tpl": null
       },
       {
         "code": "e670ac69-eda2-4b04-a0a1-a3c8492fe1e6",
-        "text": "Reside permanently at an address approved by the supervising officer and obtain the prior permission of the supervising officer for any stay of one or more nights at a different address.",
+        "text": "Get permission from your supervising officer to stay at an address and if you want to stay somewhere else for one or more nights.",
+        "tpl": null
+      },
+      {
+        "code": "3361683a-504a-4357-ae22-6aa01b370b4a",
+        "text": "Keep in touch and meet with your supervising officer in the way they tell you to. This includes meeting them where you live.",
         "tpl": null
       },
       {
         "code": "78A5F860-4791-48F2-B707-D6D4413850EE",
-        "text": "Tell the supervising officer if you use a name which is different to the name or names which appear on your licence.",
+        "text": "Tell your supervising officer about any names you use that are different to the names on this licence.",
         "tpl": null
       },
       {
         "code": "6FA6E492-F0AB-4E76-B868-63813DB44696",
-        "text": "Tell the supervising officer if you change or add any contact details, including phone number or email.",
+        "text": "Inform your supervising officer if your contact details change. For example, your phone number or email address.",
         "tpl": null
       },
       {
         "code": "88069445-08cb-4f16-915f-5a162d085c26",
-        "text": "Not undertake work, or a particular type of work, unless it is approved by the supervising officer and notify the supervising officer in advance of any proposal to undertake work or a particular type of work.",
+        "text": "Tell your supervising officer about any new work, or a type of work, you want to do. Get their approval before you start this work.",
         "tpl": null
       },
       {
         "code": "7d416906-0e94-4fde-ae86-8339d339ccb7",
-        "text": "Not travel outside the United Kingdom, the Channel Islands or the Isle of Man except with the prior permission of the supervising officer or for the purposes of immigration deportation or removal.",
+        "text": "Get permission from your supervising officer if you want to leave the United Kingdom, Isle of Man or the Channel Islands. This does not apply if you are being deported or removed for immigration purposes.",
+        "tpl": null
+      },
+      {
+        "code": "21E5216D-C601-4282-A221-697834D0C7C4",
+        "text": "Get permission from your supervising officer if you want to apply for a new passport. If requested, tell your supervising officer about any passports you have already.",
         "tpl": null
       }
     ],
-    "PSS": [
-      {
-        "code": "b3cd4a30-11fd-4715-9ebb-ed89f5386e1f",
-        "text": "Be of good behaviour and not behave in a way that undermines the rehabilitative purpose of the supervision period.",
-        "tpl": null
-      },
-      {
-        "code": "b950407d-2270-45b8-9666-3ad58a17d0be",
-        "text": "Not commit any offence.",
-        "tpl": null
-      },
-      {
-        "code": "93413832-9954-4907-a64d-eb8a56e34afb",
-        "text": "Keep in touch with your supervisor in accordance with instructions given by your supervisor.",
-        "tpl": null
-      },
-      {
-        "code": "9288e01c-e40e-4040-8b6e-57092361f422",
-        "text": "Receive visits from your supervisor in accordance with instructions given by your supervisor.",
-        "tpl": null
-      },
-      {
-        "code": "8e15cf42-f8e0-4408-a33e-d16a3448b7bd",
-        "text": "Reside permanently at an address approved by your supervisor and obtain the prior permission of the supervisor for any stay of one or more nights at a different address.",
-        "tpl": null
-      },
-      {
-        "code": "0ed57797-2745-4592-a78b-8e4d712c580e",
-        "text": "Not undertake work, or a particular type of work, unless it is approved by your supervisor and notify your supervisor in advance of any proposal to undertake work or a particular type of work.",
-        "tpl": null
-      },
-      {
-        "code": "c8966621-088a-4b87-9a19-752ff8b900c6",
-        "text": "Not travel outside the United Kingdom, the Channel Islands or the Isle of Man except with the prior permission of your supervisor or in order to comply with a legal obligation (whether or not arising under the law of any part of the United Kingdom, the Channel Islands or the Isle of Man).",
-        "tpl": null
-      },
-      {
-        "code": "579060fd-e412-471c-94d7-2fefa06d5052",
-        "text": "Participate in activities in accordance with any instructions given by your supervisor.",
-        "tpl": null
-      }
-    ]
+    "PSS": []
   },
   "additionalConditions": {
     "AP": [
@@ -305,9 +259,9 @@
       {
         "code": "4858cd8b-bca6-4f11-b6ee-439e27216d7d",
         "category": "Making or maintaining contact with a person",
-        "text": "Not to seek to approach or communicate with [INSERT NAME OF VICTIM AND / OR FAMILY MEMBERS] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT].",
+        "text": "Not to seek to approach or communicate with [INSERT NAME OF VICTIM AND / OR FAMILY MEMBERS] without the prior approval of your supervising officer.",
         "textPlural": null,
-        "tpl": "Not to seek to approach or communicate with {name} without the prior approval of your supervising officer{socialServicesDepartment}.",
+        "tpl": "Not to seek to approach or communicate with {name} without the prior approval of your supervising officer.",
         "requiresInput": true,
         "inputs": [
           {
@@ -325,25 +279,11 @@
             "subtext": null,
             "defaultValue": null,
             "hideHintText": false
-          },
-          {
-            "type": "text",
-            "label": "Enter social services department (optional)",
-            "name": "socialServicesDepartment",
-            "listType": null,
-            "options": null,
-            "case": "capitalised",
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": " and / or ",
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": "NoContactWithVictim",
+        "type": "NoContactWithVictimV4_1",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false,
         "headerCaption": null
@@ -351,9 +291,9 @@
       {
         "code": "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
         "category": "Making or maintaining contact with a person",
-        "text": "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT] except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
+        "text": "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
         "textPlural": null,
-        "tpl": "Not to have unsupervised contact with {gender} children under the age of {age} without the prior approval of your supervising officer{socialServicesDepartment} except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
+        "tpl": "Not to have unsupervised contact with {gender} children under the age of {age} without the prior approval of your supervising officer except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
         "requiresInput": true,
         "inputs": [
           {
@@ -396,25 +336,11 @@
             "subtext": null,
             "defaultValue": null,
             "hideHintText": false
-          },
-          {
-            "type": "text",
-            "label": "Enter social services department (optional)",
-            "name": "socialServicesDepartment",
-            "listType": null,
-            "options": null,
-            "case": "capitalised",
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": " and / or ",
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
           }
         ],
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": "UnsupervisedContactPolicyV3",
+        "type": "UnsupervisedContactPolicyV4_1",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false,
         "headerCaption": null
@@ -742,7 +668,7 @@
       {
         "code": "8e52e16e-1abf-4251-baca-2fabfcb243d0",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "text": "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+        "text": "Not to own or possess more than one mobile phone or SIM card, or install an e-sim, without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
         "textPlural": null,
         "tpl": null,
         "requiresInput": false,
@@ -772,7 +698,7 @@
       {
         "code": "bfbc693c-ab65-4042-920e-ddb085bc7aba",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "text": "Not to use or access any computer or device which is internet enabled without the prior approval of your supervising officer; and only for the purpose, and only at a specific location, as specified by that officer.",
+        "text": "Not to use or access any computer or device which is internet enabled without the prior approval of your supervising officer; and only for a purpose, and only at a specific location, as specified by that officer.",
         "textPlural": null,
         "tpl": null,
         "requiresInput": false,
@@ -909,21 +835,6 @@
         "headerCaption": null
       },
       {
-        "code": "79ac033f-9d7a-4dab-8344-475106e58b71",
-        "category": "Disclosure of information",
-        "text": "To notify your supervising officer of the details of any passport that you possess (including passport number), and of any intention to apply for a new passport.",
-        "textPlural": null,
-        "tpl": null,
-        "requiresInput": false,
-        "inputs": null,
-        "categoryShort": null,
-        "subtext": null,
-        "type": null,
-        "skippable": false,
-        "requiresElectronicMonitoringResponse": false,
-        "headerCaption": null
-      },
-      {
         "code": "8686a815-b7f0-43b6-9886-f01df6a48773",
         "category": "Disclosure of information",
         "text": "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
@@ -969,9 +880,9 @@
       {
         "code": "0a370862-5426-49c1-b6d4-3d074d78a81a",
         "category": "Curfew arrangement",
-        "text": "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
+        "text": "You must stay at the address approved by your supervising officer between [TIME] and [TIME] each day, unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
         "textPlural": null,
-        "tpl": "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
+        "tpl": "You must stay at the address approved by your supervising officer between {oneCurfewStart}{twoCurfewStart}{threeCurfewStart} and {oneCurfewEnd}{twoCurfewEnd}{threeCurfewEnd}{twoCurfewStart2}{twoCurfewEnd2}{threeCurfewStart2}{threeCurfewEnd2}{threeCurfewStart3}{threeCurfewEnd3} each day, unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
         "requiresInput": true,
         "inputs": [
           {
@@ -987,24 +898,24 @@
                     {
                       "type": "timePicker",
                       "label": "Enter the curfew start time",
-                      "name": "curfewStart",
+                      "name": "oneCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Enter the curfew end time",
-                      "name": "curfewEnd",
+                      "name": "oneCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     }
                   ]
                 }
@@ -1016,46 +927,46 @@
                     {
                       "type": "timePicker",
                       "label": "First curfew – enter the start time",
-                      "name": "curfewStart",
+                      "name": "twoCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "First curfew – enter the end time",
-                      "name": "curfewEnd",
+                      "name": "twoCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Second curfew – enter the start time",
-                      "name": "curfewStart2",
+                      "name": "twoCurfewStart2",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Second curfew – enter the end time",
-                      "name": "curfewEnd2",
+                      "name": "twoCurfewEnd2",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     }
                   ]
                 }
@@ -1067,68 +978,68 @@
                     {
                       "type": "timePicker",
                       "label": "First curfew – enter the start time",
-                      "name": "curfewStart",
+                      "name": "threeCurfewStart",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "First curfew – enter the end time",
-                      "name": "curfewEnd",
+                      "name": "threeCurfewEnd",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Second curfew – enter the start time",
-                      "name": "curfewStart2",
+                      "name": "threeCurfewStart2",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": ", ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Second curfew – enter the end time",
-                      "name": "curfewEnd2",
+                      "name": "threeCurfewEnd2",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Third curfew – enter the start time",
-                      "name": "curfewStart3",
+                      "name": "threeCurfewStart3",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": ", and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     },
                     {
                       "type": "timePicker",
                       "label": "Third curfew – enter the end time",
-                      "name": "curfewEnd3",
+                      "name": "threeCurfewEnd3",
                       "case": null,
                       "handleIndefiniteArticle": null,
-                      "includeBefore": null,
+                      "includeBefore": " and ",
                       "subtext": null,
                       "defaultValue": null,
-                      "hideHintText": false
+                      "hideHintText": true
                     }
                   ]
                 }
@@ -1141,52 +1052,11 @@
             "subtext": null,
             "defaultValue": null,
             "hideHintText": false
-          },
-          {
-            "type": "radio",
-            "label": "Select a review period",
-            "name": "reviewPeriod",
-            "listType": null,
-            "options": [
-              {
-                "value": "Weekly",
-                "conditional": null
-              },
-              {
-                "value": "Monthly",
-                "conditional": null
-              },
-              {
-                "value": "Other",
-                "conditional": {
-                  "inputs": [
-                    {
-                      "type": "text",
-                      "label": "Enter a review period",
-                      "name": "alternativeReviewPeriod",
-                      "case": "lower",
-                      "handleIndefiniteArticle": true,
-                      "includeBefore": null,
-                      "subtext": null,
-                      "defaultValue": null,
-                      "hideHintText": false
-                    }
-                  ]
-                }
-              }
-            ],
-            "case": "lower",
-            "handleIndefiniteArticle": true,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
           }
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "CurfewTerms",
+        "type": "CurfewTermsV4",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false,
         "headerCaption": null
@@ -1195,7 +1065,7 @@
         "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
         "category": "Freedom of movement",
         "text": "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
-        "textPlural": null,
+        "textPlural": "Not to enter the areas as defined by the attached maps without the prior approval of your supervising officer.",
         "tpl": "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
         "requiresInput": true,
         "inputs": [
@@ -1422,36 +1292,152 @@
         "headerCaption": null
       },
       {
-        "code": "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
-        "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
-        "text": "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        "code": "be16ee0b-a916-43ef-9319-b42a1dd418a3",
+        "category": "Freedom of movement",
+        "text": "Not to enter a drinking establishment [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) which also serve alcohol.",
         "textPlural": null,
-        "tpl": "Report to staff at {approvedPremises} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        "tpl": "Not to enter a drinking establishment {firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer. This means any location where you can buy alcohol without needing to buy food or stay overnight. It also means places that stay open past midnight for entertainment reasons (things like music or shows) which also serve alcohol.",
         "requiresInput": true,
         "inputs": [
           {
             "type": "radio",
-            "label": "Choose what information to enter",
-            "name": "addressOrGeneric",
+            "label": "Select a time restriction",
+            "name": "timeRestriction",
             "listType": null,
             "options": [
               {
-                "value": "The approved premises where you reside",
+                "value": "At any time",
                 "conditional": null
               },
               {
-                "value": "Name of approved premises",
+                "value": "Between specified times",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first start time",
+                      "name": "firstCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " between ",
+                      "subtext": null,
+                      "defaultValue": " at any time",
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first end time",
+                      "name": "firstCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second start time (optional)",
+                      "name": "secondCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " or between ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second end time (optional)",
+                      "name": "secondCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          }
+        ],
+        "categoryShort": null,
+        "subtext": null,
+        "type": "DrinkingEstablishment",
+        "skippable": false,
+        "requiresElectronicMonitoringResponse": false,
+        "headerCaption": null
+      },
+      {
+        "code": "005d70e4-a247-4f82-b8b3-6d294a0f5051",
+        "category": "Freedom of movement",
+        "text": "Not to leave the area as defined by the attached map without the prior approval of your supervising officer.",
+        "textPlural": "Not to leave the areas as defined by the attached maps without the prior approval of your supervising officer.",
+        "tpl": "Not to leave the area as defined by the attached map without the prior approval of your supervising officer.",
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "fileUpload",
+            "label": "Select a PDF map of the area this person must not leave",
+            "name": "inBoundFilename",
+            "listType": null,
+            "options": null,
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          }
+        ],
+        "categoryShort": null,
+        "subtext": null,
+        "type": "InBoundsRegion",
+        "skippable": false,
+        "requiresElectronicMonitoringResponse": false,
+        "headerCaption": "Area this person must not leave (restriction zone)"
+      },
+      {
+        "code": "3f96ac05-ef71-43e3-ac07-1219aa26b5f3",
+        "category": "Freedom of movement",
+        "text": "Not to attend [ANY PUBLIC EVENT / TYPES OF PUBLIC EVENT] [AT ANY TIME / BETWEEN SPECIFIED TIMES] without the prior approval of your supervising officer.",
+        "textPlural": null,
+        "tpl": "Not to attend {publicEventType}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} without the prior approval of your supervising officer.",
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "radio",
+            "label": "Event type",
+            "name": "eventType",
+            "listType": null,
+            "options": [
+              {
+                "value": "Any public event",
+                "conditional": null
+              },
+              {
+                "value": "Types of public event",
                 "conditional": {
                   "inputs": [
                     {
                       "type": "text",
-                      "label": "Enter name of approved premises",
-                      "name": "approvedPremises",
+                      "label": "Enter one or more types of public event",
+                      "name": "publicEventType",
                       "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null,
-                      "defaultValue": null,
+                      "defaultValue": "any public event",
                       "hideHintText": false
                     }
                   ]
@@ -1466,6 +1452,92 @@
             "defaultValue": null,
             "hideHintText": false
           },
+          {
+            "type": "radio",
+            "label": "Time restriction",
+            "name": "timeRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any time",
+                "conditional": null
+              },
+              {
+                "value": "Between specified times",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first start time",
+                      "name": "firstCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " between ",
+                      "subtext": null,
+                      "defaultValue": " at any time",
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first end time",
+                      "name": "firstCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second start time (optional)",
+                      "name": "secondCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " or between ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second end time (optional)",
+                      "name": "secondCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          }
+        ],
+        "categoryShort": null,
+        "subtext": null,
+        "type": "PublicEvent",
+        "skippable": false,
+        "requiresElectronicMonitoringResponse": false,
+        "headerCaption": null
+      },
+      {
+        "code": "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
+        "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
+        "text": "Report to staff at the Approved Premises where you reside at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        "textPlural": null,
+        "tpl": "Report to staff at the Approved Premises where you reside at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        "requiresInput": true,
+        "inputs": [
           {
             "type": "radio",
             "label": "Select when the person needs to report",
@@ -1613,7 +1685,7 @@
         ],
         "categoryShort": "Supervision in the community",
         "subtext": null,
-        "type": "ReportToApprovedPremisesPolicyV3",
+        "type": "ReportToApprovedPremisesPolicyV4",
         "skippable": false,
         "requiresElectronicMonitoringResponse": false,
         "headerCaption": null
@@ -1621,7 +1693,7 @@
       {
         "code": "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
-        "text": "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        "text": "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "textPlural": null,
         "tpl": "Report to staff at {policeStation} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "requiresInput": true,
@@ -1970,6 +2042,166 @@
         "headerCaption": null
       },
       {
+        "code": "d523d711-9975-4a9a-a37e-a17bd611140f",
+        "category": "Restriction of specified conduct or specified acts",
+        "text": "Not to use [ANY MOTOR VEHICLE / TYPES OF MOTOR VEHICLE] [AT ANY TIME / BETWEEN SPECIFIED TIMES] [AT ANY LOCATION / IN SPECIFIED LOCATIONS] without the prior approval of your supervising officer.",
+        "textPlural": null,
+        "tpl": "Not to use {typesOfMotorVehicle}{firstCurfewStart}{firstCurfewEnd}{secondCurfewStart}{secondCurfewEnd} {locations} without the prior approval of your supervising officer.",
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "radio",
+            "label": "Vehicle types",
+            "name": "vehicleTypes",
+            "listType": null,
+            "options": [
+              {
+                "value": "Any motor vehicle",
+                "conditional": null
+              },
+              {
+                "value": "Types of motor vehicle",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter one or more types of motor vehicle",
+                      "name": "typesOfMotorVehicle",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": "any motor vehicle",
+                      "hideHintText": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          },
+          {
+            "type": "radio",
+            "label": "Time restriction",
+            "name": "timeRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any time",
+                "conditional": null
+              },
+              {
+                "value": "Between specified times",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first start time",
+                      "name": "firstCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " between ",
+                      "subtext": null,
+                      "defaultValue": " at any time",
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter first end time",
+                      "name": "firstCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second start time (optional)",
+                      "name": "secondCurfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " or between ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter second end time (optional)",
+                      "name": "secondCurfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": " and ",
+                      "subtext": null,
+                      "defaultValue": null,
+                      "hideHintText": true
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          },
+          {
+            "type": "radio",
+            "label": "Location restriction",
+            "name": "locationRestriction",
+            "listType": null,
+            "options": [
+              {
+                "value": "At any location",
+                "conditional": null
+              },
+              {
+                "value": "In specified locations",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter one or more locations",
+                      "name": "locations",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null,
+                      "defaultValue": " at any location",
+                      "hideHintText": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          }
+        ],
+        "categoryShort": null,
+        "subtext": null,
+        "type": "VehicleRestrictions",
+        "skippable": false,
+        "requiresElectronicMonitoringResponse": false,
+        "headerCaption": null
+      },
+      {
         "code": "86f8b3d6-be31-48b2-a29e-5cf662c95ad1",
         "category": "Extremism",
         "text": "Not to contact directly or indirectly any person whom you know or believe to have been charged or convicted of any extremist related offence, without the prior approval of your supervising officer.",
@@ -2047,7 +2279,7 @@
       {
         "code": "1dc7ee29-df47-48a8-90b6-69e286692d8a",
         "category": "Polygraph",
-        "text": "To comply with any instruction given by your supervising officer requiring you to attend polygraph testing. To participate in polygraph sessions and examinations as instructed by or under the authority of your supervising officer and to comply with any instruction given to you during a polygraph session by the person conducting the polygraph.",
+        "text": "You must have polygraph tests and follow the instructions of the person doing them. You must not try to stop, interfere with, or otherwise undermine the test.",
         "textPlural": null,
         "tpl": null,
         "requiresInput": false,
@@ -2062,7 +2294,7 @@
       {
         "code": "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
         "category": "Drug, alcohol and solvent abuse",
-        "text": "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
+        "text": "When requested, provide a sample so it can be tested for specified Class A or Class B drugs. You must not try to stop, interfere with, or otherwise undermine the test.",
         "textPlural": null,
         "tpl": null,
         "requiresInput": false,
@@ -2120,9 +2352,9 @@
       {
         "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
         "category": "Electronic monitoring",
-        "text": "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
+        "text": "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking [CONDITIONS TO BE MONITORED] until [INSERT END DATE].",
         "textPlural": null,
-        "tpl": "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your {electronicMonitoringTypes} licence condition(s) unless otherwise authorised by your supervising officer.",
+        "tpl": "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking {electronicMonitoringTypes} until {endDate}.",
         "requiresInput": true,
         "inputs": [
           {
@@ -2132,30 +2364,48 @@
             "listType": "AND",
             "options": [
               {
-                "value": "exclusion zone",
+                "value": "that you do not go to areas you must not enter (exclusion zones)",
                 "conditional": null
               },
               {
-                "value": "curfew",
+                "value": "that you do not leave areas you must stay in (restriction zones)",
                 "conditional": null
               },
               {
-                "value": "location monitoring",
+                "value": "that you comply with your curfew",
                 "conditional": null
               },
               {
-                "value": "attendance at appointments",
+                "value": "that you do not drink any alcohol",
                 "conditional": null
               },
               {
-                "value": "alcohol monitoring",
+                "value": "that you attend appointments",
                 "conditional": null
               },
               {
-                "value": "alcohol abstinence",
+                "value": "your alcohol consumption",
+                "conditional": null
+              },
+              {
+                "value": "your location",
                 "conditional": null
               }
             ],
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null,
+            "defaultValue": null,
+            "hideHintText": false
+          },
+          {
+            "type": "datePicker",
+            "label": "Enter the end date",
+            "name": "endDate",
+            "listType": null,
+            "options": null,
             "case": null,
             "handleIndefiniteArticle": null,
             "addAnother": null,
@@ -2167,7 +2417,7 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "ElectronicMonitoringTypes",
+        "type": "ElectronicMonitoringTypesV4",
         "skippable": false,
         "requiresElectronicMonitoringResponse": true,
         "headerCaption": null
@@ -2265,9 +2515,9 @@
       {
         "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
         "category": "Electronic monitoring",
-        "text": "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
+        "text": "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities your probation officer asks you to.",
         "textPlural": null,
-        "tpl": "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
+        "tpl": "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities your probation officer asks you to.",
         "requiresInput": true,
         "inputs": [
           {
@@ -2441,106 +2691,7 @@
         "headerCaption": null
       }
     ],
-    "PSS": [
-      {
-        "code": "62c83b80-2223-4562-a195-0670f4072088",
-        "category": "Drug appointment",
-        "text": "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
-        "tpl": "Attend {appointmentAddress}{appointmentDate}{appointmentTime}, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
-        "requiresInput": true,
-        "categoryShort": null,
-        "pssDates": true,
-        "inputs": [
-          {
-            "type": "timePicker",
-            "label": "Enter time (optional)",
-            "name": "appointmentTime",
-            "listType": null,
-            "options": null,
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": " at ",
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
-          },
-          {
-            "type": "datePicker",
-            "label": "Enter date (optional)",
-            "name": "appointmentDate",
-            "listType": null,
-            "options": null,
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": " on ",
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
-          },
-          {
-            "type": "address",
-            "label": "Enter the address for the appointment",
-            "name": "appointmentAddress",
-            "listType": null,
-            "options": null,
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
-          }
-        ],
-        "type": "AppointmentTimeAndPlaceDuringPss",
-        "skippable": true,
-        "headerCaption": null
-      },
-      {
-        "code": "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
-        "category": "Drug testing",
-        "text": "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
-        "tpl": "Attend {name} {address}, as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
-        "requiresInput": true,
-        "categoryShort": null,
-        "pssDates": null,
-        "inputs": [
-          {
-            "type": "text",
-            "label": "Enter name",
-            "name": "name",
-            "listType": null,
-            "options": null,
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
-          },
-          {
-            "type": "address",
-            "label": "Enter address",
-            "name": "address",
-            "listType": null,
-            "options": null,
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null,
-            "defaultValue": null,
-            "hideHintText": false
-          }
-        ],
-        "type": "DrugTestLocation",
-        "skippable": false,
-        "headerCaption": null
-      }
-    ]
+    "PSS": []
   },
   "changeHints": [
     {
@@ -2591,6 +2742,10 @@
         "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
         "f1d2888b-be86-4732-8874-44cb867865c2"
       ]
+    },
+    {
+      "previousCode": "79ac033f-9d7a-4dab-8344-475106e58b71",
+      "replacements": []
     }
   ]
 }
