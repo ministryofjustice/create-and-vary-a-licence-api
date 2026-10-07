@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.Re
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.ManagedOffenderTransformer.toProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.com.RelevantLicenceFinder.findRelevantLicencePerCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.LicenceLinkingService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -38,6 +39,7 @@ class ComCreateCaseloadService(
   private val cvlRecordService: CvlRecordService,
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val telemetryService: TelemetryService,
+  private val licenceLinkingService: LicenceLinkingService,
 ) {
   companion object {
     private val COM_CREATE_LICENCE_STATUSES = listOf(ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT)
@@ -106,13 +108,13 @@ class ComCreateCaseloadService(
     cvlRecords: List<CvlRecord>,
     isAdminUser: Boolean,
   ): List<Case> {
-    val crns = cases.map { (deliusRecord, _) -> deliusRecord.crn!! }
+    val crns = cases.map { (deliusRecord, _) -> deliusRecord.crn }
     val licencesByCrn = getExistingActiveAndPreReleaseLicences(crns).groupBy { it.crn }
     val cvlRecordsByNomisId = cvlRecords.associateBy { it.nomisId }
     val caseAccessRecords = getCaseAccessRecords(crns)
 
     return cases.mapNotNull { (deliusRecord, nomisRecord) ->
-      val licences = licencesByCrn[deliusRecord.crn!!] ?: emptyList()
+      val licences = licencesByCrn[deliusRecord.crn] ?: emptyList()
       val cvlRecord = cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!
       val caseAccessRecord = caseAccessRecords[deliusRecord.crn] ?: unrestricted
       val isRestricted = caseAccessRecord.isRestricted
@@ -223,33 +225,50 @@ class ComCreateCaseloadService(
     it.comLicenceCaseDto.releaseDate.isTodayOrInTheFuture() || it.cvlRecord.creationKind == LicenceKind.TIME_SERVED
   }
 
-  private fun transformToCreateCaseload(cases: List<Case>): List<ComCreateCase> = cases.map {
-    with(it.comLicenceCaseDto) {
-      ComCreateCase(
-        licenceId = licenceId,
-        licenceStatus = licenceStatus,
-        licenceType = licenceType,
-        name = name,
-        crnNumber = crn,
-        prisonerNumber = nomisId,
-        releaseDate = releaseDate,
-        releaseDateLabel = releaseDateLabel,
-        probationPractitioner = it.probationPractitioner,
-        hardStopDate = it.cvlRecord.hardStopDate,
-        hardStopWarningDate = it.cvlRecord.hardStopWarningDate,
-        kind = kind,
-        licenceCreationType = licenceCreationType,
-        isReviewNeeded = isReviewNeeded,
-        isRestricted = isRestricted,
-        hdcStatus = it.cvlRecord.hdcStatus,
+  private fun transformToCreateCaseload(cases: List<Case>): List<ComCreateCase> {
+    val licenceIdsThatAreReplacementsForOptedOutLicences = getLicenceIdsThatAreReplacementsForOptedOutLicences(cases)
+
+    return cases.map {
+      with(it.comLicenceCaseDto) {
+        ComCreateCase(
+          licenceId = licenceId,
+          licenceStatus = licenceStatus,
+          licenceType = licenceType,
+          name = name,
+          crnNumber = crn,
+          prisonerNumber = nomisId,
+          releaseDate = releaseDate,
+          releaseDateLabel = releaseDateLabel,
+          probationPractitioner = it.probationPractitioner,
+          hardStopDate = it.cvlRecord.hardStopDate,
+          hardStopWarningDate = it.cvlRecord.hardStopWarningDate,
+          kind = kind,
+          licenceCreationType = licenceCreationType,
+          isReviewNeeded = isReviewNeeded,
+          isRestricted = isRestricted,
+          hdcStatus = it.cvlRecord.hdcStatus,
+          isReplacementForOptedOutLicence = licenceIdsThatAreReplacementsForOptedOutLicences.contains(licenceId),
+        )
+      }
+    }.sortedWith(
+      compareBy<ComCreateCase> { it.isRestricted }
+        .thenBy { case -> case.releaseDate.takeUnless { case.isRestricted } }
+        .thenBy { case -> case.name.takeUnless { case.isRestricted } }
+        .thenBy { it.crnNumber },
+    )
+  }
+
+  private fun getLicenceIdsThatAreReplacementsForOptedOutLicences(cases: List<Case>): Set<Long> {
+    val possibleCrdReplacementForOptedOutLicence =
+      cases.filter { it.comLicenceCaseDto.licenceId != null && it.comLicenceCaseDto.kind == LicenceKind.CRD }
+        .map { it.comLicenceCaseDto.licenceId!! }
+
+    val crdReplacementForOptedOutLicence =
+      licenceLinkingService.checkIfLicenceIdsAreCrdReplacementForOptedOutLicence(
+        possibleCrdReplacementForOptedOutLicence,
       )
-    }
-  }.sortedWith(
-    compareBy<ComCreateCase> { it.isRestricted }
-      .thenBy { case -> case.releaseDate.takeUnless { case.isRestricted } }
-      .thenBy { case -> case.name.takeUnless { case.isRestricted } }
-      .thenBy { it.crnNumber },
-  )
+    return crdReplacementForOptedOutLicence
+  }
 
   private fun getCaseAccessRecords(crns: List<String>): Map<String, CaseAccessResponse> {
     val username = SecurityContextHolder.getContext().authentication?.name!!

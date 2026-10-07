@@ -68,4 +68,7 @@ data class ComCreateCase(
 
   @field:Schema(description = "The current status of the HDC case", example = "APPROVED")
   val hdcStatus: HdcStatus,
+
+  @field:Schema(description = "Is this licence a replacement for an opted out licence?", example = "true")
+  val isReplacementForOptedOutLicence: Boolean,
 )

@@ -69,4 +69,9 @@ class LicenceLinkingService(
       linkType,
     )
   }
+
+  fun checkIfLicenceIdsAreCrdReplacementForOptedOutLicence(possibleCrdReplacementForOptedOutLicence: List<Long>): Set<Long> = licenceLinkRepository.findToLicenceIdsByLicenceIdsAndLinkType(
+    possibleCrdReplacementForOptedOutLicence,
+    LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
+  )
 }

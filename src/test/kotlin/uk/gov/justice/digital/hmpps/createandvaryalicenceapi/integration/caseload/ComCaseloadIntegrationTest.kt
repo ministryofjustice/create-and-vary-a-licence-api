@@ -148,6 +148,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(probationPractitioner.staffCode).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
       }
+      assertThat(caseload)
+        .allMatch { !it.isReplacementForOptedOutLicence }
     }
 
     @Test
@@ -187,6 +189,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         null,
         null,
       )
+      assertThat(caseload.single { it.licenceId == 1L }.isReplacementForOptedOutLicence).isFalse()
       with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
         assertThat(crnNumber).isEqualTo("X12352")
@@ -195,6 +198,45 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(releaseDateLabel).isEqualTo("Restricted")
         assertThat(isRestricted).isTrue()
       }
+    }
+
+    @Test
+    @Sql("classpath:test_data/seed-active-hdc_and_crd-licence-for-opt-out.sql")
+    fun `Successfully retrieve a caseload with a replacement for an opted out licence`() {
+      // Given
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
+      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
+      stubCommonDependencies()
+
+      // When
+      val result = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      val caseload = result.expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCreateCase>>())
+        .returnResult().responseBody
+
+      assertThat(caseload).hasSize(4)
+
+      assertThat(caseload.map { it.licenceId }).containsExactlyInAnyOrder(
+        2,
+        null,
+        null,
+        null,
+      )
+
+      assertThat(caseload.map { it.isReplacementForOptedOutLicence }).containsExactlyInAnyOrder(
+        true,
+        false,
+        false,
+        false,
+      )
     }
 
     @Test
