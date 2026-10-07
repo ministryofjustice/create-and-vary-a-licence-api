@@ -21,7 +21,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["hdc.event.listener.disabled=false"])
+@TestPropertySource(properties = ["hdc.event.listener.enabled=true"])
 class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
@@ -52,7 +52,8 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         .messageBody(eventJson)
         .messageAttributes(
           mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(HdcCvlEventType.OPT_OUT.toString()).build(),
+            "eventType" to MessageAttributeValue.builder().dataType("String")
+              .stringValue(HdcCvlEventType.OPT_OUT.toString()).build(),
           ),
         )
         .build(),

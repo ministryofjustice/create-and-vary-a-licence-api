@@ -53,7 +53,7 @@ import java.time.Duration
 import java.time.LocalDate
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["domain.event.listener.disabled=false"])
+@TestPropertySource(properties = ["domain.event.listener.enabled=true"])
 class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean
