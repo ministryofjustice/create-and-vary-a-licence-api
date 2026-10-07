@@ -44,7 +44,7 @@ class PrisonerReleasedHandler(
     val event = try {
       mapper.readValue(message, HMPPSPrisonerReleasedEvent::class.java)
     } catch (e: JacksonException) {
-      log.error("Failed to parse prisoner merged event message", e)
+      log.error("Failed to parse prisoner released event message", e)
       throw e
     }
 
