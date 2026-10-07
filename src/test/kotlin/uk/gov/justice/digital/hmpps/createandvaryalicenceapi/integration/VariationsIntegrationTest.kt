@@ -61,7 +61,7 @@ class VariationsIntegrationTest : IntegrationTestBase() {
   )
   fun `edits a submitted variation`() {
     webTestClient.post()
-      .uri("/variations/2/edit")
+      .uri("/variations/id/2/edit")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .bodyValue(EditVariationRequest(username = "TEST_USER"))

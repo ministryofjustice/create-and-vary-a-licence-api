@@ -85,7 +85,7 @@ class VariationsController(
   fun variationDiffFromParent(@PathVariable("newVariationId") variationId: Long) = variationService.calculateDiffFromOriginal(variationId)
 
   @Tag(name = Tags.LICENCE_VARIATIONS)
-  @PostMapping(value = ["/{variationId}/edit"])
+  @PostMapping(value = ["/id/{variationId}/edit"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
