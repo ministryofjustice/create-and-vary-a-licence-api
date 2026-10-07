@@ -95,7 +95,7 @@ class PrisonerReleasedHandler(
   }
 
   data class HMPPSPrisonerReleasedEvent(
-    val eventType: String? = PRISON_OFFENDER_MERGED_EVENT_TYPE,
+    val eventType: String? = PRISON_OFFENDER_RELEASED_EVENT_TYPE,
     val additionalInformation: AdditionalInformationPrisonerReleased,
     val version: Int,
     val occurredAt: String,
