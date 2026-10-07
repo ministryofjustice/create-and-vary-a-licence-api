@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.H
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.LicenceLinkType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.SUPERSEDED
@@ -292,12 +291,12 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(allAudits[3].summary).isEqualTo("Hdc licence converted to CRD licence on Opt Out")
 
     assertThat(allAudits[4].licenceId).isEqualTo(3L)
-    assertThat(allAudits[4].summary).isEqualTo("Updated standard conditions to policy version 4.0 for Person Approved")
+    assertThat(allAudits[4].summary).isEqualTo("Updated standard conditions to policy version 4.1 for Person Approved")
     assertThat(allAudits[5].licenceId).isEqualTo(3L)
     assertThat(allAudits[5].summary).isEqualTo("CRD licence converted from HDC on Opt Out")
 
     assertThat(allAudits[6].licenceId).isEqualTo(4L)
-    assertThat(allAudits[6].summary).isEqualTo("Updated standard conditions to policy version 4.0 for Person Three")
+    assertThat(allAudits[6].summary).isEqualTo("Updated standard conditions to policy version 4.1 for Person Three")
     assertThat(allAudits[7].licenceId).isEqualTo(4L)
     assertThat(allAudits[7].summary).isEqualTo("CRD licence converted from HDC on Opt Out")
 

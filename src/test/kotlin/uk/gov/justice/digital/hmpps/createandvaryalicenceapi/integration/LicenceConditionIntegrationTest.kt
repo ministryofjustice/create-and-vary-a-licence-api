@@ -274,7 +274,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .expectBody<PolicyUpdateResponse>()
       .returnResult().responseBody
 
-    assertThat(response).isEqualTo(PolicyUpdateResponse(true, "4.0"))
+    assertThat(response).isEqualTo(PolicyUpdateResponse(true, "4.1"))
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)

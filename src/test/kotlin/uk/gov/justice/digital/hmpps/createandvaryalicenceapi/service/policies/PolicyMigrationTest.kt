@@ -26,7 +26,7 @@ data class PolicyDifferences(
 )
 
 class PolicyMigrationTest {
-  private val currentPolicy = POLICY_V4_0.version
+  private val currentPolicy = POLICY_V4_1.version
 
   private val licencePolicyService = LicencePolicyService(progressionModelPolicyStartDate = LocalDate.now())
   private val objectMapper = jacksonObjectMapper()

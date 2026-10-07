@@ -41,7 +41,7 @@ private val FIXED_INSTANT = Instant.parse("2024-04-22T00:00:00Z")
 private val FIXED_ZONE = ZoneId.of("UTC")
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["domain.event.listener.disabled=false", "prison.event.listener.enabled=true"])
+@TestPropertySource(properties = ["domain.event.listener.enabled=true", "prison.event.listener.enabled=true"])
 @Import(PrisonEventsListenerIntegrationTest.FixedClockTestConfiguration::class)
 class PrisonEventsListenerIntegrationTest : IntegrationTestBase() {
   private val fixedClock = Clock.fixed(FIXED_INSTANT, FIXED_ZONE)
