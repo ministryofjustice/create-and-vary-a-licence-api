@@ -70,14 +70,18 @@ class PrisonerReleasedHandler(
     val (approvedLicences, unapprovedLicences) = licences.partition { it.statusCode == APPROVED }
     check(approvedLicences.size <= 1) { "Multiple approved licences found, unable to automatically activate" }
 
+    // Deactivate the unapproved set first. Activating or inactivating the approved licence below also cascades to
+    // deactivate any related in-progress/submitted/timed-out versions of it, so deactivating those versions here
+    // first (and flushing) ensures the cascade's status-based lookup can no longer select them, preventing duplicate
+    // audit, licence and domain events for the same licence.
+    if (unapprovedLicences.isNotEmpty()) {
+      licenceService.inactivateLicences(unapprovedLicences, DEACTIVATION_REASON, deactivateInProgressVersions = true)
+    }
+
     if (approvedLicences.isNotEmpty()) {
       val licenceToActivate = approvedLicences.first()
       val newStatus = if (isDeactivationRequired(prisonNumber, licenceToActivate)) inactivate else activate
       licenceService.updateLicenceStatus(licenceToActivate.id, newStatus)
-    }
-
-    if (unapprovedLicences.isNotEmpty()) {
-      licenceService.inactivateLicences(unapprovedLicences, DEACTIVATION_REASON, deactivateInProgressVersions = true)
     }
   }
 

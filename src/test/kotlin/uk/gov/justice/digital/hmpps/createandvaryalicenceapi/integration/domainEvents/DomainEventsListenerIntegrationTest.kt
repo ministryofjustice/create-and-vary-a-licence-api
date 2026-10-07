@@ -573,6 +573,54 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(auditEvent.summary).isEqualTo("Licence set to ACTIVE for Person One")
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1-approved-with-in-progress-version.sql",
+  )
+  fun `A prisoner released event does not duplicate processing of an in-progress licence version`() {
+    val nomsId = "A1234AA"
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(
+      prisonerSearchResponse = """
+        [
+          {
+            "prisonerNumber": "$nomsId",
+            "bookingId": "123",
+            "mostSeriousOffence": "Robbery",
+            "firstName": "Person",
+            "lastName": "One",
+            "dateOfBirth": "2020-10-25"
+          }
+        ]
+      """.trimIndent(),
+    )
+
+    val event = HMPPSPrisonerReleasedEvent(
+      eventType = PRISON_OFFENDER_RELEASED_EVENT_TYPE,
+      additionalInformation = AdditionalInformationPrisonerReleased(
+        nomsNumber = nomsId,
+        reason = "RELEASED",
+      ),
+      version = 1,
+      occurredAt = "2026-08-24T00:00:00Z",
+      description = "A prisoner has been released from prison",
+    )
+
+    val message = mapper.writeValueAsString(event)
+
+    sendEvent(message, event.eventType)
+
+    // Wait until the approved licence (id 1) has been activated, which indicates the release has been fully processed
+    awaitAtMost30Secs untilAsserted {
+      assertThat(testRepository.findLicence(1).statusCode).isEqualTo(ACTIVE)
+    }
+
+    // The in-progress version (id 2) is cascade-deactivated once by LicenceService.updateLicenceStatus when the
+    // approved licence is activated, and then processed again by PrisonerReleasedHandler's own
+    // inactivateLicences(unapprovedLicences, ...) call, resulting in duplicate audit events.
+    val inProgressVersionAuditEvents = testRepository.findAllAuditEventsByLicenceIdIn(listOf(2L))
+    assertThat(inProgressVersionAuditEvents).hasSize(1)
+  }
+
   private fun assertComExistsInDb(
     staffIdentifier: Long,
     staffCode: String,
