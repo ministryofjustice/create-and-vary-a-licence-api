@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceLinkingService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
@@ -50,6 +51,7 @@ class ComCreateCaseloadServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val releaseDateLabelFactory = mock<ReleaseDateLabelFactory>()
   private val telemetryService = mock<TelemetryService>()
+  private val licenceLinkingService = mock<LicenceLinkingService>()
 
   private var service = ComCreateCaseloadService(
     prisonerSearchApiClient,
@@ -58,6 +60,7 @@ class ComCreateCaseloadServiceTest {
     cvlRecordService,
     releaseDateLabelFactory,
     telemetryService,
+    licenceLinkingService,
   )
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
@@ -1426,6 +1429,7 @@ class ComCreateCaseloadServiceTest {
         cvlRecordService,
         releaseDateLabelFactory,
         telemetryService,
+        licenceLinkingService,
       )
       val managedOffenders = listOf(
         ManagedOffender(crn = "X12348", nomisId = "AB1234E", name = name, staff = staffDetail),

@@ -20,6 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLink
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
@@ -49,6 +51,11 @@ interface TestLicenceRepository : JpaRepository<Licence, Long> {
 interface TestAuditEventRepository : JpaRepository<AuditEvent, Long> {
   fun findAllByLicenceIdIn(licenceIds: List<Long>): List<AuditEvent>
   fun findAllByLicenceIdNull(): List<AuditEvent>
+}
+
+@Repository
+interface TestLicenceLinkRepository : JpaRepository<LicenceLink, Long> {
+  fun existsByToLicenceIdAndLinkType(toLicenceId: Long, linkType: LicenceLinkType): Boolean
 }
 
 @Repository
@@ -133,6 +140,7 @@ class TestRepository(
   private val migrationRepository: TestMigrationRepository,
   private val hdcCurfewAddressRepository: TestHdcCurfewAddressRepository,
   private val licenceEventRepository: TestLicenceEventRepository,
+  private val licenceLinkRepository: TestLicenceLinkRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -222,6 +230,8 @@ class TestRepository(
   fun findAllAuditEvents(): List<AuditEvent> = auditEventRepository.findAll()
 
   fun findAllEventRepository(): List<LicenceEvent> = licenceEventRepository.findAll()
+
+  fun findAllLicenceLinks(): List<LicenceLink> = licenceLinkRepository.findAll()
 
   fun findFirstAuditEvent(licenceId: Long = 1L): AuditEvent {
     val event = auditEventRepository.findAllByLicenceIdIn(listOf(licenceId)).firstOrNull()
