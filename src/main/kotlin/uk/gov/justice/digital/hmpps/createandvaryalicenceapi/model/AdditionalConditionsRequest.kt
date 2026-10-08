@@ -11,7 +11,7 @@ data class AdditionalConditionsRequest(
 
   @field:Schema(
     description = "The type of additional condition, either licence or post sentence supervision",
-    allowableValues = ["AP", "PSS"],
+    allowableValues = ["AP"],
   )
   @field:NotNull
   val conditionType: String,

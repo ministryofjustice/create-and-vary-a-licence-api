@@ -11,7 +11,7 @@
     "sentenceStartDate": "2020-10-11",
     "sentenceExpiryDate": "2026-10-11",
     "conditionalReleaseDate": "$releaseDateE",
-    "licenceType": "PSS",
+    "licenceType": "AP",
     "legalStatus": "SENTENCED",
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
@@ -38,7 +38,7 @@
     "legalStatus": "SENTENCED",
     "indeterminateSentence": false,
     "prisonId": "ABC",
-    "licenceType": "PSS",
+    "licenceType": "AP",
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
@@ -63,7 +63,7 @@
     "legalStatus": "SENTENCED",
     "indeterminateSentence": false,
     "prisonId": "ABC",
-    "licenceType": "PSS",
+    "licenceType": "AP",
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
@@ -85,7 +85,7 @@
     "legalStatus": "SENTENCED",
     "indeterminateSentence": false,
     "prisonId": "PRISON2",
-    "licenceType": "PSS",
+    "licenceType": "AP",
     "isInHardStopPeriod": false,
     "isEligibleForEarlyRelease": false,
     "isDueToBeReleasedInTheNextTwoWorkingDays": false
