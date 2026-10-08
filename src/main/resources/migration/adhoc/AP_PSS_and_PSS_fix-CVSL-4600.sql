@@ -1,13 +1,13 @@
 BEGIN;
 
-CREATE TEMP TABLE data_fix_ap_pss_and_pss AS
-	SELECT
-		l.id,
-		l.type_code AS old_type_code
-	FROM public.licence l
-	WHERE l.type_code IN ('AP_PSS', 'PSS')  AND l.status_code != 'INACTIVE';
+	CREATE TEMP TABLE data_fix_ap_pss_and_pss AS
+		SELECT
+			l.id,
+			l.type_code AS old_type_code
+		FROM public.licence l
+		WHERE l.type_code IN ('AP_PSS', 'PSS')  AND l.status_code != 'INACTIVE';
 
-UPDATE public.licence l SET type_code = 'AP' WHERE l.id IN ( SELECT id  FROM data_fix_ap_pss_and_pss );
+	UPDATE public.licence l SET type_code = 'AP' WHERE l.id IN ( SELECT id  FROM data_fix_ap_pss_and_pss );
 
 	INSERT INTO public.audit_event (
 		licence_id,
