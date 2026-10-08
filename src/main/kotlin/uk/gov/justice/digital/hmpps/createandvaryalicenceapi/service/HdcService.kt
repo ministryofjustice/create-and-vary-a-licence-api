@@ -1,20 +1,26 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Lazy
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
@@ -23,6 +29,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -34,15 +45,19 @@ class HdcService(
   private val hdcApiClient: HdcApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val licenceRepository: LicenceRepository,
+  private val hdcLicenceRepository: HdcLicenceRepository,
   private val staffRepository: StaffRepository,
   private val auditService: AuditService,
   private val clock: Clock,
+  private val crdLicenceFactory: CrdLicenceFactory,
   @param:Value("\${feature.toggle.hdcCreation.enabled}") private val useCurrentHdcStatus: Boolean = false,
 ) {
 
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
-  }
+  @Lazy
+  @Autowired
+  lateinit var licenceService: LicenceService
+
+  private val log = LoggerFactory.getLogger(this::class.java)
 
   fun getHdcStatus(records: List<PrisonerSearchPrisoner>) = getHdcStatus(records, { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
 
@@ -309,4 +324,81 @@ class HdcService(
   }
 
   private fun getUserName(staff: Staff?) = staff?.username ?: SYSTEM_USER
+
+  @Transactional
+  fun convertToCrdLicence(nomsNumber: String) {
+    val licences = hdcLicenceRepository.getLicenceEligibleForCrdConversion(nomsNumber)
+    if (licences.isNotEmpty()) {
+      val crdCopies = licences.associate { it.id to copyLicence(licences, it) }
+
+      val reason = "Licence automatically inactivated after HDC opt out event"
+      licenceService.inactivateLicences(licences, reason = reason, deactivateInProgressVersions = true)
+
+      licences.forEach { licence ->
+
+        val newLicence = licenceService.populateCopy(
+          original = licence,
+          copy = crdCopies[licence.id]!!,
+        )
+
+        addOptOutAudits(licence, newLicence)
+        addLicenceOptOutEvents(licence, newLicence)
+      }
+    }
+  }
+
+  private fun copyLicence(
+    licences: List<HdcLicenceEntity>,
+    licence: HdcLicenceEntity,
+  ): CrdLicence {
+    val keepAsApproved = licences.size > 1 && licence.statusCode == APPROVED
+    return if (keepAsApproved) {
+      crdLicenceFactory.createFromHdc(licence)
+    } else {
+      crdLicenceFactory.createFromHdc(licence, IN_PROGRESS)
+    }
+  }
+
+  private fun addLicenceOptOutEvents(
+    licence: HdcLicenceEntity,
+    newLicence: Licence,
+  ) {
+    licenceService.createLicenceEvent(
+      licenceId = licence.id,
+      eventType = INACTIVE_WHEN_HDC_OPT_OUT,
+      eventDescription = "This HDC licence was converted to CRD licence on Opt Out",
+    )
+
+    licenceService.createLicenceEvent(
+      licenceId = newLicence.id,
+      eventType = CRD_CREATED_WHEN_HDC_OPT_OUT,
+      eventDescription = "This CRD Licence was converted from Hdc a licence on Opt Out",
+    )
+  }
+
+  private fun addOptOutAudits(
+    licence: HdcLicenceEntity,
+    newLicence: Licence,
+  ) {
+    val detail = "Old ID ${licence.id}, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}"
+    val summaryParent = "Hdc licence converted to CRD licence on Opt Out"
+
+    val auditForParent = AuditEvent(
+      licenceId = licence.id,
+      summary = summaryParent,
+      detail = detail,
+      eventType = SYSTEM_EVENT,
+    )
+    auditService.recordAuditEvent(auditForParent)
+
+    val summaryChild = "CRD licence converted from HDC on Opt Out"
+
+    val auditForChild = AuditEvent(
+      licenceId = newLicence.id,
+      summary = summaryChild,
+      detail = detail,
+      eventType = SYSTEM_EVENT,
+    )
+    auditService.recordAuditEvent(auditForChild)
+  }
 }
