@@ -201,7 +201,7 @@ class LicenceService(
     updateLicenceStatus(licenceEntity, request)
   }
 
-  private fun updateLicenceStatus(licenceEntity: EntityLicence, request: StatusUpdateRequest) {
+  fun updateLicenceStatus(licenceEntity: EntityLicence, request: StatusUpdateRequest) {
     var approvedByUser = licenceEntity.approvedByUsername
     var approvedByName = licenceEntity.approvedByName
     var approvedDate = licenceEntity.approvedDate
