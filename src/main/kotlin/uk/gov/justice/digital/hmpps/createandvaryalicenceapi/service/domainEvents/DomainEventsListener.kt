@@ -13,18 +13,31 @@ const val RECALL_INSERTED_EVENT_TYPE = "recall.inserted"
 const val RECALL_UPDATED_EVENT_TYPE = "recall.updated"
 const val PRISON_OFFENDER_MERGED_EVENT_TYPE = "prison-offender-events.prisoner.merged"
 const val PRISON_OFFENDER_RECEIVED_EVENT_TYPE = "prison-offender-events.prisoner.received"
+const val PRISON_OFFENDER_RELEASED_EVENT_TYPE = "prisoner-offender-search.prisoner.released"
 
 @ConditionalOnProperty(name = ["domain.event.listener.enabled"], havingValue = "true", matchIfMissing = true)
 @Service
 class DomainEventListener(
-  private val comAllocatedHandler: ComAllocatedHandler,
-  private val prisonerUpdatedHandler: PrisonerUpdatedHandler,
-  private val recallInsertedHandler: RecallInsertedHandler,
-  private val recallUpdatedHandler: RecallUpdatedHandler,
-  private val prisonerMergedHandler: PrisonerMergedHandler,
-  private val prisonerReceivedHandler: PrisonerReceivedHandler,
+  comAllocatedHandler: ComAllocatedHandler,
+  prisonerUpdatedHandler: PrisonerUpdatedHandler,
+  recallInsertedHandler: RecallInsertedHandler,
+  recallUpdatedHandler: RecallUpdatedHandler,
+  prisonerMergedHandler: PrisonerMergedHandler,
+  prisonerReceivedHandler: PrisonerReceivedHandler,
+  prisonerReleasedHandler: PrisonerReleasedHandler,
+
   private val mapper: ObjectMapper,
 ) {
+  private val eventTypeToHandler = mapOf(
+    COM_ALLOCATED_EVENT_TYPE to comAllocatedHandler,
+    PRISONER_UPDATED_EVENT_TYPE to prisonerUpdatedHandler,
+    RECALL_INSERTED_EVENT_TYPE to recallInsertedHandler,
+    RECALL_UPDATED_EVENT_TYPE to recallUpdatedHandler,
+    PRISON_OFFENDER_MERGED_EVENT_TYPE to prisonerMergedHandler,
+    PRISON_OFFENDER_RECEIVED_EVENT_TYPE to prisonerReceivedHandler,
+    PRISON_OFFENDER_RELEASED_EVENT_TYPE to prisonerReleasedHandler,
+  )
+
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
@@ -36,34 +49,13 @@ class DomainEventListener(
     val (message, _, messageAttributes) = mapper.readValue(rawMessage, Message::class.java)
 
     try {
-      when (val eventType = messageAttributes.eventType.value) {
-        COM_ALLOCATED_EVENT_TYPE -> {
-          comAllocatedHandler.handleEvent(message)
-        }
+      val eventType = messageAttributes.eventType.value
+      val handler = eventTypeToHandler[eventType]
 
-        PRISONER_UPDATED_EVENT_TYPE -> {
-          prisonerUpdatedHandler.handleEvent(message)
-        }
-
-        RECALL_INSERTED_EVENT_TYPE -> {
-          recallInsertedHandler.handleEvent(message)
-        }
-
-        RECALL_UPDATED_EVENT_TYPE -> {
-          recallUpdatedHandler.handleEvent(message)
-        }
-
-        PRISON_OFFENDER_MERGED_EVENT_TYPE -> {
-          prisonerMergedHandler.handleEvent(message)
-        }
-
-        PRISON_OFFENDER_RECEIVED_EVENT_TYPE -> {
-          prisonerReceivedHandler.handleEvent(message)
-        }
-
-        else -> {
-          log.warn("Ignoring message with type $eventType")
-        }
+      if (handler != null) {
+        handler.handleEvent(message)
+      } else {
+        log.warn("Ignoring message with type $eventType as no handler was found")
       }
     } finally {
       finishedEventProcessing(messageAttributes.eventType)
