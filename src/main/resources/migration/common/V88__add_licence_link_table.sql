@@ -1,7 +1,7 @@
 CREATE TABLE licence_link (
 		id BIGSERIAL PRIMARY KEY,
-		from_licence_id BIGINT NOT NULL,
-		to_licence_id BIGINT NOT NULL,
+		from_licence_id INTEGER NOT NULL REFERENCES licence(id) ON DELETE CASCADE,
+		to_licence_id INTEGER NOT NULL REFERENCES licence(id) ON DELETE CASCADE
 		link_type VARCHAR(50) NOT NULL
 );
 
