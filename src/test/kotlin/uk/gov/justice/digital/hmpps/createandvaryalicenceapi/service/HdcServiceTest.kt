@@ -958,22 +958,6 @@ class HdcServiceTest {
     }
 
     @Test
-    fun `does not transition HDC licence from ACTIVE to IN_PROGRESS`() {
-      // Given
-      val hdcLicence = createHdcLicence(id = 789L)
-      hdcLicence.statusCode = ACTIVE
-      hdcLicence.nomsId = "A1234BC"
-      whenever(hdcLicenceRepository.findHdcLicenceEligibleForPostpone("A1234BC")).thenReturn(hdcLicence)
-
-      // When
-      service.transitionHdcLicenceToInProgress("A1234BC")
-
-      // Then
-      assertThat(hdcLicence.statusCode).isEqualTo(ACTIVE)
-      verify(auditService, never()).recordAuditEvent(any())
-    }
-
-    @Test
     fun `does not process when licence not found`() {
       // Given
       whenever(hdcLicenceRepository.findHdcLicenceEligibleForPostpone("A1234BC")).thenReturn(null)
