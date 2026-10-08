@@ -411,7 +411,18 @@ class HdcService(
       }
 
     val currentStatus = licence.statusCode
-    licence.statusCode = IN_PROGRESS
+    val clearApproval = currentStatus == APPROVED
+
+    licence.updateStatus(
+      statusCode = IN_PROGRESS,
+      staffMember = null,
+      approvedByUsername = licence.approvedByUsername.takeUnless { clearApproval },
+      approvedByName = licence.approvedByName.takeUnless { clearApproval },
+      approvedDate = licence.approvedDate.takeUnless { clearApproval },
+      supersededDate = null,
+      submittedDate = licence.submittedDate,
+      licenceActivatedDate = licence.licenceActivatedDate,
+    )
 
     auditService.recordAuditEvent(
       AuditEvent(

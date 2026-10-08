@@ -66,6 +66,7 @@ import java.time.DayOfWeek.TUESDAY
 import java.time.DayOfWeek.WEDNESDAY
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.Optional
@@ -913,11 +914,14 @@ class HdcServiceTest {
   inner class TransitionHdcLicenceToInProgress {
 
     @Test
-    fun `transitions HDC licence from APPROVED to IN_PROGRESS`() {
+    fun `transitions HDC licence from APPROVED to IN_PROGRESS and clears approval metadata`() {
       // Given
       val hdcLicence = createHdcLicence(id = 123L)
       hdcLicence.statusCode = APPROVED
       hdcLicence.nomsId = "A1234BC"
+      hdcLicence.approvedByUsername = "approver"
+      hdcLicence.approvedByName = "Approver Name"
+      hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
       whenever(hdcLicenceRepository.findHdcLicenceEligibleForPostpone("A1234BC")).thenReturn(hdcLicence)
 
       // When
@@ -925,6 +929,10 @@ class HdcServiceTest {
 
       // Then
       assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
+      assertThat(hdcLicence.approvedByUsername).isNull()
+      assertThat(hdcLicence.approvedByName).isNull()
+      assertThat(hdcLicence.approvedDate).isNull()
+      assertThat(hdcLicence.dateLastUpdated).isNotNull()
       val auditCaptor = argumentCaptor<AuditEvent>()
       verify(auditService).recordAuditEvent(auditCaptor.capture())
       val auditEvent = auditCaptor.firstValue
