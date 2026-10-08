@@ -301,9 +301,11 @@ data class VariationLicence(
   @field:Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   override val createdByFullName: String? = null,
 
+  @Deprecated("This shouldn't be referenced anymore as PSS has been repealed")
   @field:Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
   override val isInPssPeriod: Boolean? = false,
 
+  @Deprecated("This shouldn't be referenced anymore as PSS has been repealed")
   @field:Schema(description = "Is this licence activated in PSS period?(LED < LAD <= TUSED)")
   override val isActivatedInPssPeriod: Boolean? = false,
 

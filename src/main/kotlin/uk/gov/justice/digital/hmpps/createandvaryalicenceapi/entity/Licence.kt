@@ -133,6 +133,7 @@ abstract class Licence(
 ) : AbstractIdEntity(idInternal = id),
   SentenceDateHolder {
 
+  @Deprecated("This shouldn't be referenced anymore as PSS has been repealed")
   fun isInPssPeriod(): Boolean {
     val led = licenceExpiryDate
     val tused = topupSupervisionExpiryDate

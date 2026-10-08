@@ -102,4 +102,4 @@ insert into standard_condition (licence_id, condition_code, condition_sequence, 
 values (1, 'notBreakLaw', 2, 'Do not break the law', 'AP');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
-values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');
+values (1, 'attendMeetings', 3, 'Attend meetings', 'AP');

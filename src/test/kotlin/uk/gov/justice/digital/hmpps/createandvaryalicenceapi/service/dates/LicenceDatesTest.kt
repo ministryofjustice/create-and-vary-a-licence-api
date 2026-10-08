@@ -31,7 +31,7 @@ class LicenceDatesTest {
     sentenceEndDate = fiveDaysAgo,
     topupSupervisionStartDate = fiveDaysAgo,
     topupSupervisionExpiryDate = fiveDaysAgo,
-    typeCode = LicenceType.AP_PSS,
+    typeCode = LicenceType.AP,
   )
 
   private val testHdcLicence = TestData.createHdcLicence().copy(
@@ -47,7 +47,7 @@ class LicenceDatesTest {
     homeDetentionCurfewActualDate = fiveDaysAgo,
     homeDetentionCurfewEndDate = fiveDaysAgo,
     homeDetentionCurfewEligibilityDate = fiveDaysAgo,
-    typeCode = LicenceType.AP_PSS,
+    typeCode = LicenceType.AP,
   )
 
   private val testSentenceChanges = SentenceDates(

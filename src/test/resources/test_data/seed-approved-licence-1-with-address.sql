@@ -111,4 +111,4 @@ VALUES ((SELECT max(id) FROM probation_contact),
 INSERT INTO standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 VALUES ((SELECT max(id) FROM licence), 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP'),
        ((SELECT max(id) FROM licence), 'notBreakLaw', 2, 'Do not break the law', 'AP'),
-       ((SELECT max(id) FROM licence), 'attendMeetings', 3, 'Attend meetings', 'PSS');
+       ((SELECT max(id) FROM licence), 'attendMeetings', 3, 'Attend meetings', 'AP');
