@@ -46,16 +46,15 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       .expectBodyList<LicenceSummary>()
       .returnResult().responseBody
 
-    assertThat(inactiveLicences.size).isEqualTo(6)
+    assertThat(inactiveLicences.size).isEqualTo(5)
     assertThat(inactiveLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
       }
-      .contains(
+      .containsExactly(
         tuple(2L, INACTIVE),
+        tuple(3L, INACTIVE),
         tuple(5L, INACTIVE),
-        tuple(6L, INACTIVE),
-        tuple(7L, INACTIVE),
         tuple(8L, INACTIVE),
         tuple(9L, INACTIVE),
       )
@@ -76,8 +75,8 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       }
       .contains(
         tuple(1L, APPROVED),
-        tuple(3L, ACTIVE),
         tuple(4L, IN_PROGRESS),
+        tuple(6L, ACTIVE),
       )
   }
 

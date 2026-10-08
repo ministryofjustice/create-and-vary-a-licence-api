@@ -29,14 +29,14 @@ insert into licence (kind,
 					 created_by_com_id,
 					 licence_version)
 values (
-		   'HARD_STOP',
+		   'HDC',
 		   'AP',
 		   '1.0',
-		   'IN_PROGRESS',
+		   'INACTIVE',
 		   'A1234AA',
 		   'BOOKNO',
 		   12345,
-		   'CRN1',
+		   'X12348',
 		   '2015/1234',
 		   'CRO1',
 		   'MDI',
@@ -57,7 +57,38 @@ values (
 		   'LAU1',
 		   'TEAM1',
 		   1,
-		   9,
+		   1,
+		   '1.0'),
+	   (
+		   'CRD',
+		   'AP',
+		   '1.0',
+		   'IN_PROGRESS',
+		   'A1234AA',
+		   'BOOKNO',
+		   12345,
+		   'X12348',
+		   '2015/1234',
+		   'CRO1',
+		   'MDI',
+		   'Moorland (HMP)',
+		   'Person',
+		   'One',
+		   '2020-10-25',
+		   '2022-02-12',
+		   '2022-02-25',
+		   '2020-10-11',
+		   '2022-02-25',
+		   '2022-02-25',
+		   '2022-02-25',
+		   current_date,
+		   '2023-02-25',
+		   'N01',
+		   'PDU1',
+		   'LAU1',
+		   'TEAM1',
+		   1,
+		   1,
 		   '1.0');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
@@ -67,7 +98,12 @@ insert into standard_condition (licence_id, condition_code, condition_sequence, 
 values (1, 'notBreakLaw', 2, 'Do not break the law', 'AP');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
-values (1, 'attendMeetings', 3, 'Attend meetings', 'AP');
+values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
-VALUES (1, true, 'Test Programme');
+VALUES (1, true, 'Test Programme 1'),
+	   (2, true, 'Test Programme 2');
+
+INSERT INTO licence_link (from_licence_id, to_licence_id, link_type)
+   VALUES (1, 2, 'CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE');
+

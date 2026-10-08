@@ -87,6 +87,7 @@ data class PublicLicenceSummary(
   @field:JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   val updatedDateTime: LocalDateTime?,
 
+  @Deprecated("This shouldn't be referenced anymore as PSS has been repealed")
   @field:Schema(description = "Whether the licence in PSS period? This is when Licence End Date < TODAY <= TUSED (Top Up Supervision End Date)")
   val isInPssPeriod: Boolean,
 )

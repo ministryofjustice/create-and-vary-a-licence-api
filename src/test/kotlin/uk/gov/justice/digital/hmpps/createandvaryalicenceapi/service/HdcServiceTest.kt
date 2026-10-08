@@ -81,6 +81,7 @@ class HdcServiceTest {
   private val auditService = mock<AuditService>()
   private val crdLicenceFactory = mock<CrdLicenceFactory>()
   private val licenceService = mock<LicenceService>()
+  private val licenceLinkingService = mock<LicenceLinkingService>()
 
   private val testClock = Clock.fixed(
     Instant.parse("2024-04-22T00:00:00Z"),
@@ -99,6 +100,7 @@ class HdcServiceTest {
       auditService,
       clock,
       crdLicenceFactory,
+      licenceLinkingService,
     )
 
   @BeforeEach
@@ -490,6 +492,7 @@ class HdcServiceTest {
         auditService,
         clock,
         crdLicenceFactory,
+        licenceLinkingService,
         useCurrentHdcStatus = true,
       )
 

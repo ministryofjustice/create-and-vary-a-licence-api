@@ -17,6 +17,7 @@ import org.springframework.test.context.jdbc.SqlGroup
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
@@ -215,6 +216,13 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     argumentCaptor<HMPPSDomainEvent>().apply {
       verify(eventsPublisher, times(1)).publishDomainEvent(capture())
     }
+
+    val links = testRepository.findAllLicenceLinks()
+    assertThat(links)
+      .filteredOn { it.linkType == CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE }
+      .hasSize(1)
+      .extracting("fromLicenceId", "toLicenceId")
+      .containsExactly(tuple(1L, 2L))
   }
 
   @SqlGroup(
@@ -292,6 +300,13 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(allAudits[6].summary).isEqualTo("Updated standard conditions to policy version 4.1 for Person Three")
     assertThat(allAudits[7].licenceId).isEqualTo(4L)
     assertThat(allAudits[7].summary).isEqualTo("CRD licence converted from HDC on Opt Out")
+
+    val links = testRepository.findAllLicenceLinks()
+    assertThat(links)
+      .filteredOn { it.linkType == CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE }
+      .hasSize(2)
+      .extracting("fromLicenceId", "toLicenceId")
+      .containsExactly(tuple(1L, 3L), tuple(2L, 4L))
   }
 
   private fun sendMessage(messageBody: String, eventType: String) {
