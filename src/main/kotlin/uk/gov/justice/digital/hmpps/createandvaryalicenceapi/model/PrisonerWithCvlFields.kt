@@ -12,7 +12,7 @@ import java.time.LocalDate
 data class CvlFields(
   @field:Schema(
     description = "The type of licence this person should have based on their current dates, NB: this may differ from the current licence type if sentence dates have changed since any licence has been created",
-    example = "AP_PSS",
+    example = "AP",
   )
   val licenceType: LicenceType,
 

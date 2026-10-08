@@ -115,7 +115,7 @@ INSERT INTO standard_condition (licence_id, condition_code, condition_sequence, 
 VALUES ((SELECT MAX(id) FROM licence), 'notBreakLaw', 2, 'Do not break the law', 'AP');
 
 INSERT INTO standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
-VALUES ((SELECT MAX(id) FROM licence), 'attendMeetings', 3, 'Attend meetings', 'PSS');
+VALUES ((SELECT MAX(id) FROM licence), 'attendMeetings', 3, 'Attend meetings', 'AP');
 
 -- 7. Bespoke condition
 INSERT INTO bespoke_condition (licence_id, condition_sequence, condition_text)
