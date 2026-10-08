@@ -27,7 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -60,7 +60,7 @@ class VaryApproverCaseloadServiceTest {
   fun `should build the vary approver caseload for a probation region`() {
     // Given
     val probationAreaCode = "N01"
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
@@ -88,7 +88,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
-      assertThat(licenceType).isEqualTo(PSS)
+      assertThat(licenceType).isEqualTo(AP)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       with(probationPractitioner) {
@@ -103,7 +103,7 @@ class VaryApproverCaseloadServiceTest {
   fun `should return empty caseload if search does not match`() {
     // Given
     val probationAreaCode = "N01"
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
@@ -137,7 +137,7 @@ class VaryApproverCaseloadServiceTest {
     val pdus = listOf("N55PDV")
     val licenceSummaries = listOf(
       aLicenceVaryApproverCase(
-        type = PSS,
+        type = AP,
       ),
     )
     val probationCases = listOf(aProbationCase())
@@ -167,7 +167,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
-      assertThat(licenceType).isEqualTo(PSS)
+      assertThat(licenceType).isEqualTo(AP)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       with(probationPractitioner) {
@@ -182,7 +182,7 @@ class VaryApproverCaseloadServiceTest {
   fun `should mark probation practitioner as UNALLOCATED when no offender manager returned`() {
     // Given
     val pdus = listOf("N55PDV")
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByPduCodes(pdus)).thenReturn(licenceSummaries)
@@ -210,7 +210,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
-      assertThat(licenceType).isEqualTo(PSS)
+      assertThat(licenceType).isEqualTo(AP)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       assertThat(probationPractitioner).isEqualTo(ProbationPractitioner.UNALLOCATED)
@@ -222,7 +222,7 @@ class VaryApproverCaseloadServiceTest {
   fun `should search for offender for a probation delivery unit`() {
     // Given
     val pdus = listOf("N55PDV")
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByPduCodes(pdus)).thenReturn(licenceSummaries)
@@ -255,7 +255,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
-      assertThat(licenceType).isEqualTo(PSS)
+      assertThat(licenceType).isEqualTo(AP)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       with(probationPractitioner) {
@@ -275,7 +275,7 @@ class VaryApproverCaseloadServiceTest {
     val probationAreaCode = "N01"
     val licenceSummaries = listOf(
       aLicenceVaryApproverCase(
-        type = PSS,
+        type = AP,
       ),
     )
     val probationCases = listOf(aProbationCase())
@@ -310,7 +310,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
-      assertThat(licenceType).isEqualTo(PSS)
+      assertThat(licenceType).isEqualTo(AP)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       with(probationPractitioner) {
@@ -331,7 +331,7 @@ class VaryApproverCaseloadServiceTest {
     val probationAreaCode = "N01"
     val licenceSummaries = listOf(
       aLicenceVaryApproverCase(
-        type = PSS,
+        type = AP,
       ),
     )
     val probationCases = listOf(aProbationCase())
@@ -368,7 +368,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
-      assertThat(licenceType).isEqualTo(PSS)
+      assertThat(licenceType).isEqualTo(AP)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       with(probationPractitioner) {
@@ -382,7 +382,7 @@ class VaryApproverCaseloadServiceTest {
       assertThat(licenceId).isEqualTo(2)
       assertThat(name).isEqualTo("A Prisoner")
       assertThat(crnNumber).isEqualTo("X12348")
-      assertThat(licenceType).isEqualTo(PSS)
+      assertThat(licenceType).isEqualTo(AP)
       assertThat(variationRequestDate).isEqualTo(licenceSummaries.first().dateCreated?.toLocalDate())
       assertThat(releaseDate).isEqualTo(licenceSummaries.first().licenceStartDate)
       with(probationPractitioner) {
@@ -400,7 +400,7 @@ class VaryApproverCaseloadServiceTest {
     // Given
     val pdus = listOf("N55PDV")
     val probationAreaCode = "N01"
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByPduCodes(pdus)).thenReturn(licenceSummaries)
@@ -444,7 +444,7 @@ class VaryApproverCaseloadServiceTest {
     )
 
     val probationAreaCode = "N01"
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
@@ -480,7 +480,7 @@ class VaryApproverCaseloadServiceTest {
     )
 
     val probationAreaCode = "N01"
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
@@ -516,7 +516,7 @@ class VaryApproverCaseloadServiceTest {
     )
 
     val probationAreaCode = "N01"
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
@@ -560,7 +560,7 @@ class VaryApproverCaseloadServiceTest {
     )
 
     val probationAreaCode = "N01"
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
@@ -595,7 +595,7 @@ class VaryApproverCaseloadServiceTest {
     )
 
     val probationAreaCode = "N01"
-    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = PSS))
+    val licenceSummaries = listOf(aLicenceVaryApproverCase(type = AP))
     val probationCases = listOf(aProbationCase())
 
     whenever(licenceCaseRepository.findSubmittedVariationsByRegion(probationAreaCode)).thenReturn(licenceSummaries)
@@ -735,7 +735,7 @@ class VaryApproverCaseloadServiceTest {
 
   fun aLicenceVaryApproverCase(
     id: Long = 2,
-    type: LicenceType = LicenceType.AP_PSS,
+    type: LicenceType = LicenceType.AP,
     prisonNumber: String = "AB1234E",
     licenceStartDate: LocalDate = LocalDate.now().plusDays(10),
     crn: String = "X12348",
