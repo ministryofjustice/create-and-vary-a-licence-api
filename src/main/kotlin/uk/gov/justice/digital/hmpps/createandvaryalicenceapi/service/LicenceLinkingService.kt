@@ -1,14 +1,12 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.entity.LicenceLink
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.repository.LicenceLinkRepository
-
-enum class LicenceLinkType {
-  CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
-}
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLink
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceLinkRepository
 
 @Service
 class LicenceLinkingService(
@@ -21,14 +19,14 @@ class LicenceLinkingService(
   fun setCrdReplacementForOptedOutLicence(hdcLicenceId: Long, crdLicenceId: Long) {
     link(
       hdcLicenceId,
-      LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
+      CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
       crdLicenceId,
     )
   }
 
   fun isCrdReplacementForOptedOutLicence(licenceId: Long): Boolean = hasLinkTo(
     licenceId,
-    LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
+    CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
   )
 
   private fun hasLinkTo(
@@ -72,6 +70,6 @@ class LicenceLinkingService(
 
   fun checkIfLicenceIdsAreCrdReplacementForOptedOutLicence(possibleCrdReplacementForOptedOutLicence: List<Long>): Set<Long> = licenceLinkRepository.findToLicenceIdsByLicenceIdsAndLinkType(
     possibleCrdReplacementForOptedOutLicence,
-    LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
+    CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
   )
 }

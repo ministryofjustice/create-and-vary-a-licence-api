@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.entity
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -6,7 +6,10 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.LicenceLinkType
+
+enum class LicenceLinkType {
+  CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
+}
 
 @Entity
 class LicenceLink(

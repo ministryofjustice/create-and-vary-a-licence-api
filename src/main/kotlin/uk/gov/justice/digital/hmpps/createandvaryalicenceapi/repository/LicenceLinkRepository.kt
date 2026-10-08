@@ -1,10 +1,10 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.repository
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.LicenceLinkType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licence.entity.LicenceLink
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLink
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType
 
 @Repository
 interface LicenceLinkRepository : JpaRepository<LicenceLink, Long> {
