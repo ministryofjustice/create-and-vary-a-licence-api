@@ -31,6 +31,7 @@ generic-service:
     PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE: 2026-12-31
     PROGRESSION_MODEL_USE_POLICY_4_DOT_1: true
     PRISONER_RELEASED_HANDLER_ENABLED: true
+    HDC_EVENT_LISTENER_DISABLED: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
