@@ -5,12 +5,12 @@ enum class LicenceType {
     override fun conditionTypes() = setOf(AP.name)
   },
 
-  // PSS has been repealed - retained for backwards compatibility with existing licences, but should not be used for new licences
+  // PSS has been repealed - retained only to correctly render existing historical AP_PSS/PSS licences
   AP_PSS {
     override fun conditionTypes() = setOf(AP.name, PSS.name)
   },
 
-  // PSS has been repealed - retained for backwards compatibility with existing licences, but should not be used for new licences
+  // PSS has been repealed - retained only to correctly render existing historical AP_PSS/PSS licences
   PSS {
     override fun conditionTypes() = setOf(PSS.name)
   },
