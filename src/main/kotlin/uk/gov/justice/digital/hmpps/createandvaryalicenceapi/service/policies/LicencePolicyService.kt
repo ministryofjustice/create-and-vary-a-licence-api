@@ -205,16 +205,12 @@ class LicencePolicyService(
     },
   )
 
-  fun getHardStopAdditionalConditions(licence: Licence): List<AdditionalCondition> = when {
-    licence.typeCode == AP -> listOf(HARD_STOP_CONDITION).mapIndexed(
-      toEntityAdditionalCondition(
-        licence,
-        "AP",
-      ),
-    )
-
-    else -> emptyList()
-  }
+  fun getHardStopAdditionalConditions(licence: Licence): List<AdditionalCondition> = listOf(HARD_STOP_CONDITION).mapIndexed(
+    toEntityAdditionalCondition(
+      licence,
+      "AP",
+    ),
+  )
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

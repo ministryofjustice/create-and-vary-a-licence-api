@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someOldModelAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 import java.time.LocalDate
 
 class LicencePolicyServiceTest {
@@ -200,13 +199,6 @@ class LicencePolicyServiceTest {
 
   @Nested
   inner class GetHardStopAdditionalConditions {
-    @Test
-    fun `get Hardstop conditions for PSS`() {
-      val pssLicence = createCrdLicence().copy(typeCode = PSS)
-      val conditions = licencePolicyService.getHardStopAdditionalConditions(pssLicence)
-      assertThat(conditions).isEmpty()
-    }
-
     @Test
     fun `get HardStop conditions for AP`() {
       val pssLicence = createCrdLicence().copy(id = 2L, typeCode = AP)
