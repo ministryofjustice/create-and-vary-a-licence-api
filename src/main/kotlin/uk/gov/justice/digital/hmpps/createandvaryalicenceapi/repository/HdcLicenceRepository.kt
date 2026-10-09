@@ -36,4 +36,14 @@ interface HdcLicenceRepository :
 """,
   )
   fun getLicenceEligibleForCrdConversion(nomsId: String): List<HdcLicence>
+
+  @Query(
+    """
+    SELECT l FROM HdcLicence l
+    WHERE l.nomsId = :nomsNumber
+    AND l.kind = 'HDC'
+    AND l.statusCode IN ('APPROVED', 'SUBMITTED')
+    """,
+  )
+  fun findHdcLicenceEligibleForPostpone(nomsNumber: String): HdcLicence?
 }

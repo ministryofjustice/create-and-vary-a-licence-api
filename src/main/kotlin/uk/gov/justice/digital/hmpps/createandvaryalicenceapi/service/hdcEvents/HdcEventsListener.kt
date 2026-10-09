@@ -27,7 +27,7 @@ class HdcEventsListener(
       log.debug("Successfully parsed HDC event | eventType={} | licenceId={}", eventType, event.licenceId)
       when (eventType) {
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
-        HdcCvlEventType.POSTPONE -> log.debug("POSTPONE event received but handler not yet implemented")
+        HdcCvlEventType.POSTPONE -> hdcStatusChangedHandler.handlePostpone(rawMessage)
         HdcCvlEventType.RESUME -> log.debug("RESUME event received but handler not yet implemented")
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
