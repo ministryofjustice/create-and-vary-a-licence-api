@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -1194,7 +1195,7 @@ object TestData {
   fun aLicenceSummary(
     id: Long = 1,
     kind: LicenceKind = LicenceKind.CRD,
-    type: LicenceType = LicenceType.AP_PSS,
+    type: LicenceType = LicenceType.AP,
     status: LicenceStatus = LicenceStatus.IN_PROGRESS,
     nomsId: String = "AB1234E",
     startDate: LocalDate = TEN_DAYS_FROM_NOW,
@@ -1355,4 +1356,6 @@ object TestData {
       ),
     ),
   )
+
+  fun anEditVariationRequest() = EditVariationRequest(username = "testuser")
 }

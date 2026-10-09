@@ -68,7 +68,7 @@ insert into standard_condition (licence_id, condition_code, condition_sequence, 
 values ((select max(id) from licence), 'notBreakLaw', 2, 'Do not break the law', 'AP');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
-values ((select max(id) from licence), 'attendMeetings', 3, 'Attend meetings', 'PSS');
+values ((select max(id) from licence), 'attendMeetings', 3, 'Attend meetings', 'AP');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES ((select max(id) from licence), true, 'Test Programme');

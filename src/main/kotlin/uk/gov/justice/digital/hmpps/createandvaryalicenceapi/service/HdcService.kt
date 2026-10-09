@@ -50,6 +50,7 @@ class HdcService(
   private val auditService: AuditService,
   private val clock: Clock,
   private val crdLicenceFactory: CrdLicenceFactory,
+  private val linkingService: LicenceLinkingService,
   @param:Value("\${feature.toggle.hdcCreation.enabled}") private val useCurrentHdcStatus: Boolean = false,
 ) {
 
@@ -334,15 +335,17 @@ class HdcService(
       val reason = "Licence automatically inactivated after HDC opt out event"
       licenceService.inactivateLicences(licences, reason = reason, deactivateInProgressVersions = true)
 
-      licences.forEach { licence ->
+      licences.forEach { original ->
 
         val newLicence = licenceService.populateCopy(
-          original = licence,
-          copy = crdCopies[licence.id]!!,
+          original = original,
+          copy = crdCopies[original.id]!!,
         )
 
-        addOptOutAudits(licence, newLicence)
-        addLicenceOptOutEvents(licence, newLicence)
+        addOptOutAudits(original, newLicence)
+        addLicenceOptOutEvents(original, newLicence)
+
+        linkingService.setCrdReplacementForOptedOutLicence(original.id, newLicence.id)
       }
     }
   }
@@ -400,5 +403,36 @@ class HdcService(
       eventType = SYSTEM_EVENT,
     )
     auditService.recordAuditEvent(auditForChild)
+  }
+
+  @Transactional
+  fun transitionHdcLicenceToInProgress(nomsNumber: String) {
+    val licence = hdcLicenceRepository.findHdcLicenceEligibleForPostpone(nomsNumber)
+      ?: run {
+        log.warn("HDC postpone: HDC licence not found for nomsNumber={}", nomsNumber)
+        return
+      }
+
+    val currentStatus = licence.statusCode
+
+    licence.updateStatus(
+      statusCode = IN_PROGRESS,
+      staffMember = null,
+      approvedByUsername = null,
+      approvedByName = null,
+      approvedDate = null,
+      supersededDate = null,
+      submittedDate = licence.submittedDate,
+      licenceActivatedDate = licence.licenceActivatedDate,
+    )
+
+    auditService.recordAuditEvent(
+      AuditEvent(
+        licenceId = licence.id,
+        summary = "HDC postponed - licence moved to IN_PROGRESS",
+        detail = "HDC Application postponed. Licence status changed from $currentStatus to IN_PROGRESS",
+        eventType = SYSTEM_EVENT,
+      ),
+    )
   }
 }

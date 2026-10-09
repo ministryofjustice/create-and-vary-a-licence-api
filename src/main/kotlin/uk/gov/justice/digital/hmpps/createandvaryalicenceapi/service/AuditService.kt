@@ -446,6 +446,21 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, summary, changes, null))
   }
 
+  fun recordAuditEventVariationEdited(
+    licence: Licence,
+    staffMember: Staff?,
+  ) {
+    val summary = "Licence variation changed to in progress"
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to mapOf(
+        "oldStatus" to "VARIATION_SUBMITTED",
+        "newStatus" to "VARIATION_IN_PROGRESS",
+      ),
+    )
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
+  }
+
   private fun getAuditEventsForLicence(auditRequest: AuditRequest): List<ModelAuditEvent> {
     licenceRepository
       .findById(auditRequest.licenceId!!)

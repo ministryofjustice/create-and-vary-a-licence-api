@@ -384,6 +384,18 @@ class LicenceConditionService(
     return PolicyUpdateResponse(policyUpdated = false, policyVersion = policyVersionAvailable)
   }
 
+  @Transactional
+  fun updateLicencePolicy(licence: Licence): PolicyUpdateResponse {
+    val currentPolicyVersion = licence.version
+
+    val policyVersionAvailable = licencePolicyService.currentPolicy(licence.licenceStartDate).version
+    if (currentPolicyVersion != policyVersionAvailable) {
+      updateStandardConditions(licence)
+      return PolicyUpdateResponse(policyUpdated = true, policyVersion = policyVersionAvailable)
+    }
+    return PolicyUpdateResponse(policyUpdated = false, policyVersion = policyVersionAvailable)
+  }
+
   private fun getCurrentUserName(): String = SecurityContextHolder.getContext().authentication?.name ?: SYSTEM_USER
 
   companion object {

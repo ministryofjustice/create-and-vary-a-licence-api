@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy
 
 import io.swagger.v3.oas.annotations.media.Schema
 
+// PSS has been repealed - retained only to correctly render existing historical AP_PSS/PSS licences
 data class StandardConditionPss(
   @field:Schema(
     description = "The unique code for this standard PSS condition",
