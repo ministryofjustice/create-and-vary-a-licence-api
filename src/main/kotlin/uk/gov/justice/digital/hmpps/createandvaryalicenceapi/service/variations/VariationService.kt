@@ -71,10 +71,10 @@ class VariationService(
       submittedDate = variation.submittedDate,
       licenceActivatedDate = variation.licenceActivatedDate,
     )
-    licenceRepository.saveAndFlush(variation)
     auditService.recordAuditEventVariationEdited(variation, staffMember)
 
-    licenceConditionService.updateLicencePolicy(variationId)
+    licenceConditionService.updateLicencePolicy(variation)
+    licenceRepository.saveAndFlush(variation)
   }
 
   private fun getVariationLicence(licenceId: Long): EntityLicence {

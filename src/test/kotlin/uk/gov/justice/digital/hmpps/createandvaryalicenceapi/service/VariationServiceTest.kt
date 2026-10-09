@@ -195,6 +195,6 @@ class VariationServiceTest {
     assertThat(savedEntity.licenceActivatedDate).isEqualTo(aVariation.licenceActivatedDate)
 
     verify(auditService).recordAuditEventVariationEdited(aVariation, staffMember)
-    verify(licenceConditionService).updateLicencePolicy(aVariation.id)
+    verify(licenceConditionService).updateLicencePolicy(aVariation)
   }
 }
