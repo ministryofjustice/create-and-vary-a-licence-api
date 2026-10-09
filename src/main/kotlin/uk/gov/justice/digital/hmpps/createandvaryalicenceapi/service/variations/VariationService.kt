@@ -1,18 +1,32 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.variations
 
+import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ModelVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.VariationChangeResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence as HdcVariationLicenceEntity
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 
 @Service
 class VariationService(
+  private val auditService: AuditService,
+  private val licenceConditionService: LicenceConditionService,
+  private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
+  private val staffRepository: StaffRepository,
 ) {
   @Transactional
   fun calculateDiffFromOriginal(variationId: Long): VariationChangeResponse {
@@ -39,6 +53,36 @@ class VariationService(
       hasUpdatedCurfewAddress = updatedCurfewAddress,
       hasUpdatedCurfewHours = updatedCurfewHours,
     )
+  }
+
+  @Transactional
+  fun editVariation(variationId: Long, request: EditVariationRequest) {
+    val variation = getVariationLicence(variationId)
+    require(variation.statusCode == LicenceStatus.VARIATION_SUBMITTED) { "Only submitted variations can be edited." }
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(request.username)
+    variation.updateStatus(
+      statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+      staffMember = staffMember,
+      approvedByUsername = variation.approvedByUsername,
+      approvedByName = variation.approvedByName,
+      approvedDate = variation.approvedDate,
+      supersededDate = null,
+      submittedDate = variation.submittedDate,
+      licenceActivatedDate = variation.licenceActivatedDate,
+    )
+    auditService.recordAuditEventVariationEdited(variation, staffMember)
+
+    licenceConditionService.updateLicencePolicy(variation)
+    licenceRepository.saveAndFlush(variation)
+  }
+
+  private fun getVariationLicence(licenceId: Long): EntityLicence {
+    val licence = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+    require(licence is VariationLicence || licence is HdcVariationLicenceEntity) { "licence with id: $licenceId is not a variation" }
+    return licence
   }
 
   private fun Licence.isHdcLicence() = kind == LicenceKinds.HDC || kind == LicenceKinds.HDC_VARIATION

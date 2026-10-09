@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -1252,6 +1253,38 @@ class AuditServiceTest {
         listOf(
           "Booking ID and number updated on licence",
           changes,
+        ),
+      )
+  }
+
+  @Test
+  fun `records an edit variation audit event`() {
+    val variation = createVariationLicence()
+    service.recordAuditEventVariationEdited(
+      licence = variation,
+      staffMember = aCom,
+    )
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository).save(auditCaptor.capture())
+    val auditEvent = auditCaptor.value
+
+    val expectedSummary = "Licence variation changed to in progress for ${variation.forename} ${variation.surname}"
+    assertThat(auditEvent.username).isEqualTo(aCom.username)
+    assertThat(auditEvent.summary).isEqualTo(expectedSummary)
+    assertThat(auditEvent.detail).isEqualTo(
+      "ID ${variation.id} type ${variation.typeCode.name} " +
+        "status ${variation.statusCode.name} version ${variation.version}",
+    )
+    assertThat(auditEvent.changes)
+      .extracting("type", "changes")
+      .isEqualTo(
+        listOf(
+          "Licence variation changed to in progress",
+          mapOf(
+            "oldStatus" to "VARIATION_SUBMITTED",
+            "newStatus" to "VARIATION_IN_PROGRESS",
+          ),
         ),
       )
   }
