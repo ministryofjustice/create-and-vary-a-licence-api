@@ -52,7 +52,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
@@ -2364,43 +2363,6 @@ class LicenceServiceTest {
           aCom.username,
           "X Y",
           "Licence variation discarded for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-        ),
-      )
-  }
-
-  @Test
-  fun `update prison information persists the updated entity`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
-
-    service.updatePrisonInformation(
-      1L,
-      UpdatePrisonInformationRequest(
-        prisonCode = "PVI",
-        prisonDescription = "Pentonville (HMP)",
-        prisonTelephone = "+44 276 54545",
-      ),
-    )
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
-
-    assertThat(licenceCaptor.value)
-      .extracting("prisonCode", "prisonDescription", "prisonTelephone", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf("PVI", "Pentonville (HMP)", "+44 276 54545", aCom.username, aCom))
-
-    assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(
-        listOf(
-          1L,
-          "SYSTEM",
-          "SYSTEM",
-          "Prison information updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )
   }

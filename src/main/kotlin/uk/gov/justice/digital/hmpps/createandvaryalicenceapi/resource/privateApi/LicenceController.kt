@@ -36,7 +36,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Licen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
@@ -55,8 +54,6 @@ class LicenceController(
   private val licenceCreationService: LicenceCreationService,
   @param:Value("\${prison.event.listener.enabled:false}")
   private val prisonEventHandlerEnabled: Boolean,
-  @param:Value("\${feature.toggle.remand.enabled:false}")
-  private val remandEnabled: Boolean,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -955,78 +952,6 @@ class LicenceController(
     @PathVariable("licenceId") licenceId: Long,
   ) {
     licenceService.discardLicence(licenceId)
-  }
-
-  @Deprecated("Will not be required post remand work")
-  @Tag(name = Tags.LICENCES)
-  @PutMapping(value = ["/id/{licenceId}/prison-information"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Updates the prison information.",
-    description = "Updates the prison information. Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Prison information updated",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun updatePrisonInformation(
-    @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody
-    request: UpdatePrisonInformationRequest,
-  ) {
-    if (remandEnabled) {
-      log.debug(
-        "Not updating prison information for licenceId: {} as remand toggle is enabled",
-        licenceId,
-      )
-    } else {
-      licenceService.updatePrisonInformation(licenceId, request)
-    }
   }
 
   @Deprecated("This only used for integration tests - need to rewrite to be sqs based tests")
