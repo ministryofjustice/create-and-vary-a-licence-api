@@ -15,6 +15,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.jdbc.SqlGroup
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBody
+import org.springframework.test.web.reactive.server.expectBodyList
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
@@ -75,21 +77,21 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
+      .expectBody<LicenceDto>()
       .returnResult().responseBody
 
     log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
 
-    assertThat(result?.standardLicenceConditions?.size).isEqualTo(2)
-    assertThat(result?.standardLicenceConditions)
+    assertThat(result.standardLicenceConditions?.size).isEqualTo(2)
+    assertThat(result.standardLicenceConditions)
       .extracting("code")
       .containsAll(listOf("goodBehaviour", "notBreakLaw"))
-    assertThat(result?.standardPssConditions?.size).isEqualTo(1)
-    assertThat(result?.standardPssConditions)
+    assertThat(result.standardPssConditions?.size).isEqualTo(1)
+    assertThat(result.standardPssConditions)
       .extracting("code")
       .containsAll(listOf("attendMeetings"))
-    assertThat(result?.responsibleComFullName).isEqualTo("Test Client")
-    assertThat(result?.electronicMonitoringProviderStatus).isEqualTo(ElectronicMonitoringProviderStatus.COMPLETE)
+    assertThat(result.responsibleComFullName).isEqualTo("Test Client")
+    assertThat(result.electronicMonitoringProviderStatus).isEqualTo(ElectronicMonitoringProviderStatus.COMPLETE)
   }
 
   @ParameterizedTest(name = "Get a licence using {0}")
@@ -117,10 +119,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
+      .expectBody<LicenceDto>()
       .returnResult().responseBody
 
-    assertThat(result?.electronicMonitoringProviderStatus).isEqualTo(ElectronicMonitoringProviderStatus.NOT_STARTED)
+    assertThat(result.electronicMonitoringProviderStatus).isEqualTo(ElectronicMonitoringProviderStatus.NOT_STARTED)
   }
 
   @Test
@@ -140,10 +142,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
+      .expectBody<LicenceDto>()
       .returnResult().responseBody
 
-    assertThat(result?.electronicMonitoringProviderStatus).isEqualTo(ElectronicMonitoringProviderStatus.NOT_NEEDED)
+    assertThat(result.electronicMonitoringProviderStatus).isEqualTo(ElectronicMonitoringProviderStatus.NOT_NEEDED)
   }
 
   @Test
@@ -157,10 +159,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()
       .expectStatus().isEqualTo(FORBIDDEN.value())
-      .expectBody(ErrorResponse::class.java)
+      .expectBody<ErrorResponse>()
       .returnResult().responseBody
 
-    assertThat(result?.userMessage).contains("Access Denied")
+    assertThat(result.userMessage).contains("Access Denied")
   }
 
   @Test
@@ -195,13 +197,13 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
+      .expectBody<LicenceDto>()
       .returnResult().responseBody
 
-    assertThat(result?.statusCode).isEqualTo(aStatusToApprovedUpdateRequest.status)
-    assertThat(result?.updatedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
-    assertThat(result?.approvedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
-    assertThat(result?.approvedByName).isEqualTo(aStatusToApprovedUpdateRequest.fullName)
+    assertThat(result.statusCode).isEqualTo(aStatusToApprovedUpdateRequest.status)
+    assertThat(result.updatedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
+    assertThat(result.approvedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
+    assertThat(result.approvedByName).isEqualTo(aStatusToApprovedUpdateRequest.fullName)
   }
 
   @Test
@@ -248,11 +250,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
+      .expectBody<LicenceDto>()
       .returnResult().responseBody
 
-    assertThat(licenceV1?.statusCode).isEqualTo(INACTIVE)
-    assertThat(licenceV1?.updatedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
+    assertThat(licenceV1.statusCode).isEqualTo(INACTIVE)
+    assertThat(licenceV1.updatedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
 
     val licenceV2 = webTestClient.get()
       .uri("/licence/id/2")
@@ -261,12 +263,12 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
+      .expectBody<LicenceDto>()
       .returnResult().responseBody
 
-    assertThat(licenceV2?.statusCode).isEqualTo(APPROVED)
-    assertThat(licenceV2?.approvedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
-    assertThat(licenceV2?.approvedByName).isEqualTo(aStatusToApprovedUpdateRequest.fullName)
+    assertThat(licenceV2.statusCode).isEqualTo(APPROVED)
+    assertThat(licenceV2.approvedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
+    assertThat(licenceV2.approvedByName).isEqualTo(aStatusToApprovedUpdateRequest.fullName)
   }
 
   @Test
@@ -367,17 +369,19 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     // When
     val result = webTestClient.put()
-      .uri("/licence/id/1/submit") // use the correct ID for VARIATION
+      .uri("/licence/id/2/submit") // use the correct ID for VARIATION
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
 
     // Then
     result.expectStatus().isOk
-    val licence = testRepository.findLicence(1)
+    val licence = testRepository.findLicence(2)
     assertThat(licence).isInstanceOf(Variation::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.VARIATION)
     assertThat(licence.statusCode).isEqualTo(VARIATION_SUBMITTED)
+    // submitting a variation should update the standard conditions to the latest version
+    assertThat(licence.standardConditions).hasSize(8)
   }
 
   @Test
@@ -417,17 +421,19 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     // When
     val result = webTestClient.put()
-      .uri("/licence/id/1/submit") // correct ID for HDC_VARIATION
+      .uri("/licence/id/2/submit") // correct ID for HDC_VARIATION
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
 
     // Then
     result.expectStatus().isOk
-    val licence = testRepository.findLicence(1)
+    val licence = testRepository.findLicence(2)
     assertThat(licence).isInstanceOf(HdcVariationLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.HDC_VARIATION)
     assertThat(licence.statusCode).isEqualTo(VARIATION_SUBMITTED)
+    // submitting a variation should update the standard conditions to the latest version
+    assertThat(licence.standardConditions).hasSize(8)
   }
 
   @Test
@@ -445,11 +451,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isOk
 
     val response = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(CreateVariationResponse::class.java)
+      .expectBody<CreateVariationResponse>()
       .returnResult().responseBody
 
     assertThat(response).isNotNull
-    assertThat(response!!.licenceId).isGreaterThan(1)
+    assertThat(response.licenceId).isGreaterThan(1)
 
     assertThat(testRepository.countLicence()).isEqualTo(2)
     val oldLicence = testRepository.findLicence(1)
@@ -560,11 +566,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isOk
 
     val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(CreateVariationResponse::class.java)
+      .expectBody<CreateVariationResponse>()
       .returnResult().responseBody
 
     assertThat(licenceSummary).isNotNull
-    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
+    assertThat(licenceSummary.licenceId).isGreaterThan(1)
 
     assertThat(testRepository.countLicence()).isEqualTo(2)
 
@@ -615,11 +621,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isOk
 
     val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(CreateVariationResponse::class.java)
+      .expectBody<CreateVariationResponse>()
       .returnResult().responseBody
 
     assertThat(licenceSummary).isNotNull
-    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
+    assertThat(licenceSummary.licenceId).isGreaterThan(1)
 
     assertThat(testRepository.countLicence()).isEqualTo(2)
 
@@ -665,11 +671,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     result.expectStatus().isOk
 
     val response = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(CreateVariationResponse::class.java)
+      .expectBody<CreateVariationResponse>()
       .returnResult().responseBody
 
     assertThat(response).isNotNull
-    assertThat(response!!.licenceId).isGreaterThan(0)
+    assertThat(response.licenceId).isGreaterThan(0)
 
     val persistedLicence = testRepository.findLicence(response.licenceId)
     assertThat(persistedLicence).isInstanceOf(EntityVariationLicence::class.java)
@@ -798,12 +804,12 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(VariationLicenceDto::class.java)
+      .expectBody<VariationLicenceDto>()
       .returnResult().responseBody
 
-    assertThat(result?.spoDiscussion).isEqualTo("Yes")
-    assertThat(result?.id).isEqualTo(2)
-    assertThat(result?.variationOf).isEqualTo(1)
+    assertThat(result.spoDiscussion).isEqualTo("Yes")
+    assertThat(result.id).isEqualTo(2)
+    assertThat(result.variationOf).isEqualTo(1)
   }
 
   @Test
@@ -826,10 +832,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(VariationLicenceDto::class.java)
+      .expectBody<VariationLicenceDto>()
       .returnResult().responseBody
 
-    assertThat(result?.vloDiscussion).isEqualTo("Not applicable")
+    assertThat(result.vloDiscussion).isEqualTo("Not applicable")
   }
 
   @Test
@@ -852,7 +858,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LicenceEvent::class.java)
+      .expectBodyList<LicenceEvent>()
       .returnResult().responseBody
 
     assertThat(result).isNotNull
@@ -880,10 +886,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceDto::class.java)
+      .expectBody<LicenceDto>()
       .returnResult().responseBody
 
-    assertThat(result?.statusCode).isEqualTo(aStatusToActiveUpdateRequest.status)
+    assertThat(result.statusCode).isEqualTo(aStatusToActiveUpdateRequest.status)
 
     argumentCaptor<HMPPSDomainEvent>().apply {
       verify(eventsPublisher).publishDomainEvent(capture())
@@ -1195,21 +1201,21 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody(LicenceDto::class.java)
+        .expectBody<LicenceDto>()
         .returnResult().responseBody
 
-      assertThat(licence?.statusCode).isEqualTo(APPROVED)
-      assertThat(licence?.licenceVersion).isEqualTo("1.0")
+      assertThat(licence.statusCode).isEqualTo(APPROVED)
+      assertThat(licence.licenceVersion).isEqualTo("1.0")
     }
   }
 
   private fun assertEdit(result: WebTestClient.ResponseSpec, expectedKind: LicenceKind, noAddress: Boolean = false) {
     result.expectStatus().isOk
     val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(EditLicenceResponse::class.java)
+      .expectBody<EditLicenceResponse>()
       .returnResult().responseBody
 
-    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
+    assertThat(licenceSummary.licenceId).isGreaterThan(1)
 
     assertThat(testRepository.countLicence()).isEqualTo(2)
 

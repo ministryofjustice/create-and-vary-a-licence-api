@@ -461,9 +461,15 @@ class LicenceService(
         licenceEntity.submit(submitter as PrisonUser)
       }
 
-      is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+      is VariationLicence -> {
+        licenceConditionService.updateLicencePolicy(licenceEntity.id)
+        licenceEntity.submit(submitter as CommunityOffenderManager)
+      }
 
-      is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+      is HdcVariationLicence -> {
+        licenceConditionService.updateLicencePolicy(licenceEntity.id)
+        licenceEntity.submit(submitter as CommunityOffenderManager)
+      }
 
       else -> error("Unexpected licence type: $licenceEntity")
     }

@@ -1491,6 +1491,7 @@ class LicenceServiceTest {
         eq(variation.crn!!),
         eq(variation.submittedBy?.fullName ?: ""),
       )
+    verify(licenceConditionService).updateLicencePolicy(variation.id)
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername", "updatedBy")
@@ -4010,6 +4011,7 @@ class LicenceServiceTest {
           eq(variation.crn!!),
           eq(variation.submittedBy?.fullName ?: ""),
         )
+      verify(licenceConditionService).updateLicencePolicy(variation.id)
 
       assertThat(licenceCaptor.value)
         .extracting("id", "kind", "statusCode", "updatedByUsername", "updatedBy")
