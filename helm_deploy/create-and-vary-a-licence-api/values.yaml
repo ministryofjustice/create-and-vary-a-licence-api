@@ -52,6 +52,7 @@ generic-service:
     PRISON_EVENT_LISTENER_ENABLED: true
     PRISONER_MERGED_HANDLER_ENABLED: true
     PRISONER_RELEASED_HANDLER_ENABLED: false
+    HDC_EVENT_LISTENER_ENABLED: true
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
