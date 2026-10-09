@@ -414,14 +414,13 @@ class HdcService(
       }
 
     val currentStatus = licence.statusCode
-    val clearApproval = currentStatus == APPROVED
 
     licence.updateStatus(
       statusCode = IN_PROGRESS,
       staffMember = null,
-      approvedByUsername = licence.approvedByUsername.takeUnless { clearApproval },
-      approvedByName = licence.approvedByName.takeUnless { clearApproval },
-      approvedDate = licence.approvedDate.takeUnless { clearApproval },
+      approvedByUsername = null,
+      approvedByName = null,
+      approvedDate = null,
       supersededDate = null,
       submittedDate = licence.submittedDate,
       licenceActivatedDate = licence.licenceActivatedDate,

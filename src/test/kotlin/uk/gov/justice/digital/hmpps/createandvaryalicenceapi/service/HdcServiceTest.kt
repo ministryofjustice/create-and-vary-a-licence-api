@@ -946,11 +946,14 @@ class HdcServiceTest {
     }
 
     @Test
-    fun `transitions HDC licence from SUBMITTED to IN_PROGRESS`() {
+    fun `transitions HDC licence from SUBMITTED to IN_PROGRESS and clears approval metadata`() {
       // Given
       val hdcLicence = createHdcLicence(id = 456L)
       hdcLicence.statusCode = SUBMITTED
       hdcLicence.nomsId = "A1234BC"
+      hdcLicence.approvedByUsername = "approver"
+      hdcLicence.approvedByName = "Approver Name"
+      hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
       whenever(hdcLicenceRepository.findHdcLicenceEligibleForPostpone("A1234BC")).thenReturn(hdcLicence)
 
       // When
@@ -958,6 +961,9 @@ class HdcServiceTest {
 
       // Then
       assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
+      assertThat(hdcLicence.approvedByUsername).isNull()
+      assertThat(hdcLicence.approvedByName).isNull()
+      assertThat(hdcLicence.approvedDate).isNull()
       val auditCaptor = argumentCaptor<AuditEvent>()
       verify(auditService).recordAuditEvent(auditCaptor.capture())
       val auditEvent = auditCaptor.firstValue
