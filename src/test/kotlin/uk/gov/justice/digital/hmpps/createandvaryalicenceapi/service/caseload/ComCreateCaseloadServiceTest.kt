@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadTyp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateTeamCaseload
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CvlRecordService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceLinkingService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCaseAccessResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aCvlRecord
@@ -50,6 +51,7 @@ class ComCreateCaseloadServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val releaseDateLabelFactory = mock<ReleaseDateLabelFactory>()
   private val telemetryService = mock<TelemetryService>()
+  private val licenceLinkingService = mock<LicenceLinkingService>()
 
   private var service = ComCreateCaseloadService(
     prisonerSearchApiClient,
@@ -58,6 +60,7 @@ class ComCreateCaseloadServiceTest {
     cvlRecordService,
     releaseDateLabelFactory,
     telemetryService,
+    licenceLinkingService,
   )
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
@@ -529,7 +532,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.SUBMITTED,
           comUsername = "johndoe",
           licenceStartDate = twoDaysAgo,
@@ -538,7 +541,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12349",
           nomisId = "AB1234F",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.SUBMITTED,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
@@ -575,7 +578,7 @@ class ComCreateCaseloadServiceTest {
       expectedCrn = "X12349",
       expectedPrisonerNumber = "AB1234F",
       expectedLicenceStatus = LicenceStatus.SUBMITTED,
-      expectedLicenceType = LicenceType.AP_PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", allocated = true),
       expectedLicenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS,
@@ -687,12 +690,12 @@ class ComCreateCaseloadServiceTest {
           nomsId = "AB1234H",
           licenceStartDate = tenDaysFromNow,
           hardStopWarningDate = tenDaysFromNow,
-          licenceType = LicenceType.PSS,
+          licenceType = LicenceType.AP,
         ),
         aCvlRecord(
           nomsId = "AB1234I",
           licenceStartDate = elevenDaysFromNow,
-          licenceType = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP,
         ),
       ),
     )
@@ -703,7 +706,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12352",
           nomisId = "AB1234I",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.SUBMITTED,
           comUsername = "johndoe",
           licenceStartDate = elevenDaysFromNow,
@@ -728,7 +731,7 @@ class ComCreateCaseloadServiceTest {
       expectedCrn = "X12351",
       expectedPrisonerNumber = "AB1234H",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
       expectedLicenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED,
       expectedProbationPractitioner = ProbationPractitioner.unallocated("X1235"),
@@ -739,7 +742,7 @@ class ComCreateCaseloadServiceTest {
       expectedCrn = "X12352",
       expectedPrisonerNumber = "AB1234I",
       expectedLicenceStatus = LicenceStatus.SUBMITTED,
-      expectedLicenceType = LicenceType.AP_PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = elevenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X1234",
@@ -797,7 +800,7 @@ class ComCreateCaseloadServiceTest {
         aCvlRecord(
           nomsId = "AB1234F",
           licenceStartDate = tenDaysFromNow,
-          licenceType = LicenceType.PSS,
+          licenceType = LicenceType.AP,
         ),
       ),
     )
@@ -826,7 +829,7 @@ class ComCreateCaseloadServiceTest {
       expectedCrn = "X12349",
       expectedPrisonerNumber = "AB1234F",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
@@ -957,7 +960,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.APPROVED,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
@@ -966,7 +969,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.IN_PROGRESS,
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
@@ -990,7 +993,7 @@ class ComCreateCaseloadServiceTest {
       "X12348",
       "AB1234E",
       LicenceStatus.IN_PROGRESS,
-      LicenceType.AP_PSS,
+      LicenceType.AP,
       LicenceCreationType.LICENCE_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
     )
@@ -1018,7 +1021,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.TIMED_OUT,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
@@ -1027,7 +1030,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.IN_PROGRESS,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
@@ -1051,7 +1054,7 @@ class ComCreateCaseloadServiceTest {
       "X12348",
       "AB1234E",
       LicenceStatus.TIMED_OUT,
-      LicenceType.AP_PSS,
+      LicenceType.AP,
       LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
       expectedReleaseDate = twoDaysFromNow,
       expectedLicenceKind = LicenceKind.HARD_STOP,
@@ -1080,7 +1083,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.TIMED_OUT,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
@@ -1104,7 +1107,7 @@ class ComCreateCaseloadServiceTest {
       "X12348",
       "AB1234E",
       LicenceStatus.TIMED_OUT,
-      LicenceType.AP_PSS,
+      LicenceType.AP,
       LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
       expectedReleaseDate = twoDaysFromNow,
       expectedLicenceKind = LicenceKind.CRD,
@@ -1139,7 +1142,7 @@ class ComCreateCaseloadServiceTest {
           nomsId = "AB1234E",
           licenceStartDate = twoDaysFromNow,
           isInHardStopPeriod = true,
-          licenceType = LicenceType.AP_PSS,
+          licenceType = LicenceType.AP,
           isTimedOut = true,
         ),
       ),
@@ -1153,7 +1156,7 @@ class ComCreateCaseloadServiceTest {
       "X12348",
       "AB1234E",
       LicenceStatus.TIMED_OUT,
-      LicenceType.AP_PSS,
+      LicenceType.AP,
       LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE,
       expectedReleaseDate = twoDaysFromNow,
       expectedLicenceKind = LicenceKind.CRD,
@@ -1234,7 +1237,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.HARD_STOP,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.SUBMITTED,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
@@ -1258,7 +1261,7 @@ class ComCreateCaseloadServiceTest {
       "X12348",
       "AB1234E",
       LicenceStatus.TIMED_OUT,
-      LicenceType.AP_PSS,
+      LicenceType.AP,
       LicenceCreationType.LICENCE_CREATED_BY_PRISON,
       expectedReleaseDate = twoDaysFromNow,
       expectedLicenceKind = LicenceKind.HARD_STOP,
@@ -1286,7 +1289,7 @@ class ComCreateCaseloadServiceTest {
       crn = "X12348",
       nomisId = "AB1234E",
       kind = LicenceKind.HARD_STOP,
-      typeCode = LicenceType.AP_PSS,
+      typeCode = LicenceType.AP,
       licenceStatus = LicenceStatus.ACTIVE,
       comUsername = "johndoe",
       licenceStartDate = twoDaysFromNow,
@@ -1332,7 +1335,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.APPROVED,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
@@ -1341,7 +1344,7 @@ class ComCreateCaseloadServiceTest {
           crn = "X12348",
           nomisId = "AB1234E",
           kind = LicenceKind.CRD,
-          typeCode = LicenceType.AP_PSS,
+          typeCode = LicenceType.AP,
           licenceStatus = LicenceStatus.TIMED_OUT,
           comUsername = "johndoe",
           licenceStartDate = twoDaysFromNow,
@@ -1366,7 +1369,7 @@ class ComCreateCaseloadServiceTest {
       "X12348",
       "AB1234E",
       LicenceStatus.TIMED_OUT,
-      LicenceType.AP_PSS,
+      LicenceType.AP,
       LicenceCreationType.LICENCE_CHANGES_NOT_APPROVED_IN_TIME,
       expectedReleaseDate = twoDaysFromNow,
     )
@@ -1426,6 +1429,7 @@ class ComCreateCaseloadServiceTest {
         cvlRecordService,
         releaseDateLabelFactory,
         telemetryService,
+        licenceLinkingService,
       )
       val managedOffenders = listOf(
         ManagedOffender(crn = "X12348", nomisId = "AB1234E", name = name, staff = staffDetail),

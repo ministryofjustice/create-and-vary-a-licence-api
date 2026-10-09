@@ -454,7 +454,7 @@ class AuditServiceTest {
     }
 
     @Test
-    fun `records an audit event when bespoke conditions are deleted in PSS period`() {
+    fun `records an audit event when bespoke conditions are deleted`() {
       service.recordAuditEventDeleteBespokeConditions(
         aLicenceEntity,
         someBespokeConditions,
