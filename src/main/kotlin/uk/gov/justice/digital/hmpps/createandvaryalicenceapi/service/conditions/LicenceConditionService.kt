@@ -367,6 +367,7 @@ class LicenceConditionService(
     uploadFileConditionsService.deleteDocuments(deletableDocumentUuids)
   }
 
+  @Transactional
   fun updateLicencePolicy(licenceId: Long): PolicyUpdateResponse {
     val licence = getLicence(licenceId)
     val currentPolicyVersion = if (licence is Variation) {
