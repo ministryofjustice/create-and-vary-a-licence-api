@@ -323,9 +323,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     )
   }
 
-  private fun assertSqsProcessed() {
+  private fun assertSqsProcessed(timesProcessed: Int = 1) {
     awaitAtMost30Secs untilAsserted {
-      verify(hdcEventsListener, times(1)).finishedEventProcessing(anyOrNull())
+      verify(hdcEventsListener, times(timesProcessed)).finishedEventProcessing(anyOrNull())
     }
     assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
@@ -370,6 +370,12 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         assertThat(it.detail).contains("APPROVED").contains("IN_PROGRESS")
       }
 
+    assertThat(testRepository.findAllHdcPostponements())
+      .hasSize(1)
+      .first()
+      .extracting("licence.id", "isPostponed")
+      .containsExactly(1L, true)
+
     verifyNoInteractions(eventsPublisher)
   }
 
@@ -403,6 +409,50 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         assertThat(it.summary).isEqualTo("HDC postponed - licence moved to IN_PROGRESS")
         assertThat(it.detail).contains("SUBMITTED").contains("IN_PROGRESS")
       }
+
+    assertThat(testRepository.findAllHdcPostponements())
+      .hasSize(1)
+      .first()
+      .extracting("licence.id", "isPostponed")
+      .containsExactly(2L, true)
+    verifyNoInteractions(eventsPublisher)
+  }
+
+  @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
+  @Test
+  fun `An HDC resume event clears the current postponement state`() {
+    val event = HdcStatusChangedEvent(
+      occurredAt = LocalDateTime.now(),
+      licenceId = 1L,
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+      triggeredBy = "test.user",
+      reason = "HDC application resumed",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+
+    sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
+
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+
+    assertThat(testRepository.findAllHdcPostponements())
+      .hasSize(1)
+      .first()
+      .extracting("licence.id", "isPostponed")
+      .containsExactly(1L, true)
+
+    sendMessage(eventJson, HdcCvlEventType.RESUME.toString())
+
+    assertSqsProcessed(timesProcessed = 2)
+    verify(hdcStatusChangedHandler).handleResume(eventJson)
+
+    assertThat(testRepository.findAllHdcPostponements())
+      .hasSize(1)
+      .first()
+      .extracting("licence.id", "isPostponed")
+      .containsExactly(1L, false)
+
     verifyNoInteractions(eventsPublisher)
   }
 }

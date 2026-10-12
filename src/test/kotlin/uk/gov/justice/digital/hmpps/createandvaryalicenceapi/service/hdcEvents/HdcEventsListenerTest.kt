@@ -7,17 +7,13 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.messaging.support.GenericMessage
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import java.time.LocalDateTime
 
 class HdcEventsListenerTest {
   private val mapper = spy(ObjectMapper())
   private val handler = mock<HdcStatusChangedHandler>()
-  private val hdcService = mock<HdcService>()
-
   private val listener = HdcEventsListener(handler, mapper)
 
   @Test
@@ -43,23 +39,6 @@ class HdcEventsListenerTest {
   }
 
   @Test
-  fun `does not process HDC opt out when HDC creation is disabled`() {
-    // Given
-    val handler = HdcStatusChangedHandler(
-      mapper = mapper,
-      hdcService = hdcService,
-      hdcCreationEnabled = false,
-    )
-
-    // When
-    handler.handleOptout("message")
-
-    // Then
-    verifyNoInteractions(mapper)
-    verifyNoInteractions(hdcService)
-  }
-
-  @Test
   fun `onMessage processes OPT_OUT event successfully`() {
     val event = HdcStatusChangedEvent(
       occurredAt = LocalDateTime.now(),
@@ -78,6 +57,50 @@ class HdcEventsListenerTest {
 
     val captor = argumentCaptor<String>()
     verify(handler).handleOptout(captor.capture())
+    assertThat(captor.firstValue).isEqualTo(eventJson)
+  }
+
+  @Test
+  fun `onMessage processes POSTPONE event successfully`() {
+    val event = HdcStatusChangedEvent(
+      occurredAt = LocalDateTime.now(),
+      licenceId = 123L,
+      bookingId = 456L,
+      nomsNumber = "A1234BC",
+      triggeredBy = "test.user",
+      reason = "Test",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+
+    val headers = mapOf<String, Any>("eventType" to "POSTPONE").toMutableMap()
+    val message = GenericMessage(eventJson, headers)
+
+    listener.onMessage(message)
+
+    val captor = argumentCaptor<String>()
+    verify(handler).handlePostpone(captor.capture())
+    assertThat(captor.firstValue).isEqualTo(eventJson)
+  }
+
+  @Test
+  fun `onMessage processes RESUME event successfully`() {
+    val event = HdcStatusChangedEvent(
+      occurredAt = LocalDateTime.now(),
+      licenceId = 123L,
+      bookingId = 456L,
+      nomsNumber = "A1234BC",
+      triggeredBy = "test.user",
+      reason = "Test",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+
+    val headers = mapOf<String, Any>("eventType" to "RESUME").toMutableMap()
+    val message = GenericMessage(eventJson, headers)
+
+    listener.onMessage(message)
+
+    val captor = argumentCaptor<String>()
+    verify(handler).handleResume(captor.capture())
     assertThat(captor.firstValue).isEqualTo(eventJson)
   }
 }

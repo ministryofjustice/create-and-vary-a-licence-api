@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
@@ -63,6 +64,9 @@ interface TestLicenceEventRepository : JpaRepository<LicenceEvent, Long>
 
 @Repository
 interface TestHdcCurfewAddressRepository : JpaRepository<HdcCurfewAddress, Long>
+
+@Repository
+interface TestHdcPostponementRepository : JpaRepository<HdcPostponement, Long>
 
 @Repository
 interface TestStaffRepository : JpaRepository<Staff, Long> {
@@ -139,6 +143,7 @@ class TestRepository(
   private val testAdditionalConditionUploadRepository: TestAdditionalConditionUploadRepository,
   private val migrationRepository: TestMigrationRepository,
   private val hdcCurfewAddressRepository: TestHdcCurfewAddressRepository,
+  private val hdcPostponementRepository: TestHdcPostponementRepository,
   private val licenceEventRepository: TestLicenceEventRepository,
   private val licenceLinkRepository: TestLicenceLinkRepository,
 ) {
@@ -207,6 +212,12 @@ class TestRepository(
     val addresses = hdcCurfewAddressRepository.findAll()
     addresses.forEach { Hibernate.initialize(it.licence) }
     return addresses
+  }
+
+  fun findAllHdcPostponements(): List<HdcPostponement> {
+    val postponements = hdcPostponementRepository.findAll()
+    postponements.forEach { Hibernate.initialize(it.licence) }
+    return postponements
   }
 
   fun findWeeklyCurfewTimes(licenceId: Long): List<CurfewTimes> {

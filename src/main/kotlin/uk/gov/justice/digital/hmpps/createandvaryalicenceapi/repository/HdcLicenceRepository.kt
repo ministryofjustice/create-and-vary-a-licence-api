@@ -42,7 +42,7 @@ interface HdcLicenceRepository :
     SELECT l FROM HdcLicence l
     WHERE l.nomsId = :nomsNumber
     AND l.kind = 'HDC'
-    AND l.statusCode IN ('APPROVED', 'SUBMITTED')
+    AND l.statusCode IN ('APPROVED', 'SUBMITTED', 'IN_PROGRESS')
     """,
   )
   fun findHdcLicenceEligibleForPostpone(nomsNumber: String): HdcLicence?
