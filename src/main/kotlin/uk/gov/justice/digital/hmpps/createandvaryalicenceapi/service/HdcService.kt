@@ -430,7 +430,7 @@ class HdcService(
       } else {
         log.info("HDC postpone: only approved HDC licence found, leaving status unchanged for nomsNumber={}", nomsNumber)
       }
-      recordPostponement(licenceToUpdate)
+      recordPostponement(licenceToUpdate, isPostponed = true)
       return
     }
 
@@ -444,7 +444,7 @@ class HdcService(
       ),
     )
 
-    recordPostponement(licenceToUpdate)
+    recordPostponement(licenceToUpdate, isPostponed = true)
   }
 
   @Transactional
@@ -460,7 +460,7 @@ class HdcService(
     log.info("HDC resume: cleared postponement state for nomsNumber={}", nomsNumber)
   }
 
-  private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean = true) {
+  private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean) {
     hdcPostponementRepository.findByLicenceId(licence.id)
       ?.let {
         it.isPostponed = isPostponed
