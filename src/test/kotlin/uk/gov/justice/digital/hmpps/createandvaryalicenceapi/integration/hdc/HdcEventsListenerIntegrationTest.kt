@@ -332,11 +332,14 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
   @Test
-  fun `An HDC postpone event transitions licence from APPROVED to IN_PROGRESS`() {
+  fun `An HDC postpone event on a submitted in-flight licence moves it to IN_PROGRESS and leaves the approved licence untouched`() {
     // Given
+    val approvedLicence = testRepository.findLicence(1L)
+    assertThat(approvedLicence.statusCode).isEqualTo(LicenceStatus.APPROVED)
+
     val event = HdcStatusChangedEvent(
       occurredAt = LocalDateTime.now(),
-      licenceId = 1L,
+      licenceId = 2L,
       bookingId = 12345L,
       nomsNumber = "A1234AA",
       triggeredBy = "test.user",
@@ -354,53 +357,16 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val licences = testRepository.findAllLicence()
     assertThat(licences).hasSize(2)
 
-    val licence = testRepository.findLicence(1L)
-    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
-    assertThat(licence.approvedByUsername).isNull()
-    assertThat(licence.approvedByName).isNull()
-    assertThat(licence.approvedDate).isNull()
+    val unchangedApprovedLicence = testRepository.findLicence(1L)
+    assertThat(unchangedApprovedLicence.statusCode).isEqualTo(LicenceStatus.APPROVED)
+    assertThat(unchangedApprovedLicence.approvedByUsername).isEqualTo("approver.user")
+    assertThat(unchangedApprovedLicence.approvedByName).isEqualTo("Approved Approver")
+    assertThat(unchangedApprovedLicence.approvedDate).isNotNull
 
-    val auditEvents = testRepository.findAllAuditEvents()
-    assertThat(auditEvents)
-      .filteredOn { it.licenceId == 1L }
-      .hasSize(1)
-      .anySatisfy {
-        assertThat(it.summary).isEqualTo("HDC postponed - licence moved to IN_PROGRESS")
-        assertThat(it.detail).contains("APPROVED").contains("IN_PROGRESS")
-      }
+    val updatedSubmittedLicence = testRepository.findLicence(2L)
+    assertThat(updatedSubmittedLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(updatedSubmittedLicence.kind).isEqualTo(LicenceKind.HDC)
 
-    assertThat(testRepository.findAllHdcPostponements())
-      .hasSize(1)
-      .first()
-      .extracting("licence.id", "isPostponed")
-      .containsExactly(1L, true)
-
-    verifyNoInteractions(eventsPublisher)
-  }
-
-  @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
-  @Test
-  fun `An HDC postpone event on a submitted in-flight licence updates it to IN_PROGRESS without creating a second licence`() {
-    val event = HdcStatusChangedEvent(
-      occurredAt = LocalDateTime.now(),
-      licenceId = 2L,
-      bookingId = 12346L,
-      nomsNumber = "A1234AB",
-      triggeredBy = "test.user",
-      reason = "HDC application postponed",
-    )
-    val eventJson = mapper.writeValueAsString(event)
-
-    sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
-
-    assertSqsProcessed()
-    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
-
-    val licences = testRepository.findAllLicence()
-    assertThat(licences).hasSize(2)
-    assertThat(licences.single { it.id == 2L }.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(licences.single { it.id == 2L }.kind).isEqualTo(LicenceKind.HDC)
     val auditEvents = testRepository.findAllAuditEvents()
     assertThat(auditEvents)
       .filteredOn { it.licenceId == 2L }
@@ -415,15 +381,16 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .first()
       .extracting("licence.id", "isPostponed")
       .containsExactly(2L, true)
+
     verifyNoInteractions(eventsPublisher)
   }
 
   @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
   @Test
-  fun `An HDC resume event clears the current postponement state`() {
+  fun `An HDC resume event clears the current postponement state for the submitted edit without changing the approved licence`() {
     val event = HdcStatusChangedEvent(
       occurredAt = LocalDateTime.now(),
-      licenceId = 1L,
+      licenceId = 2L,
       bookingId = 12345L,
       nomsNumber = "A1234AA",
       triggeredBy = "test.user",
@@ -440,7 +407,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .hasSize(1)
       .first()
       .extracting("licence.id", "isPostponed")
-      .containsExactly(1L, true)
+      .containsExactly(2L, true)
 
     sendMessage(eventJson, HdcCvlEventType.RESUME.toString())
 
@@ -451,8 +418,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .hasSize(1)
       .first()
       .extracting("licence.id", "isPostponed")
-      .containsExactly(1L, false)
+      .containsExactly(2L, false)
 
+    assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.APPROVED)
     verifyNoInteractions(eventsPublisher)
   }
 }

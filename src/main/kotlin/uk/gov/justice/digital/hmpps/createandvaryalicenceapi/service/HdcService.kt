@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -410,53 +411,52 @@ class HdcService(
 
   @Transactional
   fun transitionHdcLicenceToInProgress(nomsNumber: String) {
-    val licence = hdcLicenceRepository.findHdcLicenceEligibleForPostpone(nomsNumber)
-      ?: run {
-        log.warn("HDC postpone: HDC licence not found for nomsNumber={}", nomsNumber)
-        return
-      }
-
-    val previousStatus = licence.statusCode
-
-    when (previousStatus) {
-      IN_PROGRESS -> {
-        log.info("HDC postpone: licence already IN_PROGRESS for nomsNumber={}", nomsNumber)
-        recordPostponement(licence)
-        return
-      }
-      else -> licence.updateStatus(
-        statusCode = IN_PROGRESS,
-        staffMember = null,
-        approvedByUsername = null,
-        approvedByName = null,
-        approvedDate = null,
-        supersededDate = null,
-        submittedDate = licence.submittedDate,
-        licenceActivatedDate = licence.licenceActivatedDate,
-      ).also {
-        auditService.recordAuditEvent(
-          AuditEvent(
-            licenceId = licence.id,
-            summary = "HDC postponed - licence moved to IN_PROGRESS",
-            detail = "HDC Application postponed. Licence status changed from $previousStatus to IN_PROGRESS",
-            eventType = SYSTEM_EVENT,
-          ),
-        )
-      }
+    val licences = hdcLicenceRepository.findHdcLicencesEligibleForPostpone(nomsNumber)
+    if (licences.isEmpty()) {
+      log.info("HDC postpone: no eligible HDC licence found for nomsNumber={}", nomsNumber)
+      return
     }
 
-    recordPostponement(licence)
+    val editLicence = licences.firstOrNull { it.statusCode == SUBMITTED || it.statusCode == IN_PROGRESS }
+    val licenceToUpdate = editLicence ?: licences.first()
+    val previousStatus = licenceToUpdate.statusCode
+
+    val shouldOnlyRecordPostponement =
+      (previousStatus == APPROVED && editLicence == null) || previousStatus == IN_PROGRESS
+
+    if (shouldOnlyRecordPostponement) {
+      if (previousStatus == IN_PROGRESS) {
+        log.info("HDC postpone: licence already IN_PROGRESS for nomsNumber={}", nomsNumber)
+      } else {
+        log.info("HDC postpone: only approved HDC licence found, leaving status unchanged for nomsNumber={}", nomsNumber)
+      }
+      recordPostponement(licenceToUpdate)
+      return
+    }
+
+    licenceToUpdate.statusCode = IN_PROGRESS
+    auditService.recordAuditEvent(
+      AuditEvent(
+        licenceId = licenceToUpdate.id,
+        summary = "HDC postponed - licence moved to IN_PROGRESS",
+        detail = "HDC Application postponed. Licence status changed from $previousStatus to IN_PROGRESS",
+        eventType = SYSTEM_EVENT,
+      ),
+    )
+
+    recordPostponement(licenceToUpdate)
   }
 
   @Transactional
   fun resumeHdcPostponement(nomsNumber: String) {
-    val licence = hdcLicenceRepository.findHdcLicenceEligibleForPostpone(nomsNumber)
-      ?: run {
-        log.warn("HDC resume: HDC licence not found for nomsNumber={}", nomsNumber)
-        return
-      }
+    val licences = hdcLicenceRepository.findHdcLicencesEligibleForPostpone(nomsNumber)
+    if (licences.isEmpty()) {
+      log.warn("HDC resume: no eligible HDC licence found for nomsNumber={}", nomsNumber)
+      return
+    }
 
-    recordPostponement(licence, isPostponed = false)
+    val licenceToResume = licences.firstOrNull { it.statusCode == SUBMITTED || it.statusCode == IN_PROGRESS } ?: licences.first()
+    recordPostponement(licenceToResume, isPostponed = false)
     log.info("HDC resume: cleared postponement state for nomsNumber={}", nomsNumber)
   }
 
