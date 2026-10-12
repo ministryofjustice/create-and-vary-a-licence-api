@@ -223,6 +223,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .hasSize(1)
       .extracting("fromLicenceId", "toLicenceId")
       .containsExactly(tuple(1L, 2L))
+    assertThat(links[0].createdAt).isNotNull
   }
 
   @SqlGroup(
