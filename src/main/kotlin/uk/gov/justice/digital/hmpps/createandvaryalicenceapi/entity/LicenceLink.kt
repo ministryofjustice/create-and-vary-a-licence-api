@@ -6,6 +6,8 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import org.hibernate.annotations.CreationTimestamp
+import java.time.LocalDateTime
 
 enum class LicenceLinkType {
   CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
@@ -24,4 +26,7 @@ class LicenceLink(
 
   @Enumerated(EnumType.STRING)
   val linkType: LicenceLinkType,
+
+  @CreationTimestamp
+  val createdAt: LocalDateTime? = null,
 )
