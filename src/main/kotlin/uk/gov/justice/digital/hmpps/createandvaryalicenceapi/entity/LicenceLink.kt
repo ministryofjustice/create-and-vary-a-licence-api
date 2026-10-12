@@ -28,5 +28,5 @@ class LicenceLink(
   val linkType: LicenceLinkType,
 
   @CreationTimestamp
-  val createdAt: LocalDateTime? = null,
+  val dateCreated: LocalDateTime? = null,
 )
