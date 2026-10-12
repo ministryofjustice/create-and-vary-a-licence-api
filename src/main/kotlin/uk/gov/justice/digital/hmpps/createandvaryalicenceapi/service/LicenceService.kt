@@ -97,6 +97,7 @@ class LicenceService(
   private val cvlRecordService: CvlRecordService,
   private val migrationService: MigrationService,
   private val licenceConditionService: LicenceConditionService,
+  private val licenceLinkingService: LicenceLinkingService,
 ) {
 
   @Transactional(readOnly = true)
@@ -142,6 +143,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
       conditionPolicyData = conditionPolicyData,
+      isReplacementForOptedOutLicence = licenceLinkingService.isCrdReplacementForOptedOutLicence(licence.id),
     )
 
     is VariationLicence -> toVariation(
