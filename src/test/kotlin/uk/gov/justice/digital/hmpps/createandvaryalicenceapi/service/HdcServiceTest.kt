@@ -1041,6 +1041,5 @@ class HdcServiceTest {
       verify(auditService, never()).recordAuditEvent(any())
       verify(hdcPostponementRepository).save(any())
     }
-
   }
 }
