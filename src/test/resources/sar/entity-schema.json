@@ -430,6 +430,7 @@
     "username": "String"
   },
   "LicenceLink": {
+    "createdAt": "LocalDateTime",
     "fromLicenceId": "long",
     "id": "Long",
     "linkType": "LicenceLinkType",
