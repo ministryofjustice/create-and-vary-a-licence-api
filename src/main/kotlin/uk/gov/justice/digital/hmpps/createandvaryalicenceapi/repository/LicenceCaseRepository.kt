@@ -74,7 +74,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           com.username,
           l.typeCode,
           l.reviewDate,
-          CASE WHEN hp.id IS NOT NULL AND hp.isPostponed = true THEN true ELSE false END as isPostponed,
+          COALESCE(hp.isPostponed, false) AS isPostponed,
           l.crn
         FROM Licence l
             LEFT JOIN l.responsibleCom com
