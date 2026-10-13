@@ -136,7 +136,7 @@ class ComCreateCaseloadService(
         )
 
         // Has an active licence so shouldn't appear in create caseload
-        licenceDtos.any { it.licenceStatus == ACTIVE } ->
+        licences.any { it.statusCode == ACTIVE } ->
           null
 
         // Should appear in create caseload with relevant licence
