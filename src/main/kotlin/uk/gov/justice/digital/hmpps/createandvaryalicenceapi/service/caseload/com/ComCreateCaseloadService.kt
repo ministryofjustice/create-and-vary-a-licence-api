@@ -4,7 +4,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateStaffCaseload
@@ -41,7 +40,6 @@ class ComCreateCaseloadService(
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val telemetryService: TelemetryService,
   private val licenceLinkingService: LicenceLinkingService,
-  private val hdcPostponementRepository: HdcPostponementRepository,
 ) {
   companion object {
     private val COM_CREATE_LICENCE_STATUSES = listOf(ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT)
@@ -117,6 +115,8 @@ class ComCreateCaseloadService(
 
     return cases.mapNotNull { (deliusRecord, nomisRecord) ->
       val licences = licencesByCrn[deliusRecord.crn] ?: emptyList()
+      val licenceDtos = licences.map { mapToLicenceDto(it) }
+      val licencePostponements = licences.associate { it.licenceId to it.isPostponed }
       val cvlRecord = cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!
       val caseAccessRecord = caseAccessRecords[deliusRecord.crn] ?: unrestricted
       val isRestricted = caseAccessRecord.isRestricted
@@ -136,28 +136,30 @@ class ComCreateCaseloadService(
         )
 
         // Has an active licence so shouldn't appear in create caseload
-        licences.any { it.licenceStatus == ACTIVE } ->
+        licenceDtos.any { it.licenceStatus == ACTIVE } ->
           null
 
         // Should appear in create caseload with relevant licence
-        else ->
+        else -> {
+          val relevantLicence = findRelevantLicencePerCase(licenceDtos)
           createCaseForRelevantLicence(
             probationPractitioner,
             nomisRecord,
             cvlRecord,
-            findRelevantLicencePerCase(licences),
+            relevantLicence,
             isRestricted,
             isAdminUser,
+            relevantLicence.licenceId?.let { licencePostponements[it] } ?: false,
           )
+        }
       }
     }
   }
 
-  private fun getExistingActiveAndPreReleaseLicences(crnList: List<String>): List<ComCreateCaseloadLicenceDto> = if (crnList.isEmpty()) {
+  private fun getExistingActiveAndPreReleaseLicences(crnList: List<String>): List<LicenceComCase> = if (crnList.isEmpty()) {
     emptyList()
   } else {
     licenceCaseRepository.findLicenceCasesForCom(crns = crnList, statusCodes = COM_CREATE_LICENCE_STATUSES)
-      .map { mapToLicenceDto(it) }
   }
 
   private fun mapToLicenceDto(case: LicenceComCase) = ComCreateCaseloadLicenceDto(
@@ -249,7 +251,7 @@ class ComCreateCaseloadService(
           isReviewNeeded = isReviewNeeded,
           isRestricted = isRestricted,
           hdcStatus = it.cvlRecord.hdcStatus,
-          isPostponed = it.comLicenceCaseDto.licenceId?.let { hdcPostponementRepository.findByLicenceId(it)?.isPostponed } ?: false,
+          isPostponed = it.isPostponed,
           isReplacementForOptedOutLicence = licenceIdsThatAreReplacementsForOptedOutLicences.contains(licenceId),
         )
       }
@@ -285,6 +287,7 @@ class ComCreateCaseloadService(
     createCaseloadLicence: ComCreateCaseloadLicenceDto,
     isRestricted: Boolean,
     isAdminUser: Boolean,
+    isPostponed: Boolean = false,
   ): Case = if (isRestricted && !isAdminUser) {
     Case(
       probationPractitioner,
@@ -298,9 +301,10 @@ class ComCreateCaseloadService(
         nomisRecord.prisonerNumber,
         cvlRecord.licenceStartDate,
       ),
+      isPostponed = false,
     )
   } else {
-    Case(probationPractitioner, nomisRecord, cvlRecord, createCaseloadLicence)
+    Case(probationPractitioner, nomisRecord, cvlRecord, createCaseloadLicence, isPostponed = isPostponed)
   }
 
   private data class Case(
@@ -308,5 +312,6 @@ class ComCreateCaseloadService(
     val nomisRecord: PrisonerSearchPrisoner,
     val cvlRecord: CvlRecord,
     val comLicenceCaseDto: ComCreateCaseloadLicenceDto,
+    val isPostponed: Boolean = false,
   )
 }

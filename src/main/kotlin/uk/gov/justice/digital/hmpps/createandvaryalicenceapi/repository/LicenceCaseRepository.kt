@@ -74,10 +74,12 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           com.username,
           l.typeCode,
           l.reviewDate,
+          CASE WHEN hp.id IS NOT NULL AND hp.isPostponed = true THEN true ELSE false END as isPostponed,
           l.crn
         FROM Licence l
             LEFT JOIN l.responsibleCom com
             LEFT JOIN l.updatedBy updatedBy
+            LEFT JOIN HdcPostponement hp ON hp.licence = l
         WHERE l.statusCode IN :statusCodes AND l.crn IN :crns
         ORDER BY l.licenceStartDate ASC
     """,
