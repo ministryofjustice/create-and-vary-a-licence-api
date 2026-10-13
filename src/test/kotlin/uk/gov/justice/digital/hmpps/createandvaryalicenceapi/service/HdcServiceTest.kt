@@ -981,6 +981,10 @@ class HdcServiceTest {
       // Then
       assertThat(approvedLicence.statusCode).isEqualTo(APPROVED)
       assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
+      assertThat(editLicence.approvedByUsername).isNull()
+      assertThat(editLicence.approvedByName).isNull()
+      assertThat(editLicence.approvedDate).isNull()
+      assertThat(editLicence.supersededDate).isNull()
       verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
       verify(auditService).recordAuditEventHdcLicencePostponed(editLicence, SUBMITTED)
       verify(hdcPostponementRepository, times(2)).save(any())

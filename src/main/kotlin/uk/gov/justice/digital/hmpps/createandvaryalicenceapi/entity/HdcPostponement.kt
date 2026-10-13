@@ -7,6 +7,8 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
 @Entity
@@ -22,9 +24,11 @@ class HdcPostponement(
   @Column(name = "is_postponed", nullable = false)
   var isPostponed: Boolean,
 
+  @CreationTimestamp
   @Column(name = "date_created", nullable = false, updatable = false)
-  val dateCreated: LocalDateTime = LocalDateTime.now(),
+  val dateCreated: LocalDateTime? = null,
 
+  @UpdateTimestamp
   @Column(name = "date_last_updated", nullable = false)
-  var dateLastUpdated: LocalDateTime = LocalDateTime.now(),
+  var dateLastUpdated: LocalDateTime? = null,
 ) : AbstractIdEntity()
