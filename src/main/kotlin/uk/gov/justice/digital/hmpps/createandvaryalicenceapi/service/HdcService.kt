@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
@@ -21,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
@@ -34,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -46,6 +49,7 @@ class HdcService(
   private val prisonApiClient: PrisonApiClient,
   private val licenceRepository: LicenceRepository,
   private val hdcLicenceRepository: HdcLicenceRepository,
+  private val hdcPostponementRepository: HdcPostponementRepository,
   private val staffRepository: StaffRepository,
   private val auditService: AuditService,
   private val clock: Clock,
@@ -406,33 +410,56 @@ class HdcService(
   }
 
   @Transactional
-  fun transitionHdcLicenceToInProgress(nomsNumber: String) {
-    val licence = hdcLicenceRepository.findHdcLicenceEligibleForPostpone(nomsNumber)
-      ?: run {
-        log.warn("HDC postpone: HDC licence not found for nomsNumber={}", nomsNumber)
-        return
-      }
+  fun postponeLicence(nomsNumber: String) {
+    val licences = hdcLicenceRepository.findHdcLicencesEligibleForPostpone(nomsNumber)
+    if (licences.isEmpty()) {
+      log.info("HDC postpone: no eligible HDC licence found for nomsNumber={}", nomsNumber)
+      return
+    }
 
-    val currentStatus = licence.statusCode
+    licences.forEach { recordPostponement(it, isPostponed = true) }
 
-    licence.updateStatus(
-      statusCode = IN_PROGRESS,
-      staffMember = null,
-      approvedByUsername = null,
-      approvedByName = null,
-      approvedDate = null,
-      supersededDate = null,
-      submittedDate = licence.submittedDate,
-      licenceActivatedDate = licence.licenceActivatedDate,
-    )
+    val submittedLicence = licences.firstOrNull { it.statusCode == SUBMITTED }
+    if (submittedLicence != null) {
+      val previousStatus = submittedLicence.statusCode
+      submittedLicence.statusCode = IN_PROGRESS
+      submittedLicence.approvedByUsername = null
+      submittedLicence.approvedByName = null
+      submittedLicence.approvedDate = null
+      submittedLicence.supersededDate = null
+      auditService.recordAuditEventHdcLicencePostponed(submittedLicence, previousStatus)
+    }
+  }
 
-    auditService.recordAuditEvent(
-      AuditEvent(
-        licenceId = licence.id,
-        summary = "HDC postponed - licence moved to IN_PROGRESS",
-        detail = "HDC Application postponed. Licence status changed from $currentStatus to IN_PROGRESS",
-        eventType = SYSTEM_EVENT,
-      ),
-    )
+  @Transactional
+  fun resumeHdcPostponement(nomsNumber: String) {
+    val licences = hdcLicenceRepository.findHdcLicencesEligibleForPostpone(nomsNumber)
+    if (licences.isEmpty()) {
+      log.warn("HDC resume: no eligible HDC licence found for nomsNumber={}", nomsNumber)
+      return
+    }
+
+    licences.forEach { recordPostponement(it, isPostponed = false) }
+    log.info("HDC resume: cleared postponement state for nomsNumber={}", nomsNumber)
+  }
+
+  private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean) {
+    val operation = if (isPostponed) "Postponing" else "Resuming"
+    log.info("{} HDC licence, id: '{}', status: '{}', for prisoner: '{}'", operation, licence.id, licence.statusCode, licence.nomsId)
+    val existing = hdcPostponementRepository.findByLicenceId(licence.id)
+
+    if (existing != null) {
+      existing.isPostponed = isPostponed
+      existing.dateLastUpdated = LocalDateTime.now()
+    } else {
+      hdcPostponementRepository.save(
+        HdcPostponement(
+          licence = licence,
+          isPostponed = isPostponed,
+        ),
+      )
+    }
+
+    auditService.recordAuditEventHdcLicencePostponementChange(licence, isPostponed)
   }
 }

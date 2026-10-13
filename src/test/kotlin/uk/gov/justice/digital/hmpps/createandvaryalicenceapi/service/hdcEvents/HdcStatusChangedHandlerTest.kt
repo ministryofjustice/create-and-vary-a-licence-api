@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import java.time.LocalDateTime
@@ -33,7 +32,6 @@ class HdcStatusChangedHandlerTest {
     handler = HdcStatusChangedHandler(
       mapper = mapper,
       hdcService = hdcService,
-      hdcCreationEnabled = true,
     )
   }
 
@@ -45,36 +43,10 @@ class HdcStatusChangedHandlerTest {
   }
 
   @Test
-  fun `handleOptout does not process when disabled`() {
-    handler = HdcStatusChangedHandler(
-      mapper = mapper,
-      hdcService = hdcService,
-      hdcCreationEnabled = false,
-    )
-
-    handler.handleOptout(eventJson)
-
-    verifyNoInteractions(hdcService)
-  }
-
-  @Test
   fun `handlePostpone processes event when enabled`() {
     handler.handlePostpone(eventJson)
 
-    verify(hdcService).transitionHdcLicenceToInProgress("A1234BC")
-  }
-
-  @Test
-  fun `handlePostpone does not process when disabled`() {
-    handler = HdcStatusChangedHandler(
-      mapper = mapper,
-      hdcService = hdcService,
-      hdcCreationEnabled = false,
-    )
-
-    handler.handlePostpone(eventJson)
-
-    verifyNoInteractions(hdcService)
+    verify(hdcService).postponeLicence("A1234BC")
   }
 
   @Test
@@ -90,7 +62,14 @@ class HdcStatusChangedHandlerTest {
     handler.handlePostpone(eventJson)
 
     val inOrderVerifier = inOrder(hdcService)
-    inOrderVerifier.verify(hdcService).transitionHdcLicenceToInProgress("A1234BC")
+    inOrderVerifier.verify(hdcService).postponeLicence("A1234BC")
+  }
+
+  @Test
+  fun `handleResume processes event`() {
+    handler.handleResume(eventJson)
+
+    verify(hdcService).resumeHdcPostponement("A1234BC")
   }
 
   @Test

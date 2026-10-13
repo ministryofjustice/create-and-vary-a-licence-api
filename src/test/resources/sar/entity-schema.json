@@ -290,6 +290,13 @@
     "versionOfId": "Long",
     "weeklyCurfewTimes": "List"
   },
+  "HdcPostponement": {
+    "dateCreated": "LocalDateTime",
+    "dateLastUpdated": "LocalDateTime",
+    "idInternal": "Long",
+    "isPostponed": "boolean",
+    "licence": "HdcLicence"
+  },
   "HdcVariationLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
