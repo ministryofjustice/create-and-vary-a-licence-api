@@ -321,6 +321,33 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
+  fun recordAuditEventHdcLicencePostponementChange(
+    licence: HdcLicence,
+    isPostponed: Boolean,
+  ) {
+    val action = if (isPostponed) "set" else "cleared"
+    val auditEvent = ModelAuditEvent(
+      licenceId = licence.id,
+      summary = "HDC postponement $action for licence ${licence.id}",
+      detail = "HDC postponement $action for licence ${licence.id}; postponed=$isPostponed",
+      eventType = AuditEventType.SYSTEM_EVENT,
+    )
+    auditEventRepository.save(transform(auditEvent))
+  }
+
+  fun recordAuditEventHdcLicencePostponed(
+    licence: HdcLicence,
+    previousStatus: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus,
+  ) {
+    val auditEvent = ModelAuditEvent(
+      licenceId = licence.id,
+      summary = "HDC postponed - licence moved to IN_PROGRESS",
+      detail = "HDC Application postponed. Licence status changed from ${previousStatus.name} to IN_PROGRESS",
+      eventType = AuditEventType.SYSTEM_EVENT,
+    )
+    auditEventRepository.save(transform(auditEvent))
+  }
+
   fun recordAuditEventUpdateHdcConditionalReleaseDate(
     licence: Licence,
     previousConditionalReleaseDate: LocalDate?,

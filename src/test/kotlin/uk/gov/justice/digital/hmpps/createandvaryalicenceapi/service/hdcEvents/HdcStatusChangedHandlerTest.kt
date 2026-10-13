@@ -46,7 +46,7 @@ class HdcStatusChangedHandlerTest {
   fun `handlePostpone processes event when enabled`() {
     handler.handlePostpone(eventJson)
 
-    verify(hdcService).transitionHdcLicenceToInProgress("A1234BC")
+    verify(hdcService).postponeLicence("A1234BC")
   }
 
   @Test
@@ -62,7 +62,7 @@ class HdcStatusChangedHandlerTest {
     handler.handlePostpone(eventJson)
 
     val inOrderVerifier = inOrder(hdcService)
-    inOrderVerifier.verify(hdcService).transitionHdcLicenceToInProgress("A1234BC")
+    inOrderVerifier.verify(hdcService).postponeLicence("A1234BC")
   }
 
   @Test

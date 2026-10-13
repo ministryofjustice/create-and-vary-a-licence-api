@@ -36,7 +36,7 @@ class HdcStatusChangedHandler(
 
   fun handlePostpone(message: String) {
     val event = parseEvent(message)
-    hdcService.transitionHdcLicenceToInProgress(event.nomsNumber)
+    hdcService.postponeLicence(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.POSTPONE, event)
   }
 

@@ -371,17 +371,27 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val auditEvents = testRepository.findAllAuditEvents()
     assertThat(auditEvents)
       .filteredOn { it.licenceId == 2L }
-      .hasSize(1)
+      .hasSize(2)
+      .extracting("summary")
+      .containsExactlyInAnyOrder(
+        "HDC postponed - licence moved to IN_PROGRESS",
+        "HDC postponement set for licence 2",
+      )
+
+    assertThat(auditEvents)
+      .filteredOn { it.licenceId == 2L }
       .anySatisfy {
         assertThat(it.summary).isEqualTo("HDC postponed - licence moved to IN_PROGRESS")
         assertThat(it.detail).contains("SUBMITTED").contains("IN_PROGRESS")
       }
 
     assertThat(testRepository.findAllHdcPostponements())
-      .hasSize(1)
-      .first()
+      .hasSize(2)
       .extracting("licence.id", "isPostponed")
-      .containsExactly(2L, true)
+      .containsExactlyInAnyOrder(
+        tuple(1L, true),
+        tuple(2L, true),
+      )
 
     verifyNoInteractions(eventsPublisher)
   }
@@ -405,10 +415,12 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     verify(hdcStatusChangedHandler).handlePostpone(eventJson)
 
     assertThat(testRepository.findAllHdcPostponements())
-      .hasSize(1)
-      .first()
+      .hasSize(2)
       .extracting("licence.id", "isPostponed")
-      .containsExactly(2L, true)
+      .containsExactlyInAnyOrder(
+        tuple(1L, true),
+        tuple(2L, true),
+      )
 
     sendMessage(eventJson, HdcCvlEventType.RESUME.toString())
 
@@ -416,10 +428,12 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     verify(hdcStatusChangedHandler).handleResume(eventJson)
 
     assertThat(testRepository.findAllHdcPostponements())
-      .hasSize(1)
-      .first()
+      .hasSize(2)
       .extracting("licence.id", "isPostponed")
-      .containsExactly(2L, false)
+      .containsExactlyInAnyOrder(
+        tuple(1L, false),
+        tuple(2L, false),
+      )
 
     assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.APPROVED)
     verifyNoInteractions(eventsPublisher)

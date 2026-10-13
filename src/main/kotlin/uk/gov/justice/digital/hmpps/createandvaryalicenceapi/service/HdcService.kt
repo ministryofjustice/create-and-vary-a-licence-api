@@ -410,41 +410,29 @@ class HdcService(
   }
 
   @Transactional
-  fun transitionHdcLicenceToInProgress(nomsNumber: String) {
+  fun postponeLicence(nomsNumber: String) {
     val licences = hdcLicenceRepository.findHdcLicencesEligibleForPostpone(nomsNumber)
     if (licences.isEmpty()) {
       log.info("HDC postpone: no eligible HDC licence found for nomsNumber={}", nomsNumber)
       return
     }
 
+    licences.forEach { recordPostponement(it, isPostponed = true) }
+
     val editLicence = licences.firstOrNull { it.statusCode == SUBMITTED || it.statusCode == IN_PROGRESS }
-    val licenceToUpdate = editLicence ?: licences.first()
-    val previousStatus = licenceToUpdate.statusCode
-
-    val shouldOnlyRecordPostponement =
-      (previousStatus == APPROVED && editLicence == null) || previousStatus == IN_PROGRESS
-
-    if (shouldOnlyRecordPostponement) {
-      if (previousStatus == IN_PROGRESS) {
-        log.info("HDC postpone: licence already IN_PROGRESS for nomsNumber={}", nomsNumber)
-      } else {
-        log.info("HDC postpone: only approved HDC licence found, leaving status unchanged for nomsNumber={}", nomsNumber)
+    when {
+      editLicence == null -> {
+        log.info("HDC postpone: approved HDC licence found; no in-flight edit to move, leaving status unchanged for nomsNumber={}", nomsNumber)
       }
-      recordPostponement(licenceToUpdate, isPostponed = true)
-      return
+      editLicence.statusCode == IN_PROGRESS -> {
+        log.info("HDC postpone: licence already IN_PROGRESS for nomsNumber={}", nomsNumber)
+      }
+      else -> {
+        val previousStatus = editLicence.statusCode
+        editLicence.statusCode = IN_PROGRESS
+        auditService.recordAuditEventHdcLicencePostponed(editLicence, previousStatus)
+      }
     }
-
-    licenceToUpdate.statusCode = IN_PROGRESS
-    auditService.recordAuditEvent(
-      AuditEvent(
-        licenceId = licenceToUpdate.id,
-        summary = "HDC postponed - licence moved to IN_PROGRESS",
-        detail = "HDC Application postponed. Licence status changed from $previousStatus to IN_PROGRESS",
-        eventType = SYSTEM_EVENT,
-      ),
-    )
-
-    recordPostponement(licenceToUpdate, isPostponed = true)
   }
 
   @Transactional
@@ -455,22 +443,26 @@ class HdcService(
       return
     }
 
-    val licenceToResume = licences.firstOrNull { it.statusCode == SUBMITTED || it.statusCode == IN_PROGRESS } ?: licences.first()
-    recordPostponement(licenceToResume, isPostponed = false)
+    licences.forEach { recordPostponement(it, isPostponed = false) }
     log.info("HDC resume: cleared postponement state for nomsNumber={}", nomsNumber)
   }
 
   private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean) {
-    hdcPostponementRepository.findByLicenceId(licence.id)
-      ?.let {
-        it.isPostponed = isPostponed
-        it.dateLastUpdated = LocalDateTime.now()
-      }
-      ?: hdcPostponementRepository.save(
+    val action = if (isPostponed) "set" else "cleared"
+    val existing = hdcPostponementRepository.findByLicenceId(licence.id)
+
+    if (existing != null) {
+      existing.isPostponed = isPostponed
+      existing.dateLastUpdated = LocalDateTime.now()
+    } else {
+      hdcPostponementRepository.save(
         HdcPostponement(
           licence = licence,
           isPostponed = isPostponed,
         ),
       )
+    }
+
+    auditService.recordAuditEventHdcLicencePostponementChange(licence, isPostponed)
   }
 }

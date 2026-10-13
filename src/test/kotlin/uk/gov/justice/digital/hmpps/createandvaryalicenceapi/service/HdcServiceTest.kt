@@ -545,10 +545,10 @@ class HdcServiceTest {
     val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = IN_PROGRESS)
     whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(hdcLicence))
 
-    service.transitionHdcLicenceToInProgress("A1234BC")
+    service.postponeLicence("A1234BC")
 
     verify(hdcPostponementRepository, times(1)).save(any())
-    verify(auditService, never()).recordAuditEvent(any())
+    verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
   }
 
   @Test
@@ -559,6 +559,7 @@ class HdcServiceTest {
     service.resumeHdcPostponement("A1234BC")
 
     verify(hdcPostponementRepository).save(any())
+    verify(auditService).recordAuditEventHdcLicencePostponementChange(hdcLicence, false)
   }
 
   @Test
@@ -566,11 +567,11 @@ class HdcServiceTest {
     val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = APPROVED)
     whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(approvedLicence))
 
-    service.transitionHdcLicenceToInProgress("A1234BC")
+    service.postponeLicence("A1234BC")
 
     assertThat(approvedLicence.statusCode).isEqualTo(APPROVED)
     verify(hdcPostponementRepository, times(1)).save(any())
-    verify(auditService, never()).recordAuditEvent(any())
+    verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(approvedLicence, true)
   }
 
   @Nested
@@ -975,19 +976,40 @@ class HdcServiceTest {
       whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
 
       // When
-      service.transitionHdcLicenceToInProgress("A1234BC")
+      service.postponeLicence("A1234BC")
 
       // Then
       assertThat(approvedLicence.statusCode).isEqualTo(APPROVED)
       assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
-      val auditCaptor = argumentCaptor<AuditEvent>()
-      verify(auditService).recordAuditEvent(auditCaptor.capture())
-      val auditEvent = auditCaptor.firstValue
-      assertThat(auditEvent.licenceId).isEqualTo(editLicence.id)
-      assertThat(auditEvent.summary).isEqualTo("HDC postponed - licence moved to IN_PROGRESS")
-      assertThat(auditEvent.detail).contains("SUBMITTED")
-      assertThat(auditEvent.detail).contains("IN_PROGRESS")
-      verify(hdcPostponementRepository).save(any())
+      verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
+      verify(auditService).recordAuditEventHdcLicencePostponed(editLicence, SUBMITTED)
+      verify(hdcPostponementRepository, times(2)).save(any())
+    }
+
+    @Test
+    fun `keeps an approved HDC licence and does not change an already IN_PROGRESS edit licence`() {
+      // Given
+      val approvedLicence = createHdcLicence(id = 123L)
+      approvedLicence.statusCode = APPROVED
+      approvedLicence.nomsId = "A1234BC"
+
+      val editLicence = createHdcLicence(id = 456L)
+      editLicence.statusCode = IN_PROGRESS
+      editLicence.nomsId = "A1234BC"
+
+      whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
+      whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
+      whenever(hdcPostponementRepository.findByLicenceId(approvedLicence.id)).thenReturn(null)
+
+      // When
+      service.postponeLicence("A1234BC")
+
+      // Then
+      assertThat(approvedLicence.statusCode).isEqualTo(APPROVED)
+      assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
+      verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
+      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
+      verify(hdcPostponementRepository, times(2)).save(any())
     }
 
     @Test
@@ -1003,17 +1025,12 @@ class HdcServiceTest {
       whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
-      service.transitionHdcLicenceToInProgress("A1234BC")
+      service.postponeLicence("A1234BC")
 
       // Then
       assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
-      val auditCaptor = argumentCaptor<AuditEvent>()
-      verify(auditService).recordAuditEvent(auditCaptor.capture())
-      val auditEvent = auditCaptor.firstValue
-      assertThat(auditEvent.licenceId).isEqualTo(hdcLicence.id)
-      assertThat(auditEvent.summary).isEqualTo("HDC postponed - licence moved to IN_PROGRESS")
-      assertThat(auditEvent.detail).contains("SUBMITTED")
-      assertThat(auditEvent.detail).contains("IN_PROGRESS")
+      verify(auditService).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
+      verify(auditService).recordAuditEventHdcLicencePostponed(hdcLicence, SUBMITTED)
       verify(hdcPostponementRepository).save(any())
     }
 
@@ -1023,10 +1040,11 @@ class HdcServiceTest {
       whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(emptyList())
 
       // When
-      service.transitionHdcLicenceToInProgress("A1234BC")
+      service.postponeLicence("A1234BC")
 
       // Then
-      verify(auditService, never()).recordAuditEvent(any())
+      verify(auditService, never()).recordAuditEventHdcLicencePostponementChange(any(), any())
+      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
     }
 
     @Test
@@ -1044,7 +1062,7 @@ class HdcServiceTest {
       whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
-      service.transitionHdcLicenceToInProgress("A1234BC")
+      service.postponeLicence("A1234BC")
 
       // Then
       assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
@@ -1052,7 +1070,8 @@ class HdcServiceTest {
       assertThat(hdcLicence.approvedByName).isEqualTo("Approver Name")
       assertThat(hdcLicence.approvedDate).isEqualTo(LocalDateTime.of(2024, 1, 10, 9, 0))
       assertThat(hdcLicence.dateLastUpdated).isEqualTo(originalUpdatedAt)
-      verify(auditService, never()).recordAuditEvent(any())
+      verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
+      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
       verify(hdcPostponementRepository).save(any())
     }
   }

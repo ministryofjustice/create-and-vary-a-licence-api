@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.events.UpdateProbationTeamEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -287,6 +288,39 @@ class AuditServiceTest {
         "newValue" to "John Doe",
       ),
     )
+  }
+
+  @Test
+  fun `records an event when hdc licence postponement state is set`() {
+    service.recordAuditEventHdcLicencePostponementChange(aHdcLicenceEntity, true)
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo("SYSTEM")
+    assertThat(captured.fullName).isEqualTo("SYSTEM")
+    assertThat(captured.eventType).isEqualTo(AuditEventType.SYSTEM_EVENT)
+    assertThat(captured.summary).isEqualTo("HDC postponement set for licence ${aHdcLicenceEntity.id}")
+    assertThat(captured.detail).isEqualTo("HDC postponement set for licence ${aHdcLicenceEntity.id}; postponed=true")
+  }
+
+  @Test
+  fun `records an event when hdc licence is postponed from submitted to in progress`() {
+    service.recordAuditEventHdcLicencePostponed(aHdcLicenceEntity, LicenceStatus.SUBMITTED)
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+
+    assertThat(captured.username).isEqualTo("SYSTEM")
+    assertThat(captured.fullName).isEqualTo("SYSTEM")
+    assertThat(captured.eventType).isEqualTo(AuditEventType.SYSTEM_EVENT)
+    assertThat(captured.summary).isEqualTo("HDC postponed - licence moved to IN_PROGRESS")
+    assertThat(captured.detail)
+      .isEqualTo("HDC Application postponed. Licence status changed from SUBMITTED to IN_PROGRESS")
   }
 
   @Test
