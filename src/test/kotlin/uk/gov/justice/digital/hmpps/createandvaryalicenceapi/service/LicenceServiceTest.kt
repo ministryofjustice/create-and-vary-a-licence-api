@@ -129,6 +129,7 @@ class LicenceServiceTest {
   private val cvlRecordService = mock<CvlRecordService>()
   private val migrationService = mock<MigrationService>()
   private val licenceConditionService = mock<LicenceConditionService>()
+  private val licenceLinkingService = mock<LicenceLinkingService>()
 
   private val service =
     LicenceService(
@@ -150,6 +151,7 @@ class LicenceServiceTest {
       cvlRecordService,
       migrationService,
       licenceConditionService,
+      licenceLinkingService,
     )
 
   @BeforeEach
@@ -175,6 +177,7 @@ class LicenceServiceTest {
       domainEventsService,
       prisonerSearchApiClient,
       uploadFileConditionsService,
+      licenceLinkingService,
     )
   }
 
@@ -190,6 +193,40 @@ class LicenceServiceTest {
     assertThat(licence).isExactlyInstanceOf(CrdLicenceModel::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
+  }
+
+  @Test
+  fun `service identifies a CRD replacement for an opted out licence`() {
+    // Given
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
+    whenever(licenceLinkingService.isCrdReplacementForOptedOutLicence(1L)).thenReturn(true)
+
+    // When
+    val licence = service.getLicenceById(1L) as CrdLicenceModel
+
+    // Then
+    assertThat(licence.isReplacementForOptedOutLicence).isTrue()
+    verify(licenceLinkingService).isCrdReplacementForOptedOutLicence(1L)
+  }
+
+  @Test
+  fun `service identifies a CRD licence that is not a replacement for an opted out licence`() {
+    // Given
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
+    whenever(licenceLinkingService.isCrdReplacementForOptedOutLicence(1L)).thenReturn(false)
+
+    // When
+    val licence = service.getLicenceById(1L) as CrdLicenceModel
+
+    // Then
+    assertThat(licence.isReplacementForOptedOutLicence).isFalse()
+    verify(licenceLinkingService).isCrdReplacementForOptedOutLicence(1L)
   }
 
   @Test
@@ -3553,6 +3590,7 @@ class LicenceServiceTest {
           cvlRecordService,
           migrationService,
           licenceConditionService,
+          licenceLinkingService,
         )
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = SUBMITTED)
