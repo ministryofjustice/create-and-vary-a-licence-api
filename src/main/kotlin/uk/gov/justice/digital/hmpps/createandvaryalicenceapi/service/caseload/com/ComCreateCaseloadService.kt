@@ -4,6 +4,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateStaffCaseload
@@ -40,6 +41,7 @@ class ComCreateCaseloadService(
   private val releaseDateLabelFactory: ReleaseDateLabelFactory,
   private val telemetryService: TelemetryService,
   private val licenceLinkingService: LicenceLinkingService,
+  private val hdcPostponementRepository: HdcPostponementRepository,
 ) {
   companion object {
     private val COM_CREATE_LICENCE_STATUSES = listOf(ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT)
@@ -247,6 +249,7 @@ class ComCreateCaseloadService(
           isReviewNeeded = isReviewNeeded,
           isRestricted = isRestricted,
           hdcStatus = it.cvlRecord.hdcStatus,
+          isPostponed = it.comLicenceCaseDto.licenceId?.let { hdcPostponementRepository.findByLicenceId(it)?.isPostponed } ?: false,
           isReplacementForOptedOutLicence = licenceIdsThatAreReplacementsForOptedOutLicences.contains(licenceId),
         )
       }

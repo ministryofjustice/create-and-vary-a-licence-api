@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.LicenceComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadType.ComCreateStaffCaseload
@@ -52,6 +53,7 @@ class ComCreateCaseloadServiceTest {
   private val releaseDateLabelFactory = mock<ReleaseDateLabelFactory>()
   private val telemetryService = mock<TelemetryService>()
   private val licenceLinkingService = mock<LicenceLinkingService>()
+  private val hdcPostponementRepository = mock<HdcPostponementRepository>()
 
   private var service = ComCreateCaseloadService(
     prisonerSearchApiClient,
@@ -61,6 +63,7 @@ class ComCreateCaseloadServiceTest {
     releaseDateLabelFactory,
     telemetryService,
     licenceLinkingService,
+    hdcPostponementRepository,
   )
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
@@ -1430,6 +1433,7 @@ class ComCreateCaseloadServiceTest {
         releaseDateLabelFactory,
         telemetryService,
         licenceLinkingService,
+        hdcPostponementRepository,
       )
       val managedOffenders = listOf(
         ManagedOffender(crn = "X12348", nomisId = "AB1234E", name = name, staff = staffDetail),
