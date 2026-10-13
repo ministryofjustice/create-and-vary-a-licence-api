@@ -160,6 +160,11 @@ prison:
     listener:
       enabled: false
 
+hdc:
+  event:
+    listener:
+      enabled: false
+
 update:
   offender:
     details:
