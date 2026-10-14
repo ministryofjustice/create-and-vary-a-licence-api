@@ -62,6 +62,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.Clock
@@ -637,9 +638,39 @@ class HdcServiceTest {
 
     service.postponeLicence("A1234BC")
 
-    assertThat(approvedLicence.statusCode).isEqualTo(APPROVED)
+    assertThat(approvedLicence.statusCode).isEqualTo(IN_PROGRESS)
     verify(hdcPostponementRepository, times(1)).save(any())
     verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(approvedLicence, true)
+    verify(auditService).recordAuditEventHdcLicencePostponed(approvedLicence, APPROVED)
+  }
+
+  @Test
+  fun `postpone with approved and submitted licences inactivates the approved licence and reverts the submitted edit`() {
+    val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = APPROVED)
+    val submittedEdit = createHdcLicence(id = 2).copy(nomsId = "A1234BC", statusCode = SUBMITTED)
+    whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(submittedEdit, approvedLicence))
+    whenever(
+      licenceService.inactivateLicences(
+        listOf(approvedLicence),
+        "HDC licence postponed",
+        deactivateInProgressVersions = false,
+      ),
+    ).thenAnswer {
+      approvedLicence.statusCode = INACTIVE
+      null
+    }
+
+    service.postponeLicence("A1234BC")
+
+    assertThat(approvedLicence.statusCode).isEqualTo(INACTIVE)
+    assertThat(submittedEdit.statusCode).isEqualTo(IN_PROGRESS)
+    verify(licenceService).inactivateLicences(
+      listOf(approvedLicence),
+      "HDC licence postponed",
+      deactivateInProgressVersions = false,
+    )
+    verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
+    verify(auditService).recordAuditEventHdcLicencePostponed(submittedEdit, SUBMITTED)
   }
 
   @Nested
@@ -1042,12 +1073,22 @@ class HdcServiceTest {
 
       whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
       whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
+      whenever(
+        licenceService.inactivateLicences(
+          listOf(approvedLicence),
+          "HDC licence postponed",
+          deactivateInProgressVersions = false,
+        ),
+      ).thenAnswer {
+        approvedLicence.statusCode = INACTIVE
+        null
+      }
 
       // When
       service.postponeLicence("A1234BC")
 
       // Then
-      assertThat(approvedLicence.statusCode).isEqualTo(APPROVED)
+      assertThat(approvedLicence.statusCode).isEqualTo(INACTIVE)
       assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
       assertThat(editLicence.approvedByUsername).isNull()
       assertThat(editLicence.approvedByName).isNull()
@@ -1077,10 +1118,10 @@ class HdcServiceTest {
       service.postponeLicence("A1234BC")
 
       // Then
-      assertThat(approvedLicence.statusCode).isEqualTo(APPROVED)
+      assertThat(approvedLicence.statusCode).isEqualTo(IN_PROGRESS)
       assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
       verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
-      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
+      verify(auditService).recordAuditEventHdcLicencePostponed(approvedLicence, APPROVED)
       verify(hdcPostponementRepository, times(2)).save(any())
     }
 
