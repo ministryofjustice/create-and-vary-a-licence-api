@@ -103,9 +103,10 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
   fun `An HDC opt out event converts a single eligible HDC licence to an in progress CRD licence`(status: LicenceStatus) {
     // Given
     testRepository.updateLicenceStatus(1L, status)
+    val event = createHdcStatusChangedEvent()
 
     // When
-    sendOptOutEvent(createHdcStatusChangedEvent())
+    sendOptOutEvent(event)
 
     // Then
     val licences = testRepository.findAllLicence()
@@ -164,9 +165,10 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
   fun `An HDC opt out event converts only the edit and inactivates the previously approved HDC licence`(editStatus: LicenceStatus) {
     // Given
     testRepository.updateLicenceStatus(2L, editStatus)
+    val event = createHdcStatusChangedEvent()
 
     // When
-    sendOptOutEvent(createHdcStatusChangedEvent())
+    sendOptOutEvent(event)
 
     // Then
     val licences = testRepository.findAllLicence()
