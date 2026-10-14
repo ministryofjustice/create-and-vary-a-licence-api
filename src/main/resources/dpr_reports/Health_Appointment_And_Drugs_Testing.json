@@ -1,0 +1,156 @@
+{
+  "id": "health-appointment-drug-testing",
+  "name": "Health appointment and drug testing conditions report" ,
+  "description": "Data products for Create and Vary a licence ",
+  "metadata": {
+    "author": "Caija Addai",
+    "owner": "Derrick Malone",
+    "version": "1.0.5",
+    "interactive": "true"
+  },
+  "datasource": [
+    {
+      "id": "cvl",
+      "name": "cvl"
+    }
+
+  ],
+  "dataset": [
+    {
+      "id": "licence-dataset",
+      "name": "licence-dataset",
+      "datasource": "cvl",
+      "query": "SELECT l.crn, l.probation_area_description, l.probation_pdu_description, l.prison_description, l.licence_start_date, CASE WHEN MAX(CASE WHEN ac.condition_code = 'f1d2888b-be86-4732-8874-44cb867865c2' THEN 1 ELSE 0 END) = 1 THEN 'Yes' ELSE 'No' END AS health_appointment_condition, CASE WHEN MAX(CASE WHEN ac.condition_code = '322bb3f7-2ee1-46aa-ae1c-3f743efd4327' THEN 1 ELSE 0 END) = 1 THEN 'Yes' ELSE 'No' END AS drug_testing_condition FROM licence l JOIN additional_condition ac ON ac.licence_id = l.id WHERE ac.condition_code IN ('f1d2888b-be86-4732-8874-44cb867865c2','322bb3f7-2ee1-46aa-ae1c-3f743efd4327') AND l.status_code = 'ACTIVE' AND l.licence_start_date BETWEEN '2025-09-08' AND '2026-09-08' GROUP BY l.crn, l.probation_area_description, l.probation_pdu_description, l.prison_description, l.licence_start_date",
+      "schema": {
+        "field": [
+          {
+            "name": "crn",
+            "type": "string",
+            "display": "CRN"
+          },
+          {
+            "name": "probation_area_description",
+            "type": "string",
+            "display": "Probation Region"
+          },
+          {
+            "name": "probation_pdu_description",
+            "type": "string",
+            "display": "PDU"
+          },
+          {
+            "name": "prison_description",
+            "type": "string",
+            "display": "Prison"
+          },
+          {
+            "name": "health_appointment_condition",
+            "type": "string",
+            "display": "Health appointment condition (13C)"
+          },
+          {
+            "name": "drug_testing_condition",
+            "type": "string",
+            "display": "Drug testing condition (13A)"
+          },
+          {
+            "name": "licence_start_date",
+            "type": "date",
+            "display": "Licence start date"
+          }
+        ]
+      }
+    }
+  ],
+  "policy": [
+    {
+      "id": "access",
+      "type": "access",
+      "rule": [
+        {
+          "effect": "permit",
+          "condition": [
+            {
+              "match": [
+                "${role}",
+                "ROLE_NOMIS_BATCHLOAD"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "report": [
+    {
+      "id": "health-appointment-drug-testing",
+      "name": "Health appointment and drug testing conditions report",
+      "description": "List of releases that have the health appointment condition (13C) and the drug testing condition (13A) ",
+      "version": "1.0.0",
+      "render": "HTML",
+      "dataset": "$ref:licence-dataset",
+      "feature": [
+        {
+          "type": "print"
+        }
+      ],
+      "specification": {
+        "template": "list",
+        "field": [
+          {
+            "name": "$ref:crn",
+            "display": "CRN",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:probation_area_description",
+            "display": "Probation Region",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:probation_pdu_description",
+            "display": "PDU",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:prison_description",
+            "display": "Prison Name",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:health_appointment_condition",
+            "display": "Health Appointment Condition (13C)",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:drug_testing_condition",
+            "display": "Drug Testing Condition (13A)",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:licence_start_date",
+            "display": "Licence start date",
+            "formula": "format_date(${licence_start_date}, 'dd/MM/yyyy')",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": true
+          }
+        ]
+      },
+      "summary": [
+      ]
+    }
+  ]
+}
