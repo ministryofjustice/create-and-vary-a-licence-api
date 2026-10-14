@@ -115,8 +115,6 @@ class ComCreateCaseloadService(
 
     return cases.mapNotNull { (deliusRecord, nomisRecord) ->
       val licences = licencesByCrn[deliusRecord.crn] ?: emptyList()
-      val licenceDtos = licences.map { mapToLicenceDto(it) }
-      val licencePostponements = licences.associate { it.licenceId to it.isPostponed }
       val cvlRecord = cvlRecordsByNomisId[nomisRecord.prisonerNumber]!!
       val caseAccessRecord = caseAccessRecords[deliusRecord.crn] ?: unrestricted
       val isRestricted = caseAccessRecord.isRestricted
@@ -136,12 +134,12 @@ class ComCreateCaseloadService(
         )
 
         // Has an active licence so shouldn't appear in create caseload
-        licences.any { it.statusCode == ACTIVE } ->
+        licences.any { it.licenceStatus == ACTIVE } ->
           null
 
         // Should appear in create caseload with relevant licence
         else -> {
-          val relevantLicence = findRelevantLicencePerCase(licenceDtos)
+          val relevantLicence = findRelevantLicencePerCase(licences)
           createCaseForRelevantLicence(
             probationPractitioner,
             nomisRecord,
@@ -149,17 +147,17 @@ class ComCreateCaseloadService(
             relevantLicence,
             isRestricted,
             isAdminUser,
-            relevantLicence.licenceId?.let { licencePostponements[it] } ?: false,
           )
         }
       }
     }
   }
 
-  private fun getExistingActiveAndPreReleaseLicences(crnList: List<String>): List<LicenceComCase> = if (crnList.isEmpty()) {
+  private fun getExistingActiveAndPreReleaseLicences(crnList: List<String>): List<ComCreateCaseloadLicenceDto> = if (crnList.isEmpty()) {
     emptyList()
   } else {
     licenceCaseRepository.findLicenceCasesForCom(crns = crnList, statusCodes = COM_CREATE_LICENCE_STATUSES)
+      .map { mapToLicenceDto(it) }
   }
 
   private fun mapToLicenceDto(case: LicenceComCase) = ComCreateCaseloadLicenceDto(
@@ -174,6 +172,7 @@ class ComCreateCaseloadService(
     releaseDate = case.licenceStartDate,
     releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(case),
     isReviewNeeded = case.isReviewNeeded(),
+    isHdcPostponed = case.isHdcPostponed,
     // populated by findRelevantLicencePerCase
     licenceCreationType = null,
     isRestricted = false,
@@ -202,6 +201,7 @@ class ComCreateCaseloadService(
         deliusRecord.crn,
         nomisRecord.prisonerNumber,
         cvlRecord.licenceStartDate,
+        isHdcPostponed = false,
       )
     }
 
@@ -219,6 +219,7 @@ class ComCreateCaseloadService(
       isReviewNeeded = false,
       licenceCreationType = null,
       isRestricted = isRestricted,
+      isHdcPostponed = false,
     )
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
   }
@@ -251,7 +252,7 @@ class ComCreateCaseloadService(
           isReviewNeeded = isReviewNeeded,
           isRestricted = isRestricted,
           hdcStatus = it.cvlRecord.hdcStatus,
-          isPostponed = it.isPostponed,
+          isHdcPostponed = isHdcPostponed,
           isReplacementForOptedOutLicence = licenceIdsThatAreReplacementsForOptedOutLicences.contains(licenceId),
         )
       }
@@ -287,7 +288,6 @@ class ComCreateCaseloadService(
     createCaseloadLicence: ComCreateCaseloadLicenceDto,
     isRestricted: Boolean,
     isAdminUser: Boolean,
-    isPostponed: Boolean = false,
   ): Case = if (isRestricted && !isAdminUser) {
     Case(
       probationPractitioner,
@@ -300,11 +300,11 @@ class ComCreateCaseloadService(
         createCaseloadLicence.crn,
         nomisRecord.prisonerNumber,
         cvlRecord.licenceStartDate,
+        createCaseloadLicence.isHdcPostponed,
       ),
-      isPostponed = false,
     )
   } else {
-    Case(probationPractitioner, nomisRecord, cvlRecord, createCaseloadLicence, isPostponed = isPostponed)
+    Case(probationPractitioner, nomisRecord, cvlRecord, createCaseloadLicence)
   }
 
   private data class Case(
@@ -312,6 +312,5 @@ class ComCreateCaseloadService(
     val nomisRecord: PrisonerSearchPrisoner,
     val cvlRecord: CvlRecord,
     val comLicenceCaseDto: ComCreateCaseloadLicenceDto,
-    val isPostponed: Boolean = false,
   )
 }

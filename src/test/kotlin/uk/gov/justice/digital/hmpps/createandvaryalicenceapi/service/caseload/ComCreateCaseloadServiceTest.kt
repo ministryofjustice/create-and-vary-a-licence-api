@@ -1931,6 +1931,7 @@ class ComCreateCaseloadServiceTest {
     updatedByLastName = "lastName",
     reviewDate = reviewDate,
     prisonCode = prisonCode,
+    isHdcPostponed = false,
   )
 
   private fun aManagedOffenderCrn(nomisId: String? = "ABC123"): ManagedOffender = ManagedOffender(

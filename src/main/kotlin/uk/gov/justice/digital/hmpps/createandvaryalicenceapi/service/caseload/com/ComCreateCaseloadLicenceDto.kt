@@ -21,10 +21,19 @@ data class ComCreateCaseloadLicenceDto(
   val isReviewNeeded: Boolean,
   val licenceCreationType: LicenceCreationType?,
   val isRestricted: Boolean,
+  val isHdcPostponed: Boolean,
 ) {
 
   companion object {
-    fun restrictedCase(licenceStatus: LicenceStatus, kind: LicenceKind, licenceType: LicenceType, crn: String?, nomisId: String, releaseDate: LocalDate?) = ComCreateCaseloadLicenceDto(
+    fun restrictedCase(
+      licenceStatus: LicenceStatus,
+      kind: LicenceKind,
+      licenceType: LicenceType,
+      crn: String?,
+      nomisId: String,
+      releaseDate: LocalDate?,
+      isHdcPostponed: Boolean,
+    ) = ComCreateCaseloadLicenceDto(
       licenceId = null,
       licenceStatus = licenceStatus,
       kind = kind,
@@ -38,6 +47,7 @@ data class ComCreateCaseloadLicenceDto(
       isReviewNeeded = false,
       licenceCreationType = null,
       isRestricted = true,
+      isHdcPostponed = isHdcPostponed,
     )
   }
 }

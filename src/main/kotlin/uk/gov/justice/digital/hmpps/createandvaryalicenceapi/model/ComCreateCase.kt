@@ -70,7 +70,7 @@ data class ComCreateCase(
   val hdcStatus: HdcStatus,
 
   @field:Schema(description = "Whether this HDC licence is currently postponed.", example = "true")
-  val isPostponed: Boolean = false,
+  val isHdcPostponed: Boolean,
 
   @field:Schema(description = "Is this licence a replacement for an opted out licence?", example = "true")
   val isReplacementForOptedOutLicence: Boolean,
