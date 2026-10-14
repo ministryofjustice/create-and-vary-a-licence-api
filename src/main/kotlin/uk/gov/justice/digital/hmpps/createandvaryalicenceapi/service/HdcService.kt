@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
@@ -34,7 +33,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.Clock
@@ -334,35 +332,20 @@ class HdcService(
   fun convertToCrdLicence(nomsNumber: String) {
     val licences = hdcLicenceRepository.getLicenceEligibleForCrdConversion(nomsNumber)
     if (licences.isNotEmpty()) {
-      val crdCopies = licences.associate { it.id to copyLicence(licences, it) }
-
       val reason = "Licence automatically inactivated after HDC opt out event"
       licenceService.inactivateLicences(licences, reason = reason, deactivateInProgressVersions = true)
 
-      licences.forEach { original ->
+      val licenceToConvert = licences.last()
+      val crdCopy = crdLicenceFactory.createFromHdc(licenceToConvert, IN_PROGRESS)
 
-        val newLicence = licenceService.populateCopy(
-          original = original,
-          copy = crdCopies[original.id]!!,
-        )
+      val newLicence = licenceService.populateCopy(
+        original = licenceToConvert,
+        copy = crdCopy,
+      )
+      addOptOutAudits(licenceToConvert, newLicence)
+      addLicenceOptOutEvents(licenceToConvert, newLicence)
 
-        addOptOutAudits(original, newLicence)
-        addLicenceOptOutEvents(original, newLicence)
-
-        linkingService.setCrdReplacementForOptedOutLicence(original.id, newLicence.id)
-      }
-    }
-  }
-
-  private fun copyLicence(
-    licences: List<HdcLicenceEntity>,
-    licence: HdcLicenceEntity,
-  ): CrdLicence {
-    val keepAsApproved = licences.size > 1 && licence.statusCode == APPROVED
-    return if (keepAsApproved) {
-      crdLicenceFactory.createFromHdc(licence)
-    } else {
-      crdLicenceFactory.createFromHdc(licence, IN_PROGRESS)
+      linkingService.setCrdReplacementForOptedOutLicence(licenceToConvert.id, newLicence.id)
     }
   }
 

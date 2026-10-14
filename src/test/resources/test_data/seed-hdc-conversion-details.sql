@@ -1,3 +1,5 @@
+update licence set version_of_id = 1 where id = 2;
+
 insert into additional_condition (
   licence_id,
   condition_version,
@@ -9,7 +11,7 @@ insert into additional_condition (
   condition_type
 )
 values (
-  1,
+  (select max(id) from licence),
   '1.0',
   'Freedom of movement',
   '9ae2a336-3491-4667-aaed-dd852b09b4b9',
@@ -33,4 +35,4 @@ values (
 );
 
 insert into bespoke_condition (licence_id, condition_sequence, condition_text)
-values (1, 1, 'Do not contact Person A');
+values ((select max(id) from licence), 1, 'Do not contact Person A');
