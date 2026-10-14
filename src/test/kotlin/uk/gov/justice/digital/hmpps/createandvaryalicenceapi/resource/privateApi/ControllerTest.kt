@@ -12,13 +12,19 @@ import java.lang.reflect.Method
 class ControllerTest {
   private data class InvalidController(val clazz: Class<*>, val methods: List<Method>)
 
+  private val controllersToIgnore = listOf(
+    "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.subscription.UserSubscriptionController",
+  )
+
   @Test
   fun `Check Valid annotation is being applied to endpoints with payloads`() {
-    val invalidControllers = getAllControllers().mapNotNull {
-      val clazz = Class.forName(it.beanClassName)
-      val invalidEndpoints = clazz.getInvalidEndpoints()
-      if (invalidEndpoints.isEmpty()) null else InvalidController(clazz, invalidEndpoints)
-    }
+    val invalidControllers = getAllControllers()
+      .filter { !controllersToIgnore.contains(it.beanClassName) }
+      .mapNotNull {
+        val clazz = Class.forName(it.beanClassName)
+        val invalidEndpoints = clazz.getInvalidEndpoints()
+        if (invalidEndpoints.isEmpty()) null else InvalidController(clazz, invalidEndpoints)
+      }
 
     assertThat(invalidControllers).isEmpty()
   }

@@ -20,6 +20,7 @@ class EndpointSecurityTest {
     "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.controller.DataApiSyncController",
     "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.controller.ReportDefinitionController",
     "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.productCollection.ProductCollectionController",
+    "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.subscription.UserSubscriptionController",
   )
 
   private data class EndpointInfo(
