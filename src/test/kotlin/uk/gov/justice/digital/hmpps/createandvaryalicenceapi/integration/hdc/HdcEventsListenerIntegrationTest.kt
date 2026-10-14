@@ -211,7 +211,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
   @Test
-  fun `An HDC postpone event on a submitted in-flight licence moves it to IN_PROGRESS and leaves the approved licence untouched`() {
+  fun `An HDC postpone event with an approved edit underway inactivates the approved licence and moves the submitted edit to IN_PROGRESS`() {
     // Given
     val approvedLicence = testRepository.findLicence(1L)
     assertThat(approvedLicence.statusCode).isEqualTo(LicenceStatus.APPROVED)
@@ -234,11 +234,11 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val licences = testRepository.findAllLicence()
     assertThat(licences).hasSize(2)
 
-    val unchangedApprovedLicence = testRepository.findLicence(1L)
-    assertThat(unchangedApprovedLicence.statusCode).isEqualTo(LicenceStatus.APPROVED)
-    assertThat(unchangedApprovedLicence.approvedByUsername).isEqualTo("approver.user")
-    assertThat(unchangedApprovedLicence.approvedByName).isEqualTo("Approved Approver")
-    assertThat(unchangedApprovedLicence.approvedDate).isNotNull
+    val inactivatedApprovedLicence = testRepository.findLicence(1L)
+    assertThat(inactivatedApprovedLicence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(inactivatedApprovedLicence.approvedByUsername).isEqualTo("approver.user")
+    assertThat(inactivatedApprovedLicence.approvedByName).isEqualTo("Approved Approver")
+    assertThat(inactivatedApprovedLicence.approvedDate).isNotNull
 
     val updatedSubmittedLicence = testRepository.findLicence(2L)
     assertThat(updatedSubmittedLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -269,24 +269,90 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         tuple(2L, true),
       )
 
-    verifyNoInteractions(eventsPublisher)
+    verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
   }
 
   @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
   @Test
-  fun `An HDC resume event clears the current postponement state for the submitted edit without changing the approved licence`() {
+  fun `An HDC postpone event with no edit underway and a submitted licence moves it to IN_PROGRESS`() {
     val event = createHdcStatusChangedEvent(
       licenceId = 2L,
       bookingId = 12345L,
       nomsNumber = "A1234AA",
-      reason = "HDC application resumed",
+      reason = "HDC application postponed",
     )
     val eventJson = mapper.writeValueAsString(event)
+
+    testRepository.updateLicenceStatus(1L, LicenceStatus.INACTIVE)
 
     sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
 
     assertSqsProcessed()
     verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+
+    val updatedSubmittedLicence = testRepository.findLicence(2L)
+    assertThat(updatedSubmittedLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(updatedSubmittedLicence.approvedByUsername).isNull()
+    assertThat(updatedSubmittedLicence.approvedByName).isNull()
+    assertThat(updatedSubmittedLicence.approvedDate).isNull()
+    assertThat(testRepository.findAllHdcPostponements())
+      .extracting("licence.id", "isPostponed")
+      .containsExactly(tuple(2L, true))
+
+    assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
+  }
+
+  @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
+  @Test
+  fun `An HDC postpone event with no edit underway moves an approved licence to IN_PROGRESS`() {
+    val event = createHdcStatusChangedEvent(
+      licenceId = 1L,
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+      reason = "HDC application postponed",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+
+    testRepository.updateLicenceStatus(2L, LicenceStatus.INACTIVE)
+
+    sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
+
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+
+    val updatedApprovedLicence = testRepository.findLicence(1L)
+    assertThat(updatedApprovedLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(updatedApprovedLicence.approvedByUsername).isNull()
+    assertThat(updatedApprovedLicence.approvedByName).isNull()
+    assertThat(updatedApprovedLicence.approvedDate).isNull()
+
+    assertThat(testRepository.findLicence(2L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
+  }
+
+  @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
+  @Test
+  fun `An HDC resume event clears the postponement state for the current editable HDC licence`() {
+    val postponeEvent = createHdcStatusChangedEvent(
+      licenceId = 2L,
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+      reason = "HDC application postponed",
+    )
+    val postponeEventJson = mapper.writeValueAsString(postponeEvent)
+
+    val resumeEvent = createHdcStatusChangedEvent(
+      licenceId = 2L,
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+      reason = "HDC application resumed",
+    )
+    val resumeEventJson = mapper.writeValueAsString(resumeEvent)
+
+    sendMessage(postponeEventJson, HdcCvlEventType.POSTPONE.toString())
+
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handlePostpone(postponeEventJson)
+    verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
 
     assertThat(testRepository.findAllHdcPostponements())
       .hasSize(2)
@@ -296,20 +362,19 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         tuple(2L, true),
       )
 
-    sendMessage(eventJson, HdcCvlEventType.RESUME.toString())
+    org.mockito.kotlin.clearInvocations(eventsPublisher)
+
+    sendMessage(resumeEventJson, HdcCvlEventType.RESUME.toString())
 
     assertSqsProcessed(timesProcessed = 2)
-    verify(hdcStatusChangedHandler).handleResume(eventJson)
+    verify(hdcStatusChangedHandler).handleResume(resumeEventJson)
 
     assertThat(testRepository.findAllHdcPostponements())
       .hasSize(2)
       .extracting("licence.id", "isPostponed")
-      .containsExactlyInAnyOrder(
-        tuple(1L, false),
-        tuple(2L, false),
-      )
+      .containsExactlyInAnyOrder(tuple(1L, true), tuple(2L, false))
 
-    assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.APPROVED)
+    assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
     verifyNoInteractions(eventsPublisher)
   }
 
