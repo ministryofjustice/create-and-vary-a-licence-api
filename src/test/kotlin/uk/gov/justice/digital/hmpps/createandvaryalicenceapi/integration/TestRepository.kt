@@ -185,6 +185,12 @@ class TestRepository(
     return licence
   }
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
+  fun updateLicenceStatus(id: Long, status: LicenceStatus) {
+    val licence = licenceRepository.findById(id).orElseThrow()
+    licence.statusCode = status
+  }
+
   fun doesLicenceExist(id: Long = 1L): Boolean = licenceRepository.existsById(id)
 
   fun findAllLicence(assertNotEmpty: Boolean = true): List<Licence> {
