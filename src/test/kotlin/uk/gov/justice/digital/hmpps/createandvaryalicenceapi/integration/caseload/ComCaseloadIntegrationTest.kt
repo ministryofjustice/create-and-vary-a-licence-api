@@ -220,7 +220,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
       val hdcCase = caseload.single { it.prisonerNumber == "AB1234E" }
       assertThat(hdcCase.licenceId).isEqualTo(2L)
-      assertThat(hdcCase.isPostponed).isTrue()
+      assertThat(hdcCase.isHdcPostponed).isTrue()
     }
 
     @Test
