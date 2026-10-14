@@ -16,8 +16,9 @@ case "${VERSION}" in
   v2.1) INPUT_JSON="${POLICY_DIR}/policyV2_1.json" ;;
   v3)   INPUT_JSON="${POLICY_DIR}/policyV3.json" ;;
   v4)   INPUT_JSON="${POLICY_DIR}/policyV4.json" ;;
+  v4.1) INPUT_JSON="${POLICY_DIR}/policyV4_1.json" ;;
   *)
-    echo "Error: version must be one of: v1, v2, v2.1, v3, v4" >&2
+    echo "Error: version must be one of: v1, v2, v2.1, v3, v4, v4.1" >&2
     exit 1
     ;;
 esac
