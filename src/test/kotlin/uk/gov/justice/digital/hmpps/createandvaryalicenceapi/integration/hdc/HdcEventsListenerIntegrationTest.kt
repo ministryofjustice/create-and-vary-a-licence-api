@@ -13,6 +13,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.jdbc.SqlGroup
@@ -37,6 +38,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@TestPropertySource(properties = ["hdc.event.listener.enabled=true"])
 class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
   @MockitoSpyBean

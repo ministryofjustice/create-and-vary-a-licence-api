@@ -138,15 +138,17 @@ class ComCreateCaseloadService(
           null
 
         // Should appear in create caseload with relevant licence
-        else ->
+        else -> {
+          val relevantLicence = findRelevantLicencePerCase(licences)
           createCaseForRelevantLicence(
             probationPractitioner,
             nomisRecord,
             cvlRecord,
-            findRelevantLicencePerCase(licences),
+            relevantLicence,
             isRestricted,
             isAdminUser,
           )
+        }
       }
     }
   }
@@ -170,6 +172,7 @@ class ComCreateCaseloadService(
     releaseDate = case.licenceStartDate,
     releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(case),
     isReviewNeeded = case.isReviewNeeded(),
+    isHdcPostponed = case.isHdcPostponed,
     // populated by findRelevantLicencePerCase
     licenceCreationType = null,
     isRestricted = false,
@@ -198,6 +201,7 @@ class ComCreateCaseloadService(
         deliusRecord.crn,
         nomisRecord.prisonerNumber,
         cvlRecord.licenceStartDate,
+        isHdcPostponed = false,
       )
     }
 
@@ -215,6 +219,7 @@ class ComCreateCaseloadService(
       isReviewNeeded = false,
       licenceCreationType = null,
       isRestricted = isRestricted,
+      isHdcPostponed = false,
     )
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
   }
@@ -247,6 +252,7 @@ class ComCreateCaseloadService(
           isReviewNeeded = isReviewNeeded,
           isRestricted = isRestricted,
           hdcStatus = it.cvlRecord.hdcStatus,
+          isHdcPostponed = isHdcPostponed,
           isReplacementForOptedOutLicence = licenceIdsThatAreReplacementsForOptedOutLicences.contains(licenceId),
         )
       }
@@ -294,6 +300,7 @@ class ComCreateCaseloadService(
         createCaseloadLicence.crn,
         nomisRecord.prisonerNumber,
         cvlRecord.licenceStartDate,
+        createCaseloadLicence.isHdcPostponed,
       ),
     )
   } else {
