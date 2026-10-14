@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.Clock
@@ -395,6 +396,7 @@ class HdcService(
   @Transactional
   fun postponeLicence(nomsNumber: String) {
     val licences = hdcLicenceRepository.findHdcLicencesEligibleForPostpone(nomsNumber)
+
     if (licences.isEmpty()) {
       log.info("HDC postpone: no eligible HDC licence found for nomsNumber={}", nomsNumber)
       return
@@ -402,16 +404,25 @@ class HdcService(
 
     licences.forEach { recordPostponement(it, isPostponed = true) }
 
-    val submittedLicence = licences.firstOrNull { it.statusCode == SUBMITTED }
-    if (submittedLicence != null) {
-      val previousStatus = submittedLicence.statusCode
-      submittedLicence.statusCode = IN_PROGRESS
-      submittedLicence.approvedByUsername = null
-      submittedLicence.approvedByName = null
-      submittedLicence.approvedDate = null
-      submittedLicence.supersededDate = null
-      auditService.recordAuditEventHdcLicencePostponed(submittedLicence, previousStatus)
+    val licencesByStatus = licences.associateBy { it.statusCode }
+
+    val approvedLicence = licencesByStatus[APPROVED]
+    val submittedLicence = licencesByStatus[SUBMITTED]
+
+    submittedLicence?.let { submitted ->
+      approvedLicence?.let { approved ->
+        licenceService.inactivateLicences(
+          listOf(approved),
+          reason = "HDC licence postponed",
+          deactivateInProgressVersions = false,
+        )
+      }
+
+      revertLicenceToInProgress(submitted)
+      return
     }
+
+    approvedLicence?.let(::revertLicenceToInProgress)
   }
 
   @Transactional
@@ -444,5 +455,15 @@ class HdcService(
     }
 
     auditService.recordAuditEventHdcLicencePostponementChange(licence, isPostponed)
+  }
+
+  private fun revertLicenceToInProgress(licence: HdcLicenceEntity) {
+    val previousStatus = licence.statusCode
+    licence.statusCode = IN_PROGRESS
+    licence.approvedByUsername = null
+    licence.approvedByName = null
+    licence.approvedDate = null
+    licence.supersededDate = null
+    auditService.recordAuditEventHdcLicencePostponed(licence, previousStatus)
   }
 }
