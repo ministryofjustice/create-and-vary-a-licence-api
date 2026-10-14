@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -18,6 +20,8 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
@@ -52,8 +56,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.CurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -128,13 +135,15 @@ class HdcServiceTest {
       auditService,
       crdLicenceFactory,
       licenceService,
+      licenceLinkingService,
     )
   }
 
-  @Test
-  fun `convertToCrdLicence creates a CRD copy audits the conversion and inactivates the HDC licence`() {
+  @ParameterizedTest
+  @EnumSource(LicenceStatus::class, names = ["IN_PROGRESS", "SUBMITTED", "APPROVED"])
+  fun `convertToCrdLicence creates an in progress CRD copy audits the conversion and inactivates the HDC licence`(status: LicenceStatus) {
     // Given
-    val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA")
+    val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA", statusCode = status)
     val crdToPopulate = createCrdLicence().copy(id = null, versionOfId = hdcLicence.id)
     val populatedCrd = crdToPopulate.copy(id = 2)
     val auditCaptor = argumentCaptor<AuditEvent>()
@@ -165,6 +174,65 @@ class HdcServiceTest {
       .isEqualTo("CRD licence converted from HDC on Opt Out")
     assertThat(crdAuditEvent.detail)
       .isEqualTo("Old ID 1, new ID 2 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
+
+    verify(licenceService).createLicenceEvent(
+      licenceId = hdcLicence.id,
+      eventType = INACTIVE_WHEN_HDC_OPT_OUT,
+      eventDescription = "This HDC licence was converted to CRD licence on Opt Out",
+    )
+    verify(licenceService).createLicenceEvent(
+      licenceId = populatedCrd.id,
+      eventType = CRD_CREATED_WHEN_HDC_OPT_OUT,
+      eventDescription = "This CRD Licence was converted from Hdc a licence on Opt Out",
+    )
+    verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(hdcLicence.id, populatedCrd.id)
+    verifyNoMoreInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
+  }
+
+  @ParameterizedTest
+  @EnumSource(LicenceStatus::class, names = ["IN_PROGRESS", "SUBMITTED"])
+  fun `convertToCrdLicence converts only the edit to an in progress CRD licence and inactivates both HDC versions`(editStatus: LicenceStatus) {
+    val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA", statusCode = APPROVED)
+    val edit = approvedLicence.copy(id = 2, versionOfId = approvedLicence.id, statusCode = editStatus)
+    val licences = listOf(approvedLicence, edit)
+    val crdToPopulate = createCrdLicence().copy(id = null, versionOfId = edit.id)
+    val populatedCrd = crdToPopulate.copy(id = 3)
+    val auditCaptor = argumentCaptor<AuditEvent>()
+
+    whenever(hdcLicenceRepository.getLicenceEligibleForCrdConversion("A1234AA")).thenReturn(licences)
+    whenever(crdLicenceFactory.createFromHdc(edit, IN_PROGRESS)).thenReturn(crdToPopulate)
+    whenever(licenceService.populateCopy(edit, crdToPopulate)).thenReturn(populatedCrd)
+
+    service.convertToCrdLicence("A1234AA")
+
+    verify(crdLicenceFactory).createFromHdc(edit, IN_PROGRESS)
+    verify(licenceService).inactivateLicences(licences, "Licence automatically inactivated after HDC opt out event", deactivateInProgressVersions = true)
+    verify(licenceService).populateCopy(edit, crdToPopulate)
+    verify(auditService, times(2)).recordAuditEvent(auditCaptor.capture())
+    assertThat(auditCaptor.allValues.map { it.licenceId }).containsExactly(edit.id, populatedCrd.id)
+    assertThat(auditCaptor.allValues.map { it.detail })
+      .containsOnly("Old ID 2, new ID 3 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
+    verify(licenceService).createLicenceEvent(
+      licenceId = edit.id,
+      eventType = INACTIVE_WHEN_HDC_OPT_OUT,
+      eventDescription = "This HDC licence was converted to CRD licence on Opt Out",
+    )
+    verify(licenceService).createLicenceEvent(
+      licenceId = populatedCrd.id,
+      eventType = CRD_CREATED_WHEN_HDC_OPT_OUT,
+      eventDescription = "This CRD Licence was converted from Hdc a licence on Opt Out",
+    )
+    verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(edit.id, populatedCrd.id)
+    verifyNoMoreInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
+  }
+
+  @Test
+  fun `convertToCrdLicence does nothing when there are no eligible HDC licences`() {
+    whenever(hdcLicenceRepository.getLicenceEligibleForCrdConversion("A1234AA")).thenReturn(emptyList())
+
+    service.convertToCrdLicence("A1234AA")
+
+    verifyNoInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
   @Test
