@@ -1131,7 +1131,7 @@ class HdcServiceTest {
     }
 
     @Test
-    fun `keeps an approved HDC licence and does not change an already IN_PROGRESS edit licence`() {
+    fun `inactivates an approved HDC licence and leaves an already IN_PROGRESS edit licence unchanged`() {
       // Given
       val approvedLicence = createHdcLicence(id = 123L)
       approvedLicence.statusCode = APPROVED
@@ -1144,15 +1144,25 @@ class HdcServiceTest {
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
       whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
       whenever(hdcPostponementRepository.findByLicenceId(approvedLicence.id)).thenReturn(null)
+      whenever(
+        licenceService.inactivateLicences(
+          listOf(approvedLicence),
+          "HDC licence postponed",
+          deactivateInProgressVersions = false,
+        ),
+      ).thenAnswer {
+        approvedLicence.statusCode = INACTIVE
+        null
+      }
 
       // When
       service.postponeLicence("A1234BC")
 
       // Then
-      assertThat(approvedLicence.statusCode).isEqualTo(IN_PROGRESS)
+      assertThat(approvedLicence.statusCode).isEqualTo(INACTIVE)
       assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
       verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
-      verify(auditService).recordAuditEventHdcLicencePostponed(approvedLicence, APPROVED)
+      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
       verify(hdcPostponementRepository, times(2)).save(any())
     }
 
