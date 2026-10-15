@@ -155,7 +155,7 @@ class HdcServiceTest {
   )
   fun `convertToCrdLicence creates an in progress CRD copy audits the conversion and inactivates the HDC licence`(
     status: LicenceStatus,
-    eventType: HdcCvlEventType
+    eventType: HdcCvlEventType,
   ) {
     // Given
     val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA", statusCode = status)
@@ -213,7 +213,7 @@ class HdcServiceTest {
   )
   fun `convertToCrdLicence converts only the edit to an in progress CRD licence and inactivates both HDC versions`(
     editStatus: LicenceStatus,
-    eventType: HdcCvlEventType
+    eventType: HdcCvlEventType,
   ) {
     val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA", statusCode = APPROVED)
     val edit = approvedLicence.copy(id = 2, versionOfId = approvedLicence.id, statusCode = editStatus)
