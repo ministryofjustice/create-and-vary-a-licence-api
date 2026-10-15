@@ -238,6 +238,8 @@ class ComCreateCaseloadService(
 
     return cases.map {
       with(it.comLicenceCaseDto) {
+        val replacementTypes = licenceId?.let(replacementLinkTypesByLicenceId::get)
+
         ComCreateCase(
           licenceId = licenceId,
           licenceStatus = licenceStatus,
@@ -256,10 +258,8 @@ class ComCreateCaseloadService(
           isRestricted = isRestricted,
           hdcStatus = it.cvlRecord.hdcStatus,
           isHdcPostponed = isHdcPostponed,
-          isReplacementForOptedOutLicence = licenceId != null &&
-            replacementLinkTypesByLicenceId[licenceId]?.contains(CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE) == true,
-          isReplacementForRefusedLicence = licenceId != null &&
-            replacementLinkTypesByLicenceId[licenceId]?.contains(CRD_REPLACEMENT_FOR_REFUSED_LICENCE) == true,
+          isReplacementForOptedOutLicence = replacementTypes?.contains(CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE) == true,
+          isReplacementForRefusedLicence = replacementTypes?.contains(CRD_REPLACEMENT_FOR_REFUSED_LICENCE) == true,
         )
       }
     }.sortedWith(
