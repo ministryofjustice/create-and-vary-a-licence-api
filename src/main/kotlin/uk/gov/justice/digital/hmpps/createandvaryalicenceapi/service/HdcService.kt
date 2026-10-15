@@ -28,11 +28,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatusHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_REFUSED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_REFUSED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -331,14 +336,14 @@ class HdcService(
   private fun getUserName(staff: Staff?) = staff?.username ?: SYSTEM_USER
 
   @Transactional
-  fun convertToCrdLicence(nomsNumber: String) {
+  fun convertToCrdLicence(nomsNumber: String, eventType: HdcCvlEventType) {
     val licencesByStatus = getHdcLicencesByInflightStatusMap(nomsNumber)
     if (licencesByStatus.isNotEmpty()) {
       val licenceToConvert = licencesByStatus[IN_PROGRESS]
         ?: licencesByStatus[SUBMITTED]
         ?: requireNotNull(licencesByStatus[APPROVED])
 
-      val reason = "Licence automatically inactivated after HDC opt out event"
+      val reason = "Licence automatically inactivated after HDC ${eventType.name} event"
       licenceService.inactivateLicences(licencesByStatus.values.toList(), reason = reason, deactivateInProgressVersions = true)
 
       val crdCopy = crdLicenceFactory.createFromHdc(licenceToConvert, IN_PROGRESS)
@@ -347,9 +352,9 @@ class HdcService(
         original = licenceToConvert,
         copy = crdCopy,
       )
-      addOptOutAudits(licenceToConvert, newLicence)
-      addLicenceOptOutEvents(licenceToConvert, newLicence)
 
+      addConversionAudits(licenceToConvert, newLicence, eventType)
+      addLicenceConversionEvents(licenceToConvert, newLicence, eventType)
       linkingService.setCrdReplacementForOptedOutLicence(licenceToConvert.id, newLicence.id)
     }
   }
@@ -421,29 +426,37 @@ class HdcService(
     auditService.recordAuditEventHdcLicencePostponementChange(licence, isPostponed)
   }
 
-  private fun addLicenceOptOutEvents(
+  private fun addLicenceConversionEvents(
     licence: HdcLicenceEntity,
     newLicence: Licence,
+    eventType: HdcCvlEventType,
   ) {
+    val (inactiveEventType, createdEventType) = when (eventType) {
+      OPT_OUT -> Pair(INACTIVE_WHEN_HDC_OPT_OUT, CRD_CREATED_WHEN_HDC_OPT_OUT)
+      REFUSE -> Pair(INACTIVE_WHEN_HDC_REFUSED, CRD_CREATED_WHEN_HDC_REFUSED)
+      else -> throw IllegalArgumentException("Unknown HDC conversion event type $eventType")
+    }
+
     licenceService.createLicenceEvent(
       licenceId = licence.id,
-      eventType = INACTIVE_WHEN_HDC_OPT_OUT,
-      eventDescription = "This HDC licence was converted to CRD licence on Opt Out",
+      eventType = inactiveEventType,
+      eventDescription = "This HDC licence was converted to CRD licence on ${eventType.name}",
     )
 
     licenceService.createLicenceEvent(
       licenceId = newLicence.id,
-      eventType = CRD_CREATED_WHEN_HDC_OPT_OUT,
-      eventDescription = "This CRD Licence was converted from Hdc a licence on Opt Out",
+      eventType = createdEventType,
+      eventDescription = "This CRD Licence was converted from Hdc a licence on ${eventType.name}",
     )
   }
 
-  private fun addOptOutAudits(
+  private fun addConversionAudits(
     licence: HdcLicenceEntity,
     newLicence: Licence,
+    eventType: HdcCvlEventType,
   ) {
     val detail = "Old ID ${licence.id}, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}"
-    val summaryParent = "Hdc licence converted to CRD licence on Opt Out"
+    val summaryParent = "Hdc licence converted to CRD licence on ${eventType.name}"
 
     val auditForParent = AuditEvent(
       licenceId = licence.id,
@@ -453,7 +466,7 @@ class HdcService(
     )
     auditService.recordAuditEvent(auditForParent)
 
-    val summaryChild = "CRD licence converted from HDC on Opt Out"
+    val summaryChild = "CRD licence converted from HDC on ${eventType.name}"
 
     val auditForChild = AuditEvent(
       licenceId = newLicence.id,
