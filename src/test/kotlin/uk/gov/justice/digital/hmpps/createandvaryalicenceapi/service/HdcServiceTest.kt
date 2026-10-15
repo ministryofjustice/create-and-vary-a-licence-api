@@ -923,154 +923,6 @@ class HdcServiceTest {
     }
   }
 
-  @Nested
-  inner class TransitionHdcLicenceToInProgress {
-
-    @Test
-    fun `keeps an approved HDC licence and moves the current edit back to IN_PROGRESS`() {
-      // Given
-      val approvedLicence = createHdcLicence(id = 123L)
-      approvedLicence.statusCode = APPROVED
-      approvedLicence.nomsId = "A1234BC"
-      approvedLicence.approvedByUsername = "approver"
-      approvedLicence.approvedByName = "Approver Name"
-      approvedLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
-
-      val editLicence = createHdcLicence(id = 456L)
-      editLicence.statusCode = SUBMITTED
-      editLicence.nomsId = "A1234BC"
-      editLicence.approvedByUsername = "approver"
-      editLicence.approvedByName = "Approver Name"
-      editLicence.approvedDate = LocalDateTime.of(2024, 1, 11, 9, 0)
-
-      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
-      whenever(
-        licenceService.inactivateLicences(
-          listOf(approvedLicence),
-          "HDC licence postponed",
-          deactivateInProgressVersions = false,
-        ),
-      ).thenAnswer {
-        approvedLicence.statusCode = INACTIVE
-        null
-      }
-
-      // When
-      service.postponeLicence("A1234BC")
-
-      // Then
-      assertThat(approvedLicence.statusCode).isEqualTo(INACTIVE)
-      assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
-      assertThat(editLicence.approvedByUsername).isNull()
-      assertThat(editLicence.approvedByName).isNull()
-      assertThat(editLicence.approvedDate).isNull()
-      assertThat(editLicence.supersededDate).isNull()
-      verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
-      verify(auditService).recordAuditEventHdcLicencePostponed(editLicence, SUBMITTED)
-      verify(hdcPostponementRepository, times(2)).save(any())
-    }
-
-    @Test
-    fun `inactivates an approved HDC licence and leaves an already IN_PROGRESS edit licence unchanged`() {
-      // Given
-      val approvedLicence = createHdcLicence(id = 123L)
-      approvedLicence.statusCode = APPROVED
-      approvedLicence.nomsId = "A1234BC"
-
-      val editLicence = createHdcLicence(id = 456L)
-      editLicence.statusCode = IN_PROGRESS
-      editLicence.nomsId = "A1234BC"
-
-      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
-      whenever(hdcPostponementRepository.findByLicenceId(approvedLicence.id)).thenReturn(null)
-      whenever(
-        licenceService.inactivateLicences(
-          listOf(approvedLicence),
-          "HDC licence postponed",
-          deactivateInProgressVersions = false,
-        ),
-      ).thenAnswer {
-        approvedLicence.statusCode = INACTIVE
-        null
-      }
-
-      // When
-      service.postponeLicence("A1234BC")
-
-      // Then
-      assertThat(approvedLicence.statusCode).isEqualTo(INACTIVE)
-      assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
-      verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
-      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
-      verify(hdcPostponementRepository, times(2)).save(any())
-    }
-
-    @Test
-    fun `transitions HDC licence from SUBMITTED to IN_PROGRESS`() {
-      // Given
-      val hdcLicence = createHdcLicence(id = 456L)
-      hdcLicence.statusCode = SUBMITTED
-      hdcLicence.nomsId = "A1234BC"
-      hdcLicence.approvedByUsername = "approver"
-      hdcLicence.approvedByName = "Approver Name"
-      hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
-      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
-
-      // When
-      service.postponeLicence("A1234BC")
-
-      // Then
-      assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
-      verify(auditService).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
-      verify(auditService).recordAuditEventHdcLicencePostponed(hdcLicence, SUBMITTED)
-      verify(hdcPostponementRepository).save(any())
-    }
-
-    @Test
-    fun `does not process when licence not found`() {
-      // Given
-      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(emptyList())
-
-      // When
-      service.postponeLicence("A1234BC")
-
-      // Then
-      verify(auditService, never()).recordAuditEventHdcLicencePostponementChange(any(), any())
-      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
-    }
-
-    @Test
-    fun `does not update or audit when HDC licence is already IN_PROGRESS`() {
-      // Given
-      val hdcLicence = createHdcLicence(id = 789L)
-      hdcLicence.statusCode = IN_PROGRESS
-      hdcLicence.nomsId = "A1234BC"
-      hdcLicence.approvedByUsername = "approver"
-      hdcLicence.approvedByName = "Approver Name"
-      hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
-      val originalUpdatedAt = hdcLicence.dateLastUpdated
-
-      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
-
-      // When
-      service.postponeLicence("A1234BC")
-
-      // Then
-      assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
-      assertThat(hdcLicence.approvedByUsername).isEqualTo("approver")
-      assertThat(hdcLicence.approvedByName).isEqualTo("Approver Name")
-      assertThat(hdcLicence.approvedDate).isEqualTo(LocalDateTime.of(2024, 1, 10, 9, 0))
-      assertThat(hdcLicence.dateLastUpdated).isEqualTo(originalUpdatedAt)
-      verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
-      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
-      verify(hdcPostponementRepository).save(any())
-    }
-  }
-
   private companion object {
     val aLicenceEntity = createHdcLicence()
 
@@ -1220,5 +1072,153 @@ class HdcServiceTest {
     )
 
     val aPrisonerSearchResult = prisonerSearchResult()
+  }
+
+  @Nested
+  inner class TransitionHdcLicenceToInProgress {
+
+    @Test
+    fun `keeps an approved HDC licence and moves the current edit back to IN_PROGRESS`() {
+      // Given
+      val approvedLicence = createHdcLicence(id = 123L)
+      approvedLicence.statusCode = APPROVED
+      approvedLicence.nomsId = "A1234BC"
+      approvedLicence.approvedByUsername = "approver"
+      approvedLicence.approvedByName = "Approver Name"
+      approvedLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
+
+      val editLicence = createHdcLicence(id = 456L)
+      editLicence.statusCode = SUBMITTED
+      editLicence.nomsId = "A1234BC"
+      editLicence.approvedByUsername = "approver"
+      editLicence.approvedByName = "Approver Name"
+      editLicence.approvedDate = LocalDateTime.of(2024, 1, 11, 9, 0)
+
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
+      whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
+      whenever(
+        licenceService.inactivateLicences(
+          listOf(approvedLicence),
+          "HDC licence postponed",
+          deactivateInProgressVersions = false,
+        ),
+      ).thenAnswer {
+        approvedLicence.statusCode = INACTIVE
+        null
+      }
+
+      // When
+      service.postponeLicence("A1234BC")
+
+      // Then
+      assertThat(approvedLicence.statusCode).isEqualTo(INACTIVE)
+      assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
+      assertThat(editLicence.approvedByUsername).isNull()
+      assertThat(editLicence.approvedByName).isNull()
+      assertThat(editLicence.approvedDate).isNull()
+      assertThat(editLicence.supersededDate).isNull()
+      verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
+      verify(auditService).recordAuditEventHdcLicencePostponed(editLicence, SUBMITTED)
+      verify(hdcPostponementRepository, times(2)).save(any())
+    }
+
+    @Test
+    fun `inactivates an approved HDC licence and leaves an already IN_PROGRESS edit licence unchanged`() {
+      // Given
+      val approvedLicence = createHdcLicence(id = 123L)
+      approvedLicence.statusCode = APPROVED
+      approvedLicence.nomsId = "A1234BC"
+
+      val editLicence = createHdcLicence(id = 456L)
+      editLicence.statusCode = IN_PROGRESS
+      editLicence.nomsId = "A1234BC"
+
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
+      whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
+      whenever(hdcPostponementRepository.findByLicenceId(approvedLicence.id)).thenReturn(null)
+      whenever(
+        licenceService.inactivateLicences(
+          listOf(approvedLicence),
+          "HDC licence postponed",
+          deactivateInProgressVersions = false,
+        ),
+      ).thenAnswer {
+        approvedLicence.statusCode = INACTIVE
+        null
+      }
+
+      // When
+      service.postponeLicence("A1234BC")
+
+      // Then
+      assertThat(approvedLicence.statusCode).isEqualTo(INACTIVE)
+      assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
+      verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
+      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
+      verify(hdcPostponementRepository, times(2)).save(any())
+    }
+
+    @Test
+    fun `transitions HDC licence from SUBMITTED to IN_PROGRESS`() {
+      // Given
+      val hdcLicence = createHdcLicence(id = 456L)
+      hdcLicence.statusCode = SUBMITTED
+      hdcLicence.nomsId = "A1234BC"
+      hdcLicence.approvedByUsername = "approver"
+      hdcLicence.approvedByName = "Approver Name"
+      hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
+      whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
+
+      // When
+      service.postponeLicence("A1234BC")
+
+      // Then
+      assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
+      verify(auditService).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
+      verify(auditService).recordAuditEventHdcLicencePostponed(hdcLicence, SUBMITTED)
+      verify(hdcPostponementRepository).save(any())
+    }
+
+    @Test
+    fun `does not process when licence not found`() {
+      // Given
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(emptyList())
+
+      // When
+      service.postponeLicence("A1234BC")
+
+      // Then
+      verify(auditService, never()).recordAuditEventHdcLicencePostponementChange(any(), any())
+      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
+    }
+
+    @Test
+    fun `does not update or audit when HDC licence is already IN_PROGRESS`() {
+      // Given
+      val hdcLicence = createHdcLicence(id = 789L)
+      hdcLicence.statusCode = IN_PROGRESS
+      hdcLicence.nomsId = "A1234BC"
+      hdcLicence.approvedByUsername = "approver"
+      hdcLicence.approvedByName = "Approver Name"
+      hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
+      val originalUpdatedAt = hdcLicence.dateLastUpdated
+
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
+      whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
+
+      // When
+      service.postponeLicence("A1234BC")
+
+      // Then
+      assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
+      assertThat(hdcLicence.approvedByUsername).isEqualTo("approver")
+      assertThat(hdcLicence.approvedByName).isEqualTo("Approver Name")
+      assertThat(hdcLicence.approvedDate).isEqualTo(LocalDateTime.of(2024, 1, 10, 9, 0))
+      assertThat(hdcLicence.dateLastUpdated).isEqualTo(originalUpdatedAt)
+      verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
+      verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
+      verify(hdcPostponementRepository).save(any())
+    }
   }
 }
