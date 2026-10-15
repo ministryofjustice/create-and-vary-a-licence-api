@@ -48,8 +48,8 @@ export DB_NAME=create-and-vary-a-licence-db
 export DB_USER=cvl
 export DB_PASS=cvl
 
-export SPRINGDOC_API-DOCS_ENABLED=true
-export SPRINGDOC_SWAGGER-UI_ENABLED=true
+export SPRINGDOC_API_DOCS_ENABLED=true
+export SPRINGDOC_SWAGGER_UI_ENABLED=true
 
 # Provide Notify details to access Notify
 # Match with the API key in hmpps-auth set for its dev profile
