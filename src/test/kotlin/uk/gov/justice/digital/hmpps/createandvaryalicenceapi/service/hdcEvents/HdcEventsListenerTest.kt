@@ -71,7 +71,7 @@ class HdcEventsListenerTest {
       reason = "HDC application refused",
     )
     val eventJson = mapper.writeValueAsString(event)
-    val message = GenericMessage(eventJson, mapOf("eventType" to "REFUSED"))
+    val message = GenericMessage(eventJson, mapOf("eventType" to "REFUSE"))
 
     listener.onMessage(message)
 

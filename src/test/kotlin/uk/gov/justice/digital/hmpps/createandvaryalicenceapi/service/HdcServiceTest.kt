@@ -149,9 +149,9 @@ class HdcServiceTest {
     "IN_PROGRESS, OPT_OUT",
     "SUBMITTED, OPT_OUT",
     "APPROVED, OPT_OUT",
-    "IN_PROGRESS, REFUSED",
-    "SUBMITTED, REFUSED",
-    "APPROVED, REFUSED",
+    "IN_PROGRESS, REFUSE",
+    "SUBMITTED, REFUSE",
+    "APPROVED, REFUSE",
   )
   fun `convertToCrdLicence creates an in progress CRD copy audits the conversion and inactivates the HDC licence`(
     status: LicenceStatus,
@@ -192,12 +192,12 @@ class HdcServiceTest {
 
     verify(licenceService).createLicenceEvent(
       licenceId = hdcLicence.id,
-      eventType = if (eventType == HdcCvlEventType.REFUSED) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
+      eventType = if (eventType == HdcCvlEventType.REFUSE) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
       eventDescription = "This HDC licence was converted to CRD licence on ${eventType.name}",
     )
     verify(licenceService).createLicenceEvent(
       licenceId = populatedCrd.id,
-      eventType = if (eventType == HdcCvlEventType.REFUSED) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
+      eventType = if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
       eventDescription = "This CRD Licence was converted from Hdc a licence on ${eventType.name}",
     )
     verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(hdcLicence.id, populatedCrd.id)
@@ -208,8 +208,8 @@ class HdcServiceTest {
   @CsvSource(
     "IN_PROGRESS, OPT_OUT",
     "SUBMITTED, OPT_OUT",
-    "IN_PROGRESS, REFUSED",
-    "SUBMITTED, REFUSED",
+    "IN_PROGRESS, REFUSE",
+    "SUBMITTED, REFUSE",
   )
   fun `convertToCrdLicence converts only the edit to an in progress CRD licence and inactivates both HDC versions`(
     editStatus: LicenceStatus,
@@ -237,12 +237,12 @@ class HdcServiceTest {
       .containsOnly("Old ID 2, new ID 3 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
     verify(licenceService).createLicenceEvent(
       licenceId = edit.id,
-      eventType = if (eventType == HdcCvlEventType.REFUSED) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
+      eventType = if (eventType == HdcCvlEventType.REFUSE) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
       eventDescription = "This HDC licence was converted to CRD licence on ${eventType.name}",
     )
     verify(licenceService).createLicenceEvent(
       licenceId = populatedCrd.id,
-      eventType = if (eventType == HdcCvlEventType.REFUSED) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
+      eventType = if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
       eventDescription = "This CRD Licence was converted from Hdc a licence on ${eventType.name}",
     )
     verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(edit.id, populatedCrd.id)

@@ -36,8 +36,8 @@ class HdcStatusChangedHandler(
 
   fun handleRefused(message: String) {
     val event = parseEvent(message)
-    hdcService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.REFUSED)
-    logEventProcessed(HdcCvlEventType.REFUSED, event)
+    hdcService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.REFUSE)
+    logEventProcessed(HdcCvlEventType.REFUSE, event)
   }
 
   fun handlePostpone(message: String) {

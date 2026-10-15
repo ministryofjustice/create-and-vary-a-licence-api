@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
@@ -433,7 +433,7 @@ class HdcService(
   ) {
     val (inactiveEventType, createdEventType) = when (eventType) {
       OPT_OUT -> Pair(INACTIVE_WHEN_HDC_OPT_OUT, CRD_CREATED_WHEN_HDC_OPT_OUT)
-      REFUSED -> Pair(INACTIVE_WHEN_HDC_REFUSED, CRD_CREATED_WHEN_HDC_REFUSED)
+      REFUSE -> Pair(INACTIVE_WHEN_HDC_REFUSED, CRD_CREATED_WHEN_HDC_REFUSED)
       else -> throw IllegalArgumentException("Unknown HDC conversion event type $eventType")
     }
 

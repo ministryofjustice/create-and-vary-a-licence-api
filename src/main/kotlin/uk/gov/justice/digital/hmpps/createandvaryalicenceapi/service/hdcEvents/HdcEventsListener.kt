@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.POSTPONE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.RESUME
 
 @ConditionalOnProperty(name = ["hdc.event.listener.enabled"], havingValue = "true", matchIfMissing = true)
@@ -31,7 +31,7 @@ class HdcEventsListener(
       log.debug("Successfully parsed HDC event | eventType={} | licenceId={}", eventType, event.licenceId)
       when (eventType) {
         OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
-        REFUSED -> hdcStatusChangedHandler.handleRefused(rawMessage)
+        REFUSE -> hdcStatusChangedHandler.handleRefused(rawMessage)
         POSTPONE -> hdcStatusChangedHandler.handlePostpone(rawMessage)
         RESUME -> hdcStatusChangedHandler.handleResume(rawMessage)
       }

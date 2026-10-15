@@ -107,9 +107,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     "IN_PROGRESS, OPT_OUT",
     "SUBMITTED, OPT_OUT",
     "APPROVED, OPT_OUT",
-    "IN_PROGRESS, REFUSED",
-    "SUBMITTED, REFUSED",
-    "APPROVED, REFUSED",
+    "IN_PROGRESS, REFUSE",
+    "SUBMITTED, REFUSE",
+    "APPROVED, REFUSE",
   )
   fun `An HDC conversion event converts a single eligible HDC licence to an in progress CRD licence`(
     status: LicenceStatus,
@@ -148,7 +148,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         ),
         tuple(
           1L,
-          if (eventType == HdcCvlEventType.REFUSED) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
+          if (eventType == HdcCvlEventType.REFUSE) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
           "SYSTEM_USER",
           "SYSTEM",
           "SYSTEM",
@@ -156,7 +156,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         ),
         tuple(
           2L,
-          if (eventType == HdcCvlEventType.REFUSED) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
+          if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
           "SYSTEM_USER",
           "SYSTEM",
           "SYSTEM",
@@ -178,8 +178,8 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
   @CsvSource(
     "IN_PROGRESS, OPT_OUT",
     "SUBMITTED, OPT_OUT",
-    "IN_PROGRESS, REFUSED",
-    "SUBMITTED, REFUSED",
+    "IN_PROGRESS, REFUSE",
+    "SUBMITTED, REFUSE",
   )
   fun `An HDC conversion event converts only the edit and inactivates the previously approved HDC licence`(
     editStatus: LicenceStatus,
@@ -217,8 +217,8 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .containsExactly(
         tuple(1L, SUPERSEDED),
         tuple(2L, SUPERSEDED),
-        tuple(2L, if (eventType == HdcCvlEventType.REFUSED) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT),
-        tuple(3L, if (eventType == HdcCvlEventType.REFUSED) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT),
+        tuple(2L, if (eventType == HdcCvlEventType.REFUSE) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT),
+        tuple(3L, if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT),
       )
 
     val allAudits = testRepository.findAllAuditEvents().sortedBy { it.licenceId }
