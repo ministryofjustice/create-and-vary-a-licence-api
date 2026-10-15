@@ -149,7 +149,7 @@ class HdcServiceTest {
     val populatedCrd = crdToPopulate.copy(id = 2)
     val auditCaptor = argumentCaptor<AuditEvent>()
 
-    whenever(hdcLicenceRepository.getLicenceEligibleForCrdConversion("A1234AA")).thenReturn(listOf(hdcLicence))
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234AA")).thenReturn(listOf(hdcLicence))
     whenever(crdLicenceFactory.createFromHdc(hdcLicence, IN_PROGRESS)).thenReturn(crdToPopulate)
     whenever(licenceService.populateCopy(hdcLicence, crdToPopulate)).thenReturn(populatedCrd)
 
@@ -195,12 +195,12 @@ class HdcServiceTest {
   fun `convertToCrdLicence converts only the edit to an in progress CRD licence and inactivates both HDC versions`(editStatus: LicenceStatus) {
     val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA", statusCode = APPROVED)
     val edit = approvedLicence.copy(id = 2, versionOfId = approvedLicence.id, statusCode = editStatus)
-    val licences = listOf(approvedLicence, edit)
+    val licences = listOf(edit, approvedLicence)
     val crdToPopulate = createCrdLicence().copy(id = null, versionOfId = edit.id)
     val populatedCrd = crdToPopulate.copy(id = 3)
     val auditCaptor = argumentCaptor<AuditEvent>()
 
-    whenever(hdcLicenceRepository.getLicenceEligibleForCrdConversion("A1234AA")).thenReturn(licences)
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234AA")).thenReturn(licences)
     whenever(crdLicenceFactory.createFromHdc(edit, IN_PROGRESS)).thenReturn(crdToPopulate)
     whenever(licenceService.populateCopy(edit, crdToPopulate)).thenReturn(populatedCrd)
 
@@ -229,7 +229,7 @@ class HdcServiceTest {
 
   @Test
   fun `convertToCrdLicence does nothing when there are no eligible HDC licences`() {
-    whenever(hdcLicenceRepository.getLicenceEligibleForCrdConversion("A1234AA")).thenReturn(emptyList())
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234AA")).thenReturn(emptyList())
 
     service.convertToCrdLicence("A1234AA")
 
@@ -612,7 +612,7 @@ class HdcServiceTest {
   @Test
   fun `already IN_PROGRESS HDC postpone records current postponement state once`() {
     val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = IN_PROGRESS)
-    whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(hdcLicence))
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
 
     service.postponeLicence("A1234BC")
 
@@ -623,7 +623,7 @@ class HdcServiceTest {
   @Test
   fun `resume HDC postponement clears the current postponed state`() {
     val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC")
-    whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(hdcLicence))
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
 
     service.resumeHdcPostponement("A1234BC")
 
@@ -634,7 +634,7 @@ class HdcServiceTest {
   @Test
   fun `records postponement when only an approved HDC licence exists`() {
     val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = APPROVED)
-    whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(approvedLicence))
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence))
 
     service.postponeLicence("A1234BC")
 
@@ -648,7 +648,7 @@ class HdcServiceTest {
   fun `postpone with approved and submitted licences inactivates the approved licence and reverts the submitted edit`() {
     val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = APPROVED)
     val submittedEdit = createHdcLicence(id = 2).copy(nomsId = "A1234BC", statusCode = SUBMITTED)
-    whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(submittedEdit, approvedLicence))
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(submittedEdit, approvedLicence))
     whenever(
       licenceService.inactivateLicences(
         listOf(approvedLicence),
@@ -1071,7 +1071,7 @@ class HdcServiceTest {
       editLicence.approvedByName = "Approver Name"
       editLicence.approvedDate = LocalDateTime.of(2024, 1, 11, 9, 0)
 
-      whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
       whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
       whenever(
         licenceService.inactivateLicences(
@@ -1110,7 +1110,7 @@ class HdcServiceTest {
       editLicence.statusCode = IN_PROGRESS
       editLicence.nomsId = "A1234BC"
 
-      whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
       whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
       whenever(hdcPostponementRepository.findByLicenceId(approvedLicence.id)).thenReturn(null)
 
@@ -1134,7 +1134,7 @@ class HdcServiceTest {
       hdcLicence.approvedByUsername = "approver"
       hdcLicence.approvedByName = "Approver Name"
       hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
-      whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(hdcLicence))
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
       whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
@@ -1150,7 +1150,7 @@ class HdcServiceTest {
     @Test
     fun `does not process when licence not found`() {
       // Given
-      whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(emptyList())
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(emptyList())
 
       // When
       service.postponeLicence("A1234BC")
@@ -1171,7 +1171,7 @@ class HdcServiceTest {
       hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
       val originalUpdatedAt = hdcLicence.dateLastUpdated
 
-      whenever(hdcLicenceRepository.findHdcLicencesEligibleForPostpone("A1234BC")).thenReturn(listOf(hdcLicence))
+      whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
       whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
