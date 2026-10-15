@@ -34,7 +34,7 @@ class HdcStatusChangedHandler(
     logEventProcessed(HdcCvlEventType.OPT_OUT, event)
   }
 
-  fun handleRefused(message: String) {
+  fun handleRefuse(message: String) {
     val event = parseEvent(message)
     hdcService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.REFUSE)
     logEventProcessed(HdcCvlEventType.REFUSE, event)

@@ -200,7 +200,11 @@ class HdcServiceTest {
       eventType = if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
       eventDescription = "This CRD Licence was converted from Hdc a licence on ${eventType.name}",
     )
-    verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(hdcLicence.id, populatedCrd.id)
+    if (eventType == HdcCvlEventType.OPT_OUT) {
+      verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(hdcLicence.id, populatedCrd.id)
+    } else {
+      verify(licenceLinkingService).setCrdReplacementForRefusedLicence(hdcLicence.id, populatedCrd.id)
+    }
     verifyNoMoreInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
@@ -245,7 +249,11 @@ class HdcServiceTest {
       eventType = if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
       eventDescription = "This CRD Licence was converted from Hdc a licence on ${eventType.name}",
     )
-    verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(edit.id, populatedCrd.id)
+    if (eventType == HdcCvlEventType.OPT_OUT) {
+      verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(edit.id, populatedCrd.id)
+    } else {
+      verify(licenceLinkingService).setCrdReplacementForRefusedLicence(edit.id, populatedCrd.id)
+    }
     verifyNoMoreInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 

@@ -9,6 +9,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkT
 @Repository
 interface LicenceLinkRepository : JpaRepository<LicenceLink, Long> {
 
+  @Query("SELECT DISTINCT l.linkType FROM LicenceLink l WHERE l.toLicenceId = :licenceId")
+  fun findLinkTypesByToLicenceId(licenceId: Long): Set<LicenceLinkType>
+
   fun existsByToLicenceIdAndLinkType(
     toLicenceId: Long,
     linkType: LicenceLinkType,

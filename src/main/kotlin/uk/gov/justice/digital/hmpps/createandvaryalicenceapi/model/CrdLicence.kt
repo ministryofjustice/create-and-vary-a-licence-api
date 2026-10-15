@@ -323,6 +323,9 @@ data class CrdLicence(
   @field:Schema(description = "Is this licence a replacement for an opted out licence?", example = "true")
   val isReplacementForOptedOutLicence: Boolean = false,
 
+  @field:Schema(description = "Is this licence a replacement for a refused HDC licence?", example = "true")
+  val isReplacementForRefusedLicence: Boolean = false,
+
   @field:Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
   override val submittedByFullName: String? = null,
 

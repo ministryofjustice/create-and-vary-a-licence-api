@@ -479,9 +479,11 @@ fun toCrd(
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
   isReplacementForOptedOutLicence: Boolean,
+  isReplacementForRefusedLicence: Boolean,
 ) = ModelCrdLicence(
   id = licence.id,
   isReplacementForOptedOutLicence = isReplacementForOptedOutLicence,
+  isReplacementForRefusedLicence = isReplacementForRefusedLicence,
   typeCode = licence.typeCode,
   version = licence.version,
   statusCode = licence.statusCode,

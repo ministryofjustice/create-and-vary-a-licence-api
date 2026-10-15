@@ -163,6 +163,7 @@ class PublicLicenceControllerTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       conditionPolicyData = emptyMap(),
       isReplacementForOptedOutLicence = false,
+      isReplacementForRefusedLicence = false,
     ).copy(additionalLicenceConditions = someModelAdditionalConditions()).transformToPublicLicence()
 
     val aLicenceSummary = PublicLicenceSummary(

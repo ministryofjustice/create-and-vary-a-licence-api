@@ -59,7 +59,7 @@ class HdcStatusChangedHandlerTest {
 
   @Test
   fun `handleRefused processes event`() {
-    handler.handleRefused(eventJson)
+    handler.handleRefuse(eventJson)
 
     verify(hdcService).convertToCrdLicence("A1234BC", HdcCvlEventType.REFUSE)
   }

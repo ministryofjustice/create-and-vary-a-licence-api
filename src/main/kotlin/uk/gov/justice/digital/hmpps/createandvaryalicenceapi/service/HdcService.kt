@@ -355,7 +355,19 @@ class HdcService(
 
       addConversionAudits(licenceToConvert, newLicence, eventType)
       addLicenceConversionEvents(licenceToConvert, newLicence, eventType)
+      addLicenceLinking(eventType, licenceToConvert, newLicence)
+    }
+  }
+
+  private fun addLicenceLinking(
+    eventType: HdcCvlEventType,
+    licenceToConvert: HdcLicenceEntity,
+    newLicence: Licence,
+  ) {
+    if (eventType == OPT_OUT) {
       linkingService.setCrdReplacementForOptedOutLicence(licenceToConvert.id, newLicence.id)
+    } else if (eventType == REFUSE) {
+      linkingService.setCrdReplacementForRefusedLicence(licenceToConvert.id, newLicence.id)
     }
   }
 
