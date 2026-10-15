@@ -29,6 +29,7 @@ class HdcEventsListener(
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
         HdcCvlEventType.POSTPONE -> hdcStatusChangedHandler.handlePostpone(rawMessage)
         HdcCvlEventType.RESUME -> hdcStatusChangedHandler.handleResume(rawMessage)
+        HdcCvlEventType.REFUSE -> log.info("HDC refuse event received | licenceId={}", event.licenceId)
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)

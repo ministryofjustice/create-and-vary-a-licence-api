@@ -4,4 +4,5 @@ enum class HdcCvlEventType {
   OPT_OUT,
   POSTPONE,
   RESUME,
+  REFUSE,
 }

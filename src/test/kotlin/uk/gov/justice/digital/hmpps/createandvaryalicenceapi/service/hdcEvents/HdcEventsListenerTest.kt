@@ -7,6 +7,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.messaging.support.GenericMessage
 import tools.jackson.databind.ObjectMapper
 import java.time.LocalDateTime
@@ -102,5 +103,25 @@ class HdcEventsListenerTest {
     val captor = argumentCaptor<String>()
     verify(handler).handleResume(captor.capture())
     assertThat(captor.firstValue).isEqualTo(eventJson)
+  }
+
+  @Test
+  fun `onMessage processes REFUSE event without invoking the handler`() {
+    val event = HdcStatusChangedEvent(
+      occurredAt = LocalDateTime.now(),
+      licenceId = 123L,
+      bookingId = 456L,
+      nomsNumber = "A1234BC",
+      triggeredBy = "test.user",
+      reason = "Test",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+
+    val headers = mapOf<String, Any>("eventType" to "REFUSE").toMutableMap()
+    val message = GenericMessage(eventJson, headers)
+
+    listener.onMessage(message)
+
+    verifyNoInteractions(handler)
   }
 }
