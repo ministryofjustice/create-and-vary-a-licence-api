@@ -356,7 +356,19 @@ class HdcService(
 
       addConversionAudits(licenceToConvert, newLicence, eventType)
       addLicenceConversionEvents(licenceToConvert, newLicence, eventType)
+      addLicenceLinking(eventType, licenceToConvert, newLicence)
+    }
+  }
+
+  private fun addLicenceLinking(
+    eventType: HdcCvlEventType,
+    licenceToConvert: HdcLicenceEntity,
+    newLicence: Licence,
+  ) {
+    if (eventType == OPT_OUT) {
       linkingService.setCrdReplacementForOptedOutLicence(licenceToConvert.id, newLicence.id)
+    } else if (eventType == REFUSE) {
+      linkingService.setCrdReplacementForRefusedLicence(licenceToConvert.id, newLicence.id)
     }
   }
 
@@ -477,14 +489,15 @@ class HdcService(
     auditService.recordAuditEvent(auditForChild)
   }
 
-  private fun revertLicenceToInProgress(licence: HdcLicenceEntity) {
-    val previousStatus = licence.statusCode
-    licence.statusCode = IN_PROGRESS
-    licence.approvedByUsername = null
-    licence.approvedByName = null
-    licence.approvedDate = null
-    licence.supersededDate = null
-    if (previousStatus != IN_PROGRESS) {
+  internal fun revertLicenceToInProgress(licence: HdcLicenceEntity) {
+    if (licence.statusCode != IN_PROGRESS) {
+      val previousStatus = licence.statusCode
+      licence.statusCode = IN_PROGRESS
+      licence.approvedByUsername = null
+      licence.approvedByName = null
+      licence.approvedDate = null
+      licence.supersededDate = null
+
       auditService.recordAuditEventHdcLicencePostponed(licence, previousStatus)
     }
   }

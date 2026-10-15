@@ -11,6 +11,7 @@ import java.time.LocalDateTime
 
 enum class LicenceLinkType {
   CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
+  CRD_REPLACEMENT_FOR_REFUSED_LICENCE,
 }
 
 @Entity

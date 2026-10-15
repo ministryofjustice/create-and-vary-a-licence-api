@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLink
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_REFUSED_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceLinkRepository
 
 @Service
@@ -24,10 +25,16 @@ class LicenceLinkingService(
     )
   }
 
-  fun isCrdReplacementForOptedOutLicence(licenceId: Long): Boolean = hasLinkTo(
-    licenceId,
-    CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
-  )
+  @Transactional
+  fun setCrdReplacementForRefusedLicence(hdcLicenceId: Long, crdLicenceId: Long) {
+    link(
+      hdcLicenceId,
+      CRD_REPLACEMENT_FOR_REFUSED_LICENCE,
+      crdLicenceId,
+    )
+  }
+
+  fun getLinkTypesToLicence(licenceId: Long): Set<LicenceLinkType> = licenceLinkRepository.findLinkTypesByToLicenceId(licenceId)
 
   private fun hasLinkTo(
     toLicenceId: Long,
@@ -53,18 +60,6 @@ class LicenceLinkingService(
         toLicenceId = toLicenceId,
         linkType = linkType,
       ),
-    )
-  }
-
-  private fun hasLinkFrom(
-    fromLicenceId: Long,
-    linkType: LicenceLinkType,
-  ): Boolean {
-    log.debug("Checking if licence {} has from link for type {}", fromLicenceId, linkType)
-
-    return licenceLinkRepository.existsByFromLicenceIdAndLinkType(
-      fromLicenceId,
-      linkType,
     )
   }
 

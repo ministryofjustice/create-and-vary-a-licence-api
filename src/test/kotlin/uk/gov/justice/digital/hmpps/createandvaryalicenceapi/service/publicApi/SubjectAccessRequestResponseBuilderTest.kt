@@ -347,6 +347,7 @@ class SubjectAccessRequestResponseBuilderTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       conditionPolicyData = emptyMap(),
       isReplacementForOptedOutLicence = false,
+      isReplacementForRefusedLicence = false,
     )
     private val hdcLicence = toHdc(
       licence = createHdcLicence(1),

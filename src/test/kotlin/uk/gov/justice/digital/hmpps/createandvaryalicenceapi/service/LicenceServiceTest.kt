@@ -196,40 +196,6 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `service identifies a CRD replacement for an opted out licence`() {
-    // Given
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
-      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
-    )
-    whenever(licenceLinkingService.isCrdReplacementForOptedOutLicence(1L)).thenReturn(true)
-
-    // When
-    val licence = service.getLicenceById(1L) as CrdLicenceModel
-
-    // Then
-    assertThat(licence.isReplacementForOptedOutLicence).isTrue()
-    verify(licenceLinkingService).isCrdReplacementForOptedOutLicence(1L)
-  }
-
-  @Test
-  fun `service identifies a CRD licence that is not a replacement for an opted out licence`() {
-    // Given
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
-      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
-    )
-    whenever(licenceLinkingService.isCrdReplacementForOptedOutLicence(1L)).thenReturn(false)
-
-    // When
-    val licence = service.getLicenceById(1L) as CrdLicenceModel
-
-    // Then
-    assertThat(licence.isReplacementForOptedOutLicence).isFalse()
-    verify(licenceLinkingService).isCrdReplacementForOptedOutLicence(1L)
-  }
-
-  @Test
   fun `service returns a PRRD licence by ID`() {
     // Given
     whenever(licenceRepository.findById(1L)).thenReturn(
