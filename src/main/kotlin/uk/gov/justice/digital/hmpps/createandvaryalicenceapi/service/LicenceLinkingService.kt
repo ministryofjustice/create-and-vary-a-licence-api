@@ -63,18 +63,6 @@ class LicenceLinkingService(
     )
   }
 
-  private fun hasLinkFrom(
-    fromLicenceId: Long,
-    linkType: LicenceLinkType,
-  ): Boolean {
-    log.debug("Checking if licence {} has from link for type {}", fromLicenceId, linkType)
-
-    return licenceLinkRepository.existsByFromLicenceIdAndLinkType(
-      fromLicenceId,
-      linkType,
-    )
-  }
-
   fun checkIfLicenceIdsAreCrdReplacementForOptedOutLicence(possibleCrdReplacementForOptedOutLicence: List<Long>): Set<Long> = licenceLinkRepository.findToLicenceIdsByLicenceIdsAndLinkType(
     possibleCrdReplacementForOptedOutLicence,
     CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
