@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -331,12 +332,15 @@ class HdcService(
 
   @Transactional
   fun convertToCrdLicence(nomsNumber: String) {
-    val licences = hdcLicenceRepository.getLicenceEligibleForCrdConversion(nomsNumber)
-    if (licences.isNotEmpty()) {
-      val reason = "Licence automatically inactivated after HDC opt out event"
-      licenceService.inactivateLicences(licences, reason = reason, deactivateInProgressVersions = true)
+    val licencesByStatus = getHdcLicencesByInflightStatusMap(nomsNumber)
+    if (licencesByStatus.isNotEmpty()) {
+      val licenceToConvert = licencesByStatus[IN_PROGRESS]
+        ?: licencesByStatus[SUBMITTED]
+        ?: requireNotNull(licencesByStatus[APPROVED])
 
-      val licenceToConvert = licences.last()
+      val reason = "Licence automatically inactivated after HDC opt out event"
+      licenceService.inactivateLicences(licencesByStatus.values.toList(), reason = reason, deactivateInProgressVersions = true)
+
       val crdCopy = crdLicenceFactory.createFromHdc(licenceToConvert, IN_PROGRESS)
 
       val newLicence = licenceService.populateCopy(
@@ -348,6 +352,73 @@ class HdcService(
 
       linkingService.setCrdReplacementForOptedOutLicence(licenceToConvert.id, newLicence.id)
     }
+  }
+
+  @Transactional
+  fun postponeLicence(nomsNumber: String) {
+    val licencesByStatus = getHdcLicencesByInflightStatusMap(nomsNumber)
+
+    if (licencesByStatus.isEmpty()) {
+      log.info("HDC postpone: no eligible HDC licence found for nomsNumber={}", nomsNumber)
+      return
+    }
+
+    licencesByStatus.values.forEach { recordPostponement(it, isPostponed = true) }
+
+    val approvedLicence = licencesByStatus[APPROVED]
+    val submittedLicence = licencesByStatus[SUBMITTED]
+
+    submittedLicence?.let { submitted ->
+      approvedLicence?.let { approved ->
+        licenceService.inactivateLicences(
+          listOf(approved),
+          reason = "HDC licence postponed",
+          deactivateInProgressVersions = false,
+        )
+      }
+
+      revertLicenceToInProgress(submitted)
+      return
+    }
+
+    approvedLicence?.let(::revertLicenceToInProgress)
+  }
+
+  @Transactional
+  fun resumeHdcPostponement(nomsNumber: String) {
+    val licencesByStatus = getHdcLicencesByInflightStatusMap(nomsNumber)
+    if (licencesByStatus.isEmpty()) {
+      log.warn("HDC resume: no eligible HDC licence found for nomsNumber={}", nomsNumber)
+      return
+    }
+
+    licencesByStatus.values.forEach { recordPostponement(it, isPostponed = false) }
+    log.info("HDC resume: cleared postponement state for nomsNumber={}", nomsNumber)
+  }
+
+  private fun getHdcLicencesByInflightStatusMap(nomsNumber: String): Map<LicenceStatus, HdcLicenceEntity> {
+    val licences = hdcLicenceRepository.findInFlightHdcLicences(nomsNumber)
+    return licences.associateBy { it.statusCode }
+  }
+
+  private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean) {
+    val operation = if (isPostponed) "Postponing" else "Resuming"
+    log.info("{} HDC licence, id: '{}', status: '{}', for prisoner: '{}'", operation, licence.id, licence.statusCode, licence.nomsId)
+    val existing = hdcPostponementRepository.findByLicenceId(licence.id)
+
+    if (existing != null) {
+      existing.isPostponed = isPostponed
+      existing.dateLastUpdated = LocalDateTime.now()
+    } else {
+      hdcPostponementRepository.save(
+        HdcPostponement(
+          licence = licence,
+          isPostponed = isPostponed,
+        ),
+      )
+    }
+
+    auditService.recordAuditEventHdcLicencePostponementChange(licence, isPostponed)
   }
 
   private fun addLicenceOptOutEvents(
@@ -393,70 +464,6 @@ class HdcService(
     auditService.recordAuditEvent(auditForChild)
   }
 
-  @Transactional
-  fun postponeLicence(nomsNumber: String) {
-    val licences = hdcLicenceRepository.findHdcLicencesEligibleForPostpone(nomsNumber)
-
-    if (licences.isEmpty()) {
-      log.info("HDC postpone: no eligible HDC licence found for nomsNumber={}", nomsNumber)
-      return
-    }
-
-    licences.forEach { recordPostponement(it, isPostponed = true) }
-
-    val licencesByStatus = licences.associateBy { it.statusCode }
-
-    val approvedLicence = licencesByStatus[APPROVED]
-    val submittedLicence = licencesByStatus[SUBMITTED]
-
-    submittedLicence?.let { submitted ->
-      approvedLicence?.let { approved ->
-        licenceService.inactivateLicences(
-          listOf(approved),
-          reason = "HDC licence postponed",
-          deactivateInProgressVersions = false,
-        )
-      }
-
-      revertLicenceToInProgress(submitted)
-      return
-    }
-
-    approvedLicence?.let(::revertLicenceToInProgress)
-  }
-
-  @Transactional
-  fun resumeHdcPostponement(nomsNumber: String) {
-    val licences = hdcLicenceRepository.findHdcLicencesEligibleForPostpone(nomsNumber)
-    if (licences.isEmpty()) {
-      log.warn("HDC resume: no eligible HDC licence found for nomsNumber={}", nomsNumber)
-      return
-    }
-
-    licences.forEach { recordPostponement(it, isPostponed = false) }
-    log.info("HDC resume: cleared postponement state for nomsNumber={}", nomsNumber)
-  }
-
-  private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean) {
-    val operation = if (isPostponed) "Postponing" else "Resuming"
-    log.info("{} HDC licence, id: '{}', status: '{}', for prisoner: '{}'", operation, licence.id, licence.statusCode, licence.nomsId)
-    val existing = hdcPostponementRepository.findByLicenceId(licence.id)
-
-    if (existing != null) {
-      existing.isPostponed = isPostponed
-      existing.dateLastUpdated = LocalDateTime.now()
-    } else {
-      hdcPostponementRepository.save(
-        HdcPostponement(
-          licence = licence,
-          isPostponed = isPostponed,
-        ),
-      )
-    }
-
-    auditService.recordAuditEventHdcLicencePostponementChange(licence, isPostponed)
-  }
-
   private fun revertLicenceToInProgress(licence: HdcLicenceEntity) {
     val previousStatus = licence.statusCode
     licence.statusCode = IN_PROGRESS
@@ -464,6 +471,8 @@ class HdcService(
     licence.approvedByName = null
     licence.approvedDate = null
     licence.supersededDate = null
-    auditService.recordAuditEventHdcLicencePostponed(licence, previousStatus)
+    if (previousStatus != IN_PROGRESS) {
+      auditService.recordAuditEventHdcLicencePostponed(licence, previousStatus)
+    }
   }
 }
