@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
@@ -55,9 +56,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.CurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.FirstNight
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_REFUSED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_REFUSED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -141,8 +145,19 @@ class HdcServiceTest {
   }
 
   @ParameterizedTest
-  @EnumSource(LicenceStatus::class, names = ["IN_PROGRESS", "SUBMITTED", "APPROVED"])
-  fun `convertToCrdLicence creates an in progress CRD copy audits the conversion and inactivates the HDC licence`(status: LicenceStatus) {
+  @CsvSource(
+    "IN_PROGRESS, OPT_OUT, OPT_OUT",
+    "SUBMITTED, OPT_OUT, OPT_OUT",
+    "APPROVED, OPT_OUT, OPT_OUT",
+    "IN_PROGRESS, REFUSED, REFUSED",
+    "SUBMITTED, REFUSED, REFUSED",
+    "APPROVED, REFUSED, REFUSED",
+  )
+  fun `convertToCrdLicence creates an in progress CRD copy audits the conversion and inactivates the HDC licence`(
+    status: LicenceStatus,
+    eventType: HdcCvlEventType,
+    description: String,
+  ) {
     // Given
     val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA", statusCode = status)
     val crdToPopulate = createCrdLicence().copy(id = null, versionOfId = hdcLicence.id)
@@ -154,45 +169,54 @@ class HdcServiceTest {
     whenever(licenceService.populateCopy(hdcLicence, crdToPopulate)).thenReturn(populatedCrd)
 
     // When
-    service.convertToCrdLicence("A1234AA")
+    service.convertToCrdLicence("A1234AA", eventType)
 
     // Then
     verify(crdLicenceFactory).createFromHdc(hdcLicence, IN_PROGRESS)
     verify(licenceService).populateCopy(hdcLicence, crdToPopulate)
-    verify(licenceService).inactivateLicences(listOf(hdcLicence), "Licence automatically inactivated after HDC opt out event", deactivateInProgressVersions = true)
+    verify(licenceService).inactivateLicences(listOf(hdcLicence), "Licence automatically inactivated after HDC ${description.lowercase()} event", deactivateInProgressVersions = true)
     verify(auditService, times(2)).recordAuditEvent(auditCaptor.capture())
 
     val hdcAuditEvent = auditCaptor.firstValue
     assertThat(hdcAuditEvent.licenceId).isEqualTo(hdcLicence.id)
     assertThat(hdcAuditEvent.summary)
-      .isEqualTo("Hdc licence converted to CRD licence on Opt Out")
+      .isEqualTo("Hdc licence converted to CRD licence on $description")
     assertThat(hdcAuditEvent.detail)
       .isEqualTo("Old ID 1, new ID 2 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
 
     val crdAuditEvent = auditCaptor.secondValue
     assertThat(crdAuditEvent.licenceId).isEqualTo(populatedCrd.id)
     assertThat(crdAuditEvent.summary)
-      .isEqualTo("CRD licence converted from HDC on Opt Out")
+      .isEqualTo("CRD licence converted from HDC on $description")
     assertThat(crdAuditEvent.detail)
       .isEqualTo("Old ID 1, new ID 2 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
 
     verify(licenceService).createLicenceEvent(
       licenceId = hdcLicence.id,
-      eventType = INACTIVE_WHEN_HDC_OPT_OUT,
-      eventDescription = "This HDC licence was converted to CRD licence on Opt Out",
+      eventType = if (eventType == HdcCvlEventType.REFUSED) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
+      eventDescription = "This HDC licence was converted to CRD licence on $description",
     )
     verify(licenceService).createLicenceEvent(
       licenceId = populatedCrd.id,
-      eventType = CRD_CREATED_WHEN_HDC_OPT_OUT,
-      eventDescription = "This CRD Licence was converted from Hdc a licence on Opt Out",
+      eventType = if (eventType == HdcCvlEventType.REFUSED) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
+      eventDescription = "This CRD Licence was converted from Hdc a licence on $description",
     )
     verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(hdcLicence.id, populatedCrd.id)
     verifyNoMoreInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
   @ParameterizedTest
-  @EnumSource(LicenceStatus::class, names = ["IN_PROGRESS", "SUBMITTED"])
-  fun `convertToCrdLicence converts only the edit to an in progress CRD licence and inactivates both HDC versions`(editStatus: LicenceStatus) {
+  @CsvSource(
+    "IN_PROGRESS, OPT_OUT, OPT_OUT",
+    "SUBMITTED, OPT_OUT, OPT_OUT",
+    "IN_PROGRESS, REFUSED, REFUSED",
+    "SUBMITTED, REFUSED, REFUSED",
+  )
+  fun `convertToCrdLicence converts only the edit to an in progress CRD licence and inactivates both HDC versions`(
+    editStatus: LicenceStatus,
+    eventType: HdcCvlEventType,
+    description: String,
+  ) {
     val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234AA", statusCode = APPROVED)
     val edit = approvedLicence.copy(id = 2, versionOfId = approvedLicence.id, statusCode = editStatus)
     val licences = listOf(edit, approvedLicence)
@@ -204,10 +228,10 @@ class HdcServiceTest {
     whenever(crdLicenceFactory.createFromHdc(edit, IN_PROGRESS)).thenReturn(crdToPopulate)
     whenever(licenceService.populateCopy(edit, crdToPopulate)).thenReturn(populatedCrd)
 
-    service.convertToCrdLicence("A1234AA")
+    service.convertToCrdLicence("A1234AA", eventType)
 
     verify(crdLicenceFactory).createFromHdc(edit, IN_PROGRESS)
-    verify(licenceService).inactivateLicences(licences, "Licence automatically inactivated after HDC opt out event", deactivateInProgressVersions = true)
+    verify(licenceService).inactivateLicences(licences, "Licence automatically inactivated after HDC ${description.lowercase()} event", deactivateInProgressVersions = true)
     verify(licenceService).populateCopy(edit, crdToPopulate)
     verify(auditService, times(2)).recordAuditEvent(auditCaptor.capture())
     assertThat(auditCaptor.allValues.map { it.licenceId }).containsExactly(edit.id, populatedCrd.id)
@@ -215,23 +239,24 @@ class HdcServiceTest {
       .containsOnly("Old ID 2, new ID 3 type ${populatedCrd.typeCode} status IN_PROGRESS version ${populatedCrd.version}")
     verify(licenceService).createLicenceEvent(
       licenceId = edit.id,
-      eventType = INACTIVE_WHEN_HDC_OPT_OUT,
-      eventDescription = "This HDC licence was converted to CRD licence on Opt Out",
+      eventType = if (eventType == HdcCvlEventType.REFUSED) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
+      eventDescription = "This HDC licence was converted to CRD licence on $description",
     )
     verify(licenceService).createLicenceEvent(
       licenceId = populatedCrd.id,
-      eventType = CRD_CREATED_WHEN_HDC_OPT_OUT,
-      eventDescription = "This CRD Licence was converted from Hdc a licence on Opt Out",
+      eventType = if (eventType == HdcCvlEventType.REFUSED) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
+      eventDescription = "This CRD Licence was converted from Hdc a licence on $description",
     )
     verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(edit.id, populatedCrd.id)
     verifyNoMoreInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
-  @Test
-  fun `convertToCrdLicence does nothing when there are no eligible HDC licences`() {
+  @ParameterizedTest
+  @EnumSource(HdcCvlEventType::class)
+  fun `convertToCrdLicence does nothing when there are no eligible HDC licences`(eventType: HdcCvlEventType) {
     whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234AA")).thenReturn(emptyList())
 
-    service.convertToCrdLicence("A1234AA")
+    service.convertToCrdLicence("A1234AA", eventType)
 
     verifyNoInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
   }

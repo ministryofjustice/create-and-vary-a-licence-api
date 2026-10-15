@@ -39,7 +39,7 @@ class HdcStatusChangedHandlerTest {
   fun `handleOptout processes event when enabled`() {
     handler.handleOptout(eventJson)
 
-    verify(hdcService).convertToCrdLicence("A1234BC")
+    verify(hdcService).convertToCrdLicence("A1234BC", HdcCvlEventType.OPT_OUT)
   }
 
   @Test
@@ -54,7 +54,14 @@ class HdcStatusChangedHandlerTest {
     handler.handleOptout(eventJson)
 
     val inOrderVerifier = inOrder(hdcService)
-    inOrderVerifier.verify(hdcService).convertToCrdLicence("A1234BC")
+    inOrderVerifier.verify(hdcService).convertToCrdLicence("A1234BC", HdcCvlEventType.OPT_OUT)
+  }
+
+  @Test
+  fun `handleRefused processes event`() {
+    handler.handleRefused(eventJson)
+
+    verify(hdcService).convertToCrdLicence("A1234BC", HdcCvlEventType.REFUSED)
   }
 
   @Test

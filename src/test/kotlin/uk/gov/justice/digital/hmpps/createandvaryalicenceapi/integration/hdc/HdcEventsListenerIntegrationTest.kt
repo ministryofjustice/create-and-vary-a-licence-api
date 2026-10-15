@@ -6,7 +6,7 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
@@ -30,7 +30,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.H
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_REFUSED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_REFUSED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.SUPERSEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -101,14 +103,24 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     Sql("classpath:test_data/seed-hdc-conversion-details.sql"),
   )
   @ParameterizedTest
-  @EnumSource(LicenceStatus::class, names = ["IN_PROGRESS", "SUBMITTED", "APPROVED"])
-  fun `An HDC opt out event converts a single eligible HDC licence to an in progress CRD licence`(status: LicenceStatus) {
+  @CsvSource(
+    "IN_PROGRESS, OPT_OUT",
+    "SUBMITTED, OPT_OUT",
+    "APPROVED, OPT_OUT",
+    "IN_PROGRESS, REFUSED",
+    "SUBMITTED, REFUSED",
+    "APPROVED, REFUSED",
+  )
+  fun `An HDC conversion event converts a single eligible HDC licence to an in progress CRD licence`(
+    status: LicenceStatus,
+    eventType: HdcCvlEventType,
+  ) {
     // Given
     testRepository.updateLicenceStatus(1L, status)
     val event = createHdcStatusChangedEvent()
 
     // When
-    sendOptOutEvent(event)
+    sendConversionEvent(event, eventType)
 
     // Then
     val licences = testRepository.findAllLicence()
@@ -120,7 +132,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val crdLicence =
       testRepository.findLicence(licences.single { it.kind == LicenceKind.CRD }.id) as CrdLicence
 
-    assertCrdConversion(hdcLicence, crdLicence)
+    assertCrdConversion(hdcLicence, crdLicence, eventType)
 
     assertThat(testRepository.findAllAuditEvents()).hasSize(4)
     assertThat(testRepository.findAllEventRepository())
@@ -132,23 +144,23 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
           "SYSTEM",
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically inactivated after HDC opt out event for Person Three",
+          "Licence automatically inactivated after HDC ${eventType.name} event for Person Three",
         ),
         tuple(
           1L,
-          INACTIVE_WHEN_HDC_OPT_OUT,
+          if (eventType == HdcCvlEventType.REFUSED) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
           "SYSTEM_USER",
           "SYSTEM",
           "SYSTEM",
-          "This HDC licence was converted to CRD licence on Opt Out",
+          "This HDC licence was converted to CRD licence on ${eventType.name}",
         ),
         tuple(
           2L,
-          CRD_CREATED_WHEN_HDC_OPT_OUT,
+          if (eventType == HdcCvlEventType.REFUSED) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
           "SYSTEM_USER",
           "SYSTEM",
           "SYSTEM",
-          "This CRD Licence was converted from Hdc a licence on Opt Out",
+          "This CRD Licence was converted from Hdc a licence on ${eventType.name}",
         ),
       )
 
@@ -163,14 +175,22 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     Sql("classpath:test_data/seed-hdc-conversion-details.sql"),
   )
   @ParameterizedTest
-  @EnumSource(LicenceStatus::class, names = ["IN_PROGRESS", "SUBMITTED"])
-  fun `An HDC opt out event converts only the edit and inactivates the previously approved HDC licence`(editStatus: LicenceStatus) {
+  @CsvSource(
+    "IN_PROGRESS, OPT_OUT",
+    "SUBMITTED, OPT_OUT",
+    "IN_PROGRESS, REFUSED",
+    "SUBMITTED, REFUSED",
+  )
+  fun `An HDC conversion event converts only the edit and inactivates the previously approved HDC licence`(
+    editStatus: LicenceStatus,
+    eventType: HdcCvlEventType,
+  ) {
     // Given
     testRepository.updateLicenceStatus(2L, editStatus)
     val event = createHdcStatusChangedEvent()
 
     // When
-    sendOptOutEvent(event)
+    sendConversionEvent(event, eventType)
 
     // Then
     val licences = testRepository.findAllLicence()
@@ -189,7 +209,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     // converted hdc licence
     val crdLicence = testRepository.findLicence(3L) as CrdLicence
-    assertCrdConversion(licences[1], crdLicence)
+    assertCrdConversion(licences[1], crdLicence, eventType)
 
     val allEvents = testRepository.findAllEventRepository().sortedBy { it.licenceId }
     assertThat(allEvents)
@@ -197,15 +217,15 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .containsExactly(
         tuple(1L, SUPERSEDED),
         tuple(2L, SUPERSEDED),
-        tuple(2L, INACTIVE_WHEN_HDC_OPT_OUT),
-        tuple(3L, CRD_CREATED_WHEN_HDC_OPT_OUT),
+        tuple(2L, if (eventType == HdcCvlEventType.REFUSED) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT),
+        tuple(3L, if (eventType == HdcCvlEventType.REFUSED) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT),
       )
 
     val allAudits = testRepository.findAllAuditEvents().sortedBy { it.licenceId }
     assertThat(allAudits).hasSize(5)
 
     assertThat(allAudits[0].licenceId).isEqualTo(1L)
-    assertThat(allAudits[0].summary).isEqualTo("Licence automatically inactivated after HDC opt out event for Person Approved")
+    assertThat(allAudits[0].summary).isEqualTo("Licence automatically inactivated after HDC ${eventType.name} event for Person Approved")
     assertThat(allAudits.filter { it.licenceId == 1L }).hasSize(1)
   }
 
@@ -378,7 +398,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     verifyNoInteractions(eventsPublisher)
   }
 
-  private fun assertCrdConversion(hdcLicence: Licence, crdLicence: CrdLicence) {
+  private fun assertCrdConversion(hdcLicence: Licence, crdLicence: CrdLicence, eventType: HdcCvlEventType) {
     assertThat(crdLicence.kind).isEqualTo(LicenceKind.CRD)
     assertThat(crdLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(crdLicence.versionOfId).isEqualTo(hdcLicence.id)
@@ -405,7 +425,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .extracting("summary")
       .containsExactlyInAnyOrder(
         "Updated standard conditions to policy version ${crdLicence.version} for Person Three",
-        "CRD licence converted from HDC on Opt Out",
+        "CRD licence converted from HDC on ${eventType.name}",
       )
 
     assertThat(events)
@@ -413,8 +433,8 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .hasSize(2)
       .extracting("summary")
       .containsExactlyInAnyOrder(
-        "Licence automatically inactivated after HDC opt out event for Person Three",
-        "Hdc licence converted to CRD licence on Opt Out",
+        "Licence automatically inactivated after HDC ${eventType.name} event for Person Three",
+        "Hdc licence converted to CRD licence on ${eventType.name}",
       )
 
     val conversionDetail =
@@ -424,14 +444,14 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(events)
       .filteredOn { it.licenceId == hdcLicence.id }
       .anySatisfy {
-        assertThat(it.summary).isEqualTo("Hdc licence converted to CRD licence on Opt Out")
+        assertThat(it.summary).isEqualTo("Hdc licence converted to CRD licence on ${eventType.name}")
         assertThat(it.detail).isEqualTo(conversionDetail)
       }
 
     assertThat(events)
       .filteredOn { it.licenceId == crdLicence.id }
       .anySatisfy {
-        assertThat(it.summary).isEqualTo("CRD licence converted from HDC on Opt Out")
+        assertThat(it.summary).isEqualTo("CRD licence converted from HDC on ${eventType.name}")
         assertThat(it.detail).isEqualTo(conversionDetail)
       }
 
@@ -465,9 +485,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
 
-  private fun sendOptOutEvent(event: HdcStatusChangedEvent): String? {
+  private fun sendConversionEvent(event: HdcStatusChangedEvent, eventType: HdcCvlEventType): String? {
     val eventJson = mapper.writeValueAsString(event)
-    sendMessage(eventJson, HdcCvlEventType.OPT_OUT.toString())
+    sendMessage(eventJson, eventType.toString())
     assertSqsProcessed()
     return eventJson
   }

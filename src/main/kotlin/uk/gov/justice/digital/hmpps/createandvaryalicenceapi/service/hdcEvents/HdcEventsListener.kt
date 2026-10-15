@@ -27,6 +27,7 @@ class HdcEventsListener(
       log.debug("Successfully parsed HDC event | eventType={} | licenceId={}", eventType, event.licenceId)
       when (eventType) {
         HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
+        HdcCvlEventType.REFUSED -> hdcStatusChangedHandler.handleRefused(rawMessage)
         HdcCvlEventType.POSTPONE -> hdcStatusChangedHandler.handlePostpone(rawMessage)
         HdcCvlEventType.RESUME -> hdcStatusChangedHandler.handleResume(rawMessage)
       }
