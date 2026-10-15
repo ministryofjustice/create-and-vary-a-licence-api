@@ -41,6 +41,7 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import kotlin.collections.isNotEmpty
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence as HdcLicenceEntity
 
 @Service
@@ -366,22 +367,21 @@ class HdcService(
     licencesByStatus.values.forEach { recordPostponement(it, isPostponed = true) }
 
     val approvedLicence = licencesByStatus[APPROVED]
-    val submittedLicence = licencesByStatus[SUBMITTED]
+    val editableLicence = licencesByStatus[SUBMITTED] ?: licencesByStatus[IN_PROGRESS]
 
-    submittedLicence?.let { submitted ->
-      approvedLicence?.let { approved ->
-        licenceService.inactivateLicences(
-          listOf(approved),
-          reason = "HDC licence postponed",
-          deactivateInProgressVersions = false,
-        )
+    approvedLicence?.let { approved ->
+      if (editableLicence == null) {
+        return revertLicenceToInProgress(approved)
       }
 
-      revertLicenceToInProgress(submitted)
-      return
+      licenceService.inactivateLicences(
+        listOf(approved),
+        reason = "HDC licence postponed",
+        deactivateInProgressVersions = false,
+      )
     }
 
-    approvedLicence?.let(::revertLicenceToInProgress)
+    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let(::revertLicenceToInProgress)
   }
 
   @Transactional
