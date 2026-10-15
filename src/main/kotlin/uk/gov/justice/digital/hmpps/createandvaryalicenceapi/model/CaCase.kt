@@ -64,7 +64,7 @@ data class CaCase(
   val prisonDescription: String? = null,
 
   @field:Schema(description = "Whether the case is postponed in the HDC service", example = "false")
-  val isHdcPostponed: Boolean = false,
+  val isHdcPostponed: Boolean,
 
   val hasNomisLicence: Boolean = false,
 )

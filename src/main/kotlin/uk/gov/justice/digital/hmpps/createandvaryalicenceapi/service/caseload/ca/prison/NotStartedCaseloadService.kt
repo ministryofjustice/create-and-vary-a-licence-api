@@ -115,6 +115,7 @@ class NotStartedCaseloadService(
         prisonDescription = case.nomisRecord.prisonName,
         hasNomisLicence = timeServedExternalRecord != null,
         lastWorkedOnBy = timeServedExternalRecord?.lastWorkedOnBy,
+        isHdcPostponed = false,
       )
     }
   }

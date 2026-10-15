@@ -799,6 +799,7 @@ object TestData {
     isInHardStopPeriod = false,
     tabType = CaViewCasesTab.FUTURE_RELEASES,
     probationPractitioner = ProbationPractitioner(allocated = true),
+    isHdcPostponed = false,
   )
 
   fun approvalCase() = ApprovalCase(
