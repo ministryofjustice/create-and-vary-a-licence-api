@@ -6,7 +6,7 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
@@ -30,7 +30,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.H
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_REFUSED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE_WHEN_HDC_REFUSED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.SUPERSEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -101,14 +103,24 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     Sql("classpath:test_data/seed-hdc-conversion-details.sql"),
   )
   @ParameterizedTest
-  @EnumSource(LicenceStatus::class, names = ["IN_PROGRESS", "SUBMITTED", "APPROVED"])
-  fun `An HDC opt out event converts a single eligible HDC licence to an in progress CRD licence`(status: LicenceStatus) {
+  @CsvSource(
+    "IN_PROGRESS, OPT_OUT",
+    "SUBMITTED, OPT_OUT",
+    "APPROVED, OPT_OUT",
+    "IN_PROGRESS, REFUSE",
+    "SUBMITTED, REFUSE",
+    "APPROVED, REFUSE",
+  )
+  fun `An HDC conversion event converts a single eligible HDC licence to an in progress CRD licence`(
+    status: LicenceStatus,
+    eventType: HdcCvlEventType,
+  ) {
     // Given
     testRepository.updateLicenceStatus(1L, status)
     val event = createHdcStatusChangedEvent()
 
     // When
-    sendOptOutEvent(event)
+    sendConversionEvent(event, eventType)
 
     // Then
     val licences = testRepository.findAllLicence()
@@ -120,7 +132,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val crdLicence =
       testRepository.findLicence(licences.single { it.kind == LicenceKind.CRD }.id) as CrdLicence
 
-    assertCrdConversion(hdcLicence, crdLicence)
+    assertCrdConversion(hdcLicence, crdLicence, eventType)
 
     assertThat(testRepository.findAllAuditEvents()).hasSize(4)
     assertThat(testRepository.findAllEventRepository())
@@ -132,23 +144,23 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
           "SYSTEM",
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically inactivated after HDC opt out event for Person Three",
+          "Licence automatically inactivated after HDC ${eventType.name} event for Person Three",
         ),
         tuple(
           1L,
-          INACTIVE_WHEN_HDC_OPT_OUT,
+          if (eventType == HdcCvlEventType.REFUSE) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT,
           "SYSTEM_USER",
           "SYSTEM",
           "SYSTEM",
-          "This HDC licence was converted to CRD licence on Opt Out",
+          "This HDC licence was converted to CRD licence on ${eventType.name}",
         ),
         tuple(
           2L,
-          CRD_CREATED_WHEN_HDC_OPT_OUT,
+          if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
           "SYSTEM_USER",
           "SYSTEM",
           "SYSTEM",
-          "This CRD Licence was converted from Hdc a licence on Opt Out",
+          "This CRD Licence was converted from Hdc a licence on ${eventType.name}",
         ),
       )
 
@@ -163,14 +175,22 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     Sql("classpath:test_data/seed-hdc-conversion-details.sql"),
   )
   @ParameterizedTest
-  @EnumSource(LicenceStatus::class, names = ["IN_PROGRESS", "SUBMITTED"])
-  fun `An HDC opt out event converts only the edit and inactivates the previously approved HDC licence`(editStatus: LicenceStatus) {
+  @CsvSource(
+    "IN_PROGRESS, OPT_OUT",
+    "SUBMITTED, OPT_OUT",
+    "IN_PROGRESS, REFUSE",
+    "SUBMITTED, REFUSE",
+  )
+  fun `An HDC conversion event converts only the edit and inactivates the previously approved HDC licence`(
+    editStatus: LicenceStatus,
+    eventType: HdcCvlEventType,
+  ) {
     // Given
     testRepository.updateLicenceStatus(2L, editStatus)
     val event = createHdcStatusChangedEvent()
 
     // When
-    sendOptOutEvent(event)
+    sendConversionEvent(event, eventType)
 
     // Then
     val licences = testRepository.findAllLicence()
@@ -189,7 +209,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     // converted hdc licence
     val crdLicence = testRepository.findLicence(3L) as CrdLicence
-    assertCrdConversion(licences[1], crdLicence)
+    assertCrdConversion(licences[1], crdLicence, eventType)
 
     val allEvents = testRepository.findAllEventRepository().sortedBy { it.licenceId }
     assertThat(allEvents)
@@ -197,21 +217,104 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .containsExactly(
         tuple(1L, SUPERSEDED),
         tuple(2L, SUPERSEDED),
-        tuple(2L, INACTIVE_WHEN_HDC_OPT_OUT),
-        tuple(3L, CRD_CREATED_WHEN_HDC_OPT_OUT),
+        tuple(2L, if (eventType == HdcCvlEventType.REFUSE) INACTIVE_WHEN_HDC_REFUSED else INACTIVE_WHEN_HDC_OPT_OUT),
+        tuple(3L, if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT),
       )
 
     val allAudits = testRepository.findAllAuditEvents().sortedBy { it.licenceId }
     assertThat(allAudits).hasSize(5)
 
     assertThat(allAudits[0].licenceId).isEqualTo(1L)
-    assertThat(allAudits[0].summary).isEqualTo("Licence automatically inactivated after HDC opt out event for Person Approved")
+    assertThat(allAudits[0].summary).isEqualTo("Licence automatically inactivated after HDC ${eventType.name} event for Person Approved")
     assertThat(allAudits.filter { it.licenceId == 1L }).hasSize(1)
   }
 
   @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
   @Test
-  fun `An HDC postpone event on a submitted in-flight licence moves it to IN_PROGRESS and leaves the approved licence untouched`() {
+  fun `An HDC postpone event with a single IN_PROGRESS licence leaves it at IN_PROGRESS`() {
+    val event = createHdcStatusChangedEvent(
+      licenceId = 2L,
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+      reason = "HDC application postponed",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+
+    testRepository.updateLicenceStatus(1L, LicenceStatus.INACTIVE)
+    testRepository.updateLicenceStatus(2L, LicenceStatus.IN_PROGRESS)
+
+    sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
+
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+
+    assertThat(testRepository.findLicence(2L).statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(testRepository.findAllHdcPostponements())
+      .extracting("licence.id", "isPostponed")
+      .containsExactlyInAnyOrder(tuple(2L, true))
+  }
+
+  @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
+  @Test
+  fun `An HDC postpone event with no edit underway and a submitted licence moves it to IN_PROGRESS`() {
+    val event = createHdcStatusChangedEvent(
+      licenceId = 2L,
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+      reason = "HDC application postponed",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+
+    testRepository.updateLicenceStatus(1L, LicenceStatus.INACTIVE)
+
+    sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
+
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+
+    val updatedSubmittedLicence = testRepository.findLicence(2L)
+    assertThat(updatedSubmittedLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(updatedSubmittedLicence.approvedByUsername).isNull()
+    assertThat(updatedSubmittedLicence.approvedByName).isNull()
+    assertThat(updatedSubmittedLicence.approvedDate).isNull()
+    assertThat(testRepository.findAllHdcPostponements())
+      .extracting("licence.id", "isPostponed")
+      .containsExactly(tuple(2L, true))
+
+    assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
+  }
+
+  @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
+  @Test
+  fun `An HDC postpone event with no edit underway moves an approved licence to IN_PROGRESS`() {
+    val event = createHdcStatusChangedEvent(
+      licenceId = 1L,
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+      reason = "HDC application postponed",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+
+    testRepository.updateLicenceStatus(2L, LicenceStatus.INACTIVE)
+
+    sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
+
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+
+    val updatedApprovedLicence = testRepository.findLicence(1L)
+    assertThat(updatedApprovedLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(updatedApprovedLicence.approvedByUsername).isNull()
+    assertThat(updatedApprovedLicence.approvedByName).isNull()
+    assertThat(updatedApprovedLicence.approvedDate).isNull()
+
+    assertThat(testRepository.findLicence(2L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
+  }
+
+  @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
+  @Test
+  fun `An HDC postpone event with an approved edit underway inactivates the approved licence and moves the submitted edit to IN_PROGRESS`() {
     // Given
     val approvedLicence = testRepository.findLicence(1L)
     assertThat(approvedLicence.statusCode).isEqualTo(LicenceStatus.APPROVED)
@@ -234,11 +337,11 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     val licences = testRepository.findAllLicence()
     assertThat(licences).hasSize(2)
 
-    val unchangedApprovedLicence = testRepository.findLicence(1L)
-    assertThat(unchangedApprovedLicence.statusCode).isEqualTo(LicenceStatus.APPROVED)
-    assertThat(unchangedApprovedLicence.approvedByUsername).isEqualTo("approver.user")
-    assertThat(unchangedApprovedLicence.approvedByName).isEqualTo("Approved Approver")
-    assertThat(unchangedApprovedLicence.approvedDate).isNotNull
+    val inactivatedApprovedLicence = testRepository.findLicence(1L)
+    assertThat(inactivatedApprovedLicence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(inactivatedApprovedLicence.approvedByUsername).isEqualTo("approver.user")
+    assertThat(inactivatedApprovedLicence.approvedByName).isEqualTo("Approved Approver")
+    assertThat(inactivatedApprovedLicence.approvedDate).isNotNull
 
     val updatedSubmittedLicence = testRepository.findLicence(2L)
     assertThat(updatedSubmittedLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -269,24 +372,63 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         tuple(2L, true),
       )
 
-    verifyNoInteractions(eventsPublisher)
+    verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
   }
 
   @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
   @Test
-  fun `An HDC resume event clears the current postponement state for the submitted edit without changing the approved licence`() {
+  fun `An HDC postpone event with an approved and in progress edit inactivates the approved licence and keeps the in progress edit as IN_PROGRESS`() {
     val event = createHdcStatusChangedEvent(
       licenceId = 2L,
       bookingId = 12345L,
       nomsNumber = "A1234AA",
-      reason = "HDC application resumed",
+      reason = "HDC application postponed",
     )
     val eventJson = mapper.writeValueAsString(event)
+
+    testRepository.updateLicenceStatus(2L, LicenceStatus.IN_PROGRESS)
 
     sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
 
     assertSqsProcessed()
     verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+
+    val inactivatedApprovedLicence = testRepository.findLicence(1L)
+    assertThat(inactivatedApprovedLicence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+
+    val inProgressEdit = testRepository.findLicence(2L)
+    assertThat(inProgressEdit.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(testRepository.findAllHdcPostponements())
+      .extracting("licence.id", "isPostponed")
+      .containsExactlyInAnyOrder(tuple(1L, true), tuple(2L, true))
+
+    verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
+  }
+
+  @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
+  @Test
+  fun `An HDC resume event clears the postponement state for the current editable HDC licence`() {
+    val postponeEvent = createHdcStatusChangedEvent(
+      licenceId = 2L,
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+      reason = "HDC application postponed",
+    )
+    val postponeEventJson = mapper.writeValueAsString(postponeEvent)
+
+    val resumeEvent = createHdcStatusChangedEvent(
+      licenceId = 2L,
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+      reason = "HDC application resumed",
+    )
+    val resumeEventJson = mapper.writeValueAsString(resumeEvent)
+
+    sendMessage(postponeEventJson, HdcCvlEventType.POSTPONE.toString())
+
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handlePostpone(postponeEventJson)
+    verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
 
     assertThat(testRepository.findAllHdcPostponements())
       .hasSize(2)
@@ -296,24 +438,23 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         tuple(2L, true),
       )
 
-    sendMessage(eventJson, HdcCvlEventType.RESUME.toString())
+    org.mockito.kotlin.clearInvocations(eventsPublisher)
+
+    sendMessage(resumeEventJson, HdcCvlEventType.RESUME.toString())
 
     assertSqsProcessed(timesProcessed = 2)
-    verify(hdcStatusChangedHandler).handleResume(eventJson)
+    verify(hdcStatusChangedHandler).handleResume(resumeEventJson)
 
     assertThat(testRepository.findAllHdcPostponements())
       .hasSize(2)
       .extracting("licence.id", "isPostponed")
-      .containsExactlyInAnyOrder(
-        tuple(1L, false),
-        tuple(2L, false),
-      )
+      .containsExactlyInAnyOrder(tuple(1L, true), tuple(2L, false))
 
-    assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.APPROVED)
+    assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
     verifyNoInteractions(eventsPublisher)
   }
 
-  private fun assertCrdConversion(hdcLicence: Licence, crdLicence: CrdLicence) {
+  private fun assertCrdConversion(hdcLicence: Licence, crdLicence: CrdLicence, eventType: HdcCvlEventType) {
     assertThat(crdLicence.kind).isEqualTo(LicenceKind.CRD)
     assertThat(crdLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(crdLicence.versionOfId).isEqualTo(hdcLicence.id)
@@ -340,7 +481,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .extracting("summary")
       .containsExactlyInAnyOrder(
         "Updated standard conditions to policy version ${crdLicence.version} for Person Three",
-        "CRD licence converted from HDC on Opt Out",
+        "CRD licence converted from HDC on ${eventType.name}",
       )
 
     assertThat(events)
@@ -348,8 +489,8 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .hasSize(2)
       .extracting("summary")
       .containsExactlyInAnyOrder(
-        "Licence automatically inactivated after HDC opt out event for Person Three",
-        "Hdc licence converted to CRD licence on Opt Out",
+        "Licence automatically inactivated after HDC ${eventType.name} event for Person Three",
+        "Hdc licence converted to CRD licence on ${eventType.name}",
       )
 
     val conversionDetail =
@@ -359,14 +500,14 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(events)
       .filteredOn { it.licenceId == hdcLicence.id }
       .anySatisfy {
-        assertThat(it.summary).isEqualTo("Hdc licence converted to CRD licence on Opt Out")
+        assertThat(it.summary).isEqualTo("Hdc licence converted to CRD licence on ${eventType.name}")
         assertThat(it.detail).isEqualTo(conversionDetail)
       }
 
     assertThat(events)
       .filteredOn { it.licenceId == crdLicence.id }
       .anySatisfy {
-        assertThat(it.summary).isEqualTo("CRD licence converted from HDC on Opt Out")
+        assertThat(it.summary).isEqualTo("CRD licence converted from HDC on ${eventType.name}")
         assertThat(it.detail).isEqualTo(conversionDetail)
       }
 
@@ -400,9 +541,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
   }
 
-  private fun sendOptOutEvent(event: HdcStatusChangedEvent): String? {
+  private fun sendConversionEvent(event: HdcStatusChangedEvent, eventType: HdcCvlEventType): String? {
     val eventJson = mapper.writeValueAsString(event)
-    sendMessage(eventJson, HdcCvlEventType.OPT_OUT.toString())
+    sendMessage(eventJson, eventType.toString())
     assertSqsProcessed()
     return eventJson
   }
