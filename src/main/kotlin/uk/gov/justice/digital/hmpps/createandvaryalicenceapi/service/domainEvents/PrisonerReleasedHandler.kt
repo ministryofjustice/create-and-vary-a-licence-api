@@ -64,6 +64,7 @@ class PrisonerReleasedHandler(
     val licences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(prisonNumber, PRE_RELEASE_STATUSES.toList())
 
     if (licences.isEmpty()) {
+      log.info("No pre-release licences for: $prisonNumber, skipping")
       return
     }
 
@@ -75,12 +76,14 @@ class PrisonerReleasedHandler(
     // first (and flushing) ensures the cascade's status-based lookup can no longer select them, preventing duplicate
     // audit, licence and domain events for the same licence.
     if (unapprovedLicences.isNotEmpty()) {
+      log.info("inactivating unapproved licences on release for: $prisonNumber, ids: ${unapprovedLicences.map { it.id }}")
       licenceService.inactivateLicences(unapprovedLicences, DEACTIVATION_REASON, deactivateInProgressVersions = true)
     }
 
     if (approvedLicences.isNotEmpty()) {
       val licenceToActivate = approvedLicences.first()
       val newStatus = if (isDeactivationRequired(prisonNumber, licenceToActivate)) inactivate else activate
+      log.info("Updating approved licences on release for: $prisonNumber, id: ${licenceToActivate.id}, new status: $newStatus")
       licenceService.updateLicenceStatus(licenceToActivate.id, newStatus)
     }
   }

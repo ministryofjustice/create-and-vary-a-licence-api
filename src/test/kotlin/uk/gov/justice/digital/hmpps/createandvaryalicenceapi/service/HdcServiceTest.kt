@@ -200,7 +200,11 @@ class HdcServiceTest {
       eventType = if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
       eventDescription = "This CRD Licence was converted from Hdc a licence on ${eventType.name}",
     )
-    verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(hdcLicence.id, populatedCrd.id)
+    if (eventType == HdcCvlEventType.OPT_OUT) {
+      verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(hdcLicence.id, populatedCrd.id)
+    } else {
+      verify(licenceLinkingService).setCrdReplacementForRefusedLicence(hdcLicence.id, populatedCrd.id)
+    }
     verifyNoMoreInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
@@ -245,7 +249,11 @@ class HdcServiceTest {
       eventType = if (eventType == HdcCvlEventType.REFUSE) CRD_CREATED_WHEN_HDC_REFUSED else CRD_CREATED_WHEN_HDC_OPT_OUT,
       eventDescription = "This CRD Licence was converted from Hdc a licence on ${eventType.name}",
     )
-    verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(edit.id, populatedCrd.id)
+    if (eventType == HdcCvlEventType.OPT_OUT) {
+      verify(licenceLinkingService).setCrdReplacementForOptedOutLicence(edit.id, populatedCrd.id)
+    } else {
+      verify(licenceLinkingService).setCrdReplacementForRefusedLicence(edit.id, populatedCrd.id)
+    }
     verifyNoMoreInteractions(crdLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
@@ -1219,6 +1227,56 @@ class HdcServiceTest {
       verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
       verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
       verify(hdcPostponementRepository).save(any())
+    }
+  }
+
+  @Nested
+  inner class RevertLicenceToInProgress {
+    @Test
+    fun `reverts a SUBMITTED licence to IN_PROGRESS, clears approval details and audits`() {
+      // Given
+      val hdcLicence = createHdcLicence(id = 1L)
+      hdcLicence.statusCode = SUBMITTED
+      hdcLicence.approvedByUsername = "approver"
+      hdcLicence.approvedByName = "Approver Name"
+      hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
+      hdcLicence.supersededDate = LocalDateTime.of(2024, 1, 11, 9, 0)
+
+      // When
+      service.revertLicenceToInProgress(hdcLicence)
+
+      // Then
+      assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
+      assertThat(hdcLicence.approvedByUsername).isNull()
+      assertThat(hdcLicence.approvedByName).isNull()
+      assertThat(hdcLicence.approvedDate).isNull()
+      assertThat(hdcLicence.supersededDate).isNull()
+      verify(auditService).recordAuditEventHdcLicencePostponed(hdcLicence, SUBMITTED)
+      verifyNoMoreInteractions(auditService)
+    }
+
+    @Test
+    fun `leaves an IN_PROGRESS licence unchanged and does not audit`() {
+      // Given
+      val approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
+      val supersededDate = LocalDateTime.of(2024, 1, 11, 9, 0)
+      val hdcLicence = createHdcLicence(id = 1L)
+      hdcLicence.statusCode = IN_PROGRESS
+      hdcLicence.approvedByUsername = "approver"
+      hdcLicence.approvedByName = "Approver Name"
+      hdcLicence.approvedDate = approvedDate
+      hdcLicence.supersededDate = supersededDate
+
+      // When
+      service.revertLicenceToInProgress(hdcLicence)
+
+      // Then
+      assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
+      assertThat(hdcLicence.approvedByUsername).isEqualTo("approver")
+      assertThat(hdcLicence.approvedByName).isEqualTo("Approver Name")
+      assertThat(hdcLicence.approvedDate).isEqualTo(approvedDate)
+      assertThat(hdcLicence.supersededDate).isEqualTo(supersededDate)
+      verifyNoInteractions(auditService)
     }
   }
 }

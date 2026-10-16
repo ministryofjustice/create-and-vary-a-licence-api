@@ -22,6 +22,7 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_REFUSED_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
@@ -512,12 +513,17 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       }
 
     val links = testRepository.findAllLicenceLinks()
+    val expectedLinkType = if (eventType == HdcCvlEventType.REFUSE) {
+      CRD_REPLACEMENT_FOR_REFUSED_LICENCE
+    } else {
+      CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
+    }
     assertThat(links)
-      .filteredOn { it.linkType == CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE }
       .hasSize(1)
-      .extracting("fromLicenceId", "toLicenceId")
-      .containsExactly(tuple(hdcLicence.id, crdLicence.id))
-    assertThat(links.single { it.linkType == CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE }.dateCreated).isNotNull
+      .extracting("fromLicenceId", "toLicenceId", "linkType")
+      .containsExactly(tuple(hdcLicence.id, crdLicence.id, expectedLinkType))
+
+    assertThat(links[0].dateCreated).isNotNull
   }
 
   private fun sendMessage(messageBody: String, eventType: String) {

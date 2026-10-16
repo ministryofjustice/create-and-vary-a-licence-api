@@ -75,7 +75,7 @@ class HdcEventsListenerTest {
 
     listener.onMessage(message)
 
-    verify(handler).handleRefused(eventJson)
+    verify(handler).handleRefuse(eventJson)
   }
 
   @Test
