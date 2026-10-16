@@ -74,4 +74,7 @@ data class ComCreateCase(
 
   @field:Schema(description = "Is this licence a replacement for an opted out licence?", example = "true")
   val isReplacementForOptedOutLicence: Boolean,
+
+  @field:Schema(description = "Is this licence a replacement for a refused licence?", example = "true")
+  val isReplacementForRefusedLicence: Boolean,
 )

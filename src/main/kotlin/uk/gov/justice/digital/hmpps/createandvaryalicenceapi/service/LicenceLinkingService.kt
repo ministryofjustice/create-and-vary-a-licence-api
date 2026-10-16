@@ -63,8 +63,14 @@ class LicenceLinkingService(
     )
   }
 
-  fun checkIfLicenceIdsAreCrdReplacementForOptedOutLicence(possibleCrdReplacementForOptedOutLicence: List<Long>): Set<Long> = licenceLinkRepository.findToLicenceIdsByLicenceIdsAndLinkType(
-    possibleCrdReplacementForOptedOutLicence,
-    CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
-  )
+  fun getCrdReplacementLinkTypes(licenceIds: List<Long>): Map<Long, Set<LicenceLinkType>> {
+    if (licenceIds.isEmpty()) return emptyMap()
+
+    return licenceLinkRepository.findLinksByToLicenceIdsAndLinkTypes(
+      licenceIds,
+      setOf(CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE, CRD_REPLACEMENT_FOR_REFUSED_LICENCE),
+    )
+      .groupBy { it.toLicenceId }
+      .mapValues { (_, links) -> links.mapTo(mutableSetOf()) { it.linkType } }
+  }
 }

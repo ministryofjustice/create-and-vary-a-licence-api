@@ -224,8 +224,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    @Sql("classpath:test_data/seed-active-hdc_and_crd-licence-for-opt-out.sql")
-    fun `Successfully retrieve a caseload with a replacement for an opted out licence`() {
+    @Sql("classpath:test_data/seed-crd-licence-with-opt-out-and-refused-links.sql")
+    fun `Successfully retrieve a caseload with replacements for opted out and refused licences`() {
       // Given
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
@@ -255,6 +255,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       )
 
       assertThat(caseload.map { it.isReplacementForOptedOutLicence }).containsExactlyInAnyOrder(
+        true,
+        false,
+        false,
+        false,
+      )
+      assertThat(caseload.map { it.isReplacementForRefusedLicence }).containsExactlyInAnyOrder(
         true,
         false,
         false,
