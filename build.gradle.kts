@@ -63,7 +63,7 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:18.2.5")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.8.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.6.0")
   implementation("org.jsoup:jsoup:1.23.2")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
