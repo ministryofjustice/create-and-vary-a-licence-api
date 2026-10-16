@@ -33,6 +33,7 @@ object LocalStackContainer {
     ).apply {
       withServices("sqs", "sns")
       withEnv("DEFAULT_REGION", "eu-west-2")
+      withReuse(true)
       waitingFor(
         Wait.forLogMessage(".*Ready.*", 1),
       )

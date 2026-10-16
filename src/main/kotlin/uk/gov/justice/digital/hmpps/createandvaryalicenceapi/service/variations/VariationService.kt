@@ -58,7 +58,7 @@ class VariationService(
   @Transactional
   fun editVariation(variationId: Long, request: EditVariationRequest) {
     val variation = getVariationLicence(variationId)
-    require(variation.statusCode == LicenceStatus.VARIATION_SUBMITTED) { "Only submitted variations can be edited." }
+    require(variation.statusCode == LicenceStatus.VARIATION_SUBMITTED || variation.statusCode == LicenceStatus.VARIATION_REJECTED) { "Only submitted or rejected variations can be edited." }
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(request.username)
     variation.updateStatus(

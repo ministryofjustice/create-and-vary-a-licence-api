@@ -771,5 +771,6 @@ class ComVaryCaseloadServiceTest {
     updatedByLastName = "lastName",
     reviewDate = reviewDate,
     prisonCode = prisonCode,
+    isHdcPostponed = false,
   )
 }

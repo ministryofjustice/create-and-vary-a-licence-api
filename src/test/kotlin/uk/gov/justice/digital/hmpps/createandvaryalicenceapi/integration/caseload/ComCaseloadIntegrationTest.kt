@@ -201,8 +201,31 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    @Sql("classpath:test_data/seed-active-hdc_and_crd-licence-for-opt-out.sql")
-    fun `Successfully retrieve a caseload with a replacement for an opted out licence`() {
+    @Sql("classpath:test_data/seed-hdc-postponed-licence-for-com-caseload.sql")
+    fun `Successfully retrieve a caseload with an HDC licence marked as postponed`() {
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
+      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
+      stubCommonDependencies()
+
+      val caseload = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCreateCase>>())
+        .returnResult().responseBody
+
+      val hdcCase = caseload.single { it.prisonerNumber == "AB1234E" }
+      assertThat(hdcCase.licenceId).isEqualTo(2L)
+      assertThat(hdcCase.isHdcPostponed).isTrue()
+    }
+
+    @Test
+    @Sql("classpath:test_data/seed-crd-licence-with-opt-out-and-refused-links.sql")
+    fun `Successfully retrieve a caseload with replacements for opted out and refused licences`() {
       // Given
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
@@ -232,6 +255,12 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       )
 
       assertThat(caseload.map { it.isReplacementForOptedOutLicence }).containsExactlyInAnyOrder(
+        true,
+        false,
+        false,
+        false,
+      )
+      assertThat(caseload.map { it.isReplacementForRefusedLicence }).containsExactlyInAnyOrder(
         true,
         false,
         false,

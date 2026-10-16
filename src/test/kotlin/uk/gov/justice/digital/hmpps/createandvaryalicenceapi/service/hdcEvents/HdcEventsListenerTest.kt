@@ -61,6 +61,24 @@ class HdcEventsListenerTest {
   }
 
   @Test
+  fun `onMessage processes REFUSED event successfully`() {
+    val event = HdcStatusChangedEvent(
+      occurredAt = LocalDateTime.now(),
+      licenceId = 123L,
+      bookingId = 456L,
+      nomsNumber = "A1234BC",
+      triggeredBy = "test.user",
+      reason = "HDC application refused",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+    val message = GenericMessage(eventJson, mapOf("eventType" to "REFUSE"))
+
+    listener.onMessage(message)
+
+    verify(handler).handleRefuse(eventJson)
+  }
+
+  @Test
   fun `onMessage processes POSTPONE event successfully`() {
     val event = HdcStatusChangedEvent(
       occurredAt = LocalDateTime.now(),

@@ -46,5 +46,30 @@ class CrdLicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.isInHardStopPeriod).isTrue
     assertThat(result?.isDueToBeReleasedInTheNextTwoWorkingDays).isTrue
     assertThat(result?.isReplacementForOptedOutLicence).isFalse
+    assertThat(result?.isReplacementForRefusedLicence).isFalse
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-crd-licence-with-opt-out-and-refused-links.sql")
+  fun `Get a CRD licence includes opted out and refused replacement flags`() {
+    // Given
+    val uri = "/licence/id/2"
+    val roles = cvlRoles()
+
+    // When
+    val response = webTestClient.get()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = roles))
+      .exchange()
+
+    // Then
+    val result = response
+      .expectStatus().isOk
+      .expectBody(CrdLicence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.isReplacementForOptedOutLicence).isTrue
+    assertThat(result?.isReplacementForRefusedLicence).isTrue
   }
 }

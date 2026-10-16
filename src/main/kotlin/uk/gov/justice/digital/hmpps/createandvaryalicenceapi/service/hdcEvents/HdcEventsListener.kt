@@ -6,6 +6,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.messaging.Message
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.POSTPONE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.RESUME
 
 @ConditionalOnProperty(name = ["hdc.event.listener.enabled"], havingValue = "true", matchIfMissing = true)
 @Service
@@ -26,9 +30,10 @@ class HdcEventsListener(
       eventType = getHdcEventType(message)
       log.debug("Successfully parsed HDC event | eventType={} | licenceId={}", eventType, event.licenceId)
       when (eventType) {
-        HdcCvlEventType.OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
-        HdcCvlEventType.POSTPONE -> hdcStatusChangedHandler.handlePostpone(rawMessage)
-        HdcCvlEventType.RESUME -> hdcStatusChangedHandler.handleResume(rawMessage)
+        OPT_OUT -> hdcStatusChangedHandler.handleOptout(rawMessage)
+        REFUSE -> hdcStatusChangedHandler.handleRefuse(rawMessage)
+        POSTPONE -> hdcStatusChangedHandler.handlePostpone(rawMessage)
+        RESUME -> hdcStatusChangedHandler.handleResume(rawMessage)
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)

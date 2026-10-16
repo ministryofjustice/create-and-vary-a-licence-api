@@ -62,6 +62,7 @@ class CaProbationCaseloadService(
         probationPractitioner = usernameToProbationPractitioner[licence.comUsername?.lowercase()] ?: ProbationPractitioner.UNALLOCATED,
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
+        isHdcPostponed = false,
       )
     }
   }

@@ -23,4 +23,5 @@ data class LicenceCaCase(
   override val comUsername: String?,
   val prisonCode: String?,
   val prisonDescription: String?,
+  val isPostponed: Boolean,
 ) : LicenceCase
