@@ -260,6 +260,7 @@
     "nomsId": "String",
     "pnc": "String",
     "postRecallReleaseDate": "LocalDate",
+    "postponement": "HdcPostponement",
     "prisonCode": "String",
     "prisonDescription": "String",
     "prisonTelephone": "String",

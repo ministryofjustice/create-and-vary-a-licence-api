@@ -181,6 +181,9 @@ class HdcLicence(
   HdcCase,
   AlwaysHasCom {
 
+  @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY)
+  var postponement: HdcPostponement? = null
+
   fun copy(
     id: Long? = this.id,
     typeCode: LicenceType = this.typeCode,

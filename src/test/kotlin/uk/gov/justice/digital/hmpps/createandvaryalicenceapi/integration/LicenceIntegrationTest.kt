@@ -57,6 +57,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.DayOfWeek.MONDAY
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as HdcLicenceDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as LicenceDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as VariationLicenceDto
 
@@ -92,6 +93,31 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .containsAll(listOf("attendMeetings"))
     assertThat(result.responsibleComFullName).isEqualTo("Test Client")
     assertThat(result.electronicMonitoringProviderStatus).isEqualTo(ElectronicMonitoringProviderStatus.COMPLETE)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-hdc-licence-id-1.sql",
+    "classpath:test_data/seed-hdc-postponement-for-licence-id-1.sql",
+  )
+  fun `Get an HDC licence by ID includes its postponement status`() {
+    // Given
+    val licenceId = 1
+    val auth = setAuthorisation(roles = cvlRoles())
+
+    // When
+    val result = webTestClient.get()
+      .uri("/licence/id/$licenceId")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(auth)
+      .exchange()
+
+    // Then
+    val licence = result.expectStatus().isOk
+      .expectBody<HdcLicenceDto>()
+      .returnResult().responseBody
+
+    assertThat(licence.isPostponed).isTrue()
   }
 
   @ParameterizedTest(name = "Get a licence using {0}")
