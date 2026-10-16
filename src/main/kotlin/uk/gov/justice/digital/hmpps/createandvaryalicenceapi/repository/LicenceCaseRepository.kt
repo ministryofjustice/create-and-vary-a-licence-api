@@ -38,10 +38,12 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
             updatedBy.lastName,
             com.username,
             l.prisonCode,
-            l.prisonDescription
+            l.prisonDescription,
+            COALESCE(hp.isPostponed, false) AS isPostponed
         FROM Licence l
             LEFT JOIN l.responsibleCom com
             LEFT JOIN l.updatedBy updatedBy
+            LEFT JOIN HdcPostponement hp ON hp.licence = l
         WHERE l.statusCode IN :statusCodes AND l.prisonCode IN :prisonCodes
         ORDER BY l.licenceStartDate ASC
     """,

@@ -24,6 +24,7 @@ fun createLicenceCase(
   updatedByLastName: String? = "Y",
   comUsername: String? = "com-user",
   homeDetentionCurfewActualDate: LocalDate? = null,
+  isHdcPostponed: Boolean = false,
 ) = LicenceCaCase(
   kind = kind,
   licenceId = licenceId,
@@ -43,4 +44,5 @@ fun createLicenceCase(
   updatedByLastName = updatedByLastName,
   comUsername = comUsername,
   homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
+  isPostponed = isHdcPostponed,
 )

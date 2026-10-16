@@ -63,5 +63,8 @@ data class CaCase(
   @field:Schema(description = "The agency description of the detaining prison", example = "Leeds (HMP)")
   val prisonDescription: String? = null,
 
+  @field:Schema(description = "Whether the case is postponed in the HDC service", example = "false")
+  val isHdcPostponed: Boolean,
+
   val hasNomisLicence: Boolean = false,
 )

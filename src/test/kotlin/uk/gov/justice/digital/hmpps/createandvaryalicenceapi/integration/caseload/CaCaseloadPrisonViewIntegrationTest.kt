@@ -250,6 +250,65 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/seed-hdc-postponed-licence-for-ca-caseload.sql",
+  )
+  fun `Retrieve a CA caseload with an HDC licence marked as postponed`() {
+    prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    deliusMockServer.stubGetStaffDetailsByUsername()
+    deliusMockServer.stubGetManagersWithoutUserDetails()
+
+    // When
+    val result = webTestClient.post()
+      .uri(GET_PRISON_CASELOAD)
+      .bodyValue(caCaseloadSearch)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    val caseload = result.expectStatus().isOk
+      .expectHeader().contentType(APPLICATION_JSON)
+      .expectBody(typeReference<List<CaCase>>())
+      .returnResult().responseBody!!
+
+    with(caseload[0]) {
+      assertThat(name).isEqualTo("Person Two")
+      assertThat(prisonerNumber).isEqualTo("A1234AB")
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.SUBMITTED)
+      assertThat(tabType).isEqualTo(CaViewCasesTab.FUTURE_RELEASES)
+      assertThat(isInHardStopPeriod).isFalse()
+      assertThat(kind).isEqualTo(LicenceKind.CRD)
+      assertThat(releaseDate).isEqualTo("2022-01-01")
+      assertThat(releaseDateLabel).isEqualTo("Conditional release date")
+      assertThat(isHdcPostponed).isTrue()
+    }
+    with(caseload[1]) {
+      assertThat(name).isEqualTo("Person One")
+      assertThat(prisonerNumber).isEqualTo("A1234AA")
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.APPROVED)
+      assertThat(tabType).isEqualTo(CaViewCasesTab.ATTENTION_NEEDED)
+      assertThat(isInHardStopPeriod).isFalse()
+      assertThat(kind).isEqualTo(LicenceKind.CRD)
+      assertThat(releaseDate).isEqualTo("2022-09-29")
+      assertThat(releaseDateLabel).isEqualTo("Conditional release date")
+      assertThat(isHdcPostponed).isFalse()
+    }
+    with(caseload[3]) {
+      assertThat(name).isEqualTo("Person Three")
+      assertThat(prisonerNumber).isEqualTo("A1234AC")
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
+      assertThat(isInHardStopPeriod).isTrue()
+      assertThat(kind).isEqualTo(LicenceKind.CRD)
+      assertThat(releaseDate).isToday()
+      assertThat(releaseDateLabel).isEqualTo("Conditional release date")
+      assertThat(isHdcPostponed).isFalse()
+    }
+  }
+
+  @Test
   fun `Get forbidden (403) when incorrect roles are supplied`() {
     // Given
     val invalidRoles = listOf("ROLE_CVL_WRONG ROLE")

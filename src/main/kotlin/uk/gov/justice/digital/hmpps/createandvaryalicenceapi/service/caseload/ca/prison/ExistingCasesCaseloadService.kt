@@ -86,6 +86,7 @@ class ExistingCasesCaseloadService(
           ?: ProbationPractitioner.UNALLOCATED,
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
+        isHdcPostponed = licence.isPostponed,
       )
     }.filterNotNull()
   }
