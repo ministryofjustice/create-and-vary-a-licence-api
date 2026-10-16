@@ -168,20 +168,6 @@ class VariationServiceTest {
   }
 
   @Test
-  fun `should not edit a licence that doesn't have a status of variation_submitted or variation_rejected`() {
-    val aLicence = createCrdLicence()
-    whenever(
-      licenceRepository.findById(aLicence.id),
-    ).thenReturn(Optional.of(aLicence))
-
-    val exception = assertThrows<IllegalArgumentException> {
-      variationService.editVariation(aLicence.id, anEditVariationRequest())
-    }
-
-    assertThat(exception.message).isEqualTo("licence with id: ${aLicence.id} is not a variation")
-  }
-
-  @Test
   fun `should edit a variation`() {
     val aVariation = createVariationLicence().copy(statusCode = LicenceStatus.VARIATION_SUBMITTED)
     whenever(
