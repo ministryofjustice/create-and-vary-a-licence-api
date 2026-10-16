@@ -2,6 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.c
 
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_REFUSED_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceCaseRepository
@@ -231,10 +234,12 @@ class ComCreateCaseloadService(
   }
 
   private fun transformToCreateCaseload(cases: List<Case>): List<ComCreateCase> {
-    val licenceIdsThatAreReplacementsForOptedOutLicences = getLicenceIdsThatAreReplacementsForOptedOutLicences(cases)
+    val replacementLinkTypesByLicenceId = getReplacementLinkTypesByLicenceId(cases)
 
     return cases.map {
       with(it.comLicenceCaseDto) {
+        val replacementTypes = licenceId?.let(replacementLinkTypesByLicenceId::get)
+
         ComCreateCase(
           licenceId = licenceId,
           licenceStatus = licenceStatus,
@@ -253,7 +258,8 @@ class ComCreateCaseloadService(
           isRestricted = isRestricted,
           hdcStatus = it.cvlRecord.hdcStatus,
           isHdcPostponed = isHdcPostponed,
-          isReplacementForOptedOutLicence = licenceIdsThatAreReplacementsForOptedOutLicences.contains(licenceId),
+          isReplacementForOptedOutLicence = replacementTypes?.contains(CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE) == true,
+          isReplacementForRefusedLicence = replacementTypes?.contains(CRD_REPLACEMENT_FOR_REFUSED_LICENCE) == true,
         )
       }
     }.sortedWith(
@@ -264,16 +270,12 @@ class ComCreateCaseloadService(
     )
   }
 
-  private fun getLicenceIdsThatAreReplacementsForOptedOutLicences(cases: List<Case>): Set<Long> {
-    val possibleCrdReplacementForOptedOutLicence =
+  private fun getReplacementLinkTypesByLicenceId(cases: List<Case>): Map<Long, Set<LicenceLinkType>> {
+    val possibleCrdReplacementLicenceIds =
       cases.filter { it.comLicenceCaseDto.licenceId != null && it.comLicenceCaseDto.kind == LicenceKind.CRD }
         .map { it.comLicenceCaseDto.licenceId!! }
 
-    val crdReplacementForOptedOutLicence =
-      licenceLinkingService.checkIfLicenceIdsAreCrdReplacementForOptedOutLicence(
-        possibleCrdReplacementForOptedOutLicence,
-      )
-    return crdReplacementForOptedOutLicence
+    return licenceLinkingService.getCrdReplacementLinkTypes(possibleCrdReplacementLicenceIds)
   }
 
   private fun getCaseAccessRecords(crns: List<String>): Map<String, CaseAccessResponse> {
