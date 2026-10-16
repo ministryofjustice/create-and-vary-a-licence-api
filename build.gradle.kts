@@ -24,7 +24,7 @@ dependencies {
     }
   }
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.3")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
 
   implementation("io.netty:netty-codec-http")
@@ -33,7 +33,7 @@ dependencies {
   // END of CVE-2025-67735 - Remove when fixed
 
   // Fix for CVE-2025-48924
-  implementation("org.apache.commons:commons-lang3:3.20.0")
+  implementation("org.apache.commons:commons-lang3:3.21.0")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -44,7 +44,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:6.2.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:6.2.1-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:3.0.8")
@@ -60,7 +60,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
 
   // Digital prison reporting
-  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:16.4.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:18.2.5")
 
   // To help override SAR
   implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.8.1")
@@ -86,7 +86,7 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
   testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.0")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.3")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.springframework.boot:spring-boot-starter-test")

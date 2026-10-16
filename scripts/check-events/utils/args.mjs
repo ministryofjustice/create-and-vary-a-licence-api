@@ -8,6 +8,12 @@ const FLAG_TO_KEY = {
   prison_number: 'prisonNumber',
 }
 
+// Each mode only requires the arguments it actually uses.
+const REQUIRED_KEYS_BY_MODE = {
+  transfer: ['fromPrison', 'toPrison', 'prisonNumber'],
+  release: ['prisonNumber'],
+}
+
 export const parseArgs = (argv) => {
   const [mode, ...flagArgs] = argv
 
@@ -26,7 +32,11 @@ export const parseArgs = (argv) => {
     return { ...acc, [key]: value }
   }, {})
 
-  const required = Object.values(FLAG_TO_KEY)
+  const required = REQUIRED_KEYS_BY_MODE[mode]
+  if (!required) {
+    throw new Error(`Unknown mode: "${mode}". Expected one of: ${Object.keys(REQUIRED_KEYS_BY_MODE).join(', ')}`)
+  }
+
   const missing = required.filter((key) => !parsed[key])
   if (missing.length > 0) {
     throw new Error(`Missing required argument(s): ${missing.join(', ')}`)
