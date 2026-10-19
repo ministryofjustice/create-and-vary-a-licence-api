@@ -7,7 +7,6 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
@@ -25,7 +24,6 @@ import java.time.LocalDate
 import kotlin.jvm.optionals.getOrNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource(properties = ["hardstop.deactivation.job.enabled=true"])
 class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
 

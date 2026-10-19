@@ -15,7 +15,6 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
-import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.TestPropertySource
@@ -41,7 +40,6 @@ import java.time.temporal.TemporalAdjusters
 import kotlin.jvm.optionals.getOrNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   @Autowired
@@ -588,7 +586,6 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   @Nested
   @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-  @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
   @TestPropertySource(properties = ["progression.model.policy-start-date="])
   inner class WhenProgressionModelPolicyStartDateIsNull {
 
@@ -641,7 +638,6 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   @Nested
   @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-  @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
   @TestPropertySource(properties = ["progression.model.policy-start-date=2026-09-02"])
   inner class WhenHardstopAndPolicyVersionBothApply {
 
