@@ -42,7 +42,11 @@ class DomainEventListener(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @SqsListener("domaineventsqueue", factory = "hmppsQueueContainerFactoryProxy")
+  @SqsListener(
+    "domaineventsqueue",
+    factory = "hmppsQueueContainerFactoryProxy",
+    pollTimeoutSeconds = "\${hmpps.sqs.poll-timeout-seconds:}",
+  )
   fun onMessage(
     rawMessage: String,
   ) {
