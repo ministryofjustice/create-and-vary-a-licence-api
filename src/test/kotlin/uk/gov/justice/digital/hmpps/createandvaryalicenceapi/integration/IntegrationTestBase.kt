@@ -44,6 +44,7 @@ import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.MissingTopicException
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
+import java.time.Duration
 
 /*
 ** The abstract parent class for integration tests.
@@ -144,12 +145,12 @@ abstract class IntegrationTestBase {
 
   @BeforeEach
   fun `Clear queues`() {
-    domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
-    await untilCallTo {
+    domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build()).get()
+    await.pollDelay(Duration.ZERO) untilCallTo {
       domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueue.queueUrl).get()
     } matches { it == 0 }
-    hdcCvlEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(hdcCvlEventsQueue.queueUrl).build())
-    await untilCallTo {
+    hdcCvlEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(hdcCvlEventsQueue.queueUrl).build()).get()
+    await.pollDelay(Duration.ZERO) untilCallTo {
       hdcCvlEventsQueue.sqsClient.countMessagesOnQueue(hdcCvlEventsQueue.queueUrl).get()
     } matches { it == 0 }
     reset(telemetryClient)

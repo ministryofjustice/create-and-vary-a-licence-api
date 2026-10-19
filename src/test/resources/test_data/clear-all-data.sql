@@ -1,24 +1,26 @@
-TRUNCATE TABLE electronic_monitoring_provider RESTART IDENTITY CASCADE;
-TRUNCATE TABLE standard_condition RESTART IDENTITY CASCADE;
-TRUNCATE TABLE additional_condition_data RESTART IDENTITY CASCADE;
-TRUNCATE TABLE additional_condition_upload RESTART IDENTITY CASCADE;
-TRUNCATE TABLE additional_condition RESTART IDENTITY CASCADE;
-TRUNCATE TABLE bespoke_condition RESTART IDENTITY CASCADE;
-TRUNCATE TABLE hdc_curfew_address RESTART IDENTITY CASCADE;
-TRUNCATE TABLE curfew_times RESTART IDENTITY CASCADE;
-TRUNCATE TABLE hdc_weekly_curfew_times RESTART IDENTITY CASCADE;
-TRUNCATE TABLE hdc_first_night_curfew_times RESTART IDENTITY CASCADE;
-TRUNCATE TABLE licence RESTART IDENTITY CASCADE;
-TRUNCATE TABLE staff RESTART IDENTITY CASCADE;
-TRUNCATE TABLE audit_event RESTART IDENTITY CASCADE;
-TRUNCATE TABLE omu_contact RESTART IDENTITY CASCADE;
-TRUNCATE TABLE probation_contact RESTART IDENTITY CASCADE;
-TRUNCATE TABLE licence_probation_contact RESTART IDENTITY CASCADE;
-TRUNCATE TABLE address RESTART IDENTITY CASCADE;
-TRUNCATE TABLE probation_contact_address RESTART IDENTITY CASCADE;
-TRUNCATE TABLE saved_contact_addresses RESTART IDENTITY CASCADE;
-TRUNCATE TABLE time_served_external_records RESTART IDENTITY CASCADE;
-TRUNCATE TABLE time_served_probation_confirm_contact RESTART IDENTITY CASCADE;
-TRUNCATE TABLE hdc_migration_condition_meta_data RESTART IDENTITY CASCADE;
-TRUNCATE TABLE hdc_migration_meta_data RESTART IDENTITY CASCADE;
-TRUNCATE TABLE licence_link RESTART IDENTITY CASCADE;
+TRUNCATE TABLE
+    electronic_monitoring_provider,
+    standard_condition,
+    additional_condition_data,
+    additional_condition_upload,
+    additional_condition,
+    bespoke_condition,
+    hdc_curfew_address,
+    curfew_times,
+    hdc_weekly_curfew_times,
+    hdc_first_night_curfew_times,
+    licence,
+    staff,
+    audit_event,
+    omu_contact,
+    probation_contact,
+    licence_probation_contact,
+    address,
+    probation_contact_address,
+    saved_contact_addresses,
+    time_served_external_records,
+    time_served_probation_confirm_contact,
+    hdc_migration_condition_meta_data,
+    hdc_migration_meta_data,
+    licence_link
+RESTART IDENTITY CASCADE;

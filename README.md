@@ -85,10 +85,22 @@ Unit tests mock all external dependencies and can be run with no dependent conta
 
 ## Running the integration tests
 
-Integration tests use Wiremock to stub any API calls required, and use a local H2 database
-that is seeded with data specific to each test suite.
+Integration tests use WireMock for upstream APIs, PostgreSQL for persistence, and LocalStack for SQS/SNS.
+Testcontainers starts PostgreSQL and LocalStack when local instances are not already running.
+Each test seeds its own database fixtures; a single `TRUNCATE ... RESTART IDENTITY CASCADE` clears the
+test tables afterwards (clear-all-datat.sql). Queue cleanup waits for purge requests to finish and checks immediately for an
+empty queue, polling only if necessary.
 
 `./gradlew integrationTest`
+
+Spring caches application contexts between tests. Different `@TestPropertySource` values,
+`@DynamicPropertySource` methods, bean overrides, and imported configurations already produce separate
+contexts, they do not need `@DirtiesContext` just for isolation. 
+
+The event-listener integration test retain `@DirtiesContext(AFTER_CLASS)` to stop their SQS consumers.
+These contexts share LocalStack queues, so leaving them running could consume messages intended for
+another test class.
+
 
 ## Pre-commit hooks
 
