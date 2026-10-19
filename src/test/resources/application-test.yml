@@ -1,6 +1,9 @@
 spring:
   main:
     allow-bean-definition-overriding: true
+  reactor:
+    netty:
+      shutdown-quiet-period: 0s
   security:
     oauth2:
       resourceserver:

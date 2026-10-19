@@ -93,6 +93,10 @@ empty queue, polling only if necessary.
 
 `./gradlew integrationTest`
 
+The test profile sets `spring.reactor.netty.shutdown-quiet-period=0s` to avoid 
+default two second quiet peroid when closing each context. Resources still shut down normally,
+the shutdown timeout and production configuration are unchanged.
+
 Spring caches application contexts between tests. Different `@TestPropertySource` values,
 `@DynamicPropertySource` methods, bean overrides, and imported configurations already produce separate
 contexts, they do not need `@DirtiesContext` just for isolation. 
