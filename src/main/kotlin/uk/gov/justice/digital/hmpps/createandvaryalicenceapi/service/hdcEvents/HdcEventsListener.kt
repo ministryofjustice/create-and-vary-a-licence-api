@@ -19,7 +19,11 @@ class HdcEventsListener(
 ) {
   private val log = LoggerFactory.getLogger(HdcEventsListener::class.java)
 
-  @SqsListener("hdccvleventsqueue", factory = "hmppsQueueContainerFactoryProxy")
+  @SqsListener(
+    "hdccvleventsqueue",
+    factory = "hmppsQueueContainerFactoryProxy",
+    pollTimeoutSeconds = "\${hmpps.sqs.poll-timeout-seconds:}",
+  )
   fun onMessage(message: Message<String>) {
     val rawMessage = message.payload
     log.debug("Raw HDC event message received: {}", rawMessage)

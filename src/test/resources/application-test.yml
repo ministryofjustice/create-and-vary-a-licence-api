@@ -20,7 +20,7 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 2
       idle-timeout: 10000           # 10 seconds
-      max-lifetime: 30000           # 30 seconds
+      max-lifetime: 120000           # 120 seconds
       connection-timeout: 2000      # 2 seconds
       validation-timeout: 1000      # 1 second
       initialization-fail-timeout: 0
@@ -86,6 +86,7 @@ hmpps:
 
   sqs:
     provider: localstack
+    poll-timeout-seconds: 1
     queues:
       domaineventsqueue:
         queueName: domainevents-queue

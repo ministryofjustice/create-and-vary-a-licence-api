@@ -22,7 +22,11 @@ class PrisonEventsListener(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @SqsListener("prisoneventsqueue", factory = "hmppsQueueContainerFactoryProxy")
+  @SqsListener(
+    "prisoneventsqueue",
+    factory = "hmppsQueueContainerFactoryProxy",
+    pollTimeoutSeconds = "\${hmpps.sqs.poll-timeout-seconds:}",
+  )
   fun onMessage(
     rawMessage: String,
   ) {
