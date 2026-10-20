@@ -51,4 +51,9 @@ class HdcStatusChangedHandler(
     hdcService.resumeHdcPostponement(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.RESUME, event)
   }
+
+  fun handleOptIn(message: String) {
+    val event = parseEvent(message)
+    logEventProcessed(HdcCvlEventType.OPT_IN, event)
+  }
 }
