@@ -56,7 +56,7 @@ class HdcEventsListenerTest {
     listener.onMessage(message)
 
     val captor = argumentCaptor<String>()
-    verify(handler).handleOptout(captor.capture())
+    verify(handler).handleOptOut(captor.capture())
     assertThat(captor.firstValue).isEqualTo(eventJson)
   }
 
