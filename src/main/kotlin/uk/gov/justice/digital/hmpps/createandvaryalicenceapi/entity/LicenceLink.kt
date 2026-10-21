@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDateTime
 
 enum class LicenceLinkType {
+  HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE,
   CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE,
   CRD_REPLACEMENT_FOR_REFUSED_LICENCE,
 }

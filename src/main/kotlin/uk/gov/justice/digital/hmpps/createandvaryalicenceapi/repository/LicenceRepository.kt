@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCountsDto
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.EditedLicenceNotReApproved
@@ -218,4 +219,13 @@ interface LicenceRepository :
   """,
   )
   fun getLicencesForProgressionDeactivation(policyV4GoLiveDate: LocalDate): List<Licence>
+
+  @Query(
+    """
+            SELECT l FROM CrdLicence l WHERE l.nomsId = :nomsNumber
+                AND l.kind = 'CRD' AND l.statusCode IN ('APPROVED', 'SUBMITTED', 'IN_PROGRESS')
+                    ORDER BY l.dateLastUpdated DESC, l.idInternal DESC
+    """,
+  )
+  fun findInFlightCrdLicences(nomsNumber: String): List<CrdLicence>
 }

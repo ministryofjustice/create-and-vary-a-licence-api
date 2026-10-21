@@ -28,7 +28,7 @@ class HdcStatusChangedHandler(
     )
   }
 
-  fun handleOptout(message: String) {
+  fun handleOptOut(message: String) {
     val event = parseEvent(message)
     hdcService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.OPT_OUT)
     logEventProcessed(HdcCvlEventType.OPT_OUT, event)
@@ -54,6 +54,7 @@ class HdcStatusChangedHandler(
 
   fun handleOptIn(message: String) {
     val event = parseEvent(message)
+    hdcService.convertToHdcLicence(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.OPT_IN, event)
   }
 }
