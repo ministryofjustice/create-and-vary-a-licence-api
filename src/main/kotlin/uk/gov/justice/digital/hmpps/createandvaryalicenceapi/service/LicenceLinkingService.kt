@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLink
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_IN_LICENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_REFUSED_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceLinkRepository
@@ -30,7 +30,7 @@ class LicenceLinkingService(
   fun setHdcReplacementForOptedInLicence(crdLicenceId: Long, hdcLicenceId: Long) {
     link(
       crdLicenceId,
-      CRD_REPLACEMENT_FOR_OPTED_IN_LICENCE,
+      HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE,
       hdcLicenceId,
     )
   }
