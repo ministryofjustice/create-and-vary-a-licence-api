@@ -77,5 +77,5 @@ helm_deploy/create-and-vary-a-licence-api/charts/*.tgz
 # Generated sar report
 example-cvl-api.pdf
 
-# find-merge-discrepancies script output (contains real CRNs/prisoner names)
+# find-merge-discrepancies script output
 scripts/find-merge-discrepancies/discrepancies-*.csv
