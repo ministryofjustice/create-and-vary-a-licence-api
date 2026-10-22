@@ -4,11 +4,14 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.UpcomingReleasesWithMonitoringConditionsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ReportRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.ElectronicMonitoringData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.UpcomingReleasesWithMonitoringConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.collections.map
 
 private const val BATCH_SIZE = 500
 private val formatter = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.ENGLISH)
@@ -18,9 +21,19 @@ class UpcomingReleasesWithMonitoringConditionsReportService(
   private val reportRepository: ReportRepository,
 ) {
 
-  fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> {
-    val releases = reportRepository.getUpcomingReleasesWithMonitoringConditions()
+  fun getRecentReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> {
+    val releases = reportRepository.getRecentOrUpcomingReleasesWithMonitoringConditions()
+      .filter { it.licenceStartDate?.isBefore(LocalDate.now()) == true }
+    return convertToUpcomingReleasesWithMonitoringConditionsResponse(releases)
+  }
 
+  fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> {
+    val releases = reportRepository.getRecentOrUpcomingReleasesWithMonitoringConditions()
+      .filter { it.licenceStartDate?.isOnOrAfter(LocalDate.now()) == true }
+    return convertToUpcomingReleasesWithMonitoringConditionsResponse(releases)
+  }
+
+  fun convertToUpcomingReleasesWithMonitoringConditionsResponse(releases: List<UpcomingReleasesWithMonitoringConditions>): List<UpcomingReleasesWithMonitoringConditionsResponse> {
     val monitoringDataByLicence = releases
       .map { it.licenceId }
       .chunked(BATCH_SIZE)

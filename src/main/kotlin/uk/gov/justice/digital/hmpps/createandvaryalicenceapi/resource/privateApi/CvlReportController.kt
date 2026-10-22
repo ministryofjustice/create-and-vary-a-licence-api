@@ -79,7 +79,7 @@ class CvlReportController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "A list of last minute handover cases",
+        description = "A list of upcoming cases with electronic monitoring conditions cases",
         content = [
           Content(
             mediaType = "application/json",
@@ -105,6 +105,44 @@ class CvlReportController(
     ],
   )
   fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> = upcomingElectronicMonitoringCasesService.getUpcomingReleasesWithMonitoringConditions()
+
+  @GetMapping("/recent-releases-with-monitoring")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Retrieve list of recent cases with electronic monitoring conditions for FTR-56 report",
+    description = "Returns a list of UpcomingReleasesWithMonitoringConditionsResponse objects",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "A list of recent cases with electronic monitoring conditions cases",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = UpcomingReleasesWithMonitoringConditionsResponse::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request parameters must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getRecentReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> = upcomingElectronicMonitoringCasesService.getRecentReleasesWithMonitoringConditions()
 
   @GetMapping("/licence-status-cases")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

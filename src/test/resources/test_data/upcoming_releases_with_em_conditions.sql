@@ -381,3 +381,84 @@ values ( 7, 1, 'Electronic monitoring', 'Town centre');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (5, true, 'Test Programme');
+
+-- case 6 - recent case with EM conditions and licence start date in the recent past
+insert into licence (kind,
+                     type_code,
+                     version,
+                     status_code,
+                     noms_id,
+                     booking_no,
+                     booking_id,
+                     crn,
+                     pnc,
+                     cro,
+                     prison_code,
+                     prison_description,
+                     forename,
+                     surname,
+                     date_of_birth,
+                     conditional_release_date,
+                     actual_release_date,
+                     sentence_start_date,
+                     sentence_end_date,
+                     topup_supervision_start_date,
+                     topup_supervision_expiry_date,
+                     licence_start_date,
+                     licence_expiry_date,
+                     probation_area_code,
+                     probation_pdu_code,
+                     probation_lau_code,
+                     probation_team_code,
+                     responsible_com_id,
+                     created_by_com_id,
+                     licence_version,
+                     submitted_date)
+values ('CRD',
+        'AP',
+        '3.0',
+        'SUBMITTED',
+        'A1234AF',
+        'BOOKNO',
+        12348,
+        'CRN1',
+        '2015/1234',
+        'CRO1',
+        'MDI',
+        'Moorland (HMP)',
+        'Person',
+        'One',
+        '2020-10-25',
+        '2022-02-12',
+        '2022-02-25',
+        '2020-10-11',
+        '2022-02-25',
+        '2022-02-25',
+        '2022-02-25',
+        current_date - 7,
+        '2023-02-25',
+        'N01',
+        'PDU1',
+        'LAU1',
+        'TEAM1',
+        1,
+        1,
+        '1.0',
+        '2024-08-24 11:30:33');
+
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (6, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
+
+insert into additional_condition (id,licence_id, condition_version, condition_category, condition_code,
+                                  condition_sequence, condition_text, condition_type)
+values (8,6, '3.0', 'Electronic monitoring', 'fd129172-bdd3-4d97-a4a0-efd7b47a49d4', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]','AP'),
+       (9,6, '3.0', 'Exclusion zone', 'd36a3b77-30ba-40ce-8953-83e761d3b487', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP'),
+       (10,6, '3.0', 'Electronic monitoring', '3932e5c9-4d21-4251-a747-ce6dc52dc9c0', 3, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
+
+insert into additional_condition_data (additional_condition_id, data_sequence, data_field, data_value)
+values 	(8, 1, 'electronicMonitoringTypes', 'exclusion zone'),
+          (8, 2, 'electronicMonitoringTypes', 'alcohol abstinence'),
+          (8, 3, 'endDate', 'Sunday 16 January 2028');
+
+insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
+VALUES (6, true, 'Test Programme');
