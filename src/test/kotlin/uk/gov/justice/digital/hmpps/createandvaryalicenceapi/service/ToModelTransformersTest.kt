@@ -73,9 +73,28 @@ class ToModelTransformersTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = false,
       conditionPolicyData = emptyMap(),
       isHdcMigration = false,
+      isReplacementForOptedInLicence = false,
     )
 
     assertThat(result.isPostponed).isTrue()
+  }
+
+  @Test
+  fun `toHdc maps the opted in replacement flag`() {
+    val result = toHdc(
+      licence = TestData.createHdcLicence(),
+      earliestReleaseDate = null,
+      isEligibleForEarlyRelease = false,
+      hardStopDate = null,
+      hardStopWarningDate = null,
+      isInHardStopPeriod = false,
+      isDueToBeReleasedInTheNextTwoWorkingDays = false,
+      conditionPolicyData = emptyMap(),
+      isHdcMigration = false,
+      isReplacementForOptedInLicence = true,
+    )
+
+    assertThat(result.isReplacementForOptedInLicence).isTrue()
   }
 
   @Test
