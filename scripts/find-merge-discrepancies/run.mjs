@@ -19,7 +19,7 @@ if (discrepancies.length === 0) {
   console.error(`Found ${discrepancies.length} licence(s) referencing a noms id that no longer exists.`)
 }
 
-console.log('CSV:licenceId,nomsId,crn,statusCode,name')
-discrepancies.forEach(({ id, nomsId, crn, statusCode, forename, surname }) => {
-  console.log(`CSV:${id},${nomsId},${crn},${statusCode},${forename} ${surname}`)
+console.log('CSV:licenceId,nomsId,crn,statusCode')
+discrepancies.forEach(({ id, nomsId, crn, statusCode }) => {
+  console.log(`CSV:${id},${nomsId},${crn},${statusCode}`)
 })

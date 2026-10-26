@@ -5,7 +5,7 @@ export const readLicences = (path) => {
   if (!text) return []
 
   return text.split('\n').map((line) => {
-    const [id, nomsId, crn, statusCode, forename, surname] = line.split(',')
-    return { id, nomsId, crn, statusCode, forename, surname }
+    const [id, nomsId, crn, statusCode] = line.split(',')
+    return { id, nomsId, crn, statusCode }
   })
 }

@@ -118,7 +118,7 @@ POD_JSON="$(
           resources: {requests: {memory: "128Mi", cpu: "50m"}, limits: {memory: "256Mi"}},
           command: ["sh", "-c"],
           args: [
-            "psql -At -F, -c \"SELECT id, noms_id, crn, status_code, forename, surname FROM licence WHERE status_code != '\''INACTIVE'\'' AND noms_id IS NOT NULL ORDER BY id\" > /data/licences.csv"
+            "psql -At -F, -c \"SELECT id, noms_id, crn, status_code FROM licence WHERE status_code != '\''INACTIVE'\'' AND noms_id IS NOT NULL ORDER BY id\" > /data/licences.csv"
           ],
           volumeMounts: [{name: "data", mountPath: "/data"}]
         }],
