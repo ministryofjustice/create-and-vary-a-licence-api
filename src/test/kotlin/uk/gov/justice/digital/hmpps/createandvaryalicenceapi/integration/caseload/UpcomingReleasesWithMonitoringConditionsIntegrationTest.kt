@@ -59,6 +59,37 @@ class UpcomingReleasesWithMonitoringConditionsIntegrationTest : IntegrationTestB
       .isEqualTo(expected.toPrettyString())
   }
 
+  @Sql(
+    "classpath:test_data/upcoming_releases_with_em_conditions.sql",
+  )
+  @Test
+  fun `Successfully retrieve a recent case`() {
+    // Given
+    val licenceStartDate = LocalDate.now().minusDays(7).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+    val expectedJson = serializedContent("recent_releases_with_em_conditions")
+      .replace("{{RECENT_LICENCE_START_DATE}}", licenceStartDate)
+
+    // When
+    val result = webTestClient.get()
+      .uri("/cvl-report/recent-releases-with-monitoring")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .accept(APPLICATION_JSON)
+      .exchange()
+
+    // Then
+    val actualJson = result.expectStatus().isOk
+      .expectHeader().contentType(APPLICATION_JSON)
+      .expectBody<String>()
+      .returnResult()
+      .responseBody
+
+    val expected = objectMapper.readTree(expectedJson)
+    val actual = objectMapper.readTree(actualJson)
+
+    assertThat(actual.toPrettyString())
+      .isEqualTo(expected.toPrettyString())
+  }
+
   private fun serializedContent(name: String) = this.javaClass.getResourceAsStream("/test_data/reports/$name.json")!!.bufferedReader(
     UTF_8,
   ).readText()
