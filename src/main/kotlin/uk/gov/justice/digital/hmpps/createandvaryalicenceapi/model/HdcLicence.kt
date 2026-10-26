@@ -367,6 +367,9 @@ data class HdcLicence(
 
   @field:Schema(description = "Whether this HDC licence is currently postponed.", example = "true")
   val isPostponed: Boolean = false,
+
+  @field:Schema(description = "Is this licence a replacement for an opted in CRD licence?", example = "false")
+  val isReplacementForOptedInLicence: Boolean = false,
 ) : Licence,
   SupportsElectronicMonitoring,
   ModelHdcCase

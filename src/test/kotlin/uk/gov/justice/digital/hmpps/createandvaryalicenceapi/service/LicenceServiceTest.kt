@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
@@ -3900,8 +3901,23 @@ class LicenceServiceTest {
       val licence = service.getLicenceById(1L)
 
       assertThat(licence).isExactlyInstanceOf(HdcLicenceModel::class.java)
+      assertThat((licence as HdcLicenceModel).isReplacementForOptedInLicence).isFalse()
 
       verify(licenceRepository, times(1)).findById(1L)
+    }
+
+    @Test
+    fun `populates isReplacementForOptedInLicence from the conversion link`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
+      whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+        AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+      )
+      whenever(licenceLinkingService.getLinkTypesToLicence(1L))
+        .thenReturn(setOf(HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE))
+
+      val licence = service.getLicenceById(1L) as HdcLicenceModel
+
+      assertThat(licence.isReplacementForOptedInLicence).isTrue()
     }
 
     @Test

@@ -149,6 +149,14 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(hdcLicence.bespokeConditions.single().conditionText).isEqualTo("Do not contact Person A")
     assertThat(hdcLicence.standardConditions).hasSize(8)
 
+    webTestClient.get()
+      .uri("/licence/id/${hdcLicence.id}")
+      .headers(setAuthorisation(roles = cvlRoles()))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.isReplacementForOptedInLicence").isEqualTo(true)
+
     val audits = testRepository.findAllAuditEvents()
     assertThat(audits).hasSize(4)
     assertThat(audits)
