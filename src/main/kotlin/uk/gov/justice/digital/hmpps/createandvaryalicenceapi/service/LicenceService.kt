@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Comp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_REFUSED_LICENCE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
@@ -181,17 +182,21 @@ class LicenceService(
       conditionPolicyData = conditionPolicyData,
     )
 
-    is HdcLicence -> toHdc(
-      licence = licence,
-      earliestReleaseDate = earliestReleaseDate,
-      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind),
-      hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate, licence.kind),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
-      conditionPolicyData = conditionPolicyData,
-      isHdcMigration = migrationService.isAMigratedLicence(licence.id),
-    )
+    is HdcLicence -> {
+      val linkTypes = licenceLinkingService.getLinkTypesToLicence(licence.id)
+      toHdc(
+        licence = licence,
+        earliestReleaseDate = earliestReleaseDate,
+        isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence.licenceStartDate, licence.kind),
+        hardStopDate = releaseDateService.getHardStopDate(licence.licenceStartDate, licence.kind),
+        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence.licenceStartDate, licence.kind),
+        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence.licenceStartDate),
+        conditionPolicyData = conditionPolicyData,
+        isHdcMigration = migrationService.isAMigratedLicence(licence.id),
+        isReplacementForOptedInLicence = HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE in linkTypes,
+      )
+    }
 
     is HdcVariationLicence -> toHdcVariation(
       licence = licence,
