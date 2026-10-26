@@ -155,8 +155,8 @@ for _ in $(seq 1 90); do
 done
 
 if [ "${PHASE}" != "Succeeded" ] && [ "${PHASE}" != "Failed" ]; then
-  echo "Pod did not finish within the timeout. Check it with:" >&2
-  echo "  kubectl -n ${NAMESPACE} describe pod ${POD_NAME}" >&2
+  echo "Pod did not finish within the timeout. Pod diagnostics:" >&2
+  kubectl -n "${NAMESPACE}" describe pod "${POD_NAME}" >&2 || true
   exit 1
 fi
 
