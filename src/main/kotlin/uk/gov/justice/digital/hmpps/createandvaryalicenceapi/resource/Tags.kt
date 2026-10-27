@@ -27,5 +27,6 @@ class Tags {
     const val ELECTRONIC_MONITORING_PROGRAMME = "Electronic Monitoring Programme"
     const val TIME_SERVED = "Time Served"
     const val HDC_CURFEW_ADDRESS = "HDC Curfew Address"
+    const val HDC_RISK_CHECKS_STATUS = "HDC Risk Checks Status"
   }
 }

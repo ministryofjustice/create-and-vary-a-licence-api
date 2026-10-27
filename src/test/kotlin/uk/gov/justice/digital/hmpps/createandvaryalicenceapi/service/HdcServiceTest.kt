@@ -452,6 +452,64 @@ class HdcServiceTest {
     )
   }
 
+  @Nested
+  inner class HasHdcRiskChecksCompletedWhenHdcCreationEnabledTest {
+    private val service =
+      HdcService(
+        hdcApiClient,
+        prisonApiClient,
+        licenceRepository,
+        hdcLicenceRepository,
+        hdcPostponementRepository,
+        staffRepository,
+        auditService,
+        clock,
+        crdLicenceFactory,
+        hdcLicenceFactory,
+        licenceLinkingService,
+        hdcCreationEnabled = true,
+      )
+
+    @Test
+    fun `hasHdcRiskChecksCompleted when risk checks completed`() {
+      whenever(hdcApiClient.getCurrentHdcStatuses(any(), any())).thenReturn(
+        listOf(
+          currentPrisonerHdcStatus(bookingId = 1L, hdcStatus = HdcStatus.RISK_CHECKS_COMPLETE),
+          currentPrisonerHdcStatus(bookingId = 2L, hdcStatus = HdcStatus.APPROVED),
+        ),
+      )
+
+      assertThat(service.hasHdcRiskChecksCompleted(1L)).isTrue
+      assertThat(service.hasHdcRiskChecksCompleted(2L)).isTrue
+    }
+
+    @Test
+    fun `hasHdcRiskChecksCompleted when risk checks not completed`() {
+      whenever(hdcApiClient.getCurrentHdcStatuses(any(), any())).thenReturn(
+        listOf(
+          currentPrisonerHdcStatus(bookingId = 1L, hdcStatus = HdcStatus. NOT_STARTED),
+          currentPrisonerHdcStatus(bookingId = 2L, hdcStatus = HdcStatus. ELIGIBILITY_CHECKS_COMPLETE),
+        ),
+      )
+
+      assertThat(service.hasHdcRiskChecksCompleted(1L)).isFalse
+      assertThat(service.hasHdcRiskChecksCompleted(2L)).isFalse
+    }
+  }
+
+  @Test
+  fun `hasHdcRiskChecksCompleted throws error when hdcCreationEnabled is false`() {
+    val exception = assertThrows<IllegalArgumentException> {
+      service.hasHdcRiskChecksCompleted(1L)
+    }
+
+    assertThat(exception)
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessage("Should only be called if HDC_ENABLED")
+
+    verify(hdcApiClient, times(0)).getCurrentHdcStatuses(listOf(1L))
+  }
+
   @Test
   fun `isApprovedForHdc when approved`() {
     whenever(prisonApiClient.getHdcStatus(1L)).thenReturn(
@@ -714,7 +772,7 @@ class HdcServiceTest {
         crdLicenceFactory,
         hdcLicenceFactory,
         licenceLinkingService,
-        useCurrentHdcStatus = true,
+        hdcCreationEnabled = true,
       )
 
     @Test

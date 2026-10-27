@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatusHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
@@ -66,7 +67,7 @@ class HdcService(
   private val crdLicenceFactory: CrdLicenceFactory,
   private val hdcLicenceFactory: HdcLicenceFactory,
   private val linkingService: LicenceLinkingService,
-  @param:Value("\${feature.toggle.hdcCreation.enabled}") private val useCurrentHdcStatus: Boolean = false,
+  @param:Value("\${feature.toggle.hdcCreation.enabled}") private val hdcCreationEnabled: Boolean = false,
 ) {
 
   @Lazy
@@ -83,13 +84,21 @@ class HdcService(
     hdcedGetter: (T) -> LocalDate?,
   ): HdcStatuses {
     val bookingsWithHdc = records.filter { hdcedGetter(it) != null }.mapNotNull { bookingIdGetter(it) }
-    val hdcStatuses: List<HdcStatusHolder> = if (useCurrentHdcStatus) {
+    val hdcStatuses: List<HdcStatusHolder> = if (hdcCreationEnabled) {
       hdcApiClient.getCurrentHdcStatuses(bookingsWithHdc)
     } else {
       prisonApiClient.getHdcStatuses(bookingsWithHdc)
     }
     return HdcStatuses(hdcStatuses)
   }
+
+ fun hasHdcRiskChecksCompleted(bookingId: Long): Boolean {
+   if (hdcCreationEnabled) {
+     val hdcStatuses = hdcApiClient.getCurrentHdcStatuses(listOf(bookingId))
+     return hdcStatuses.any{it.hdcStatus == HdcStatus.RISK_CHECKS_COMPLETE || it.hdcStatus == HdcStatus.APPROVED }
+   }
+   throw IllegalArgumentException("Should only be called if HDC_ENABLED")
+ }
 
   fun isApprovedForHdc(bookingId: Long, dateToCheck: LocalDate?) = if (dateToCheck == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
 

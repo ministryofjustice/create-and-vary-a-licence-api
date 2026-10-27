@@ -66,7 +66,7 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
 # Feature toggles
 export HDC_ENABLED=true
-export USE_CURRENT_HDC_STATUS=false
+export HDC_CREATION_ENABLED=true
 export REMAND_ENABLED=true
 export PROGRESSION_MODEL_POLICY_START_DATE=2026-01-14
 export PROGRESSION_MODEL_USE_POLICY_V4_DOT_1=true
