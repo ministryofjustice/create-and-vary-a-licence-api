@@ -92,13 +92,13 @@ class HdcService(
     return HdcStatuses(hdcStatuses)
   }
 
- fun hasHdcRiskChecksCompleted(bookingId: Long): Boolean {
-   if (hdcCreationEnabled) {
-     val hdcStatuses = hdcApiClient.getCurrentHdcStatuses(listOf(bookingId))
-     return hdcStatuses.any{it.hdcStatus == HdcStatus.RISK_CHECKS_COMPLETE || it.hdcStatus == HdcStatus.APPROVED }
-   }
-   throw IllegalArgumentException("Should only be called if HDC_ENABLED")
- }
+  fun hasHdcRiskChecksCompleted(bookingId: Long): Boolean {
+    if (hdcCreationEnabled) {
+      val hdcStatuses = hdcApiClient.getCurrentHdcStatuses(listOf(bookingId))
+      return hdcStatuses.any { it.hdcStatus == HdcStatus.RISK_CHECKS_COMPLETE || it.hdcStatus == HdcStatus.APPROVED }
+    }
+    throw IllegalArgumentException("Should only be called if HDC_ENABLED")
+  }
 
   fun isApprovedForHdc(bookingId: Long, dateToCheck: LocalDate?) = if (dateToCheck == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
 

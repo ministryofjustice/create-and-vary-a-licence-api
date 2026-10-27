@@ -40,7 +40,7 @@ class HdcRiskChecksStatusControllerTest {
     mvc.perform(
       get("/licence/id/123456/hdc/hdc-risk-checks-status")
         .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
 

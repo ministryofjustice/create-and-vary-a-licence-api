@@ -487,8 +487,8 @@ class HdcServiceTest {
     fun `hasHdcRiskChecksCompleted when risk checks not completed`() {
       whenever(hdcApiClient.getCurrentHdcStatuses(any(), any())).thenReturn(
         listOf(
-          currentPrisonerHdcStatus(bookingId = 1L, hdcStatus = HdcStatus. NOT_STARTED),
-          currentPrisonerHdcStatus(bookingId = 2L, hdcStatus = HdcStatus. ELIGIBILITY_CHECKS_COMPLETE),
+          currentPrisonerHdcStatus(bookingId = 1L, hdcStatus = HdcStatus.NOT_STARTED),
+          currentPrisonerHdcStatus(bookingId = 2L, hdcStatus = HdcStatus.ELIGIBILITY_CHECKS_COMPLETE),
         ),
       )
 
