@@ -51,38 +51,38 @@ class HdcLifecycleServiceTest {
   private val licenceService = mock<LicenceService>()
   private val licenceLinkingService = mock<LicenceLinkingService>()
 
-    private val service =
-      HdcLifecycleService(
-        licenceRepository,
-        hdcLicenceRepository,
-        hdcPostponementRepository,
-        auditService,
-        crdLicenceFactory,
-        hdcLicenceFactory,
-        licenceLinkingService,
-      )
+  private val service =
+    HdcLifecycleService(
+      licenceRepository,
+      hdcLicenceRepository,
+      hdcPostponementRepository,
+      auditService,
+      crdLicenceFactory,
+      hdcLicenceFactory,
+      licenceLinkingService,
+    )
 
-    @BeforeEach
-    fun reset() {
-      service.licenceService = licenceService
-      val authentication = mock<Authentication>()
-      val securityContext = mock<SecurityContext>()
-      whenever(authentication.name).thenReturn("tcom")
-      whenever(securityContext.authentication).thenReturn(authentication)
+  @BeforeEach
+  fun reset() {
+    service.licenceService = licenceService
+    val authentication = mock<Authentication>()
+    val securityContext = mock<SecurityContext>()
+    whenever(authentication.name).thenReturn("tcom")
+    whenever(securityContext.authentication).thenReturn(authentication)
 
-      SecurityContextHolder.setContext(securityContext)
+    SecurityContextHolder.setContext(securityContext)
 
-      reset(
-        licenceRepository,
-        hdcLicenceRepository,
-        hdcPostponementRepository,
-        auditService,
-        crdLicenceFactory,
-        hdcLicenceFactory,
-        licenceService,
-        licenceLinkingService,
-      )
-    }
+    reset(
+      licenceRepository,
+      hdcLicenceRepository,
+      hdcPostponementRepository,
+      auditService,
+      crdLicenceFactory,
+      hdcLicenceFactory,
+      licenceService,
+      licenceLinkingService,
+    )
+  }
 
   @ParameterizedTest
   @CsvSource(
@@ -575,4 +575,4 @@ class HdcLifecycleServiceTest {
       verifyNoInteractions(auditService)
     }
   }
-  }
+}
