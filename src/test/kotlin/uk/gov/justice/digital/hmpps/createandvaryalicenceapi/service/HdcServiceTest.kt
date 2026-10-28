@@ -34,8 +34,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Curfe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.FirstNightCurfewTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
@@ -74,8 +72,6 @@ class HdcServiceTest {
   private val hdcApiClient = mock<HdcApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val licenceRepository = mock<LicenceRepository>()
-  private val hdcLicenceRepository = mock<HdcLicenceRepository>()
-  private val hdcPostponementRepository = mock<HdcPostponementRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val auditService = mock<AuditService>()
 
@@ -91,8 +87,6 @@ class HdcServiceTest {
       hdcApiClient,
       prisonApiClient,
       licenceRepository,
-      hdcLicenceRepository,
-      hdcPostponementRepository,
       staffRepository,
       auditService,
       clock,
@@ -109,8 +103,6 @@ class HdcServiceTest {
 
     reset(
       licenceRepository,
-      hdcLicenceRepository,
-      hdcPostponementRepository,
       hdcApiClient,
       staffRepository,
       auditService,
@@ -444,8 +436,6 @@ class HdcServiceTest {
         hdcApiClient,
         prisonApiClient,
         licenceRepository,
-        hdcLicenceRepository,
-        hdcPostponementRepository,
         staffRepository,
         auditService,
         clock,

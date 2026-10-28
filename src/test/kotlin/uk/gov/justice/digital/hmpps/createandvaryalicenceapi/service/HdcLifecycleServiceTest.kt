@@ -60,11 +60,11 @@ class HdcLifecycleServiceTest {
       crdLicenceFactory,
       hdcLicenceFactory,
       licenceLinkingService,
+      licenceService,
     )
 
   @BeforeEach
   fun reset() {
-    service.licenceService = licenceService
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
     whenever(authentication.name).thenReturn("tcom")

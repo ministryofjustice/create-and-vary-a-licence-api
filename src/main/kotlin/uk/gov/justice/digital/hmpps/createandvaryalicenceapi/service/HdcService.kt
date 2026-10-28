@@ -15,8 +15,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
@@ -36,8 +34,6 @@ class HdcService(
   private val hdcApiClient: HdcApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val licenceRepository: LicenceRepository,
-  private val hdcLicenceRepository: HdcLicenceRepository,
-  private val hdcPostponementRepository: HdcPostponementRepository,
   private val staffRepository: StaffRepository,
   private val auditService: AuditService,
   private val clock: Clock,

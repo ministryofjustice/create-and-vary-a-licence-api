@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
@@ -40,11 +38,8 @@ class HdcLifecycleService(
   private val crdLicenceFactory: CrdLicenceFactory,
   private val hdcLicenceFactory: HdcLicenceFactory,
   private val linkingService: LicenceLinkingService,
+  private var licenceService: LicenceService,
 ) {
-
-  @Lazy
-  @Autowired
-  lateinit var licenceService: LicenceService
 
   private val log = LoggerFactory.getLogger(this::class.java)
 
