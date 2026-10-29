@@ -1,0 +1,209 @@
+{
+  "id": "licences_with_health_licence_conditions",
+  "name": "Licences with Health Licence Conditions",
+  "description": "Data products for Create and Vary a licence ",
+  "metadata": {
+    "author": "Dave Virden",
+    "owner": "Dave Virden",
+    "version": "1.0.0",
+    "interactive": "true"
+  },
+  "datasource": [
+    {
+      "id": "cvl",
+      "name": "cvl"
+    }
+  ],
+  "dataset": [
+    {
+      "id": "licence-dataset",
+      "name": "licence-dataset",
+      "datasource": "cvl",
+      "query": "SELECT l.probation_area_description, l.probation_area_code, l.prison_description, l.prison_code, l.crn, l.licence_start_date, (SELECT COALESCE(STRING_AGG(acd.data_value, ', ' ORDER BY acd.data_sequence), '') FROM additional_condition ac JOIN additional_condition_data acd ON acd.additional_condition_id = ac.id WHERE ac.licence_id = l.id AND ac.condition_code = 'b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90') AS condition_3a, CASE WHEN EXISTS (SELECT 1 FROM additional_condition ac WHERE ac.licence_id = l.id AND ac.condition_code = '9ae2a336-3491-4667-aaed-dd852b09b4b9') THEN 'true' ELSE '' END AS condition_3b, (SELECT COALESCE(STRING_AGG(acd.data_value, ', ' ORDER BY acd.data_sequence), '') FROM additional_condition ac JOIN additional_condition_data acd ON acd.additional_condition_id = ac.id WHERE ac.licence_id = l.id AND ac.condition_code = 'df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa') AS condition_4a, (SELECT COALESCE(STRING_AGG(acd.data_value, ', ' ORDER BY acd.data_sequence), '') FROM additional_condition ac JOIN additional_condition_data acd ON acd.additional_condition_id = ac.id WHERE ac.licence_id = l.id AND ac.condition_code = 'f1d2888b-be86-4732-8874-44cb867865c2') AS condition_13c, CASE WHEN EXISTS (SELECT 1 FROM additional_condition ac WHERE ac.licence_id = l.id AND ac.condition_code = '2F8A5418-C6E4-4F32-9E58-64B23550E504') THEN 'true' ELSE '' END AS condition_14e FROM licence l",
+      "schema": {
+        "field": [
+          {
+            "name": "probation_area_description",
+            "type": "string",
+            "display": "Probation Area Description"
+          },
+          {
+            "name": "probation_area_code",
+            "type": "string",
+            "display": "Probation Area Code"
+          },
+          {
+            "name": "prison_description",
+            "type": "string",
+            "display": "Prison Description"
+          },
+          {
+            "name": "prison_code",
+            "type": "string",
+            "display": "Prison Code"
+          },
+          {
+            "name": "crn",
+            "type": "string",
+            "display": "CRN"
+          },
+          {
+            "name": "licence_start_date",
+            "type": "date",
+            "display": "Licence Start Date"
+          },
+          {
+            "name": "condition_3a",
+            "type": "string",
+            "display": "List of values for 3a"
+          },
+          {
+            "name": "condition_3b",
+            "type": "string",
+            "display": "Is 3b selected"
+          },
+          {
+            "name": "condition_4a",
+            "type": "string",
+            "display": "List of values for 4a"
+          },
+          {
+            "name": "condition_13c",
+            "type": "string",
+            "display": "List of values for 13c"
+          },
+          {
+            "name": "condition_14e",
+            "type": "string",
+            "display": "Is 14e selected"
+          }
+        ]
+      }
+    }
+  ],
+  "policy": [
+    {
+      "id": "access",
+      "type": "access",
+      "rule": [
+        {
+          "effect": "permit",
+          "condition": [
+            {
+              "match": [
+                "${role}",
+                "ROLE_NOMIS_BATCHLOAD",
+                "ROLE_CVL_REPORTS"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "report": [
+    {
+      "id": "licences_with_health_licence_conditions",
+      "name": "Licences with Health Licence Conditions",
+      "description": "Licences with health licence conditions",
+      "version": "1.0.0",
+      "render": "HTML",
+      "dataset": "$ref:licence-dataset",
+      "feature": [
+        {
+          "type": "print"
+        }
+      ],
+      "specification": {
+        "template": "list",
+        "field": [
+          {
+            "name": "$ref:probation_area_description",
+            "display": "Probation Area",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:probation_area_code",
+            "display": "Probation Area code",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": true
+          },
+          {
+            "name": "$ref:prison_description",
+            "display": "Prison Description",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:prison_code",
+            "display": "Prison code",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": true
+          },
+          {
+            "name": "$ref:crn",
+            "display": "CRN",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:licence_start_date",
+            "display": "Release date",
+            "formula": "format_date(${licence_start_date}, 'dd/MM/yyyy')",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false,
+            "filter": {
+              "type": "daterange",
+              "interactive": true,
+              "default": "today(-1,months) - today()",
+              "mandatory": false
+            }
+          },
+          {
+            "name": "$ref:condition_3a",
+            "display": "3a",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:condition_3b",
+            "display": "3b",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:condition_4a",
+            "display": "4a",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:condition_13c",
+            "display": "13c",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:condition_14e",
+            "display": "14e",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          }
+        ]
+      },
+      "summary": []
+    }
+  ]
+}
