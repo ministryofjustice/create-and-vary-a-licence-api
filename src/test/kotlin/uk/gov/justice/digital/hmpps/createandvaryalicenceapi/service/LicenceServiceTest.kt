@@ -3908,7 +3908,7 @@ class LicenceServiceTest {
           mapOf(
             54321L to HdcStatus.APPROVED,
           ),
-        )
+        ),
       )
 
       val licence = service.getLicenceById(1L)
@@ -3932,7 +3932,7 @@ class LicenceServiceTest {
           mapOf(
             54321L to HdcStatus.APPROVED,
           ),
-        )
+        ),
       )
 
       val licence = service.getLicenceById(1L) as HdcLicenceModel
@@ -3951,7 +3951,7 @@ class LicenceServiceTest {
           mapOf(
             54321L to HdcStatus.RISK_CHECKS_COMPLETE,
           ),
-        )
+        ),
       )
 
       val licence = service.getLicenceById(1L) as HdcLicenceModel
@@ -3970,7 +3970,7 @@ class LicenceServiceTest {
           mapOf(
             54321L to HdcStatus.ELIGIBILITY_CHECKS_COMPLETE,
           ),
-        )
+        ),
       )
 
       val licence = service.getLicenceById(1L) as HdcLicenceModel
@@ -3990,7 +3990,7 @@ class LicenceServiceTest {
           mapOf(
             54321L to HdcStatus.APPROVED,
           ),
-        )
+        ),
       )
 
       val licence = service.getLicenceById(1L)
