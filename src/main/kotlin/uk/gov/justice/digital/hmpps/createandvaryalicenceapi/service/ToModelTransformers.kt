@@ -578,9 +578,11 @@ fun toHdc(
   conditionPolicyData: Map<String, ConditionPolicyData>,
   isHdcMigration: Boolean,
   isReplacementForOptedInLicence: Boolean,
+  hdcAddressChecksComplete: Boolean,
 ) = ModelHdcLicence(
   id = licence.id,
   isReplacementForOptedInLicence = isReplacementForOptedInLicence,
+  hdcAddressChecksComplete = hdcAddressChecksComplete,
   typeCode = licence.typeCode,
   version = licence.version,
   statusCode = licence.statusCode,

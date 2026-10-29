@@ -53,6 +53,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -101,6 +102,7 @@ class LicenceService(
   private val migrationService: MigrationService,
   private val licenceConditionService: LicenceConditionService,
   private val licenceLinkingService: LicenceLinkingService,
+  private val hdcService: HdcService,
 ) {
 
   @Transactional(readOnly = true)
@@ -184,6 +186,9 @@ class LicenceService(
 
     is HdcLicence -> {
       val linkTypes = licenceLinkingService.getLinkTypesToLicence(licence.id)
+      println(licence)
+      val bookingIdsToHdcStatus = hdcService.getHdcStatus(listOf(licence), { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate } )
+      println(bookingIdsToHdcStatus)
       toHdc(
         licence = licence,
         earliestReleaseDate = earliestReleaseDate,
@@ -195,6 +200,7 @@ class LicenceService(
         conditionPolicyData = conditionPolicyData,
         isHdcMigration = migrationService.isAMigratedLicence(licence.id),
         isReplacementForOptedInLicence = HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE in linkTypes,
+        hdcAddressChecksComplete = bookingIdsToHdcStatus.any { it.value == HdcStatus.RISK_CHECKS_COMPLETE || it.value == HdcStatus.APPROVED }
       )
     }
 
