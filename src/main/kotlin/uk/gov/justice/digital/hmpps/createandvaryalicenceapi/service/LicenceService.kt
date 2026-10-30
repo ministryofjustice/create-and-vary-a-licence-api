@@ -53,6 +53,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -101,6 +102,7 @@ class LicenceService(
   private val migrationService: MigrationService,
   private val licenceConditionService: LicenceConditionService,
   private val licenceLinkingService: LicenceLinkingService,
+  private val hdcService: HdcService,
 ) {
 
   @Transactional(readOnly = true)
@@ -108,6 +110,7 @@ class LicenceService(
     val entityLicence = getLicence(licenceId)
     val isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(entityLicence)
     val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
+    val hdcAddressChecksComplete = entityLicence.kind == HDC && hdcAddressChecksComplete(entityLicence)
 
     val conditionsSubmissionStatus =
       getLicenceConditionPolicyData(
@@ -115,9 +118,14 @@ class LicenceService(
         licencePolicyService.getAllAdditionalConditions(),
       )
 
-    val licence = transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
+    val licence = transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus, hdcAddressChecksComplete)
     uploadFileConditionsService.getThumbnailForImages(entityLicence, licence)
     return licence
+  }
+
+  fun hdcAddressChecksComplete(licence: EntityLicence): Boolean {
+    val bookingIdsToHdcStatus = hdcService.getHdcStatus(listOf(licence), { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
+    return bookingIdsToHdcStatus.any { it.value == HdcStatus.RISK_CHECKS_COMPLETE || it.value == HdcStatus.APPROVED }
   }
 
   fun transform(
@@ -125,6 +133,7 @@ class LicenceService(
     earliestReleaseDate: LocalDate?,
     isEligibleForEarlyRelease: Boolean,
     conditionPolicyData: Map<String, ConditionPolicyData>,
+    hdcAddressChecksComplete: Boolean,
   ): Licence = when (licence) {
     is PrrdLicence -> toPrrd(
       licence = licence,
@@ -195,6 +204,7 @@ class LicenceService(
         conditionPolicyData = conditionPolicyData,
         isHdcMigration = migrationService.isAMigratedLicence(licence.id),
         isReplacementForOptedInLicence = HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE in linkTypes,
+        hdcAddressChecksComplete = hdcAddressChecksComplete,
       )
     }
 
