@@ -39,6 +39,41 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
   lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadRepository
 
   @Nested
+  inner class `Get HDC licence by id` {
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-hdc-licence-id-1.sql",
+      "classpath:test_data/seed-hdc-curfew-hours.sql",
+      "classpath:test_data/seed-hdc-curfew-address.sql",
+    )
+    fun `returns HDC curfew address and times`() {
+      // Given
+      val request = buildGetRequest(uri = "/public/licences/id/1")
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      response
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody()
+        .jsonPath("$.kind").isEqualTo("HDC")
+        .jsonPath("$.curfewAddress.firstLine").isEqualTo("1 Some Address")
+        .jsonPath("$.curfewAddress.townOrCity").isEqualTo("Some Town")
+        .jsonPath("$.curfewAddress.postcode").isEqualTo("AB1 2CD")
+        .jsonPath("$.curfewAddress.accommodationType").isEqualTo("RESIDENTIAL")
+        .jsonPath("$.curfewAddress.postReleaseResidentialChecksCompleted").isEqualTo(true)
+        .jsonPath("$.firstNightCurfewTimes.fromTime").isEqualTo("18:00:00")
+        .jsonPath("$.firstNightCurfewTimes.untilTime").isEqualTo("08:00:00")
+        .jsonPath("$.curfewTimes[0].fromDay").isEqualTo("MONDAY")
+        .jsonPath("$.curfewTimes[0].fromTime").isEqualTo("19:00:00")
+        .jsonPath("$.curfewTimes[1].fromDay").isEqualTo("TUESDAY")
+    }
+  }
+
+  @Nested
   inner class `Get licences by CRN` {
 
     @Test

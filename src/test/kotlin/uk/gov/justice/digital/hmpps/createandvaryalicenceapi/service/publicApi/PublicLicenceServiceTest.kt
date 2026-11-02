@@ -12,6 +12,8 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
@@ -21,6 +23,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -36,8 +41,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformTo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceStandard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes as ModelCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as ModelHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as PublicLicenceType
 
@@ -247,7 +257,99 @@ class PublicLicenceServiceTest {
       whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
       val actualLicence = service.getLicenceById(licenceId)
 
-      assertThat(actualLicence).isEqualTo(publicLicence)
+      assertThat(actualLicence).usingRecursiveComparison().isEqualTo(publicLicence)
+    }
+
+    @Test
+    fun `service returns HDC licence with public curfew details`() {
+      // Given
+      val modelHdcLicence = ModelHdcLicence(
+        typeCode = modelLicence.typeCode,
+        version = "2.1",
+        statusCode = LicenceStatus.IN_PROGRESS,
+        licenceVersion = "1.4",
+        weeklyCurfewTimes = listOf(
+          ModelCurfewTimes(
+            curfewTimesSequence = 2,
+            fromDay = DayOfWeek.TUESDAY,
+            fromTime = LocalTime.of(21, 0),
+            untilDay = DayOfWeek.WEDNESDAY,
+            untilTime = LocalTime.of(9, 0),
+            createdTimestamp = null,
+          ),
+          ModelCurfewTimes(
+            curfewTimesSequence = 1,
+            fromDay = DayOfWeek.MONDAY,
+            fromTime = LocalTime.of(20, 0),
+            untilDay = DayOfWeek.TUESDAY,
+            untilTime = LocalTime.of(8, 0),
+            createdTimestamp = null,
+          ),
+        ),
+        firstNightCurfewTimes = ModelCurfewTimes(
+          fromTime = LocalTime.of(22, 0),
+          untilTime = LocalTime.of(6, 0),
+          createdTimestamp = null,
+        ),
+        curfewAddress = ModelHdcCurfewAddress(
+          uprn = "uprn-123",
+          firstLine = "1 Test Street",
+          secondLine = "Test Area",
+          townOrCity = "Test Town",
+          county = "Test County",
+          postcode = "AB1 2CD",
+          source = AddressSource.MANUAL,
+          accommodationType = AccommodationType.RESIDENTIAL,
+          postReleaseResidentialChecksCompleted = false,
+          postReleaseResidentialChecksNotCompletedReason = "Old reason",
+          createdTimestamp = null,
+          lastUpdatedTimestamp = null,
+        ),
+      )
+      whenever(licenceService.getLicenceById(any())).thenReturn(modelHdcLicence)
+
+      // When
+      val actualLicence = service.getLicenceById(12345) as PublicHdcLicence
+
+      // Then
+      assertThat(actualLicence.id).isEqualTo(modelHdcLicence.id)
+      assertThat(actualLicence.curfewAddress).usingRecursiveComparison().isEqualTo(
+        PublicHdcCurfewAddress(
+          uprn = "uprn-123",
+          firstLine = "1 Test Street",
+          secondLine = "Test Area",
+          townOrCity = "Test Town",
+          county = "Test County",
+          postcode = "AB1 2CD",
+          accommodationType = "RESIDENTIAL",
+          postReleaseResidentialChecksCompleted = false,
+          postReleaseResidentialChecksNotCompletedReason = "Old reason",
+        ),
+      )
+      assertThat(actualLicence.firstNightCurfewTimes).usingRecursiveComparison().isEqualTo(
+        PublicCurfewTimes(
+          fromDay = null,
+          fromTime = LocalTime.of(22, 0),
+          untilDay = null,
+          untilTime = LocalTime.of(6, 0),
+        ),
+      )
+      assertThat(actualLicence.curfewTimes).usingRecursiveComparison().isEqualTo(
+        listOf(
+          PublicCurfewTimes(
+            fromDay = "MONDAY",
+            fromTime = LocalTime.of(20, 0),
+            untilDay = "TUESDAY",
+            untilTime = LocalTime.of(8, 0),
+          ),
+          PublicCurfewTimes(
+            fromDay = "TUESDAY",
+            fromTime = LocalTime.of(21, 0),
+            untilDay = "WEDNESDAY",
+            untilTime = LocalTime.of(9, 0),
+          ),
+        ),
+      )
     }
 
     @Test

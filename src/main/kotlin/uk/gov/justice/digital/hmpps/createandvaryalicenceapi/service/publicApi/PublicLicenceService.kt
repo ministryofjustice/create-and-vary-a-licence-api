@@ -2,8 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
@@ -17,7 +22,34 @@ class PublicLicenceService(
   private val uploadFileConditionsService: UploadFileConditionsService,
 ) {
 
-  fun getLicenceById(id: Long): Licence = licenceService.getLicenceById(id).transformToPublicLicence()
+  fun getLicenceById(id: Long): Licence {
+    val licence = licenceService.getLicenceById(id)
+
+    return if (licence is HdcLicence) {
+      PublicHdcLicence(
+        licence = licence.transformToPublicLicence(),
+        curfewAddress = toPublicHdcCurfewAddress(licence),
+        firstNightCurfewTimes = licence.firstNightCurfewTimes?.toPublicCurfewTimes(),
+        curfewTimes = licence.weeklyCurfewTimes.sortedBy { it.curfewTimesSequence }.map { it.toPublicCurfewTimes() },
+      )
+    } else {
+      licence.transformToPublicLicence()
+    }
+  }
+
+  private fun toPublicHdcCurfewAddress(licence: HdcLicence): PublicHdcCurfewAddress? = licence.curfewAddress?.let {
+    PublicHdcCurfewAddress(
+      uprn = it.uprn,
+      firstLine = it.firstLine,
+      secondLine = it.secondLine,
+      townOrCity = it.townOrCity,
+      county = it.county,
+      postcode = it.postcode,
+      accommodationType = it.accommodationType?.name,
+      postReleaseResidentialChecksCompleted = it.postReleaseResidentialChecksCompleted,
+      postReleaseResidentialChecksNotCompletedReason = it.postReleaseResidentialChecksNotCompletedReason,
+    )
+  }
 
   @Transactional
   fun getAllLicencesByCrn(crn: String): List<PublicLicenceSummary> {
@@ -35,4 +67,11 @@ class PublicLicenceService(
 
   @Transactional
   fun getImageUpload(licenceId: Long, conditionId: Long) = uploadFileConditionsService.getImage(licenceId, conditionId)
+
+  private fun CurfewTimes.toPublicCurfewTimes() = PublicCurfewTimes(
+    fromDay = fromDay?.name,
+    fromTime = fromTime,
+    untilDay = untilDay?.name,
+    untilTime = untilTime,
+  )
 }

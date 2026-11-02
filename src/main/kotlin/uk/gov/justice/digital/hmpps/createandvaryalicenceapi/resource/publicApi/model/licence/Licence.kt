@@ -8,7 +8,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
-data class Licence(
+open class Licence(
 
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long = -1,
@@ -98,4 +98,19 @@ data class Licence(
 
   @field:Schema(description = "The AP and PSS conditions that form the licence")
   val conditions: Conditions,
-)
+) {
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+    other as Licence
+    return id == other.id &&
+      version == other.version
+  }
+
+  override fun hashCode(): Int {
+    var result = id.hashCode()
+    result = 31 * result + version.hashCode()
+    return result
+  }
+}
