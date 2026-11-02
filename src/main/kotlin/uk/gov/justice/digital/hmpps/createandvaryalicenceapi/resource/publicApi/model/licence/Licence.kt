@@ -104,13 +104,8 @@ open class Licence(
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
     other as Licence
-    return id == other.id &&
-      version == other.version
+    return id == other.id
   }
 
-  override fun hashCode(): Int {
-    var result = id.hashCode()
-    result = 31 * result + version.hashCode()
-    return result
-  }
+  override fun hashCode(): Int = id.hashCode()
 }
