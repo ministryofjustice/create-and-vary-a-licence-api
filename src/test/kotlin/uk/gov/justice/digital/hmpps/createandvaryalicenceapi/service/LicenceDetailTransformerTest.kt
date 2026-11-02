@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
@@ -47,6 +48,7 @@ class LicenceDetailTransformerTest {
         id = 2,
         code = EXCLUSION_ZONE_COND_CODE,
         text = "Do not enter the area defined in the attached map.",
+        description = "Exclusion zone one",
         hasImageUpload = true,
       ),
       MultipleExclusionZoneAdditionalCondition(
@@ -55,6 +57,7 @@ class LicenceDetailTransformerTest {
         id = 3,
         code = EXCLUSION_ZONE_COND_CODE,
         text = "Do not enter the area defined in the attached map.",
+        description = "Exclusion zone two",
         hasImageUpload = true,
       ),
       SingleUploadAdditionalCondition(
@@ -63,6 +66,7 @@ class LicenceDetailTransformerTest {
         id = 4,
         code = EVENT_EXCLUSION_COND_CODE,
         text = "Do not enter the area defined in the attached map for the duration of The Event.",
+        description = "Event exclusion zone",
         hasImageUpload = true,
       ),
       ElectronicMonitoringAdditionalConditionWithRestriction(
@@ -79,6 +83,7 @@ class LicenceDetailTransformerTest {
         id = 6,
         code = MULTIPLE_UPLOAD_COND_CODE,
         text = "Do not enter the area defined in the attached map.",
+        description = "Exclusion zone two",
         hasImageUpload = true,
       ),
     )
@@ -95,6 +100,65 @@ class LicenceDetailTransformerTest {
 
     // Check that expanded has been selected:
     assertThat(privateAdditionalCondition.text).isEqualTo(publicModelCondition.expandedText)
+  }
+
+  @Test
+  fun `upload conditions show upload description`() {
+    val condition = someModelAdditionalConditions()[1].copy(
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(id = 1, description = "Zone A"),
+      ),
+    )
+
+    assertThat(transformMultipleExclusionZonesCondition(condition).description).isEqualTo("Zone A")
+    assertThat(transformMultipleUploadsCondition(condition).description).isEqualTo("Zone A")
+    assertThat(transformSingleExclusionZoneCondition(condition).description).isEqualTo("Zone A")
+  }
+
+  @Test
+  fun `upload conditions combine distinct non-blank upload descriptions`() {
+    val condition = someModelAdditionalConditions()[1].copy(
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(id = 1, description = "Zone A"),
+        AdditionalConditionUploadSummary(id = 2, description = " "),
+        AdditionalConditionUploadSummary(id = 3, description = null),
+        AdditionalConditionUploadSummary(id = 4, description = "Zone B"),
+        AdditionalConditionUploadSummary(id = 5, description = "Zone A"),
+      ),
+    )
+
+    assertThat(transformMultipleExclusionZonesCondition(condition).description).isEqualTo("Zone A, Zone B")
+    assertThat(transformMultipleUploadsCondition(condition).description).isEqualTo("Zone A, Zone B")
+    assertThat(transformSingleExclusionZoneCondition(condition).description).isEqualTo("Zone A, Zone B")
+  }
+
+  @Test
+  fun `upload conditions have null description when there are no uploads`() {
+    val condition = someModelAdditionalConditions()[1].copy(uploadSummary = emptyList())
+
+    with(transformMultipleExclusionZonesCondition(condition)) {
+      assertThat(description).isNull()
+      assertThat(hasImageUpload).isFalse()
+    }
+    assertThat(transformMultipleUploadsCondition(condition).description).isNull()
+    assertThat(transformSingleExclusionZoneCondition(condition).description).isNull()
+  }
+
+  @Test
+  fun `upload conditions have null description when upload descriptions are null or blank`() {
+    val condition = someModelAdditionalConditions()[1].copy(
+      uploadSummary = listOf(
+        AdditionalConditionUploadSummary(id = 1, description = null),
+        AdditionalConditionUploadSummary(id = 2, description = " "),
+      ),
+    )
+
+    with(transformMultipleExclusionZonesCondition(condition)) {
+      assertThat(description).isNull()
+      assertThat(hasImageUpload).isTrue()
+    }
+    assertThat(transformMultipleUploadsCondition(condition).description).isNull()
+    assertThat(transformSingleExclusionZoneCondition(condition).description).isNull()
   }
 
   private companion object {

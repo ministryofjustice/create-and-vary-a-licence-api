@@ -110,6 +110,7 @@ fun transformMultipleExclusionZonesCondition(model: AdditionalCondition) = Multi
   code = model.code.orEmpty(),
   text = model.expandedText.orEmpty(),
   hasImageUpload = model.uploadSummary.isNotEmpty(),
+  description = transformUploadDescription(model),
 )
 
 fun transformMultipleUploadsCondition(model: AdditionalCondition) = MultipleUploadAdditionalCondition(
@@ -119,6 +120,7 @@ fun transformMultipleUploadsCondition(model: AdditionalCondition) = MultipleUplo
   code = model.code.orEmpty(),
   text = model.expandedText.orEmpty(),
   hasImageUpload = model.uploadSummary.isNotEmpty(),
+  description = transformUploadDescription(model),
 )
 
 fun transformSingleExclusionZoneCondition(model: AdditionalCondition) = SingleUploadAdditionalCondition(
@@ -128,7 +130,14 @@ fun transformSingleExclusionZoneCondition(model: AdditionalCondition) = SingleUp
   code = model.code.orEmpty(),
   text = model.expandedText.orEmpty(),
   hasImageUpload = model.uploadSummary.isNotEmpty(),
+  description = transformUploadDescription(model),
 )
+
+private fun transformUploadDescription(model: AdditionalCondition): String? = model.uploadSummary
+  .mapNotNull { it.description?.takeIf(String::isNotBlank) }
+  .distinct()
+  .takeIf { it.isNotEmpty() }
+  ?.joinToString(", ")
 
 typealias PublicStandardAdditionalCondition = ModelStandardAdditionalCondition
 

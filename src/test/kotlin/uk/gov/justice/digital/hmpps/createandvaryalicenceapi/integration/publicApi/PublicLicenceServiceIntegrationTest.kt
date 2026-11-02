@@ -22,6 +22,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleUploadAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -96,7 +100,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody
 
       assertThat(resultList).hasSize(1)
-      val result = resultList!!.first()
+      val result = resultList.first()
       assertLicenceSummary(result)
     }
 
@@ -214,9 +218,102 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         setOf("MULTIPLE_EXCLUSION_ZONE"),
         1,
         "Freedom of movement",
+        EXCLUSION_ZONE_COND_CODE,
+        "c1t",
+        true,
+        "Description",
+      )
+      assertUploadCondition(
+        additionalConditions[1],
+        "MULTIPLE_UPLOADS",
+        setOf("MULTIPLE_UPLOADS"),
+        2,
+        "restricted area",
+        MULTIPLE_UPLOAD_COND_CODE,
+        "c2t",
+        true,
+        "Description",
+      )
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-licence-id-2.sql",
+      "classpath:test_data/add-upload-to-licence-id-2.sql",
+      "classpath:test_data/add-event-exclusion-to-licence-id-2.sql",
+    )
+    fun `Transforms event exclusion with upload description`() {
+      // Given
+      val request = buildGetRequest(
+        uri = "/public/licences/id/2",
+        role = "ROLE_VIEW_LICENCES",
+        acceptMediaTypes = listOf(MediaType.APPLICATION_JSON),
+      )
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      val licence = response
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(Licence::class.java)
+        .returnResult().responseBody!!
+
+      val eventExclusion = licence.conditions.apConditions.additional
+        .single { it.code == EVENT_EXCLUSION_COND_CODE }
+      assertThat(eventExclusion).isInstanceOf(SingleUploadAdditionalCondition::class.java)
+      assertUploadCondition(
+        eventExclusion,
+        "SINGLE_UPLOAD",
+        setOf("SINGLE_UPLOAD"),
+        eventExclusion.id,
+        "Freedom of movement",
+        EVENT_EXCLUSION_COND_CODE,
+        "c3t",
+        true,
+        "Event exclusion zone",
+      )
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-licence-id-2.sql",
+      "classpath:test_data/add-upload-to-licence-id-2.sql",
+    )
+    fun `Returns null description when upload description is null`() {
+      // Given
+      additionalConditionUploadDetailRepository.findAll().forEach {
+        additionalConditionUploadDetailRepository.save(it.copy(description = null))
+      }
+      val request = buildGetRequest(
+        uri = "/public/licences/id/2",
+        role = "ROLE_VIEW_LICENCES",
+        acceptMediaTypes = listOf(MediaType.APPLICATION_JSON),
+      )
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      val licence = response
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(Licence::class.java)
+        .returnResult().responseBody!!
+
+      val additionalConditions = licence.conditions.apConditions.additional
+      assertThat(additionalConditions).hasSize(2)
+      assertUploadCondition(
+        additionalConditions[0],
+        "MULTIPLE_EXCLUSION_ZONE",
+        setOf("MULTIPLE_EXCLUSION_ZONE"),
+        1,
+        "Freedom of movement",
         "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
         "c1t",
         true,
+        null,
       )
       assertUploadCondition(
         additionalConditions[1],
@@ -227,6 +324,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         "005d70e4-a247-4f82-b8b3-6d294a0f5051",
         "c2t",
         true,
+        null,
       )
     }
 
@@ -239,6 +337,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       expectedCode: String,
       expectedText: String,
       expectedHasImageUpload: Boolean,
+      expectedDescription: String?,
     ) {
       assertThat(allowedTypes).contains(expectedType)
       assertThat(actual.type).isEqualTo(expectedType)
@@ -250,9 +349,18 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       val hasImageUpload = when (actual) {
         is MultipleExclusionZoneAdditionalCondition -> actual.hasImageUpload
         is MultipleUploadAdditionalCondition -> actual.hasImageUpload
+        is SingleUploadAdditionalCondition -> actual.hasImageUpload
         else -> null
       }
       hasImageUpload?.let { assertThat(it).isEqualTo(expectedHasImageUpload) }
+
+      val description = when (actual) {
+        is MultipleExclusionZoneAdditionalCondition -> actual.description
+        is MultipleUploadAdditionalCondition -> actual.description
+        is SingleUploadAdditionalCondition -> actual.description
+        else -> null
+      }
+      assertThat(description).isEqualTo(expectedDescription)
     }
   }
 
