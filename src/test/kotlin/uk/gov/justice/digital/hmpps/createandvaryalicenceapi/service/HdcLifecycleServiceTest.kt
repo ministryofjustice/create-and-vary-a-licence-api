@@ -26,7 +26,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_IN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_REFUSED
@@ -48,6 +50,7 @@ class HdcLifecycleServiceTest {
   private val auditService = mock<AuditService>()
   private val crdLicenceFactory = mock<CrdLicenceFactory>()
   private val hdcLicenceFactory = mock<HdcLicenceFactory>()
+  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val licenceService = mock<LicenceService>()
   private val licenceLinkingService = mock<LicenceLinkingService>()
 
@@ -59,6 +62,7 @@ class HdcLifecycleServiceTest {
       auditService,
       crdLicenceFactory,
       hdcLicenceFactory,
+      prisonerSearchApiClient,
       licenceLinkingService,
       licenceService,
     )
@@ -79,6 +83,7 @@ class HdcLifecycleServiceTest {
       auditService,
       crdLicenceFactory,
       hdcLicenceFactory,
+      prisonerSearchApiClient,
       licenceService,
       licenceLinkingService,
     )
@@ -215,19 +220,21 @@ class HdcLifecycleServiceTest {
   ) {
     // Given
     val crdLicence = createCrdLicence().copy(id = 1, nomsId = "A1234AA", statusCode = status)
+    val prisoner = prisonerSearchResult()
     val hdcToPopulate = createHdcLicence().copy(id = null, versionOfId = crdLicence.id)
     val populatedHdc = hdcToPopulate.copy(id = 2)
     val auditCaptor = argumentCaptor<AuditEvent>()
 
     whenever(licenceRepository.findInFlightCrdLicences("A1234AA")).thenReturn(listOf(crdLicence))
-    whenever(hdcLicenceFactory.createFromCrd(crdLicence, IN_PROGRESS)).thenReturn(hdcToPopulate)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
+    whenever(hdcLicenceFactory.createFromCrd(crdLicence, prisoner, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(crdLicence, hdcToPopulate)).thenReturn(populatedHdc)
 
     // When
     service.convertToHdcLicence("A1234AA")
 
     // Then
-    verify(hdcLicenceFactory).createFromCrd(crdLicence, IN_PROGRESS)
+    verify(hdcLicenceFactory).createFromCrd(crdLicence, prisoner, IN_PROGRESS)
     verify(licenceService).populateCopy(crdLicence, hdcToPopulate)
     verify(licenceService).inactivateLicences(listOf(crdLicence), "Licence automatically inactivated after HDC OPT_IN event", deactivateInProgressVersions = true)
     verify(auditService, times(2)).recordAuditEvent(auditCaptor.capture())
@@ -269,19 +276,21 @@ class HdcLifecycleServiceTest {
     val approvedLicence = createCrdLicence().copy(id = 1, nomsId = "A1234AA", statusCode = APPROVED)
     val edit = approvedLicence.copy(id = 2, versionOfId = approvedLicence.id, statusCode = editStatus)
     val licences = listOf(edit, approvedLicence)
+    val prisoner = prisonerSearchResult()
     val hdcToPopulate = createHdcLicence().copy(id = null, versionOfId = edit.id)
     val populatedHdc = hdcToPopulate.copy(id = 3)
     val auditCaptor = argumentCaptor<AuditEvent>()
 
     whenever(licenceRepository.findInFlightCrdLicences("A1234AA")).thenReturn(licences)
-    whenever(hdcLicenceFactory.createFromCrd(edit, IN_PROGRESS)).thenReturn(hdcToPopulate)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
+    whenever(hdcLicenceFactory.createFromCrd(edit, prisoner, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(edit, hdcToPopulate)).thenReturn(populatedHdc)
 
     // When
     service.convertToHdcLicence("A1234AA")
 
     // Then
-    verify(hdcLicenceFactory).createFromCrd(edit, IN_PROGRESS)
+    verify(hdcLicenceFactory).createFromCrd(edit, prisoner, IN_PROGRESS)
     verify(licenceService).inactivateLicences(licences, "Licence automatically inactivated after HDC OPT_IN event", deactivateInProgressVersions = true)
     verify(licenceService).populateCopy(edit, hdcToPopulate)
     verify(auditService, times(2)).recordAuditEvent(auditCaptor.capture())
@@ -312,6 +321,24 @@ class HdcLifecycleServiceTest {
 
     // Then
     verifyNoInteractions(hdcLicenceFactory, licenceService, auditService, licenceLinkingService)
+  }
+
+  @Test
+  fun `convertToHdcLicence continues when prisoner search has no result`() {
+    val crdLicence = createCrdLicence().copy(id = 1, nomsId = "A1234AA")
+    val hdcToPopulate = createHdcLicence().copy(id = null, versionOfId = crdLicence.id)
+    val populatedHdc = hdcToPopulate.copy(id = 2)
+
+    whenever(licenceRepository.findInFlightCrdLicences("A1234AA")).thenReturn(listOf(crdLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
+    whenever(hdcLicenceFactory.createFromCrd(crdLicence, null, IN_PROGRESS)).thenReturn(hdcToPopulate)
+    whenever(licenceService.populateCopy(crdLicence, hdcToPopulate)).thenReturn(populatedHdc)
+
+    service.convertToHdcLicence("A1234AA")
+
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(listOf("A1234AA"))
+    verify(hdcLicenceFactory).createFromCrd(crdLicence, null, IN_PROGRESS)
+    verify(licenceService).populateCopy(crdLicence, hdcToPopulate)
   }
 
   @Test

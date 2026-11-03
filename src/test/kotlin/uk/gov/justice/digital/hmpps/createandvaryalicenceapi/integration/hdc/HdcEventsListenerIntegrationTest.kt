@@ -4,7 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
@@ -27,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_REFUSED_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
@@ -60,6 +63,11 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
   private val awaitAtMost30Secs
     get() = await.atMost(Duration.ofSeconds(30))
+
+  @BeforeEach
+  fun setupClient() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIdsNoResult()
+  }
 
   @Test
   fun `An HDC opt out event is processed`() {
@@ -139,6 +147,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(hdcLicence.nomsId).isEqualTo(crdLicence.nomsId)
     assertThat(hdcLicence.bookingId).isEqualTo(crdLicence.bookingId)
     assertThat(hdcLicence.licenceStartDate).isEqualTo(crdLicence.licenceStartDate)
+    assertThat(hdcLicence.homeDetentionCurfewEligibilityDate).isNull()
+    assertThat(hdcLicence.homeDetentionCurfewActualDate).isNull()
+    assertThat(hdcLicence.homeDetentionCurfewEndDate).isNull()
     assertThat(hdcLicence.probationContact).isNull()
     assertThat(hdcLicence.additionalConditions).hasSize(1)
     assertThat(hdcLicence.additionalConditions.single().expandedConditionText)
@@ -685,4 +696,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     triggeredBy = triggeredBy,
     reason = reason,
   )
+
+  private companion object {
+    @RegisterExtension
+    val prisonerSearchMockServer = PrisonerSearchMockServer()
+  }
 }
