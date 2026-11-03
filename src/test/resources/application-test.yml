@@ -82,7 +82,7 @@ hmpps:
   corepersonrecord:
     api:
       url: http://localhost:8098
-  remand-and-sentencing:
+  remandandsentencing:
     api:
       url: http://localhost:8102
 

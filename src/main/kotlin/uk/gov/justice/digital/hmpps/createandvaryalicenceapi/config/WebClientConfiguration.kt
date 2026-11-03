@@ -31,7 +31,7 @@ class WebClientConfiguration(
   @param:Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
   @param:Value("\${hmpps.corepersonrecord.api.url}") private val corePersonRecordApiUrl: String,
   @param:Value("\${os.places.api.url}") private val osPlacesApiUrl: String,
-  @param:Value("\${hmpps.remand-and-sentencing.api.url}") private val remandAndSentencingApiUrl: String,
+  @param:Value("\${hmpps.remandandsentencing.api.url}") private val remandAndSentencingApiUrl: String,
 
 ) {
 

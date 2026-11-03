@@ -48,7 +48,7 @@ hmpps:
     api:
       url: "https://hmpps-person-record-dev.hmpps.service.justice.gov.uk/"
 
-  remand-and-sentencing:
+  remandandsentencing:
     api:
       url: "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk"
 
