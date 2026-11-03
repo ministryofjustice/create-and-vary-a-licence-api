@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ModelHdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicCurfewTimes
@@ -25,7 +25,7 @@ class PublicLicenceService(
   fun getLicenceById(id: Long): Licence {
     val licence = licenceService.getLicenceById(id)
 
-    return if (licence is HdcLicence) {
+    return if (licence is ModelHdcCase) {
       PublicHdcLicence(
         licence = licence.transformToPublicLicence(),
         curfewAddress = toPublicHdcCurfewAddress(licence),
@@ -37,7 +37,7 @@ class PublicLicenceService(
     }
   }
 
-  private fun toPublicHdcCurfewAddress(licence: HdcLicence): PublicHdcCurfewAddress? = licence.curfewAddress?.let {
+  private fun toPublicHdcCurfewAddress(licence: ModelHdcCase): PublicHdcCurfewAddress? = licence.curfewAddress?.let {
     PublicHdcCurfewAddress(
       uprn = it.uprn,
       firstLine = it.firstLine,
@@ -45,7 +45,7 @@ class PublicLicenceService(
       townOrCity = it.townOrCity,
       county = it.county,
       postcode = it.postcode,
-      accommodationType = it.accommodationType?.name,
+      accommodationType = it.accommodationType,
       postReleaseResidentialChecksCompleted = it.postReleaseResidentialChecksCompleted,
       postReleaseResidentialChecksNotCompletedReason = it.postReleaseResidentialChecksNotCompletedReason,
     )
@@ -69,9 +69,9 @@ class PublicLicenceService(
   fun getImageUpload(licenceId: Long, conditionId: Long) = uploadFileConditionsService.getImage(licenceId, conditionId)
 
   private fun CurfewTimes.toPublicCurfewTimes() = PublicCurfewTimes(
-    fromDay = fromDay?.name,
+    fromDay = fromDay,
     fromTime = fromTime,
-    untilDay = untilDay?.name,
+    untilDay = untilDay,
     untilTime = untilTime,
   )
 }

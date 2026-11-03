@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -48,6 +50,7 @@ import java.time.LocalTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes as ModelCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as ModelHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as ModelHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as PublicLicenceType
 
@@ -260,10 +263,12 @@ class PublicLicenceServiceTest {
       assertThat(actualLicence).usingRecursiveComparison().isEqualTo(publicLicence)
     }
 
-    @Test
-    fun `service returns HDC licence with public curfew details`() {
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `service returns HDC licence and variation with public curfew details`(isVariation: Boolean) {
       // Given
       val modelHdcLicence = ModelHdcLicence(
+        id = 12345,
         typeCode = modelLicence.typeCode,
         version = "2.1",
         statusCode = LicenceStatus.IN_PROGRESS,
@@ -306,13 +311,29 @@ class PublicLicenceServiceTest {
           lastUpdatedTimestamp = null,
         ),
       )
-      whenever(licenceService.getLicenceById(any())).thenReturn(modelHdcLicence)
+      val licence = if (isVariation) {
+        ModelHdcVariationLicence(
+          id = modelHdcLicence.id,
+          typeCode = modelHdcLicence.typeCode,
+          version = modelHdcLicence.version,
+          statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+          licenceVersion = modelHdcLicence.licenceVersion,
+          weeklyCurfewTimes = modelHdcLicence.weeklyCurfewTimes,
+          firstNightCurfewTimes = modelHdcLicence.firstNightCurfewTimes,
+          curfewAddress = modelHdcLicence.curfewAddress,
+        )
+      } else {
+        modelHdcLicence
+      }
+      whenever(licenceService.getLicenceById(12345)).thenReturn(licence)
 
       // When
       val actualLicence = service.getLicenceById(12345) as PublicHdcLicence
 
       // Then
       assertThat(actualLicence.id).isEqualTo(modelHdcLicence.id)
+      assertThat(actualLicence.kind).isEqualTo(if (isVariation) "HDC_VARIATION" else "HDC")
+      assertThat(actualLicence.statusCode).isEqualTo(licence.statusCode)
       assertThat(actualLicence.curfewAddress).usingRecursiveComparison().isEqualTo(
         PublicHdcCurfewAddress(
           uprn = "uprn-123",
@@ -321,7 +342,7 @@ class PublicLicenceServiceTest {
           townOrCity = "Test Town",
           county = "Test County",
           postcode = "AB1 2CD",
-          accommodationType = "RESIDENTIAL",
+          accommodationType = AccommodationType.RESIDENTIAL,
           postReleaseResidentialChecksCompleted = false,
           postReleaseResidentialChecksNotCompletedReason = "Old reason",
         ),
@@ -337,15 +358,15 @@ class PublicLicenceServiceTest {
       assertThat(actualLicence.curfewTimes).usingRecursiveComparison().isEqualTo(
         listOf(
           PublicCurfewTimes(
-            fromDay = "MONDAY",
+            fromDay = DayOfWeek.MONDAY,
             fromTime = LocalTime.of(20, 0),
-            untilDay = "TUESDAY",
+            untilDay = DayOfWeek.TUESDAY,
             untilTime = LocalTime.of(8, 0),
           ),
           PublicCurfewTimes(
-            fromDay = "TUESDAY",
+            fromDay = DayOfWeek.TUESDAY,
             fromTime = LocalTime.of(21, 0),
-            untilDay = "WEDNESDAY",
+            untilDay = DayOfWeek.WEDNESDAY,
             untilTime = LocalTime.of(9, 0),
           ),
         ),

@@ -48,6 +48,20 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-hdc-curfew-address.sql",
     )
     fun `returns HDC curfew address and times`() {
+      assertHdcCurfewDetails("HDC")
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-hdc-variation-licence-id-1.sql",
+      "classpath:test_data/seed-hdc-curfew-hours.sql",
+      "classpath:test_data/seed-hdc-curfew-address.sql",
+    )
+    fun `returns HDC variation curfew address and times`() {
+      assertHdcCurfewDetails("HDC_VARIATION")
+    }
+
+    private fun assertHdcCurfewDetails(kind: String) {
       // Given
       val request = buildGetRequest(uri = "/public/licences/id/1")
 
@@ -59,7 +73,8 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
-        .jsonPath("$.kind").isEqualTo("HDC")
+        .jsonPath("$.id").isEqualTo(1)
+        .jsonPath("$.kind").isEqualTo(kind)
         .jsonPath("$.curfewAddress.firstLine").isEqualTo("1 Some Address")
         .jsonPath("$.curfewAddress.townOrCity").isEqualTo("Some Town")
         .jsonPath("$.curfewAddress.postcode").isEqualTo("AB1 2CD")
