@@ -30,8 +30,8 @@ generic-service:
     PROGRESSION_MODEL_POLICY_START_DATE: 2026-01-14
     PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE: 2026-12-31
     HDC_CREATION_ENABLED: true
-    HMPPS_REMAND_API_ENANBLED: false
-    HMPPS_REMAND_API_URL: "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk"
+    HMPPS_REMAND_API_ENABLED: false
+    HMPPS_REMANDANDSENTENCING_API_URL: "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk"
 
     # Event listeners
     HDC_EVENT_LISTENER_ENABLED: true

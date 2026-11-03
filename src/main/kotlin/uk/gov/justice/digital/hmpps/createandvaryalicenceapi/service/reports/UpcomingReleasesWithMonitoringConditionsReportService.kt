@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.El
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.model.UpcomingReleasesWithMonitoringConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -21,17 +20,9 @@ class UpcomingReleasesWithMonitoringConditionsReportService(
   private val reportRepository: ReportRepository,
 ) {
 
-  fun getRecentReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> {
-    val releases = reportRepository.getRecentOrUpcomingReleasesWithMonitoringConditions()
-      .filter { it.licenceStartDate?.isBefore(LocalDate.now()) == true }
-    return convertToUpcomingReleasesWithMonitoringConditionsResponse(releases)
-  }
+  fun getRecentReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> = convertToUpcomingReleasesWithMonitoringConditionsResponse(reportRepository.getRecentReleasesWithMonitoringConditions())
 
-  fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> {
-    val releases = reportRepository.getRecentOrUpcomingReleasesWithMonitoringConditions()
-      .filter { it.licenceStartDate?.isOnOrAfter(LocalDate.now()) == true }
-    return convertToUpcomingReleasesWithMonitoringConditionsResponse(releases)
-  }
+  fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditionsResponse> = convertToUpcomingReleasesWithMonitoringConditionsResponse(reportRepository.getUpcomingReleasesWithMonitoringConditions())
 
   fun convertToUpcomingReleasesWithMonitoringConditionsResponse(releases: List<UpcomingReleasesWithMonitoringConditions>): List<UpcomingReleasesWithMonitoringConditionsResponse> {
     val monitoringDataByLicence = releases
