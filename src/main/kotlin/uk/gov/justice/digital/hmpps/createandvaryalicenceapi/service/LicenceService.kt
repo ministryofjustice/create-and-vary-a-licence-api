@@ -110,7 +110,6 @@ class LicenceService(
     val entityLicence = getLicence(licenceId)
     val isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(entityLicence)
     val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
-    val hdcAddressChecksComplete = entityLicence.kind == HDC && hdcAddressChecksComplete(entityLicence)
 
     val conditionsSubmissionStatus =
       getLicenceConditionPolicyData(
@@ -118,14 +117,9 @@ class LicenceService(
         licencePolicyService.getAllAdditionalConditions(),
       )
 
-    val licence = transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus, hdcAddressChecksComplete)
+    val licence = transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
     uploadFileConditionsService.getThumbnailForImages(entityLicence, licence)
     return licence
-  }
-
-  fun hdcAddressChecksComplete(licence: EntityLicence): Boolean {
-    val bookingIdsToHdcStatus = hdcService.getHdcStatus(listOf(licence), { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
-    return bookingIdsToHdcStatus.any { it.value == HdcStatus.RISK_CHECKS_COMPLETE || it.value == HdcStatus.APPROVED }
   }
 
   fun transform(
@@ -133,7 +127,6 @@ class LicenceService(
     earliestReleaseDate: LocalDate?,
     isEligibleForEarlyRelease: Boolean,
     conditionPolicyData: Map<String, ConditionPolicyData>,
-    hdcAddressChecksComplete: Boolean,
   ): Licence = when (licence) {
     is PrrdLicence -> toPrrd(
       licence = licence,
@@ -193,6 +186,7 @@ class LicenceService(
 
     is HdcLicence -> {
       val linkTypes = licenceLinkingService.getLinkTypesToLicence(licence.id)
+      val bookingIdsToHdcStatus = hdcService.getHdcStatus(listOf(licence), { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
       toHdc(
         licence = licence,
         earliestReleaseDate = earliestReleaseDate,
@@ -204,7 +198,7 @@ class LicenceService(
         conditionPolicyData = conditionPolicyData,
         isHdcMigration = migrationService.isAMigratedLicence(licence.id),
         isReplacementForOptedInLicence = HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE in linkTypes,
-        hdcAddressChecksComplete = hdcAddressChecksComplete,
+        hdcAddressChecksComplete = bookingIdsToHdcStatus.any { it.value == HdcStatus.RISK_CHECKS_COMPLETE || it.value == HdcStatus.APPROVED },
       )
     }
 
