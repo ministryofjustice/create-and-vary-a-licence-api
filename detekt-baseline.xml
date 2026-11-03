@@ -39,6 +39,7 @@
     <ID>MagicNumber:PromptComService.kt:PromptComService.Companion$4</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt:EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt:LicenceQueryObject</ID>
+    <ID>NewLineAtEndOfFile:RemandOutcome.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.remandAndSentencing.RemandOutcome.kt</ID>
     <ID>ReturnCount:AllRepositoryUnproxyAspect.kt:AllRepositoryUnproxyAspect$fun unProxy: Any?</ID>
     <ID>ReturnCount:ComAllocatedHandler.kt:ComAllocatedHandler$fun isValidOffenderManager: Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isEligibleIfOnAnExtendedDeterminateSentence: Boolean</ID>
