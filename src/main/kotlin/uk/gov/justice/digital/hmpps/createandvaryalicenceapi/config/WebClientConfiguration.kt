@@ -31,6 +31,8 @@ class WebClientConfiguration(
   @param:Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
   @param:Value("\${hmpps.corepersonrecord.api.url}") private val corePersonRecordApiUrl: String,
   @param:Value("\${os.places.api.url}") private val osPlacesApiUrl: String,
+  @param:Value("\${hmpps.remand-and-sentencing.api.url}") private val remandAndSentencingApiUrl: String,
+
 ) {
 
   @Bean
@@ -120,6 +122,12 @@ class WebClientConfiguration(
     authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider)
     return authorizedClientManager
   }
+
+  @Bean
+  fun oauthRemandAndSentencingApiClient(
+    authorizedClientManagerCvl: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = getWebClient(remandAndSentencingApiUrl, authorizedClientManagerCvl, builder)
 
   private fun getWebClient(
     url: String,
