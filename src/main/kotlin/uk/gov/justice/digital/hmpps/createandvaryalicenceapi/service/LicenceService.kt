@@ -101,7 +101,6 @@ class LicenceService(
   private val migrationService: MigrationService,
   private val licenceConditionService: LicenceConditionService,
   private val licenceLinkingService: LicenceLinkingService,
-  private val hdcService: HdcService,
 ) {
 
   @Transactional(readOnly = true)
@@ -185,7 +184,6 @@ class LicenceService(
 
     is HdcLicence -> {
       val linkTypes = licenceLinkingService.getLinkTypesToLicence(licence.id)
-      val bookingIdsToHdcStatus = hdcService.getHdcStatus(listOf(licence), { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
       toHdc(
         licence = licence,
         earliestReleaseDate = earliestReleaseDate,
@@ -197,7 +195,6 @@ class LicenceService(
         conditionPolicyData = conditionPolicyData,
         isHdcMigration = migrationService.isAMigratedLicence(licence.id),
         isReplacementForOptedInLicence = HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE in linkTypes,
-        hdcRiskChecksComplete = hdcService.isRiskChecksComplete(bookingIdsToHdcStatus),
       )
     }
 

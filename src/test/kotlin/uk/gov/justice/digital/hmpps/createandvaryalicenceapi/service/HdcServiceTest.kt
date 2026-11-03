@@ -202,39 +202,6 @@ class HdcServiceTest {
     assertThat(service.isApprovedForHdc(2L, null)).isFalse
   }
 
-  @Test
-  fun `isRiskChecksComplete true when risk checks have been completed in HDC`() {
-    val hdcStatus = HdcStatuses(
-      mapOf(
-        54321L to HdcStatus.RISK_CHECKS_COMPLETE,
-      ),
-    )
-
-    assertThat(service.isRiskChecksComplete(hdcStatus)).isTrue
-  }
-
-  @Test
-  fun `isRiskChecksComplete true when risk checks have been completed and licence is approved in HDC`() {
-    val hdcStatus = HdcStatuses(
-      mapOf(
-        54321L to HdcStatus.APPROVED,
-      ),
-    )
-
-    assertThat(service.isRiskChecksComplete(hdcStatus)).isTrue
-  }
-
-  @Test
-  fun `isRiskChecksComplete false when risk checks not yet completed in HDC`() {
-    val hdcStatus = HdcStatuses(
-      mapOf(
-        54321L to HdcStatus.ELIGIBILITY_CHECKS_COMPLETE,
-      ),
-    )
-
-    assertThat(service.isRiskChecksComplete(hdcStatus)).isFalse
-  }
-
   @Nested
   inner class HdcStatusesTest {
     val statuses = HdcStatuses(

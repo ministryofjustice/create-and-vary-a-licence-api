@@ -74,7 +74,6 @@ class ToModelTransformersTest {
       conditionPolicyData = emptyMap(),
       isHdcMigration = false,
       isReplacementForOptedInLicence = false,
-      hdcRiskChecksComplete = false,
     )
 
     assertThat(result.isPostponed).isTrue()
@@ -93,29 +92,9 @@ class ToModelTransformersTest {
       conditionPolicyData = emptyMap(),
       isHdcMigration = false,
       isReplacementForOptedInLicence = true,
-      hdcRiskChecksComplete = false,
     )
 
     assertThat(result.isReplacementForOptedInLicence).isTrue()
-  }
-
-  @Test
-  fun `toHdc maps the hdc address checks complete flag`() {
-    val result = toHdc(
-      licence = TestData.createHdcLicence(),
-      earliestReleaseDate = null,
-      isEligibleForEarlyRelease = false,
-      hardStopDate = null,
-      hardStopWarningDate = null,
-      isInHardStopPeriod = false,
-      isDueToBeReleasedInTheNextTwoWorkingDays = false,
-      conditionPolicyData = emptyMap(),
-      isHdcMigration = false,
-      isReplacementForOptedInLicence = false,
-      hdcRiskChecksComplete = true,
-    )
-
-    assertThat(result.hdcRiskChecksComplete).isTrue()
   }
 
   @Test
