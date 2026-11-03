@@ -31,6 +31,12 @@ data class SingleUploadAdditionalCondition(
   ) override val text: String,
 
   @field:Schema(
+    description = "The description of the uploaded file for this condition, if one was provided",
+    example = "Exclusion Zone for London",
+  )
+  val description: String?,
+
+  @field:Schema(
     description = "Whether any image was uploaded when the condition was created",
     example = "true",
   ) val hasImageUpload: Boolean,
