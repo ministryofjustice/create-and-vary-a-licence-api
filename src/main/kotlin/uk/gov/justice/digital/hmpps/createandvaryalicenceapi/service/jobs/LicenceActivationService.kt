@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetrySe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.RemandCourtEvents
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.remandAndSentencing.RemandAndSentencingApiClient
 import java.time.LocalDate
 
 data class LicenceWithPrisoner(val licence: Licence, val prisoner: PrisonerSearchPrisoner) {
@@ -30,6 +30,7 @@ class LicenceActivationService(
   private val hdcService: HdcService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
+  private val remandAndSentencingApiClient: RemandAndSentencingApiClient,
   private val auditService: AuditService,
   private val telemetryService: TelemetryService,
   @param:Value("\${feature.toggle.remand.enabled}") private val remandEnabled: Boolean = false,
@@ -104,16 +105,26 @@ class LicenceActivationService(
 
     val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(
       nonImmigrationBookingIds,
-      if (remandEnabled) Is91CourtEvents.getCodes() + RemandCourtEvents.getCodes() else Is91CourtEvents.getCodes(),
+      Is91CourtEvents.getCodes(),
     )
 
-    val iS91OutcomeBookingIds = courtEventOutcomes
+    val is91CourtEventOutcomeBookingIds = courtEventOutcomes
       .filter { it.outcomeReasonCode in Is91CourtEvents.getCodes() }
       .map { it.bookingId }
+      .toSet()
 
-    val remandOutcomeBookingIds = courtEventOutcomes
-      .filter { it.outcomeReasonCode in RemandCourtEvents.getCodes() }
-      .map { it.bookingId }
+    val (iS91OutcomeBookingIds, nonIs91OutcomeBookingIds) = nonImmigrationBookingIds
+      .partition { it in is91CourtEventOutcomeBookingIds }
+
+    val remandOutcomeBookingIds = if (remandEnabled) {
+      nonIs91OutcomeBookingIds.map {
+        val remandOutcome = remandAndSentencingApiClient.getRemandOutcome(it)
+      }
+      val remandOutcomes = remandAndSentencingApiClient.getRemandOutcomes(nonIs91OutcomeBookingIds)
+      remandOutcomes.filter { it.isOnRemand }.mapNotNull { it.bookingId?.toLong() }.toSet()
+    } else {
+      emptySet()
+    }
 
     val iS91BookingIds = immigrationDetaineeBookingIds + iS91OutcomeBookingIds
     val (iS91Licences, nonIs91Licences) = licences.partition { it.bookingId in iS91BookingIds }
