@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.H
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_IN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_IN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
@@ -37,6 +38,7 @@ class HdcLifecycleService(
   private val auditService: AuditService,
   private val crdLicenceFactory: CrdLicenceFactory,
   private val hdcLicenceFactory: HdcLicenceFactory,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val linkingService: LicenceLinkingService,
   private var licenceService: LicenceService,
 ) {
@@ -182,7 +184,8 @@ class HdcLifecycleService(
       val licenceToConvert = getLicenceToConvert(licencesByStatus)
       inactivateConversionLicence(OPT_IN, licencesByStatus)
 
-      val hdcCopy = hdcLicenceFactory.createFromCrd(licenceToConvert, IN_PROGRESS)
+      val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsNumber)).firstOrNull()
+      val hdcCopy = hdcLicenceFactory.createFromCrd(licenceToConvert, prisoner, IN_PROGRESS)
       val newLicence = licenceService.populateCopy(
         original = licenceToConvert,
         copy = hdcCopy,
