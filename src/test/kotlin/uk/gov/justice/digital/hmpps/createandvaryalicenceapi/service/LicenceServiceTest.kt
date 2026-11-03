@@ -3903,13 +3903,6 @@ class LicenceServiceTest {
       whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
         AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
       )
-      whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-        HdcStatuses(
-          mapOf(
-            54321L to HdcStatus.APPROVED,
-          ),
-        ),
-      )
 
       val licence = service.getLicenceById(1L)
 
@@ -3927,13 +3920,6 @@ class LicenceServiceTest {
       )
       whenever(licenceLinkingService.getLinkTypesToLicence(1L))
         .thenReturn(setOf(HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE))
-      whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-        HdcStatuses(
-          mapOf(
-            54321L to HdcStatus.APPROVED,
-          ),
-        ),
-      )
 
       val licence = service.getLicenceById(1L) as HdcLicenceModel
 
@@ -3941,7 +3927,7 @@ class LicenceServiceTest {
     }
 
     @Test
-    fun `populates hdcRiskChecksComplete true from the conversion link when address checks complete`() {
+    fun `populates hdcRiskChecksComplete field`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
       whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
         AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
@@ -3953,29 +3939,11 @@ class LicenceServiceTest {
           ),
         ),
       )
+      whenever(hdcService.isRiskChecksComplete(any())).thenReturn(true)
 
       val licence = service.getLicenceById(1L) as HdcLicenceModel
 
       assertThat(licence.hdcRiskChecksComplete).isTrue()
-    }
-
-    @Test
-    fun `populates hdcRiskChecksComplete false from the conversion link when address checks not complete`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
-      whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
-        AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
-      )
-      whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-        HdcStatuses(
-          mapOf(
-            54321L to HdcStatus.ELIGIBILITY_CHECKS_COMPLETE,
-          ),
-        ),
-      )
-
-      val licence = service.getLicenceById(1L) as HdcLicenceModel
-
-      assertThat(licence.hdcRiskChecksComplete).isFalse()
     }
 
     @Test
@@ -3985,13 +3953,6 @@ class LicenceServiceTest {
         AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
       )
       whenever(migrationService.isAMigratedLicence(1L)).thenReturn(true)
-      whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
-        HdcStatuses(
-          mapOf(
-            54321L to HdcStatus.APPROVED,
-          ),
-        ),
-      )
 
       val licence = service.getLicenceById(1L)
 
