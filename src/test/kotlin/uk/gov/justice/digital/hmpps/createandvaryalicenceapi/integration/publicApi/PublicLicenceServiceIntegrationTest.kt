@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.json.JsonCompareMode
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
@@ -52,6 +53,22 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
+    @Sql("classpath:test_data/seed-hdc-licence-id-1-with-curfew-details.sql")
+    fun `HDC licence response can be deserialized as a regular licence`() {
+      // Given
+      val request = buildGetRequest(uri = "/public/licences/id/1")
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      response.expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody().json(serializedContent("hdc-licence"), JsonCompareMode.STRICT)
+        .returnResult()
+    }
+
+    @Test
     @Sql(
       "classpath:test_data/seed-hdc-variation-licence-id-1.sql",
       "classpath:test_data/seed-hdc-curfew-hours.sql",
@@ -85,6 +102,26 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .jsonPath("$.curfewTimes[0].fromDay").isEqualTo("MONDAY")
         .jsonPath("$.curfewTimes[0].fromTime").isEqualTo("19:00:00")
         .jsonPath("$.curfewTimes[1].fromDay").isEqualTo("TUESDAY")
+    }
+  }
+
+  @Nested
+  inner class `Get CRD licence by id` {
+
+    @Test
+    @Sql("classpath:test_data/seed-crd-licence-id-1-with-conditions.sql")
+    fun `CRD licence response can be deserialized as a regular licence`() {
+      // Given
+      val request = buildGetRequest(uri = "/public/licences/id/1")
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      response.expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody().json(serializedContent("crd-licence"), JsonCompareMode.STRICT)
+        .returnResult()
     }
   }
 
@@ -440,6 +477,10 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     .uri(uri)
     .accept(*acceptMediaTypes.toTypedArray())
     .headers(setAuthorisation(roles = listOf(role)))
+
+  private fun serializedContent(name: String) = this.javaClass.getResourceAsStream("/test_data/public-api/$name.json")!!
+    .bufferedReader()
+    .readText()
 
   private companion object {
     @RegisterExtension
