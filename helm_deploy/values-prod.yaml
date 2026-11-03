@@ -27,6 +27,8 @@ generic-service:
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     OS_PLACES_DATASET: "DPA"
     DPR_MANAGE_USERS_HOST: "https://manage-users-api.hmpps.service.justice.gov.uk"
+    HMPPS_REMAND_API_ENABLED: false
+    HMPPS_REMANDANDSENTENCING_API_URL: "https://remand-and-sentencing-api.hmpps.service.justice.gov.uk"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
