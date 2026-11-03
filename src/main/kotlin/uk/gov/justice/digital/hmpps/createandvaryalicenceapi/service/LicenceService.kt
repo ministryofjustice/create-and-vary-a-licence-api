@@ -198,7 +198,7 @@ class LicenceService(
         conditionPolicyData = conditionPolicyData,
         isHdcMigration = migrationService.isAMigratedLicence(licence.id),
         isReplacementForOptedInLicence = HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE in linkTypes,
-        hdcAddressChecksComplete = bookingIdsToHdcStatus.any { it.value == HdcStatus.RISK_CHECKS_COMPLETE || it.value == HdcStatus.APPROVED },
+        hdcRiskChecksComplete = bookingIdsToHdcStatus.any { it.value == HdcStatus.RISK_CHECKS_COMPLETE || it.value == HdcStatus.APPROVED },
       )
     }
 

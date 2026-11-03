@@ -74,7 +74,7 @@ class ToModelTransformersTest {
       conditionPolicyData = emptyMap(),
       isHdcMigration = false,
       isReplacementForOptedInLicence = false,
-      hdcAddressChecksComplete = false,
+      hdcRiskChecksComplete = false,
     )
 
     assertThat(result.isPostponed).isTrue()
@@ -93,7 +93,7 @@ class ToModelTransformersTest {
       conditionPolicyData = emptyMap(),
       isHdcMigration = false,
       isReplacementForOptedInLicence = true,
-      hdcAddressChecksComplete = false,
+      hdcRiskChecksComplete = false,
     )
 
     assertThat(result.isReplacementForOptedInLicence).isTrue()
@@ -112,10 +112,10 @@ class ToModelTransformersTest {
       conditionPolicyData = emptyMap(),
       isHdcMigration = false,
       isReplacementForOptedInLicence = false,
-      hdcAddressChecksComplete = true,
+      hdcRiskChecksComplete = true,
     )
 
-    assertThat(result.hdcAddressChecksComplete).isTrue()
+    assertThat(result.hdcRiskChecksComplete).isTrue()
   }
 
   @Test

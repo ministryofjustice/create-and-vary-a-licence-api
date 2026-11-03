@@ -372,7 +372,7 @@ data class HdcLicence(
   val isReplacementForOptedInLicence: Boolean = false,
 
   @field:Schema(description = "Have the address checks been completed for this HDC licence?", example = "false")
-  val hdcAddressChecksComplete: Boolean = false,
+  val hdcRiskChecksComplete: Boolean = false,
 ) : Licence,
   SupportsElectronicMonitoring,
   ModelHdcCase

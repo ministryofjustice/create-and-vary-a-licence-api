@@ -3941,7 +3941,7 @@ class LicenceServiceTest {
     }
 
     @Test
-    fun `populates hdcAddressChecksComplete true from the conversion link when address checks complete`() {
+    fun `populates hdcRiskChecksComplete true from the conversion link when address checks complete`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
       whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
         AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
@@ -3956,11 +3956,11 @@ class LicenceServiceTest {
 
       val licence = service.getLicenceById(1L) as HdcLicenceModel
 
-      assertThat(licence.hdcAddressChecksComplete).isTrue()
+      assertThat(licence.hdcRiskChecksComplete).isTrue()
     }
 
     @Test
-    fun `populates hdcAddressChecksComplete false from the conversion link when address checks not complete`() {
+    fun `populates hdcRiskChecksComplete false from the conversion link when address checks not complete`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
       whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
         AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
@@ -3975,7 +3975,7 @@ class LicenceServiceTest {
 
       val licence = service.getLicenceById(1L) as HdcLicenceModel
 
-      assertThat(licence.hdcAddressChecksComplete).isFalse()
+      assertThat(licence.hdcRiskChecksComplete).isFalse()
     }
 
     @Test
