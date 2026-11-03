@@ -360,7 +360,6 @@ class SubjectAccessRequestResponseBuilderTest {
       conditionPolicyData = emptyMap(),
       isHdcMigration = false,
       isReplacementForOptedInLicence = false,
-      hdcRiskChecksComplete = false,
     )
   }
 }
