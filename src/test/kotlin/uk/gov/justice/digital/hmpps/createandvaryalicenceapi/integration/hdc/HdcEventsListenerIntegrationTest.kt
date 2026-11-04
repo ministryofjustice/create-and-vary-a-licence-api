@@ -231,7 +231,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
   @Sql("classpath:test_data/seed-licence-id-1.sql")
   fun `An HDC opt in event copies the electronic monitoring provider into it's own entity`() {
     // Given
-    val crdLicence =  testRepository.findLicence(1L) as CrdLicence
+    val crdLicence = testRepository.findLicence(1L) as CrdLicence
     val originalProvider = requireNotNull(crdLicence.electronicMonitoringProvider)
     val event = createHdcStatusChangedEvent(
       bookingId = 123L,
