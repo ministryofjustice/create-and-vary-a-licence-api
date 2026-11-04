@@ -258,7 +258,6 @@ class PublicLicenceServiceTest {
 
     @Test
     fun `service returns a licence by id`() {
-
       // Given
       val licenceId: Long = 12345
       whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
