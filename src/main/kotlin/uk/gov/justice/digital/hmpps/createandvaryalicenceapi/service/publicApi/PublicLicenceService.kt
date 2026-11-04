@@ -18,10 +18,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
 class PublicLicenceService(
-    private val licenceRepository: LicenceRepository,
-    private val licenceService: LicenceService,
-    private val uploadFileConditionsService: UploadFileConditionsService,
-    @param:Value($$"${feature.toggle.publicApiHdcDetails.enabled}") private val publicApiHdcDetailsEnabled: Boolean = false,
+  private val licenceRepository: LicenceRepository,
+  private val licenceService: LicenceService,
+  private val uploadFileConditionsService: UploadFileConditionsService,
+  @param:Value($$"${feature.toggle.publicApiHdcDetails.enabled}") private val publicApiHdcDetailsEnabled: Boolean = false,
 ) {
 
   fun getLicenceById(id: Long): Licence {
