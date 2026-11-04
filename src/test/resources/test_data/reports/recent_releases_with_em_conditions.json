@@ -1,7 +1,7 @@
 [ {
   "prisonNumber" : "A1234AF",
   "crn" : "CRN1",
-  "status" : "SUBMITTED",
+  "status" : "ACTIVE",
   "licenceStartDate" : "{{RECENT_LICENCE_START_DATE}}",
   "submittedDate" : "24/08/2024",
   "emConditionCodes" : "14a, 14d",

@@ -46,6 +46,7 @@
           "id": 2,
           "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
           "text": "Do not enter the area defined in the attached map.",
+          "description": "Exclusion zone one",
           "hasImageUpload": true
         },
         {
@@ -54,6 +55,7 @@
           "id": 3,
           "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
           "text": "Do not enter the area defined in the attached map.",
+          "description": "Exclusion zone two",
           "hasImageUpload": true
         },
         {
@@ -62,6 +64,7 @@
           "id": 4,
           "code": "99195049-f355-46fb-b7d8-aef87a1b19c5",
           "text": "Do not enter the area defined in the attached map for the duration of The Event.",
+          "description": "Event exclusion zone",
           "hasImageUpload": true
         },
         {
@@ -80,6 +83,7 @@
           "id": 6,
           "code": "005d70e4-a247-4f82-b8b3-6d294a0f5051",
           "text": "Do not enter the area defined in the attached map.",
+          "description": "Exclusion zone two",
           "hasImageUpload": true
         }
       ],
