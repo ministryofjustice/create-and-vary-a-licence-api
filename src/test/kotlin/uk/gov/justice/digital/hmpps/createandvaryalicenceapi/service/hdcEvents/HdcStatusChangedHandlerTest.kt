@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import java.time.LocalDateTime
@@ -92,6 +93,13 @@ class HdcStatusChangedHandlerTest {
     handler.handleResume(eventJson)
 
     verify(hdcService).resumeHdcPostponement("A1234BC")
+  }
+
+  @Test
+  fun `handleAddressWithdrawn processes event without changing the licence`() {
+    handler.handleAddressWithdrawn(eventJson)
+
+    verifyNoInteractions(hdcService)
   }
 
   @Test
