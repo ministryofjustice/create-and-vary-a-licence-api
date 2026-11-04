@@ -100,7 +100,7 @@ class ToModelTransformersTest {
   }
 
   @Test
-  fun `toHdc maps the hdc address checks complete flag`() {
+  fun `toHdc maps the hdc risk checks complete flag`() {
     val result = toHdc(
       licence = TestData.createHdcLicence(),
       earliestReleaseDate = null,
