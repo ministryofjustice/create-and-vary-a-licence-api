@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.NotSecuredWebMvcTest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -69,7 +70,7 @@ class PublicLicenceControllerTest {
 
   @Test
   fun `get a licence by id handles missing created dates`() {
-    whenever(publicLicenceService.getLicenceById(1234)).thenReturn(aLicence.copy(createdDateTime = null))
+    whenever(publicLicenceService.getLicenceById(1234)).thenReturn(aLicence.copyWithCreatedDateTime(null))
 
     mvc.perform(get("/public/licences/id/1234").accept(APPLICATION_JSON))
       .andExpect(status().isOk)
@@ -153,6 +154,27 @@ class PublicLicenceControllerTest {
   }
 
   private companion object {
+    private fun Licence.copyWithCreatedDateTime(createdDateTime: LocalDateTime?) = Licence(
+      id = id,
+      kind = kind,
+      licenceType = licenceType,
+      policyVersion = policyVersion,
+      version = version,
+      statusCode = statusCode,
+      prisonNumber = prisonNumber,
+      bookingId = bookingId,
+      crn = crn,
+      approvedByUsername = approvedByUsername,
+      approvedDateTime = approvedDateTime,
+      createdByUsername = createdByUsername,
+      createdDateTime = createdDateTime,
+      updatedByUsername = updatedByUsername,
+      updatedDateTime = updatedDateTime,
+      licenceStartDate = licenceStartDate,
+      isInPssPeriod = isInPssPeriod,
+      conditions = conditions,
+    )
+
     val aLicence = toCrd(
       licence = createCrdLicence().copy(id = 1234, version = "2.1"),
       earliestReleaseDate = LocalDate.of(2024, 1, 3),
