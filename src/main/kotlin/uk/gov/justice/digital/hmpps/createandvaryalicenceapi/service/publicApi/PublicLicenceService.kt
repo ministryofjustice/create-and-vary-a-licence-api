@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import jakarta.transaction.Transactional
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ModelHdcCase
@@ -17,15 +18,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
 class PublicLicenceService(
-  private val licenceRepository: LicenceRepository,
-  private val licenceService: LicenceService,
-  private val uploadFileConditionsService: UploadFileConditionsService,
+    private val licenceRepository: LicenceRepository,
+    private val licenceService: LicenceService,
+    private val uploadFileConditionsService: UploadFileConditionsService,
+    @param:Value($$"${feature.toggle.publicApiHdcDetails.enabled}") private val publicApiHdcDetailsEnabled: Boolean = false,
 ) {
 
   fun getLicenceById(id: Long): Licence {
     val licence = licenceService.getLicenceById(id)
 
-    return if (licence is ModelHdcCase) {
+    return if (publicApiHdcDetailsEnabled && licence is ModelHdcCase) {
       PublicHdcLicence(
         licence = licence.transformToPublicLicence(),
         curfewAddress = toPublicHdcCurfewAddress(licence),

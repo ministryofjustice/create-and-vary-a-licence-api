@@ -63,6 +63,7 @@ class PublicLicenceServiceTest {
     licenceRepository,
     licenceService,
     uploadFileConditionsService,
+    publicApiHdcDetailsEnabled = true,
   )
 
   @BeforeEach
@@ -254,63 +255,50 @@ class PublicLicenceServiceTest {
 
   @Nested
   inner class `Get licence by id` {
+
     @Test
-    fun `service returns a licence by id`() {
+    fun `service returns a hdc licence with out hdc detail when publicApiHdcDetailsEnabled is false`() {
+      // Given
+      val service = PublicLicenceService(
+        licenceRepository,
+        licenceService,
+        uploadFileConditionsService,
+        publicApiHdcDetailsEnabled = false,
+      )
       val licenceId: Long = 12345
-      whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
+      whenever(licenceService.getLicenceById(any())).thenReturn(modelHdcLicence)
+      // When
       val actualLicence = service.getLicenceById(licenceId)
 
-      assertThat(actualLicence).usingRecursiveComparison().isEqualTo(publicLicence)
+      // Then
+      assertThat(actualLicence).isInstanceOf(PublicLicence::class.java)
+      assertThat(actualLicence).isNotInstanceOf(PublicHdcLicence::class.java)
+    }
+
+    @Test
+    fun `service returns a hdc licence with hdc detail when publicApiHdcDetailsEnabled is true`() {
+      // Given
+      val service = PublicLicenceService(
+        licenceRepository,
+        licenceService,
+        uploadFileConditionsService,
+        publicApiHdcDetailsEnabled = true,
+      )
+      val licenceId: Long = 12345
+      whenever(licenceService.getLicenceById(any())).thenReturn(modelHdcLicence)
+      // When
+      val actualLicence = service.getLicenceById(licenceId)
+
+      // Then
+      assertThat(actualLicence).isInstanceOf(PublicLicence::class.java)
+      assertThat(actualLicence).isInstanceOf(PublicHdcLicence::class.java)
     }
 
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun `service returns HDC licence and variation with public curfew details`(isVariation: Boolean) {
       // Given
-      val modelHdcLicence = ModelHdcLicence(
-        id = 12345,
-        typeCode = modelLicence.typeCode,
-        version = "2.1",
-        statusCode = LicenceStatus.IN_PROGRESS,
-        licenceVersion = "1.4",
-        weeklyCurfewTimes = listOf(
-          ModelCurfewTimes(
-            curfewTimesSequence = 2,
-            fromDay = DayOfWeek.TUESDAY,
-            fromTime = LocalTime.of(21, 0),
-            untilDay = DayOfWeek.WEDNESDAY,
-            untilTime = LocalTime.of(9, 0),
-            createdTimestamp = null,
-          ),
-          ModelCurfewTimes(
-            curfewTimesSequence = 1,
-            fromDay = DayOfWeek.MONDAY,
-            fromTime = LocalTime.of(20, 0),
-            untilDay = DayOfWeek.TUESDAY,
-            untilTime = LocalTime.of(8, 0),
-            createdTimestamp = null,
-          ),
-        ),
-        firstNightCurfewTimes = ModelCurfewTimes(
-          fromTime = LocalTime.of(22, 0),
-          untilTime = LocalTime.of(6, 0),
-          createdTimestamp = null,
-        ),
-        curfewAddress = ModelHdcCurfewAddress(
-          uprn = "uprn-123",
-          firstLine = "1 Test Street",
-          secondLine = "Test Area",
-          townOrCity = "Test Town",
-          county = "Test County",
-          postcode = "AB1 2CD",
-          source = AddressSource.MANUAL,
-          accommodationType = AccommodationType.RESIDENTIAL,
-          postReleaseResidentialChecksCompleted = false,
-          postReleaseResidentialChecksNotCompletedReason = "Old reason",
-          createdTimestamp = null,
-          lastUpdatedTimestamp = null,
-        ),
-      )
+
       val licence = if (isVariation) {
         ModelHdcVariationLicence(
           id = modelHdcLicence.id,
@@ -504,6 +492,51 @@ class PublicLicenceServiceTest {
         id = 2,
         sequence = 2,
         text = "Bespoke two text",
+      ),
+    )
+
+    val modelHdcLicence = ModelHdcLicence(
+      id = 12345,
+      typeCode = LicenceType.AP,
+      version = "2.1",
+      statusCode = LicenceStatus.IN_PROGRESS,
+      licenceVersion = "1.4",
+      weeklyCurfewTimes = listOf(
+        ModelCurfewTimes(
+          curfewTimesSequence = 2,
+          fromDay = DayOfWeek.TUESDAY,
+          fromTime = LocalTime.of(21, 0),
+          untilDay = DayOfWeek.WEDNESDAY,
+          untilTime = LocalTime.of(9, 0),
+          createdTimestamp = null,
+        ),
+        ModelCurfewTimes(
+          curfewTimesSequence = 1,
+          fromDay = DayOfWeek.MONDAY,
+          fromTime = LocalTime.of(20, 0),
+          untilDay = DayOfWeek.TUESDAY,
+          untilTime = LocalTime.of(8, 0),
+          createdTimestamp = null,
+        ),
+      ),
+      firstNightCurfewTimes = ModelCurfewTimes(
+        fromTime = LocalTime.of(22, 0),
+        untilTime = LocalTime.of(6, 0),
+        createdTimestamp = null,
+      ),
+      curfewAddress = ModelHdcCurfewAddress(
+        uprn = "uprn-123",
+        firstLine = "1 Test Street",
+        secondLine = "Test Area",
+        townOrCity = "Test Town",
+        county = "Test County",
+        postcode = "AB1 2CD",
+        source = AddressSource.MANUAL,
+        accommodationType = AccommodationType.RESIDENTIAL,
+        postReleaseResidentialChecksCompleted = false,
+        postReleaseResidentialChecksNotCompletedReason = "Old reason",
+        createdTimestamp = null,
+        lastUpdatedTimestamp = null,
       ),
     )
 
