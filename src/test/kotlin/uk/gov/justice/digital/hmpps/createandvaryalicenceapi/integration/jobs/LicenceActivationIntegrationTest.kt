@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.Integra
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -123,6 +124,8 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         CurrentPrisonerHdcStatus(345, HdcStatus.APPROVED),
       ),
     )
+    remandAndSentencingApiMockServer.stubRemandStatusForAnyNonRemandPrisoners(isOnRemand = false)
+    remandAndSentencingApiMockServer.stubRemandStatusForRemandPrisoner("A1234AG", isOnRemand = true)
   }
 
   private companion object {
@@ -134,6 +137,9 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
+
+    @RegisterExtension
+    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
 
     private val mapper: ObjectMapper = createTestMapper()
     val mockPrisoners = mapper.writeValueAsString(

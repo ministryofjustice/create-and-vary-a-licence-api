@@ -46,11 +46,6 @@ class PrisonApiMockServer :
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """[
                 {
-                "bookingId": 901,
-                "eventId": 1,
-                "outcomeReasonCode": "2507"
-                },
-                {
                 "bookingId": 12,
                 "eventId": 2,
                 "outcomeReasonCode": "5500"
