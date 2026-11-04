@@ -4,7 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
@@ -27,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_REFUSED_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
@@ -60,6 +63,11 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
   private val awaitAtMost30Secs
     get() = await.atMost(Duration.ofSeconds(30))
+
+  @BeforeEach
+  fun setupClient() {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIdsNoResult()
+  }
 
   @Test
   fun `An HDC opt out event is processed`() {
@@ -139,6 +147,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(hdcLicence.nomsId).isEqualTo(crdLicence.nomsId)
     assertThat(hdcLicence.bookingId).isEqualTo(crdLicence.bookingId)
     assertThat(hdcLicence.licenceStartDate).isEqualTo(crdLicence.licenceStartDate)
+    assertThat(hdcLicence.homeDetentionCurfewEligibilityDate).isNull()
+    assertThat(hdcLicence.homeDetentionCurfewActualDate).isNull()
+    assertThat(hdcLicence.homeDetentionCurfewEndDate).isNull()
     assertThat(hdcLicence.probationContact).isNull()
     assertThat(hdcLicence.additionalConditions).hasSize(1)
     assertThat(hdcLicence.additionalConditions.single().expandedConditionText)
@@ -214,6 +225,32 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .extracting("fromLicenceId", "toLicenceId", "linkType")
       .containsExactly(tuple(crdLicence.id, hdcLicence.id, HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE))
     verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-licence-id-1.sql")
+  fun `An HDC opt in event copies the electronic monitoring provider into it's own entity`() {
+    // Given
+    val crdLicence = testRepository.findLicence(1L) as CrdLicence
+    val originalProvider = requireNotNull(crdLicence.electronicMonitoringProvider)
+    val event = createHdcStatusChangedEvent(
+      bookingId = 123L,
+      nomsNumber = "A1234AA",
+      reason = "Offender opted in",
+    )
+
+    // When
+    sendConversionEvent(event, HdcCvlEventType.OPT_IN)
+
+    // Then
+    val hdcLicence = testRepository.findAllLicence().single { it.kind == LicenceKind.HDC } as HdcLicence
+    val copiedProvider = requireNotNull(hdcLicence.electronicMonitoringProvider)
+
+    assertThat(copiedProvider.id).isPositive().isNotEqualTo(originalProvider.id)
+    assertThat(copiedProvider.licence.id).isEqualTo(hdcLicence.id)
+    assertThat(copiedProvider.licence.id).isNotEqualTo(crdLicence.id)
+    assertThat(copiedProvider.isToBeTaggedForProgramme).isEqualTo(originalProvider.isToBeTaggedForProgramme)
+    assertThat(copiedProvider.programmeName).isEqualTo(originalProvider.programmeName)
   }
 
   @SqlGroup(
@@ -685,4 +722,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     triggeredBy = triggeredBy,
     reason = reason,
   )
+
+  private companion object {
+    @RegisterExtension
+    val prisonerSearchMockServer = PrisonerSearchMockServer()
+  }
 }

@@ -930,6 +930,7 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 1,
           fileSize = 1,
+          description = "Exclusion zone one",
         ),
       ),
     ),
@@ -947,6 +948,7 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 2,
           fileSize = 1,
+          description = "Exclusion zone two",
         ),
       ),
     ),
@@ -964,6 +966,7 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 3,
           fileSize = 1,
+          description = "Event exclusion zone",
         ),
       ),
     ),
@@ -998,6 +1001,7 @@ object TestData {
         AdditionalConditionUploadSummary(
           id = 2,
           fileSize = 1,
+          description = "Exclusion zone two",
         ),
       ),
     ),
@@ -1196,7 +1200,7 @@ object TestData {
   fun aLicenceSummary(
     id: Long = 1,
     kind: LicenceKind = LicenceKind.CRD,
-    type: LicenceType = LicenceType.AP,
+    type: LicenceType = AP,
     status: LicenceStatus = LicenceStatus.IN_PROGRESS,
     nomsId: String = "AB1234E",
     startDate: LocalDate = TEN_DAYS_FROM_NOW,

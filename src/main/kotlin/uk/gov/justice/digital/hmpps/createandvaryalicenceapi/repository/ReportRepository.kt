@@ -51,7 +51,7 @@ ranked AS (
   INNER JOIN condition_lookup AS cl
     ON cl.condition_code = ac.condition_code
     WHERE l.status_code IN ('SUBMITTED', 'APPROVED')
-    AND l.licence_start_date >= CURRENT_DATE - INTERVAL '30 days'
+    AND l.licence_start_date >= CURRENT_DATE
   GROUP BY l.noms_id, l.crn, l.status_code, l.licence_start_date, l.submitted_date, l.id, l.surname, l.forename
 )
 SELECT
@@ -69,7 +69,61 @@ WHERE rn = 1
 ORDER BY nomis_number;
   """,
   )
-  fun getRecentOrUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditions>
+  fun getUpcomingReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditions>
+
+  @NativeQuery(
+    value = """
+WITH condition_lookup (condition_code, condition_value) AS (
+  VALUES
+    ('${ELECTRONIC_TAG_COND_CODE_14A}', '14a'),
+    ('${ELECTRONIC_TAG_COND_CODE_14B}', '14b'),
+    ('${ELECTRONIC_TAG_COND_CODE_14C}', '14c'),
+    ('${ELECTRONIC_TAG_COND_CODE_14D}', '14d'),
+    ('${ELECTRONIC_TAG_COND_CODE_14E}', '14e')
+),
+ranked AS (
+  SELECT
+    l.id as licence_id,
+    l.noms_id AS nomis_number,
+    l.crn,
+    l.status_code,
+    l.licence_start_date,
+    l.submitted_date,
+    STRING_AGG(DISTINCT cl.condition_value, ', ') AS em_condition_codes,
+    l.forename AS forename,
+    l.surname AS surname,
+    ROW_NUMBER() OVER (
+      PARTITION BY l.noms_id, l.crn
+      ORDER BY
+        CASE WHEN l.status_code = 'SUBMITTED' THEN 0 ELSE 1 END,
+        l.id DESC
+    ) AS rn
+  FROM licence AS l
+  LEFT JOIN additional_condition AS ac
+    ON ac.licence_id = l.id
+  INNER JOIN condition_lookup AS cl
+    ON cl.condition_code = ac.condition_code
+    WHERE l.status_code = 'ACTIVE'
+    AND l.licence_start_date >= CURRENT_DATE - INTERVAL '30 days'
+    AND l.licence_start_date <= CURRENT_DATE 
+  GROUP BY l.noms_id, l.crn, l.status_code, l.licence_start_date, l.submitted_date, l.id, l.surname, l.forename
+)
+SELECT
+  licence_id,
+  nomis_number AS "prisonNumber",
+  crn,
+  status_code AS "status",
+  licence_start_date AS "licenceStartDate",
+  submitted_date::date AS "submittedDate",
+  em_condition_codes,
+  forename,
+  surname
+FROM ranked
+WHERE rn = 1
+ORDER BY nomis_number;
+  """,
+  )
+  fun getRecentReleasesWithMonitoringConditions(): List<UpcomingReleasesWithMonitoringConditions>
 
   @Query(
     value = """

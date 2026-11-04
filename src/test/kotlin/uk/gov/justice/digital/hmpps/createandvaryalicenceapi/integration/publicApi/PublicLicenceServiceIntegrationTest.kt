@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.json.JsonCompareMode
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
@@ -22,6 +23,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleUploadAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -33,6 +38,90 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadRepository
+
+  @Nested
+  inner class `Get HDC licence by id` {
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-hdc-licence-id-1.sql",
+      "classpath:test_data/seed-hdc-curfew-hours.sql",
+      "classpath:test_data/seed-hdc-curfew-address.sql",
+    )
+    fun `returns HDC curfew address and times`() {
+      assertHdcCurfewDetails("HDC")
+    }
+
+    @Test
+    @Sql("classpath:test_data/seed-hdc-licence-id-1-with-curfew-details.sql")
+    fun `HDC licence response can be deserialized as a regular licence`() {
+      // Given
+      val request = buildGetRequest(uri = "/public/licences/id/1")
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      response.expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody().json(serializedContent("hdc-licence"), JsonCompareMode.STRICT)
+        .returnResult()
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-hdc-variation-licence-id-1.sql",
+      "classpath:test_data/seed-hdc-curfew-hours.sql",
+      "classpath:test_data/seed-hdc-curfew-address.sql",
+    )
+    fun `returns HDC variation curfew address and times`() {
+      assertHdcCurfewDetails("HDC_VARIATION")
+    }
+
+    private fun assertHdcCurfewDetails(kind: String) {
+      // Given
+      val request = buildGetRequest(uri = "/public/licences/id/1")
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      response
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody()
+        .jsonPath("$.id").isEqualTo(1)
+        .jsonPath("$.kind").isEqualTo(kind)
+        .jsonPath("$.curfewAddress.firstLine").isEqualTo("1 Some Address")
+        .jsonPath("$.curfewAddress.townOrCity").isEqualTo("Some Town")
+        .jsonPath("$.curfewAddress.postcode").isEqualTo("AB1 2CD")
+        .jsonPath("$.firstNightCurfewTimes.fromTime").isEqualTo("18:00:00")
+        .jsonPath("$.firstNightCurfewTimes.untilTime").isEqualTo("08:00:00")
+        .jsonPath("$.curfewTimes[0].fromDay").isEqualTo("MONDAY")
+        .jsonPath("$.curfewTimes[0].fromTime").isEqualTo("19:00:00")
+        .jsonPath("$.curfewTimes[1].fromDay").isEqualTo("TUESDAY")
+    }
+  }
+
+  @Nested
+  inner class `Get CRD licence by id` {
+
+    @Test
+    @Sql("classpath:test_data/seed-crd-licence-id-1-with-conditions.sql")
+    fun `CRD licence response can be deserialized as a regular licence`() {
+      // Given
+      val request = buildGetRequest(uri = "/public/licences/id/1")
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      response.expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody().json(serializedContent("crd-licence"), JsonCompareMode.STRICT)
+        .returnResult()
+    }
+  }
 
   @Nested
   inner class `Get licences by CRN` {
@@ -96,7 +185,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody
 
       assertThat(resultList).hasSize(1)
-      val result = resultList!!.first()
+      val result = resultList.first()
       assertLicenceSummary(result)
     }
 
@@ -214,9 +303,102 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         setOf("MULTIPLE_EXCLUSION_ZONE"),
         1,
         "Freedom of movement",
+        EXCLUSION_ZONE_COND_CODE,
+        "c1t",
+        true,
+        "Description",
+      )
+      assertUploadCondition(
+        additionalConditions[1],
+        "MULTIPLE_UPLOADS",
+        setOf("MULTIPLE_UPLOADS"),
+        2,
+        "restricted area",
+        MULTIPLE_UPLOAD_COND_CODE,
+        "c2t",
+        true,
+        "Description",
+      )
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-licence-id-2.sql",
+      "classpath:test_data/add-upload-to-licence-id-2.sql",
+      "classpath:test_data/add-event-exclusion-to-licence-id-2.sql",
+    )
+    fun `Transforms event exclusion with upload description`() {
+      // Given
+      val request = buildGetRequest(
+        uri = "/public/licences/id/2",
+        role = "ROLE_VIEW_LICENCES",
+        acceptMediaTypes = listOf(MediaType.APPLICATION_JSON),
+      )
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      val licence = response
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(Licence::class.java)
+        .returnResult().responseBody!!
+
+      val eventExclusion = licence.conditions.apConditions.additional
+        .single { it.code == EVENT_EXCLUSION_COND_CODE }
+      assertThat(eventExclusion).isInstanceOf(SingleUploadAdditionalCondition::class.java)
+      assertUploadCondition(
+        eventExclusion,
+        "SINGLE_UPLOAD",
+        setOf("SINGLE_UPLOAD"),
+        eventExclusion.id,
+        "Freedom of movement",
+        EVENT_EXCLUSION_COND_CODE,
+        "c3t",
+        true,
+        "Event exclusion zone",
+      )
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-licence-id-2.sql",
+      "classpath:test_data/add-upload-to-licence-id-2.sql",
+    )
+    fun `Returns null description when upload description is null`() {
+      // Given
+      additionalConditionUploadDetailRepository.findAll().forEach {
+        additionalConditionUploadDetailRepository.save(it.copy(description = null))
+      }
+      val request = buildGetRequest(
+        uri = "/public/licences/id/2",
+        role = "ROLE_VIEW_LICENCES",
+        acceptMediaTypes = listOf(MediaType.APPLICATION_JSON),
+      )
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      val licence = response
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(Licence::class.java)
+        .returnResult().responseBody!!
+
+      val additionalConditions = licence.conditions.apConditions.additional
+      assertThat(additionalConditions).hasSize(2)
+      assertUploadCondition(
+        additionalConditions[0],
+        "MULTIPLE_EXCLUSION_ZONE",
+        setOf("MULTIPLE_EXCLUSION_ZONE"),
+        1,
+        "Freedom of movement",
         "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
         "c1t",
         true,
+        null,
       )
       assertUploadCondition(
         additionalConditions[1],
@@ -227,6 +409,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         "005d70e4-a247-4f82-b8b3-6d294a0f5051",
         "c2t",
         true,
+        null,
       )
     }
 
@@ -239,6 +422,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       expectedCode: String,
       expectedText: String,
       expectedHasImageUpload: Boolean,
+      expectedDescription: String?,
     ) {
       assertThat(allowedTypes).contains(expectedType)
       assertThat(actual.type).isEqualTo(expectedType)
@@ -250,9 +434,18 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       val hasImageUpload = when (actual) {
         is MultipleExclusionZoneAdditionalCondition -> actual.hasImageUpload
         is MultipleUploadAdditionalCondition -> actual.hasImageUpload
+        is SingleUploadAdditionalCondition -> actual.hasImageUpload
         else -> null
       }
       hasImageUpload?.let { assertThat(it).isEqualTo(expectedHasImageUpload) }
+
+      val description = when (actual) {
+        is MultipleExclusionZoneAdditionalCondition -> actual.description
+        is MultipleUploadAdditionalCondition -> actual.description
+        is SingleUploadAdditionalCondition -> actual.description
+        else -> null
+      }
+      assertThat(description).isEqualTo(expectedDescription)
     }
   }
 
@@ -282,6 +475,10 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     .uri(uri)
     .accept(*acceptMediaTypes.toTypedArray())
     .headers(setAuthorisation(roles = listOf(role)))
+
+  private fun serializedContent(name: String) = this.javaClass.getResourceAsStream("/test_data/public-api/$name.json")!!
+    .bufferedReader()
+    .readText()
 
   private companion object {
     @RegisterExtension

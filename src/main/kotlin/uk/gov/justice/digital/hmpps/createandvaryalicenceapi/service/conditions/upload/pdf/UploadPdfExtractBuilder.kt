@@ -3,11 +3,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
+import org.apache.pdfbox.text.TextPosition
 import org.slf4j.LoggerFactory
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
+
 class UploadPdfExtractBuilder(private var pdfDoc: PDDocument) {
 
   fun build(): UploadPdfExtract {
@@ -18,12 +20,22 @@ class UploadPdfExtractBuilder(private var pdfDoc: PDDocument) {
   }
 
   private fun description(): String = runCatching {
-    with(PDFTextStripper()) {
+    with(BodyTextStripper()) {
       sortByPosition = true
       startPage = 2
       getText(pdfDoc)
     }
   }.getOrElse { throw UploadPdfExtractionException("Unable to extract description", it) }
+
+  // Ignores the page header, "Notes" heading and copyright footer, keeping only the description body text
+  private class BodyTextStripper : PDFTextStripper() {
+    override fun writeString(text: String, textPositions: MutableList<TextPosition>) {
+      val first = textPositions.firstOrNull() ?: return
+      val isHeaderOrFooter = first.yDirAdj < HEADER_BOTTOM_Y || first.yDirAdj > first.pageHeight - FOOTER_HEIGHT
+      if (isHeaderOrFooter || text.trim() == NOTES_HEADING) return
+      super.writeString(text, textPositions)
+    }
+  }
 
   private fun fullSizeImage(): ByteArray = runCatching {
     with(PDFRenderer(pdfDoc)) {
@@ -62,6 +74,9 @@ class UploadPdfExtractBuilder(private var pdfDoc: PDDocument) {
     const val IMAGE_LOCATION_X = 50
     const val IMAGE_LOCATION_Y = 50
     const val IMAGE_PADDING = 100
+    const val HEADER_BOTTOM_Y = 60f
+    const val FOOTER_HEIGHT = 50f
+    const val NOTES_HEADING = "Notes"
     const val THUMBNAIL_WIDTH = 150
     const val THUMBNAIL_HEIGHT = 200
   }

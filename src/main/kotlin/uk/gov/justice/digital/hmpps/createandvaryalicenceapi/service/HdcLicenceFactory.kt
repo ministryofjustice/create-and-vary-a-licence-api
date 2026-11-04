@@ -2,14 +2,20 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 
 @Component
 class HdcLicenceFactory {
 
-  fun createFromCrd(licence: CrdLicence, statusCode: LicenceStatus? = null) = HdcLicence(
+  fun createFromCrd(
+    licence: CrdLicence,
+    prisoner: PrisonerSearchPrisoner? = null,
+    statusCode: LicenceStatus? = null,
+  ) = HdcLicence(
     typeCode = licence.typeCode,
     version = licence.version,
     statusCode = statusCode ?: licence.statusCode,
@@ -33,6 +39,9 @@ class HdcLicenceFactory {
     licenceStartDate = licence.licenceStartDate,
     licenceExpiryDate = licence.licenceExpiryDate,
     licenceActivatedDate = licence.licenceActivatedDate,
+    homeDetentionCurfewActualDate = prisoner?.homeDetentionCurfewActualDate,
+    homeDetentionCurfewEndDate = prisoner?.homeDetentionCurfewEndDate,
+    homeDetentionCurfewEligibilityDate = prisoner?.homeDetentionCurfewEligibilityDate,
     topupSupervisionStartDate = licence.topupSupervisionStartDate,
     topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
     postRecallReleaseDate = licence.postRecallReleaseDate,
@@ -58,5 +67,13 @@ class HdcLicenceFactory {
     createdBy = licence.createdBy,
     versionOfId = licence.id,
     responsibleCom = licence.getCom(),
-  )
+  ).also { hdcLicence ->
+    hdcLicence.electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { provider ->
+      ElectronicMonitoringProvider(
+        licence = hdcLicence,
+        isToBeTaggedForProgramme = provider.isToBeTaggedForProgramme,
+        programmeName = provider.programmeName,
+      )
+    }
+  }
 }
